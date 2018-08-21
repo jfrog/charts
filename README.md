@@ -10,7 +10,7 @@ Get the latest [Helm release](https://github.com/kubernetes/helm#install).
 
 You need to add this Chart repo to Helm:
 ```console
-$ helm repo add jfrog http://charts.jfrog.io/
+$ helm repo add jfrog https://charts.jfrog.io/
 $ helm repo update
 ```
 Now you can then run `helm search jfrog` to see the available charts.
