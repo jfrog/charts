@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.4.0] - Aug 22, 2018
+* Added SecurityContext for Artifactory Pods
+* Updated Artifactory version to 6.2.0
+
 ## [0.3.0] - Aug 22, 2018
 * Enabled RBAC Support
 * Added support for PostStartCommand (To download Database JDBC connector)
