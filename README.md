@@ -13,11 +13,14 @@ You need to add this Chart repo to Helm:
 $ helm repo add jfrog https://charts.jfrog.io/
 $ helm repo update
 ```
+
+**Note:** https://charts.jfrog.io/ is also a proxy for the central helm repository https://storage.googleapis.com/kubernetes-charts
+
 Now you can then run `helm search jfrog` to see the available charts.
 
-**Note:** How to install charts follow install instructions in chart's _readme_.
+**Note:** For instructions on how to install charts follow instructions in chart's _README.md_.
 
-## Contributing to Jfrog Charts
+## Contributing to JFrog Charts
 
 Make a [pull request](https://help.github.com/articles/using-pull-requests) (PR).
 
