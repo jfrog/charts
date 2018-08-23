@@ -2,7 +2,7 @@
 All notable changes to this chart will be documented in this file.
 
 ## [7.4.0] - Aug 22, 2018
-* Added SecurityContext for Artifactory Pod
+* Added support to run as non root
 * Updated Artifactory version to 6.2.0 
 
 ## [7.3.0] - Aug 22, 2018
