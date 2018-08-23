@@ -147,14 +147,14 @@ kubectl create configmap nginx-config --from-file=nginx.conf
 ```
 * Pass configMap to helm install
 ```bash
-helm install --name artifactory-ha --set nginx.customConfigMap=nginx-config jfrog/artifactory-ha
+helm install --name artifactory --set nginx.customConfigMap=nginx-config jfrog/artifactory
 ```
 
 ### Use an external Database
 There are cases where you will want to use a different database and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Database)
 > The official Artifactory Docker images include the PostgreSQL database driver.
-> For other database types, you will have to add the relevant database driver to Artifactory's tomcat/lib
+> For other database types, you will have to add the relevant database driver to Artifactory's tomcat/lib 
 
 This can be done with the following parameters
 ```bash
@@ -205,7 +205,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.replicaCount`            | Replica count for Artifactory deployment| `1`                                    |
 | `artifactory.image.pullPolicy`         | Container pull policy             | `IfNotPresent`                              |
 | `artifactory.image.repository`    | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`        |
-| `artifactory.image.version`       | Container tag                     |  `6.1.0`                                        |
+| `artifactory.image.version`       | Container tag                     |  `6.2.0`                                        |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
@@ -227,7 +227,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
-| `artifactory.persistence.size` | Artifactory persistence volume size | `20Gi`                                            |
+| `artifactory.persistence.size` | Artifactory persistence volume size | `20Gi`                                            | 
 | `artifactory.resources.requests.memory` | Artifactory initial memory request                  |                          |
 | `artifactory.resources.requests.cpu`    | Artifactory initial cpu request     |                                          |
 | `artifactory.resources.limits.memory`   | Artifactory memory limit            |                                          |
@@ -246,7 +246,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.enabled` | Deploy nginx server | `true`                                                                           |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
-| `nginx.image.version`       | Container tag                     | `6.1.0`                                               |
+| `nginx.image.version`       | Container tag                     | `6.2.0`                                               |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
