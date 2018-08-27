@@ -22,9 +22,12 @@ Now you can then run `helm search jfrog` to see the available charts.
 
 ## Contributing to JFrog Charts
 
-Make a [pull request](https://help.github.com/articles/using-pull-requests) (PR).
+Fork the `repo`, make changes and then please run `make lint` to lint charts locally, at last install the chart to see it is working. :)
+
+On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR).
 
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
+Two __LGTM__ are needed to get the PR approved and merged.
 
 ## Docs
 
