@@ -52,6 +52,9 @@ spec:
           until nc -z -w 2 {{ $serviceName }} {{ $servicePort }} && echo artifactory ok; do
             sleep 2;
           done;
+      securityContext:
+        runAsUser: {{ .Values.nginx.uid }}
+        fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
         image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
