@@ -1,6 +1,6 @@
 # Lint charts locally
 CHART_TESTING_TAG ?= v1.0.3
-CHARTS_REPO ?= https://github.com/rimusz/charts-testing-travisci
+CHARTS_REPO ?= https://github.com/jfrog/charts
 
 .PHONY: lint
 lint:
