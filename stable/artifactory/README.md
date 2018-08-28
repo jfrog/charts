@@ -245,8 +245,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.name` | Nginx name | `nginx`                                                                                      |
 | `nginx.enabled` | Deploy nginx server | `true`                                                                           |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
+| `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
+| `nginx.git`                 | Nginx Group Id                    | `107`                                                  |
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
-| `nginx.image.version`       | Container tag                     | `6.2.0`                                               |
+| `nginx.image.version`       | Container tag                     | `6.2.0`                                                |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
