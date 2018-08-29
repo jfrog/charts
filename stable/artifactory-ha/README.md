@@ -259,7 +259,7 @@ $ kubectl delete pvc volume-artifactory-node-2
 There are cases where you will want to use a different database and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Database)
 > The official Artifactory Docker images include the PostgreSQL database driver.
-> For other database types, you will have to add the relevant database driver to Artifactory's tomcat/lib 
+> For other database types, you will have to add the relevant database driver to Artifactory's tomcat/lib
 
 This can be done with the following parameters
 ```bash
@@ -391,6 +391,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
+| `nginx.service.annotations` | Nginx service annotations           | `{}`                            |
 | `nginx.loadBalancerIP`| Provide Static IP to configure with Nginx |                                 |
 | `nginx.externalPortHttp` | Nginx service external port            | `80`                            |
 | `nginx.internalPortHttp` | Nginx service internal port            | `80`                            |
