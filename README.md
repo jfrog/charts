@@ -22,7 +22,8 @@ Now you can then run `helm search jfrog` to see the available charts.
 
 ## Contributing to JFrog Charts
 
-Fork the `repo`, make changes and then please run `make lint` to lint charts locally, at last install the chart to see it is working. :)
+Fork the `repo`, make changes and then please run `make lint` to lint charts locally, and at last install the chart to see it is working. :)
+On Mac you can run `make test` which will lint, install and test charts on `Docker for Mac`.
 
 On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR).
 
