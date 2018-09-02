@@ -197,15 +197,15 @@ The following table lists the configurable parameters of the artifactory chart a
 |         Parameter         |           Description             |                         Default                          |
 |---------------------------|-----------------------------------|----------------------------------------------------------|
 | `imagePullSecrets`        | Docker registry pull secret       |                                                          |
-| `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                               |
+| `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                                |
 | `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template |
-| `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                               |
+| `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                     |
 | `artifactory.name`        | Artifactory name                  | `artifactory`                                            |
 | `artifactory.replicaCount`            | Replica count for Artifactory deployment| `1`                                    |
 | `artifactory.image.pullPolicy`         | Container pull policy             | `IfNotPresent`                              |
 | `artifactory.image.repository`    | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`        |
-| `artifactory.image.version`       | Container tag                     |  `6.2.0`                                        |
+| `artifactory.image.version`       | Container tag                     |  `.Chart.AppVersion`                             |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
@@ -248,7 +248,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.git`                 | Nginx Group Id                    | `107`                                                  |
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
-| `nginx.image.version`       | Container tag                     | `6.2.0`                                                |
+| `nginx.image.version`       | Container tag                     | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
