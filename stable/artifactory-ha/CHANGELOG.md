@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All notable changes to this chart will be documented in this file.
 
-## [0.4.4] - Aug 22, 2018
+## [0.4.4] - Sep 2, 2018
 * Updated Artifactory version to 6.3.2
 
 ## [0.4.0] - Aug 22, 2018
