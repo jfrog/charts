@@ -32,6 +32,9 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.distribution.uid }}
+        fsGroup: {{ .Values.distribution.uid }}
       initContainers:
       - name: "init-data"
         image: "{{ .Values.initContainerImage }}"
@@ -45,6 +48,8 @@ spec:
       - name: {{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: false
         ports:
         - containerPort: {{ .Values.distribution.internalPort }}
           protocol: TCP
@@ -61,21 +66,28 @@ spec:
                   -Xmx{{ .Values.distribution.javaOpts.xmx }}
                   {{- end}}
                   -Dspring.profiles.active=production'
-        - name: mongo_connectionString
+        - name: MONGODB_HOST
+          value: '{{ .Release.Name }}-mongodb'
+        - name: MONGODB_PORT
+          value: '27017'
+        - name: MONGODB_DATABASE
+          value: '{{ .Values.mongodb.mongodbDatabase }}'
+        - name: MONGODB_USERNAME
+          value: '{{ .Values.mongodb.mongodbUsername }}'
+        - name: MONGODB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "distribution.fullname" . }}-mongo-connection
-              key: mongo_connectionString
-        - name: audit_mongo_connectionString
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-mongo-connection
-              key: audit_mongo_connectionString
-        - name: redis_connectionString
+              key: distributionPassword
+        - name: REDIS_HOST
+          value: '{{ .Release.Name }}-redis'
+        - name: REDIS_PORT
+          value: '6379'
+        - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "distribution.fullname" . }}-redis-connection
-              key: redis_connectionString
+              key: redisPassword
         - name: BT_ARTIFACTORY_URL
           value: {{ .Values.distribution.env.artifactoryUrl | quote }}
         - name: BT_SERVER_URL
