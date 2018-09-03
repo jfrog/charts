@@ -177,7 +177,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |
 | `rabbitmq-ha.rabbitmqPassword`                 | RabbitMQ application password                | ` `                  |
-| `rabbitmq-ha.customConfigMap`                  | RabbitMQ Use a custom ConfigMap              | `true`               |
 | `rabbitmq-ha.rabbitmqErlangCookie`             | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
 | `rabbitmq-ha.rabbitmqMemoryHighWatermark`      | RabbitMQ Memory high watermark               | `500MB`              |
 | `rabbitmq-ha.persistentVolume.enabled`         | If `true`, persistent volume claims are created | `true`            |

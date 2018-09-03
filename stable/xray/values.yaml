@@ -111,12 +111,22 @@ mongodb:
 ##
 rabbitmq-ha:
   replicaCount: 1
-  rabbitmqUsername: "guest"
+  rabbitmqUsername: guest
   rabbitmqPassword:
-  customConfigMap: true
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
   rabbitmqMemoryHighWatermark: 500MB
   rabbitmqNodePort: 5672
+  policies: |-
+    {
+      "name": "ha-all",
+      "apply-to": "all",
+      "pattern": ".*",
+      "vhost": "/",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+      }
+    }
   # resources:
   #  requests:
   #    memory: "250Mi"
