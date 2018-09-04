@@ -9,6 +9,6 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 data:
-  token: |
+  token: |-
     {{ .Values.distributor.token }}
 {{- end }}
