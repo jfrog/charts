@@ -66,6 +66,7 @@ spec:
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distributor.persistence.mountPath }}
+                  -Djfrog.distributor.distribution.internal-api-url=http://{{ include "distribution.fullname" . }}:{{ .Values.distribution.externalPort }}/api/internal
                   -Dfile.encoding=UTF8 -Dcom.sun.management.jmxremote.authenticate=false
                   -Dcom.sun.management.jmxremote.ssl=false -Duser.timezone=UTC
                   {{- if .Values.distributor.javaOpts.xms }}
