@@ -177,13 +177,12 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |
 | `rabbitmq-ha.rabbitmqPassword`                 | RabbitMQ application password                | ` `                  |
-| `rabbitmq-ha.customConfigMap`                  | RabbitMQ Use a custom ConfigMap              | `true`               |
 | `rabbitmq-ha.rabbitmqErlangCookie`             | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
 | `rabbitmq-ha.rabbitmqMemoryHighWatermark`      | RabbitMQ Memory high watermark               | `500MB`              |
 | `rabbitmq-ha.persistentVolume.enabled`         | If `true`, persistent volume claims are created | `true`            |
 | `rabbitmq-ha.persistentVolume.size`            | RabbitMQ Persistent volume size              | `20Gi`               |
-| `rabbitmq-ha.rbac.create`                      | If true, create & use RBAC resources         | `true`              |
-| `common.xrayVersion`                           | Xray image tag                               | `2.3.0`              |
+| `rabbitmq-ha.rbac.create`                      | If true, create & use RBAC resources         | `true`               |
+| `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
 | `common.xrayConfigPath`                        | Xray config path                   | `/var/opt/jfrog/xray/data`     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |

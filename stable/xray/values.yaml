@@ -111,12 +111,22 @@ mongodb:
 ##
 rabbitmq-ha:
   replicaCount: 1
-  rabbitmqUsername: "guest"
+  rabbitmqUsername: guest
   rabbitmqPassword:
-  customConfigMap: true
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
   rabbitmqMemoryHighWatermark: 500MB
   rabbitmqNodePort: 5672
+  policies: |-
+    {
+      "name": "ha-all",
+      "apply-to": "all",
+      "pattern": ".*",
+      "vhost": "/",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+      }
+    }
   # resources:
   #  requests:
   #    memory: "250Mi"
@@ -132,7 +142,7 @@ rabbitmq-ha:
 
 common:
   ## Note that by default we use appVersion to get image tag
-  # xrayVersion: 2.3.0
+  # xrayVersion: 2.3.2
   xrayConfigPath: /var/opt/jfrog/xray/data
   xrayUserId: 1035
   xrayGroupId: 1035
@@ -148,7 +158,6 @@ common:
 global:
   mongoUrl:
   postgresqlUrl:
-
 
 analysis:
   name: xray-analysis

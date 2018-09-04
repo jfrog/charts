@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.5.0] - Sep 3, 2018
+* New RabbitMQ HA helm chart version 1.9.1
+* Updated Xray version to 2.3.2
+
 ## [0.4.1] - Aug 22, 2018
 * Updated Xray version to 2.3.0
 
