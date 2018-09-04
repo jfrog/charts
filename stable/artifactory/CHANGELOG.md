@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [7.4.2] - Sep 2, 2018
+* Updated Artifactory version to 6.3.2
+* Removed unused PVC
+
 ## [7.4.0] - Aug 22, 2018
 * Added support to run as non root
 * Updated Artifactory version to 6.2.0 

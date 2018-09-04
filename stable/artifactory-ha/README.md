@@ -307,14 +307,14 @@ The following table lists the configurable parameters of the artifactory chart a
 |         Parameter            |           Description             |                         Default                       |
 |------------------------------|-----------------------------------|-------------------------------------------------------|
 | `imagePullSecrets`           | Docker registry pull secret       |                                                       |
-| `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                               |
+| `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                                |
 | `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template |
-| `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                               |
+| `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                     |
 | `artifactory.name`                   | Artifactory name                     | `artifactory`                              |
 | `artifactory.image.pullPolicy`       | Container pull policy                | `IfNotPresent`                             |
 | `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
-| `artifactory.image.version`          | Container image tag                  | `6.2.0`                                    |
+| `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
 | `artifactory.masterKey`      | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
@@ -325,7 +325,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
 | `artifactory.internalPortReplicator` | Replicator service internal port | `6061`   |
 | `artifactory.externalPortReplicator` | Replicator service external port | `6061`   |
-| `artifactory.livenessProbe.enabled`              | Enable liveness probe                     |  `true`                                        |
+| `artifactory.livenessProbe.enabled`              | Enable liveness probe                     |  `true`                                               |
 | `artifactory.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 180                                                   |
 | `artifactory.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                                                    |
 | `artifactory.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                                                    |
@@ -387,7 +387,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.git`                 | Nginx Group Id                    | `107`                                                  |
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
-| `nginx.image.version`       | Container version                 | `6.2.0`                                                |
+| `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
