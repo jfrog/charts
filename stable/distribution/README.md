@@ -5,12 +5,12 @@
 * Kubernetes 1.8+
 
 ## Chart Details
-This chart will do the following:
+This chart does the following:
 
 * Deploy Mongodb database.
-* Deploy a Redis.
-* Deploy a distributor.
-* Deploy a distribution.
+* Deploy Redis.
+* Deploy distributor.
+* Deploy distribution.
 
 ## Requirements
 - A running Kubernetes cluster
@@ -52,6 +52,14 @@ $ helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/
 ```
 **NOTE:** Make sure to pass the same master key with `--set distribution.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
 
+### High Availability
+JFrog Distribution can run in High Availability by having multiple replicas of the Distribution service.
+
+To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
+```bash
+# Run 3 replicas of the Distribution service
+helm install --name distribution --set distribution.replicaCount=3 jfrog/distribution
+```
 
 ### External Databases
 There is an option to use external database services (MongoDB or PostgreSQL) for your Distribution.
@@ -122,7 +130,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.usePassword`                        | Enable password authentication             | `false`                            |
 | `mongodb.mongodbDatabase`                    | Mongodb Database for distribution          | `bintray`                          |
 | `mongodb.mongodbRootPassword`                | Mongodb Database Password for root user    | ` `                                |
-| `mongodb.mongodbUsername`                    | Mongodb Database Mission Control User      | `distribution`                     |
+| `mongodb.mongodbUsername`                    | Mongodb Database User                      | `distribution`                     |
 | `mongodb.mongodbPassword`                    | Mongodb Database Password for Mission Control user  | ` `                       |
 | `redis.enabled`                              | Enable Redis                               | `true`                             |
 | `redis.redisPassword`                        | Redis password                             | ` `                                |
@@ -132,9 +140,10 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.persistence.storageClass`             | Storage class of backing PVC               | `generic`                          |
 | `redis.persistence.size`                     | Size of data volume                        | `10Gi`                             |
 | `distribution.name`                          | Distribution name                          | `distribution`                     |
+| `distribution.replicaCount`                  | Number of Distribution replicas (HA)       | `1`                                |
 | `distribution.image.pullPolicy`              | Container pull policy                      | `IfNotPresent`                     |
 | `distribution.image.repository`              | Container image                            | `docker.jfrog.io/jf-distribution`  |
-| `distribution.image.version`                 | Container image tag                        | `1.1.0`                            |
+| `distribution.image.version`                 | Container image tag                        | `.Chart.AppVersion`                |
 | `distribution.service.type`                  | Distribution service type                  | `LoadBalancer`                     |
 | `distribution.externalPort`                  | Distribution service external port         | `80`                               |
 | `distribution.internalPort`                  | Distribution service internal port         | `8080`                             |
@@ -148,7 +157,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.name`                           | Distribution name                          | `distribution`                     |
 | `distributor.image.pullPolicy`               | Container pull policy                      | `IfNotPresent`                     |
 | `distributor.image.repository`               | Container image                            | `docker.jfrog.io/jf-distribution`  |
-| `distributor.image.version`                  | Container image tag                        | `1.1.0`                            |
+| `distributor.image.version`                  | Container image tag                        | `.Chart.AppVersion`                |
 | `distributor.token`                          | Distributor token                          | ` `                                |
 | `distributor.persistence.mountPath`          | Distributor persistence volume mount path  | `"/bt-distributor"`                |
 | `distributor.persistence.existingClaim`      | Provide an existing PersistentVolumeClaim  | `nil`                              |

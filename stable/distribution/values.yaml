@@ -74,9 +74,9 @@ mongodb:
   mongodbExtraFlags:
   - "--wiredTigerCacheSizeGB=1"
   mongodbRootPassword:
+  mongodbDatabase: bintray
   mongodbUsername: distribution
   mongodbPassword:
-  mongodbDatabase: bintray
   livenessProbe:
     initialDelaySeconds: 40
   readinessProbe:
@@ -113,10 +113,11 @@ distribution:
   image:
     repository: "docker.bintray.io/jfrog/distribution-distribution"
     ## Note that by default we use appVersion to get image tag
-    # version: 1.1.0
+    # version: 1.2.0
     imagePullPolicy: IfNotPresent
   internalPort: 8080
   externalPort: 80
+  uid: 1020
   masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
   env:
     artifactoryUrl:
@@ -159,12 +160,13 @@ distribution:
     # storageClass: "-"
 
 distributor:
+  # Distributor does not support multiple replicas yet. Leave at 1!
   replicaCount: 1
   name: distributor
   image:
     repository: "docker.bintray.io/jfrog/distribution-distributor"
     ## Note that by default we use appVersion to get image tag
-    # version: 1.1.0
+    # version: 1.2.0
     imagePullPolicy: IfNotPresent
   token:
   resources: {}
