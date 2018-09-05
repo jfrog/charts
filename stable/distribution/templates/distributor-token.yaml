@@ -1,14 +1,15 @@
 {{- if .Values.distributor.token }}
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: {{ template "distributor.fullname" . }}-token
   labels:
     app: {{ template "distribution.name" . }}
     chart: {{ template "distribution.chart" . }}
-    heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+type: Opaque
 data:
   token: |-
-    {{ .Values.distributor.token }}
+    {{ .Values.distributor.token | b64enc }}
 {{- end }}

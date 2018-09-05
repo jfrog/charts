@@ -54,8 +54,7 @@ spec:
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
         {{- if .Values.distributor.token }}
         - name: distributor-token
-          mountPath: "/tmp/security/token"
-          subPath: token
+          mountPath: "/tmp/security"
         {{- end }}
       containers:
       - name: {{ .Values.distributor.name }}
@@ -93,8 +92,8 @@ spec:
       volumes:
       {{- if .Values.distributor.token }}
       - name: distributor-token
-        configMap:
-          name: {{ template "distributor.fullname" . }}-token
+        secret:
+          secretName: {{ template "distributor.fullname" . }}-token
       {{- end }}
       {{- if .Values.distributor.persistence.enabled }}
   volumeClaimTemplates:
