@@ -210,6 +210,13 @@ insightScheduler:
     type: ClusterIP
   externalPort: 8080
   internalPort: 8080
+
+  ## Control Java options (JAVA_OPTIONS)
+  ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
+  javaOpts: {}
+  #  other:
+  #  xms: "500m"
+  #  xmx: "3g"
   resources: {}
   #  requests:
   #    memory: "500Mi"
@@ -253,6 +260,12 @@ insightExecutor:
   externalPort: 8080
   internalPort: 8080
 
+  ## Control Java options (JAVA_OPTIONS)
+  ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
+  javaOpts: {}
+  #  other:
+  #  xms: "500m"
+  #  xmx: "3g"
   resources: {}
   #  requests:
   #    memory: "500Mi"
