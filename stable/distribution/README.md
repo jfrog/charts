@@ -128,7 +128,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.readinessProbe.initialDelaySeconds` | Mongodb delay before readiness probe is initiated   | `30`                      |
 | `mongodb.mongodbExtraFlags`                  | MongoDB additional command line flags      | `["--wiredTigerCacheSizeGB=1"]`    |
 | `mongodb.usePassword`                        | Enable password authentication             | `false`                            |
-| `mongodb.mongodbDatabase`                    | Mongodb Database for distribution          | `bintray`                          |
+| `mongodb.mongodbDatabase`                    | Mongodb Database for distribution          | `distribution`                          |
 | `mongodb.mongodbRootPassword`                | Mongodb Database Password for root user    | ` `                                |
 | `mongodb.mongodbUsername`                    | Mongodb Database User                      | `distribution`                     |
 | `mongodb.mongodbPassword`                    | Mongodb Database Password for Mission Control user  | ` `                       |
