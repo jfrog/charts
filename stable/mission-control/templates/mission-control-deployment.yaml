@@ -77,7 +77,17 @@ spec:
         - name: MC_URL
           value: "{{ .Values.missionControl.missionControlUrl }}"
         - name: JAVA_OPTIONS
-          value: "{{ .Values.missionControl.javaOpts.other }} {{- if .Values.missionControl.javaOpts.xms }}-Xms{{ .Values.missionControl.javaOpts.xms }}{{- end }}  {{- if .Values.missionControl.javaOpts.xmx }}-Xmx{{ .Values.missionControl.javaOpts.xmx }} {{- end }}"
+          value: "
+          {{- if .Values.missionControl.javaOpts.other }}
+              {{ .Values.missionControl.javaOpts.other }}
+          {{- end}}
+          {{- if .Values.missionControl.javaOpts.xms }}
+              -Xms{{ .Values.missionControl.javaOpts.xms }}
+          {{- end }}
+          {{- if .Values.missionControl.javaOpts.xmx }}
+              -Xmx{{ .Values.missionControl.javaOpts.xmx }}
+          {{- end }}
+          "
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
