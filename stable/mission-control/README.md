@@ -257,6 +257,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `elasticsearch.persistence.existingClaim`    | Use an existing PVC to persist data             | `nil`                                 |
 | `elasticsearch.persistence.storageClass`     | Storage class of backing PVC                    | `generic`                             |
 | `elasticsearch.persistence.size`             | Elasticsearch persistence volume size           | `50Gi`                                |
+| `elasticsearch.javaOpts.xms`                 | Elasticsearch ES_JAVA_OPTS -Xms                 | ``                                    |
+| `elasticsearch.javaOpts.xmx`                 | Elasticsearch ES_JAVA_OPTS -Xmx                 | ``                                    |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
 | `elasticsearch.env.esUsername`               | Elasticsearch User Name                         | `elastic`                             |
 | `elasticsearch.env.esPassword`               | Elasticsearch User Name                         | `changeme`                            |
@@ -276,8 +278,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `missionControl.persistence.accessMode`      | Mission Control persistence volume access mode  | `ReadWriteOnce`                       |
 | `missionControl.persistence.size`            | Mission Control persistence volume size         | `100Gi`                               |
 | `missionControl.javaOpts.other`              | Mission Control JAVA_OPTIONS                    | `-server -XX:+UseG1GC -Dfile.encoding=UTF8` |
-| `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | `1g`                                  |
-| `missionControl.javaOpts.xmx`                | Mission Control JAVA_OPTIONS -Xmx               | `2g`                                  |
+| `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | ``                                    |
+| `missionControl.javaOpts.xmx`                | Mission Control JAVA_OPTIONS -Xmx               | ``                                    |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
 | `insightServer.replicaCount`                 | Insight Server replica count                    | `1`                                   |
 | `insightServer.image`                        | Container image                                 | `docker.jfrog.io/jfrog/insight-server`|
@@ -294,6 +296,9 @@ The following table lists the configurable parameters of the distribution chart 
 | `insightScheduler.service.type`              | Insight Scheduler service type                  | `ClusterIP`                           |
 | `insightScheduler.externalPort`              | Insight Scheduler service external port         | `8080`                                |
 | `insightScheduler.internalPort`              | Insight Scheduler service internal port         | `8080`                                |
+| `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
+| `insightScheduler.javaOpts.xms`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xms     | ``                                    |
+| `insightScheduler.javaOpts.xmx`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xmx     | ``                                    |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
 | `insightExecutor.replicaCount`               | Insight Executor replica count                  | `1`                                   |
 | `insightExecutor.image`                      | Container image                                 | `docker.jfrog.io/jfrog/insight-executor`   |
@@ -301,6 +306,9 @@ The following table lists the configurable parameters of the distribution chart 
 | `insightExecutor.service.type`               | Insight Executor service type                   | `ClusterIP`                           |
 | `insightExecutor.externalPort`               | Insight Executor service external port          | `8080`                                |
 | `insightExecutor.internalPort`               | Insight Executor service internal port          | `8080`                                |
+| `insightExecutor.javaOpts.other`             | Insight Executor JFMC_EXTRA_JAVA_OPTS           | ``                                    |
+| `insightExecutor.javaOpts.xms`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xms      | ``                                    |
+| `insightExecutor.javaOpts.xmx`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xmx      | ``                                    |
 | `insightExecutor.persistence.mountPath`      | Insight Executor persistence volume mount path  | `"/var/cloudbox"`                     |
 | `insightExecutor.persistence.enabled`        | Insight Executor persistence volume enabled     | `true`                                |
 | `insightExecutor.persistence.storageClass`   | Storage class of backing PVC                    | `nil (uses alpha storage class annotation)`|

@@ -68,6 +68,18 @@ spec:
               key: adminPassword
         - name: JFMC_SCHEDULER_MONGO_DB
           value: '{{ .Values.mongodb.db.insightSchedulerDb }}'
+        - name: JFMC_EXTRA_JAVA_OPTS
+          value: "
+          {{- if .Values.insightScheduler.javaOpts.other }}
+              {{ .Values.insightScheduler.javaOpts.other }}
+          {{- end}}
+          {{- if .Values.insightScheduler.javaOpts.xms }}
+              -Xms{{ .Values.insightScheduler.javaOpts.xms }}
+          {{- end}}
+          {{- if .Values.insightScheduler.javaOpts.xmx }}
+              -Xmx{{ .Values.insightScheduler.javaOpts.xmx }}
+          {{- end}}
+          "
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP

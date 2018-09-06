@@ -38,6 +38,18 @@ spec:
           value: '/var/cloudbox'
         - name: JFI_HOME_EXECUTOR
           value: '/var/cloudbox/executor'
+        - name: JFMC_EXTRA_JAVA_OPTS
+          value: "
+          {{- if .Values.insightExecutor.javaOpts.other }}
+              {{ .Values.insightExecutor.javaOpts.other }}
+          {{- end}}
+          {{- if .Values.insightExecutor.javaOpts.xms }}
+              -Xms{{ .Values.insightExecutor.javaOpts.xms }}
+          {{- end}}
+          {{- if .Values.insightExecutor.javaOpts.xmx }}
+              -Xmx{{ .Values.insightExecutor.javaOpts.xmx }}
+          {{- end}}
+          "
         ports:
         - containerPort: {{ .Values.insightExecutor.internalPort }}
           protocol: TCP

@@ -12,13 +12,18 @@ replicaCount: 1
 image:
   repository: "docker.bintray.io/elasticsearch/elasticsearch"
   version: 6.1.1
-resources:
-  requests:
-    memory: "2Gi"
-    cpu: "200m"
-  limits:
-    memory: "3Gi"
-    cpu: "250m"
+resources: {}
+#  requests:
+#    memory: "2Gi"
+#    cpu: "100m"
+#  limits:
+#    memory: "2Gi"
+#    cpu: "500m"
+## ElasticSearch xms and xmx should be same!
+javaOpts: {}
+#  xms: "2g"
+#  xmx: "2g"
+
 
 env:
   clusterName: "es-cluster"
