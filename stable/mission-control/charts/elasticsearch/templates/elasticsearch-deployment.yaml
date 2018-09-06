@@ -47,7 +47,14 @@ spec:
         - name: 'xpack.security.enabled'
           value: {{ .Values.env.xpackSecurityEnabled | quote }}
         - name: ES_JAVA_OPTS
-          value: "-Xms{{ .Values.resources.requests.memory | trunc 1 }}g -Xmx{{ .Values.resources.requests.memory | trunc 1 }}g"
+          value: "
+          {{- if .Values.javaOpts.xms }}
+              -Xms{{ .Values.javaOpts.xms }}
+          {{- end }}
+          {{- if .Values.javaOpts.xmx }}
+              -Xmx{{ .Values.javaOpts.xmx }}
+          {{- end }}
+          "
         - name: ELASTIC_SEARCH_URL
           value: {{ .Values.env.esUrl }}
         - name: ELASTIC_SEARCH_USERNAME
@@ -78,12 +85,7 @@ spec:
         - name: elasticsearch-data
           mountPath: {{ .Values.persistence.mountPath | quote }}
         resources:
-          requests:
-            memory: "{{ .Values.resources.requests.memory }}"
-            cpu: "{{ .Values.resources.requests.cpu }}"
-          limits:
-            memory: "{{ .Values.resources.limits.memory }}"
-            cpu: "{{ .Values.resources.limits.cpu }}"
+{{ toYaml .Values.resources | indent 10 }}
         livenessProbe:
           httpGet:
             path: /_cluster/health?local=true

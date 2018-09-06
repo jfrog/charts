@@ -88,8 +88,12 @@ elasticsearch:
   #    memory: "2Gi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "3Gi"
-  #    cpu: "250m"
+  #    memory: "2Gi"
+  #    cpu: "500m"
+  ## ElasticSearch xms and xmx should be same!
+  javaOpts: {}
+  #  xms: "2g"
+  #  xmx: "2g"
   env:
     clusterName: "es-cluster"
     esUsername: "elastic"
@@ -153,8 +157,8 @@ missionControl:
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
   javaOpts:
     other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
-    xms:
-    xmx:
+  #  xms: "2g"
+  #  xmx: "3g"
   resources: {}
   #  requests:
   #    memory: "2Gi"
