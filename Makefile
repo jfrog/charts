@@ -11,8 +11,8 @@ lint:
 	$(eval export CHARTS_REPO)
 	test/lint-charts.sh
 
-.PHONY: test
-test:
+.PHONY: test-mac
+test-mac:
 	$(eval export CHART_TESTING_TAG)
 	$(eval export CHARTS_REPO)
 	test/e2e-docker4mac.sh
