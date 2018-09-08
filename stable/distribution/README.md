@@ -109,9 +109,10 @@ The following table lists the configurable parameters of the distribution chart 
 |         Parameter                            |           Description                      |               Default              |
 |----------------------------------------------|--------------------------------------------|------------------------------------|
 | `imagePullSecrets`                           | Docker registry pull secret                |                                    |
-| `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                                      |
-| `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template       |
-| `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                      |
+| `global.replicaCount`                        | Number of instances per service            |                                    |
+| `serviceAccount.create`   | Specifies whether a ServiceAccount should be created          | `true`                             |
+| `serviceAccount.name`     | The name of the ServiceAccount to create                      | Generated using fullname template  |
+| `rbac.create`             | Specifies whether RBAC resources should be created            | `true`                             |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                           |
 | `ingress.enabled`                            | If true, distribution Ingress will be created | `false`                         |
 | `ingress.annotations`                        | distribution Ingress annotations              | `{}`                            |
@@ -128,19 +129,20 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.readinessProbe.initialDelaySeconds` | Mongodb delay before readiness probe is initiated   | `30`                      |
 | `mongodb.mongodbExtraFlags`                  | MongoDB additional command line flags      | `["--wiredTigerCacheSizeGB=1"]`    |
 | `mongodb.usePassword`                        | Enable password authentication             | `false`                            |
-| `mongodb.mongodbDatabase`                    | Mongodb Database for distribution          | `distribution`                          |
+| `mongodb.mongodbDatabase`                    | Mongodb Database for distribution          | `distribution`                     |
 | `mongodb.mongodbRootPassword`                | Mongodb Database Password for root user    | ` `                                |
 | `mongodb.mongodbUsername`                    | Mongodb Database User                      | `distribution`                     |
 | `mongodb.mongodbPassword`                    | Mongodb Database Password for Mission Control user  | ` `                       |
 | `redis.enabled`                              | Enable Redis                               | `true`                             |
-| `redis.redisPassword`                        | Redis password                             | ` `                                |
+| `redis.password`                             | Redis password                             | ` `                                |
 | `redis.master.port`                          | Redis Port                                 | `6379`                             |
+| `redis.rbac.create`                          | Redis use RBAC                             | `true`                             |
+| `redis.serviceAccount.create`                | Redis create Service Account               | `true`                             |
 | `redis.persistence.enabled`                  | Use a PVC to persist data                  | `true`                             |
 | `redis.persistence.existingClaim`            | Use an existing PVC to persist data        | `nil`                              |
 | `redis.persistence.storageClass`             | Storage class of backing PVC               | `generic`                          |
 | `redis.persistence.size`                     | Size of data volume                        | `10Gi`                             |
 | `distribution.name`                          | Distribution name                          | `distribution`                     |
-| `distribution.replicaCount`                  | Number of Distribution replicas (HA)       | `1`                                |
 | `distribution.image.pullPolicy`              | Container pull policy                      | `IfNotPresent`                     |
 | `distribution.image.repository`              | Container image                            | `docker.jfrog.io/jf-distribution`  |
 | `distribution.image.version`                 | Container image tag                        | `.Chart.AppVersion`                |

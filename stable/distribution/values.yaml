@@ -52,7 +52,7 @@ ingress:
 
 # Sub charts
 ## Configuration values for the mongodb dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/mongodb/README.md
+## ref: https://github.com/helm/charts/blob/master/stable/mongodb/README.md
 ##
 mongodb:
   enabled: true
@@ -83,11 +83,29 @@ mongodb:
     initialDelaySeconds: 30
 
 ## Configuration values for the redis dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/redis/README.md
+## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
 redis:
   enabled: true
-  redisPassword:
+  cluster:
+    enabled: false
+  image:
+    pullPolicy: IfNotPresent
+  password:
+  rbac:
+    create: false
+#    role:
+#      rules:
+#      - apiGroups:
+#        - extensions
+#        resources:
+#        - podsecuritypolicies
+#        verbs:
+#        - use
+#        resourceNames:
+#        - gce.unprivileged
+  serviceAccount:
+    create: false
   persistence:
     enabled: true
     size: 10Gi
@@ -95,7 +113,7 @@ redis:
     port: 6379
   resources: {}
   #  requests:
-  #    memory: "1Gi"
+  #    memory: "256Mi"
   #    cpu: "100m"
   #  limits:
   #    memory: "2Gi"
@@ -105,10 +123,9 @@ redis:
 global:
   mongoUrl:
   mongoAuditUrl:
-  redisUrl:
+  replicaCount: 1
 
 distribution:
-  replicaCount: 1
   name: distribution
   image:
     repository: "docker.bintray.io/jfrog/distribution-distribution"
@@ -160,8 +177,6 @@ distribution:
     # storageClass: "-"
 
 distributor:
-  # Distributor does not support multiple replicas yet. Leave at 1!
-  replicaCount: 1
   name: distributor
   image:
     repository: "docker.bintray.io/jfrog/distribution-distributor"

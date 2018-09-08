@@ -85,9 +85,9 @@ Set the final Redis connection URL
 {{- if .Values.global.redisUrl -}}
 {{- .Values.global.redisUrl -}}
 {{- else -}}
-{{- $redisPassword := required "A valid .Values.redis.redisPassword entry required!" .Values.redis.redisPassword -}}
+{{- $redisPassword := required "A valid .Values.redis.password entry required!" .Values.redis.password -}}
 {{- $redisPort := .Values.redis.master.port -}}
-{{- printf "%s://:%s@%s-%s:%g" "redis" $redisPassword .Release.Name "redis" $redisPort | b64enc | quote -}}
+{{- printf "%s://:%s@%s-%s:%g" "redis" $redisPassword .Release.Name "redis-master" $redisPort | b64enc | quote -}}
 {{- end -}}
 {{- end -}}
 
