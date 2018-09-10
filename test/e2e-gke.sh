@@ -13,9 +13,7 @@ echo $GCLOUD_GKE_CLUSTER | base64 --decode -i > ${PWD}/cluster
 source ${PWD}/cluster
 
 main() {
-    if [[ $(git remote | grep k8s) = '' ]]; then
-      git remote add k8s ${CHARTS_REPO}
-    fi
+    git remote add k8s ${CHARTS_REPO} &> /dev/null || true
     git fetch k8s master
 
     local config_container_id
