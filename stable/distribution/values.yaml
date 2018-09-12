@@ -114,20 +114,20 @@ redis:
   rbac:
     ## Specifies whether RBAC resources should be created
     ##
-    create: false
-
+    create: true
     role:
       ## Rules to create. It follows the role specification
-      # rules:
-      #  - apiGroups:
-      #    - extensions
-      #    resources:
-      #      - podsecuritypolicies
-      #    verbs:
-      #      - use
-      #    resourceNames:
-      #      - gce.unprivileged
-      rules: []
+      rules:
+      - apiGroups:
+        - ''
+        resources:
+        - services
+        - endpoints
+        - pods
+        verbs:
+        - get
+        - watch
+        - list
 
   ## Use password authentication
   usePassword: true
