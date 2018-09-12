@@ -65,6 +65,10 @@ configure_kubectl() {
     local port
     port=$(get_apiserver_arg "$apiserver_id" --secure-port)
 
+    # ------- Temporal work around till PR20 gets merged upstream ------- #
+    docker cp test/chart_test.sh "$testcontainer_id:/testing/chart_test.sh"
+    docker cp test/chartlib.sh "$testcontainer_id:/testing/lib/chartlib.sh"
+    # ------------------------------------------------------------------- #
     docker cp "$HOME/.kube" "$testcontainer_id:/root/.kube"
     docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster "--server=https://$ip:$port"
     docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster --insecure-skip-tls-verify=true
@@ -74,7 +78,8 @@ configure_kubectl() {
 run_test() {
     git remote add k8s ${CHARTS_REPO} &> /dev/null || true
     git fetch k8s
-    docker exec "$testcontainer_id" chart_test.sh --config test/.testenv
+    echo "Passed arguments: ${CHART_TESTING_ARGS}"
+    docker exec "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
 
     echo "Done Testing!"
 }
