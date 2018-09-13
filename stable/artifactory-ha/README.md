@@ -1,5 +1,6 @@
 # JFrog Artifactory High Availability Helm Chart
 
+
 ## Prerequisites Details
 
 * Kubernetes 1.8+
