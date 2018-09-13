@@ -22,3 +22,24 @@ spec:
     app: {{ template "distribution.name" . }}
     component: {{ .Values.distribution.name }}
     release: {{ .Release.Name }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "distribution.fullname" . }}-headless
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    component: {{ .Values.distribution.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  clusterIP: None
+  ports:
+  - port: {{ .Values.distribution.externalPort }}
+    protocol: TCP
+    targetPort: {{ .Values.distribution.internalPort }}
+  selector:
+    app: {{ template "distribution.name" . }}
+    component: {{ .Values.distribution.name }}
+    release: {{ .Release.Name }}

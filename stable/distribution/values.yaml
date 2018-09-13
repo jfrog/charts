@@ -93,19 +93,22 @@ redis:
     pullPolicy: IfNotPresent
   password:
   rbac:
-    create: false
-#    role:
-#      rules:
-#      - apiGroups:
-#        - extensions
-#        resources:
-#        - podsecuritypolicies
-#        verbs:
-#        - use
-#        resourceNames:
-#        - gce.unprivileged
+    create: true
+    role:
+      ## Rules to create. It follows the role specification
+      rules:
+      - apiGroups:
+        - ''
+        resources:
+        - services
+        - endpoints
+        - pods
+        verbs:
+        - get
+        - watch
+        - list
   serviceAccount:
-    create: false
+    create: true
   persistence:
     enabled: true
     size: 10Gi
