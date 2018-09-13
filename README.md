@@ -29,9 +29,48 @@ On success make a [pull request](https://help.github.com/articles/using-pull-req
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
 Two __LGTM__ are needed to get the PR approved and merged.
 
-## Testing charts locally
+## Testing charts locally on Docker for Mac
 
-On the Mac you can run `make test-mac` which will lint, install and test changed charts on `Docker for Mac`.
+On the Mac you can run `make mac` which will lint, install and test changed charts on `Docker for Mac`.
+
+**Note:** Requirements:
+- Make sure 'Show system containers (advanced)' is enabled in `Docker for Mac` `Preferences`.
+- Make sure 'Tiller' is installed with `helm init` and it matches the `helm` version from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5`:
+
+  ```console
+  $ docker run gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 helm version --client --short
+  Client: v2.10.0+g9ad53aa
+  ```
+
+### Forcing to lint unchanged charts
+
+You can force to lint one chart with `--chart` flags (chart version bump check will be ignored):
+
+```console
+$ make mac -- --no-install --chart stable/artifactory
+```
+
+You can force to lint all charts with `--force` flag (chart version bump check will be ignored):
+
+```console
+$ make mac -- --no-install --force
+```
+
+### Forcing to install unchanged charts
+
+You can force to install one chart with `--chart` flags:
+
+```console
+$ make mac -- --no-lint --chart stable/artifactory
+```
+
+You can force to install all charts with `--force` flag:
+
+```console
+$ make mac -- --no-lint --force
+```
+
+**Note:** It will take a while to run install test for all charts on `Docker for Mac`.
 
 ## Docs
 
