@@ -21,21 +21,9 @@ This chart will do the following:
 
 
 ## Deploy JFrog Xray
+
+Deploy JFrog Xray
 ```bash
-# cd to directory that includes untar version of helm charts
-helm install -n xray --set replicaCount=2,rabbitmq-ha.replicaCount=2,common.masterKey=${MASTER_KEY} jfrog/xray
-
-# Passing the imagePullSecrets to authenticate with Bintray and download E+ docker images.
-helm upgrade xray --set replicaCount=3,rabbitmq-ha.replicaCount=3,common.masterKey=${MASTER_KEY} jfrog/xray
-```
-
-### Deploy Xray
-Deploy the Xray tools and services
-```bash
-# Get required dependency charts
-$ helm dependency update jfrog/xray
-
-# Deploy Xray
 $ helm install -n xray jfrog/xray
 ```
 
@@ -82,11 +70,11 @@ $ helm install --set common.masterKey=${MASTER_KEY} -n xray jfrog/xray
 This is a list of special use cases for non-standard deployments
 
 ### High Availability
-For **high availability** of Xray, just need to set the replica count per pod be equal or higher than **2**. Recommended is **3**.
+For **high availability** of Xray, set the replica count per service be equal or higher than **2**. Recommended is **3**.
 > It is highly recommended to also set **RabbitMQ** to run as an HA cluster.
 ```bash
 # Start Xray with 3 replicas per service and 3 replicas for RabbitMQ
-$ helm install -n xray --set replicaCount=3,rabbitmq-ha.replicaCount=3 jfrog/xray
+$ helm install -n xray --set analysis.replicaCount=3,server.replicaCount=3,indexer.replicaCount=3,persist.replicaCount=3,rabbitmq-ha.replicaCount=3 jfrog/xray
 ```
 
 ### External Databases
