@@ -55,7 +55,7 @@ spec:
             echo HOSTNAME is ${HOSTNAME};
             ORDINAL=$(echo ${HOSTNAME} | sed 's/.*-\(.*\)/\1/g');
             echo ORDINAL is ${ORDINAL};
-            export REDIS_HOST={{ .Release.Name }}-redis-master-${ORDINAL};
+            export REDIS_HOST={{ .Release.Name }}-redis-master-${ORDINAL}.{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local;
             echo REDIS_HOST is ${REDIS_HOST};
             echo =========================================================;
             cd /opt/jfrog/distribution-distribution;
