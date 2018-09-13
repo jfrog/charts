@@ -3,8 +3,7 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
-replicaCount: 1
+# General
 imagePullPolicy: IfNotPresent
 initContainerImage: "alpine:3.6"
 imagePullSecrets:
@@ -140,6 +139,7 @@ rabbitmq-ha:
   rbac:
     create: true
 
+# Common Xray settings
 common:
   ## Note that by default we use appVersion to get image tag
   # xrayVersion: 2.3.2
@@ -162,6 +162,7 @@ global:
 analysis:
   name: xray-analysis
   image: docker.bintray.io/jfrog/xray-analysis
+  replicaCount: 1
   internalPort: 7000
   externalPort: 7000
   service:
@@ -180,6 +181,7 @@ analysis:
 indexer:
   name: xray-indexer
   image: docker.bintray.io/jfrog/xray-indexer
+  replicaCount: 1
   internalPort: 7002
   externalPort: 7002
   service:
@@ -198,6 +200,7 @@ indexer:
 persist:
   name: xray-persist
   image: docker.bintray.io/jfrog/xray-persist
+  replicaCount: 1
   internalPort: 7003
   externalPort: 7003
   service:
@@ -216,6 +219,7 @@ persist:
 server:
   name: xray-server
   image: docker.bintray.io/jfrog/xray-server
+  replicaCount: 1
   internalPort: 8000
   externalPort: 80
   service:

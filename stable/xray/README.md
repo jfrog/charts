@@ -147,7 +147,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.annotations`        | Xray Ingress annotations                         | `{}`                               |
 | `ingress.hosts`              | Xray Ingress hostnames                           | `[]`                               |
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
-| `replicaCount`               | Replica count for Xray services                  | `1`                                |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |
@@ -192,6 +191,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |
 | `analysis.image`                               | Xray Analysis container image                | `docker.bintray.io/jfrog/xray-analysis` |
+| `analysis.replicaCount`                        | Xray Analysis replica count                  | `1`                  |
 | `analysis.internalPort`                        | Xray Analysis internal port                  | `7000`               |
 | `analysis.externalPort`                        | Xray Analysis external port                  | `7000`               |
 | `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
@@ -199,6 +199,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
 | `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
+| `indexer.replicaCount`                         | Xray Indexer replica count                   | `1`                  |
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
@@ -206,6 +207,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
 | `persist.name`                                 | Xray Persist name                            | `xray-persist`       |
 | `persist.image`                                | Xray Persist container image                 | `docker.bintray.io/jfrog/xray-persist`  |
+| `persist.replicaCount`                         | Xray Persist replica count                   | `1`                  |
 | `persist.internalPort`                         | Xray Persist internal port                   | `7003`               |
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
 | `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
@@ -213,6 +215,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
 | `server.name`                                  | Xray server name                             | `xray-server`        |
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
+| `server.replicaCount`                          | Xray server replica count                    | `1`                  |
 | `server.internalPort`                          | Xray server internal port                    | `8000`               |
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |

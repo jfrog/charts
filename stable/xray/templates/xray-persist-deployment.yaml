@@ -9,7 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     component: {{ .Values.persist.name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.persist.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}
