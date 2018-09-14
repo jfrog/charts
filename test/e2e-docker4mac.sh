@@ -21,6 +21,8 @@ set -o pipefail
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 
+TILLERLES_HELM=false
+
 main() {
     local testcontainer_id
     testcontainer_id=$(create_testcontainer)
@@ -65,7 +67,7 @@ configure_kubectl() {
     local port
     port=$(get_apiserver_arg "$apiserver_id" --secure-port)
 
-    # ------- Temporal work around till PR20 gets merged upstream ------- #
+    # ------- Temporal work around till PR24 gets merged upstream ------- #
     docker cp test/chart_test.sh "$testcontainer_id:/testing/chart_test.sh"
     docker cp test/chartlib.sh "$testcontainer_id:/testing/lib/chartlib.sh"
     # ------------------------------------------------------------------- #
@@ -78,8 +80,19 @@ configure_kubectl() {
 run_test() {
     git remote add k8s ${CHARTS_REPO} &> /dev/null || true
     git fetch k8s
-    echo "Passed arguments: ${CHART_TESTING_ARGS}"
-    docker exec "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
+
+    # -- Work around for Tillerless Helm, till Helm v3 gests released -- #
+    if [[ "TILLERLES_HELM" == true ]]; then
+        docker exec "$testcontainer_id" helm init --client-only
+        docker exec "$testcontainer_id" helm plugin install https://github.com/rimusz/helm-tiller || true && helm tiller start-ci || true
+        echo
+        echo "Passed arguments: ${CHART_TESTING_ARGS}"
+        docker exec -e HELM_HOST=localhost:44134 "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
+    # ------------------------------------------------------------------- #
+    else
+        echo "Passed arguments: ${CHART_TESTING_ARGS}"
+        docker exec "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
+    fi
 
     echo "Done Testing!"
 }
