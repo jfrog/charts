@@ -58,7 +58,7 @@ JFrog Distribution can run in High Availability by having multiple replicas of t
 To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
 ```bash
 # Run 3 replicas of the Distribution service
-helm install --name distribution --set distribution.replicaCount=3 jfrog/distribution
+helm install --name distribution --set replicaCount=3 jfrog/distribution
 ```
 
 ### External Databases
@@ -109,7 +109,7 @@ The following table lists the configurable parameters of the distribution chart 
 |         Parameter                            |           Description                      |               Default              |
 |----------------------------------------------|--------------------------------------------|------------------------------------|
 | `imagePullSecrets`                           | Docker registry pull secret                |                                    |
-| `global.replicaCount`                        | Number of instances per service            |                                    |
+| `replicaCount`                               | HA - Number of instances per service       |                                    |
 | `serviceAccount.create`   | Specifies whether a ServiceAccount should be created          | `true`                             |
 | `serviceAccount.name`     | The name of the ServiceAccount to create                      | Generated using fullname template  |
 | `rbac.create`             | Specifies whether RBAC resources should be created            | `true`                             |

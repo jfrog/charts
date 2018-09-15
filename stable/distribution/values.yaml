@@ -59,6 +59,7 @@ mongodb:
   image:
     tag: 3.6.3
     pullPolicy: IfNotPresent
+  port: 27017
   persistence:
     enabled: true
     size: 10Gi
@@ -86,16 +87,16 @@ mongodb:
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
 redis:
-  enabled: true
-  cluster:
-    enabled: false
   image:
+    repository: docker.io/bitnami/redis
+    tag: 4.0.11-debian-9
     pullPolicy: IfNotPresent
+  port: 6379
   password:
   rbac:
     create: true
     role:
-      ## Rules to create. It follows the role specification
+    ## Rules to create. It follows the role specification
       rules:
       - apiGroups:
         - ''
@@ -107,13 +108,22 @@ redis:
         - get
         - watch
         - list
+  securityContext:
+    fsGroup: 1001
+    runAsUser: 1001
   serviceAccount:
     create: true
+  disableCommands: "FLUSHDB,FLUSHALL"
   persistence:
     enabled: true
+    path: /bitnami/redis/data
     size: 10Gi
-  master:
-    port: 6379
+    ## A manually managed Persistent Volume and Claim
+    ## Requires redis.persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+    accessModes:
+    - ReadWriteOnce
   resources: {}
   #  requests:
   #    memory: "256Mi"

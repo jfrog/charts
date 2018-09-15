@@ -10,7 +10,7 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   serviceName: {{ template "distributor.name" . }}
-  replicas: {{ .Values.global.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   updateStrategy:
     type: RollingUpdate
   selector:
@@ -36,15 +36,15 @@ spec:
         runAsUser: {{ .Values.distribution.uid }}
         fsGroup: {{ .Values.distribution.uid }}
       initContainers:
-      - name: "prepare-data"
-        image: "{{ .Values.initContainerImage }}"
+      - name: 'prepare-data'
+        image: '{{ .Values.initContainerImage }}'
         imagePullPolicy: {{ .Values.distributor.image.pullPolicy }}
         command:
         - '/bin/sh'
         - '-c'
         - >
-          until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.master.port }} && echo {{ .Release.Name }}-redis-master ok; do sleep 2; done;
           {{- if .Values.distributor.token }}
+          echo Setting up distributor token;
           mkdir -pv {{ .Values.distributor.persistence.mountPath }}/etc/security;
           cp -fv /tmp/security/token {{ .Values.distributor.persistence.mountPath }}/etc/security/token;
           chmod 400 {{ .Values.distributor.persistence.mountPath }}/etc/security/token;
@@ -54,7 +54,7 @@ spec:
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
         {{- if .Values.distributor.token }}
         - name: distributor-token
-          mountPath: "/tmp/security"
+          mountPath: '/tmp/security'
         {{- end }}
       containers:
       - name: {{ .Values.distributor.name }}
@@ -68,12 +68,14 @@ spec:
             echo HOSTNAME is ${HOSTNAME};
             ORDINAL=$(echo ${HOSTNAME} | sed 's/.*-\(.*\)/\1/g');
             echo ORDINAL is ${ORDINAL};
-            export REDIS_HOST={{ .Release.Name }}-redis-master-${ORDINAL}.{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local;
+            export REDIS_HOST={{ template "distribution.fullname" . }}-redis-${ORDINAL}.{{ template "distribution.fullname" . }}-redis;
             echo REDIS_HOST is ${REDIS_HOST};
-            export DISTRIBUTION_HOST={{ template "distribution.fullname" . }}-${ORDINAL}.{{ template "distribution.fullname" . }}-headless.{{ .Release.Namespace }}.svc.cluster.local;
+            export DISTRIBUTION_HOST={{ template "distribution.fullname" . }}-${ORDINAL}.{{ template "distribution.fullname" . }}-headless;
             echo DISTRIBUTION_HOST is ${DISTRIBUTION_HOST};
             export DEFAULT_JAVA_OPTS="${DEFAULT_JAVA_OPTS} -Djfrog.distributor.distribution.internal-api-url=http://${DISTRIBUTION_HOST}:{{ .Values.distribution.internalPort }}/api/internal";
             echo DEFAULT_JAVA_OPTS is ${DEFAULT_JAVA_OPTS};
+            echo Waiting for Redis availability...;
+            until nc -z -w 2 ${REDIS_HOST} {{ .Values.redis.port }} && echo "Redis ${REDIS_HOST} is ready!"; do sleep 3; echo "Waiting..."; done;
             echo =========================================================;
             cd /opt/jfrog/distribution-distributor;
             ./wrapper.sh
@@ -91,10 +93,8 @@ spec:
                   -Xmx{{ .Values.distributor.javaOpts.xmx }}
                   {{- end}}
                   -Dspring.profiles.active=production'
-#        - name: REDIS_HOST
-#          value: '{{ .Release.Name }}-redis-master'
         - name: REDIS_PORT
-          value: '6379'
+          value: '{{ .Values.redis.port }}'
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -123,12 +123,12 @@ spec:
       {{- else }}
         {{- if .Values.distributor.persistence.storageClass }}
         {{- if (eq "-" .Values.distributor.persistence.storageClass) }}
-        storageClassName: ""
+        storageClassName: ''
         {{- else }}
-        storageClassName: "{{ .Values.distributor.persistence.storageClass }}"
+        storageClassName: '{{ .Values.distributor.persistence.storageClass }}'
         {{- end }}
         {{- end }}
-        accessModes: [ "{{ .Values.distributor.persistence.accessMode }}" ]
+        accessModes: [ '{{ .Values.distributor.persistence.accessMode }}' ]
         resources:
           requests:
             storage: {{ .Values.distributor.persistence.size }}

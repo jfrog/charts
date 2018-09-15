@@ -10,7 +10,7 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   serviceName: {{ template "distribution.name" . }}-headless
-  replicas: {{ .Values.global.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   updateStrategy:
     type: RollingUpdate
   selector:
@@ -36,13 +36,13 @@ spec:
         runAsUser: {{ .Values.distribution.uid }}
         fsGroup: {{ .Values.distribution.uid }}
       initContainers:
-      - name: "wait-for-dbs"
-        image: "{{ .Values.initContainerImage }}"
+      - name: 'wait-for-dbs'
+        image: '{{ .Values.initContainerImage }}'
         command:
         - '/bin/sh'
         - '-c'
         - >
-          until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
+          until nc -z -w 2 {{ .Release.Name }}-mongodb {{ .Values.mongodb.port }} && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
       containers:
       - name: {{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
@@ -55,12 +55,13 @@ spec:
             echo HOSTNAME is ${HOSTNAME};
             ORDINAL=$(echo ${HOSTNAME} | sed 's/.*-\(.*\)/\1/g');
             echo ORDINAL is ${ORDINAL};
-            export REDIS_HOST={{ .Release.Name }}-redis-master-${ORDINAL}.{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local;
+            export REDIS_HOST={{ template "distribution.fullname" . }}-redis-${ORDINAL}.{{ template "distribution.fullname" . }}-redis;
             echo REDIS_HOST is ${REDIS_HOST};
+            echo Waiting for Redis availability...;
+            until nc -z -w 2 ${REDIS_HOST} {{ .Values.redis.port }} && echo "Redis ${REDIS_HOST} is ready!"; do sleep 3; echo "Waiting..."; done;
             echo =========================================================;
             cd /opt/jfrog/distribution-distribution;
             ./wrapper.sh
-
         securityContext:
           allowPrivilegeEscalation: false
         ports:
@@ -82,7 +83,7 @@ spec:
         - name: MONGODB_HOST
           value: '{{ .Release.Name }}-mongodb'
         - name: MONGODB_PORT
-          value: '27017'
+          value: '{{ .Values.mongodb.port }}'
         - name: MONGODB_DATABASE
           value: '{{ .Values.mongodb.mongodbDatabase }}'
         - name: MONGODB_USERNAME
@@ -92,10 +93,8 @@ spec:
             secretKeyRef:
               name: {{ template "distribution.fullname" . }}-mongo-connection
               key: distributionPassword
-#        - name: REDIS_HOST
-#          value: '{{ .Release.Name }}-redis-master'
         - name: REDIS_PORT
-          value: '6379'
+          value: '{{ .Values.redis.port }}'
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -129,15 +128,15 @@ spec:
         readinessProbe:
           httpGet:
             path: /api/v1/system/ping
-            port: 8080
-          initialDelaySeconds: 60
+            port: {{ .Values.distribution.internalPort }}
+          initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 10
         livenessProbe:
           httpGet:
             path: /api/v1/system/ping
-            port: 8080
-          initialDelaySeconds: 180
+            port: {{ .Values.distribution.internalPort }}
+          initialDelaySeconds: 60
           periodSeconds: 10
       {{- if .Values.distribution.persistence.enabled }}
   volumeClaimTemplates:
@@ -151,12 +150,12 @@ spec:
       {{- else }}
         {{- if .Values.distribution.persistence.storageClass }}
         {{- if (eq "-" .Values.distribution.persistence.storageClass) }}
-        storageClassName: ""
+        storageClassName: ''
         {{- else }}
-        storageClassName: "{{ .Values.distribution.persistence.storageClass }}"
+        storageClassName: '{{ .Values.distribution.persistence.storageClass }}'
         {{- end }}
         {{- end }}
-        accessModes: [ "{{ .Values.distribution.persistence.accessMode }}" ]
+        accessModes: [ '{{ .Values.distribution.persistence.accessMode }}' ]
         resources:
           requests:
             storage: {{ .Values.distribution.persistence.size }}
