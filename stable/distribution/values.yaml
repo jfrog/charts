@@ -108,9 +108,7 @@ redis:
         - get
         - watch
         - list
-  securityContext:
-    fsGroup: 1001
-    runAsUser: 1001
+  uid: 1001
   serviceAccount:
     create: true
   disableCommands: "FLUSHDB,FLUSHALL"

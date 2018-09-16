@@ -5,15 +5,15 @@ metadata:
   labels:
     app: {{ template "distribution.name" . }}
     chart: {{ template "distribution.chart" . }}
-    release: "{{ .Release.Name }}"
-    heritage: "{{ .Release.Service }}"
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
 spec:
   clusterIP: None
   ports:
   - name: redis
-    port: 6379
+    port: {{ .Values.redis.port }}
     targetPort: redis
   selector:
     app: {{ template "redis.name" . }}
-    release: "{{ .Release.Name }}"
+    release: {{ .Release.Name }}
     role: master

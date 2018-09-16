@@ -5,7 +5,6 @@ metadata:
   labels:
     app: {{ template "distribution.name" . }}
     chart: {{ template "distribution.chart" . }}
-    component: {{ .Values.distribution.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 {{- if .Values.distribution.service.annotations }}
@@ -15,13 +14,13 @@ metadata:
 spec:
   type: {{ .Values.distribution.service.type }}
   ports:
-  - port: {{ .Values.distribution.externalPort }}
-    protocol: TCP
-    targetPort: {{ .Values.distribution.internalPort }}
+  - name: distribution
+    port: {{ .Values.distribution.externalPort }}
+    targetPort: distribution
   selector:
     app: {{ template "distribution.name" . }}
-    component: {{ .Values.distribution.name }}
     release: {{ .Release.Name }}
+    component: {{ .Values.distribution.name }}
 ---
 apiVersion: v1
 kind: Service
@@ -30,16 +29,15 @@ metadata:
   labels:
     app: {{ template "distribution.name" . }}
     chart: {{ template "distribution.chart" . }}
-    component: {{ .Values.distribution.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 spec:
   clusterIP: None
   ports:
-  - port: {{ .Values.distribution.externalPort }}
-    protocol: TCP
-    targetPort: {{ .Values.distribution.internalPort }}
+  - name: distribution
+    port: {{ .Values.distribution.externalPort }}
+    targetPort: distribution
   selector:
     app: {{ template "distribution.name" . }}
-    component: {{ .Values.distribution.name }}
     release: {{ .Release.Name }}
+    component: {{ .Values.distribution.name }}

@@ -5,9 +5,9 @@ metadata:
   labels:
     app: {{ template "distribution.name" . }}
     chart: {{ template "distribution.chart" . }}
-    component: {{ .Values.distribution.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    component: {{ .Values.distribution.name }}
 spec:
   serviceName: {{ template "distribution.name" . }}-headless
   replicas: {{ .Values.replicaCount }}
@@ -16,6 +16,7 @@ spec:
   selector:
     matchLabels:
       app: {{ template "distribution.name" . }}
+      chart: {{ template "distribution.chart" . }}
       release: {{ .Release.Name }}
       role: {{ template "distribution.name" . }}
       component: {{ .Values.distribution.name }}
@@ -23,9 +24,10 @@ spec:
     metadata:
       labels:
         app: {{ template "distribution.name" . }}
-        component: {{ .Values.distribution.name }}
-        role: {{ template "distribution.name" . }}
+        chart: {{ template "distribution.chart" . }}
         release: {{ .Release.Name }}
+        role: {{ template "distribution.name" . }}
+        component: {{ .Values.distribution.name }}
     spec:
       serviceAccountName: {{ template "distribution.serviceAccountName" . }}
     {{- if .Values.imagePullSecrets }}
@@ -36,7 +38,7 @@ spec:
         runAsUser: {{ .Values.distribution.uid }}
         fsGroup: {{ .Values.distribution.uid }}
       initContainers:
-      - name: 'wait-for-dbs'
+      - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
         command:
         - '/bin/sh'
@@ -57,6 +59,10 @@ spec:
             echo ORDINAL is ${ORDINAL};
             export REDIS_HOST={{ template "distribution.fullname" . }}-redis-${ORDINAL}.{{ template "distribution.fullname" . }}-redis;
             echo REDIS_HOST is ${REDIS_HOST};
+            export DISTRIBUTION_HOST={{ template "distribution.fullname" . }}-${ORDINAL}.{{ template "distribution.fullname" . }}-headless;
+            echo DISTRIBUTION_HOST is ${DISTRIBUTION_HOST};
+            export DEFAULT_JAVA_OPTS="${DEFAULT_JAVA_OPTS} -Dinternal-api-url=http://${DISTRIBUTION_HOST}:{{ .Values.distribution.internalPort }}/api/internal";
+            echo DEFAULT_JAVA_OPTS is ${DEFAULT_JAVA_OPTS};
             echo Waiting for Redis availability...;
             until nc -z -w 2 ${REDIS_HOST} {{ .Values.redis.port }} && echo "Redis ${REDIS_HOST} is ready!"; do sleep 3; echo "Waiting..."; done;
             echo =========================================================;
@@ -65,8 +71,8 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         ports:
-        - containerPort: {{ .Values.distribution.internalPort }}
-          protocol: TCP
+        - name: distribution
+          containerPort: {{ .Values.distribution.internalPort }}
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distribution.persistence.mountPath }}

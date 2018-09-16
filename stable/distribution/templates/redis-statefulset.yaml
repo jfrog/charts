@@ -25,13 +25,13 @@ spec:
         app: {{ template "redis.name" . }}
     spec:
       securityContext:
-        fsGroup: {{ .Values.redis.securityContext.fsGroup }}
-        runAsUser: {{ .Values.redis.securityContext.runAsUser }}
+        fsGroup: {{ .Values.redis.uid }}
+        runAsUser: {{ .Values.redis.uid }}
       serviceAccountName: '{{ template "redis.serviceAccountName" . }}'
       containers:
       - name: {{ template "redis.fullname" . }}
         image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
-        imagePullPolicy: {{ .Values.redis.image.pullPolicy | quote }}
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
         env:
         - name: REDIS_REPLICATION_MODE
           value: master
