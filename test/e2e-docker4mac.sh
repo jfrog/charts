@@ -21,8 +21,6 @@ set -o pipefail
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 
-TILLERLES_HELM=false
-
 main() {
     local testcontainer_id
     testcontainer_id=$(create_testcontainer)
@@ -31,6 +29,15 @@ main() {
     trap "docker container rm --force $testcontainer_id > /dev/null" EXIT
 
     configure_kubectl "$testcontainer_id"
+
+    # Workarounds #
+    copy_files
+
+    if [[ "${CHART_TESTING_ARGS}" != *"--no-install"* ]]; then
+      run_tillerless
+    fi
+    # ---------- #
+
     run_test
 }
 
@@ -67,32 +74,38 @@ configure_kubectl() {
     local port
     port=$(get_apiserver_arg "$apiserver_id" --secure-port)
 
-    # ------- Temporal work around till PR24 gets merged upstream ------- #
-    docker cp test/chart_test.sh "$testcontainer_id:/testing/chart_test.sh"
-    docker cp test/chartlib.sh "$testcontainer_id:/testing/lib/chartlib.sh"
-    # ------------------------------------------------------------------- #
     docker cp "$HOME/.kube" "$testcontainer_id:/root/.kube"
     docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster "--server=https://$ip:$port"
     docker exec "$testcontainer_id" kubectl config set-cluster docker-for-desktop-cluster --insecure-skip-tls-verify=true
     docker exec "$testcontainer_id" kubectl config use-context docker-for-desktop
 }
 
+copy_files() {
+   # ------- Temporal work around till PR24 gets merged upstream ------- #
+   docker cp test/chart_test.sh "$testcontainer_id:/testing/chart_test.sh"
+   docker cp test/chartlib.sh "$testcontainer_id:/testing/lib/chartlib.sh"
+}
+
+run_tillerless() {
+   # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+   docker exec "$testcontainer_id" helm init --client-only
+   docker exec "$testcontainer_id" helm plugin install https://github.com/rimusz/helm-tiller
+   docker exec "$testcontainer_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
+   docker exec "$testcontainer_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
+   echo
+}
+
 run_test() {
     git remote add k8s ${CHARTS_REPO} &> /dev/null || true
     git fetch k8s
 
-    # -- Work around for Tillerless Helm, till Helm v3 gests released -- #
-    if [[ "TILLERLES_HELM" == true ]]; then
-        docker exec "$testcontainer_id" helm init --client-only
-        docker exec "$testcontainer_id" helm plugin install https://github.com/rimusz/helm-tiller || true && helm tiller start-ci || true
-        echo
-        echo "Passed arguments: ${CHART_TESTING_ARGS}"
-        docker exec -e HELM_HOST=localhost:44134 "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
+    echo "Passed arguments: ${CHART_TESTING_ARGS}"
+
+    # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+    docker exec -e HELM_HOST=localhost:44134 "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
     # ------------------------------------------------------------------- #
-    else
-        echo "Passed arguments: ${CHART_TESTING_ARGS}"
-        docker exec "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
-    fi
+
+    ##### docker exec "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
 
     echo "Done Testing!"
 }

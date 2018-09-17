@@ -179,9 +179,6 @@ main() {
 
     popd > /dev/null
 
-# -------- Temporal work around for Tillerless Helm support --------- #
-    helm tiller stop
-# ------------------------------------------------------------------- #
     exit "$exit_code"
 }
 
