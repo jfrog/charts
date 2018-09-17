@@ -9,6 +9,9 @@ initContainerImage: "alpine:3.6"
 # For supporting pulling from private registries
 imagePullSecrets:
 
+# For HA
+replicaCount: 1
+
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
@@ -133,7 +136,6 @@ redis:
 global:
   mongoUrl:
   mongoAuditUrl:
-  replicaCount: 1
 
 distribution:
   name: distribution

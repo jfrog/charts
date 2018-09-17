@@ -98,22 +98,15 @@ spec:
       - name: startup
         configMap:
           name: {{ template "distributor.fullname" . }}-startup
-      {{- if not .Values.distributor.persistence.enabled }}
-      - name: distributor-data
-        emptyDir: {}
-      {{- else }}
-      {{- if .Values.distributor.persistence.existingClaim }}
-      - name: distributor-data
-        persistentVolumeClaim:
-          claimName: {{ .Values.distributor.persistence.existingClaim }}
-      {{- end }}
-      {{- end }}
       {{- if .Values.distributor.token }}
       - name: distributor-token
         secret:
           secretName: {{ template "distributor.fullname" . }}-token
       {{- end }}
-  {{- if and .Values.distributor.persistence.enabled (not .Values.distributor.persistence.existingClaim) }}
+  {{- if not .Values.distributor.persistence.enabled }}
+      - name: distributor-data
+        emptyDir: {}
+  {{- else }}
   volumeClaimTemplates:
     - metadata:
         name: distributor-data
@@ -123,6 +116,11 @@ spec:
           release: {{ .Release.Name  }}
           heritage: {{ .Release.Service }}
       spec:
+      {{- if .Values.distributor.persistence.existingClaim }}
+        selector:
+          matchLabels:
+            app: {{ template "distributor.name" . }}
+      {{- else }}
         {{- if .Values.distributor.persistence.storageClass }}
         {{- if (eq "-" .Values.distributor.persistence.storageClass) }}
         storageClassName: ''
@@ -134,4 +132,5 @@ spec:
         resources:
           requests:
             storage: {{ .Values.distributor.persistence.size }}
+      {{- end }}
   {{- end }}

@@ -64,18 +64,11 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}
+  {{- if not .Values.redis.persistence.enabled }}
       volumes:
-      {{- if not .Values.redis.persistence.enabled }}
       - name: redis-data
         emptyDir: {}
-      {{- else }}
-      {{- if .Values.redis.persistence.existingClaim }}
-      - name: redis-data
-        persistentVolumeClaim:
-          claimName: {{ .Values.redis.persistence.existingClaim }}
-      {{- end }}
-      {{- end }}
-  {{- if and .Values.redis.persistence.enabled (not .Values.redis.persistence.existingClaim) }}
+  {{- else }}
   volumeClaimTemplates:
     - metadata:
         name: redis-data
@@ -85,6 +78,11 @@ spec:
           release: {{ .Release.Name  }}
           heritage: {{ .Release.Service }}
       spec:
+      {{- if .Values.redis.persistence.existingClaim }}
+        selector:
+            matchLabels:
+              app: {{ template "redis.name" . }}
+      {{- else }}
         {{- if .Values.redis.persistence.storageClass }}
         {{- if (eq "-" .Values.redis.persistence.storageClass) }}
         storageClassName: ''
@@ -96,4 +94,5 @@ spec:
         resources:
           requests:
             storage: {{ .Values.redis.persistence.size }}
+      {{- end }}
   {{- end }}
