@@ -63,24 +63,9 @@ spec:
         image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
         command:
-          - '/bin/sh'
-          - '-c'
-          - >
-            echo =========================================================;
-            echo HOSTNAME is ${HOSTNAME};
-            ORDINAL=$(echo ${HOSTNAME} | sed 's/.*-\(.*\)/\1/g');
-            echo ORDINAL is ${ORDINAL};
-            export REDIS_HOST={{ template "distribution.fullname" . }}-redis-${ORDINAL}.{{ template "distribution.fullname" . }}-redis;
-            echo REDIS_HOST is ${REDIS_HOST};
-            export DISTRIBUTION_HOST={{ template "distribution.fullname" . }}-${ORDINAL}.{{ template "distribution.fullname" . }}-headless;
-            echo DISTRIBUTION_HOST is ${DISTRIBUTION_HOST};
-            export DEFAULT_JAVA_OPTS="${DEFAULT_JAVA_OPTS} -Djfrog.distributor.distribution.internal-api-url=http://${DISTRIBUTION_HOST}:{{ .Values.distribution.internalPort }}/api/internal";
-            echo DEFAULT_JAVA_OPTS is ${DEFAULT_JAVA_OPTS};
-            echo Waiting for Redis availability...;
-            until nc -z -w 2 ${REDIS_HOST} {{ .Values.redis.port }} && echo "Redis ${REDIS_HOST} is ready!"; do sleep 3; echo "Waiting..."; done;
-            echo =========================================================;
-            cd /opt/jfrog/distribution-distributor;
-            ./wrapper.sh
+        - '/bin/sh'
+        - '-c'
+        - 'sh /scripts/startup.sh'
         securityContext:
           allowPrivilegeEscalation: false
         env:
@@ -103,11 +88,16 @@ spec:
               name: {{ template "distribution.fullname" . }}-redis-connection
               key: password
         volumeMounts:
+        - name: startup
+          mountPath: "/scripts"
         - name: distributor-data
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.distributor.resources | indent 10 }}
       volumes:
+      - name: startup
+        configMap:
+          name: {{ template "distributor.fullname" . }}-startup
       {{- if .Values.distributor.token }}
       - name: distributor-token
         secret:

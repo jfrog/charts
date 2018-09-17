@@ -50,20 +50,9 @@ spec:
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         command:
-          - '/bin/sh'
-          - '-c'
-          - >
-            echo =========================================================;
-            echo HOSTNAME is ${HOSTNAME};
-            ORDINAL=$(echo ${HOSTNAME} | sed 's/.*-\(.*\)/\1/g');
-            echo ORDINAL is ${ORDINAL};
-            export REDIS_HOST={{ template "distribution.fullname" . }}-redis-${ORDINAL}.{{ template "distribution.fullname" . }}-redis;
-            echo REDIS_HOST is ${REDIS_HOST};
-            echo Waiting for Redis availability...;
-            until nc -z -w 2 ${REDIS_HOST} {{ .Values.redis.port }} && echo "Redis ${REDIS_HOST} is ready!"; do sleep 3; echo "Waiting..."; done;
-            echo =========================================================;
-            cd /opt/jfrog/distribution-distribution;
-            ./wrapper.sh
+        - '/bin/sh'
+        - '-c'
+        - 'sh /scripts/startup.sh'
         securityContext:
           allowPrivilegeEscalation: false
         ports:
@@ -123,6 +112,8 @@ spec:
           value: {{ .Values.distribution.env.artifactoryCi1Url }}
         {{- end }}
         volumeMounts:
+        - name: startup
+          mountPath: "/scripts"
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
         resources:
@@ -140,7 +131,15 @@ spec:
             port: {{ .Values.distribution.internalPort }}
           initialDelaySeconds: 60
           periodSeconds: 10
-      {{- if .Values.distribution.persistence.enabled }}
+      volumes:
+      - name: startup
+        configMap:
+          name: {{ template "distribution.fullname" . }}-startup
+      {{- if not .Values.distribution.persistence.existingClaim }}
+      - name: distribution-data
+        emptyDir: {}
+      {{- end }}
+  {{- if .Values.distribution.persistence.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: distribution-data
@@ -162,8 +161,4 @@ spec:
           requests:
             storage: {{ .Values.distribution.persistence.size }}
       {{- end }}
-      {{- else }}
-      volumes:
-      - name: distribution-data
-        emptyDir: {}
-      {{- end }}
+  {{- end }}

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "distribution.fullname" . }}-startup
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.distribution.name }}
+data:
+  startup.sh: |
+    #!/bin/sh
+    # Startup for Distribution
+
+    echo =========================================================;
+    ORDINAL=$(echo ${HOSTNAME} | sed 's/.*-\(.*\)/\1/g');
+    export REDIS_HOST={{ template "distribution.fullname" . }}-redis-${ORDINAL}.{{ template "distribution.fullname" . }}-redis;
+    echo REDIS_HOST is ${REDIS_HOST};
+    echo Waiting for Redis availability...;
+    until nc -z -w 2 ${REDIS_HOST} {{ .Values.redis.port }} 2> /dev/null && echo "Redis ${REDIS_HOST} is ready!"; do sleep 3; echo "Waiting..."; done;
+    echo Starting Distribution
+    echo =========================================================;
+    cd /opt/jfrog/distribution-distribution;
+    ./wrapper.sh
+
