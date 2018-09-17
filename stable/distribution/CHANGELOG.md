@@ -1,12 +1,10 @@
 # JFrog Distribution Chart Changelog
 All notable changes to this project chart be documented in this file.
 
-## [0.7.0] - Sep 9, 2018
+## [1.0.0] - Sep 17, 2018
 * HA for distributor and Redis
-* New Redis
-    * Helm chart: 3.8.1
-    * Redis version: 4.0.11
-
+* Redis StatefulSet now part of the main templates
+* New Redis version: 4.0.11
 
 ## [0.6.0] - Sep 6, 2018
 * Change Distribution DB name to `distribution`
