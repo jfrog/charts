@@ -23,7 +23,7 @@ main() {
     # shellcheck disable=SC2064
     trap "docker rm -f $config_container_id" EXIT
 
-    docker exec "$config_container_id" gcloud auth activate-service-account --key-file /gcloud-service-key.json >/dev/null 2>&1
+    docker exec "$config_container_id" gcloud auth activate-service-account --key-file /gcloud-service-key.json
     docker exec "$config_container_id" gcloud container clusters get-credentials $CLUSTER_NAME --project $PROJECT_NAME --zone $CLOUDSDK_COMPUTE_ZONE
 
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
