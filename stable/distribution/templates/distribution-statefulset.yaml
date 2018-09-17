@@ -9,7 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
 spec:
-  serviceName: {{ template "distribution.name" . }}-headless
+  serviceName: {{ template "distribution.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
     type: RollingUpdate

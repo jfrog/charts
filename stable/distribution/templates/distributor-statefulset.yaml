@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: {{ template "distributor.fullname" . }}
   labels:
-    app: {{ template "distribution.name" . }}
+    app: {{ template "distributor.name" . }}
     chart: {{ template "distribution.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
@@ -15,7 +15,7 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: {{ template "distribution.name" . }}
+      app: {{ template "distributor.name" . }}
       chart: {{ template "distribution.chart" . }}
       release: {{ .Release.Name }}
       role: {{ template "distributor.name" . }}
@@ -23,7 +23,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ template "distribution.name" . }}
+        app: {{ template "distributor.name" . }}
         chart: {{ template "distribution.chart" . }}
         release: {{ .Release.Name }}
         role: {{ template "distributor.name" . }}
