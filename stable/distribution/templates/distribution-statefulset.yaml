@@ -135,20 +135,26 @@ spec:
       - name: startup
         configMap:
           name: {{ template "distribution.fullname" . }}-startup
-      {{- if not .Values.distribution.persistence.existingClaim }}
+      {{- if not .Values.distribution.persistence.enabled }}
       - name: distribution-data
         emptyDir: {}
+      {{- else }}
+      {{- if .Values.distribution.persistence.existingClaim }}
+      - name: distribution-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.distribution.persistence.existingClaim }}
       {{- end }}
-  {{- if .Values.distribution.persistence.enabled }}
+      {{- end }}
+  {{- if and .Values.distribution.persistence.enabled (not .Values.distribution.persistence.existingClaim) }}
   volumeClaimTemplates:
     - metadata:
         name: distribution-data
+        labels:
+          app: {{ template "distribution.name" . }}
+          chart: {{ template "distribution.chart" . }}
+          release: {{ .Release.Name  }}
+          heritage: {{ .Release.Service }}
       spec:
-      {{- if .Values.distribution.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "distribution.name" . }}
-      {{- else }}
         {{- if .Values.distribution.persistence.storageClass }}
         {{- if (eq "-" .Values.distribution.persistence.storageClass) }}
         storageClassName: ''
@@ -160,5 +166,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.distribution.persistence.size }}
-      {{- end }}
   {{- end }}

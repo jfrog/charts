@@ -120,8 +120,7 @@ redis:
     ## Requires redis.persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
-    accessModes:
-    - ReadWriteOnce
+    accessMode: ReadWriteOnce
   resources: {}
   #  requests:
   #    memory: "256Mi"
