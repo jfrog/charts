@@ -107,6 +107,19 @@ You can force to install all charts with `--force` flag:
 make gke -- --no-lint --force
 ```
 
+### Using dedicated GKE cluster for manual charts testing
+
+By default it uses the `GKE` cluster set in kubeconfig `context`, you can specify the dedicated cluster (it must be set in the kubeconfig) in the file `CLUSTER`:
+
+```
+GKE_CLUSTER=gke_my_cluster_context_name
+```
+
+Then store the `CLUSTER` file in the root folder of the repo. It is also ignored by git.
+
+In such setup your local default cluster can be different from the charts testing one.
+
+
 ## Docs
 
 For more information on using Helm, refer to the Helm's [documentation](https://docs.helm.sh/using_helm/#quickstart-guide).

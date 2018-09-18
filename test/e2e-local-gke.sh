@@ -9,6 +9,7 @@ readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/test-image"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 main() {
+
     git remote add k8s ${CHARTS_REPO} &> /dev/null || true
     git fetch k8s master
 
@@ -22,6 +23,15 @@ main() {
     # copy and update kubeconfig file
     docker cp "$HOME/.kube"  "$config_container_id:/root/.kube"
     docker exec "$config_container_id" sed -i 's|'${HOME}'||g' /root/.kube/config
+    # Set to specified cluster
+    if [[ -e CLUSTER ]]; then
+        source CLUSTER
+        if [[ -n "${GKE_CLUSTER}" ]]; then
+            echo
+            docker exec "$config_container_id" kubectl config use-context ${GKE_CLUSTER}
+            echo
+        fi
+    fi
 
     # ------- Temporal work around till PR20 gets merged upstream ------- #
     docker cp test/chart_test.sh "$config_container_id:/testing/chart_test.sh"
