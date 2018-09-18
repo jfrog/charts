@@ -101,7 +101,7 @@ run_test() {
 
     echo "Passed arguments: ${CHART_TESTING_ARGS}"
 
-    # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+    # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
     docker exec -e HELM_HOST=localhost:44134 "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
     # ------------------------------------------------------------------- #
 

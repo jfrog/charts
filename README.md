@@ -9,9 +9,10 @@ Get the latest [Helm release](https://github.com/kubernetes/helm#install).
 ## Install Charts
 
 You need to add this Chart repo to Helm:
+
 ```console
-$ helm repo add jfrog https://charts.jfrog.io/
-$ helm repo update
+helm repo add jfrog https://charts.jfrog.io/
+helm repo update
 ```
 
 **Note:** https://charts.jfrog.io/ is also a proxy for the central helm repository https://storage.googleapis.com/kubernetes-charts
@@ -29,48 +30,82 @@ On success make a [pull request](https://help.github.com/articles/using-pull-req
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
 Two __LGTM__ are needed to get the PR approved and merged.
 
-## Testing charts locally on Docker for Mac
 
-On the Mac you can run `make mac` which will lint, install and test changed charts on `Docker for Mac`.
+## Manually testing charts with Docker for Mac
 
-**Note:** Requirements:
-- Make sure 'Show system containers (advanced)' is enabled in `Docker for Mac` `Preferences`.
-- Make sure 'Tiller' is installed with `helm init` and it matches the `helm` version from `gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5`:
+On the Mac you can run `make mac` which will lint, install and test changed charts in `Docker for Mac`.
 
-  ```console
-  $ docker run gcr.io/kubernetes-charts-ci/chart-testing:v1.0.5 helm version --client --short
-  Client: v2.10.0+g9ad53aa
-  ```
+**Note:** Make sure **'Show system containers (advanced)'** is enabled in `Preferences/Kubernetes`.
 
 ### Forcing to lint unchanged charts
 
-You can force to lint one chart with `--chart` flags (chart version bump check will be ignored):
+**Note:** Chart version bump check will be ignored.
+
+You can force to lint one chart with `--chart` flag:
 
 ```console
-$ make mac -- --no-install --chart stable/artifactory
+make mac -- --no-install --chart stable/artifactory
 ```
 
-You can force to lint all charts with `--force` flag (chart version bump check will be ignored):
+You can force to lint all charts with `--force` flag:
 
 ```console
-$ make mac -- --no-install --force
+make mac -- --no-install --force
 ```
 
 ### Forcing to install unchanged charts
 
-You can force to install one chart with `--chart` flags:
+**Note:** Chart version bump check will be ignored.
+
+You can force to install one chart with `--chart` flag:
 
 ```console
-$ make mac -- --no-lint --chart stable/artifactory
+make mac -- --no-lint --chart stable/artifactory
 ```
 
 You can force to install all charts with `--force` flag:
 
 ```console
-$ make mac -- --no-lint --force
+make mac -- --no-lint --force
 ```
 
-**Note:** It will take a while to run install test for all charts on `Docker for Mac`.
+**Note:** It might take a while to run install test for all charts in `Docker for Mac`.
+
+## Manually testing charts with remote GKE cluster
+
+You can run `make gke` which will lint, install and test changed charts with `GKE` cluster set in kubeconfig `context`.
+
+### Forcing to lint unchanged charts
+
+**Note:** Chart version bump check will be ignored.
+
+You can force to lint one chart with `--chart` flag:
+
+```console
+make gke -- --no-install --chart stable/artifactory
+```
+
+You can force to lint all charts with `--force` flag:
+
+```console
+make gke -- --no-install --force
+```
+
+### Forcing to install unchanged charts
+
+**Note:** Chart version bump check will be ignored.
+
+You can force to install one chart with `--chart` flag:
+
+```console
+make gke -- --no-lint --chart stable/artifactory
+```
+
+You can force to install all charts with `--force` flag:
+
+```console
+make gke -- --no-lint --force
+```
 
 ## Docs
 
