@@ -41,44 +41,44 @@ On the Mac you can run `make mac` which will lint, install and test changed char
 
 **Note:** Chart version bump check will be ignored.
 
-You can force to lint one chart with `--chart` flag:
+You can force to lint one chart with `--charts` flag:
 
 ```console
-make mac -- --no-install --chart stable/artifactory
+make mac -- --no-install --charts stable/artifactory
 ```
 
-You can force to lint a list of charts (separated by comma) with `--chart` flag:
+You can force to lint a list of charts (separated by comma) with `--charts` flag:
 
 ```console
-make mac -- --no-install --chart stable/artifactory,stable/xray
+make mac -- --no-install --charts stable/artifactory,stable/xray
 ```
 
-You can force to lint all charts with `--chart-all` flag:
+You can force to lint all charts with `--all` flag:
 
 ```console
-make mac -- --no-install --chart-all
+make mac -- --no-install --all
 ```
 
 ### Forcing to install unchanged charts
 
 **Note:** Chart version bump check will be ignored.
 
-You can force to install one chart with `--chart` flag:
+You can force to install one chart with `--charts` flag:
 
 ```console
-make mac -- --no-lint --chart stable/artifactory
+make mac -- --no-lint --charts stable/artifactory
 ```
 
-You can force to install a list of charts (separated by comma) with `--chart` flag:
+You can force to install a list of charts (separated by comma) with `--charts` flag:
 
 ```console
-make mac -- --no-lint --chart stable/artifactory,stable/xray
+make mac -- --no-lint --charts stable/artifactory,stable/xray
 ```
 
-You can force to install all charts with `--chart-all` flag:
+You can force to install all charts with `--all` flag:
 
 ```console
-make mac -- --no-lint --chart-all
+make mac -- --no-lint --all
 ```
 
 **Note:** It might take a while to run install test for all charts in `Docker for Mac`.
@@ -91,32 +91,32 @@ You can run `make gke` which will lint, install and test changed charts with `GK
 
 **Note:** Chart version bump check will be ignored.
 
-You can force to lint one chart with `--chart` flag:
+You can force to lint one chart with `--charts` flag:
 
 ```console
-make gke -- --no-install --chart stable/artifactory
+make gke -- --no-install --charts stable/artifactory
 ```
 
-You can force to lint all charts with `--chart-all` flag:
+You can force to lint all charts with `--all` flag:
 
 ```console
-make gke -- --no-install --chart-all
+make gke -- --no-install --all
 ```
 
 ### Forcing to install unchanged charts
 
 **Note:** Chart version bump check will be ignored.
 
-You can force to install one chart with `--chart` flag:
+You can force to install one chart with `--charts` flag:
 
 ```console
-make gke -- --no-lint --chart stable/artifactory
+make gke -- --no-lint --charts stable/artifactory
 ```
 
-You can force to install all charts with `--chart-all` flag:
+You can force to install all charts with `--all` flag:
 
 ```console
-make gke -- --no-lint --chart-all
+make gke -- --no-lint --all
 ```
 
 ### Using dedicated GKE cluster for manual charts testing
