@@ -96,21 +96,6 @@ redis:
     pullPolicy: IfNotPresent
   port: 6379
   password:
-  rbac:
-    create: true
-    role:
-    ## Rules to create. It follows the role specification
-      rules:
-      - apiGroups:
-        - ''
-        resources:
-        - services
-        - endpoints
-        - pods
-        verbs:
-        - get
-        - watch
-        - list
   uid: 1001
   serviceAccount:
     create: true

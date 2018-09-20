@@ -2,6 +2,7 @@
 All notable changes to this project chart be documented in this file.
 
 ## [1.0.0] - Sep 17, 2018
+* **NOTE:** This chart is not compatible with older versions and should not be used to upgrade them. See README for more details on upgrades 
 * True HA with distributor and Redis in their own StatefulSets and headless services
 * Redis StatefulSet now part of the main templates
 * New Redis version: 4.0.11

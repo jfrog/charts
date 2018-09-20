@@ -27,7 +27,7 @@ spec:
       securityContext:
         fsGroup: {{ .Values.redis.uid }}
         runAsUser: {{ .Values.redis.uid }}
-      serviceAccountName: '{{ template "redis.serviceAccountName" . }}'
+      serviceAccountName: {{ template "distribution.serviceAccountName" . }}
       containers:
       - name: {{ template "redis.fullname" . }}
         image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'

@@ -44,11 +44,11 @@ JFrog Distribution requires a unique master key to be used by all micro-services
 You should generate a unique one and pass it to the template at install/upgrade time.
 ```bash
 # Create a key
-$ export MASTER_KEY=$(openssl rand -hex 32)
-$ echo ${MASTER_KEY}
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-$ helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/distribution
+helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/distribution
 ```
 **NOTE:** Make sure to pass the same master key with `--set distribution.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
 
@@ -61,11 +61,10 @@ To enable this, pass replica count to the `helm install` and `helm upgrade` comm
 helm install --name distribution --set replicaCount=3 jfrog/distribution
 ```
 
-### External Databases
-There is an option to use external database services (MongoDB or PostgreSQL) for your Distribution.
+### External Database
+There is an option to use an external MongoDB database for your Distribution.
 
-#### MongoDB
-To use an external **MongoDB**, You need to set Distribution **MongoDB** connection URL.
+To use an external **MongoDB**, You need to set the Distribution **MongoDB** connection URL.
 
 For this, pass the parameter: `mongodb.enabled=false,global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL}`.
 
@@ -84,23 +83,19 @@ $ export DISTRIBUTION_MONGODB_AUDIT_URL='mongodb://${MONGODB_USER}:${MONGODB_PAS
 $ helm install -n distribution --set global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL} jfrog/distribution
 ```
 
-#### External Redis
-To use an external **Redis**, You need to disable the use of the bundled **Redis** and set a custom **Redis** connection URL.
-
-For this, pass the parameters: `redis.enabled=false` and `global.redisUrl=${DISTRIBUTION_REDIS_CONN_URL}`.
-
-**IMPORTANT:** Make sure the DB is already created before deploying Distribution services
+## Upgrade
+Upgrading Distribution is a simple helm command
 ```bash
-# Passing a custom Redis to Distribution
-
-# Example
-# Redis host: custom-redis.local
-# Redis port: 6379
-# Redis password: password2_X
-
-$ export DISTRIBUTION_REDIS_CONN_URL='redis://:${REDIS_PASSWORD}@custom-redis.local:6379'
-$ helm install -n distribution --set redis.enabled=false,global.redisUrl=${DISTRIBUTION_REDIS_CONN_URL} jfrog/distribution
+helm upgrade distribution jfrog/distribution
 ```
+
+### Non compatible upgrades
+In cases where a new version is not compatible with existing deployed version (look in CHANGELOG.md) you should
+* Deploy new version along side old version (set a new release name)
+* Copy configurations and data from old deployment to new one (/var/opt/jfrog)
+* Update DNS to point to new Distribution service
+* Remove old release
+
 
 ## Configuration
 
@@ -133,11 +128,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.mongodbRootPassword`                | Mongodb Database Password for root user    | ` `                                |
 | `mongodb.mongodbUsername`                    | Mongodb Database User                      | `distribution`                     |
 | `mongodb.mongodbPassword`                    | Mongodb Database Password for Mission Control user  | ` `                       |
-| `redis.enabled`                              | Enable Redis                               | `true`                             |
 | `redis.password`                             | Redis password                             | ` `                                |
-| `redis.master.port`                          | Redis Port                                 | `6379`                             |
-| `redis.rbac.create`                          | Redis use RBAC                             | `true`                             |
-| `redis.serviceAccount.create`                | Redis create Service Account               | `true`                             |
+| `redis.port`                                 | Redis Port                                 | `6379`                             |
 | `redis.persistence.enabled`                  | Use a PVC to persist data                  | `true`                             |
 | `redis.persistence.existingClaim`            | Use an existing PVC to persist data        | `nil`                              |
 | `redis.persistence.storageClass`             | Storage class of backing PVC               | `generic`                          |
