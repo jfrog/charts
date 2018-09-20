@@ -21,14 +21,15 @@ data:
     mkdir -pv ${XRAY_CONFIG_DIR}
 
     # Wait for DBs to be ready
-    echo "Waiting for DBs..."
     {{- if .Values.mongodb.enabled }}
-    until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo postgresql ok; do
+    echo "Waiting for Mongo..."
+    until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo mongodb ok; do
       sleep 2;
     done;
     {{- end }}
     {{- if .Values.postgresql.enabled }}
-    until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo mongodb ok; do
+    echo "Waiting for Postgres..."
+    until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo postgresql ok; do
       sleep 2;
     done;
     {{- end }}
@@ -77,4 +78,3 @@ data:
         stdOutEnabled:  {{ .Values.common.stdOutEnabled }}
         skipEntLicCheckForCloud: true
     # End generated config
-
