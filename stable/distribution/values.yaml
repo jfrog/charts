@@ -86,20 +86,110 @@ mongodb:
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/redis/README.md
 ##
 redis:
-  enabled: true
-  redisPassword:
-  persistence:
-    enabled: true
-    size: 10Gi
+  name: redis
+  #############################################
+  ## Bitnami Redis image version
+  ## ref: https://hub.docker.com/r/bitnami/redis/tags/
+  ##
+  image:
+    repository: docker.io/bitnami/redis
+    ## Bitnami Redis image tag
+    ## ref: https://github.com/bitnami/bitnami-docker-redis#supported-tags-and-respective-dockerfile-links
+    ##
+    tag: 4.0.11-debian-9
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+
+  serviceAccount:
+    ## Specifies whether a ServiceAccount should be created
+    ##
+    create: false
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name:
+
+  rbac:
+    ## Specifies whether RBAC resources should be created
+    ##
+    create: true
+    role:
+      ## Rules to create. It follows the role specification
+      rules:
+      - apiGroups:
+        - ''
+        resources:
+        - services
+        - endpoints
+        - pods
+        verbs:
+        - get
+        - watch
+        - list
+
+  ## Use password authentication
+  usePassword: true
+  ## Redis password (both master and slave)
+  ## Defaults to a random 10-character alphanumeric string if not set and usePassword is true
+  ## ref: https://github.com/bitnami/bitnami-docker-redis#setting-the-server-password-on-first-run
+  ##
+  password:
+  ## Use existing secret (ignores previous password)
+  # existingSecret:
+
+  ##
+  ## Redis Master parameters
+  ##
   master:
+    ## Redis port
     port: 6379
-  resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "250m"
+
+    ## Comma-separated list of Redis commands to disable
+    ##
+    ## Can be used to disable Redis commands for security reasons.
+    ## ref: https://github.com/bitnami/bitnami-docker-redis#disabling-redis-commands
+    ##
+    disableCommands: "FLUSHDB,FLUSHALL"
+
+    ## Redis Master resource requests and limits
+    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+    resources: {}
+    #  requests:
+    #    memory: 256Mi
+    #    cpu: 100m
+    #  limits:
+    #    memory: 1Gi
+    #    cpu: 500m
+
+    ## Redis Master Pod Security Context
+    ##
+    securityContext:
+      fsGroup: 1001
+      runAsUser: 1001
+
+    ## Enable persistence using Persistent Volume Claims
+    ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    ##
+    persistence:
+      enabled: true
+      ## A manually managed Persistent Volume and Claim
+      ## Requires persistence.enabled: true
+      ## If defined, PVC must be created manually before volume will be bound
+      # existingClaim:
+
+      accessModes: ReadWriteOnce
+      path: /bitnami/redis/data
+      ## redis data Persistent Volume Storage Class
+      ## If defined, storageClassName: <storageClass>
+      ## If set to "-", storageClassName: "", which disables dynamic provisioning
+      ## If undefined (the default) or set to null, no storageClassName spec is
+      ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+      ##   GKE, AWS & OpenStack)
+      ##
+      # storageClass: "-"
+      size: 10Gi
 
 # For setting up external services, must pass the connection URL for them
 global:
