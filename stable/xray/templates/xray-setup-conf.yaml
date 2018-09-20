@@ -33,6 +33,7 @@ data:
       sleep 2;
     done;
     {{- end }}
+    echo "Waiting for Rabbit..."
     until nc -z -w 2 {{ .Release.Name }}-rabbitmq-ha {{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }} && echo rabbitmq ok; do
       sleep 2;
     done;
