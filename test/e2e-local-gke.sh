@@ -10,7 +10,7 @@ readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 main() {
 
-    git remote add k8s ${CHARTS_REPO} &> /dev/null || true
+    git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
 
     local config_container_id
@@ -22,13 +22,15 @@ main() {
 
     # copy and update kubeconfig file
     docker cp "$HOME/.kube"  "$config_container_id:/root/.kube"
+    # shellcheck disable=SC2086
     docker exec "$config_container_id" sed -i 's|'${HOME}'||g' /root/.kube/config
     # Set to specified cluster
     if [[ -e CLUSTER ]]; then
+        # shellcheck disable=SC1091
         source CLUSTER
         if [[ -n "${GKE_CLUSTER}" ]]; then
             echo
-            docker exec "$config_container_id" kubectl config use-context ${GKE_CLUSTER}
+            docker exec "$config_container_id" kubectl config use-context "${GKE_CLUSTER}"
             echo
         fi
     fi
@@ -47,6 +49,7 @@ main() {
         echo
     fi
 
+    # shellcheck disable=SC2086
     docker exec -e HELM_HOST=localhost:44134 "$config_container_id" chart_test.sh --config /workdir/test/.testenv ${CHART_TESTING_ARGS}
     # ------------------------------------------------------------------- #
 
