@@ -29,8 +29,10 @@ Usage: $(basename "$0") <options>
     --verbose         Display verbose output
     --no-lint         Skip chart linting
     --no-install      Skip chart installation
-    --force           Force charts linting/installation
-    --chart           Lint/install a standalone chart (ignored if --force is used)
+    --all             Lint/install all charts
+    --charts          Lint/install:
+                        a standalone chart (e. g. stable/nginx)
+                        a list of charts (e. g. stable/nginx,stable/cert-manager)
     --config          Path to the config file (optional)
     --                End of all options
 EOF
@@ -41,6 +43,8 @@ main() {
     local no_install=
     local no_lint=
     local config=
+    local all=
+    local charts=
 
     while :; do
         case "${1:-}" in
@@ -57,17 +61,15 @@ main() {
             --no-lint)
                 no_lint=true
                 ;;
-            --force)
-                FORCE=true
-                CHECK_VERSION_INCREMENT=false
+            --all)
+                all=true
                 ;;
-            --chart)
+            --charts)
                 if [ -n "$2" ]; then
-                    STANDALONE_CHART="$2"
+                    charts="$2"
                     shift
-                    export CHECK_VERSION_INCREMENT=false
                 else
-                    echo "ERROR: '--chart' cannot be empty." >&2
+                    echo "ERROR: '--charts' cannot be empty." >&2
                     exit 1
                 fi
                 ;;
@@ -101,6 +103,10 @@ main() {
         fi
     fi
 
+    if [[ "$all" == "true" || -n "$charts" ]]; then
+        export CHECK_VERSION_INCREMENT=false
+    fi
+
     # shellcheck source=lib/chartlib.sh
     source "$SCRIPT_DIR/lib/chartlib.sh"
 
@@ -117,14 +123,11 @@ main() {
 
     local exit_code=0
 
-    if [[ "$FORCE" = true ]]; then
+    if [[ "$all" == "true" ]]; then
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
-    elif [[ -n "$STANDALONE_CHART" ]]; then
-        if [[ ! -d "$STANDALONE_CHART" ]]; then
-            chartlib::error "Configured chart '$STANDALONE_CHART' does not exist"
-            exit 1
-        fi
-        read -ra changed_dirs <<< "${STANDALONE_CHART}"
+    elif [[ -n "$charts" ]]; then
+        charts="${charts//,/ }"
+        read -ra changed_dirs <<< "${charts}"
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
     fi

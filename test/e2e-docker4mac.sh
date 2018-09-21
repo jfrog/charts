@@ -96,12 +96,13 @@ run_tillerless() {
 }
 
 run_test() {
-    git remote add k8s ${CHARTS_REPO} &> /dev/null || true
+    git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s
 
     echo "Passed arguments: ${CHART_TESTING_ARGS}"
 
-    # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+    # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
+    # shellcheck disable=SC2086
     docker exec -e HELM_HOST=localhost:44134 "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
     # ------------------------------------------------------------------- #
 
