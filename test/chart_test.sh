@@ -32,7 +32,7 @@ Usage: $(basename "$0") <options>
     --all             Lint/install all charts
     --charts          Lint/install:
                         a standalone chart (e. g. stable/nginx)
-                        a list of charts   - stable/nginx,stable/cert-manager
+                        a list of charts (e. g. stable/nginx,stable/cert-manager)
     --config          Path to the config file (optional)
     --                End of all options
 EOF
@@ -69,7 +69,7 @@ main() {
                     charts="$2"
                     shift
                 else
-                    echo "ERROR: '--chart' cannot be empty." >&2
+                    echo "ERROR: '--charts' cannot be empty." >&2
                     exit 1
                 fi
                 ;;
@@ -103,6 +103,10 @@ main() {
         fi
     fi
 
+    if [[ "$all" == "true" || -n "$charts" ]]; then
+        export CHECK_VERSION_INCREMENT=false
+    fi
+
     # shellcheck source=lib/chartlib.sh
     source "$SCRIPT_DIR/lib/chartlib.sh"
 
@@ -120,11 +124,9 @@ main() {
     local exit_code=0
 
     if [[ "$all" == "true" ]]; then
-        export CHECK_VERSION_INCREMENT=false
         read -ra changed_dirs <<< "$(chartlib::read_directories)"
     elif [[ -n "$charts" ]]; then
         charts="${charts//,/ }"
-        export CHECK_VERSION_INCREMENT=false
         read -ra changed_dirs <<< "${charts}"
     else
         read -ra changed_dirs <<< "$(chartlib::detect_changed_directories)"
