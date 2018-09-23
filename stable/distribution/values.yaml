@@ -9,6 +9,9 @@ initContainerImage: "alpine:3.6"
 # For supporting pulling from private registries
 imagePullSecrets:
 
+# For HA
+replicaCount: 1
+
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
@@ -52,13 +55,14 @@ ingress:
 
 # Sub charts
 ## Configuration values for the mongodb dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/mongodb/README.md
+## ref: https://github.com/helm/charts/blob/master/stable/mongodb/README.md
 ##
 mongodb:
   enabled: true
   image:
     tag: 3.6.3
     pullPolicy: IfNotPresent
+  port: 27017
   persistence:
     enabled: true
     size: 10Gi
@@ -80,22 +84,34 @@ mongodb:
   livenessProbe:
     initialDelaySeconds: 40
   readinessProbe:
-    initialDelaySeconds: 30
+    initialDelaySeconds: 20
 
 ## Configuration values for the redis dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/redis/README.md
+## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
 redis:
-  enabled: true
-  redisPassword:
+  image:
+    repository: docker.io/bitnami/redis
+    tag: 4.0.11-debian-9
+    pullPolicy: IfNotPresent
+  port: 6379
+  password:
+  uid: 1001
+  serviceAccount:
+    create: true
+  disableCommands: "FLUSHDB,FLUSHALL"
   persistence:
     enabled: true
+    path: /bitnami/redis/data
     size: 10Gi
-  master:
-    port: 6379
+    ## A manually managed Persistent Volume and Claim
+    ## Requires redis.persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+    accessMode: ReadWriteOnce
   resources: {}
   #  requests:
-  #    memory: "1Gi"
+  #    memory: "256Mi"
   #    cpu: "100m"
   #  limits:
   #    memory: "2Gi"
@@ -105,10 +121,8 @@ redis:
 global:
   mongoUrl:
   mongoAuditUrl:
-  redisUrl:
 
 distribution:
-  replicaCount: 1
   name: distribution
   image:
     repository: "docker.bintray.io/jfrog/distribution-distribution"
@@ -160,8 +174,6 @@ distribution:
     # storageClass: "-"
 
 distributor:
-  # Distributor does not support multiple replicas yet. Leave at 1!
-  replicaCount: 1
   name: distributor
   image:
     repository: "docker.bintray.io/jfrog/distribution-distributor"

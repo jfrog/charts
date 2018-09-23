@@ -5,17 +5,18 @@ metadata:
   labels:
     app: {{ template "distribution.name" . }}
     chart: {{ template "distribution.chart" . }}
-    component: {{ .Values.distribution.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    component: {{ .Values.distribution.name }}
 spec:
-  serviceName: {{ template "distribution.name" . }}
-  replicas: {{ .Values.distribution.replicaCount }}
+  serviceName: {{ template "distribution.fullname" . }}-headless
+  replicas: {{ .Values.replicaCount }}
   updateStrategy:
     type: RollingUpdate
   selector:
     matchLabels:
       app: {{ template "distribution.name" . }}
+      chart: {{ template "distribution.chart" . }}
       release: {{ .Release.Name }}
       role: {{ template "distribution.name" . }}
       component: {{ .Values.distribution.name }}
@@ -23,9 +24,10 @@ spec:
     metadata:
       labels:
         app: {{ template "distribution.name" . }}
-        component: {{ .Values.distribution.name }}
-        role: {{ template "distribution.name" . }}
+        chart: {{ template "distribution.chart" . }}
         release: {{ .Release.Name }}
+        role: {{ template "distribution.name" . }}
+        component: {{ .Values.distribution.name }}
     spec:
       serviceAccountName: {{ template "distribution.serviceAccountName" . }}
     {{- if .Values.imagePullSecrets }}
@@ -36,23 +38,26 @@ spec:
         runAsUser: {{ .Values.distribution.uid }}
         fsGroup: {{ .Values.distribution.uid }}
       initContainers:
-      - name: "init-data"
-        image: "{{ .Values.initContainerImage }}"
+      - name: 'wait-for-db'
+        image: '{{ .Values.initContainerImage }}'
         command:
         - '/bin/sh'
         - '-c'
         - >
-          until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
-          until nc -z -w 2 {{ .Release.Name }}-redis {{ .Values.redis.master.port }} && echo {{ .Release.Name }}-redis ok; do sleep 2; done;
+          until nc -z -w 2 {{ .Release.Name }}-mongodb {{ .Values.mongodb.port }} && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
       containers:
       - name: {{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - 'sh /scripts/startup.sh'
         securityContext:
           allowPrivilegeEscalation: false
         ports:
-        - containerPort: {{ .Values.distribution.internalPort }}
-          protocol: TCP
+        - name: distribution
+          containerPort: {{ .Values.distribution.internalPort }}
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distribution.persistence.mountPath }}
@@ -69,7 +74,7 @@ spec:
         - name: MONGODB_HOST
           value: '{{ .Release.Name }}-mongodb'
         - name: MONGODB_PORT
-          value: '27017'
+          value: '{{ .Values.mongodb.port }}'
         - name: MONGODB_DATABASE
           value: '{{ .Values.mongodb.mongodbDatabase }}'
         - name: MONGODB_USERNAME
@@ -79,15 +84,13 @@ spec:
             secretKeyRef:
               name: {{ template "distribution.fullname" . }}-mongo-connection
               key: distributionPassword
-        - name: REDIS_HOST
-          value: '{{ .Release.Name }}-redis'
         - name: REDIS_PORT
-          value: '6379'
+          value: '{{ .Values.redis.port }}'
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "distribution.fullname" . }}-redis-connection
-              key: redisPassword
+              key: password
         - name: BT_ARTIFACTORY_URL
           value: {{ .Values.distribution.env.artifactoryUrl | quote }}
         - name: BT_SERVER_URL
@@ -109,6 +112,8 @@ spec:
           value: {{ .Values.distribution.env.artifactoryCi1Url }}
         {{- end }}
         volumeMounts:
+        - name: startup
+          mountPath: "/scripts"
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
         resources:
@@ -116,20 +121,32 @@ spec:
         readinessProbe:
           httpGet:
             path: /api/v1/system/ping
-            port: 8080
-          initialDelaySeconds: 60
+            port: {{ .Values.distribution.internalPort }}
+          initialDelaySeconds: 30
           periodSeconds: 10
           failureThreshold: 10
         livenessProbe:
           httpGet:
             path: /api/v1/system/ping
-            port: 8080
-          initialDelaySeconds: 180
+            port: {{ .Values.distribution.internalPort }}
+          initialDelaySeconds: 60
           periodSeconds: 10
-      {{- if .Values.distribution.persistence.enabled }}
+      volumes:
+      - name: startup
+        configMap:
+          name: {{ template "distribution.fullname" . }}-startup
+  {{- if not .Values.distribution.persistence.enabled }}
+      - name: distribution-data
+        emptyDir: {}
+  {{- else }}
   volumeClaimTemplates:
     - metadata:
         name: distribution-data
+        labels:
+          app: {{ template "distribution.name" . }}
+          chart: {{ template "distribution.chart" . }}
+          release: {{ .Release.Name  }}
+          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.distribution.persistence.existingClaim }}
         selector:
@@ -138,18 +155,14 @@ spec:
       {{- else }}
         {{- if .Values.distribution.persistence.storageClass }}
         {{- if (eq "-" .Values.distribution.persistence.storageClass) }}
-        storageClassName: ""
+        storageClassName: ''
         {{- else }}
-        storageClassName: "{{ .Values.distribution.persistence.storageClass }}"
+        storageClassName: '{{ .Values.distribution.persistence.storageClass }}'
         {{- end }}
         {{- end }}
-        accessModes: [ "{{ .Values.distribution.persistence.accessMode }}" ]
+        accessModes: [ '{{ .Values.distribution.persistence.accessMode }}' ]
         resources:
           requests:
             storage: {{ .Values.distribution.persistence.size }}
       {{- end }}
-      {{- else }}
-      volumes:
-      - name: distribution-data
-        emptyDir: {}
-      {{- end }}
+  {{- end }}

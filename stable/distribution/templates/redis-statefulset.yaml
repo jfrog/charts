@@ -1,0 +1,98 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: {{ template "distribution.fullname" . }}-redis
+  labels:
+    app: {{ template "redis.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      release: {{ .Release.Name }}
+      chart: {{ template "distribution.chart" . }}
+      role: master
+      app: {{ template "redis.name" . }}
+  serviceName: {{ template "distribution.fullname" . }}-redis
+  template:
+    metadata:
+      labels:
+        release: {{ .Release.Name }}
+        chart: {{ template "distribution.chart" . }}
+        role: master
+        app: {{ template "redis.name" . }}
+    spec:
+      securityContext:
+        fsGroup: {{ .Values.redis.uid }}
+        runAsUser: {{ .Values.redis.uid }}
+      serviceAccountName: {{ template "distribution.serviceAccountName" . }}
+      containers:
+      - name: {{ template "redis.fullname" . }}
+        image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        env:
+        - name: REDIS_REPLICATION_MODE
+          value: master
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "distribution.fullname" . }}-redis-connection
+              key: password
+        - name: REDIS_PORT
+          value: {{ .Values.redis.port | quote }}
+        - name: REDIS_DISABLE_COMMANDS
+          value: {{ .Values.redis.disableCommands }}
+        ports:
+        - name: redis
+          containerPort: {{ .Values.redis.port }}
+        readinessProbe:
+          initialDelaySeconds: 10
+          exec:
+            command:
+            - redis-cli
+            - ping
+        livenessProbe:
+          initialDelaySeconds: 30
+          exec:
+            command:
+            - redis-cli
+            - ping
+        resources:
+{{ toYaml .Values.redis.resources | indent 10 }}
+        volumeMounts:
+        - name: redis-data
+          mountPath: {{ .Values.redis.persistence.path }}
+  {{- if not .Values.redis.persistence.enabled }}
+      volumes:
+      - name: redis-data
+        emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app: {{ template "redis.name" . }}
+          chart: {{ template "distribution.chart" . }}
+          release: {{ .Release.Name  }}
+          heritage: {{ .Release.Service }}
+      spec:
+      {{- if .Values.redis.persistence.existingClaim }}
+        selector:
+            matchLabels:
+              app: {{ template "redis.name" . }}
+      {{- else }}
+        {{- if .Values.redis.persistence.storageClass }}
+        {{- if (eq "-" .Values.redis.persistence.storageClass) }}
+        storageClassName: ''
+        {{- else }}
+        storageClassName: '{{ .Values.redis.persistence.storageClass }}'
+        {{- end }}
+        {{- end }}
+        accessModes: [ '{{ .Values.redis.persistence.accessMode }}' ]
+        resources:
+          requests:
+            storage: {{ .Values.redis.persistence.size }}
+      {{- end }}
+  {{- end }}
