@@ -1,0 +1,15 @@
+steps:
+
+# Fetch GKE cluster credentials for charts testing
+- name: 'gcr.io/cloud-builders/kubectl'
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=_CLOUDSDK_COMPUTE_ZONE'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=_CLOUDSDK_CONTAINER_CLUSTER'
+  - 'KUBECONFIG=/workspace/.kube/config'
+  args: ['cluster-info']
+
+# Run charts testing
+- name: 'ubuntu'
+  args: ['bash', './test/e2e-gke.sh']
+  env:
+  - 'KUBECONFIG=/workspace/.kube/config'
