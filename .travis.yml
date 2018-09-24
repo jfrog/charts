@@ -15,16 +15,6 @@ before_script:
 script:
 - echo "Run charts-testing linting!"
 - ./test/lint-charts.sh
-- >
-  if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
-      echo "No chart changes detected, stopping TravisCI pipeline!"
-      travis_terminate 0
-  fi
-- echo "Run full charts-testing on GKE!"
-# ping stdout every 9 minutes or Travis kills build
-# https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
-- while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
-- ./test/e2e-gke.sh
 
 notifications:
   email: false
