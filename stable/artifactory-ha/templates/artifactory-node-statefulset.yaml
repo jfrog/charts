@@ -25,6 +25,8 @@ spec:
         role: {{ template "artifactory-ha.node.name" . }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
+      annotations:
+        checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
     {{- if .Values.imagePullSecrets }}
