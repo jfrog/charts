@@ -369,7 +369,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.javaOpts.xms`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.xmx`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
-| `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `1`                 |
+| `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
+| `artifactory.node.minAvailable`                 | Artifactory member node min available count      | `1`                 |
 | `artifactory.node.resources.requests.memory`    | Artifactory member node initial memory request   |                     |
 | `artifactory.node.resources.requests.cpu`       | Artifactory member node initial cpu request      |                     |
 | `artifactory.node.resources.limits.memory`      | Artifactory member node memory limit             |                     |
