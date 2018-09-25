@@ -239,6 +239,7 @@ artifactory:
       ## If true, you must prepare a PVC with the name e.g `artifactory-ha-member`
       existingClaim: false
     replicaCount: 2
+    minAvailable: 1
     ## Resources for the member nodes
     resources: {}
     #  requests:
