@@ -8,10 +8,12 @@ readonly IMAGE_TAG=${TEST_IMAGE_TAG}
 readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/test-image"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
-echo "$GCLOUD_SERVICE_KEY_CHARTS_CI" | base64 --decode -i > "${PWD}"/gcloud-service-key.json
-echo "$GCLOUD_GKE_CLUSTER" | base64 --decode -i > "${PWD}"/cluster
-# shellcheck disable=SC1090
-source "${PWD}"/cluster
+# shellcheck disable=SC2086
+echo $GCLOUD_SERVICE_KEY_CHARTS_CI | base64 --decode -i > ${PWD}/gcloud-service-key.json
+# shellcheck disable=SC2086
+echo $GCLOUD_GKE_CLUSTER | base64 --decode -i > ${PWD}/cluster
+# shellcheck disable=SC1090,SC2086
+source ${PWD}/cluster
 
 main() {
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
