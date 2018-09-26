@@ -4,9 +4,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=${TEST_IMAGE_TAG}
-readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/test-image"
+readonly IMAGE_TAG=${CHART_TESTING_TAG}
+readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
+
+copy_files() {
+  # ------- Temporal work around till PR20 gets merged upstream ------- #
+  docker cp test/chart_test.sh "$config_container_id:/testing/chart_test.sh"
+  docker cp test/chartlib.sh "$config_container_id:/testing/lib/chartlib.sh"
+}
+
+run_tillerless() {
+   # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+   docker exec "$testcontainer_id" helm init --client-only
+   docker exec "$testcontainer_id" helm plugin install https://github.com/rimusz/helm-tiller
+   docker exec "$testcontainer_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
+   docker exec "$testcontainer_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
+   echo
+}
 
 main() {
 
@@ -15,7 +30,7 @@ main() {
 
     local config_container_id
     config_container_id=$(docker run -ti -d -v "$HOME/.config/gcloud:/root/.config/gcloud" -v "$REPO_ROOT:/workdir" \
-        "$IMAGE_REPOSITORY:$IMAGE_TAG" cat)
+        --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" cat)
 
     # shellcheck disable=SC2064
     trap "docker rm -f $config_container_id > /dev/null" EXIT
@@ -35,20 +50,15 @@ main() {
         fi
     fi
 
-    # ------- Temporal work around till PR20 gets merged upstream ------- #
-    docker cp test/chart_test.sh "$config_container_id:/testing/chart_test.sh"
-    docker cp test/chartlib.sh "$config_container_id:/testing/lib/chartlib.sh"
-    # ------------------------------------------------------------------- #
+    # Workarounds #
+    ###copy_files
+
+    if [[ "${CHART_TESTING_ARGS}" != *"--no-install"* ]]; then
+      run_tillerless
+    fi
+    # ---------- #
 
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
-    if [[ "${CHART_TESTING_ARGS}" != *"--no-install"* ]]; then
-        docker exec "$config_container_id" helm init --client-only
-        docker exec "$config_container_id" helm plugin install https://github.com/rimusz/helm-tiller
-        docker exec "$config_container_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
-        docker exec "$config_container_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
-        echo
-    fi
-
     # shellcheck disable=SC2086
     docker exec -e HELM_HOST=localhost:44134 "$config_container_id" chart_test.sh --config /workdir/test/.testenv ${CHART_TESTING_ARGS}
     # ------------------------------------------------------------------- #
