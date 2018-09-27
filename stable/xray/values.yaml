@@ -77,6 +77,9 @@ postgresql:
 ##
 mongodb:
   enabled: true
+  image:
+    tag: 3.6.3
+    pullPolicy: IfNotPresent
   persistence:
     size: 50Gi
   # resources:
