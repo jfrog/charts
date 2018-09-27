@@ -30,10 +30,6 @@ run_tillerless() {
 
 main() {
 
-    echo "Refresh GKE user token..."
-    kubectl get nodes > /dev/null
-    echo
-
     echo "Add git remote k8s ${CHARTS_REPO}"
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
