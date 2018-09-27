@@ -14,6 +14,8 @@ main() {
         echo
         test/e2e-minikube.sh
     fi
+
+    echo "Done Testing!"
 }
 
 main
