@@ -5,13 +5,16 @@ set -o nounset
 set -o pipefail
 
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
+pwd
 
 # shellcheck disable=SC2086
 echo $GCLOUD_SERVICE_KEY_CHARTS_CI | base64 --decode -i > ${PWD}/gcloud-service-key.json
 # shellcheck disable=SC2086
-echo $GCLOUD_GKE_CLUSTER | base64 --decode -i > ${PWD}/cluster
+echo $GCLOUD_GKE_CLUSTER | base64 --decode -i > ${PWD}/gke_cluster
 # shellcheck disable=SC1090,SC2086
-source ${PWD}/cluster
+source ${PWD}/gke_cluster
+
+ls -alh
 
 main() {
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
