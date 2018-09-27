@@ -97,6 +97,12 @@ You can force to lint one chart with `--charts` flag:
 make gke -- --no-install --charts stable/artifactory
 ```
 
+You can force to lint a list of charts (separated by comma) with `--charts` flag:
+
+```console
+make gke -- --no-install --charts stable/artifactory,stable/xray
+```
+
 You can force to lint all charts with `--all` flag:
 
 ```console
@@ -111,6 +117,12 @@ You can force to install one chart with `--charts` flag:
 
 ```console
 make gke -- --no-lint --charts stable/artifactory
+```
+
+You can force to install a list of charts (separated by comma) with `--charts` flag:
+
+```console
+make gke -- --no-lint --charts stable/artifactory,stable/xray
 ```
 
 You can force to install all charts with `--all` flag:
