@@ -7,10 +7,6 @@ set -o pipefail
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 run_minikube() {
-    echo "Install socat and util-linux"
-    sudo apt-get update
-    sudo apt-get install -y socat util-linux
-    echo
 
     echo "Copy nsenter tool for Ubuntu 14.04 (current travisCI build VM version)"
     # shellcheck disable=SC2046

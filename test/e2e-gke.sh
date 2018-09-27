@@ -11,7 +11,7 @@ echo $GCLOUD_SERVICE_KEY_CHARTS_CI | base64 --decode -i > ${PWD}/gcloud-service-
 # shellcheck disable=SC2086
 echo $GCLOUD_GKE_CLUSTER | base64 --decode -i > ${PWD}/cluster
 # shellcheck disable=SC1090,SC2086
-source ${PWD}/cluster
+source ${PWD}/cluster > /dev/null
 
 main() {
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
