@@ -1,30 +1,46 @@
-sudo: false
+sudo: required
+dist: trusty
 
 services:
   - docker
 
-env:
-  global:
-  - CHART_TESTING_TAG="v1.1.0"
-  - TEST_IMAGE_TAG="v2.0.5"
-  - CHARTS_REPO="https://github.com/jfrog/charts"
+jobs:
+  include:
+    - stage: lint-scripts
+      name: "Lint shell scripts"
+      script:
+        - echo "Run shell scripts linting!"
+        - ./test/lint-scripts.sh
+    - stage: charts-testing
+      name: "Lint and install charts"
+      env:
+        - CHART_TESTING_IMAGE="gcr.io/kubernetes-charts-ci/chart-testing"
+        - CHART_TESTING_TAG="v1.1.0"
+        - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
+        - TEST_IMAGE_TAG=v2.0.5
+        - CHARTS_REPO="https://github.com/jfrog/charts"
+        - CHANGE_MINIKUBE_NONE_USER=true
+        - MINIKUBE_WANTUPDATENOTIFICATION=false
+        - MINIKUBE_WANTREPORTERRORPROMPT=false
+        - K8S_VERSION="v1.10.0"
+        - MINIKUBE_VERSION="v0.28.2"
+      script:
+        - echo "Run chart-testing linting!"
+        - ./test/lint-charts.sh
+        - >
+          if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
+              echo "No chart changes detected, stopping TravisCI pipeline!"
+              travis_terminate 0
+          fi
+        - echo "Run full charts-testing!"
+        # ping stdout every 9 minutes or Travis kills the build
+        # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
+        - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+        - ./test/e2e-github.sh
 
-before_script:
-- docker pull gcr.io/kubernetes-charts-ci/chart-testing:"${CHART_TESTING_TAG}"
-
-script:
-- echo "Run charts-testing linting!"
-- ./test/lint-charts.sh
-- >
-  if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
-      echo "No chart changes detected, stopping TravisCI pipeline!"
-      travis_terminate 0
-  fi
-- echo "Run full charts-testing on GKE!"
-# ping stdout every 9 minutes or Travis kills build
-# https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
-- while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
-- ./test/e2e-gke.sh
+stages:
+  - lint-scripts
+  - charts-testing
 
 notifications:
   email: false

@@ -9,24 +9,35 @@ readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 copy_files() {
-  # ------- Temporal work around till PR20 gets merged upstream ------- #
-  docker cp test/chart_test.sh "$config_container_id:/testing/chart_test.sh"
-  docker cp test/chartlib.sh "$config_container_id:/testing/lib/chartlib.sh"
+    # ------- Some work around ------- #
+    docker cp test/chart_test.sh "$config_container_id:/testing/chart_test.sh"
+    docker cp test/chartlib.sh "$config_container_id:/testing/lib/chartlib.sh"
 }
 
 run_tillerless() {
-   # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
-   docker exec "$testcontainer_id" helm init --client-only
-   docker exec "$testcontainer_id" helm plugin install https://github.com/rimusz/helm-tiller
-   docker exec "$testcontainer_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
-   docker exec "$testcontainer_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
-   echo
+     # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+     echo "Install Tillerless Helm plugin..."
+     # shellcheck disable=SC2154
+     docker exec "$config_container_id" helm init --client-only
+     # shellcheck disable=SC2154
+     docker exec "$config_container_id" helm plugin install https://github.com/rimusz/helm-tiller
+     # shellcheck disable=SC2154
+     docker exec "$config_container_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
+     # shellcheck disable=SC2154
+     docker exec "$config_container_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
+     echo
 }
 
 main() {
 
+    echo "Refresh GKE user token..."
+    kubectl get nodes > /dev/null
+    echo
+
+    echo "Add git remote k8s ${CHARTS_REPO}"
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
+    echo
 
     local config_container_id
     config_container_id=$(docker run -ti -d -v "$HOME/.config/gcloud:/root/.config/gcloud" -v "$REPO_ROOT:/workdir" \
@@ -52,13 +63,12 @@ main() {
 
     # Workarounds #
     ###copy_files
-
-    if [[ "${CHART_TESTING_ARGS}" != *"--no-install"* ]]; then
-      run_tillerless
-    fi
     # ---------- #
 
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
+    if [[ "${CHART_TESTING_ARGS}" != *"--no-install"* ]]; then
+      run_tillerless
+    fi
     # shellcheck disable=SC2086
     docker exec -e HELM_HOST=localhost:44134 "$config_container_id" chart_test.sh --config /workdir/test/.testenv ${CHART_TESTING_ARGS}
     # ------------------------------------------------------------------- #
