@@ -4,8 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=${CHART_TESTING_TAG}
-readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
+readonly IMAGE_TAG=${TEST_IMAGE_TAG}
+readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/test-image"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 copy_files() {
@@ -62,7 +62,7 @@ main() {
     fi
 
     # Workarounds #
-    ###copy_files
+    copy_files
     # ---------- #
 
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #

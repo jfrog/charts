@@ -27,7 +27,7 @@ mac:
 
 .PHONY: gke
 gke:
-	$(eval export CHART_TESTING_TAG)
+	$(eval export TEST_IMAGE_TAG)
 	$(eval export CHARTS_REPO)
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
 	test/e2e-local-gke.sh
