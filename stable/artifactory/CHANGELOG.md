@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [7.5.0] - Sep 27, 2018
+* Set Artifactory to 6.4.0
+
 ## [7.4.3] - Sep 26, 2018
 * Add ci/test-values.yaml
 
