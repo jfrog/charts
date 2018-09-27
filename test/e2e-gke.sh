@@ -22,7 +22,6 @@ source ${PWD}/cluster > /dev/null
 git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
 git fetch k8s master
 
-local config_container_id
 config_container_id=$(docker run -ti -d -v "${PWD}/gcloud-service-key.json:/gcloud-service-key.json" -v "$REPO_ROOT:/workdir" \
     "$TEST_IMAGE:$TEST_IMAGE_TAG" cat)
 
