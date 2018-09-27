@@ -12,9 +12,9 @@ sudo apt-get install -y openssl
 echo
 
 # shellcheck disable=SC2086
-echo $GCLOUD_SERVICE_KEY_CHARTS_CI | openssl enc -base64 -d > ${PWD}/gcloud-service-key.json
+echo $GCLOUD_SERVICE_KEY_CHARTS_CI | base64 --decode -i > ${PWD}/gcloud-service-key.json
 # shellcheck disable=SC2086
-echo $GCLOUD_GKE_CLUSTER | openssl enc -base64 -d > ${PWD}/cluster
+echo $GCLOUD_GKE_CLUSTER | base64 --decode -i > ${PWD}/cluster
 # shellcheck disable=SC1090,SC2086
 source ${PWD}/cluster > /dev/null
 
