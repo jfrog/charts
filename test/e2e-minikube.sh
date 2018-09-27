@@ -29,7 +29,7 @@ run_minikube() {
     echo "Setup Minikuke..."
     # TODO: remove the --bootstrapper flag once this issue is solved: https://github.com/kubernetes/minikube/issues/2704
     sudo minikube config set WantReportErrorPrompt false
-    sudo -E minikube start --cpus 2 --memory 7168 --vm-driver=none --bootstrapper=localkube --kubernetes-version="${K8S_VERSION}" --extra-config=apiserver.Authorization.Mode=RBAC
+    sudo -E minikube start --cpus 4 --memory 7168 --vm-driver=none --bootstrapper=localkube --kubernetes-version="${K8S_VERSION}" --extra-config=apiserver.Authorization.Mode=RBAC
     echo
 
     echo "Enable add-ons..."
