@@ -1,0 +1,13 @@
+artifactory:
+  persistence:
+    enabled: false
+
+postgresql:
+  persistence:
+    enabled: false
+
+nginx:
+  enabled: false
+  service:
+    ## For minikube, set this to NodePort, elsewhere use LoadBalancer
+    type: NodePort
