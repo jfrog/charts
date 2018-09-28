@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.5.4] - Sep 26, 2018
+* Add ci/test-values.yaml
+
 ## [0.5.3] - Sep 26, 2018
 * Updated Xray version to 2.3.3
 
