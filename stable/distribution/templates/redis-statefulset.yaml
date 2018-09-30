@@ -61,6 +61,18 @@ spec:
             - ping
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
+        {{- with .Values.redis.nodeSelector }}
+        nodeSelector:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.redis.affinity }}
+        affinity:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.redis.tolerations }}
+        tolerations:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}

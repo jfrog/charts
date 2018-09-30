@@ -118,6 +118,18 @@ spec:
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.distribution.resources | indent 10 }}
+        {{- with .Values.distribution.nodeSelector }}
+        nodeSelector:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.distribution.affinity }}
+        affinity:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.distribution.tolerations }}
+        tolerations:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         readinessProbe:
           httpGet:
             path: /api/v1/system/ping

@@ -94,6 +94,18 @@ spec:
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.distributor.resources | indent 10 }}
+        {{- with .Values.distributor.nodeSelector }}
+        nodeSelector:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.distributor.affinity }}
+        affinity:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.distributor.tolerations }}
+        tolerations:
+{{ toYaml . | indent 10 }}
+        {{- end }}
       volumes:
       - name: startup
         configMap:
