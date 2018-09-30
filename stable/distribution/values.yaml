@@ -85,6 +85,9 @@ mongodb:
     initialDelaySeconds: 40
   readinessProbe:
     initialDelaySeconds: 20
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## Configuration values for the redis dependency
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
@@ -118,9 +121,7 @@ redis:
   #    cpu: "250m"
 
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
 
 # For setting up external services, must pass the connection URL for them
@@ -180,9 +181,7 @@ distribution:
     # storageClass: "-"
 
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
 
 distributor:
@@ -225,7 +224,5 @@ distributor:
     # storageClass: "-"
 
   nodeSelector: {}
-
   tolerations: []
-
   affinity: {}
