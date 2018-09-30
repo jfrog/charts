@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All notable changes to this project chart be documented in this file.
 
+## [1.0.2] - Sep 30, 2018
+* Add pods nodeSelector, affinity and tolerations
+
 ## [1.0.1] - Sep 26, 2018
 * Disable persistence for CI testing
 * Enable RBAC
