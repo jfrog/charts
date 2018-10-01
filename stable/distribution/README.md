@@ -117,8 +117,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.image.tag`                          | Mongodb docker image tag                   | `3.6.3`                            |
 | `mongodb.image.pullPolicy`                   | Mongodb Container pull policy              | `IfNotPresent`                     |
 | `mongodb.persistence.enabled`                | Mongodb persistence volume enabled         | `true`                             |
-| `mongodb.persistence.existingClaim`          | Use an existing PVC to persist data        | `nil`                              |
-| `mongodb.persistence.storageClass`           | Storage class of backing PVC               | `generic`                          |
+| `mongodb.persistence.existingClaim`          | Mongodb use an existing PVC to persist data        | `nil`                      |
+| `mongodb.persistence.storageClass`           | Mongodb storage class of backing PVC               | `generic`                  |
 | `mongodb.persistence.size`                   | Mongodb persistence volume size            | `10Gi`                             |
 | `mongodb.livenessProbe.initialDelaySeconds`  | Mongodb delay before liveness probe is initiated    | `40`                      |
 | `mongodb.readinessProbe.initialDelaySeconds` | Mongodb delay before readiness probe is initiated   | `30`                      |
@@ -128,12 +128,18 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.mongodbRootPassword`                | Mongodb Database Password for root user    | ` `                                |
 | `mongodb.mongodbUsername`                    | Mongodb Database User                      | `distribution`                     |
 | `mongodb.mongodbPassword`                    | Mongodb Database Password for Mission Control user  | ` `                       |
+| `mongodb.nodeSelector`                       | Mongodb node selector                      | `{}`                               |
+| `mongodb.affinity`                           | Mongodb node affinity                      | `{}`                               |
+| `mongodb.tolerations`                        | Mongodb node tolerations                   | `[]`                               |
 | `redis.password`                             | Redis password                             | ` `                                |
 | `redis.port`                                 | Redis Port                                 | `6379`                             |
-| `redis.persistence.enabled`                  | Use a PVC to persist data                  | `true`                             |
-| `redis.persistence.existingClaim`            | Use an existing PVC to persist data        | `nil`                              |
-| `redis.persistence.storageClass`             | Storage class of backing PVC               | `generic`                          |
-| `redis.persistence.size`                     | Size of data volume                        | `10Gi`                             |
+| `redis.persistence.enabled`                  | Redis use a PVC to persist data            | `true`                             |
+| `redis.persistence.existingClaim`            | Redis use an existing PVC to persist data  | `nil`                              |
+| `redis.persistence.storageClass`             | Redis storage class of backing PVC         | `generic`                          |
+| `redis.persistence.size`                     | Redis size of data volume                  | `10Gi`                             |
+| `redis.nodeSelector`                         | Redis node selector                        | `{}`                               |
+| `redis.affinity`                             | Redis node affinity                        | `{}`                               |
+| `redis.tolerations`                          | Redis node tolerations                     | `[]`                               |
 | `distribution.name`                          | Distribution name                          | `distribution`                     |
 | `distribution.image.pullPolicy`              | Container pull policy                      | `IfNotPresent`                     |
 | `distribution.image.repository`              | Container image                            | `docker.jfrog.io/jf-distribution`  |
@@ -148,6 +154,9 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.persistence.existingClaim`     | Provide an existing PersistentVolumeClaim  | `nil`                              |
 | `distribution.persistence.accessMode`        | Distribution persistence volume access mode| `ReadWriteOnce`                    |
 | `distribution.persistence.size`              | Distribution persistence volume size       | `50Gi`                             |
+| `distribution.nodeSelector`                  | Distribution node selector                 | `{}`                               |
+| `distribution.affinity`                      | Distribution node affinity                 | `{}`                               |
+| `distribution.tolerations`                   | Distribution node tolerations              | `[]`                               |
 | `distributor.name`                           | Distribution name                          | `distribution`                     |
 | `distributor.image.pullPolicy`               | Container pull policy                      | `IfNotPresent`                     |
 | `distributor.image.repository`               | Container image                            | `docker.jfrog.io/jf-distribution`  |
@@ -159,6 +168,9 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.persistence.enabled`            | Distributor persistence volume enabled     | `true`                             |
 | `distributor.persistence.accessMode`         | Distributor persistence volume access mode | `ReadWriteOnce`                    |
 | `distributor.persistence.size`               | Distributor persistence volume size        | `50Gi`                             |
+| `distributor.nodeSelector`                   | Distributor node selector                  | `{}`                               |
+| `distributor.affinity`                       | Distributor node affinity                  | `{}`                               |
+| `distributor.tolerations`                    | Distributor node tolerations               | `[]`                               |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
