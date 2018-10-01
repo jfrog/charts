@@ -32,11 +32,6 @@ run_minikube() {
     sudo -E minikube start --cpus 2 --memory 7168 --vm-driver=none --kubernetes-version="${K8S_VERSION}" --extra-config=apiserver.Authorization.Mode=RBAC
     echo
 
-    echo "Enable add-ons..."
-    sudo minikube addons disable kube-dns
-    sudo minikube addons enable coredns
-    echo
-
     echo "Update kubectl context..."
     minikube update-context
     echo
