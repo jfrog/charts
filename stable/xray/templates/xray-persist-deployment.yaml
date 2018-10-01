@@ -111,6 +111,18 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.persist.resources | indent 10 }}
+        {{- with .Values.persist.nodeSelector }}
+        nodeSelector:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.persist.affinity }}
+        affinity:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        {{- with .Values.persist.tolerations }}
+        tolerations:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         readinessProbe:
           httpGet:
             path: /debug/pprof/

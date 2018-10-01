@@ -147,6 +147,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.resources.requests.cpu`       | PostgreSQL initial cpu request      |                                    |
 | `postgresql.resources.limits.memory`      | PostgreSQL memory limit             |                                    |
 | `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit                |                                    |
+| `postgresql.nodeSelector`                 | PostgreSQL node selector            | `{}`                               |
+| `postgresql.affinity`                     | PostgreSQL node affinity            | `{}`                               |
+| `postgresql.tolerations`                  | PostgreSQL node tolerations         | `[]`                               |
 | `mongodb.enabled`                         | Enable Mongodb                      | `true`                             |
 | `mongodb.image.tag`                       | Mongodb docker image tag            | `3.6.3`                            |
 | `mongodb.image.pullPolicy`                | Mongodb Container pull policy       | `IfNotPresent`                     |
@@ -161,6 +164,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `mongodb.mongodbRootPassword`                  | Mongodb Database Password for root user      | ` `                  |
 | `mongodb.mongodbUsername`                      | Mongodb Database Xray User                   | `admin`              |
 | `mongodb.mongodbPassword`                      | Mongodb Database Password for Xray User      | ` `                  |
+| `mongodb.nodeSelector`                         | Mongodb node selector                        | `{}`                 |
+| `mongodb.affinity`                             | Mongodb node affinity                        | `{}`                 |
+| `mongodb.tolerations`                          | Mongodb node tolerations                     | `[]`                 |
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |
 | `rabbitmq-ha.rabbitmqPassword`                 | RabbitMQ application password                | ` `                  |
@@ -169,6 +175,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.persistentVolume.enabled`         | If `true`, persistent volume claims are created | `true`            |
 | `rabbitmq-ha.persistentVolume.size`            | RabbitMQ Persistent volume size              | `20Gi`               |
 | `rabbitmq-ha.rbac.create`                      | If true, create & use RBAC resources         | `true`               |
+| `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
+| `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
 | `common.xrayConfigPath`                        | Xray config path                   | `/var/opt/jfrog/xray/data`     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
@@ -185,6 +193,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
 | `analysis.storage.sizeLimit`                   | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
+| `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
+| `analysis.affinity`                            | Xray Analysis node affinity                  | `{}`                 |
+| `analysis.tolerations`                         | Xray Analysis node tolerations               | `[]`                 |
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
 | `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
 | `indexer.replicaCount`                         | Xray Indexer replica count                   | `1`                  |
@@ -193,6 +204,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
 | `indexer.storage.sizeLimit`                    | Xray Indexer storage size limit              | `10Gi`               |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
+| `indexer.nodeSelector`                         | Xray Indexer node selector                   | `{}`                 |
+| `indexer.affinity`                             | Xray Indexer node affinity                   | `{}`                 |
+| `indexer.tolerations`                          | Xray Indexer node tolerations                | `[]`                 |
 | `persist.name`                                 | Xray Persist name                            | `xray-persist`       |
 | `persist.image`                                | Xray Persist container image                 | `docker.bintray.io/jfrog/xray-persist`  |
 | `persist.replicaCount`                         | Xray Persist replica count                   | `1`                  |
@@ -201,6 +215,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
 | `persist.storage.sizeLimit`                    | Xray Persist storage size limit              | `10Gi`               |
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
+| `persist.nodeSelector`                         | Xray Persist node selector                   | `{}`                 |
+| `persist.affinity`                             | Xray Persist node affinity                   | `{}`                 |
+| `persist.tolerations`                          | Xray Persist node tolerations                | `[]`                 |
 | `server.name`                                  | Xray server name                             | `xray-server`        |
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
 | `server.replicaCount`                          | Xray server replica count                    | `1`                  |
@@ -210,6 +227,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
 | `server.storage.sizeLimit`                     | Xray server storage size limit               | `10Gi`               |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
+| `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
+| `server.affinity`                              | Xray server node affinity                    | `{}`                 |
+| `server.tolerations`                           | Xray server node tolerations                 | `[]`                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

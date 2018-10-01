@@ -64,13 +64,16 @@ postgresql:
     enabled: true
     size: 50Gi
     existingClaim:
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "250m"
-    limits:
-      memory: "2Gi"
-      cpu: "1"
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "250m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
 
 ## Configuration values for the mongodb dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/mongodb/README.md
@@ -82,7 +85,7 @@ mongodb:
     pullPolicy: IfNotPresent
   persistence:
     size: 50Gi
-  # resources:
+  resources: {}
   #  requests:
   #    memory: "12Gi"
   #    cpu: "200m"
@@ -103,6 +106,9 @@ mongodb:
 #  readinessProbe:
 #    initialDelaySeconds: 30
 #    periodSeconds: 30
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
 
 # RabbitMQ HA
 ## Configuration values for the rabbitmq-ha dependency
@@ -126,7 +132,7 @@ rabbitmq-ha:
         "ha-sync-mode": "automatic",
       }
     }
-  # resources:
+  resources: {}
   #  requests:
   #    memory: "250Mi"
   #    cpu: "100m"
@@ -138,6 +144,8 @@ rabbitmq-ha:
     size: 20Gi
   rbac:
     create: true
+  nodeSelector: {}
+  tolerations: []
 
 # Common Xray settings
 common:
@@ -177,6 +185,9 @@ analysis:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
 
 indexer:
   name: xray-indexer
@@ -196,6 +207,9 @@ indexer:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
 
 persist:
   name: xray-persist
@@ -215,6 +229,9 @@ persist:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
 
 server:
   name: xray-server
@@ -238,3 +255,6 @@ server:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
