@@ -22,8 +22,8 @@ jobs:
         - CHANGE_MINIKUBE_NONE_USER=true
         - MINIKUBE_WANTUPDATENOTIFICATION=false
         - MINIKUBE_WANTREPORTERRORPROMPT=false
-        - K8S_VERSION="v1.10.0"
-        - MINIKUBE_VERSION="v0.28.2"
+        - K8S_VERSION="v1.11.2"
+        - MINIKUBE_VERSION="v0.29.0"
       script:
         - echo "Run chart-testing linting!"
         - ./test/lint-charts.sh
