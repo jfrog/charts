@@ -25,36 +25,36 @@ This chart will do the following:
 ### Add JFrog Helm repository
 Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
 ```bash
-$ helm repo add jfrog https://charts.jfrog.io
+helm repo add jfrog https://charts.jfrog.io
 ```
 
 ### Install Chart
 Install JFrog Xray
 ```bash
-$ helm install -n xray jfrog/xray
+helm install -n xray jfrog/xray
 ```
 
 ## Status
 See the status of your deployed **helm** releases
 ```bash
-$ helm status xray
+helm status xray
 ```
 
 ## Upgrade
 To upgrade an existing Xray, you still use **helm**
 ```bash
 # Update existing deployed version to 2.1.2
-$ helm upgrade --set common.xrayVersion=2.1.2 jfrog/xray
+helm upgrade --set common.xrayVersion=2.1.2 jfrog/xray
 ```
 
 ## Remove
 Removing a **helm** release is done with
 ```bash
 # Remove the Xray services and data tools
-$ helm delete --purge xray
+helm delete --purge xray
 
 # Remove the data disks
-$ kubectl delete pvc -l release=xray
+kubectl delete pvc -l release=xray
 ```
 
 ### Create a unique Master Key
@@ -65,11 +65,11 @@ JFrog Xray requires a unique master key to be used by all micro-services in the 
 You should generate a unique one and pass it to the template at install/upgrade time.
 ```bash
 # Create a key
-$ export MASTER_KEY=$(openssl rand -hex 32)
-$ echo ${MASTER_KEY}
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-$ helm install --set common.masterKey=${MASTER_KEY} -n xray jfrog/xray
+helm install --set common.masterKey=${MASTER_KEY} -n xray jfrog/xray
 ```
 **NOTE:** Make sure to pass the same master key with `--set common.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
 
@@ -81,7 +81,7 @@ For **high availability** of Xray, set the replica count per service be equal or
 > It is highly recommended to also set **RabbitMQ** to run as an HA cluster.
 ```bash
 # Start Xray with 3 replicas per service and 3 replicas for RabbitMQ
-$ helm install -n xray --set analysis.replicaCount=3,server.replicaCount=3,indexer.replicaCount=3,persist.replicaCount=3,rabbitmq-ha.replicaCount=3 jfrog/xray
+helm install -n xray --set analysis.replicaCount=3,server.replicaCount=3,indexer.replicaCount=3,persist.replicaCount=3,rabbitmq-ha.replicaCount=3 jfrog/xray
 ```
 
 ### External Databases
@@ -102,8 +102,8 @@ For this, pass the parameter: `global.mongoUrl=${XRAY_MONGODB_CONN_URL}`.
 # MongoDB user: xray
 # MongoDB password: password1_X
 
-$ export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABSE}&authMechanism=SCRAM-SHA-1'
-$ helm install -n xray --set global.mongoUrl=${XRAY_MONGODB_CONN_URL} jfrog/xray
+export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABSE}&authMechanism=SCRAM-SHA-1'
+helm install -n xray --set global.mongoUrl=${XRAY_MONGODB_CONN_URL} jfrog/xray
 ```
 
 #### PostgreSQL
@@ -121,8 +121,8 @@ For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql
 # PostgreSQL user: xray
 # PostgreSQL password: password2_X
 
-$ export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable'
-$ helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} jfrog/xray
+export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable'
+helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} jfrog/xray
 ```
 
 ## Configuration

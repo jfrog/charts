@@ -86,9 +86,9 @@ For this, pass the parameter: `mongodb.enabled=false,global.mongoUrl=${DISTRIBUT
 # MongoDB user: distribution
 # MongoDB password: password1_X
 
-$ export DISTRIBUTION_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/${MONGODB_DATABSE}'
-$ export DISTRIBUTION_MONGODB_AUDIT_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/audit?maxpoolsize=500'
-$ helm install -n distribution --set global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL} jfrog/distribution
+export DISTRIBUTION_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/${MONGODB_DATABSE}'
+export DISTRIBUTION_MONGODB_AUDIT_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/audit?maxpoolsize=500'
+helm install -n distribution --set global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL} jfrog/distribution
 ```
 
 ## Upgrade
