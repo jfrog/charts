@@ -19,10 +19,14 @@ This chart will do the following:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
 
+## Add JFrog Helm repository
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+```bash
+helm repo add jfrog https://charts.jfrog.io
+```
+
 ## Create Secret with keys and certs for Mission-Control
-
 * Create file `generate_keys.sh` with following content:
-
 ```bash
 #!/bin/bash
 set -e

@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.4.4] - Oct 2, 2018
+* Add `helm repo add jfrog https://charts.jfrog.io` to README
+
 ## [0.4.3] - Sep 6, 2018
 * Option to set Java `Xms` and `Xmx` for Insight scheduler and executor
 

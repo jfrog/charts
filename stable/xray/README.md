@@ -20,9 +20,16 @@ This chart will do the following:
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
 
 
-## Deploy JFrog Xray
+## Install JFrog Xray
 
-Deploy JFrog Xray
+### Add JFrog Helm repository
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+```bash
+$ helm repo add jfrog https://charts.jfrog.io
+```
+
+### Install Chart
+Install JFrog Xray
 ```bash
 $ helm install -n xray jfrog/xray
 ```

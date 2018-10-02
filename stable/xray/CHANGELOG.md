@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.5.5] - Oct 2, 2018
+* Add `helm repo add jfrog https://charts.jfrog.io` to README
+
 ## [0.5.4] - Sep 30, 2018
 * Add pods nodeSelector, affinity and tolerations
 

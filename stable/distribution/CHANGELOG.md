@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All notable changes to this project chart be documented in this file.
 
+## [1.0.3] - Oct 2, 2018
+* Add `helm repo add jfrog https://charts.jfrog.io` to README
+
 ## [1.0.2] - Sep 30, 2018
 * Add pods nodeSelector, affinity and tolerations
 

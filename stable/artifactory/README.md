@@ -15,8 +15,14 @@ This chart will do the following:
 
 ## Installing the Chart
 
-To install the chart with the release name `artifactory`:
+### Add JFrog Helm repository
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+```bash
+$ helm repo add jfrog https://charts.jfrog.io
+```
 
+### Install Chart
+To install the chart with the release name `artifactory`:
 ```bash
 $ helm install --name artifactory jfrog/artifactory
 ```

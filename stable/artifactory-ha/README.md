@@ -22,6 +22,14 @@ This leaves the primary node free to handle jobs and tasks and not be interrupte
 > This can be controlled by the parameter `artifactory.service.pool`.
 
 ## Installing the Chart
+
+### Add JFrog Helm repository
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+```bash
+$ helm repo add jfrog https://charts.jfrog.io
+```
+
+### Install Chart
 To install the chart with the release name `artifactory-ha`:
 ```bash
 $ helm install --name artifactory-ha jfrog/artifactory-ha
