@@ -21,8 +21,16 @@ This chart does the following:
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
 
 ## Installing the Chart
-To install the chart with the release name `distribution`:
+
+### Add JFrog Helm repository
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+```bash
+helm repo add jfrog https://charts.jfrog.io
 ```
+
+### Install Chart
+To install the chart with the release name `distribution`:
+```bash
 helm install --name distribution jfrog/distribution
 ```
 
@@ -32,7 +40,7 @@ Follow the instructions outputted by the install command to get the Distribution
 
 ### Updating Distribution
 Once you have a new chart version, you can update your deployment with
-```
+```bash
 helm upgrade distribution jfrog/distribution
 ```
 
@@ -78,9 +86,9 @@ For this, pass the parameter: `mongodb.enabled=false,global.mongoUrl=${DISTRIBUT
 # MongoDB user: distribution
 # MongoDB password: password1_X
 
-$ export DISTRIBUTION_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/${MONGODB_DATABSE}'
-$ export DISTRIBUTION_MONGODB_AUDIT_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/audit?maxpoolsize=500'
-$ helm install -n distribution --set global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL} jfrog/distribution
+export DISTRIBUTION_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/${MONGODB_DATABSE}'
+export DISTRIBUTION_MONGODB_AUDIT_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/audit?maxpoolsize=500'
+helm install -n distribution --set global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL} jfrog/distribution
 ```
 
 ## Upgrade
@@ -176,7 +184,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
-```
+```bash
 helm install --name distribution \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="distribution.company.com" \
@@ -188,7 +196,7 @@ If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [c
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
-```console
+```bash
 kubectl create secret tls distribution-tls --cert=path/to/tls.cert --key=path/to/tls.key
 ```
 

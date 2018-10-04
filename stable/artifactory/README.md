@@ -15,22 +15,28 @@ This chart will do the following:
 
 ## Installing the Chart
 
-To install the chart with the release name `artifactory`:
-
+### Add JFrog Helm repository
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
 ```bash
-$ helm install --name artifactory jfrog/artifactory
+helm repo add jfrog https://charts.jfrog.io
+```
+
+### Install Chart
+To install the chart with the release name `artifactory`:
+```bash
+helm install --name artifactory jfrog/artifactory
 ```
 
 ### Deploying Artifactory OSS
 By default it will run Artifactory-Pro to run Artifactory-Oss use following command:
 ```bash
-$ helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
+helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
 ```
 
 ### Deploying Artifactory with replicator enabled
 ```bash
 ## Artifactory replicator is disabled by default. To enable it use the following:
-$ helm install --name artifactory --set artifactory.replicator.enabled=true jfrog/artifactory
+helm install --name artifactory --set artifactory.replicator.enabled=true jfrog/artifactory
 ```
 
 ### Accessing Artifactory
@@ -40,7 +46,7 @@ Follow the instructions outputted by the install command to get the Artifactory 
 ### Updating Artifactory
 Once you have a new chart version, you can update your deployment with
 ```bash
-$ helm upgrade artifactory --namespace artifactory jfrog/artifactory
+helm upgrade artifactory --namespace artifactory jfrog/artifactory
 ```
 
 This will apply any configuration changes on your existing deployment.
@@ -51,7 +57,7 @@ It is **highly** recommended to set these so you have full control of the alloca
 Artifactory java memory parameters can (and should) also be set to match the allocated resources with `artifactory.javaOpts.xms` and `artifactory.javaOpts.xmx`.
 ```bash
 # Example of setting resource requests and limits to all pods (including passing java memory settings to Artifactory)
-$ helm install --name artifactory \
+helm install --name artifactory \
                --set artifactory.resources.requests.cpu="500m" \
                --set artifactory.resources.limits.cpu="2" \
                --set artifactory.resources.requests.memory="1Gi" \
@@ -70,14 +76,14 @@ Get more details on configuring Artifactory in the [official documentation](http
 ### Customizing Database password
 You can override the specified database password (set in [values.yaml](values.yaml)), by passing it as a parameter in the install command line
 ```bash
-$ helm install --name artifactory --namespace artifactory --set postgresql.postgresPassword=12_hX34qwerQ2 jfrog/artifactory
+helm install --name artifactory --namespace artifactory --set postgresql.postgresPassword=12_hX34qwerQ2 jfrog/artifactory
 ```
 
 You can customise other parameters in the same way, by passing them on `helm install` command line.
 
 ### Deleting Artifactory
 ```bash
-$ helm delete --purge artifactory
+helm delete --purge artifactory
 ```
 This will completely delete your Artifactory Pro deployment.  
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
@@ -85,17 +91,17 @@ This will completely delete your Artifactory Pro deployment.
 ### Create Distribution Cert for Artifactory Edge
 ```bash
 # Create private.key and root.crt
-$ openssl req -newkey rsa:2048 -nodes -keyout private.key -x509 -days 365 -out root.crt
+openssl req -newkey rsa:2048 -nodes -keyout private.key -x509 -days 365 -out root.crt
 ```
 
 Once Created, Use it to create ConfigMap
 ```bash
 # Create ConfigMap distribution-certs
-$ kubectl create configmap distribution-certs --from-file=private.key=private.key --from-file=root.crt=root.crt
+kubectl create configmap distribution-certs --from-file=private.key=private.key --from-file=root.crt=root.crt
 ```
 Pass it to `helm`
 ```bash
-$ helm install --name artifactory --set artifactory.distributionCerts=distribution-certs jfrog/artifactory
+helm install --name artifactory --set artifactory.distributionCerts=distribution-certs jfrog/artifactory
 ```
 
 ### Kubernetes Secret for Artifactory License
@@ -103,10 +109,10 @@ You can deploy the Artifactory license as a [Kubernetes secret](https://kubernet
 Prepare a text file with the license written in it.
 ```bash
 # Create the Kubernetes secret (assuming the local license file is 'art.lic')
-$ kubectl create secret generic artifactory-license --from-file=./art.lic
+kubectl create secret generic artifactory-license --from-file=./art.lic
 
 # Pass the license to helm
-$ helm install --name artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic jfrog/artifactory
+helm install --name artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic jfrog/artifactory
 ```
 **NOTE:** You have to keep passing the license secret parameters as `--set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic` on all future calls to `helm install` and `helm upgrade`!
 
@@ -131,11 +137,11 @@ data:
 
 2. Create configMap in Kubernetes:
 ```bash
-$ kubectl apply -f bootstrap-config.yaml
+kubectl apply -f bootstrap-config.yaml
 ```
 3. Pass the configMap to helm
 ```bash
-$ helm install --name artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
+helm install --name artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
 ```
 
 ### Use custom nginx.conf with Nginx
@@ -174,7 +180,7 @@ This can be done with the following parameters
 ### Deleting Artifactory
 To delete the Artifactory.
 ```bash
-$ helm delete --purge artifactory
+helm delete --purge artifactory
 ```
 This will completely delete your Artifactory HA cluster.  
 
@@ -183,11 +189,11 @@ If you need to pull your Docker images from a private registry, you need to crea
 [Kubernetes Docker registry secret](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) and pass it to helm
 ```bash
 # Create a Docker registry secret called 'regsecret'
-$ kubectl create secret docker-registry regsecret --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+kubectl create secret docker-registry regsecret --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
 ```
 Once created, you pass it to `helm`
 ```bash
-$ helm install --name artifactory --set imagePullSecrets=regsecret jfrog/artifactory
+helm install --name artifactory --set imagePullSecrets=regsecret jfrog/artifactory
 ```
 
 ## Configuration

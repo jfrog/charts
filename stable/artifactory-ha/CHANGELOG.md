@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.5.2] - Oct 2, 2018
+* Add `helm repo add jfrog https://charts.jfrog.io` to README
+
 ## [0.5.1] - Oct 2, 2018
 * Set Artifactory to 6.4.1
 
