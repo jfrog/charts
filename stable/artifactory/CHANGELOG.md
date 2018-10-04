@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [7.5.3] - Oct 4, 2018
+* Add PostgreSQL resources template
+
 ## [7.5.2] - Oct 2, 2018
 * Add `helm repo add jfrog https://charts.jfrog.io` to README
 
