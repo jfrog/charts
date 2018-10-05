@@ -245,8 +245,16 @@ postgresql:
     maxConnections: "1500"
   persistence:
     enabled: true
+    size: 50Gi
   service:
     port: 5432
+  resources: {}
+  #  requests:
+  #    memory: "512Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "500m"
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## you must specify the following database details
