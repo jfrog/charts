@@ -82,8 +82,8 @@ spec:
         - name: MONGODB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-mongo-connection
-              key: distributionPassword
+              name: {{ template "distribution.fullname" . }}-mongodb
+              key: mongodb-password
         - name: REDIS_PORT
           value: '{{ .Values.redis.port }}'
         - name: REDIS_PASSWORD
