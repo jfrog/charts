@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All notable changes to this project chart be documented in this file.
 
+## [1.0.5] - Oct 9, 2018
+* Quote ingress hosts to support wildcard names
+
 ## [1.0.4] - Oct 8, 2018
 * Fix distribution to use mongodb credentials secret
 

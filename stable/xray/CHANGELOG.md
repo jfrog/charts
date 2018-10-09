@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.5.6] - Oct 9, 2018
+* Quote ingress hosts to support wildcard names
+
 ## [0.5.5] - Oct 2, 2018
 * Add `helm repo add jfrog https://charts.jfrog.io` to README
 
