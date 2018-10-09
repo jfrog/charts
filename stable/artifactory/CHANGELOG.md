@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [7.5.4] - Oct 9, 2018
+* Quote ingress hosts to support wildcard names
+
 ## [7.5.3] - Oct 4, 2018
 * Add PostgreSQL resources template
 
