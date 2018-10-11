@@ -390,6 +390,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
+| `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `nginx.enabled`             | Deploy nginx server                      | `true`                                          |
 | `nginx.name`                | Nginx name                        | `nginx`                                                |
 | `nginx.replicaCount`        | Nginx replica count               | `1`                                                    |

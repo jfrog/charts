@@ -1,5 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
-All notable changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file.
+
+## [0.6.1] - Oct 11, 2018
+* Allows ingress default `backend` to be enabled or disabled (defaults to enabled)
+
+## [0.6.0] - Oct 11, 2018
+* Updated Artifactory version to 6.5.0
 
 ## [0.5.3] - Oct 9, 2018
 * Quote ingress hosts to support wildcard names
