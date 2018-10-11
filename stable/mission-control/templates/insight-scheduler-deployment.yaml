@@ -28,8 +28,21 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
+      securityContext:
+        fsGroup: {{ .Values.uid }}
       initContainers:
-      - name: init-data
+      - name: "prepare-storage"
+        image: "{{ .Values.initContainerImage }}"
+        command:
+        - 'sh'
+        - '-c'
+        - >
+          mkdir -p {{ .Values.insightScheduler.persistence.mountPath }} ; 
+          chown -R {{ .Values.uid }}:{{ .Values.uid }} {{ .Values.insightScheduler.persistence.mountPath }}
+        volumeMounts:
+        - name: insight-scheduler-data
+          mountPath: {{ .Values.insightScheduler.persistence.mountPath | quote }}
+      - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
         - 'sh'
@@ -44,12 +57,10 @@ spec:
         image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
-        - name: CORE_URL
+        - name: JFIS_URL
           value: 'http://{{ template "insight-server.fullname" . }}:{{ .Values.insightServer.internalHttpPort }}'
-        - name: JFI_HOME
-          value: '/var/cloudbox'
-        - name: JFI_HOME_SCHEDULER
-          value: '/var/cloudbox/scheduler'
+        - name: JFMC_URL
+          value: 'http://{{ template "mission-control.fullname" . }}:{{ .Values.missionControl.internalPort }}'
         - name: MONGO_URL
           value: '{{ .Release.Name }}-mongodb:27017'
         - name: MONGODB_USERNAME
@@ -79,20 +90,27 @@ spec:
           {{- if .Values.insightScheduler.javaOpts.xmx }}
               -Xmx{{ .Values.insightScheduler.javaOpts.xmx }}
           {{- end}}
-          "
+          "        
+        - name: JFSC_LOGS
+          value: '{{ .Values.insightScheduler.home }}/{{ .Values.insightScheduler.name }}/logs'
+        - name: JFSC_APP_NAME
+          value: '{{ .Values.insightScheduler.name }}'
+        volumeMounts:
+        - name: insight-scheduler-data
+          mountPath: {{ .Values.insightScheduler.persistence.mountPath | quote }}
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
         livenessProbe:
           httpGet:
-            path: /schedulerservice/api/status
-            port: 8080
+            path: /api/status
+            port: {{ .Values.insightScheduler.internalPort }}
           initialDelaySeconds: 120
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /schedulerservice/api/status
-            port: 8080
+            path: /api/status
+            port: {{ .Values.insightScheduler.internalPort }}
           initialDelaySeconds: 120
           periodSeconds: 10
         resources:
@@ -109,3 +127,11 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+      volumes:
+      - name: insight-scheduler-data
+      {{- if .Values.insightScheduler.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.insightScheduler.persistence.existingClaim }}{{ .Values.insightScheduler.persistence.existingClaim }}{{ else }}{{ template "insight-scheduler.fullname" . }}{{ end }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}

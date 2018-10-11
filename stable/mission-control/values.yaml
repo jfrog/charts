@@ -7,6 +7,9 @@
 initContainerImage: "alpine:3.6"
 imagePullPolicy: IfNotPresent
 
+uid: 1050
+uname: jfmc
+
 imagePullSecrets:
 
 ## Role Based Access Control
@@ -74,6 +77,7 @@ mongodb:
     insightUser: jfrog_insight
     insightPassword:
     insightSchedulerDb: insight_scheduler
+    insightExecutorDb: insight_executor
   livenessProbe:
     initialDelaySeconds: 40
   readinessProbe:
@@ -129,11 +133,20 @@ jfmcTruststore:
 missionControl:
   replicaCount: 1
   name: mission-control
+  appName: jfmc-server
+  home: /var/opt/jfrog/mission-control
   image: docker.bintray.io/jfrog/mission-control
   ## Note that by default we use appVersion to get image tag
-  # version: 3.1.2
+  # version: 3.2.0
   missionControlUrl:
   podRestartTime:
+  repository: jfrog-mission-control
+  package: mc-docker-installer
+  dist: helm
+  osVersion: "NA"
+  osType: "NA"
+  osDist: "NA"
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -181,9 +194,29 @@ missionControl:
 insightServer:
   replicaCount: 1
   name: insight-server
+  home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-server
   ## Note that by default we use appVersion to get image tag
-  # version: 3.1.2
+  # version: 3.2.0
+  persistence:
+    enabled: true
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    mountPath: "/opt/jfrog/insight-server/logs"
+    accessMode: ReadWriteOnce
+    size: 100Gi
+    ## Mission Control data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
   service:
     name: insight-server
     type: ClusterIP
@@ -207,9 +240,29 @@ insightServer:
 insightScheduler:
   replicaCount: 1
   name: insight-scheduler
+  home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-scheduler
   ## Note that by default we use appVersion to get image tag
-  # version: 3.1.2
+  # version: 3.2.0
+  persistence:
+    enabled: true
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    mountPath: "/opt/jfrog/insight-scheduler/logs"
+    accessMode: ReadWriteOnce
+    size: 100Gi
+    ## Mission Control data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
   service:
     type: ClusterIP
   externalPort: 8080
@@ -237,9 +290,10 @@ insightScheduler:
 insightExecutor:
   replicaCount: 1
   name: insight-executor
+  home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-executor
   ## Note that by default we use appVersion to get image tag
-  # version: 3.1.2
+  # version: 3.2.0
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -247,7 +301,7 @@ insightExecutor:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
 
-    mountPath: "/var/cloudbox"
+    mountPath: "/opt/jfrog/insight-executor/logs"
     accessMode: ReadWriteOnce
     size: 100Gi
     ## Mission Control data Persistent Volume Storage Class
