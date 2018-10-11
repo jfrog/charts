@@ -28,6 +28,8 @@ rbac:
 
 ingress:
   enabled: false
+  defaultBackend:
+    enabled: true  
   # Used to create an Ingress record.
   hosts:
     - xray.domain.example
@@ -115,6 +117,7 @@ mongodb:
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq-ha/README.md
 ##
 rabbitmq-ha:
+  enabled: true
   replicaCount: 1
   rabbitmqUsername: guest
   rabbitmqPassword:

@@ -34,7 +34,11 @@ data:
     done;
     {{- end }}
     echo "Waiting for Rabbit..."
+    {{ if index .Values "rabbitmq-ha" "enabled" }}
     until nc -z -w 2 {{ .Release.Name }}-rabbitmq-ha {{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }} && echo rabbitmq ok; do
+    {{- else }}
+    until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ index .Values "rabbitmq" "rabbitmqNodePort" }} && echo rabbitmq ok; do
+    {{- end }}
       sleep 2;
     done;
 
@@ -59,8 +63,12 @@ data:
     POSTGRESS_URL="${POSTGRESS_URL}"
     {{- end }}
 
-    # Creating Rabbitmq-Ha URL
+    # Creating Rabbitmq URL
+    {{ if index .Values "rabbitmq-ha" "enabled" }}
     RABBITMQ_URL="amqp://${RABBITMQ_USER}:${RABBITMQ_DEFAULT_PASS}@{{ .Release.Name }}-rabbitmq-ha:{{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }}/"
+    {{- else }}
+    RABBITMQ_URL="amqp://${RABBITMQ_USER}:${RABBITMQ_DEFAULT_PASS}@{{ .Release.Name }}-rabbitmq:{{ index .Values "rabbitmq" "rabbitmqNodePort" }}/"
+    {{- end }}
     cp -vf ${SCRIPTS_DIR}/xray_config.yaml ${XRAY_CONFIG_FILE}
 
     # Preparing xray_config.yaml

@@ -142,6 +142,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.annotations`        | Xray Ingress annotations                         | `{}`                               |
 | `ingress.hosts`              | Xray Ingress hostnames                           | `[]`                               |
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
+| `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |
@@ -174,6 +175,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `mongodb.nodeSelector`                         | Mongodb node selector                        | `{}`                 |
 | `mongodb.affinity`                             | Mongodb node affinity                        | `{}`                 |
 | `mongodb.tolerations`                          | Mongodb node tolerations                     | `[]`                 |
+| `rabbitmq-ha.enabled`                          | RabbitMQ enabled uses rabbitmq-ha, disabled uses rabbitmq | `true`  |
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |
 | `rabbitmq-ha.rabbitmqPassword`                 | RabbitMQ application password                | ` `                  |
