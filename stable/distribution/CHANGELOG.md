@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All notable changes to this project chart be documented in this file.
 
+## [1.0.6] - Oct 11, 2018
+* Update Distribution version 1.3.0
+
 ## [1.0.5] - Oct 9, 2018
 * Quote ingress hosts to support wildcard names
 
