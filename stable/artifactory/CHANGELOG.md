@@ -1,5 +1,8 @@
 # JFrog Artifactory Chart Changelog
-All notable changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file.
+
+## [7.5.5] - Oct 11, 2018
+* Updated Artifactory version to 6.5.0
 
 ## [7.5.4] - Oct 9, 2018
 * Quote ingress hosts to support wildcard names
