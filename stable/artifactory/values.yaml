@@ -39,6 +39,8 @@ serviceAccount:
 
 ingress:
   enabled: false
+  defaultBackend:
+    enabled: true
   # Used to create an Ingress record.
   hosts:
     - artifactory.domain.example
@@ -70,7 +72,7 @@ artifactory:
     dataKey:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
-
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   ## Extra postStart command to install JDBC driver for MySql/MariaDb/Oracle
   # postStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && chown 1030:1030 /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar"
 
