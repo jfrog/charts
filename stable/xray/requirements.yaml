@@ -6,6 +6,11 @@ dependencies:
 - name: rabbitmq-ha
   version: 1.9.1
   repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: rabbitmq-ha.enabled
+- name: rabbitmq
+  version: 3.2.1
+  repository: https://kubernetes-charts.storage.googleapis.com/
+  condition: rabbitmq.enabled
 - name: mongodb
   version: 2.0.5
   repository: https://kubernetes-charts.storage.googleapis.com/

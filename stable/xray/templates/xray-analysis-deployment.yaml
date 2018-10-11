@@ -75,7 +75,8 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-rabbitmq-ha
               key: rabbitmq-password
-        {{- else }}
+        {{- end }}
+        {{ if index .Values "rabbitmq" "enabled" }}
         - name: RABBITMQ_USER
           value: {{ index .Values "rabbitmq" "rabbitmqUsername" }}
         - name: RABBITMQ_ERLANG_COOKIE

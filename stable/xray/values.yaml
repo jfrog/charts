@@ -150,6 +150,23 @@ rabbitmq-ha:
   nodeSelector: {}
   tolerations: []
 
+# RabbitMQ
+## Configuration values for the rabbitmq dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
+##
+rabbitmq:
+  enabled: false
+  rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
+  rabbitmqMemoryHighWatermark: 500MB
+  rabbitmqNodePort: 5672
+  rabbitmqUsername: user
+  rabbitmqPassword:
+  persistentVolume:
+    enabled: true
+    size: 20Gi
+  rbac:
+    create: true    
+
 # Common Xray settings
 common:
   ## Note that by default we use appVersion to get image tag
