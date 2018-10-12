@@ -115,6 +115,11 @@ spec:
               name: {{ template "artifactory.fullname" . }}
               key: db-password
       {{- end }}
+        - name: ARTIFACTORY_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "artifactory.fullname" . }}
+              key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "
       {{- if .Values.artifactory.javaOpts.other }}

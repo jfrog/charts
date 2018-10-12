@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.6.1] - Oct 11, 2018
+* Supports master-key in the secrets and stateful-set
+* Allows ingress default `backend` to be enabled or disabled (defaults to enabled)
+
 ## [7.6.0] - Oct 11, 2018
 * Updated Artifactory version to 6.5.0
 

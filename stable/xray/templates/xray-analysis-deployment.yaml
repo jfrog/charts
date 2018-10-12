@@ -62,6 +62,7 @@ spec:
         - name: POSTGRESS_URL
           value: {{ .Values.global.postgresqlUrl }}
         {{- end }}
+        {{ if index .Values "rabbitmq-ha" "enabled" }}
         - name: RABBITMQ_USER
           value: {{ index .Values "rabbitmq-ha" "rabbitmqUsername" }}
         - name: RABBITMQ_ERLANG_COOKIE
@@ -74,6 +75,21 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-rabbitmq-ha
               key: rabbitmq-password
+        {{- end }}
+        {{ if index .Values "rabbitmq" "enabled" }}
+        - name: RABBITMQ_USER
+          value: {{ index .Values "rabbitmq" "rabbitmqUsername" }}
+        - name: RABBITMQ_ERLANG_COOKIE
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-rabbitmq
+              key: rabbitmq-erlang-cookie
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-rabbitmq
+              key: rabbitmq-password
+        {{- end }}
         command:
         - '/bin/sh'
         - '-c'

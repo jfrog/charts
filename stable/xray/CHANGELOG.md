@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.1] - Oct 11, 2018
+* Allows ingress default `backend` to be enabled or disabled (defaults to enabled)
+* Allows rabbitmq to be used instead of rabbitmq-ha by settings rabbitmq-ha.enabled: false and rabbitmq.enabled: true
+
 ## [0.6.0] - Oct 11, 2018
 * Updated Xray version to 2.4.0
 
