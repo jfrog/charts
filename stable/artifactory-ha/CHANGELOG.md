@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.2] - Oct 14, 2018
+* Make S3 endpoint configurable (was hardcoded with `s3.amazonaws.com`)
+
 ## [0.6.1] - Oct 11, 2018
 * Allows ingress default `backend` to be enabled or disabled (defaults to enabled)
 
