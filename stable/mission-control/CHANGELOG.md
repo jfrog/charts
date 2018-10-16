@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All notable changes to this chart will be documented in this file.
 
+## [0.4.6] - Oct 16, 2018
+* Fix #67 Set password used to generate internal certs in Mission-Control
+
 ## [0.4.5] - Oct 9, 2018
 * Quote ingress hosts to support wildcard names
 

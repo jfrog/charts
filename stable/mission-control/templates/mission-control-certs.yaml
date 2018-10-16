@@ -19,4 +19,6 @@ data:
   jfmc-keystore.jks-b64: {{ required "A valid .Values.jfmcKeystore entry required!" .Values.jfmcKeystore | b64enc | quote }}
 
   jfmc-truststore.jks-b64: {{ required "A valid .Values.jfmcTruststore entry required!" .Values.jfmcTruststore | b64enc | quote }}
+
+  jfmc-store-passwd-b64: {{ required "A valid .Values.jfmcStorePasswd entry required!" .Values.jfmcStorePasswd | b64enc | quote }}
 {{- end }}
