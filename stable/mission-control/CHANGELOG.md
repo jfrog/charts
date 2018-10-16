@@ -1,5 +1,11 @@
 # JFrog Mission-Control Chart Changelog
-All notable changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file.
+
+## [0.5.1] - Oct 16, 2018
+* Fix #67 Set password used to generate internal certs in Mission-Control
+
+## [0.5.0] - Oct 14, 2018
+* Upgrade MongoDB version (chart 4.3.10, app 3.6.8-debian-9)
 
 ## [0.4.5] - Oct 9, 2018
 * Quote ingress hosts to support wildcard names

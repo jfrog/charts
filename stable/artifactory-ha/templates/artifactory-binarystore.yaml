@@ -135,7 +135,7 @@ data:
         </provider>
 
         <provider id="s3" type="s3">
-            <endpoint>s3.amazonaws.com</endpoint>
+            <endpoint>{{ .Values.artifactory.persistence.awsS3.endpoint }}</endpoint>
             <refreshCredentials>true</refreshCredentials>
             <testConnection>false</testConnection>
             <httpsOnly>true</httpsOnly>

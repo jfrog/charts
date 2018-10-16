@@ -38,6 +38,8 @@ serviceAccount:
 
 ingress:
   enabled: false
+  defaultBackend:
+    enabled: true
   # Used to create an Ingress record.
   hosts:
   #  - artifactory.domain.example
@@ -89,7 +91,7 @@ artifactory:
   image:
     repository: "docker.bintray.io/jfrog/artifactory-pro"
     # Note that by default we use appVersion to get image tag
-    # version: 6.3.2
+    # version:
     pullPolicy: IfNotPresent
   ## Artifactory requires a unique master key
   ## You can generate one with the command:
@@ -177,9 +179,11 @@ artifactory:
       credential:
       path: "artifactory-ha/filestore"
     ## For artifactory.persistence.type aws-s3
+    ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
       # Set a unique bucket name
       bucketName: "artifactory-ha-aws"
+      endpoint:
       region:
       identity:
       credential:
@@ -270,7 +274,7 @@ nginx:
   image:
     repository: "docker.bintray.io/jfrog/nginx-artifactory-pro"
     # Note that by default we use appVersion to get image tag
-    # version: 6.3.2
+    # version:
     pullPolicy: IfNotPresent
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer

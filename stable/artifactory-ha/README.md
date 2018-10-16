@@ -144,11 +144,13 @@ To use an AWS S3 bucket as the cluster's filestore
 ```bash
 ...
 --set artifactory.persistence.type=aws-s3 \
+--set artifactory.persistence.awsS3.endpoint=${AWS_S3_ENDPOINT} \
 --set artifactory.persistence.awsS3.region=${AWS_REGION} \
 --set artifactory.persistence.awsS3.identity=${AWS_ACCESS_KEY_ID} \
 --set artifactory.persistence.awsS3.credential=${AWS_SECRET_ACCESS_KEY} \
 ...
 ```
+**NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
 
 ### Create a unique Master Key
 Artifactory HA cluster requires a unique master key. By default the chart has one set in values.yaml (`artifactory.masterKey`).
@@ -362,6 +364,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
 | `artifactory.persistence.googleStorage.path`        | Google Storage path in bucket       | `artifactory-ha/filestore`   |
 | `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                  | `artifactory-ha`             |
+| `artifactory.persistence.awsS3.endpoint`            | AWS S3 bucket endpoint              | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
 | `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                |                              |
 | `artifactory.persistence.awsS3.identity`            | AWS S3 AWS_ACCESS_KEY_ID            |                              |
 | `artifactory.persistence.awsS3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY        |                              |
@@ -390,6 +393,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
+| `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `nginx.enabled`             | Deploy nginx server                      | `true`                                          |
 | `nginx.name`                | Nginx name                        | `nginx`                                                |
 | `nginx.replicaCount`        | Nginx replica count               | `1`                                                    |

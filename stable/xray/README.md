@@ -142,6 +142,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.annotations`        | Xray Ingress annotations                         | `{}`                               |
 | `ingress.hosts`              | Xray Ingress hostnames                           | `[]`                               |
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
+| `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |
@@ -174,6 +175,15 @@ The following table lists the configurable parameters of the xray chart and thei
 | `mongodb.nodeSelector`                         | Mongodb node selector                        | `{}`                 |
 | `mongodb.affinity`                             | Mongodb node affinity                        | `{}`                 |
 | `mongodb.tolerations`                          | Mongodb node tolerations                     | `[]`                 |
+| `rabbitmq.enabled`                             | RabbitMQ enabled uses rabbitmq               | `false`              |
+| `rabbitmq.rabbitmqErlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
+| `rabbitmq.rabbitmqMemoryHighWatermark`         | RabbitMQ Memory high watermark               | `500MB`              |
+| `rabbitmq.rabbitmqUsername`                    | RabbitMQ application username                | `user`               |
+| `rabbitmq.rabbitmqNodePort`                    | RabbitMQ node port                           | `5672`               |
+| `rabbitmq.persistentVolume.enabled`            | If `true`, persistent volume claims are created | `true`            |
+| `rabbitmq.persistentVolume.size`               | RabbitMQ Persistent volume size              | `20Gi`               |
+| `rabbitmq.rbac.create`                         | If true, create & use RBAC resources         | `true`               |
+| `rabbitmq-ha.enabled`                          | RabbitMQ enabled uses rabbitmq-ha            | `true`               |
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |
 | `rabbitmq-ha.rabbitmqPassword`                 | RabbitMQ application password                | ` `                  |

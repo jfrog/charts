@@ -224,6 +224,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                        |
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
+| `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                        |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                        |
@@ -248,6 +249,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
+| `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `nginx.name` | Nginx name | `nginx`                                                                                      |
 | `nginx.enabled` | Deploy nginx server | `true`                                                                           |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
