@@ -165,6 +165,7 @@ arrangeFiles() {
     mv -f ${tmpDir}/insight.crt ${insightSecurity}
     cat ${jfmcSecurity}/jfmc-truststore.jks | base64 > ${jfmcSecurity}/jfmc-truststore.jks-b64
     cat ${jfmcSecurity}/jfmc-keystore.jks | base64 > ${jfmcSecurity}/jfmc-keystore.jks-b64
+    echo "${storePassword}" | base64 > ${jfmcSecurity}/jfmc-store-passwd-b64
 }
 
 summary() {
