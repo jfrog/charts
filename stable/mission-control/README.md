@@ -240,7 +240,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `rbac.create`                                | Specifies whether RBAC resources should be created   | `true`                           |
 | `rbac.role.rules`                            | Rules to create                                 | `[]`                                  |
 | `mongodb.enabled`                            | Enable Mongodb                                  | `true`                                |
-| `mongodb.image.tag`                          | Mongodb docker image tag                        | `3.6.3`                               |
+| `mongodb.image.tag`                          | Mongodb docker image tag                        | `3.6.8-debian-9`                      |
 | `mongodb.image.pullPolicy`                   | Mongodb Container pull policy                   | `IfNotPresent`                        |
 | `mongodb.persistence.enabled`                | Mongodb persistence volume enabled              | `true`                                |
 | `mongodb.persistence.existingClaim`          | Use an existing PVC to persist data             | `nil`                                 |
