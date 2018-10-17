@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.5.2] - Oct 17, 2018
+* Updated Mission-Control version to 3.2.0
+* Not compatible with Mission-Control version less than or equal to 3.1.2
+
 ## [0.5.1] - Oct 16, 2018
 * Fix #67 Set password used to generate internal certs in Mission-Control
 
