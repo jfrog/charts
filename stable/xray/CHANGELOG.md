@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.3] - Oct 17, 2018
+* Add Apache 2.0 license
+
 ## [0.6.2] - Oct 16, 2018
 * Updated Xray version to 2.4.1
 
