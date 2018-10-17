@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.5.2] - Oct 17, 2018
+* Add Apache 2.0 license
+
 ## [0.5.1] - Oct 16, 2018
 * Fix #67 Set password used to generate internal certs in Mission-Control
 
