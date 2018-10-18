@@ -118,7 +118,7 @@ spec:
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ template "artifactory.fullname" . }}
+              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}"
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "
