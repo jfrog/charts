@@ -250,5 +250,6 @@ spec:
     {{- end }}
       {{- else }}
       - name: artifactory-volume
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}

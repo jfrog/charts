@@ -364,7 +364,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.mountPath`  | Artifactory persistence volume mount path       | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`    | Artifactory persistence volume enabled          | `true`                          |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode      | `ReadWriteOnce`                 |
-| `artifactory.persistence.size`       | Artifactory persistence volume size             | `200Gi`                         |
+| `artifactory.persistence.size`       | Artifactory persistence or local volume size    | `200Gi`                         |
 | `artifactory.persistence.type`       | Artifactory HA storage type                     | `file-system`                   |
 | `artifactory.persistence.redundancy` | Artifactory HA storage redundancy               | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |

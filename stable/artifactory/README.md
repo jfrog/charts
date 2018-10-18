@@ -235,7 +235,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
-| `artifactory.persistence.size` | Artifactory persistence volume size | `20Gi`                                            | 
+| `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
 | `artifactory.resources.requests.memory` | Artifactory initial memory request                  |                          |
 | `artifactory.resources.requests.cpu`    | Artifactory initial cpu request     |                                          |
 | `artifactory.resources.limits.memory`   | Artifactory memory limit            |                                          |

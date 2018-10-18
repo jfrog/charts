@@ -247,7 +247,8 @@ spec:
       {{- end }}
       {{- if .Values.artifactory.persistence.local }}
       - name: volume
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- else }}
   volumeClaimTemplates:
   - metadata:
