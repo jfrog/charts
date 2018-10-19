@@ -116,6 +116,18 @@ spec:
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
+      {{- if .Values.database.secrets }}
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.Key }}
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+      {{- else }}
         - name: DB_USER
           value: '{{ .Values.database.user }}'
         - name: DB_PASSWORD
@@ -123,6 +135,7 @@ spec:
             secretKeyRef:
               name: {{ template "artifactory-ha.fullname" . }}
               key: db-password
+      {{- end }}
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
           value: "

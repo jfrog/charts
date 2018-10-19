@@ -177,6 +177,19 @@ This can be done with the following parameters
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
+If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:
+```bash
+# Create a secret containing the database credentials
+kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-literal=password=${DB_PASSWORD}
+...
+--set postgresql.enabled=false \
+--set database.secrets.user.name=my-secret \
+--set database.secrets.user.key=user \
+--set database.secrets.password.name=my-secret \
+--set database.secrets.password.key=password \
+...
+```
+
 ### Deleting Artifactory
 To delete the Artifactory.
 ```bash

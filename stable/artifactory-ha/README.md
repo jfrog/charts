@@ -299,6 +299,19 @@ This can be done with the following parameters
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
+If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:
+```bash
+# Create a secret containing the database credentials
+kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-literal=password=${DB_PASSWORD}
+...
+--set postgresql.enabled=false \
+--set database.secrets.user.name=my-secret \
+--set database.secrets.user.key=user \
+--set database.secrets.password.name=my-secret \
+--set database.secrets.password.key=password \
+...
+```
+
 ### Deleting Artifactory
 To delete the Artifactory HA cluster
 ```bash
@@ -457,11 +470,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `postgresql.resources.requests.cpu`       | PostgreSQL initial cpu request     |                                         |
 | `postgresql.resources.limits.memory`      | PostgreSQL memory limit            |                                         |
 | `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit               |                                         |
-| `database.type`           | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
-| `database.host`           | External database hostname                         |                                         |
-| `database.port`           | External database port                             |                                         |
-| `database.user`           | External database username                         |                                         |
-| `database.password`       | External database password                         |                                         |
+| `database.type`                  | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
+| `database.host`                  | External database hostname                         |                                         |
+| `database.port`                  | External database port                             |                                         |
+| `database.user`                  | External database username                         |                                         |
+| `database.password`              | External database password                         |                                         |
+| `database.secrets.user.name`     | External database username `Secret` name           |                                         |
+| `database.secrets.user.key`      | External database username `Secret` key            |                                         |
+| `database.secrets.password.name` | External database password `Secret` name           |                                         |
+| `database.secrets.password.key`  | External database password `Secret` key            |                                         |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
