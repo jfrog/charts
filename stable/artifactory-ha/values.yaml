@@ -267,7 +267,15 @@ artifactory:
 
     tolerations: []
 
+    ## Complete specification of the "affinity" of the member nodes; if this is non-empty,
+    ## "podAntiAffinity" values are not used.
     affinity: {}
+
+    ## Only used if "affinity" is empty
+    podAntiAffinity:
+      ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+      type: ""
+      topologyKey: "kubernetes.io/hostname"
 
 # Nginx
 nginx:
