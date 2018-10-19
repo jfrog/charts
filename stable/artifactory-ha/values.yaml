@@ -156,6 +156,7 @@ artifactory:
     mountPath: "/var/opt/jfrog/artifactory"
     accessMode: ReadWriteOnce
     size: 200Gi
+    maxCacheSize: 50000000000
     ## artifactory data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
@@ -202,6 +203,8 @@ artifactory:
       identity:
       credential:
       path: "artifactory-ha/filestore"
+      refreshCredentials: true
+      testConnection: false
   service:
     name: artifactory
     type: ClusterIP

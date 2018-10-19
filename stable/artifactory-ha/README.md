@@ -374,12 +374,13 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                                                    |
 | `artifactory.readinessProbe.successThreshold`    | Minimum consecutive successes for the probe to be considered successful after having failed. | 1  |
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
-| `artifactory.persistence.mountPath`  | Artifactory persistence volume mount path       | `"/var/opt/jfrog/artifactory"`  |
-| `artifactory.persistence.enabled`    | Artifactory persistence volume enabled          | `true`                          |
-| `artifactory.persistence.accessMode` | Artifactory persistence volume access mode      | `ReadWriteOnce`                 |
-| `artifactory.persistence.size`       | Artifactory persistence or local volume size    | `200Gi`                         |
-| `artifactory.persistence.type`       | Artifactory HA storage type                     | `file-system`                   |
-| `artifactory.persistence.redundancy` | Artifactory HA storage redundancy               | `3`                             |
+| `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
+| `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
+| `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
+| `artifactory.persistence.size`         | Artifactory persistence or local volume size        | `200Gi`                         |
+| `artifactory.persistence.maxCacheSize` | Artifactory cache-fs provider maxCacheSize in bytes | `50000000000`                   |
+| `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
+| `artifactory.persistence.redundancy`   | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
 | `artifactory.persistence.nfs.haDataMount`   | NFS data directory                   | `/data`                             |
 | `artifactory.persistence.nfs.haBackupMount` | NFS backup directory                 | `/backup`                           |
@@ -390,12 +391,14 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
 | `artifactory.persistence.googleStorage.path`        | Google Storage path in bucket       | `artifactory-ha/filestore`   |
-| `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                  | `artifactory-ha`             |
-| `artifactory.persistence.awsS3.endpoint`            | AWS S3 bucket endpoint              | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
-| `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                |                              |
-| `artifactory.persistence.awsS3.identity`            | AWS S3 AWS_ACCESS_KEY_ID            |                              |
-| `artifactory.persistence.awsS3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY        |                              |
-| `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket               | `artifactory-ha/filestore`   |
+| `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                     | `artifactory-ha`             |
+| `artifactory.persistence.awsS3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
+| `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                   |                              |
+| `artifactory.persistence.awsS3.identity`            | AWS S3 AWS_ACCESS_KEY_ID               |                              |
+| `artifactory.persistence.awsS3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY           |                              |
+| `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
+| `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true`                       |
+| `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
 | `artifactory.javaOpts.other` | Artifactory extra java options (for all nodes) | `-Dartifactory.locking.provider.type=db` |
 | `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
 | `artifactory.distributionCerts`            | Name of ConfigMap for Artifactory Distribution Certificate  |               |
