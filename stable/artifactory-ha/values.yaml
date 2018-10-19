@@ -205,6 +205,9 @@ artifactory:
       path: "artifactory-ha/filestore"
       refreshCredentials: true
       testConnection: false
+      ## Additional properties to set on the s3 provider
+      properties: {}
+      #  httpclient.max-connections: 100
   service:
     name: artifactory
     type: ClusterIP

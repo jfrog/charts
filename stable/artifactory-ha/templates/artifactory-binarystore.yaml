@@ -143,6 +143,9 @@ data:
             <identity>{{ .Values.artifactory.persistence.awsS3.identity }}</identity>
             <credential>{{ .Values.artifactory.persistence.awsS3.credential }}</credential>
             <path>{{ .Values.artifactory.persistence.awsS3.path }}</path>
+            {{- range $key, $value := .Values.artifactory.persistence.awsS3.properties }}
+            <property name="{{ $key }}" value="{{ $value }}"/>
+            {{- end }}
         </provider>
     </config>
 {{- end }}
