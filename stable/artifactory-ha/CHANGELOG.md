@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.4] - Oct 18, 2018
+* Updated Artifactory version to 6.5.1
+
 ## [0.6.3] - Oct 17, 2018
 * Add Apache 2.0 license
 
