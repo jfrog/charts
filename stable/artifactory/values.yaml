@@ -78,6 +78,8 @@ artifactory:
   ## Extra postStart command to install JDBC driver for MySql/MariaDb/Oracle
   # postStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && chown 1030:1030 /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar"
 
+  annotations: {}
+
   service:
     name: artifactory
     type: ClusterIP
