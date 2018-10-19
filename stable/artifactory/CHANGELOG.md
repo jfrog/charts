@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.6.4] - Oct 19, 2018
+* Allow user to configure externalTrafficPolicy for Loadbalancer
+
 ## [7.6.3] - Oct 18, 2018
 * Updated Artifactory version to 6.5.1
 

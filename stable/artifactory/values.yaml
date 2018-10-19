@@ -173,6 +173,8 @@ nginx:
     annotations: {}
     ## Provide static ip address
     loadBalancerIP:
+    ## There are two available options: “Cluster” (default) and “Local”.
+    externalTrafficPolicy: Cluster
   externalPortHttp: 80
   internalPortHttp: 80
   externalPortHttps: 443
