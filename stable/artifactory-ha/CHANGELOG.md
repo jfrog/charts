@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.5] - Oct 19, 2018
+* Updated ingress annotation support (with examples) to support docker registry v2
+
 ## [0.6.4] - Oct 18, 2018
 * Updated Artifactory version to 6.5.1
 
