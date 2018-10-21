@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.6] - Oct 21, 2018
+* Updated Artifactory version to 6.5.2
+
 ## [0.6.5] - Oct 19, 2018
 * Allow providing pre-existing secret containing master key
 * Allow arbitrary annotations on primary and member node pods
