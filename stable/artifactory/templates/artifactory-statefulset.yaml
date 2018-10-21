@@ -25,6 +25,10 @@ spec:
         role: {{ template "artifactory.name" . }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
+      annotations:
+      {{- range $key, $value := .Values.artifactory.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
     {{- if .Values.imagePullSecrets }}
@@ -107,6 +111,18 @@ spec:
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
+        {{- if .Values.database.secrets }}
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.Key }}
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        {{- else }}
         - name: DB_USER
           value: '{{ .Values.database.user }}'
         - name: DB_PASSWORD
@@ -114,11 +130,12 @@ spec:
             secretKeyRef:
               name: {{ template "artifactory.fullname" . }}
               key: db-password
+        {{- end }}
       {{- end }}
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ template "artifactory.fullname" . }}
+              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}"
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "
@@ -246,5 +263,6 @@ spec:
     {{- end }}
       {{- else }}
       - name: artifactory-volume
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}

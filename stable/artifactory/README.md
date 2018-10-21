@@ -177,6 +177,19 @@ This can be done with the following parameters
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
+If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:
+```bash
+# Create a secret containing the database credentials
+kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-literal=password=${DB_PASSWORD}
+...
+--set postgresql.enabled=false \
+--set database.secrets.user.name=my-secret \
+--set database.secrets.user.key=user \
+--set database.secrets.password.name=my-secret \
+--set database.secrets.password.key=password \
+...
+```
+
 ### Deleting Artifactory
 To delete the Artifactory.
 ```bash
@@ -225,6 +238,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                        |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                        |
@@ -234,7 +248,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
-| `artifactory.persistence.size` | Artifactory persistence volume size | `20Gi`                                            | 
+| `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
 | `artifactory.resources.requests.memory` | Artifactory initial memory request                  |                          |
 | `artifactory.resources.requests.cpu`    | Artifactory initial cpu request     |                                          |
 | `artifactory.resources.limits.memory`   | Artifactory memory limit            |                                          |
