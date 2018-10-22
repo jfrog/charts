@@ -1,8 +1,17 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.6.4] - Oct 19, 2018
+## [7.6.6] - Oct 22, 2018
 * Updated ingress annotation support (with examples) to support docker registry v2
+
+## [7.6.5] - Oct 21, 2018
+* Updated Artifactory version to 6.5.2
+
+## [7.6.4] - Oct 19, 2018
+* Allow providing pre-existing secret containing master key
+* Allow arbitrary annotations on primary and member node pods
+* Enforce size limits when using local storage with `emptyDir`
+* Allow providing pre-existing secrets containing external database credentials
 
 ## [7.6.3] - Oct 18, 2018
 * Updated Artifactory version to 6.5.1

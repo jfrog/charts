@@ -73,8 +73,12 @@ artifactory:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
   ## Extra postStart command to install JDBC driver for MySql/MariaDb/Oracle
   # postStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && chown 1030:1030 /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar"
+
+  annotations: {}
 
   service:
     name: artifactory
@@ -264,5 +268,16 @@ database:
   type:
   host:
   port:
+  ## If you would like this chart to create the secret containing the db
+  ## password, use these values
   user:
   password:
+  ## If you have existing Kubernetes secrets containing db credentials, use
+  ## these values
+  secrets: {}
+  #  user:
+  #    name: "rds-artifactory"
+  #    key: "db-user"
+  #  password:
+  #    name: "rds-artifactory"
+  #    key: "db-password"
