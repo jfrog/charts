@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.8] - Oct 22, 2018
+* Allow user to configure externalTrafficPolicy for Loadbalancer
+
 ## [0.6.7] - Oct 22, 2018
 * Updated ingress annotation support (with examples) to support docker registry v2
 
