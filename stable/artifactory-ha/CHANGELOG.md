@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.7] - Oct 23, 2018
+* Fix providing external secret for database credentials
+
 ## [0.6.6] - Oct 21, 2018
 * Updated Artifactory version to 6.5.2
 
