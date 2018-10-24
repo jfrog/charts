@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.9] - Oct 23, 2018
+* Fix providing external secret for database credentials
+
 ## [0.6.8] - Oct 22, 2018
 * Allow user to configure externalTrafficPolicy for Loadbalancer
 

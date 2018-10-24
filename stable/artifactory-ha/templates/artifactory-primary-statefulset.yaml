@@ -121,7 +121,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.Key }}
+              key: {{ .Values.database.secrets.user.key }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
