@@ -51,6 +51,7 @@ spec:
                 nc -z -w 2 {{ .Release.Name }}-elasticsearch 9200 && echo elasticsearch ok;
             do sleep 2;
           done;
+          sleep 40
       containers:
       - name: {{ .Values.insightServer.name }}
         image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.version }}

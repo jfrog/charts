@@ -102,13 +102,13 @@ spec:
           httpGet:
             path: /executorservice/api
             port: {{ .Values.insightExecutor.internalPort }}
-          initialDelaySeconds: 180
+          initialDelaySeconds: 600
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /executorservice/api
             port: {{ .Values.insightExecutor.internalPort }}
-          initialDelaySeconds: 180
+          initialDelaySeconds: 600
           periodSeconds: 10
         resources:
 {{ toYaml .Values.insightExecutor.resources | indent 10 }}

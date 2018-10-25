@@ -50,7 +50,8 @@ spec:
           until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo mongodb ok && \
                 nc -z -w 2 {{ .Release.Name }}-elasticsearch 9200 && echo elasticsearch ok;
             do sleep 2;
-          done
+          done;
+          sleep 10
       - name: set-password
         image: "{{ .Values.initContainerImage }}"
         command:
