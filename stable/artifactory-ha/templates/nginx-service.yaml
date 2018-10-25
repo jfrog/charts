@@ -19,7 +19,9 @@ spec:
   {{ if .Values.nginx.service.loadBalancerIP -}}
   loadBalancerIP: {{ .Values.nginx.service.loadBalancerIP }}
   {{ end -}}
-  externalTrafficPolicy: Local
+  {{- if .Values.nginx.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.nginx.service.externalTrafficPolicy }}
+  {{- end }}
 {{- end }}
 {{- if .Values.nginx.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges:

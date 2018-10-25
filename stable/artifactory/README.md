@@ -177,6 +177,19 @@ This can be done with the following parameters
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
+If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:
+```bash
+# Create a secret containing the database credentials
+kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-literal=password=${DB_PASSWORD}
+...
+--set postgresql.enabled=false \
+--set database.secrets.user.name=my-secret \
+--set database.secrets.user.key=user \
+--set database.secrets.password.name=my-secret \
+--set database.secrets.password.key=password \
+...
+```
+
 ### Deleting Artifactory
 To delete the Artifactory.
 ```bash
@@ -225,6 +238,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                        |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                        |
@@ -234,7 +248,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
-| `artifactory.persistence.size` | Artifactory persistence volume size | `20Gi`                                            | 
+| `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
 | `artifactory.resources.requests.memory` | Artifactory initial memory request                  |                          |
 | `artifactory.resources.requests.cpu`    | Artifactory initial cpu request     |                                          |
 | `artifactory.resources.limits.memory`   | Artifactory memory limit            |                                          |
@@ -250,6 +264,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
+| `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
 | `nginx.name` | Nginx name | `nginx`                                                                                      |
 | `nginx.enabled` | Deploy nginx server | `true`                                                                           |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
@@ -260,6 +275,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
+| `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |
 | `nginx.loadBalancerIP`| Provide Static IP to configure with Nginx |                                                      |
 | `nginx.externalPortHttp` | Nginx service external port | `80`                                                            |
 | `nginx.internalPortHttp` | Nginx service internal port | `80`                                                            |
@@ -336,6 +352,32 @@ Include the secret's name, along with the desired hostnames, in the Artifactory 
       - secretName: artifactory-tls
         hosts:
           - artifactory.domain.com
+```
+
+### Ingress annotations
+
+This example specifically enables Artifactory to work as a Docker Registry using the Repository Path method. See [Artifactory as Docker Registry](https://www.jfrog.com/confluence/display/RTF/Getting+Started+with+Artifactory+as+a+Docker+Registry) documentation for more information about this setup.
+
+```
+ingress:
+  enabled: true
+  defaultBackend:
+    enabled: false
+  hosts:
+    - myhost.example.com
+  annotations:
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    ingress.kubernetes.io/proxy-body-size: "0"
+    ingress.kubernetes.io/proxy-read-timeout: "600"
+    ingress.kubernetes.io/proxy-send-timeout: "600"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+      rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  tls:
+    - hosts:
+      - "myhost.example.com"
 ```
 
 ## Useful links
