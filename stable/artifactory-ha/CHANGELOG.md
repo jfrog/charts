@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.0] - Oct 28, 2018
+* Update postgresql chart to version 0.9.5 to be able and use `postgresConfig` options
+
 ## [0.6.9] - Oct 23, 2018
 * Fix providing external secret for database credentials
 
