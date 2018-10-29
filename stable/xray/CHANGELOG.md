@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.0] - Oct 29, 2018
+* Update postgresql chart to version 0.9.5 to be able and use `postgresConfig` options
+
 ## [0.6.3] - Oct 17, 2018
 * Add Apache 2.0 license
 
