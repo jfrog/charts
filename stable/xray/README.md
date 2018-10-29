@@ -138,7 +138,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `serviceAccount.name`     | The name of the ServiceAccount to create            | Generated using the fullname template |
 | `rbac.create`             | Specifies whether RBAC resources should be created  | `true`                             |
 | `rbac.role.rules`         | Rules to create                                     | `[]`                               |
-| `ingress.enabled`            | If true, Xray Ingress will be created | `false`                                |
+| `ingress.enabled`            | If true, Xray Ingress will be created            | `false`                            |
 | `ingress.annotations`        | Xray Ingress annotations                         | `{}`                               |
 | `ingress.hosts`              | Xray Ingress hostnames                           | `[]`                               |
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
@@ -147,6 +147,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |
 | `postgresql.postgresPassword`     | PostgreSQL database password                | ` `                                |
+| `postgresql.postgresConfig.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage           | `true`                             |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size          | `50Gi`                             |
 | `postgresql.persistence.existingClaim`  | PostgreSQL use existing persistent storage          | ` `                  |
