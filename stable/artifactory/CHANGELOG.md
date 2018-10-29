@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.7.1] - Oct 29, 2018
+* Change probes port to 8040 (so they will not be blocked when all tomcat threads on 8081 are exhausted)
+
 ## [7.7.0] - Oct 28, 2018
 * Update postgresql chart to version 0.9.5 to be able and use `postgresConfig` options
 
