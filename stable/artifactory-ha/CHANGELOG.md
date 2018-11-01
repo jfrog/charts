@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.2] - Nov 1, 2018
+* Allow specification of arbitrary [User Plugins](https://www.jfrog.com/confluence/display/RTF/User+Plugins)
+
 ## [0.7.1] - Oct 29, 2018
 * Change probes port to 8040 (so they will not be blocked when all tomcat threads on 8081 are exhausted)
 

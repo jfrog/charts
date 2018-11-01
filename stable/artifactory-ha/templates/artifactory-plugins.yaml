@@ -1,13 +1,16 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ template "artifactory-ha.fullname" . }}-isc
+  name: {{ template "artifactory-ha.fullname" . }}-plugins
   labels:
     app: {{ template "artifactory-ha.name" . }}
     chart: {{ template "artifactory-ha.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 data:
+{{- if .Values.artifactory.plugins }}
+{{ .Values.artifactory.plugins | toYaml | indent 2 -}}
+{{- end }}
   inactiveServerCleaner.groovy: |-
     import org.artifactory.state.ArtifactoryServerState
     import org.artifactory.storage.db.servers.service.ArtifactoryServersCommonService

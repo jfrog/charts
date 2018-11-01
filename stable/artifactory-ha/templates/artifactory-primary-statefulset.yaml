@@ -27,6 +27,7 @@ spec:
         release: {{ .Release.Name }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore.yaml") . | sha256sum }}
+        checksum/plugins: {{ include (print $.Template.BasePath "/artifactory-plugins.yaml") . | sha256sum }}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}

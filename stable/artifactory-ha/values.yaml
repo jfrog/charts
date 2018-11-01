@@ -113,6 +113,15 @@ artifactory:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   # masterKeySecretName:
 
+  # Load User Plugins (https://www.jfrog.com/confluence/display/RTF/User+Plugins)
+  plugins:
+    # dummyPlugin.groovy: |
+    #   executions {
+    #       dummyPlugin(users: ['anonymous']) {
+    #           message = '{"status":"okay"}'
+    #           status = 200
+    #       }
+    #   }
 
   ## Artifactory license secret.
   ## If artifactory.license.secret is passed, it will be mounted as
