@@ -15,11 +15,7 @@ helm repo add jfrog https://charts.jfrog.io/
 helm repo update
 ```
 
-**Note:** https://charts.jfrog.io/ is also a proxy for the central helm repository https://storage.googleapis.com/kubernetes-charts
-
-Now you can then run `helm search jfrog` to see the available charts.
-
-**Note:** For instructions on how to install charts follow instructions in chart's _README.md_.
+**Note:** For instructions on how to install a chart follow instructions in its _README.md_.
 
 ## Contributing to JFrog Charts
 
