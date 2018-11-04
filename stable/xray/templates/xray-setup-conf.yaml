@@ -59,9 +59,9 @@ data:
 
     # Creating PostgreSQL URL
     {{- if .Values.postgresql.enabled }}
-    POSTGRESS_URL="postgres://${POSTGRES_USER}:${POSTGRESS_PASSWORD}@{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/${POSTGRESS_DB}?sslmode=disable"
+    POSTGRES_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/${POSTGRES_DB}?sslmode=disable"
     {{- else }}
-    POSTGRESS_URL="${POSTGRESS_URL}"
+    POSTGRES_URL="${POSTGRES_URL}"
     {{- end }}
 
     # Creating Rabbitmq URL
@@ -76,7 +76,7 @@ data:
     # Preparing xray_config.yaml
     sed -i "s RABBITMQ_URL ${RABBITMQ_URL} " ${XRAY_CONFIG_FILE}
     sed -i "s MONGODB_URL ${MONGODB_URL} " ${XRAY_CONFIG_FILE}
-    sed -i "s POSTGRESS_URL ${POSTGRESS_URL} " ${XRAY_CONFIG_FILE}
+    sed -i "s POSTGRES_URL ${POSTGRES_URL} " ${XRAY_CONFIG_FILE}
 
   xray_config.yaml: |
     # Generated Xray config
@@ -85,7 +85,7 @@ data:
         XrayServerPort: "{{ .Values.server.internalPort }}"
         mqBaseUrl:      "RABBITMQ_URL"
         mongoUrl:       "MONGODB_URL"
-        postgresqlUrl:  "POSTGRESS_URL"
+        postgresqlUrl:  "POSTGRES_URL"
         stdOutEnabled:  {{ .Values.common.stdOutEnabled }}
         skipEntLicCheckForCloud: true
     # End generated config
