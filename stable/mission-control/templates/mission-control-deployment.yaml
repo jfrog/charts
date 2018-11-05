@@ -27,8 +27,21 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
+      securityContext:
+        fsGroup: {{ .Values.uid }}
       initContainers:
-      - name: init-data
+      - name: "prepare-storage"
+        image: "{{ .Values.initContainerImage }}"
+        command:
+        - 'sh'
+        - '-c'
+        - >
+          mkdir -p {{ .Values.missionControl.persistence.mountPath }}; 
+          chown -R {{ .Values.uid }}:{{ .Values.uid }} {{ .Values.missionControl.persistence.mountPath }}
+        volumeMounts:
+        - name: mission-control-data
+          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+      - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
         - 'sh'
@@ -37,7 +50,8 @@ spec:
           until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo mongodb ok && \
                 nc -z -w 2 {{ .Release.Name }}-elasticsearch 9200 && echo elasticsearch ok;
             do sleep 2;
-          done
+          done;
+          sleep 10
       - name: set-password
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -110,7 +124,7 @@ spec:
           value: '20'
         - name: MC_URL
           value: "{{ .Values.missionControl.missionControlUrl }}"
-        - name: JAVA_OPTIONS
+        - name: JFMC_EXTRA_JAVA_OPTS
           value: "
           {{- if .Values.missionControl.javaOpts.other }}
               {{ .Values.missionControl.javaOpts.other }}
@@ -122,6 +136,30 @@ spec:
               -Xmx{{ .Values.missionControl.javaOpts.xmx }}
           {{- end }}
           "
+        - name: JFMC_SERVER_HOME
+          value: "{{ .Values.missionControl.home }}"
+        - name: JFMC_LOGS_ROOT
+          value: "{{ .Values.missionControl.home }}/logs"
+        - name: JFMC_LOGS
+          value: "{{ .Values.missionControl.home }}/logs/{{ .Values.missionControl.appName }}"
+        - name: JFMC_APP_NAME
+          value: "{{ .Values.missionControl.appName }}"
+        - name: JFSC_URL
+          value: 'http://{{ template "insight-scheduler.fullname" . }}:{{ .Values.insightScheduler.internalPort }}'
+        - name: JFMC_REPOSITORY
+          value: "{{ .Values.missionControl.repository }}"
+        - name: JFMC_PACKAGE
+          value: "{{ .Values.missionControl.package }}"
+        - name: JFMC_DIST
+          value: "{{ .Values.missionControl.dist }}"
+        - name: JFMC_OS_VERSION
+          value: "{{ .Values.missionControl.osVersion }}"
+        - name: JFMC_OS_TYPE
+          value: "{{ .Values.missionControl.osType }}"
+        - name: JFMC_OS_DIST
+          value: "{{ .Values.missionControl.osDist }}"
+        - name: JFMC_CREATE_DATE
+          value: "{{ .Values.podRestartTime }}"
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
@@ -133,13 +171,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /api/v3/ping
-            port: 8080
+            port: {{ .Values.missionControl.internalPort }}
           periodSeconds: 10
           initialDelaySeconds: 240
         readinessProbe:
           httpGet:
             path: /api/v3/ping
-            port: 8080
+            port: {{ .Values.missionControl.internalPort }}
           periodSeconds: 10
           initialDelaySeconds: 240
     {{- with .Values.missionControl.nodeSelector }}

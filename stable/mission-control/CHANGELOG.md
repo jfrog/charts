@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.0] - Oct 18, 2018
+* Updated Mission-Control version to 3.2.0
+* This chart version (0.6.0) cannot be used to deploy older versions of Mission Control (less than or equal to 3.1.2)
+
 ## [0.5.2] - Oct 17, 2018
 * Add Apache 2.0 license
 

@@ -1,0 +1,24 @@
+{{- if and .Values.insightScheduler.persistence.enabled (not .Values.insightScheduler.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "insight-scheduler.fullname" . }}
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  accessModes:
+    - {{ .Values.insightScheduler.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.insightScheduler.persistence.size }}
+{{- if .Values.insightScheduler.persistence.storageClass }}
+{{- if (eq "-" .Values.insightScheduler.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.insightScheduler.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}

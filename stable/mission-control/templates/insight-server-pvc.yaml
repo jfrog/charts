@@ -1,0 +1,24 @@
+{{- if and .Values.insightServer.persistence.enabled (not .Values.insightServer.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "insight-server.fullname" . }}
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  accessModes:
+    - {{ .Values.insightServer.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.insightServer.persistence.size }}
+{{- if .Values.insightServer.persistence.storageClass }}
+{{- if (eq "-" .Values.insightServer.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.insightServer.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}
