@@ -92,7 +92,7 @@ spec:
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
         env:
-        {{- if .Values.postgresql.enabled }}
+      {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
           value: 'postgresql'
         - name: DB_USER
@@ -104,13 +104,18 @@ spec:
               key: postgres-password
         - name: DB_HOST
           value: {{ .Release.Name }}-postgresql
-        {{- else }}
+      {{- else }}
         - name: DB_TYPE
           value: '{{ .Values.database.type }}'
+        {{- if .Values.database.url }}
+        - name: DB_URL
+          value: '{{.Values.database.url }}'
+        {{- else }}
         - name: DB_HOST
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
+        {{- end }}
         {{- if .Values.database.secrets }}
         - name: DB_USER
           valueFrom:

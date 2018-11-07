@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.2] - Nov 7, 2018
+* Support database.url parameter (DB_URL)
+
 ## [0.7.1] - Oct 29, 2018
 * Change probes port to 8040 (so they will not be blocked when all tomcat threads on 8081 are exhausted)
 
