@@ -478,6 +478,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.type`                  | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
 | `database.host`                  | External database hostname                         |                                         |
 | `database.port`                  | External database port                             |                                         |
+| `database.url`                   | External database connection URL                   |                                         |
 | `database.user`                  | External database username                         |                                         |
 | `database.password`              | External database password                         |                                         |
 | `database.secrets.user.name`     | External database username `Secret` name           |                                         |

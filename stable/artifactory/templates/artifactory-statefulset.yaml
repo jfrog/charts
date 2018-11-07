@@ -58,7 +58,11 @@ spec:
       {{- if .Values.postgresql.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
       {{- else }}
+        {{- if and .Values.database.host .Values.database.port }}
           until nc -z -w 2 {{ .Values.database.host }} {{ .Values.database.port }} && echo database ok; do
+        {{- else }}
+          until true; do
+        {{- end }}
       {{- end }}
             sleep 2;
           done;
@@ -128,6 +132,7 @@ spec:
               name: {{ .Values.database.secrets.password.name }}
               key: {{ .Values.database.secrets.password.key }}
         {{- else }}
+        {{- if .Values.database.type }}
         - name: DB_USER
           value: '{{ .Values.database.user }}'
         - name: DB_PASSWORD
@@ -135,6 +140,7 @@ spec:
             secretKeyRef:
               name: {{ template "artifactory.fullname" . }}
               key: db-password
+        {{- end }}
         {{- end }}
       {{- end }}
         - name: ARTIFACTORY_MASTER_KEY

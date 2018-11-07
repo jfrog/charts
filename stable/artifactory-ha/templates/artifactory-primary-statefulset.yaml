@@ -111,7 +111,7 @@ spec:
               key: postgres-password
       {{- else }}
         - name: DB_TYPE
-          value: '{{ .Values.database.type }}'
+          value: '{{ required "Must set database.type when not using the PostgreSQL sub-chart (postgresql.enabled=false) " .Values.database.type }}'
         {{- if .Values.database.url }}
         - name: DB_URL
           value: '{{.Values.database.url }}'
