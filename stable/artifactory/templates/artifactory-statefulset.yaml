@@ -68,7 +68,7 @@ spec:
           done;
       containers:
       - name: {{ .Values.artifactory.name }}
-        image: "{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
+        image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -99,6 +99,10 @@ spec:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
           value: 'postgresql'
+        - name: DB_HOST
+          value: '{{ .Release.Name }}-postgresql'
+        - name: DB_PORT
+          value: '{{ .Values.postgresql.service.port }}'
         - name: DB_USER
           value: {{.Values.postgresql.postgresUser | quote }}
         - name: DB_PASSWORD
@@ -106,33 +110,40 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
               key: postgres-password
-        - name: DB_HOST
-          value: {{ .Release.Name }}-postgresql
       {{- else }}
         - name: DB_TYPE
           value: '{{ .Values.database.type }}'
-        {{- if .Values.database.url }}
+        {{- if or .Values.database.url .Values.database.secrets.url }}
         - name: DB_URL
+        {{- if .Values.database.url }}
           value: '{{.Values.database.url }}'
+        {{- else }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- end }}
         {{- else }}
         - name: DB_HOST
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
         {{- end }}
-        {{- if .Values.database.secrets }}
+        {{- if .Values.database.secrets.user }}
         - name: DB_USER
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.user.name }}
               key: {{ .Values.database.secrets.user.key }}
+        {{- end }}
+        {{- if .Values.database.secrets.password }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.password.name }}
               key: {{ .Values.database.secrets.password.key }}
         {{- else }}
-        {{- if .Values.database.type }}
+        {{- if and .Values.database.type .Values.database.user }}
         - name: DB_USER
           value: '{{ .Values.database.user }}'
         - name: DB_PASSWORD
@@ -146,7 +157,7 @@ spec:
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}"
+              name: '{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}'
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "

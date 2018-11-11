@@ -485,6 +485,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.secrets.user.key`      | External database username `Secret` key            |                                         |
 | `database.secrets.password.name` | External database password `Secret` name           |                                         |
 | `database.secrets.password.key`  | External database password `Secret` key            |                                         |
+| `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
+| `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
