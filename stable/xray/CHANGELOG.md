@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.3] - Nov 11, 2018
+* Updated Xray version to 2.4.6
+
 ## [0.7.2] - Nov 4, 2018
 * Replace POSTGRESS_ with POSTGRES_ (remove double S)
 
