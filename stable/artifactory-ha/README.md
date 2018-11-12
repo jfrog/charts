@@ -289,7 +289,7 @@ This can be done with the following parameters
 # Make sure your Artifactory Docker image has the MySQL database driver in it
 ...
 --set postgresql.enabled=false \
---set artifactory.postStartCommand="curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && chown 1030:1030 /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar" \
+--set artifactory.preStartCommand="curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
 --set database.type=mysql \
 --set database.host=${DB_HOST} \
 --set database.port=${DB_PORT} \
@@ -353,6 +353,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
+| `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
+| `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |

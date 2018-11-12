@@ -39,6 +39,7 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
+    {{- if .Values.artifactory.persistence.enabled }}
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -49,6 +50,7 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: artifactory-volume
+    {{- end }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -72,6 +74,15 @@ spec:
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
+      {{- if .Values.artifactory.preStartCommand }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          echo "Running custom preStartCommand command";
+          {{ .Values.artifactory.preStartCommand }};
+          /entrypoint-artifactory.sh
+      {{- end }}
         lifecycle:
           postStart:
             exec:
