@@ -58,13 +58,17 @@ spec:
       {{- if .Values.postgresql.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
       {{- else }}
+        {{- if and .Values.database.host .Values.database.port }}
           until nc -z -w 2 {{ .Values.database.host }} {{ .Values.database.port }} && echo database ok; do
+        {{- else }}
+          until true; do
+        {{- end }}
       {{- end }}
             sleep 2;
           done;
       containers:
       - name: {{ .Values.artifactory.name }}
-        image: "{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
+        image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -92,9 +96,13 @@ spec:
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
         env:
-        {{- if .Values.postgresql.enabled }}
+      {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
           value: 'postgresql'
+        - name: DB_HOST
+          value: '{{ .Release.Name }}-postgresql'
+        - name: DB_PORT
+          value: '{{ .Values.postgresql.service.port }}'
         - name: DB_USER
           value: {{.Values.postgresql.postgresUser | quote }}
         - name: DB_PASSWORD
@@ -102,27 +110,40 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
               key: postgres-password
-        - name: DB_HOST
-          value: {{ .Release.Name }}-postgresql
-        {{- else }}
+      {{- else }}
         - name: DB_TYPE
           value: '{{ .Values.database.type }}'
+        {{- if or .Values.database.url .Values.database.secrets.url }}
+        - name: DB_URL
+        {{- if .Values.database.url }}
+          value: '{{.Values.database.url }}'
+        {{- else }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- end }}
+        {{- else }}
         - name: DB_HOST
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
-        {{- if .Values.database.secrets }}
+        {{- end }}
+        {{- if .Values.database.secrets.user }}
         - name: DB_USER
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.user.name }}
               key: {{ .Values.database.secrets.user.key }}
+        {{- end }}
+        {{- if .Values.database.secrets.password }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.password.name }}
               key: {{ .Values.database.secrets.password.key }}
         {{- else }}
+        {{- if and .Values.database.type .Values.database.user }}
         - name: DB_USER
           value: '{{ .Values.database.user }}'
         - name: DB_PASSWORD
@@ -131,11 +152,12 @@ spec:
               name: {{ template "artifactory.fullname" . }}
               key: db-password
         {{- end }}
+        {{- end }}
       {{- end }}
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}"
+              name: '{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}'
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "

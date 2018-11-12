@@ -478,12 +478,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.type`                  | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
 | `database.host`                  | External database hostname                         |                                         |
 | `database.port`                  | External database port                             |                                         |
+| `database.url`                   | External database connection URL                   |                                         |
 | `database.user`                  | External database username                         |                                         |
 | `database.password`              | External database password                         |                                         |
 | `database.secrets.user.name`     | External database username `Secret` name           |                                         |
 | `database.secrets.user.key`      | External database username `Secret` key            |                                         |
 | `database.secrets.password.name` | External database password `Secret` name           |                                         |
 | `database.secrets.password.key`  | External database password `Secret` key            |                                         |
+| `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
+| `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.

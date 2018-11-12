@@ -79,7 +79,7 @@ spec:
               - '-c'
               - >
                 {{- if .Values.artifactory.configMapName }}
-                cp -Lrfv /bootstrap/* /artifactory_extra_conf/
+                cp -Lrf /bootstrap/* /artifactory_extra_conf/;
                 {{- end }}
                 {{- if .Values.artifactory.replicator.enabled }}
                 mkdir -p {{ .Values.artifactory.persistence.mountPath }}/replicator/etc;
@@ -111,23 +111,38 @@ spec:
               key: postgres-password
       {{- else }}
         - name: DB_TYPE
-          value: '{{ .Values.database.type }}'
+          value: '{{ required "Must set database.type when not using the PostgreSQL sub-chart (postgresql.enabled=false) " .Values.database.type }}'
+        {{- if or .Values.database.url .Values.database.secrets.url }}
+        - name: DB_URL
+        {{- if .Values.database.url }}
+          value: '{{.Values.database.url }}'
+        {{- else }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- end }}
+        {{- else }}
         - name: DB_HOST
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
-      {{- if .Values.database.secrets }}
+        {{- end }}
+        {{- if .Values.database.secrets.user }}
         - name: DB_USER
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.user.name }}
               key: {{ .Values.database.secrets.user.key }}
+        {{- end }}
+        {{- if .Values.database.secrets.password }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.password.name }}
               key: {{ .Values.database.secrets.password.key }}
-      {{- else }}
+        {{- else }}
+        {{- if and .Values.database.type .Values.database.user }}
         - name: DB_USER
           value: '{{ .Values.database.user }}'
         - name: DB_PASSWORD
@@ -135,7 +150,8 @@ spec:
             secretKeyRef:
               name: {{ template "artifactory-ha.fullname" . }}
               key: db-password
-      {{- end }}
+        {{- end }}
+        {{- end }}
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
           value: "
