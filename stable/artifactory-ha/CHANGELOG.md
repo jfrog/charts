@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.3] - Nov 12, 2018
+* Support artifactory.preStartCommand for running command before entrypoint starts
+
 ## [0.7.2] - Nov 7, 2018
 * Support database.url parameter (DB_URL)
 
