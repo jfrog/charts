@@ -249,6 +249,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
 | `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
+| `artifactory.persistence.existingClaim` | Name of an exsting pvc              |                                          |
 | `artifactory.resources.requests.memory` | Artifactory initial memory request                  |                          |
 | `artifactory.resources.requests.cpu`    | Artifactory initial cpu request     |                                          |
 | `artifactory.resources.limits.memory`   | Artifactory memory limit            |                                          |
