@@ -6,7 +6,7 @@ MAC_ARGS ?=
 
 # If the first argument is "lint" or "mac" or "gke"...
 ifneq ( $(filter wordlist 1,lint mac gke), $(firstword $(MAKECMDGOALS)))
-  # use the rest as arguments for "mac" or "gke"
+  # use the rest as arguments for "lint" "mac" or "gke"
   MAC_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   # ...and turn them into do-nothing targets
   $(eval $(MAC_ARGS):;@:)
