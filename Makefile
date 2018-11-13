@@ -1,11 +1,11 @@
 # Lint charts locally
-CHART_TESTING_TAG ?= v1.1.0
-TEST_IMAGE_TAG ?= v2.0.5
+CHART_TESTING_TAG ?= v2.0.0
+TEST_IMAGE_TAG ?= v3.0.0
 CHARTS_REPO ?= https://github.com/jfrog/charts
 MAC_ARGS ?=
 
-# If the first argument is "mac" or "gke"...
-ifneq ( $(filter wordlist 1,mac gke), $(firstword $(MAKECMDGOALS)))
+# If the first argument is "lint" or "mac" or "gke"...
+ifneq ( $(filter wordlist 1,lint mac gke), $(firstword $(MAKECMDGOALS)))
   # use the rest as arguments for "mac" or "gke"
   MAC_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
   # ...and turn them into do-nothing targets
@@ -16,7 +16,8 @@ endif
 lint:
 	$(eval export CHART_TESTING_TAG)
 	$(eval export CHARTS_REPO)
-	test/lint-charts.sh
+	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
+	test/lint-charts-local.sh
 
 .PHONY: mac
 mac:

@@ -14,10 +14,10 @@ jobs:
     - stage: charts-testing
       name: "Lint and install charts"
       env:
-        - CHART_TESTING_IMAGE="gcr.io/kubernetes-charts-ci/chart-testing"
-        - CHART_TESTING_TAG="v1.1.0"
+        - CHART_TESTING_IMAGE="quay.io/helmpack/chart-testing"
+        - CHART_TESTING_TAG="v2.0.0"
         - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
-        - TEST_IMAGE_TAG=v2.0.5
+        - TEST_IMAGE_TAG=v3.0.0
         - CHARTS_REPO="https://github.com/jfrog/charts"
         - CHANGE_MINIKUBE_NONE_USER=true
         - MINIKUBE_WANTUPDATENOTIFICATION=false
@@ -32,7 +32,7 @@ jobs:
               echo "No chart changes detected, stopping TravisCI pipeline!"
               travis_terminate 0
           fi
-        - echo "Run full charts-testing!"
+        - echo "Run charts-testing install test!"
         # ping stdout every 9 minutes or Travis kills the build
         # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
         - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
