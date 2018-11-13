@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
-readonly IMAGE_REPOSITORY="gcr.io/kubernetes-charts-ci/chart-testing"
+readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 
 main() {
     local testcontainer_id
@@ -29,14 +29,9 @@ main() {
     trap "docker container rm --force $testcontainer_id > /dev/null" EXIT
 
     configure_kubectl "$testcontainer_id"
-
-    # Workarounds #
-    ###copy_files
     
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
-    if [[ "${CHART_TESTING_ARGS}" != *"--no-install"* ]]; then
-      run_tillerless
-    fi
+    run_tillerless
     # ---------- #
 
     run_test
@@ -81,14 +76,9 @@ configure_kubectl() {
     docker exec "$testcontainer_id" kubectl config use-context docker-for-desktop
 }
 
-copy_files() {
-   # ------- Some work around ------- #
-   docker cp test/chart_test.sh "$testcontainer_id:/testing/chart_test.sh"
-   docker cp test/chartlib.sh "$testcontainer_id:/testing/lib/chartlib.sh"
-}
-
 run_tillerless() {
    # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+   docker exec "$testcontainer_id" apk add bash
    docker exec "$testcontainer_id" helm init --client-only
    docker exec "$testcontainer_id" helm plugin install https://github.com/rimusz/helm-tiller
    docker exec "$testcontainer_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
@@ -100,14 +90,12 @@ run_test() {
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s
 
-    echo "Passed arguments: ${CHART_TESTING_ARGS}"
-
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
     # shellcheck disable=SC2086
-    docker exec -e HELM_HOST=localhost:44134 "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
+    docker exec -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true "$testcontainer_id" ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
     # ------------------------------------------------------------------- #
 
-    ##### docker exec "$testcontainer_id" chart_test.sh --config test/.testenv ${CHART_TESTING_ARGS}
+    ##### docker exec "$testcontainer_id" ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
 
     echo "Done Testing!"
 }

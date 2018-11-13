@@ -29,15 +29,16 @@ main() {
     docker exec "$config_container_id" gcloud container clusters get-credentials "$CLUSTER_NAME" --project "$PROJECT_NAME" --zone "$CLOUDSDK_COMPUTE_ZONE"
 
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
+    docker exec "$config_container_id" apk add bash
     docker exec "$config_container_id" helm init --client-only
     docker exec "$config_container_id" helm plugin install https://github.com/rimusz/helm-tiller
     docker exec "$config_container_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
     docker exec "$config_container_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
     echo
-    docker exec -e HELM_HOST=localhost:44134 "$config_container_id" chart_test.sh --no-lint --config /workdir/test/.testenv
+    docker exec -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true "$config_container_id" ct install --config /workdir/test/ct.yaml
     # ------------------------------------------------------------------- #
 
-    ##### docker exec "$config_container_id" chart_test.sh --config /workdir/test/.testenv
+    ##### docker exec "$config_container_id" ct install --config /workdir/test/ct.yaml
 
     echo "Done Testing!"
 }

@@ -56,14 +56,11 @@ run_minikube() {
 
 run_tillerless() {
      # -- Work around for Tillerless Helm, till Helm v3 gets released -- #
+     docker exec "$config_container_id" apk add bash
      echo "Install Tillerless Helm plugin..."
-     # shellcheck disable=SC2154
      docker exec "$config_container_id" helm init --client-only
-     # shellcheck disable=SC2154
      docker exec "$config_container_id" helm plugin install https://github.com/rimusz/helm-tiller
-     # shellcheck disable=SC2154
      docker exec "$config_container_id" bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
-     # shellcheck disable=SC2154
      docker exec "$config_container_id" bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
      echo
 }
@@ -92,10 +89,10 @@ main() {
     # --- Work around for Tillerless Helm, till Helm v3 gets released --- #
     run_tillerless
     # shellcheck disable=SC2086
-    docker exec -e HELM_HOST=localhost:44134 "$config_container_id" chart_test.sh --no-lint --config /workdir/test/.testenv_minikube
+    docker exec -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true "$config_container_id" ct install --config /workdir/test/ct.yaml
     # ------------------------------------------------------------------- #
 
-    ##### docker exec -e KUBECONFIG="/home/travis/.kube/config" "$config_container_id" chart_test.sh --no-lint --config /workdir/test/.testenv ${CHART_TESTING_ARGS}
+    ##### docker exec -e KUBECONFIG="/home/travis/.kube/config" "$config_container_id" ct install --config /workdir/test/ct.yaml
 
     echo "Done Testing!"
 }
