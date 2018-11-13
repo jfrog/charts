@@ -26,12 +26,15 @@ On success make a [pull request](https://help.github.com/articles/using-pull-req
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
 Two __LGTM__ are needed to get the PR approved and merged.
 
+## Linting charts locally
 
-## Manually testing charts with Docker for Mac
+**Note:** Docker must be running on your Mac/Linux machine. Commands will only lint changed charts.
 
-On the Mac you can run `make mac` which will lint, install and test changed charts in `Docker for Mac`.
+To lint all charts:
 
-**Note:** Make sure **'Show system containers (advanced)'** is enabled in `Preferences/Kubernetes`.
+```console
+make lint
+```
 
 ### Forcing to lint unchanged charts
 
@@ -40,91 +43,79 @@ On the Mac you can run `make mac` which will lint, install and test changed char
 You can force to lint one chart with `--charts` flag:
 
 ```console
-make mac -- --no-install --charts stable/artifactory
+make lint -- --charts stable/artifactory
 ```
 
 You can force to lint a list of charts (separated by comma) with `--charts` flag:
 
 ```console
-make mac -- --no-install --charts stable/artifactory,stable/xray
+make lint -- --charts stable/artifactory,stable/xray
 ```
 
 You can force to lint all charts with `--all` flag:
 
 ```console
-make mac -- --no-install --all
+make lint -- --all
+```
+
+## Manually testing charts with Docker for Mac
+
+**Note:** Make sure **'Show system containers (advanced)'** is enabled in `Preferences/Kubernetes`.
+
+On the Mac you can install and test all changed charts in `Docker for Mac`:
+
+```console
+make mac
 ```
 
 ### Forcing to install unchanged charts
 
-**Note:** Chart version bump check will be ignored.
-
 You can force to install one chart with `--charts` flag:
 
 ```console
-make mac -- --no-lint --charts stable/artifactory
+make mac -- --charts stable/artifactory
 ```
 
 You can force to install a list of charts (separated by comma) with `--charts` flag:
 
 ```console
-make mac -- --no-lint --charts stable/artifactory,stable/xray
+make mac -- --charts stable/artifactory,stable/xray
 ```
 
 You can force to install all charts with `--all` flag:
 
 ```console
-make mac -- --no-lint --all
+make mac -- --all
 ```
 
 **Note:** It might take a while to run install test for all charts in `Docker for Mac`.
 
 ## Manually testing charts with remote GKE cluster
 
-You can run `make gke` which will lint, install and test changed charts with `GKE` cluster set in kubeconfig `context`.
-
-### Forcing to lint unchanged charts
-
-**Note:** Chart version bump check will be ignored.
-
-You can force to lint one chart with `--charts` flag:
+You can install and test changed charts with `GKE` cluster set in kubeconfig `context`:
 
 ```console
-make gke -- --no-install --charts stable/artifactory
-```
-
-You can force to lint a list of charts (separated by comma) with `--charts` flag:
-
-```console
-make gke -- --no-install --charts stable/artifactory,stable/xray
-```
-
-You can force to lint all charts with `--all` flag:
-
-```console
-make gke -- --no-install --all
+make gke
 ```
 
 ### Forcing to install unchanged charts
 
-**Note:** Chart version bump check will be ignored.
-
 You can force to install one chart with `--charts` flag:
 
 ```console
-make gke -- --no-lint --charts stable/artifactory
+make gke -- --charts stable/artifactory
 ```
 
 You can force to install a list of charts (separated by comma) with `--charts` flag:
 
 ```console
-make gke -- --no-lint --charts stable/artifactory,stable/xray
+make gke -- --charts stable/artifactory,stable/xray
 ```
 
 You can force to install all charts with `--all` flag:
 
 ```console
-make gke -- --no-lint --all
+make gke -- --all
 ```
 
 ### Using dedicated GKE cluster for manual charts testing
