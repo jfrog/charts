@@ -1,7 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.7.1] - Oct 29, 2018
+## [0.7.2] - Oct 29, 2018
+* Allow pod anti-affinity settings to include primary node
+
+## [0.7.1] - Nov 13, 2018
 * Change probes port to 8040 (so they will not be blocked when all tomcat threads on 8081 are exhausted)
 
 ## [0.7.0] - Oct 28, 2018
