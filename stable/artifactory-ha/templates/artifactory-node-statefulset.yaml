@@ -273,7 +273,9 @@ spec:
                 matchLabels:
                   app: {{ template "artifactory-ha.name" . }}
                   release: {{ .Release.Name }}
+                  {{- if eq .Values.artifactory.service.pool "members" }}
                   role: {{ template "artifactory-ha.node.name" . }}
+                  {{- end }}
     {{- else if eq .Values.artifactory.node.podAntiAffinity.type "hard" }}
       affinity:
         podAntiAffinity:
@@ -283,7 +285,9 @@ spec:
               matchLabels:
                 app: {{ template "artifactory-ha.name" . }}
                 release: {{ .Release.Name }}
+                {{- if eq .Values.artifactory.service.pool "members" }}
                 role: {{ template "artifactory-ha.node.name" . }}
+                {{- end }}
     {{- end }}
     {{- with .Values.artifactory.node.tolerations }}
       tolerations:

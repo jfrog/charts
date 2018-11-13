@@ -273,9 +273,31 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- if .Values.artifactory.primary.affinity }}
     {{- with .Values.artifactory.primary.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.artifactory.primary.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: {{ .Values.artifactory.primary.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "artifactory-ha.name" . }}
+                  release: {{ .Release.Name }}
+    {{- else if eq .Values.artifactory.primary.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: {{ .Values.artifactory.primary.podAntiAffinity.topologyKey }}
+            labelSelector:
+              matchLabels:
+                app: {{ template "artifactory-ha.name" . }}
+                release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.artifactory.primary.tolerations }}
       tolerations:
