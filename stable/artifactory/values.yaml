@@ -75,8 +75,11 @@ artifactory:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   # masterKeySecretName:
-  ## Extra postStart command to install JDBC driver for MySql/MariaDb/Oracle
-  # postStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && chown 1030:1030 /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar"
+
+  ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
+  # preStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+  ## Extra post-start command to run extra commands after container starts
+  # postStartCommand:
 
   annotations: {}
 
@@ -265,11 +268,13 @@ postgresql:
   #    cpu: "500m"
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
-## you must specify the following database details
+## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:
   type:
   host:
   port:
+  ## If you set the url, leave host and port empty
+  url:
   ## If you would like this chart to create the secret containing the db
   ## password, use these values
   user:
@@ -283,3 +288,6 @@ database:
   #  password:
   #    name: "rds-artifactory"
   #    key: "db-password"
+  #  url:
+  #    name: "rds-artifactory"
+  #    key: "db-url"

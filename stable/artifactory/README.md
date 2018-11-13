@@ -167,7 +167,7 @@ This can be done with the following parameters
 # Make sure your Artifactory Docker image has the MySQL database driver in it
 ...
 --set postgresql.enabled=false \
---set artifactory.postStartCommand="curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && chown 1030:1030 /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar" \
+--set artifactory.preStartCommand="curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
 --set database.type=mysql \
 --set database.host=${DB_HOST} \
 --set database.port=${DB_PORT} \
@@ -187,6 +187,8 @@ kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-li
 --set database.secrets.user.key=user \
 --set database.secrets.password.name=my-secret \
 --set database.secrets.password.key=password \
+--set database.secrets.url.name=my-secret \
+--set database.secrets.url.key=url \
 ...
 ```
 
@@ -239,6 +241,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
+| `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
+| `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                        |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                        |
@@ -308,6 +312,29 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.requests.cpu`    | Nginx initial cpu request     |                                                      |
 | `nginx.resources.limits.memory`   | Nginx memory limit            |                                                      |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit               |                                                      |
+| `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
+| `postgresql.postgresDatabase`     | PostgreSQL database name                   | `artifactory`                           |
+| `postgresql.postgresUser`         | PostgreSQL database user                   | `artifactory`                           |
+| `postgresql.postgresPassword`     | PostgreSQL database password               |                                         |
+| `postgresql.persistence.enabled`  | PostgreSQL use persistent storage          | `true`                                  |
+| `postgresql.persistence.size`     | PostgreSQL persistent storage size         | `50Gi`                                  |
+| `postgresql.service.port`         | PostgreSQL database port                   | `5432`                                  |
+| `postgresql.resources.requests.memory`    | PostgreSQL initial memory request  |                                         |
+| `postgresql.resources.requests.cpu`       | PostgreSQL initial cpu request     |                                         |
+| `postgresql.resources.limits.memory`      | PostgreSQL memory limit            |                                         |
+| `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit               |                                         |
+| `database.type`                  | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
+| `database.host`                  | External database hostname                         |                                         |
+| `database.port`                  | External database port                             |                                         |
+| `database.url`                   | External database connection URL                   |                                         |
+| `database.user`                  | External database username                         |                                         |
+| `database.password`              | External database password                         |                                         |
+| `database.secrets.user.name`     | External database username `Secret` name           |                                         |
+| `database.secrets.user.key`      | External database username `Secret` key            |                                         |
+| `database.secrets.password.name` | External database password `Secret` name           |                                         |
+| `database.secrets.password.key`  | External database password `Secret` key            |                                         |
+| `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
+| `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
