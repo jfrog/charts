@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.7.4] - Nov 14, 2018
+* Updated Artifactory version to 6.5.3
+
 ## [7.7.3] - Nov 12, 2018
 * Support artifactory.preStartCommand for running command before entrypoint starts
 

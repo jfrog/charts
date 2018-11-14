@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.5] - Nov 14, 2018
+* Updated Artifactory version to 6.5.3
+
 ## [0.7.4] - Nov 13, 2018
 * Allow pod anti-affinity settings to include primary node
 
