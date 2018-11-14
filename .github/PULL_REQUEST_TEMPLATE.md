@@ -1,3 +1,9 @@
+#### PR Checklist
+[Place an '[x]' (no spaces) in all applicable fields. Please remove unrelated fields.]
+- [ ] Chart Version bumped
+- [ ] Changelog.md updated
+- [ ] Variables and other changes are documented in the README.md
+
 <!--
 Thank you for contributing to jfrog/charts. Before you submit this PR we'd like to
 make sure you are aware of our technical requirements and best practices:
@@ -27,12 +33,9 @@ even continue reviewing your changes.
 
 **What this PR does / why we need it**:
 
+
 **Which issue this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close that issue when PR gets merged)*: fixes #
+
 
 **Special notes for your reviewer**:
 
-#### Checklist
-[Place an '[x]' (no spaces) in all applicable fields. Please remove unrelated fields.]
-- [ ] Chart Version bumped
-- [ ] Changelog.md updated
-- [ ] Variables and other changes are documented in the README.md
