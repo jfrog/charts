@@ -127,18 +127,6 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.server.resources | indent 10 }}
-        {{- with .Values.server.nodeSelector }}
-        nodeSelector:
-{{ toYaml . | indent 10 }}
-        {{- end }}
-        {{- with .Values.server.affinity }}
-        affinity:
-{{ toYaml . | indent 10 }}
-        {{- end }}
-        {{- with .Values.server.tolerations }}
-        tolerations:
-{{ toYaml . | indent 10 }}
-        {{- end }}
         readinessProbe:
           httpGet:
             path: /
@@ -152,6 +140,18 @@ spec:
             port: {{ .Values.server.internalPort }}
           initialDelaySeconds: 90
           periodSeconds: 10
+    {{- with .Values.analysis.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.analysis.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.analysis.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       volumes:
       - name: data-volume
         emptyDir:

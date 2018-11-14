@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.4] - Nov 14, 2018
+* Fix indent of `nodeSelector`, `affinity` and `tolerations` in the templates
+
 ## [0.7.3] - Nov 11, 2018
 * Updated Xray version to 2.4.6
 
