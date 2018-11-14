@@ -61,22 +61,22 @@ spec:
             - ping
         resources:
 {{ toYaml .Values.redis.resources | indent 10 }}
-        {{- with .Values.redis.nodeSelector }}
-        nodeSelector:
-{{ toYaml . | indent 10 }}
-        {{- end }}
-        {{- with .Values.redis.affinity }}
-        affinity:
-{{ toYaml . | indent 10 }}
-        {{- end }}
-        {{- with .Values.redis.tolerations }}
-        tolerations:
-{{ toYaml . | indent 10 }}
-        {{- end }}
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}
   {{- if not .Values.redis.persistence.enabled }}
+    {{- with .Values.redis.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.redis.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.redis.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
       volumes:
       - name: redis-data
         emptyDir: {}
