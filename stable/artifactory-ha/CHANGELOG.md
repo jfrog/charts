@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.7] - Nov 26, 2018
+* Optionally include primary node into poddisruptionbudget
+
 ## [0.7.6] - Nov 18, 2018
 * Added support for configMap to use custom Reverse Proxy Configuration with Nginx
 
