@@ -15,10 +15,6 @@ spec:
     port: {{ .Values.insightServer.internalHttpPort }}
     targetPort: {{ .Values.insightServer.externalHttpPort }}
     protocol: TCP
-  - name: https
-    port: {{ .Values.insightServer.internalHttpsPort }}
-    targetPort: {{ .Values.insightServer.externalHttpsPort }}
-    protocol: TCP
   selector:
     app: {{ template "mission-control.name" . }}
     component: {{ .Values.insightServer.name }}
