@@ -116,6 +116,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `insightServer.service.type`                 | Insight Server service type                     | `ClusterIP`                           |
 | `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
 | `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
+| `insightServer.allowIP`                      | Range of IPs allowed to be served by Insight Server service  | `"0.0.0.0/0"`            |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
 | `insightScheduler.replicaCount`              | Insight Scheduler replica count                 | `1`                                   |
 | `insightScheduler.image`                     | Container image                                 | `docker.jfrog.io/jfrog/insight-scheduler`  |

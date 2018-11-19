@@ -107,7 +107,7 @@ spec:
         - name: JFMC_INSIGHT_SERVER_DB
           value: "{{ .Values.mongodb.db.insightServerDb }}"
         - name: JFIS_ALLOW_IP
-          value: "0.0.0.0/0"
+          value: "{{ .Values.insightServer.allowIP }}"
         - name: JFMC_INSIGHT_SERVER_PORT
           value: "{{ .Values.insightServer.internalHttpPort }}"
         ports:

@@ -212,6 +212,9 @@ insightServer:
     type: ClusterIP
   externalHttpPort: 8082
   internalHttpPort: 8082
+  ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
+  ## The value must follow CIDR format
+  allowIP: "0.0.0.0/0"
   resources: {}
   #  requests:
   #    memory: "500Mi"
