@@ -104,33 +104,18 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-elasticsearch
               key: esPassword
-        - name: JFMC_MISSION_CONTROL_CERT
-          value: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/_MASTER_/data/contexts/security/jfmc.crt"
-        - name: JFMC_INSIGHT_SERVER_CERT
-          value: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/_MASTER_/data/contexts/security/insight.crt"
-        - name: JFMC_INSIGHT_SERVER_KEY
-          value: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/_MASTER_/data/contexts/security/insight.key"
+        - name: JFMC_INSIGHT_SERVER_DB
+          value: "{{ .Values.mongodb.db.insightServerDb }}"
+        - name: JFIS_ALLOW_IP
+          value: "{{ .Values.insightServer.allowIP }}"
         - name: JFMC_INSIGHT_SERVER_PORT
           value: "{{ .Values.insightServer.internalHttpPort }}"
-        - name: JFMC_INSIGHT_SERVER_SSL_PORT
-          value: "{{ .Values.insightServer.internalHttpsPort }}"
         ports:
         - containerPort: {{ .Values.insightServer.internalHttpPort }}
-          protocol: TCP
-        - containerPort: {{ .Values.insightServer.internalHttpsPort }}
           protocol: TCP
         volumeMounts:
         - name: insight-server-data
           mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
-        - name: mission-control-certs
-          mountPath: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/_MASTER_/data/contexts/security/insight.key"
-          subPath: insight.key
-        - name: mission-control-certs
-          mountPath: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/_MASTER_/data/contexts/security/insight.crt"
-          subPath: insight.crt
-        - name: mission-control-certs
-          mountPath: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/_MASTER_/data/contexts/security/jfmc.crt"
-          subPath: jfmc.crt
         livenessProbe:
           httpGet:
             path: /api/status
@@ -158,13 +143,6 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      - name: mission-control-certs
-        secret:
-          {{- if .Values.existingCertsSecret }}
-          secretName: {{ .Values.existingCertsSecret }}
-          {{- else }}
-          secretName: {{ template "mission-control.fullname" . }}-certs
-          {{- end }}
       - name: insight-server-data
       {{- if .Values.insightServer.persistence.enabled }}
         persistentVolumeClaim:

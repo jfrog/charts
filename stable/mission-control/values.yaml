@@ -78,6 +78,8 @@ mongodb:
     insightPassword:
     insightSchedulerDb: insight_scheduler
     insightExecutorDb: insight_executor
+    insightServerDb: insight_team
+    missionControl: mission_platform
   livenessProbe:
     initialDelaySeconds: 40
   readinessProbe:
@@ -118,19 +120,6 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-## Common
-## Create secret with keys and certs as per documentation provided in README.md
-existingCertsSecret:
-
-## Create secret for certs from provided values. Follow script given in README.md to generate keys and certs. Example is given in
-## Example values given in https://github.com/kubernetes/charts//blob/master/incubator/mission-control/ci/test-values.yaml
-insightKey:
-insightCrt:
-jfmcCrt:
-jfmcKeystore:
-jfmcTruststore:
-jfmcStorePasswd:
-
 missionControl:
   replicaCount: 1
   name: mission-control
@@ -138,7 +127,7 @@ missionControl:
   home: /var/opt/jfrog/mission-control
   image: docker.bintray.io/jfrog/mission-control
   ## Note that by default we use appVersion to get image tag
-  # version: 3.2.0
+  # version:
   missionControlUrl:
   podRestartTime:
   repository: jfrog-mission-control
@@ -198,7 +187,7 @@ insightServer:
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-server
   ## Note that by default we use appVersion to get image tag
-  # version: 3.2.0
+  # version:
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -223,8 +212,9 @@ insightServer:
     type: ClusterIP
   externalHttpPort: 8082
   internalHttpPort: 8082
-  externalHttpsPort: 8091
-  internalHttpsPort: 8091
+  ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
+  ## The value must follow CIDR format
+  allowIP: "0.0.0.0/0"
   resources: {}
   #  requests:
   #    memory: "500Mi"
@@ -244,7 +234,7 @@ insightScheduler:
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-scheduler
   ## Note that by default we use appVersion to get image tag
-  # version: 3.2.0
+  # version:
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -294,7 +284,7 @@ insightExecutor:
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-executor
   ## Note that by default we use appVersion to get image tag
-  # version: 3.2.0
+  # version:
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim

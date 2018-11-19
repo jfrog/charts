@@ -58,38 +58,10 @@ spec:
         - 'sh'
         - '-c'
         - >
-          until [ -f /tmp/jfmc-keystore.jks-b64 ] && [ -f /tmp/jfmc-truststore.jks-b64 ]; do sleep 1; done;
-          mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security {{ .Values.missionControl.persistence.mountPath }}/logs {{ .Values.missionControl.persistence.mountPath }}/data/security;
-          base64 -d /tmp/jfmc-keystore.jks-b64 > {{ .Values.missionControl.persistence.mountPath }}/etc/security/jfmc-keystore.jks;
-          base64 -d /tmp/jfmc-truststore.jks-b64 > {{ .Values.missionControl.persistence.mountPath }}/etc/security/jfmc-truststore.jks;
-
-          if [ -f /tmp/jfmc-store-passwd-b64 ]; then                                                          \
-            propertyName=server.internal.ssl.trust-store-password;                                            \
-            propertiesPath={{ .Values.missionControl.persistence.mountPath }}/etc/mission-control.properties; \
-            propertyValue=$(base64 -d /tmp/jfmc-store-passwd-b64);                                            \
-                                                                                                              \
-            grep "^${propertyName}\s*=.*$" ${propertiesPath} > /dev/null 2>&1;                                \
-            [ $? -ne 0 ] && echo "${propertyName}=${propertyValue}" >> ${propertiesPath};                     \
-            sed -i -e "s|^${propertyName}\s*=.*$|${propertyName}=${propertyValue}|g;" ${propertiesPath};      \
-                                                                                                              \
-            propertyName=server.internal.ssl.key-store-password;                                              \
-            grep "^${propertyName}\s*=.*$" ${propertiesPath} > /dev/null 2>&1;                                \
-            [ $? -ne 0 ] && echo "${propertyName}=${propertyValue}" >> ${propertiesPath};                     \
-            sed -i -e "s|^${propertyName}\s*=.*$|${propertyName}=${propertyValue}|g;" ${propertiesPath};      \
-          fi;
           chown -R {{ .Values.uid }}:{{ .Values.uid }} {{ .Values.missionControl.persistence.mountPath }};
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-        - name: mission-control-certs
-          mountPath: /tmp/jfmc-keystore.jks-b64
-          subPath: jfmc-keystore.jks-b64
-        - name: mission-control-certs
-          mountPath: /tmp/jfmc-truststore.jks-b64
-          subPath: jfmc-truststore.jks-b64
-        - name: mission-control-certs
-          mountPath: /tmp/jfmc-store-passwd-b64
-          subPath: jfmc-store-passwd-b64
       containers:
       - name: {{ .Values.missionControl.name }}
         image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
@@ -106,10 +78,10 @@ spec:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-mongodb-cred
               key: mcPassword
+        - name: SPRING_DATA_MONGODB_DATABASE
+          value: '{{ .Values.mongodb.db.missionControl }}'
         - name: INSIGHT_URL
           value: "http://{{ template "insight-server.fullname" . }}:{{ .Values.insightServer.internalHttpPort }}"
-        - name: INSIGHT_SSL_URL
-          value: "https://{{ template "insight-server.fullname" . }}:{{ .Values.insightServer.internalHttpsPort }}"
         - name: POD_RESTART_TIME
           value: "{{ .Values.podRestartTime }}"
         - name: ARTIFACTORY_CLIENT_CONNECTIONTIMEOUT
@@ -200,10 +172,3 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      - name: mission-control-certs
-        secret:
-          {{- if .Values.existingCertsSecret }}
-          secretName: {{ .Values.existingCertsSecret }}
-          {{- else }}
-          secretName: {{ template "mission-control.fullname" . }}-certs
-          {{- end }}
