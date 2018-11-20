@@ -213,6 +213,8 @@ nginx:
     skipAutoConfigUpdate: false
   ## Custom ConfigMap for nginx.conf
   customConfigMap:
+  ## Custom ConfigMap for artifactory-ha.conf
+  customArtifactoryConfigMap:
   persistence:
     mountPath: "/var/opt/jfrog/nginx"
     enabled: false

@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [0.7.6] - Nov 18, 2018
-* Added Documentation for Reverse Proxy Configuration
+* Added support for configMap to use custom Reverse Proxy Configuration with Nginx
 
 ## [0.7.5] - Nov 14, 2018
 * Updated Artifactory version to 6.5.3
