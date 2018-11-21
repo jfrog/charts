@@ -89,8 +89,13 @@ spec:
           {{- end }}
         - name: SSL
           value: "{{ .Values.nginx.env.ssl }}"
+        {{- if .Values.nginx.customArtifactoryConfigMap }}
+        - name: SKIP_AUTO_UPDATE_CONFIG
+          value: "true"
+        {{- else }}
         - name: SKIP_AUTO_UPDATE_CONFIG
           value: "{{ .Values.nginx.env.skipAutoConfigUpdate }}"
+        {{- end }}
         ports:
         - containerPort: {{ .Values.nginx.internalPortHttp }}
         - containerPort: {{ .Values.nginx.internalPortHttps }}

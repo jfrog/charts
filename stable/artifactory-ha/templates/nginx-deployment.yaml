@@ -86,7 +86,7 @@ spec:
                 cp -fv /tmp/ssl/* /var/opt/jfrog/nginx/ssl;
                 fi;
                 until [ -f /etc/nginx/conf.d/artifactory.conf ]; do sleep 1; done;
-n                sleep 5; nginx -s reload; touch /var/log/nginx/conf.done
+                sleep 5; nginx -s reload; touch /var/log/nginx/conf.done
         env:
         - name: ART_BASE_URL
           {{- if .Values.nginx.env.artUrl }}
@@ -96,8 +96,13 @@ n                sleep 5; nginx -s reload; touch /var/log/nginx/conf.done
           {{- end }}
         - name: SSL
           value: "{{ .Values.nginx.env.ssl }}"
+        {{- if .Values.nginx.customArtifactoryConfigMap }}
+        - name: SKIP_AUTO_UPDATE_CONFIG
+          value: "true"
+        {{- else }}
         - name: SKIP_AUTO_UPDATE_CONFIG
           value: "{{ .Values.nginx.env.skipAutoConfigUpdate }}"
+        {{- end }}
         ports:
         - containerPort: {{ .Values.nginx.internalPortHttp }}
         - containerPort: {{ .Values.nginx.internalPortHttps }}
