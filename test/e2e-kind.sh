@@ -52,9 +52,7 @@ install_hostpath-provisioner() {
      kubectl delete storageclass standard
 
      echo "Install Hostpath Provisioner..."
-     docker exec "$config_container_id" helm repo add rimusz https://charts.rimusz.net
-     docker exec "$config_container_id" helm repo update
-     docker exec -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true "$config_container_id" helm upgrade --install hostpath-provisioner --namespace kube-system rimusz/hostpath-provisioner
+     docker exec -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true "$config_container_id" helm upgrade --install hostpath-provisioner --namespace kube-system test/hostpath-provisioner-0.2.3.tgz
      echo
 }
 
