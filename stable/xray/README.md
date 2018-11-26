@@ -125,6 +125,33 @@ export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASS
 helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} jfrog/xray
 ```
 
+### Hardening Connection Strings Setup
+
+JFrog applications provide a way to harden secrets management so sensitive data will not appear as environment variables, command line parameters or clear text on files in the file system.
+Temporary secrets file will be loaded to containers' memory and deleted from file system on every start up.
+
+#### Create `temp.xray_config.yml` file containing the relevant Connection Strings:
+
+```yaml
+mqBaseUrl:            amqp://<USERNAME>:<PASSWORD>@<HOST>:5672/
+mongoUrl:             mongodb://<USERNAME>:<PASSWORD>@<HOST>:27017/?authSource=xray&authMechanism=SCRAM-SHA-1
+postgresqlUrl:        postgres://<USERNAME>:<PASSWORD>@<HOST>:5432/xraydb?sslmode=disable
+```
+
+#### Create secret from yaml file: 
+
+```bash
+kubectl create secret generic <SECRET_NAME> --from-file=<PATH/TO/TEMP/YAML>/temp.xray_config.yml
+```
+
+To get Helm to use the created secret, add the following argument to your Helm command:
+
+```
+helm install --name xray \
+  --set common.tempBootSecretName=<SECRET_NAME> \
+  jfrog/xray
+```
+
 ## Configuration
 
 The following table lists the configurable parameters of the xray chart and their default values.
@@ -201,6 +228,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
 | `common.stdOutEnabled`                         | Xray enable standard output                  | `true`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `common.tempBootSecretName`                    | Xray temporary boot secret name              | ``                   |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |

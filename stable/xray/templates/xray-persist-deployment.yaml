@@ -102,6 +102,24 @@ spec:
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         - name: setup
           mountPath: "/scripts"
+    {{- if .Values.common.tempBootSecretName }}
+      - name: init-secrets
+        image: {{ .Values.initContainerImage | quote }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - >
+            mkdir -p {{ .Values.common.xrayConfigPath }}/.secrets;
+            echo Preparing connections string temporary config file;
+            cp -fv /tmp/secrets/temp.xray_config.yml {{ .Values.common.xrayConfigPath }}/.secrets/.temp.xray_config.yml;
+            echo Done
+        volumeMounts:
+          - name: data-volume
+            mountPath: "{{ .Values.common.xrayConfigPath }}"
+          - name: secrets-volume
+            mountPath: "/tmp/secrets"
+    {{- end }}
       containers:
       - name: {{ .Values.persist.name }}
         image: {{ .Values.persist.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
@@ -162,3 +180,8 @@ spec:
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup
+    {{- if .Values.common.tempBootSecretName }}
+      - name: secrets-volume
+        secret:
+          secretName: {{ .Values.common.tempBootSecretName }}
+    {{- end }}
