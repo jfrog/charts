@@ -2,6 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [0.8.0] - Nov 27, 2018
+* Updated Xray version to 2.5.0
 * Added support for hardening secrets management.
 
 ## [0.7.5] - Nov 14, 2018
