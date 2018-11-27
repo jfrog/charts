@@ -10,9 +10,9 @@ main() {
         echo
         test/e2e-gke.sh
     else
-        echo "PR is from fork, running in Minikube..."
+        echo "PR is from fork, running in kind..."
         echo
-        test/e2e-minikube.sh
+        test/e2e-kind.sh
     fi
 }
 

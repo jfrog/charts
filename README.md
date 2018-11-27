@@ -28,7 +28,8 @@ Two __LGTM__ are needed to get the PR approved and merged.
 
 ## Linting charts locally
 
-**Note:** Docker must be running on your Mac/Linux machine. Commands will only lint changed charts.
+**Note:** Docker must be running on your Mac/Linux machine. 
+The command will only lint changed charts.
 
 To lint all charts:
 
