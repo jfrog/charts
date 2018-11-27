@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.7] - Nov 27, 2018
+* Updated Artifactory version to 6.5.8
+
 ## [0.7.6] - Nov 18, 2018
 * Added support for configMap to use custom Reverse Proxy Configuration with Nginx
 
