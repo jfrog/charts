@@ -102,7 +102,7 @@ For this, pass the parameter: `global.mongoUrl=${XRAY_MONGODB_CONN_URL}`.
 # MongoDB user: xray
 # MongoDB password: password1_X
 
-export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABSE}&authMechanism=SCRAM-SHA-1'
+export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABASE}\&authMechanism=SCRAM-SHA-1'
 helm install -n xray --set global.mongoUrl=${XRAY_MONGODB_CONN_URL} jfrog/xray
 ```
 
