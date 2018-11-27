@@ -153,6 +153,13 @@ helm install --name xray \
   jfrog/xray
 ```
 
+**NOTE:** In case connection strings refer to external tools, make sure to disable the deployment of the internal tools accordingly:
+```bash
+...
+  --set rabbitmq.enabled=false,rabbitmq-ha.enabled=false,mongodb.enabled=false,postgresql.enabled=false
+...
+```
+
 ## Configuration
 
 The following table lists the configurable parameters of the xray chart and their default values.

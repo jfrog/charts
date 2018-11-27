@@ -34,14 +34,16 @@ data:
     done;
     {{- end }}
     echo "Waiting for Rabbit..."
-    {{ if index .Values "rabbitmq-ha" "enabled" }}
-    until nc -z -w 2 {{ .Release.Name }}-rabbitmq-ha {{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }} && echo rabbitmq ok; do
+    {{ if or (index .Values "rabbitmq" "enabled") (index .Values "rabbitmq-ha" "enabled") }}
+      {{ if index .Values "rabbitmq-ha" "enabled" }}
+      until nc -z -w 2 {{ .Release.Name }}-rabbitmq-ha {{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }} && echo rabbitmq ok; do
+      {{- end }}
+      {{ if index .Values "rabbitmq" "enabled" }}
+      until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ index .Values "rabbitmq" "rabbitmqNodePort" }} && echo rabbitmq ok; do
+      {{- end }}
+        sleep 2;
+      done;
     {{- end }}
-    {{ if index .Values "rabbitmq" "enabled" }}
-    until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ index .Values "rabbitmq" "rabbitmqNodePort" }} && echo rabbitmq ok; do
-    {{- end }}
-      sleep 2;
-    done;
 
     # Prepare Xray config
     echo "Preparing Xray config (${XRAY_CONFIG_FILE})"
