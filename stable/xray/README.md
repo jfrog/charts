@@ -125,12 +125,12 @@ export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASS
 helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} jfrog/xray
 ```
 
-### Hardening Connection Strings Setup
+### Hardening Connection Strings Setup (Optional)
 
 JFrog applications provide a way to harden secrets management so sensitive data will not appear as environment variables, command line parameters or clear text on files in the file system.
-Temporary secrets file will be loaded to containers' memory and deleted from file system on every start up.
+Temporary secrets file will be loaded to containers' memory and deleted from the file system on every startup.
 
-#### Create `temp.xray_config.yml` file containing the relevant Connection Strings:
+1. Create `temp.xray_config.yml` file containing the relevant connection strings:
 
 ```yaml
 mqBaseUrl:            amqp://<USERNAME>:<PASSWORD>@<HOST>:5672/
@@ -138,17 +138,18 @@ mongoUrl:             mongodb://<USERNAME>:<PASSWORD>@<HOST>:27017/?authSource=x
 postgresqlUrl:        postgres://<USERNAME>:<PASSWORD>@<HOST>:5432/xraydb?sslmode=disable
 ```
 
-#### Create secret from yaml file: 
+2. Create secret from yaml file: 
 
 ```bash
-kubectl create secret generic <SECRET_NAME> --from-file=<PATH/TO/TEMP/YAML>/temp.xray_config.yml
+kubectl create secret generic init-secret --from-file=<PATH/TO/TEMP/YAML>/temp.xray_config.yml
 ```
 
-To get Helm to use the created secret, add the following argument to your Helm command:
+3. Deploy Xray Helm Chart with the created secret:
 
-```
+```bash
 helm install --name xray \
-  --set common.tempBootSecretName=<SECRET_NAME> \
+  --set common.tempBootSecretName=init-secret \
+  --set common.tempBootSecretFileName=temp.xray_config.yml \
   jfrog/xray
 ```
 
@@ -229,6 +230,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.stdOutEnabled`                         | Xray enable standard output                  | `true`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `common.tempBootSecretName`                    | Xray temporary boot secret name              | ``                   |
+| `common.tempBootSecretFileName`                | Xray temporary boot secret file name         |`temp.xray_config.yml`|
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |

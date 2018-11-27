@@ -112,7 +112,7 @@ spec:
           - >
             mkdir -p {{ .Values.common.xrayConfigPath }}/.secrets;
             echo Preparing connections string temporary config file;
-            cp -fv /tmp/secrets/temp.xray_config.yml {{ .Values.common.xrayConfigPath }}/.secrets/.temp.xray_config.yml;
+            cp -fv /tmp/secrets/{{ .Values.common.tempBootSecretFileName }} {{ .Values.common.xrayConfigPath }}/.secrets/.temp.xray_config.yml;
             echo Done
         volumeMounts:
           - name: data-volume

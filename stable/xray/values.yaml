@@ -183,7 +183,11 @@ common:
   ## Pass it to helm with '--set common.masterKey=${MASTER_KEY}'
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-  tempBootSecretName:
+
+  ## For using the optional hardening of secrets setup
+  # tempBootSecretName:
+  # tempBootSecretFileName: temp.xray_config.yml
+
 
 # For setting up external services, must pass the connection URL for them
 global:
