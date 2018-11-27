@@ -75,6 +75,11 @@ data:
     {{- end }}
     cp -vf ${SCRIPTS_DIR}/xray_config.yaml ${XRAY_CONFIG_FILE}
 
+    # Set default values in case connection strings are not provided
+    RABBITMQ_URL="${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}"
+    MONGODB_URL="${MONGODB_URL:-mongodb://xray:password@mongodb:27017/?authSource=xray&authMechanism=SCRAM-SHA-1}"
+    POSTGRES_URL="${POSTGRES_URL:-postgres://xray:xray@postgres:5432/xraydb?sslmode=disable}"
+
     # Preparing xray_config.yaml
     sed -i "s RABBITMQ_URL ${RABBITMQ_URL} " ${XRAY_CONFIG_FILE}
     sed -i "s MONGODB_URL ${MONGODB_URL} " ${XRAY_CONFIG_FILE}
