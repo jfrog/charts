@@ -14,16 +14,12 @@ jobs:
     - stage: charts-testing
       name: "Lint and install charts"
       env:
-        - CHART_TESTING_IMAGE="quay.io/helmpack/chart-testing"
-        - CHART_TESTING_TAG="v2.0.0"
+        - CHART_TESTING_IMAGE=quay.io/helmpack/chart-testing
+        - CHART_TESTING_TAG=v2.0.1
         - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
-        - TEST_IMAGE_TAG=v3.0.0
-        - CHARTS_REPO="https://github.com/jfrog/charts"
-        - CHANGE_MINIKUBE_NONE_USER=true
-        - MINIKUBE_WANTUPDATENOTIFICATION=false
-        - MINIKUBE_WANTREPORTERRORPROMPT=false
-        - K8S_VERSION="v1.10.0"
-        - MINIKUBE_VERSION="v0.28.2"
+        - TEST_IMAGE_TAG=v3.0.1
+        - CHARTS_REPO=https://github.com/jfrog/charts
+        - K8S_VERSION="v1.11.3"
       script:
         - echo "Run chart-testing linting!"
         - ./test/lint-charts.sh

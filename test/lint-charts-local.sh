@@ -13,9 +13,6 @@ main() {
     git fetch k8s master
 
     mkdir -p tmp
-    if [[ ( "${CHART_TESTING_ARGS}" = *"--charts"* ) || ( "${CHART_TESTING_ARGS}" = *"--all"* ) ]]; then
-      CHART_TESTING_ARGS=$CHART_TESTING_ARGS" --check-version-increment=false"
-    fi
     # shellcheck disable=SC2086
     docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
 
