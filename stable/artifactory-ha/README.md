@@ -468,6 +468,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.limits.memory`   | Nginx memory limit                         | `250Mi`                                 |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit                            | `500m`                                  |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
+| `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresPassword`     | PostgreSQL database password               |                                         |

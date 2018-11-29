@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.8] - Nov 29, 2018
+* Updated postgresql version to 9.6.11
+
 ## [0.7.7] - Nov 27, 2018
 * Updated Artifactory version to 6.5.8
 
