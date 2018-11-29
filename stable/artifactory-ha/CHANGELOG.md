@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.9] - Nov 29, 2018
+* Optionally include primary node into poddisruptionbudget
+
 ## [0.7.8] - Nov 29, 2018
 * Updated postgresql version to 9.6.11
 
