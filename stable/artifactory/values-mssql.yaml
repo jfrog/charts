@@ -1,0 +1,17 @@
+artifactory:
+  ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
+   preStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/sqljdbc.jar URL_TO_JAR"
+
+postgresql:
+  enabled: false
+ 
+database:
+  type: mssql
+  host: IP_ADDRESS
+  port: PORT
+  url: jdbc:sqlserver://IP_ADDRESS:PORT;databaseName=DB_NAME;integratedSecurity=true;authenticationScheme=JavaKerberos;sendStringParametersAsUnicode=false;applicationName=Artifactory Binary Repository
+  ## If you would like this chart to create the secret containing the db
+  ## password, use these values
+  user: USER_NAME
+  password: PASSWORD
+
