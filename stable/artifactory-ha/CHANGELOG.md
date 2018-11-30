@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.11] - Nov 30, 2018
+* Updated Artifactory version to 6.5.9
+
 ## [0.7.10] - Nov 29, 2018
 * Fixed the volumeMount for the replicator.yaml
 
