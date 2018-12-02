@@ -401,10 +401,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
 | `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true`                       |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
-| `artifactory.javaOpts.other` | Artifactory extra java options (for all nodes) | `-Dartifactory.locking.provider.type=db` |
-| `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
-| `artifactory.distributionCerts`            | Name of ConfigMap for Artifactory Distribution Certificate  |               |
-| `artifactory.replicator.publicUrl`            | Artifactory Replicator Public URL |                                      |
+| `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |                 |
+| `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                      |
+| `artifactory.distributionCerts`                 | Name of ConfigMap for Artifactory Distribution Certificate  |          |
+| `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
 | `artifactory.primary.resources.requests.memory` | Artifactory primary node initial memory request  |                     |
 | `artifactory.primary.resources.requests.cpu`    | Artifactory primary node initial cpu request     |                     |
 | `artifactory.primary.resources.limits.memory`   | Artifactory primary node memory limit            |                     |
