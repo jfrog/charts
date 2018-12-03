@@ -33,8 +33,8 @@ data:
       sleep 2;
     done;
     {{- end }}
-    echo "Waiting for Rabbit..."
     {{ if or (index .Values "rabbitmq" "enabled") (index .Values "rabbitmq-ha" "enabled") }}
+      echo "Waiting for Rabbit..."
       {{ if index .Values "rabbitmq-ha" "enabled" }}
       until nc -z -w 2 {{ .Release.Name }}-rabbitmq-ha {{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }} && echo rabbitmq ok; do
       {{- end }}
@@ -75,15 +75,22 @@ data:
     {{- end }}
     cp -vf ${SCRIPTS_DIR}/xray_config.yaml ${XRAY_CONFIG_FILE}
 
-    # Set default values in case connection strings are not provided
-    RABBITMQ_URL="${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}"
-    MONGODB_URL="${MONGODB_URL:-mongodb://xray:password@mongodb:27017/?authSource=xray&authMechanism=SCRAM-SHA-1}"
-    POSTGRES_URL="${POSTGRES_URL:-postgres://xray:xray@postgres:5432/xraydb?sslmode=disable}"
-
     # Preparing xray_config.yaml
-    sed -i "s RABBITMQ_URL ${RABBITMQ_URL} " ${XRAY_CONFIG_FILE}
-    sed -i "s MONGODB_URL ${MONGODB_URL} " ${XRAY_CONFIG_FILE}
-    sed -i "s POSTGRES_URL ${POSTGRES_URL} " ${XRAY_CONFIG_FILE}
+    if [ -z "${RABBITMQ_URL}" ]; then
+      sed -i "/mqBaseUrl/d" ${XRAY_CONFIG_FILE}
+    else
+      sed -i "s RABBITMQ_URL ${RABBITMQ_URL} " ${XRAY_CONFIG_FILE}
+    fi
+    if [ -z "${MONGODB_URL}" ]; then
+      sed -i "/mongoUrl/d" ${XRAY_CONFIG_FILE}
+    else
+      sed -i "s MONGODB_URL ${MONGODB_URL} " ${XRAY_CONFIG_FILE}
+    fi
+    if [ -z "${POSTGRES_URL}" ]; then
+      sed -i "/postgresqlUrl/d" ${XRAY_CONFIG_FILE}
+    else
+      sed -i "s POSTGRES_URL ${POSTGRES_URL} " ${XRAY_CONFIG_FILE}
+    fi
 
   xray_config.yaml: |
     # Generated Xray config

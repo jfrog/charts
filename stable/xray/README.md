@@ -160,6 +160,10 @@ helm install --name xray \
 ...
 ```
 
+**NOTE:** A full pod restart is required
+Since the temporary file is deleted when Xray starts, a full pod restart is required if the Xray service container crashes and restarts.
+This is a known limitation of the pod lifecycle. The automated pod restart on container crash is currently not supported.
+
 ## Configuration
 
 The following table lists the configurable parameters of the xray chart and their default values.
