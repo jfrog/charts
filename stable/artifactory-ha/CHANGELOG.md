@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.12] - Dec 2, 2018
+* Remove Java option "-Dartifactory.locking.provider.type=db". This is already the default setting.
+
 ## [0.7.11] - Nov 30, 2018
 * Updated Artifactory version to 6.5.9
 
