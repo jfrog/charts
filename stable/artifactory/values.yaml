@@ -94,7 +94,7 @@ artifactory:
   uid: 1030
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
-    enabled: true
+    enabled: false
     initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 10
@@ -102,7 +102,7 @@ artifactory:
     successThreshold: 1
 
   readinessProbe:
-    enabled: true
+    enabled: false
     initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10
@@ -153,8 +153,6 @@ artifactory:
   replicator:
     enabled: false
     publicUrl:
-  # Name of ConfigMap for Distribution Cert
-  distributionCerts:
 
 # Nginx
 nginx:

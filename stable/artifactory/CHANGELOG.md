@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.7.10] - Dec 5, 2018
+* Remove Distribution certificates creation.
+
 ## [7.7.9] - Nov 30, 2018
 * Updated Artifactory version to 6.5.9
 

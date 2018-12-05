@@ -88,22 +88,6 @@ helm delete --purge artifactory
 This will completely delete your Artifactory Pro deployment.  
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
 
-### Create Distribution Cert for Artifactory Edge
-```bash
-# Create private.key and root.crt
-openssl req -newkey rsa:2048 -nodes -keyout private.key -x509 -days 365 -out root.crt
-```
-
-Once Created, Use it to create ConfigMap
-```bash
-# Create ConfigMap distribution-certs
-kubectl create configmap distribution-certs --from-file=private.key=private.key --from-file=root.crt=root.crt
-```
-Pass it to `helm`
-```bash
-helm install --name artifactory --set artifactory.distributionCerts=distribution-certs jfrog/artifactory
-```
-
 ### Kubernetes Secret for Artifactory License
 You can deploy the Artifactory license as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 Prepare a text file with the license written in it.
@@ -261,7 +245,6 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.xmx`              | Artifactory java Xms size           |                                          |
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
 | `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
-| `artifactory.distributionCerts`            | Name of ConfigMap for Artifactory Distribution Certificate  | ``            |
 | `artifactory.replicator.publicUrl`            | Artifactory Replicator Public URL |                                      |
 | `ingress.enabled`           | If true, Artifactory Ingress will be created | `false`                                     |
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
