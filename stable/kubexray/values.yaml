@@ -7,7 +7,7 @@ replicaCount: 1
 imagePullSecrets:
 
 image:
-  repository:  jfrog-docker-reg2.bintray.io/kubexray
+  repository: jfrog-docker-reg2.bintray.io/kubexray
   # Note that by default we use appVersion to get image tag
   # tag:
   pullPolicy: Always
@@ -92,7 +92,6 @@ resources:
 rbac:
   enabled: true
 
-# 
 nodeSelector: {}
 
 tolerations: []
