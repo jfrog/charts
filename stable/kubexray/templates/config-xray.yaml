@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kubexray.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "kubexray.name" . }}
+    helm.sh/chart: {{ include "kubexray.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  config.yaml: |-
+    unscanned:
+      deployments: {{ .Values.scanPolicy.unscanned.deployments | default "ignore" }}
+      statefulSets: {{ .Values.scanPolicy.unscanned.statefulSets | default "ignore" }}
+      whiltelistNamespaces: {{ .Values.scanPolicy.unscanned.whiltelistNamespaces | default "kube-system,kubexray" }} 
+    security:
+      deployments: {{ .Values.scanPolicy.security.deployments | default "ignore" }}
+      statefulSets: {{ .Values.scanPolicy.security.statefulSets | default "ignore" }}
+    license:
+      deployments: {{ .Values.scanPolicy.license.deployments | default "ignore"  }}
+      statefulSets: {{ .Values.scanPolicy.license.statefulSets | default "ignore" }}

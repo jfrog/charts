@@ -1,0 +1,19 @@
+{{ if not (or .Values.xrayConfig .Values.existingSecret) -}}
+################################################################################
+####   WARNING: You did not provide Xray config file.       ####
+################################################################################
+
+kubexray requires API access to Xray instance.
+
+This deployment will be incomplete until you provide a valid Xray configuration file:
+
+  helm upgrade {{ .Release.Name }} \
+      --namespace {{ .Release.Namespace }} charts/kubexray/
+      --set xrayConfig="$(cat xray_config.yaml | base64)"
+
+{{- else }}
+Check the kubexray application by running:
+
+kubectl get pods --namespace {{ .Release.Namespace }}
+
+{{- end }}

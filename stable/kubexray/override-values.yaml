@@ -1,0 +1,41 @@
+# Override values for kubexray.
+
+# Specify an existing secret holding the Xray config
+existingSecret: "kubexray-config"
+
+# Set kubexray scannig policy
+scanPolicy:
+  unscanned:
+    # Whitelist namespaces
+    whitelistNamespaces: "kube-system,kubexray,cert-manager,nginx-ingress"
+    # Set for unscanned deployments delete/scaledown/ignore
+    deployments: scaledown
+    # Set for unscanned statefulsets delete/scaledown/ignore
+    statefulSets: scaledown
+  security:
+    # Set for deployments with security issues delete/scaledown/ignore
+    deployments: scaledown
+    # Set for statefulsets with security issues delete/scaledown/ignore
+    statefulSets: scaledown
+  license:
+    # Set for deployments with license issues delete/scaledown/ignore
+    deployments: ignore
+    # Set for statefulsets with license issues delete/scaledown/ignore
+    statefulSets: ignore
+
+# Webhook REST API ingress
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    certmanager.k8s.io/cluster-issuer: "letsencrypt-prod"
+
+  path: /
+  hosts:
+    - kubexray-ci-test.jfrog.team
+  tls:
+    - secretName: kubexray-ci-test.jfrog.team
+      hosts:
+        - kubexray-ci-test.jfrog.team
