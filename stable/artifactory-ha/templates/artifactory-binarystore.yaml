@@ -140,12 +140,16 @@ data:
             <httpsOnly>true</httpsOnly>
             <region>{{ .Values.artifactory.persistence.awsS3.region }}</region>
             <bucketName>{{ .Values.artifactory.persistence.awsS3.bucketName }}</bucketName>
+        {{- if .Values.artifactory.persistence.awsS3.identity }}
             <identity>{{ .Values.artifactory.persistence.awsS3.identity }}</identity>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.awsS3.credential }}
             <credential>{{ .Values.artifactory.persistence.awsS3.credential }}</credential>
+        {{- end }}
             <path>{{ .Values.artifactory.persistence.awsS3.path }}</path>
-            {{- range $key, $value := .Values.artifactory.persistence.awsS3.properties }}
+        {{- range $key, $value := .Values.artifactory.persistence.awsS3.properties }}
             <property name="{{ $key }}" value="{{ $value }}"/>
-            {{- end }}
+        {{- end }}
         </provider>
     </config>
 {{- end }}

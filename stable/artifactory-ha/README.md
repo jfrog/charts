@@ -127,11 +127,19 @@ To use an AWS S3 bucket as the cluster's filestore
 - Pass AWS S3 parameters to `helm install` and `helm upgrade`
 ```bash
 ...
+# With explicit credentials:
 --set artifactory.persistence.type=aws-s3 \
 --set artifactory.persistence.awsS3.endpoint=${AWS_S3_ENDPOINT} \
 --set artifactory.persistence.awsS3.region=${AWS_REGION} \
 --set artifactory.persistence.awsS3.identity=${AWS_ACCESS_KEY_ID} \
 --set artifactory.persistence.awsS3.credential=${AWS_SECRET_ACCESS_KEY} \
+...
+
+...
+# With using existing IAM role
+--set artifactory.persistence.type=aws-s3 \
+--set artifactory.persistence.awsS3.endpoint=${AWS_S3_ENDPOINT} \
+--set artifactory.persistence.awsS3.region=${AWS_REGION} \
 ...
 ```
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
@@ -382,6 +390,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                   |                              |
 | `artifactory.persistence.awsS3.identity`            | AWS S3 AWS_ACCESS_KEY_ID               |                              |
 | `artifactory.persistence.awsS3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY           |                              |
+| `artifactory.persistence.awsS3.properties`          | AWS S3 additional properties           |                              |
 | `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
 | `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true`                       |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
