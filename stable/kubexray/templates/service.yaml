@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kubexray.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "kubexray.name" . }}
+    helm.sh/chart: {{ include "kubexray.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+ {{- if eq .Values.service.type "LoadBalancer" }}
+  {{ if .Values.service.loadBalancerIP -}}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{ end -}}
+  {{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  {{- end }}
+{{- end }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "kubexray.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
