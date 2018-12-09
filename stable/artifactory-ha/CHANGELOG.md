@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.15] - Dec 9, 2018
+* AWS S3 add `roleName` for using IAM role
+
 ## [0.7.14] - Dec 6, 2018
 * AWS S3 `identity` and `credential` are now added only if have a value to allow using IAM role 
 

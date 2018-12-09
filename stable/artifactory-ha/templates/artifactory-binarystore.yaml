@@ -135,7 +135,12 @@ data:
 
         <provider id="s3" type="s3">
             <endpoint>{{ .Values.artifactory.persistence.awsS3.endpoint }}</endpoint>
+        {{- if .Values.artifactory.persistence.awsS3.roleName }}
+            <roleName>{{ .Values.artifactory.persistence.awsS3.roleName }}</roleName>
+            <refreshCredentials>true</refreshCredentials>
+        {{- else }}
             <refreshCredentials>{{ .Values.artifactory.persistence.awsS3.refreshCredentials }}</refreshCredentials>
+        {{- end }}
             <testConnection>{{ .Values.artifactory.persistence.awsS3.testConnection }}</testConnection>
             <httpsOnly>true</httpsOnly>
             <region>{{ .Values.artifactory.persistence.awsS3.region }}</region>
