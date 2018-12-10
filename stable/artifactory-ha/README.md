@@ -140,6 +140,7 @@ To use an AWS S3 bucket as the cluster's filestore
 --set artifactory.persistence.type=aws-s3 \
 --set artifactory.persistence.awsS3.endpoint=${AWS_S3_ENDPOINT} \
 --set artifactory.persistence.awsS3.region=${AWS_REGION} \
+--set artifactory.persistence.awsS3.roleName=${AWS_ROLE_NAME} \
 ...
 ```
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
@@ -388,11 +389,12 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                     | `artifactory-ha`             |
 | `artifactory.persistence.awsS3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
 | `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                   |                              |
+| `artifactory.persistence.awsS3.roleName`            | AWS S3 IAM role name                   |                             |
 | `artifactory.persistence.awsS3.identity`            | AWS S3 AWS_ACCESS_KEY_ID               |                              |
 | `artifactory.persistence.awsS3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY           |                              |
 | `artifactory.persistence.awsS3.properties`          | AWS S3 additional properties           |                              |
 | `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
-| `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true`                       |
+| `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true` (When roleName is used, this parameter will be set to true) |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |                 |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                      |
