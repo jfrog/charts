@@ -235,6 +235,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
+| `artifactory.persistence.existingClaim` | Artifactory persistence volume claim name |                                       |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
 | `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
 | `artifactory.resources.requests.memory` | Artifactory initial memory request                  |                          |
