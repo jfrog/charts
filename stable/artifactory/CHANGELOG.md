@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.7.12] - Dec 12, 2018
+* Fix documentation about Artifactory license setup using secret
+
 ## [7.7.11] - Dec 10, 2018
 * Fix issue when using existing claim
 

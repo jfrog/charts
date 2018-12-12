@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.16] - Dec 12, 2018
+* Fix documentation about Artifactory license setup using secret
+
 ## [0.7.15] - Dec 9, 2018
 * AWS S3 add `roleName` for using IAM role
 
