@@ -46,7 +46,10 @@ spec:
               key: mongodb-password
         {{- else }}
         - name: MONGODB_URL
-          value: {{ .Values.global.mongoUrl }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "xray.fullname" . }}-mongodb-secret
+              key: mongoUrl
         {{- end }}
         {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_USER
@@ -60,7 +63,10 @@ spec:
           value: {{ .Values.postgresql.postgresDatabase }}
         {{- else }}
         - name: POSTGRES_URL
-          value: {{ .Values.global.postgresqlUrl }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "xray.fullname" . }}-postgres-secret
+              key: postgresqlUrl
         {{- end }}
         {{ if index .Values "rabbitmq-ha" "enabled" }}
         - name: RABBITMQ_USER
