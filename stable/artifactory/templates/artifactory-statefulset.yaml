@@ -242,6 +242,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
+      - name: artifactory-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.artifactory.persistence.existingClaim }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config
         configMap:
@@ -257,16 +262,11 @@ spec:
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
-      {{- if .Values.artifactory.persistence.enabled }}
+      {{- if and .Values.artifactory.persistence.enabled (not .Values.artifactory.persistence.existingClaim) }}
   volumeClaimTemplates:
   - metadata:
       name: artifactory-volume
     spec:
-    {{- if .Values.artifactory.persistence.existingClaim }}
-      selector:
-        matchLabels:
-          app: {{ template "artifactory.name" . }}
-    {{- else }}
       {{- if .Values.artifactory.persistence.storageClass }}
       {{- if (eq "-" .Values.artifactory.persistence.storageClass) }}
       storageClassName: ""
@@ -278,8 +278,8 @@ spec:
       resources:
         requests:
           storage: {{ .Values.artifactory.persistence.size }}
-    {{- end }}
-      {{- else }}
+      {{- end }}
+      {{- if not .Values.artifactory.persistence.enabled }}
       - name: artifactory-volume
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}

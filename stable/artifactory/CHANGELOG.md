@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.7.11] - Dec 10, 2018
+* Fix issue when using existing claim
+
 ## [7.7.10] - Dec 5, 2018
 * Remove Distribution certificates creation.
 
