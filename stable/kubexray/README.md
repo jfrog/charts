@@ -140,41 +140,43 @@ The following table lists the configurable parameters of the xray chart and thei
 
 |         Parameter            |                    Description                   |           Default                  |
 |------------------------------|--------------------------------------------------|------------------------------------|
-| `image.PullPolicy`| Container pull policy | `IfNotPresent` |
-| `xrayConfig` | base64 encoded `xray_config.yaml` file | `` |
-| `existingSecret` | Specifies an existing secret holding the Xray config | `` |
-| `scanPolicy.unscanned.whiltelistNamespaces` | Specifies unscanned whitelist Namespaces list | `kube-system,kubexray` |
-| `scanPolicy.unscanned.deployments` | Specifies unscanned Deployments policy | `ignore` |
-| `scanPolicy.unscanned.statefulSets` | Specifies unscanned StatefulSets policy | `ignore` |
-| `scanPolicy.security.deployments` | Specifies Deployments with security issues policy | `ignore` |
-| `scanPolicy.security.statefulSets` | Specifies Deployments with security issues policy  | `ignore` |
-| `scanPolicy.license.deployments` | Specifies Deployments with license issues policy | `ignore` |
-| `scanPolicy.license.statefulSets` | Specifies StatefulSets with license issues policy | `ignore` |
-| `securityContext.enabled` | Enables Security Context  | `true` |
-| `securityContext.enabled` |  Security UserId | `1000` |
-| `securityContext.kubeXrayUserId` |  Security GroupId | `1000` |
-| `service.port` |  Service port | `80` |
-| `service.type` |  Service type | `ClusterIP` |
-| `service.loadBalancerIP` |  Loadbalancer IP | `` |
-| `service.externalTrafficPolicy` | External traffic policy | `Cluster` |
-| `ingress.enabled`           | If true, Webhook REST API Ingress will be created | `false`                                     |
-| `ingress.annotations`       | Webhook REST API Ingress annotations     | `{}`                                                 |
-| `ingress.hosts`             | Webhook REST API Ingress hostnames       | `[]`                                                 |
-| `ingress.tls`               | Webhook REST API Ingress TLS configuration (YAML) | `[]`                                        |
+| `image.PullPolicy`           | Container pull policy                            | `IfNotPresent`                     |
+| `xrayConfig`                 | base64 encoded `xray_config.yaml` file           | ``                                 |
+| `existingSecret`             | Specifies an existing secret holding the Xray config | ``                             |
+| `scanPolicy.unscanned.whitelistNamespaces` | Specifies unscanned violations whitelist Namespaces list | `kube-system,kubexray` |
+| `scanPolicy.unscanned.deployments`         | Specifies unscanned Deployments policy     | `ignore`                   |
+| `scanPolicy.unscanned.statefulSets`        | Specifies unscanned StatefulSets policy    | `ignore`                   |
+| `scanPolicy.security.whitelistNamespaces`  | Specifies security violations whitelist Namespaces list | `kube-system,kubexray` |
+| `scanPolicy.security.deployments`          | Specifies Deployments with security issues policy   | `ignore`          |
+| `scanPolicy.security.statefulSets`         | Specifies Deployments with security issues policy   | `ignore`          |
+| `scanPolicy.license.whitelistNamespaces`   | Specifies license violations whitelist Namespaces list | `kube-system,kubexray` |
+| `scanPolicy.license.deployments`           | Specifies Deployments with license issues policy   | `ignore`           |
+| `scanPolicy.license.statefulSets`          | Specifies StatefulSets with license issues policy  | `ignore`           |
+| `securityContext.enabled`                  | Enables Security Context  | `true`                                      |
+| `securityContext.kubeXrayUserId`           | Security UserId           | `1000`                                      |
+| `securityContext.kubeXrayGroupId`          | Security GroupId          | `1000`                                      |
+| `service.port`                             |  Service port             | `80`                                        |
+| `service.type`                             |  Service type             | `ClusterIP`                                 |
+| `service.loadBalancerIP`                   |  Loadbalancer IP          | ``                                          |
+| `service.externalTrafficPolicy`            | External traffic policy   | `Cluster`                                   |
+| `ingress.enabled`           | If true, Webhook REST API Ingress will be created | `false`                            |
+| `ingress.annotations`       | Webhook REST API Ingress annotations     | `{}`                                        |
+| `ingress.hosts`             | Webhook REST API Ingress hostnames       | `[]`                                        |
+| `ingress.tls`               | Webhook REST API Ingress TLS configuration (YAML) | `[]`                               |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. | `` |
-| `env.logLevel` | Logs level | `INFO` |
-| `resources.limits.cpu` | Specifies CPU limit | `256m` |
-| `resources.limits.memory` | Specifies memory limit | `128Mi` |
-| `resources.requests.cpu` | Specifies CPU request | `100m` |
-| `resources.requests.memory` | Specifies memory request | `128Mi` |
-| `rbac.enabled` | Specifies whether RBAC resources should be created | `true` |
-| `nodeSelector` | kubexray micro-service node selector | `{}` |
-| `tolerations` | kubexray micro-service node tolerations | `[]` |
-| `affinity` | kubexray micro-service node affinity | `{}` |
-| `podDisruptionBudget.enabled` | Enables Pod Disruption Budget | `false` |
-| `podDisruptionBudget.maxUnavailable` | Max unavailable Pods | `1` |
-| `podDisruptionBudget.minAvailable` | min unavailable Pods | `` |
+| `env.logLevel`              | Logs level                               | `INFO`                                      |
+| `resources.limits.cpu`      | Specifies CPU limit                      | `256m`                                      |
+| `resources.limits.memory`   | Specifies memory limit                   | `128Mi`                                     |
+| `resources.requests.cpu`    | Specifies CPU request                    | `100m`                                      |
+| `resources.requests.memory` | Specifies memory request                 | `128Mi`                                     |
+| `rbac.enabled`              | Specifies whether RBAC resources should be created | `true`                            |
+| `nodeSelector`              | kubexray micro-service node selector     | `{}`                                        |
+| `tolerations`               | kubexray micro-service node tolerations  | `[]`                                        |
+| `affinity`                  | kubexray micro-service node affinity     | `{}`                                        |
+| `podDisruptionBudget.enabled`        | Enables Pod Disruption Budget   | `false`                                     |
+| `podDisruptionBudget.maxUnavailable` | Max unavailable Pods            | `1`                                         |
+| `podDisruptionBudget.minAvailable`   | min unavailable Pods            | ``                                          |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install/upgrade`.
 

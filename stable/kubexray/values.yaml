@@ -7,7 +7,7 @@ replicaCount: 1
 imagePullSecrets:
 
 image:
-  repository: jfrog-docker-reg2.bintray.io/kubexray
+  repository: docker.bintray.io/kubexray
   # Note that by default we use appVersion to get image tag
   # tag:
   pullPolicy: Always
@@ -31,11 +31,15 @@ scanPolicy:
     # Set for unscanned statefulsets delete/scaledown/ignore
     statefulSets: ignore
   security:
+    # Whitelist namespaces
+    whitelistNamespaces: "kube-system,kubexray"
     # Set for deployments with security issues delete/scaledown/ignore
     deployments: ignore
     # Set for statefulsets with security issues delete/scaledown/ignore
     statefulSets: ignore
   license:
+    # Whitelist namespaces
+    whitelistNamespaces: "kube-system,kubexray"
     # Set for deployments with license issues delete/scaledown/ignore
     deployments: ignore
     # Set for statefulsets with license issues delete/scaledown/ignore
