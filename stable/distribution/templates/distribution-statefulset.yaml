@@ -35,8 +35,8 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       securityContext:
-        runAsUser: {{ .Values.distribution.uid }}
-        fsGroup: {{ .Values.distribution.uid }}
+        runAsUser: {{ .Values.common.uid }}
+        fsGroup: {{ .Values.common.gid }}
       initContainers:
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
@@ -44,7 +44,13 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
+          echo "Waiting for database to be ready...";
+        {{- if .Values.mongodb.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-mongodb {{ .Values.mongodb.port }} && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
+        {{- end }}
+        {{- if .Values.postgresql.enabled }}
+          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
+        {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
@@ -70,7 +76,11 @@ spec:
                   {{- if .Values.distribution.javaOpts.xmx }}
                   -Xmx{{ .Values.distribution.javaOpts.xmx }}
                   {{- end}}
+                  {{- if .Values.distribution.serviceId }}
+                  -Djfrog.distribution.platform.serviceId={{ .Values.distribution.serviceId }}
+                  {{- end}}
                   -Dspring.profiles.active=production'
+      {{- if .Values.mongodb.enabled }}
         - name: MONGODB_HOST
           value: '{{ .Release.Name }}-mongodb'
         - name: MONGODB_PORT
@@ -82,8 +92,22 @@ spec:
         - name: MONGODB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-mongodb
+              name: {{ .Release.Name }}-mongodb
               key: mongodb-password
+      {{- end }}
+        - name: POSTGRES_HOST
+          value: '{{ .Release.Name }}-postgresql'
+        - name: POSTGRES_PORT
+          value: '{{ .Values.postgresql.service.port }}'
+        - name: POSTGRES_DATABASE
+          value: '{{ .Values.postgresql.postgresDatabase }}'
+        - name: POSTGRES_USERNAME
+          value: '{{ .Values.postgresql.postgresUser }}'
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-postgresql
+              key: postgres-password
         - name: REDIS_PORT
           value: '{{ .Values.redis.port }}'
         - name: REDIS_PASSWORD

@@ -155,6 +155,10 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.service.type`                  | Distribution service type                  | `LoadBalancer`                     |
 | `distribution.externalPort`                  | Distribution service external port         | `80`                               |
 | `distribution.internalPort`                  | Distribution service internal port         | `8080`                             |
+| `distribution.uid`                           | Distribution process user ID               | `1020`                             |
+| `distribution.gid`                           | Distribution process group ID              | `1020`                             |
+| `distribution.masterKey`                     | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
+| `distribution.serviceId`                     | Distribution service ID                    | ` `                                |
 | `distribution.env.artifactoryUrl`            | Distribution Environment Artifactory URL   | ` `                                |
 | `distribution.persistence.mountPath`         | Distribution persistence volume mount path | `"/jf-distribution"`               |
 | `distribution.persistence.enabled`           | Distribution persistence volume enabled    | `true`                             |

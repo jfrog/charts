@@ -1,6 +1,12 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [1.2.0] - Dec 17, 2018
+* Update Distribution version 1.4.0
+* Move to using PostgreSQL as Distribution database (replace MongoDB)
+* **NOTE:** For upgrading an existing deployment (pre 1.4.0), Distribution must be installed with both databases: MongoDB and PostgreSQL
+  * Pass `--set mongodb.enabled=true` to the `helm upgrade command`.
+
 ## [1.1.2] - Nov 14, 2018
 * Fix indent of `nodeSelector`, `affinity` and `tolerations` in the templates
 

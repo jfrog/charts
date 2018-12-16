@@ -35,8 +35,8 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       securityContext:
-        runAsUser: {{ .Values.distribution.uid }}
-        fsGroup: {{ .Values.distribution.uid }}
+        runAsUser: {{ .Values.common.uid }}
+        fsGroup: {{ .Values.common.gid }}
       initContainers:
       - name: 'prepare-data'
         image: '{{ .Values.initContainerImage }}'
