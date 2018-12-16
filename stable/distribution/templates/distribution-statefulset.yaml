@@ -126,7 +126,7 @@ spec:
           value: '{{ .Values.database.user }}'
       {{- end }}
         - name: POSTGRES_PASSWORD
-      {{- if .Values.database.secrets.user }}
+      {{- if .Values.database.secrets.password }}
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.password.name }}

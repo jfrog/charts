@@ -173,6 +173,9 @@ The following table lists the configurable parameters of the distribution chart 
 | `postgresql.resources.requests.cpu`          | PostgreSQL initial cpu request             | ` `                                |
 | `postgresql.resources.limits.memory`         | PostgreSQL memory limit                    | ` `                                |
 | `postgresql.resources.limits.cpu`            | PostgreSQL cpu limit                       | ` `                                |
+| `postgresql.nodeSelector`                    | PostgreSQL node selector                   | `{}`                               |
+| `postgresql.affinity`                        | PostgreSQL node affinity                   | `{}`                               |
+| `postgresql.tolerations`                     | PostgreSQL node tolerations                | `[]`                               |
 | `redis.password`                             | Redis password                             | ` `                                |
 | `redis.port`                                 | Redis Port                                 | `6379`                             |
 | `redis.persistence.enabled`                  | Redis use a PVC to persist data            | `true`                             |
