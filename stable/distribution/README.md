@@ -7,7 +7,7 @@
 ## Chart Details
 This chart does the following:
 
-* Deploy Mongodb database.
+* Deploy PostgreSQL database.
 * Deploy Redis.
 * Deploy distributor.
 * Deploy distribution.
@@ -70,25 +70,43 @@ helm install --name distribution --set replicaCount=3 jfrog/distribution
 ```
 
 ### External Database
-There is an option to use an external MongoDB database for your Distribution.
+There is an option to use an external PostgreSQL database for your Distribution.
 
-To use an external **MongoDB**, You need to set the Distribution **MongoDB** connection URL.
-
-For this, pass the parameter: `mongodb.enabled=false,global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL}`.
-
-**IMPORTANT:** Make sure the DB is already created before deploying Distribution services
+To use an external **PostgreSQL**, You need to set the Distribution **PostgreSQL** connection details
 ```bash
-# Passing a custom MongoDB to Distribution
+export POSTGRES_HOST=
+export POSTGRES_PORT=
+export POSTGRES_DATABASE=
+export POSTGRES_USERNAME=
+export POSTGRES_PASSWORD=
 
-# Example
-# MongoDB host: custom-mongodb.local
-# MongoDB port: 27017
-# MongoDB user: distribution
-# MongoDB password: password1_X
+helm install --name distribution \
+    --set database.host=${POSTGRES_HOST} \
+    --set database.port=${POSTGRES_PORT} \
+    --set database.database=${POSTGRES_DATABASE} \
+    --set database.user=${POSTGRES_USERNAME} \
+    --set database.password=${POSTGRES_PASSWORD} \
+    jfrog/distribution
+```
+**NOTE:** The Database password is saved as a Kubernetes secret
 
-export DISTRIBUTION_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/${MONGODB_DATABSE}'
-export DISTRIBUTION_MONGODB_AUDIT_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/audit?maxpoolsize=500'
-helm install -n distribution --set global.mongoUrl=${DISTRIBUTION_MONGODB_CONN_URL},global.mongoAuditUrl=${DISTRIBUTION_MONGODB_AUDIT_URL} jfrog/distribution
+
+#### Existing secrets for PostgreSQL connection details
+You can use already existing secrets for managing the database connection details.
+
+Pass them to the install command like this
+```bash
+export POSTGRES_USERNAME_SECRET_NAME=
+export POSTGRES_USERNAME_SECRET_KEY=
+export POSTGRES_PASSWORD_SECRET_NAME=
+export POSTGRES_PASSWORD_SECRET_KEY=
+
+helm install --name distribution \
+    --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
+    --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
+    --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
+    --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
+    jfrog/distribution
 ```
 
 ## Upgrade
@@ -96,6 +114,8 @@ Upgrading Distribution is a simple helm command
 ```bash
 helm upgrade distribution jfrog/distribution
 ```
+
+**NOTE:** Check for any version specific upgrade nodes in [CHANGELOG.md]
 
 ### Non compatible upgrades
 In cases where a new version is not compatible with existing deployed version (look in CHANGELOG.md) you should
@@ -139,6 +159,20 @@ The following table lists the configurable parameters of the distribution chart 
 | `mongodb.nodeSelector`                       | Mongodb node selector                      | `{}`                               |
 | `mongodb.affinity`                           | Mongodb node affinity                      | `{}`                               |
 | `mongodb.tolerations`                        | Mongodb node tolerations                   | `[]`                               |
+| `postgresql.enabled`                         | Enable PostgreSQL                          | `true`                             |
+| `postgresql.imageTag`                        | PostgreSQL image tag                       | `9.6.11`                           |
+| `postgresql.postgresDatabase`                | PostgreSQL database name                   | `distribution`                     |
+| `postgresql.postgresUser`                    | PostgreSQL database username               | `distribution`                     |
+| `postgresql.postgresPassword`                | PostgreSQL database password               | ` `                                |
+| `postgresql.postgresConfig.maxConnections`   | PostgreSQL max_connections                 | `1500`                             |
+| `postgresql.service.port`                    | PostgreSQL service port                    | `5432`                             |
+| `postgresql.persistence.enabled`             | PostgreSQL persistence enabled             | `true`                             |
+| `postgresql.persistence.size`                | PostgreSQL persistent disk size            | `50Gi`                             |
+| `postgresql.persistence.existingClaim`       | PostgreSQL persistence use existing PVC    | ` `                                |
+| `postgresql.resources.requests.memory`       | PostgreSQL initial memory request          | ` `                                |
+| `postgresql.resources.requests.cpu`          | PostgreSQL initial cpu request             | ` `                                |
+| `postgresql.resources.limits.memory`         | PostgreSQL memory limit                    | ` `                                |
+| `postgresql.resources.limits.cpu`            | PostgreSQL cpu limit                       | ` `                                |
 | `redis.password`                             | Redis password                             | ` `                                |
 | `redis.port`                                 | Redis Port                                 | `6379`                             |
 | `redis.persistence.enabled`                  | Redis use a PVC to persist data            | `true`                             |
@@ -148,6 +182,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.nodeSelector`                         | Redis node selector                        | `{}`                               |
 | `redis.affinity`                             | Redis node affinity                        | `{}`                               |
 | `redis.tolerations`                          | Redis node tolerations                     | `[]`                               |
+| `common.uid`                                 | Distribution and Distributor process user ID               | `1020`                             |
+| `common.gid`                                 | Distribution and Distributor process group ID              | `1020`                             |
 | `distribution.name`                          | Distribution name                          | `distribution`                     |
 | `distribution.image.pullPolicy`              | Container pull policy                      | `IfNotPresent`                     |
 | `distribution.image.repository`              | Container image                            | `docker.jfrog.io/jf-distribution`  |
@@ -155,8 +191,6 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.service.type`                  | Distribution service type                  | `LoadBalancer`                     |
 | `distribution.externalPort`                  | Distribution service external port         | `80`                               |
 | `distribution.internalPort`                  | Distribution service internal port         | `8080`                             |
-| `distribution.uid`                           | Distribution process user ID               | `1020`                             |
-| `distribution.gid`                           | Distribution process group ID              | `1020`                             |
 | `distribution.masterKey`                     | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
 | `distribution.serviceId`                     | Distribution service ID                    | ` `                                |
 | `distribution.env.artifactoryUrl`            | Distribution Environment Artifactory URL   | ` `                                |

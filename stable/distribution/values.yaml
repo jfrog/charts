@@ -95,6 +95,7 @@ mongodb:
 ##
 postgresql:
   enabled: true
+  imageTag: "9.6.11"
   postgresDatabase: "distribution"
   postgresUser: "distribution"
   postgresPassword:
@@ -113,6 +114,26 @@ postgresql:
 #    limits:
 #      memory: "2Gi"
 #      cpu: "1"
+
+## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
+## specify custom database details here or leave empty and Artifactory will use embedded derby
+database:
+  host:
+  port:
+  database:
+  ## If you would like this chart to create the secret containing the db
+  ## password, use these values
+  user:
+  password:
+  ## If you have existing Kubernetes secrets containing db credentials, use
+  ## these values
+  secrets: {}
+  #  user:
+  #    name: "database-creds"
+  #    key: "db-user"
+  #  password:
+  #    name: "database-creds"
+  #    key: "db-password"
 
 ## Configuration values for the redis dependency
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
@@ -148,11 +169,6 @@ redis:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
-# For setting up external services, must pass the connection URL for them
-global:
-  mongoUrl:
-  mongoAuditUrl:
 
 common:
   uid: 1020
