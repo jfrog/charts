@@ -1,7 +1,7 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.7.2] - Nov 16, 2018
+## [0.7.1] - Dec 17, 2018
 * Updated Mission-Control version to 3.3.2
 
 ## [0.7.0] - Nov 16, 2018
