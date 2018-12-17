@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [1.2.0] - Dec 17, 2018
+## [2.0.0] - Dec 17, 2018
 * Update Distribution version 1.4.0
 * Move to using PostgreSQL as Distribution database (replace MongoDB)
 * **UPGRADE NOTES:** For upgrading an existing deployment (pre 1.4.0), follow the following:
