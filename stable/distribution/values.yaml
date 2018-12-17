@@ -58,7 +58,7 @@ ingress:
 ## ref: https://github.com/helm/charts/blob/master/stable/mongodb/README.md
 ##
 mongodb:
-  enabled: true
+  enabled: false
   image:
     tag: 3.6.8-debian-9
     pullPolicy: IfNotPresent
@@ -88,6 +88,55 @@ mongodb:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+# PostgreSQL
+## Configuration values for the postgresql dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+##
+postgresql:
+  enabled: true
+  imageTag: "9.6.11"
+  postgresDatabase: "distribution"
+  postgresUser: "distribution"
+  postgresPassword:
+  postgresConfig:
+    maxConnections: "1500"
+  service:
+    port: 5432
+  persistence:
+    enabled: true
+    size: 50Gi
+    existingClaim:
+  resources: {}
+#    requests:
+#      memory: "1Gi"
+#      cpu: "250m"
+#    limits:
+#      memory: "2Gi"
+#      cpu: "1"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
+## specify custom database details here or leave empty and Artifactory will use embedded derby
+database:
+  host:
+  port:
+  database:
+  ## If you would like this chart to create the secret containing the db
+  ## password, use these values
+  user:
+  password:
+  ## If you have existing Kubernetes secrets containing db credentials, use
+  ## these values
+  secrets: {}
+  #  user:
+  #    name: "database-creds"
+  #    key: "db-user"
+  #  password:
+  #    name: "database-creds"
+  #    key: "db-password"
 
 ## Configuration values for the redis dependency
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
@@ -124,22 +173,26 @@ redis:
   tolerations: []
   affinity: {}
 
-# For setting up external services, must pass the connection URL for them
-global:
-  mongoUrl:
-  mongoAuditUrl:
+common:
+  uid: 1020
+  gid: 1020
 
 distribution:
   name: distribution
   image:
     repository: "docker.bintray.io/jfrog/distribution-distribution"
     ## Note that by default we use appVersion to get image tag
-    # version: 1.3.0
+    # version:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
   externalPort: 80
-  uid: 1020
+  ## Distribution requires a unique master key
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 32'
+  ## Pass it to helm with '--set distribution.masterKey=${MASTER_KEY}'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  serviceId:
   env:
     artifactoryUrl:
     btServerUrl:
@@ -189,7 +242,7 @@ distributor:
   image:
     repository: "docker.bintray.io/jfrog/distribution-distributor"
     ## Note that by default we use appVersion to get image tag
-    # version: 1.3.0
+    # version:
     imagePullPolicy: IfNotPresent
   token:
   resources: {}

@@ -1,6 +1,17 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [2.0.0] - Dec 17, 2018
+* Update Distribution version 1.4.0
+* Move to using PostgreSQL as Distribution database (replace MongoDB)
+* **UPGRADE NOTES:** For upgrading an existing deployment (pre 1.4.0), follow the following:
+  * Distribution should be idle. This means not have any distributions in queue or in process
+  * If in HA (replicaCount > 1), scale down **existing deployment** to 1 with `helm upgrade .... --set replicaCount=1 ....`
+  * New Distribution must be installed with both databases: MongoDB and PostgreSQL
+    * Upgrade to new version (1.4.0) with the following parameter for the upgrade process `helm upgrade .... --set mongodb.enabled=true ....`
+  * Once Distribution is up - it means the migration from MongoDB to PostgreSQL is done!
+  * You can deploy again without MongoDB and back to your required `replicaCount`
+
 ## [1.1.2] - Nov 14, 2018
 * Fix indent of `nodeSelector`, `affinity` and `tolerations` in the templates
 
