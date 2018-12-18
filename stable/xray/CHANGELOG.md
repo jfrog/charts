@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.7] - Dec 18, 2018
+* Improve server health probes to support GKE ingress controller. Fixes https://github.com/jfrog/charts/issues/149
+
 ## [0.7.6] - Dec 11, 2018
 * Using secret for external databases. Fixes https://github.com/jfrog/charts/issues/73
 
