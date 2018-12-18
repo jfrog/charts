@@ -135,14 +135,14 @@ spec:
 {{ toYaml .Values.server.resources | indent 10 }}
         readinessProbe:
           httpGet:
-            path: /web
+            path: /web/
             port: {{ .Values.server.internalPort }}
           initialDelaySeconds: 60
           periodSeconds: 10
           failureThreshold: 10
         livenessProbe:
           httpGet:
-            path: /web
+            path: /web/
             port: {{ .Values.server.internalPort }}
           initialDelaySeconds: 90
           periodSeconds: 10
