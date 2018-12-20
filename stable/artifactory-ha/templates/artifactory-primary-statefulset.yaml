@@ -40,18 +40,19 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
-    {{- if .Values.artifactory.persistence.enabled }}
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         command:
         - 'sh'
         - '-c'
-        - 'rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found'
+        - >
+          if [ -d {{ .Values.artifactory.persistence.mountPath }}/lost+found ]; then
+            rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found
+          fi
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
-    {{- end }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -324,7 +325,7 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
       {{- end }}
-      {{- if .Values.artifactory.persistence.local }}
+      {{- if not .Values.artifactory.persistence.enabled }}
       - name: volume
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
