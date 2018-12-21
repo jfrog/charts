@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.20] - Apr29, 2019
+* Added support for headless services
+
 ## [0.12.19] - Apr 28, 2019
 * Added support for `cacheProviderDir`
 
