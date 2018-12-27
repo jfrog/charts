@@ -93,8 +93,8 @@ spec:
               - '-c'
               - >
                 {{- if .Values.artifactory.replicator.enabled }}
-                mkdir -p {{ .Values.artifactory.persistence.mountPath }}/replicator/etc;
-                cp -fv /tmp/replicator/replicator.yaml {{ .Values.artifactory.persistence.mountPath }}/replicator/etc/replicator.yaml;
+                mkdir -p /opt/jfrog/artifactory/replicator/etc;
+                cp -fv /tmp/replicator/replicator.yaml /opt/jfrog/artifactory/replicator/etc/replicator.yaml;
                 {{- end }}
                 {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
