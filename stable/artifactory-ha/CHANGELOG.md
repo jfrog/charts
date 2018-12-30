@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.3] - Dec 30, 2018
+* Add missing nginx configuration for distribution setup
+
 ## [0.8.2] - Dec 28, 2018
 * Fix location `replicator.yaml` is copied to
 
