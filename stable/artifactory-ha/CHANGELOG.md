@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.2] - Dec 28, 2018
+* Fix location `replicator.yaml` is copied to
+
 ## [0.8.1] - Dec 27, 2018
 * Updated Artifactory version to 6.6.1
 
