@@ -18,7 +18,6 @@ data:
         client_max_body_size 0;
 
         location / {
-          proxy_http_version 1.1;
           chunked_transfer_encoding on;
           proxy_read_timeout  900;
           proxy_pass_header   Server;
