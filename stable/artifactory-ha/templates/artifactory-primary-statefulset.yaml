@@ -202,6 +202,10 @@ spec:
         - name: HA_BACKUP_DIR
           value: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
       {{- end }}
+      {{- range .Values.artifactory.extraEnvironmentVariables }}
+        - name: {{ .name }}
+          value: '{{ .value }}'
+      {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         {{- if .Values.artifactory.replicator.enabled }}

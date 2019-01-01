@@ -358,6 +358,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
 | `artifactory.internalPortReplicator` | Replicator service internal port | `6061`   |
 | `artifactory.externalPortReplicator` | Replicator service external port | `6061`   |
+| `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.livenessProbe.enabled`              | Enable liveness probe                     |  `true`                                               |
 | `artifactory.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 180                                                   |
 | `artifactory.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                                                    |
