@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.0] - Jan 1, 2019
+* Updated Xray version to 2.6.0
+
 ## [0.7.8] - Dec 18, 2018
 * Fix for 0.7.7 (Improve server health probes to support GKE ingress controller. Fixes https://github.com/jfrog/charts/issues/149)
 
