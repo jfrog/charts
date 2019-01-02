@@ -183,6 +183,10 @@ spec:
         - name: START_LOCAL_REPLICATOR
           value: "true"
         {{- end }}
+        {{- range .Values.artifactory.extraEnvironmentVariables }}
+        - name: {{ .name }}
+          value: '{{ .value }}'
+        {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         {{- if .Values.artifactory.replicator.enabled }}

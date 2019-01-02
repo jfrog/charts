@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.3] - Jan 1, 2019
+* Updated Artifactory version to 6.6.3
+* Add support for `artifactory.extraEnvironmentVariables` to pass more environment variables to Artifactory
+
 ## [0.8.2] - Dec 28, 2018
 * Fix location `replicator.yaml` is copied to
 
