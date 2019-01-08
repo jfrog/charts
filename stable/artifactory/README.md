@@ -35,8 +35,8 @@ helm install --name artifactory --set artifactory.image.repository=docker.bintra
 
 ### Deploying Artifactory with replicator enabled
 ```bash
-## Artifactory replicator is disabled by default. To enable it use the following:
-helm install --name artifactory --set artifactory.replicator.enabled=true jfrog/artifactory
+## Artifactory replicator is disabled by default. When the replicator is enabled, the replicator.publicUrl parameter is required. To enable it use the following:
+helm install --name artifactory --set artifactory.replicator.enabled=true --set artifactory.replicator.publicUrl=<artifactory_url>:<replicator_port> jfrog/artifactory
 ```
 
 ### Accessing Artifactory
