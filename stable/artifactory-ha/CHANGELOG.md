@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.6] - Jan 13, 2019
+* Fix documentation about nginx group id
+
 ## [0.8.5] - Jan 13, 2019
 * Updated Artifactory version to 6.6.5
 
