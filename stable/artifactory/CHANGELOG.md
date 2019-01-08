@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.8.4] - Jan 8, 2019
+* Make artifactory.replicator.publicUrl required when the replicator is enabled 
+
 ## [7.8.3] - Jan 1, 2019
 * Updated Artifactory version to 6.6.3
 * Add support for `artifactory.extraEnvironmentVariables` to pass more environment variables to Artifactory
