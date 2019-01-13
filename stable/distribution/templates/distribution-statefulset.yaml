@@ -80,21 +80,6 @@ spec:
                   -Djfrog.distribution.platform.serviceId={{ .Values.distribution.serviceId }}
                   {{- end}}
                   -Dspring.profiles.active=production'
-      {{- if .Values.mongodb.enabled }}
-        - name: MONGODB_HOST
-          value: '{{ .Release.Name }}-mongodb'
-        - name: MONGODB_PORT
-          value: '{{ .Values.mongodb.port }}'
-        - name: MONGODB_DATABASE
-          value: '{{ .Values.mongodb.mongodbDatabase }}'
-        - name: MONGODB_USERNAME
-          value: '{{ .Values.mongodb.mongodbUsername }}'
-        - name: MONGODB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-mongodb
-              key: mongodb-password
-      {{- end }}
       {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_HOST
           value: '{{ .Release.Name }}-postgresql'

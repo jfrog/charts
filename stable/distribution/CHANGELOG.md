@@ -3,7 +3,7 @@ All changes to this project chart be documented in this file.
 
 ## [2.1.0] - Jan 13, 2019
 * Update Distribution version 1.5.0
-* Remove MongoDB completely. This means an upgrade to this version must go through version 1.4.0! 
+* Remove MongoDB completely. This means an upgrade to this version must go through version 1.4.0 (chart version 2.0.0)! 
 
 ## [2.0.0] - Dec 17, 2018
 * Update Distribution version 1.4.0
