@@ -52,33 +52,6 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
-Set the final MongoDB connection URL
-*/}}
-{{- define "mongodb.url" -}}
-{{- if .Values.global.mongoUrl -}}
-{{- .Values.global.mongoUrl -}}
-{{- else -}}
-{{- $mongoDatabase :=  .Values.mongodb.mongodbDatabase -}}
-{{- $mongoUser := .Values.mongodb.mongodbUsername -}}
-{{- $mongoPassword := required "A valid .Values.mongodb.mongodbPassword entry required!" .Values.mongodb.mongodbPassword -}}
-{{- printf "%s://%s:%s@%s-%s/%s" "mongodb" $mongoUser $mongoPassword .Release.Name "mongodb:27017" $mongoDatabase | b64enc | quote -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Set the final MongoDB audit URL
-*/}}
-{{- define "mongodb.audit.url" -}}
-{{- if .Values.global.mongoAuditUrl -}}
-{{- .Values.global.mongoAuditUrl -}}
-{{- else -}}
-{{- $mongoUser := .Values.mongodb.mongodbUsername -}}
-{{- $mongoPassword := required "A valid .Values.mongodb.mongodbPassword entry required!" .Values.mongodb.mongodbPassword -}}
-{{- printf "%s://%s:%s@%s-%s/%s" "mongodb" $mongoUser $mongoPassword .Release.Name "mongodb:27017" "audit?maxpoolsize=500" | b64enc | quote -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Set the final Redis connection URL
 */}}
 {{- define "redis.url" -}}

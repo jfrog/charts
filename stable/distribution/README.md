@@ -91,7 +91,7 @@ helm install --name distribution \
 **NOTE:** The Database password is saved as a Kubernetes secret
 
 
-#### Existing secrets for PostgreSQL connection details
+#### Use existing secrets for PostgreSQL connection details
 You can use already existing secrets for managing the database connection details.
 
 Pass them to the install command like this
@@ -141,24 +141,6 @@ The following table lists the configurable parameters of the distribution chart 
 | `ingress.annotations`                        | distribution Ingress annotations              | `{}`                            |
 | `ingress.hosts`                              | distribution Ingress hostnames                | `[]`                            |
 | `ingress.tls`                                | distribution Ingress TLS configuration (YAML) | `[]`                            |
-| `mongodb.enabled`                            | Enable Mongodb                             | `true`                             |
-| `mongodb.image.tag`                          | Mongodb docker image tag                   | `3.6.8-debian-9`                   |
-| `mongodb.image.pullPolicy`                   | Mongodb Container pull policy              | `IfNotPresent`                     |
-| `mongodb.persistence.enabled`                | Mongodb persistence volume enabled         | `true`                             |
-| `mongodb.persistence.existingClaim`          | Mongodb use an existing PVC to persist data        | `nil`                      |
-| `mongodb.persistence.storageClass`           | Mongodb storage class of backing PVC               | `generic`                  |
-| `mongodb.persistence.size`                   | Mongodb persistence volume size            | `10Gi`                             |
-| `mongodb.livenessProbe.initialDelaySeconds`  | Mongodb delay before liveness probe is initiated    | `40`                      |
-| `mongodb.readinessProbe.initialDelaySeconds` | Mongodb delay before readiness probe is initiated   | `30`                      |
-| `mongodb.mongodbExtraFlags`                  | MongoDB additional command line flags      | `["--wiredTigerCacheSizeGB=1"]`    |
-| `mongodb.usePassword`                        | Enable password authentication             | `false`                            |
-| `mongodb.mongodbDatabase`                    | Mongodb Database for distribution          | `distribution`                     |
-| `mongodb.mongodbRootPassword`                | Mongodb Database Password for root user    | ` `                                |
-| `mongodb.mongodbUsername`                    | Mongodb Database User                      | `distribution`                     |
-| `mongodb.mongodbPassword`                    | Mongodb Database Password for Mission Control user  | ` `                       |
-| `mongodb.nodeSelector`                       | Mongodb node selector                      | `{}`                               |
-| `mongodb.affinity`                           | Mongodb node affinity                      | `{}`                               |
-| `mongodb.tolerations`                        | Mongodb node tolerations                   | `[]`                               |
 | `postgresql.enabled`                         | Enable PostgreSQL                          | `true`                             |
 | `postgresql.imageTag`                        | PostgreSQL image tag                       | `9.6.11`                           |
 | `postgresql.postgresDatabase`                | PostgreSQL database name                   | `distribution`                     |

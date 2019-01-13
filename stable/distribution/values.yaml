@@ -53,42 +53,6 @@ ingress:
   #   hosts:
   #     - distribution.domain.example
 
-# Sub charts
-## Configuration values for the mongodb dependency
-## ref: https://github.com/helm/charts/blob/master/stable/mongodb/README.md
-##
-mongodb:
-  enabled: false
-  image:
-    tag: 3.6.8-debian-9
-    pullPolicy: IfNotPresent
-  port: 27017
-  persistence:
-    enabled: true
-    size: 10Gi
-  resources: {}
-  #  requests:
-  #    memory: "2Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "250m"
-  ## Make sure the --wiredTigerCacheSizeGB is no more than half the memory limit!
-  ## This is critical to protect against OOMKill by Kubernetes!
-  mongodbExtraFlags:
-  - "--wiredTigerCacheSizeGB=1"
-  mongodbRootPassword:
-  mongodbDatabase: distribution
-  mongodbUsername: distribution
-  mongodbPassword:
-  livenessProbe:
-    initialDelaySeconds: 40
-  readinessProbe:
-    initialDelaySeconds: 20
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-
 # PostgreSQL
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md

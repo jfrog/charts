@@ -45,9 +45,6 @@ spec:
         - '-c'
         - >
           echo "Waiting for database to be ready...";
-        {{- if .Values.mongodb.enabled }}
-          until nc -z -w 2 {{ .Release.Name }}-mongodb {{ .Values.mongodb.port }} && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
-        {{- end }}
         {{- if .Values.postgresql.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
         {{- end }}
@@ -80,21 +77,6 @@ spec:
                   -Djfrog.distribution.platform.serviceId={{ .Values.distribution.serviceId }}
                   {{- end}}
                   -Dspring.profiles.active=production'
-      {{- if .Values.mongodb.enabled }}
-        - name: MONGODB_HOST
-          value: '{{ .Release.Name }}-mongodb'
-        - name: MONGODB_PORT
-          value: '{{ .Values.mongodb.port }}'
-        - name: MONGODB_DATABASE
-          value: '{{ .Values.mongodb.mongodbDatabase }}'
-        - name: MONGODB_USERNAME
-          value: '{{ .Values.mongodb.mongodbUsername }}'
-        - name: MONGODB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-mongodb
-              key: mongodb-password
-      {{- end }}
       {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_HOST
           value: '{{ .Release.Name }}-postgresql'
