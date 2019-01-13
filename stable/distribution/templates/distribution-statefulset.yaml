@@ -45,9 +45,6 @@ spec:
         - '-c'
         - >
           echo "Waiting for database to be ready...";
-        {{- if .Values.mongodb.enabled }}
-          until nc -z -w 2 {{ .Release.Name }}-mongodb {{ .Values.mongodb.port }} && echo {{ .Release.Name }}-mongodb ok; do sleep 2; done;
-        {{- end }}
         {{- if .Values.postgresql.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
         {{- end }}
