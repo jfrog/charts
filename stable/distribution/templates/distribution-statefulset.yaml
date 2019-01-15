@@ -77,6 +77,10 @@ spec:
                   -Djfrog.distribution.platform.serviceId={{ .Values.distribution.serviceId }}
                   {{- end}}
                   -Dspring.profiles.active=production'
+      {{- if .Values.distribution.masterKey }}
+        - name: MASTER_KEY
+          value: '{{ .Values.distribution.masterKey }}'
+      {{- end }}
       {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_HOST
           value: '{{ .Release.Name }}-postgresql'

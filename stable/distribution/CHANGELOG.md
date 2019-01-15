@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [2.1.1] - Jan 15, 2019
+* add master key as env var in Distribution
+
 ## [2.1.0] - Jan 13, 2019
 * Update Distribution version 1.5.0
 * Remove MongoDB completely. This means an upgrade to this version must go through version 1.4.0 (chart version 2.0.0)! 
