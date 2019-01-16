@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.7] - Jan 15, 2018
+* Add support for Azure Blob Storage Binary provider
+
 ## [0.8.6] - Jan 13, 2019
 * Fix documentation about nginx group id
 

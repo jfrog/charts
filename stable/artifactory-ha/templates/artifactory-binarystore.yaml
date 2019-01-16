@@ -158,3 +158,35 @@ data:
         </provider>
     </config>
 {{- end }}
+
+{{- if eq .Values.artifactory.persistence.type "azure-blob" }}
+    <!-- Azure Blob Storage -->
+    <config version="2">
+      <chain>
+        <provider id="cache-fs" type="cache-fs">
+          <provider id="eventual" type="eventual">
+            <provider id="retry" type="retry">
+              <provider id="azure-blob-storage" type="azure-blob-storage"/>
+            </provider>
+          </provider>
+        </provider>
+      </chain>
+
+      <!-- Set max cache-fs size -->
+      <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+      </provider>
+
+      <provider type="eventual" id="eventual">
+        <numberOfThreads>{{ .Values.artifactory.persistence.eventual.numberOfThreads }}</numberOfThreads>
+      </provider>
+
+      <provider id="azure-blob-storage" type="azure-blob-storage">
+        <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
+        <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
+        <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
+        <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
+        <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
+      </provider>
+    </config>
+{{- end }}

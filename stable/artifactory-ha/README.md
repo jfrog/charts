@@ -112,7 +112,7 @@ To use an NFS server as your cluster's storage, you need to
 ```
 
 #### Google Storage
-To use a Google Storage bucket as the cluster's filestore
+To use a Google Storage bucket as the cluster's filestore. See [Google Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-GoogleStorageBinaryProvider)
 - Pass Google Storage parameters to `helm install` and `helm upgrade`
 ```bash
 ...
@@ -123,7 +123,7 @@ To use a Google Storage bucket as the cluster's filestore
 ```
 
 #### AWS S3
-To use an AWS S3 bucket as the cluster's filestore
+To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-S3BinaryProvider)
 - Pass AWS S3 parameters to `helm install` and `helm upgrade`
 ```bash
 ...
@@ -144,6 +144,19 @@ To use an AWS S3 bucket as the cluster's filestore
 ...
 ```
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
+
+#### Microsoft Azure Blob Storage
+To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageBinaryProvider)
+- Pass Azure Blob Storage parameters to `helm install` and `helm upgrade`
+```bash
+...
+--set artifactory.persistence.type=azure-blob \
+--set artifactory.persistence.azureBlob.accountName=${AZURE_ACCOUNT_NAME} \
+--set artifactory.persistence.azureBlob.accountKey=${AZURE_ACCOUNT_KEY} \
+--set artifactory.persistence.azureBlob.endpoint=${AZURE_ENDPOINT} \
+--set artifactory.persistence.azureBlob.containerName=${AZURE_CONTAINER_NAME} \
+...
+```
 
 ### Create a unique Master Key
 Artifactory HA cluster requires a unique master key. By default the chart has one set in values.yaml (`artifactory.masterKey`).
@@ -384,6 +397,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory-ha`     |
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
+| `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
 | `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory-ha`             |
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
@@ -398,8 +412,13 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
 | `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true` (When roleName is used, this parameter will be set to true) |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
-| `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |                 |
-| `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                      |
+| `artifactory.persistence.azureBlob.accountName`     | Azure Blob Storage account name        | ``                        |
+| `artifactory.persistence.azureBlob.accountKey`      | Azure Blob Storage account key         | ``                        |
+| `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
+| `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
+| `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
+| `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
+| `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
 | `artifactory.primary.resources.requests.memory` | Artifactory primary node initial memory request  |                     |
 | `artifactory.primary.resources.requests.cpu`    | Artifactory primary node initial cpu request     |                     |
