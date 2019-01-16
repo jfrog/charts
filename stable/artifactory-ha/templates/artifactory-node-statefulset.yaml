@@ -92,10 +92,7 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-                {{- if .Values.artifactory.replicator.enabled }}
-                mkdir -p /opt/jfrog/artifactory/replicator/etc;
-                cp -fv /tmp/replicator/replicator.yaml /opt/jfrog/artifactory/replicator/etc/replicator.yaml;
-                {{- end }}
+                echo;
                 {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
@@ -222,7 +219,7 @@ spec:
       {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
         - name: replicator-config
-          mountPath: "/tmp/replicator/replicator.yaml"
+          mountPath: "/replicator_extra_conf/replicator.yaml"
           subPath: replicator.yaml
       {{- end }}
         resources:
