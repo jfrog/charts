@@ -33,7 +33,8 @@ By default it will run Artifactory-Pro to run Artifactory-Oss use following comm
 helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
 ```
 
-### Deploying Artifactory with replicator enabled
+### Deploying Artifactory with replicator
+The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replicator) is used with an [Enterprise Plus](https://www.jfrog.com/confluence/display/EP/Welcome+to+JFrog+Enterprise+Plus) license.
 ```bash
 ## Artifactory replicator is disabled by default. When the replicator is enabled, the replicator.publicUrl parameter is required. To enable it use the following:
 helm install --name artifactory --set artifactory.replicator.enabled=true --set artifactory.replicator.publicUrl=<artifactory_url>:<replicator_port> jfrog/artifactory
