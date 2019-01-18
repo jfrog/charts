@@ -252,7 +252,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.replicator.publicUrl`            | Artifactory Replicator Public URL |                                      |
 | `ingress.enabled`           | If true, Artifactory Ingress will be created | `false`                                     |
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
-| `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                 |
+| `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
