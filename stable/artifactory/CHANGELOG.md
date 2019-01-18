@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.8.8] - Jan 17, 2019
+* Added support of values ingress.labels 
+
 ## [7.8.7] - Jan 16, 2019
 * Mount replicator.yaml (config) directly to /replicator_extra_conf
 
