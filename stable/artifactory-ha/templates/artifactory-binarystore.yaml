@@ -162,31 +162,52 @@ data:
 {{- if eq .Values.artifactory.persistence.type "azure-blob" }}
     <!-- Azure Blob Storage -->
     <config version="2">
-      <chain>
-        <provider id="cache-fs" type="cache-fs">
-          <provider id="eventual" type="eventual">
-            <provider id="retry" type="retry">
-              <provider id="azure-blob-storage" type="azure-blob-storage"/>
+        <chain> <!--template="cluster-azure-blob-storage"-->
+            <provider id="cache-fs" type="cache-fs">
+                <provider id="sharding-cluster" type="sharding-cluster">
+                    <sub-provider id="eventual-cluster" type="eventual-cluster">
+                        <provider id="retry-azure-blob-storage" type="retry">
+                            <provider id="azure-blob-storage" type="azure-blob-storage"/>
+                        </provider>
+                    </sub-provider>
+                    <dynamic-provider id="remote" type="remote"/>
+                </provider>
             </provider>
-          </provider>
+        </chain>
+    
+        <!-- cluster eventual Azure Blob Storage Service default chain -->
+        <provider id="sharding-cluster" type="sharding-cluster">
+            <readBehavior>crossNetworkStrategy</readBehavior>
+            <writeBehavior>crossNetworkStrategy</writeBehavior>
+            <redundancy>2</redundancy>
+            <lenientLimit>1</lenientLimit>
+            <property name="zones" value="local,remote"/>
         </provider>
-      </chain>
+    
+        <provider id="remote" type="remote">
+            <zone>remote</zone>
+        </provider>
+    
+        <provider id="eventual-cluster" type="eventual-cluster">
+            <zone>local</zone>
+        </provider>
+    
+        <!-- Set max cache-fs size -->
+        <!--<provider id="cache-fs" type="cache-fs">
+            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+        </provider>
 
-      <!-- Set max cache-fs size -->
-      <provider id="cache-fs" type="cache-fs">
-        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
-      </provider>
+        <provider type="eventual" id="eventual">
+            <numberOfThreads>{{ .Values.artifactory.persistence.eventual.numberOfThreads }}</numberOfThreads>
+        </provider>-->
 
-      <provider type="eventual" id="eventual">
-        <numberOfThreads>{{ .Values.artifactory.persistence.eventual.numberOfThreads }}</numberOfThreads>
-      </provider>
-
-      <provider id="azure-blob-storage" type="azure-blob-storage">
-        <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
-        <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
-        <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
-        <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
-        <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
-      </provider>
+        <!--cluster eventual template-->
+        <provider id="azure-blob-storage" type="azure-blob-storage">
+            <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
+            <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
+            <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
+            <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
+            <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
+        </provider>
     </config>
 {{- end }}
