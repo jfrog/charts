@@ -192,15 +192,6 @@ data:
             <zone>local</zone>
         </provider>
     
-        <!-- Set max cache-fs size -->
-        <!--<provider id="cache-fs" type="cache-fs">
-            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
-        </provider>
-
-        <provider type="eventual" id="eventual">
-            <numberOfThreads>{{ .Values.artifactory.persistence.eventual.numberOfThreads }}</numberOfThreads>
-        </provider>-->
-
         <!--cluster eventual template-->
         <provider id="azure-blob-storage" type="azure-blob-storage">
             <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
