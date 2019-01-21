@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.9] - Jan 18, 2019
+* Fixed the support for Azure Blob Storage Binary provider
+
 ## [0.8.8] - Jan 16, 2019
 * Mount replicator.yaml (config) directly to /replicator_extra_conf
 
