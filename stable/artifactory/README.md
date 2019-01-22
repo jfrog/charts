@@ -197,6 +197,17 @@ Once created, you pass it to `helm`
 helm install --name artifactory --set imagePullSecrets=regsecret jfrog/artifactory
 ```
 
+### Custom init containers
+There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
+
+For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom init containers
+  customInitContainers: |
+    ## Init containers template goes here ##
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
