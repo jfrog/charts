@@ -125,6 +125,17 @@ export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASS
 helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} jfrog/xray
 ```
 
+### Custom init containers
+There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
+
+For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+```
+common:
+  ## Add custom init containers
+  customInitContainers: |
+    ## Init containers template goes here ##
+```
+
 ## Configuration
 The following table lists the configurable parameters of the xray chart and their default values.
 
