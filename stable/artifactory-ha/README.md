@@ -345,7 +345,6 @@ helm install --name artifactory-ha --set imagePullSecrets=regsecret jfrog/artifa
 ```
 
 ## Configuration
-
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
 |         Parameter            |           Description             |                         Default                       |
@@ -359,6 +358,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.pullPolicy`       | Container pull policy                | `IfNotPresent`                             |
 | `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
+| `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |

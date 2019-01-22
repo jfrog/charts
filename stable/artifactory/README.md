@@ -198,7 +198,6 @@ helm install --name artifactory --set imagePullSecrets=regsecret jfrog/artifacto
 ```
 
 ## Configuration
-
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
 |         Parameter         |           Description             |                         Default                          |
@@ -213,6 +212,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.pullPolicy`         | Container pull policy             | `IfNotPresent`                              |
 | `artifactory.image.repository`    | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`        |
 | `artifactory.image.version`       | Container tag                     |  `.Chart.AppVersion`                             |
+| `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
