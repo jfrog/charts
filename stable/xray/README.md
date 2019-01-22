@@ -126,7 +126,6 @@ helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_
 ```
 
 ## Configuration
-
 The following table lists the configurable parameters of the xray chart and their default values.
 
 |         Parameter            |                    Description                   |           Default                  |
@@ -201,6 +200,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
 | `common.stdOutEnabled`                         | Xray enable standard output                  | `true`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `common.customInitContainers`                  | Custom init containers                       | ` `                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |

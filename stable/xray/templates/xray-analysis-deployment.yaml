@@ -108,6 +108,9 @@ spec:
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         - name: setup
           mountPath: "/scripts"
+      {{- if .Values.common.customInitContainers }}
+{{ tpl .Values.common.customInitContainers . | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.analysis.name }}
         image: {{ .Values.analysis.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
