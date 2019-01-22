@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.6"
+initContainerImage: "alpine:3.8"
 imagePullPolicy: IfNotPresent
 
 uid: 1050
@@ -128,6 +128,20 @@ missionControl:
   image: docker.bintray.io/jfrog/mission-control
   ## Note that by default we use appVersion to get image tag
   # version:
+
+  ## Add custom init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: mission-control-data
+
   missionControlUrl:
   podRestartTime:
   repository: jfrog-mission-control

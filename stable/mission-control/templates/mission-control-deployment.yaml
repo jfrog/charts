@@ -62,6 +62,9 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+    {{- if .Values.missionControl.customInitContainers }}
+{{ tpl .Values.missionControl.customInitContainers . | indent 6}}
+    {{- end }}
       containers:
       - name: {{ .Values.missionControl.name }}
         image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
