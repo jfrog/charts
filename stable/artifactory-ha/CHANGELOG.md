@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.10] - Jan 22, 2019
+* Added support for `artifactory.customInitContainers` to create custom init containers
+
 ## [0.8.9] - Jan 18, 2019
 * Added support of values ingress.labels 
 
