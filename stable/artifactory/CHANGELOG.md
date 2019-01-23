@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.9.0] - Jan 23, 2019
+* Updated Artifactory version to 6.7.0
+
 ## [7.8.9] - Jan 22, 2019
 * Added support for `artifactory.customInitContainers` to create custom init containers
 
