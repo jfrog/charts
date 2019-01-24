@@ -124,9 +124,19 @@ In cases where a new version is not compatible with existing deployed version (l
 * Update DNS to point to new Distribution service
 * Remove old release
 
+## Custom init containers
+There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
+
+For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+```
+distribution:
+  ## Add custom init containers
+  customInitContainers: |
+    ## Init containers template goes here ##
+```
+
 
 ## Configuration
-
 The following table lists the configurable parameters of the distribution chart and their default values.
 
 |         Parameter                            |           Description                      |               Default              |
@@ -174,6 +184,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.image.repository`              | Container image                            | `docker.jfrog.io/jf-distribution`  |
 | `distribution.image.version`                 | Container image tag                        | `.Chart.AppVersion`                |
 | `distribution.service.type`                  | Distribution service type                  | `LoadBalancer`                     |
+| `distribution.customInitContainers`          | Custom init containers for Distribution    |                                    |
 | `distribution.externalPort`                  | Distribution service external port         | `80`                               |
 | `distribution.internalPort`                  | Distribution service internal port         | `8080`                             |
 | `distribution.masterKey`                     | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
