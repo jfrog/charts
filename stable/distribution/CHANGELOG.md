@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [2.1.2] - Jan 24, 2019
+* Added support for `distribution.customInitContainers` to create custom init containers for Distribution pod
+
 ## [2.1.1] - Jan 15, 2019
 * add master key as env var in Distribution
 
