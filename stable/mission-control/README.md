@@ -51,8 +51,18 @@ Once you have a new chart version, you can update your deployment with
 helm upgrade mission-control jfrog/mission-control
 ```
 
-## Configuration
+### Custom init containers
+There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
+For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+```
+missionControl:
+  ## Add custom init containers
+  customInitContainers: |
+    ## Init containers template goes here ##
+```
+
+## Configuration
 The following table lists the configurable parameters of the distribution chart and their default values.
 
 |         Parameter                            |           Description                           |          Default                      |
@@ -96,6 +106,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `missionControl.replicaCount`                | Mission Control replica count                   | `1`                                   |
 | `missionControl.image`                       | Container image                                 | `docker.jfrog.io/jfrog/mission-control`     |
 | `missionControl.version`                     | Container image tag                             | `3.1.2`                               |
+| `missionControl.customInitContainers`        | Custom init containers                          | ``                                    |
 | `missionControl.service.type`                | Mission Control service type                    | `LoadBalancer`                        |
 | `missionControl.externalPort`                | Mission Control service external port           | `80`                                  |
 | `missionControl.internalPort`                | Mission Control service internal port           | `8080`                                |
