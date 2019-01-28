@@ -147,7 +147,7 @@ To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](htt
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
 
 #### Microsoft Azure Blob Storage
-To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageBinaryProvider)
+To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider)
 - Pass Azure Blob Storage parameters to `helm install` and `helm upgrade`
 ```bash
 ...
