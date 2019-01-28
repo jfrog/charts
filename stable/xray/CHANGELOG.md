@@ -1,6 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.2] - Jan 24, 2019
+* Added missing documentation about using `mongodb.enabled=false` when using external MongoDB
+
+## [0.8.1] - Jan 22, 2019
+* Added support for `common.customInitContainers` to create custom init containers
+
 ## [0.8.0] - Jan 1, 2019
 * Updated Xray version to 2.6.0
 

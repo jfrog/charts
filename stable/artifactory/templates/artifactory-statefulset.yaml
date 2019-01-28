@@ -68,6 +68,9 @@ spec:
       {{- end }}
             sleep 2;
           done;
+    {{- if .Values.artifactory.customInitContainers }}
+{{ tpl .Values.artifactory.customInitContainers . | indent 6}}
+    {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'

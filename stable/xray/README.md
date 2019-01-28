@@ -90,7 +90,7 @@ There is an option to use external database services (MongoDB or PostgreSQL) for
 #### MongoDB
 To use an external **MongoDB**, You need to set Xray **MongoDB** connection URL.
 
-For this, pass the parameter: `global.mongoUrl=${XRAY_MONGODB_CONN_URL}`.
+For this, pass the parameter: `mongodb.enabled=false` and `global.mongoUrl=${XRAY_MONGODB_CONN_URL}`.
 
 **IMPORTANT:** Make sure the DB is already created before deploying Xray services
 ```bash
@@ -103,7 +103,10 @@ For this, pass the parameter: `global.mongoUrl=${XRAY_MONGODB_CONN_URL}`.
 # MongoDB password: password1_X
 
 export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABASE}\&authMechanism=SCRAM-SHA-1'
-helm install -n xray --set global.mongoUrl=${XRAY_MONGODB_CONN_URL} jfrog/xray
+helm install -n xray \
+    --set mongodb.enabled=false \
+    --set global.mongoUrl=${XRAY_MONGODB_CONN_URL} \
+    jfrog/xray
 ```
 
 #### PostgreSQL
@@ -122,11 +125,24 @@ For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql
 # PostgreSQL password: password2_X
 
 export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable'
-helm install -n xray --set postgresql.enabled=false,global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} jfrog/xray
+helm install -n xray \
+    --set postgresql.enabled=false \
+    --set global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} \
+    jfrog/xray
+```
+
+### Custom init containers
+There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
+
+For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+```
+common:
+  ## Add custom init containers
+  customInitContainers: |
+    ## Init containers template goes here ##
 ```
 
 ## Configuration
-
 The following table lists the configurable parameters of the xray chart and their default values.
 
 |         Parameter            |                    Description                   |           Default                  |
@@ -201,6 +217,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
 | `common.stdOutEnabled`                         | Xray enable standard output                  | `true`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `common.customInitContainers`                  | Custom init containers                       | ` `                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |

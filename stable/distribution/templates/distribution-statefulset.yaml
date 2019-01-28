@@ -48,6 +48,9 @@ spec:
         {{- if .Values.postgresql.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
         {{- end }}
+    {{- if .Values.distribution.customInitContainers }}
+{{ tpl .Values.distribution.customInitContainers . | indent 6}}
+    {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
