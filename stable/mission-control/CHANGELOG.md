@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.3] - Jan 31, 2019
+* Add 0.5G to all memory limits for java services to be higher than java xmx value
+
 ## [0.7.2] - Jan 23, 2019
 * Added support for `missionControl.customInitContainers` to create custom init containers
 
