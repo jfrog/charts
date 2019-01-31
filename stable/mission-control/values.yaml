@@ -171,7 +171,7 @@ missionControl:
     # storageClass: "-"
 
   ## Control Java options (JAVA_OPTIONS)
-  ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
+  ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
   javaOpts:
     other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
   #  xms: "2g"
@@ -181,7 +181,7 @@ missionControl:
   #    memory: "2Gi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "3Gi"
+  #    memory: "3.5Gi"
   #    cpu: "1"
   nodeSelector: {}
 
@@ -274,7 +274,7 @@ insightScheduler:
   internalPort: 8080
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
-  ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
+  ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
   javaOpts: {}
   #  other:
   #  xms: "500m"
@@ -284,7 +284,7 @@ insightScheduler:
   #    memory: "500Mi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "3Gi"
+  #    memory: "3.5Gi"
   #    cpu: "1"
   nodeSelector: {}
 
@@ -324,7 +324,7 @@ insightExecutor:
   internalPort: 8080
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
-  ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
+  ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
   javaOpts: {}
   #  other:
   #  xms: "500m"
@@ -334,7 +334,7 @@ insightExecutor:
   #    memory: "500Mi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "3Gi"
+  #    memory: "3.5Gi"
   #    cpu: "1"
   nodeSelector: {}
 
