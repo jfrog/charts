@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.9.1] - Feb 3, 2019
+* Updated Artifactory version to 6.7.1
+
 ## [7.9.0] - Jan 23, 2019
 * Updated Artifactory version to 6.7.0
 
