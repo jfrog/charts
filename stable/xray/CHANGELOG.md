@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.3] - Feb 4, 2019
+* Updated Xray version to 2.6.3
+
 ## [0.8.2] - Jan 24, 2019
 * Added missing documentation about using `mongodb.enabled=false` when using external MongoDB
 
