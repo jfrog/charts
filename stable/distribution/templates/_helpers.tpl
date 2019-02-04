@@ -4,14 +4,14 @@
 Expand the name of the chart.
 */}}
 {{- define "distribution.name" -}}
-{{- default .Chart.Name .Values.distribution.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.distribution.name .Values.distributionNameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 The distributor name
 */}}
 {{- define "distributor.name" -}}
-{{- default .Chart.Name .Values.distributor.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.distributor.name .Values.distributorNameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -86,7 +86,7 @@ Create chart name and version as used by the chart label.
 Expand the name of the chart.
 */}}
 {{- define "redis.name" -}}
-{{- printf "%s-%s" .Chart.Name "redis" | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.redis.name .Values.redisNameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*

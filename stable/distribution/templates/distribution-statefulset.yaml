@@ -55,10 +55,6 @@ spec:
       - name: {{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
-        command:
-        - '/bin/sh'
-        - '-c'
-        - 'sh /scripts/startup.sh'
         securityContext:
           allowPrivilegeEscalation: false
         ports:
@@ -77,7 +73,7 @@ spec:
                   -Xmx{{ .Values.distribution.javaOpts.xmx }}
                   {{- end}}
                   {{- if .Values.distribution.serviceId }}
-                  -Djfrog.distribution.platform.serviceId={{ .Values.distribution.serviceId }}
+                  -Djfrog.distribution.platform.distributionServiceId={{ .Values.distribution.serviceId }}
                   {{- end}}
                   -Dspring.profiles.active=production'
       {{- if .Values.distribution.masterKey }}
@@ -127,12 +123,14 @@ spec:
               key: db-password
       {{- end }}
       {{- end }}
+        - name: REDIS_HOST
+          value: 'localhost'
         - name: REDIS_PORT
           value: '{{ .Values.redis.port }}'
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-redis-connection
+              name: {{ template "distribution.fullname" . }}-redis-secret
               key: password
         - name: BT_ARTIFACTORY_URL
           value: {{ .Values.distribution.env.artifactoryUrl | quote }}
@@ -155,8 +153,6 @@ spec:
           value: {{ .Values.distribution.env.artifactoryCi1Url }}
         {{- end }}
         volumeMounts:
-        - name: startup
-          mountPath: "/scripts"
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
         resources:
@@ -174,6 +170,77 @@ spec:
             port: {{ .Values.distribution.internalPort }}
           initialDelaySeconds: 60
           periodSeconds: 10
+      - name: {{ .Values.distributor.name }}
+        image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
+        imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+            - '/bin/sh'
+              - '-c'
+              - 'sh /scripts/startup.sh'
+        env:
+        - name: DEFAULT_JAVA_OPTS
+          value: '-Ddistribution.home={{ .Values.distributor.persistence.mountPath }}
+                  -Djfrog.distributor.distribution.internal-api-url=http://localhost:{{ .Values.distribution.internalPort }}/api/internal
+                  -Dfile.encoding=UTF8 -Dcom.sun.management.jmxremote.authenticate=false
+                  -Dcom.sun.management.jmxremote.ssl=false -Duser.timezone=UTC
+                  {{- if .Values.distributor.javaOpts.xms }}
+                  -Xms{{ .Values.distributor.javaOpts.xms }}
+                  {{- end}}
+                  {{- if .Values.distributor.javaOpts.xmx }}
+                  -Xmx{{ .Values.distributor.javaOpts.xmx }}
+                  {{- end}}
+                  -Dspring.profiles.active=production'
+        - name: REDIS_HOST
+          value: 'localhost'
+        - name: REDIS_PORT
+          value: '{{ .Values.redis.port }}'
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "distribution.fullname" . }}-redis-secret
+              key: password
+        volumeMounts:
+        - name: distributor-data
+          mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.distributor.resources | indent 10 }}
+      - name: {{ template "redis.name" . }}
+        image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        env:
+        - name: REDIS_REPLICATION_MODE
+          value: master
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "distribution.fullname" . }}-redis-secret
+              key: password
+        - name: REDIS_PORT
+        value: {{ .Values.redis.port | quote }}
+        - name: REDIS_DISABLE_COMMANDS
+          value: {{ .Values.redis.disableCommands }}
+        ports:
+        - name: redis
+          containerPort: {{ .Values.redis.port }}
+        readinessProbe:
+          initialDelaySeconds: 10
+          exec:
+            command:
+            - redis-cli
+            - ping
+        livenessProbe:
+          initialDelaySeconds: 30
+          exec:
+            command:
+            - redis-cli
+            - ping
+        resources:
+{{ toYaml .Values.redis.resources | indent 10 }}
+        volumeMounts:
+        - name: redis-data
+          mountPath: {{ .Values.redis.persistence.path }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -187,9 +254,6 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      - name: startup
-        configMap:
-          name: {{ template "distribution.fullname" . }}-startup
   {{- if not .Values.distribution.persistence.enabled }}
       - name: distribution-data
         emptyDir: {}
