@@ -1,6 +1,15 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.0.0] - Jan 31, 2019
+* Join distribution, distributor and redis to a single pod
+* Distributor internal communication token generated and consumed automatically
+* **UPGRADE NOTES:** For upgrading an existing deployment (pre 1.5.1), follow the following:
+  * Distribution should be idle. This means not have any distributions in queue or in process
+  * If in HA (replicaCount > 1)
+    * Scale down **existing deployment** to 1 with `helm upgrade .... --set replicaCount=1 ....`.
+    * Once upgraded and new version is running, scale back up to the original size.
+    
 ## [2.1.2] - Jan 24, 2019
 * Added support for `distribution.customInitContainers` to create custom init containers for Distribution pod
 

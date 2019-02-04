@@ -203,7 +203,6 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.image.pullPolicy`               | Container pull policy                      | `IfNotPresent`                     |
 | `distributor.image.repository`               | Container image                            | `docker.jfrog.io/jf-distribution`  |
 | `distributor.image.version`                  | Container image tag                        | `.Chart.AppVersion`                |
-| `distributor.token`                          | Distributor token                          | ` `                                |
 | `distributor.persistence.mountPath`          | Distributor persistence volume mount path  | `"/bt-distributor"`                |
 | `distributor.persistence.existingClaim`      | Provide an existing PersistentVolumeClaim  | `nil`                              |
 | `distributor.persistence.storageClass`       | Storage class of backing PVC | `nil (uses alpha storage class annotation)`      |
