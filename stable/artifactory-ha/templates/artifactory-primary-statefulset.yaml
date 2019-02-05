@@ -213,9 +213,6 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-        - name: artifactory-inactiveservercleaner
-          mountPath: "/tmp/plugins/inactiveServerCleaner.groovy"
-          subPath: inactiveServerCleaner.groovy
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
@@ -312,9 +309,6 @@ spec:
         configMap:
           name: {{ .Values.artifactory.configMapName }}
       {{- end}}
-      - name: artifactory-inactiveservercleaner
-        configMap:
-          name: {{ template "artifactory-ha.fullname" . }}-isc
       {{- if .Values.artifactory.license.secret }}
       - name: artifactory-license
         secret:

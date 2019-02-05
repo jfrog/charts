@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.3] - Feb 5, 2019
+* Remove the inactive server remove plugin
+
 ## [0.9.2] - Feb 3, 2019
 * Updated Artifactory version to 6.7.2
 
