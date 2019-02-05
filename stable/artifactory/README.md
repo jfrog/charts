@@ -261,6 +261,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
 | `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
 | `artifactory.replicator.publicUrl`            | Artifactory Replicator Public URL |                                      |
+| `artifactory.terminationGracePeriodSeconds`   | Termination grace period (seconds)  | `30s`                                |
 | `ingress.enabled`           | If true, Artifactory Ingress will be created | `false`                                     |
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |

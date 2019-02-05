@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.9.2] - Feb 5, 2019
+* Add support for customizing statefulset `terminationGracePeriodSeconds`
+
 ## [7.9.1] - Feb 3, 2019
 * Updated Artifactory version to 6.7.2
 

@@ -239,6 +239,7 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.artifactory.primary.resources | indent 10 }}
+        terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
         {{- if .Values.artifactory.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
