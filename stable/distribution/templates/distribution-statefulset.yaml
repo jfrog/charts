@@ -175,10 +175,6 @@ spec:
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
-        command:
-            - '/bin/sh'
-              - '-c'
-              - 'sh /scripts/startup.sh'
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distributor.persistence.mountPath }}
