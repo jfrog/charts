@@ -448,6 +448,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.javaOpts.xms`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.xmx`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.other`               | Artifactory member node additional java options  |                     |
+| `artifactory.terminationGracePeriodSeconds`     | Termination grace period (seconds)               | `30s`               |
 | `ingress.enabled`           | If true, Artifactory Ingress will be created | `false`                                     |
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |
