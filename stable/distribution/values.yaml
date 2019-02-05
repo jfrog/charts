@@ -106,6 +106,7 @@ database:
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
 redis:
+  name: redis
   image:
     repository: docker.io/bitnami/redis
     tag: 4.0.11-debian-9
@@ -222,7 +223,6 @@ distributor:
     ## Note that by default we use appVersion to get image tag
     # version:
     imagePullPolicy: IfNotPresent
-  token:
   resources: {}
   #  requests:
   #    memory: "2Gi"
