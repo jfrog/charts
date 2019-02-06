@@ -9,7 +9,7 @@
 This chart will do the following:
 
 * Deploy Artifactory-Pro/Artifactory-Edge (or OSS if set custom image)
-* Deploy a PostgreSQL database using the jfrog/postgresql chart
+* Deploy a PostgreSQL database using the stable/postgresql chart (can be changed)
 * Deploy an optional Nginx server
 * Optionally expose Artifactory with Ingress [Ingress documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 
@@ -32,6 +32,15 @@ By default it will run Artifactory-Pro to run Artifactory-Oss use following comm
 ```bash
 helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
 ```
+
+### Deploying Artifactory with embedded Derby database
+By default, this chart deploys Artifactory with PostgreSQL (running in a separate pod).
+It's possible to deploy Artifactory without PostgreSQL (or any other external database), which will default to the embedded [Derby database](https://db.apache.org/derby/).
+```bash
+# Disable the default postgresql
+helm install --name artifactory --set postgresql.enabled=false jfrog/artifactory
+```
+Artifactory will start with it's embedded Derby database.
 
 ### Deploying Artifactory with replicator
 The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replicator) is used with an [Enterprise Plus](https://www.jfrog.com/confluence/display/EP/Welcome+to+JFrog+Enterprise+Plus) license.
