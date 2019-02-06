@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.4] - Feb 6, 2019
+* Updated Postgres version to 9.6.11
+
 ## [0.8.3] - Feb 4, 2019
 * Updated Xray version to 2.6.3
 
