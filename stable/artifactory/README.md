@@ -9,7 +9,7 @@
 This chart will do the following:
 
 * Deploy Artifactory-Pro/Artifactory-Edge (or OSS if set custom image)
-* Deploy a PostgreSQL database using the jfrog/postgresql chart (can be changed)
+* Deploy a PostgreSQL database using the stable/postgresql chart (can be changed)
 * Deploy an optional Nginx server
 * Optionally expose Artifactory with Ingress [Ingress documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 
