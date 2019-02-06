@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.5] - Feb 6, 2019
+* Fix support for customizing statefulset `terminationGracePeriodSeconds`
+
 ## [0.9.4] - Feb 5, 2019
 * Add support for customizing statefulset `terminationGracePeriodSeconds`
 

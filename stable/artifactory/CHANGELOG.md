@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.9.4] - Feb 6, 2019
+* Fix support for customizing statefulset `terminationGracePeriodSeconds`
+
 ## [7.9.3] - Feb 5, 2019
 * Add instructions on how to deploy Artifactory with embedded Derby database
 
