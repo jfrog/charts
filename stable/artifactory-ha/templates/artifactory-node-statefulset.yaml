@@ -75,6 +75,18 @@ spec:
 {{ tpl .Values.artifactory.customInitContainers . | indent 6}}
     {{- end }}
       containers:
+      {{- range .Values.artifactory.loggers }}
+      - name: {{ . | replace "_" "-" }}
+        image: busybox
+        command:
+        - tail
+        args:
+        - "-f"
+        - "/data/logs/{{ . }}.log"
+        volumeMounts:
+        - name: volume
+          mountPath: /data
+      {{- end }}
       - name: {{ .Values.artifactory.name }}
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
