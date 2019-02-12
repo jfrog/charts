@@ -218,6 +218,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.stdOutEnabled`                         | Xray enable standard output                  | `true`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `common.customInitContainers`                  | Custom init containers                       | ` `                  |
+| `common.indexAllBuilds`                        | Whether to index all builds in artifactory   | false                |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |

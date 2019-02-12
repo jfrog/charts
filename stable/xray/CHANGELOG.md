@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.5] - Feb 11, 2019
+* Add an option to set the indexAllBuilds configuration option in order to index all the builds in artifactory
+
 ## [0.8.4] - Feb 6, 2019
 * Updated Postgres version to 9.6.11
 
