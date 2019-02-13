@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.9.5] - Feb 12, 2019
+*  Add support for tail sidecars to view logs from k8s api
+
 ## [7.9.4] - Feb 6, 2019
 * Fix support for customizing statefulset `terminationGracePeriodSeconds`
 

@@ -232,6 +232,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.pullPolicy`         | Container pull policy             | `IfNotPresent`                              |
 | `artifactory.image.repository`    | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`        |
 | `artifactory.image.version`       | Container tag                     |  `.Chart.AppVersion`                             |
+| `artifactory.logger.image.repository`| repository for logger image | `busybox`                                           |
+| `artifactory.logger.image.tag`       | tag for logger image | `1.30`                                                     |
+| `artifactory.logger.names`           | Artifactory loggers (see values.yaml for possible values) | `[]`                  |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
