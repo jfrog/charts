@@ -250,6 +250,24 @@ spec:
           failureThreshold: {{ .Values.artifactory.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.artifactory.livenessProbe.successThreshold }}
         {{- end }}
+      {{- with .Values.artifactory.logger }}
+      {{- $image := .image.repository }}
+      {{- $tag := .image.tag }}
+      {{- $mountPath := $.Values.artifactory.persistence.mountPath }}
+      {{- range .names }}
+      - name: {{ . | replace "_" "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+        - tail
+        args:
+        - "-F"
+        - "{{ $mountPath }}/logs/{{ . }}.log"
+        volumeMounts:
+        - name: volume
+          mountPath: {{ $mountPath }}
+      {{- end }}
+      {{- end }}
     {{- with .Values.artifactory.node.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}

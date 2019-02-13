@@ -344,6 +344,13 @@ Once created, you pass it to `helm`
 helm install --name artifactory-ha --set imagePullSecrets=regsecret jfrog/artifactory-ha
 ```
 
+### Logger sidecars
+
+This chart provides thee option to add sidecars to tail various types of logs from artifactory. To see the potential values check the `artifactory.logger.names` value in `values.yaml`
+
+To access a specific log run `kubectl logs -n <ARTIFACTORY_NAMESPACE> <ARTIFACTORY_POD_NAME> -c <LOG_NAME>`.
+
+
 ### Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
@@ -369,6 +376,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.pullPolicy`       | Container pull policy                | `IfNotPresent`                             |
 | `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
+| `artifactory.logger.image.repository`| repository for logger image | `busybox`                                           |
+| `artifactory.logger.image.tag`       | tag for logger image | `1.30`                                                     |
+| `artifactory.logger.names`           | Artifactory loggers (see values.yaml for possible values) | `[]`                  |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |

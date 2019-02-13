@@ -114,6 +114,19 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+  logger:
+    image:
+      repository: busybox
+      tag: 1.30
+    names: []  # add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+    # - request
+    # - event
+    # - binarystore
+    # - request_trace
+    # - access
+    # - artifactory
+    # - build_info_migration
+
   ## Add custom init containers
   customInitContainers: |
   #  - name: "custom-setup"
