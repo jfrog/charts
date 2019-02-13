@@ -190,7 +190,9 @@ helm install --name artifactory-ha --set artifactory.masterKeySecretName=my-secr
 
 ### Install Artifactory HA license
 For activating Artifactory HA, you must install an appropriate license. There are two ways to manage the license. **Artifactory UI** or a **Kubernetes Secret**.
+
 The easier and recommended way is the **Artifactory UI**. Using the **Kubernetes Secret** is for advanced users and is better suited for automation.
+
 **IMPORTANT:** You should use only one of the following methods. Switching between them while a cluster is running might disable your Artifactory HA cluster!
 
 ##### Artifactory UI

@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.7] - Feb 13, 2019
+* Updated Artifactory version to 6.7.3
+
 ## [0.9.6] - Feb 7, 2019
 * Add support for tail sidecars to view logs from k8s api
 
