@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.0.1] - Feb 14, 2019
+* Add support for `distribution.service.loadBalancerSourceRanges` to set whitelist on load balancer
+
 ## [3.0.0] - Feb 04, 2019
 * Join distribution, distributor and redis to a single pod
 * Distributor internal communication token generated and consumed automatically

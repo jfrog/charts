@@ -177,13 +177,14 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.nodeSelector`                         | Redis node selector                        | `{}`                               |
 | `redis.affinity`                             | Redis node affinity                        | `{}`                               |
 | `redis.tolerations`                          | Redis node tolerations                     | `[]`                               |
-| `common.uid`                                 | Distribution and Distributor process user ID               | `1020`                             |
-| `common.gid`                                 | Distribution and Distributor process group ID              | `1020`                             |
+| `common.uid`                                 | Distribution and Distributor process user ID               | `1020`             |
+| `common.gid`                                 | Distribution and Distributor process group ID              | `1020`             |
 | `distribution.name`                          | Distribution name                          | `distribution`                     |
 | `distribution.image.pullPolicy`              | Container pull policy                      | `IfNotPresent`                     |
 | `distribution.image.repository`              | Container image                            | `docker.jfrog.io/jf-distribution`  |
 | `distribution.image.version`                 | Container image tag                        | `.Chart.AppVersion`                |
 | `distribution.service.type`                  | Distribution service type                  | `LoadBalancer`                     |
+| `distribution.service.loadBalancerSourceRanges`  | Distribution service whitelist         | `[]`                               |
 | `distribution.customInitContainers`          | Custom init containers for Distribution    |                                    |
 | `distribution.externalPort`                  | Distribution service external port         | `80`                               |
 | `distribution.internalPort`                  | Distribution service internal port         | `8080`                             |
