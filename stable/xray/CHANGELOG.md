@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.0] - Feb 14, 2019
+* Updated Xray version to 2.7.0
+
 ## [0.8.5] - Feb 11, 2019
 * Add an option to set the indexAllBuilds configuration option in order to index all the builds in artifactory
 
