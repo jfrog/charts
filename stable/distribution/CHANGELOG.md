@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.1.0] - Feb 18, 2019
+* Update Distribution version 1.6.0
+
 ## [3.0.2] - Feb 17, 2019
 * Add `component` label to missing objects
 
@@ -8,6 +11,7 @@ All changes to this project chart be documented in this file.
 * Add support for `distribution.service.loadBalancerSourceRanges` to set whitelist on load balancer
 
 ## [3.0.0] - Feb 04, 2019
+* Update Distribution version 1.5.1
 * Join distribution, distributor and redis to a single pod
 * Distributor internal communication token generated and consumed automatically
 * **UPGRADE NOTES:** For upgrading an existing deployment (pre 1.5.1), follow the following:
