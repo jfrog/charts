@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.0.2] - Feb 17, 2019
+* Add `component` label to missing objects
+
 ## [3.0.1] - Feb 14, 2019
 * Add support for `distribution.service.loadBalancerSourceRanges` to set whitelist on load balancer
 
