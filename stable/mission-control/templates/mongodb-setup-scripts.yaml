@@ -1,3 +1,4 @@
+{{- if .Values.mongodb.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -74,5 +75,5 @@ data:
     createUserDB("insight_team", jiUser);
     createUserDB("{{ .Values.mongodb.db.insightSchedulerDb }}", jiUser)
 
-
+{{- end }}
 

@@ -10,6 +10,11 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.missionControl.replicaCount }}
+  strategy:
+      type: RollingUpdate
+      rollingUpdate:
+         maxSurge: 0
+         maxUnavailable: 1
   selector:
     matchLabels:
       app: {{ template "mission-control.name" . }}
@@ -30,6 +35,266 @@ spec:
       securityContext:
         fsGroup: {{ .Values.uid }}
       initContainers:
+      - name: "wait-for-db"
+        image: "{{ .Values.initContainerImage }}"
+        command:
+        - 'sh'
+        - '-c'
+        - >
+      {{- if .Values.postgresql.enabled }}
+          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; \
+      {{- else }}
+        {{- if and .Values.database.host .Values.database.port }}
+          until nc -z -w 2 {{ .Values.database.host }} {{ .Values.database.port }} && echo database ok; \
+        {{- else }}
+          until true; \
+        {{- end }}
+      {{- end }}
+      {{- if .Values.mongodb.enabled }}
+                nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo mongodb ok && \
+      {{- end }}
+      {{- if .Values.elasticsearch.enabled }}
+                nc -z -w 2 {{ .Release.Name }}-elasticsearch {{ .Values.elasticsearch.service.port }} && echo elasticsearch ok;
+      {{- end }}
+            do sleep 2;
+          done;
+    {{- if .Values.mongodb.enabled }}
+      - name: mongodb-setup
+        image: "{{ .Values.dbSetup.mongodb.image.repository }}:{{ .Values.dbSetup.mongodb.image.tag }}"
+        env:
+        - name: MONGODB_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: adminPassword
+        - name: MONGODB_MC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: mcPassword
+        - name: MONGODB_INSIGHT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: insightPassword
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/setup.sh'
+        volumeMounts:
+        - name: mongodb-setup
+          mountPath: "/scripts"
+    {{- end }}
+    {{- if .Values.postgresql.enabled }}
+      - name: postgresql-setup
+        image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
+        env:
+        - name: DB_PORT
+          value: '{{ .Values.postgresql.service.port }}'
+        - name: DB_HOST
+          value: '{{ .Release.Name }}-postgresql'
+        - name: DB_NAME
+          value: '{{ .Values.postgresql.db.name }}'
+        - name: DB_SSLMODE
+          value: '{{ .Values.postgresql.db.sslmode }}'
+        - name: DB_TABLESPACE
+          value: '{{ .Values.postgresql.db.tablespace }}'
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: postgresPassword
+        - name: JFMC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfmcPassword
+        - name: JFMC_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfmcUsername }}'
+        - name: JFMC_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfmcSchema }}'
+        - name: JFEX_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfexPassword
+        - name: JFEX_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfexUsername }}'
+        - name: JFEX_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfexSchema }}'
+        - name: JFSC_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfscUsername }}'
+        - name: JFSC_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfscSchema }}'
+        - name: JFSC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfscPassword
+        - name: JFIS_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfisUsername }}'
+        - name: JFIS_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfisSchema }}'
+        - name: JFIS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfisPassword
+        command:
+        - 'bash'
+        - '-c'
+        - 'su postgres -c "PGPASSWORD=${PGPASSWORD} bash /scripts/createPostgresUsers.sh all"'
+        volumeMounts:
+        - name: postgresql-setup
+          mountPath: "/scripts"
+    {{- end }}
+      - name: "set-properties"
+        image: "{{ .Values.initContainerImage }}"
+        env:
+      {{- if .Values.postgresql.enabled }}
+        - name: JFMC_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfmcUsername }}'
+        - name: JFMC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfmcPassword
+        - name: JFEX_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfexUsername }}'
+        - name: JFEX_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfexPassword
+        - name: JFSC_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfscUsername }}'
+        - name: JFSC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfscPassword
+        - name: JFIS_DB_USERNAME
+          value: '{{ .Values.postgresql.db.jfisUsername }}'
+        - name: JFIS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              key: jfisPassword
+      {{- else }}
+        {{- if .Values.database.secrets.user }}
+        - name: JFMC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        - name: JFEX_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        - name: JFSC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        - name: JFIS_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        {{- end }}
+        {{- if .Values.database.secrets.password }}
+        - name: JFMC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        - name: JFEX_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        - name: JFSC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        - name: JFIS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        {{- else }}
+          {{- if and .Values.database.user .Values.database.password }}
+        - name: JFMC_DB_USERNAME
+          value: '{{ .Values.database.user }}'
+        - name: JFMC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: dbPassword
+        - name: JFEX_DB_USERNAME
+          value: '{{ .Values.database.user }}'
+        - name: JFEX_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: dbPassword
+        - name: JFSC_DB_USERNAME
+          value: '{{ .Values.database.user }}'
+        - name: JFSC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: dbPassword
+        - name: JFIS_DB_USERNAME
+          value: '{{ .Values.database.user }}'
+        - name: JFIS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: dbPassword
+          {{- else }}
+        - name: JFMC_DB_USERNAME
+          value: '{{ .Values.database.jfmcUsername }}'
+        - name: JFMC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfmcPassword
+        - name: JFEX_DB_USERNAME
+          value: '{{ .Values.database.jfexUsername }}'
+        - name: JFEX_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfexPassword
+        - name: JFSC_DB_USERNAME
+          value: '{{ .Values.database.jfscUsername }}'
+        - name: JFSC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfscPassword
+        - name: JFIS_DB_USERNAME
+          value: '{{ .Values.database.jfisUsername }}'
+        - name: JFIS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfisPassword
+          {{- end }}
+        {{- end }}
+      {{- end }}
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/setProperties.sh'
+        volumeMounts:
+        - name: jfmc-setup-scripts
+          mountPath: "/scripts"
+        - name: mission-control-data
+          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
       - name: "prepare-storage"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -41,27 +306,6 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-      - name: "wait-for-db"
-        image: "{{ .Values.initContainerImage }}"
-        command:
-        - 'sh'
-        - '-c'
-        - >
-          until nc -z -w 2 {{ .Release.Name }}-mongodb 27017 && echo mongodb ok && \
-                nc -z -w 2 {{ .Release.Name }}-elasticsearch 9200 && echo elasticsearch ok;
-            do sleep 2;
-          done;
-          sleep 10
-      - name: set-password
-        image: "{{ .Values.initContainerImage }}"
-        command:
-        - 'sh'
-        - '-c'
-        - >
-          chown -R {{ .Values.uid }}:{{ .Values.uid }} {{ .Values.missionControl.persistence.mountPath }};
-        volumeMounts:
-        - name: mission-control-data
-          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
     {{- if .Values.missionControl.customInitContainers }}
 {{ tpl .Values.missionControl.customInitContainers . | indent 6}}
     {{- end }}
@@ -70,6 +314,30 @@ spec:
         image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
+      {{- if .Values.postgresql.enabled }}
+        - name: DB_TYPE
+          value: 'postgresql'
+        - name: DB_SSLMODE
+          value: '{{ .Values.postgresql.db.sslmode }}'
+        - name: DB_NAME
+          value: '{{ .Values.postgresql.db.name }}'
+        - name: DB_TABLESPACE
+          value: '{{ .Values.postgresql.db.tablespace }}'
+        - name: JFMC_DB_URL
+          value: 'jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.db.name }}?currentSchema={{ .Values.postgresql.db.jfmcSchema }}'
+      {{- else }}
+        - name: DB_TYPE
+          value: '{{ .Values.database.type }}'
+        - name: DB_NAME
+          value: '{{ .Values.database.name }}'
+        - name: DB_HOST
+          value: '{{ .Values.database.host }}'
+        - name: DB_PORT
+          value: '{{ .Values.database.port }}'
+        - name: JFMC_DB_URL
+          value: 'jdbc:postgresql://{{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}?currentSchema={{ .Values.database.jfmcSchema }}'
+      {{- end }}
+      {{- if .Values.mongodb.enabled }}
         - name: SPRING_DATA_MONGODB_HOST
           value: '{{ .Release.Name }}-mongodb'
         - name: SPRING_DATA_MONGODB_PORT
@@ -83,8 +351,9 @@ spec:
               key: mcPassword
         - name: SPRING_DATA_MONGODB_DATABASE
           value: '{{ .Values.mongodb.db.missionControl }}'
+      {{- end }}
         - name: INSIGHT_URL
-          value: "http://{{ template "insight-server.fullname" . }}:{{ .Values.insightServer.internalHttpPort }}"
+          value: "http://localhost:{{ .Values.insightServer.internalHttpPort }}"
         - name: POD_RESTART_TIME
           value: "{{ .Values.podRestartTime }}"
         - name: ARTIFACTORY_CLIENT_CONNECTIONTIMEOUT
@@ -120,7 +389,7 @@ spec:
         - name: JFMC_APP_NAME
           value: "{{ .Values.missionControl.appName }}"
         - name: JFSC_URL
-          value: 'http://{{ template "insight-scheduler.fullname" . }}:{{ .Values.insightScheduler.internalPort }}'
+          value: 'http://localhost:{{ .Values.insightScheduler.internalPort }}'
         - name: JFMC_REPOSITORY
           value: "{{ .Values.missionControl.repository }}"
         - name: JFMC_PACKAGE
@@ -148,13 +417,235 @@ spec:
             path: /api/v3/ping
             port: {{ .Values.missionControl.internalPort }}
           periodSeconds: 10
-          initialDelaySeconds: 240
+          initialDelaySeconds: 600
         readinessProbe:
           httpGet:
             path: /api/v3/ping
             port: {{ .Values.missionControl.internalPort }}
+          periodSeconds: 20
+          initialDelaySeconds: 120
+      - name: {{ .Values.insightServer.name }}
+        image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: JFIS_URL
+          value: 'http://localhost:{{ .Values.insightServer.internalHttpPort }}'
+        - name: JFEX_URL
+          value: 'http://localhost:{{ .Values.insightExecutor.internalPort }}'
+        - name: JFSC_URL
+          value: 'http://localhost:{{ .Values.insightScheduler.internalPort }}'
+        - name: JFIS_LOGS
+          value: "{{ .Values.insightServer.home }}/{{ .Values.insightServer.name }}/logs"
+        - name: JFIS_APP_NAME
+          value: "{{ .Values.insightServer.name }}"
+        - name: GOMAXPROCS
+          value: "1"
+      {{- if .Values.mongodb.enabled }}
+        - name: MONGO_URL
+          value: '{{ .Release.Name }}-mongodb:27017'
+        - name: MONGODB_USERNAME
+          value: '{{ .Values.mongodb.db.insightUser }}'
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: insightPassword
+        - name: MONGODB_ADMIN_USERNAME
+          value: '{{ .Values.mongodb.db.adminUser }}'
+        - name: MONGODB_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: adminPassword
+        - name: JFMC_INSIGHT_SERVER_DB
+          value: "{{ .Values.mongodb.db.insightServerDb }}"
+      {{- end }}
+      {{- if .Values.postgresql.enabled }}
+        - name: DB_TYPE
+          value: 'postgresql'
+        - name: DB_URL
+          value: '{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}'
+        - name: DB_NAME
+          value: '{{ .Values.postgresql.db.name }}'
+        - name: DB_SSLMODE
+          value: '{{ .Values.postgresql.db.sslmode }}'
+        - name: DB_TABLESPACE
+          value: '{{ .Values.postgresql.db.tablespace }}'
+        - name: JFIS_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfisSchema }}'
+        - name: JFSC_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfscSchema }}'
+        - name: JFEX_DB_SCHEMA
+          value: '{{ .Values.postgresql.db.jfexSchema }}'
+      {{- else }}
+        - name: DB_TYPE
+          value: '{{ .Values.database.type }}'
+        - name: DB_NAME
+          value: '{{ .Values.database.name }}'
+        - name: DB_HOST
+          value: '{{ .Values.database.host }}'
+        - name: DB_PORT
+          value: '{{ .Values.database.port }}'
+        - name: DB_URL
+          value: '{{ .Values.database.host }}:{{ .Values.database.port }}'
+        - name: JFIS_DB_SCHEMA
+          value: '{{ .Values.database.jfisSchema }}'
+        - name: JFSC_DB_SCHEMA
+          value: '{{ .Values.database.jfscSchema }}'
+        - name: JFEX_DB_SCHEMA
+          value: '{{ .Values.database.jfexSchema }}'
+      {{- end }}
+        - name: JFMC_URL
+          value: 'http://localhost:{{ .Values.missionControl.internalPort }}'
+        - name: ELASTIC_SEARCH_URL
+          value: 'http://{{ .Release.Name }}-elasticsearch:9200'
+        - name: ELASTIC_SEARCH_WRITE_URL
+          value: 'http://{{ .Release.Name }}-elasticsearch:9200'
+        - name: ELASTIC_SEARCH_READ_URL
+          value: 'http://{{ .Release.Name }}-elasticsearch:9200'
+        - name: ELASTIC_LB_WRITE_URL
+          value: ''
+        - name: ELASTIC_LB_READ_URL
+          value: ''
+        - name: ELASTIC_CLUSTER_NAME
+          value: '{{ .Values.elasticsearch.env.clusterName }}'
+        - name: JFIS_ALLOW_IP
+          value: "{{ .Values.insightServer.allowIP }}"
+        - name: JFMC_INSIGHT_SERVER_PORT
+          value: "{{ .Values.insightServer.internalHttpPort }}"
+        ports:
+        - containerPort: {{ .Values.insightServer.internalHttpPort }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: {{ .Values.insightServer.internalHttpPort }}
+          initialDelaySeconds: 600
           periodSeconds: 10
-          initialDelaySeconds: 240
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: {{ .Values.insightServer.internalHttpPort }}
+          initialDelaySeconds: 30
+          periodSeconds: 20
+      - name: {{ .Values.insightScheduler.name }}
+        image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: JFIS_URL
+          value: 'http://localhost:{{ .Values.insightServer.internalHttpPort }}'
+        - name: JFMC_URL
+          value: 'http://localhost:{{ .Values.missionControl.internalPort }}'
+      {{- if .Values.mongodb.enabled }}
+        - name: MONGO_URL
+          value: '{{ .Release.Name }}-mongodb:27017'
+        - name: MONGODB_USERNAME
+          value: '{{ .Values.mongodb.db.insightUser }}'
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: insightPassword
+        - name: MONGODB_ADMIN_USERNAME
+          value: '{{ .Values.mongodb.db.adminUser }}'
+        - name: MONGODB_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: adminPassword
+        - name: JFMC_SCHEDULER_MONGO_DB
+          value: '{{ .Values.mongodb.db.insightSchedulerDb }}'
+      {{- end }}
+        - name: JFMC_EXTRA_JAVA_OPTS
+          value: "
+          {{- if .Values.insightScheduler.javaOpts.other }}
+              {{ .Values.insightScheduler.javaOpts.other }}
+          {{- end}}
+          {{- if .Values.insightScheduler.javaOpts.xms }}
+              -Xms{{ .Values.insightScheduler.javaOpts.xms }}
+          {{- end}}
+          {{- if .Values.insightScheduler.javaOpts.xmx }}
+              -Xmx{{ .Values.insightScheduler.javaOpts.xmx }}
+          {{- end}}
+          -Dserver.port={{ .Values.insightScheduler.internalPort }}
+          "        
+        - name: JFSC_LOGS
+          value: '{{ .Values.insightScheduler.home }}/{{ .Values.insightScheduler.name }}/logs'
+        - name: JFSC_APP_NAME
+          value: '{{ .Values.insightScheduler.name }}'
+        ports:
+        - containerPort: {{ .Values.insightScheduler.internalPort }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: {{ .Values.insightScheduler.internalPort }}
+          initialDelaySeconds: 600
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: {{ .Values.insightScheduler.internalPort }}
+          initialDelaySeconds: 60
+          periodSeconds: 20
+      - name: {{ .Values.insightExecutor.name }}
+        image: {{ .Values.insightExecutor.image }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        env:
+        - name: JFIS_URL
+          value: 'http://localhost:{{ .Values.insightServer.internalHttpPort }}'
+        - name: JFEX_LOGS
+          value: '{{ .Values.insightExecutor.home }}/{{ .Values.insightExecutor.name }}/logs'
+        - name: JFEX_APP_NAME
+          value: '{{ .Values.insightExecutor.name }}'
+      {{- if .Values.mongodb.enabled }}
+        - name: MONGO_URL
+          value: '{{ .Release.Name }}-mongodb:27017'
+        - name: MONGODB_USERNAME
+          value: '{{ .Values.mongodb.db.insightUser }}'
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: insightPassword
+        - name: MONGODB_ADMIN_USERNAME
+          value: '{{ .Values.mongodb.db.adminUser }}'
+        - name: MONGODB_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-mongodb-cred
+              key: adminPassword
+        - name: JFMC_EXECUTOR_MONGO_DB
+          value: '{{ .Values.mongodb.db.insightExecutorDb }}'
+      {{- end }}
+        - name: JFMC_EXTRA_JAVA_OPTS
+          value: "
+          {{- if .Values.insightExecutor.javaOpts.other }}
+              {{ .Values.insightExecutor.javaOpts.other }}
+          {{- end}}
+          {{- if .Values.insightExecutor.javaOpts.xms }}
+              -Xms{{ .Values.insightExecutor.javaOpts.xms }}
+          {{- end}}
+          {{- if .Values.insightExecutor.javaOpts.xmx }}
+              -Xmx{{ .Values.insightExecutor.javaOpts.xmx }}
+          {{- end}}
+          -Dserver.port={{ .Values.insightExecutor.internalPort }}
+          "
+        ports:
+        - containerPort: {{ .Values.insightExecutor.internalPort }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /executorservice/api
+            port: {{ .Values.insightExecutor.internalPort }}
+          initialDelaySeconds: 600
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /executorservice/api
+            port: {{ .Values.insightExecutor.internalPort }}
+          initialDelaySeconds: 60
+          periodSeconds: 20
     {{- with .Values.missionControl.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -175,3 +666,16 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
+      {{- if .Values.postgresql.enabled }}
+      - name: postgresql-setup
+        configMap:
+          name: {{ template "mission-control.fullname" . }}-postgresql-setup-script
+      {{- end }}
+      {{- if .Values.mongodb.enabled }}
+      - name: mongodb-setup
+        configMap:
+          name: {{ template "mission-control.fullname" . }}-setup-script
+      {{- end }}
+      - name: jfmc-setup-scripts
+        configMap:
+          name: {{ template "mission-control.fullname" . }}-jfmc-setup-scripts
