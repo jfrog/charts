@@ -26,6 +26,7 @@ spec:
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
       annotations:
+        checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore.yaml") . | sha256sum }}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
@@ -49,8 +50,18 @@ spec:
         - '-c'
         - 'rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found {{ .Values.artifactory.persistence.mountPath }}/data/.lock'
         volumeMounts:
-        - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-          name: artifactory-volume
+        - name: artifactory-volume
+          mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+        - name: artifactory-data
+          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+        - name: artifactory-backup
+          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+      {{- else }}
+        - name: binarystore-xml
+          mountPath: "/artifactory_extra_conf/binarystore.xml"
+          subPath: binarystore.xml
+      {{- end }}
     {{- end }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
@@ -264,6 +275,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      - name: binarystore-xml
+        configMap:
+          name: {{ template "artifactory.fullname" . }}-bs
       {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
       - name: artifactory-volume
         persistentVolumeClaim:
@@ -284,11 +298,28 @@ spec:
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
-      {{- if and .Values.artifactory.persistence.enabled (not .Values.artifactory.persistence.existingClaim) }}
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+      - name: artifactory-data
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory.fullname" . }}-data-pvc
+      - name: artifactory-backup
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory.fullname" . }}-backup-pvc
+      {{- end }}
+      {{- if not .Values.artifactory.persistence.enabled }}
+      - name: artifactory-volume
+        emptyDir:
+          sizeLimit: {{ .Values.artifactory.persistence.size }}
+      {{- else }}
   volumeClaimTemplates:
   - metadata:
       name: artifactory-volume
     spec:
+      {{- if .Values.artifactory.persistence.existingClaim }}
+      selector:
+        matchLabels:
+          app: artifactory
+      {{- else }}
       {{- if .Values.artifactory.persistence.storageClass }}
       {{- if (eq "-" .Values.artifactory.persistence.storageClass) }}
       storageClassName: ""
@@ -301,8 +332,4 @@ spec:
         requests:
           storage: {{ .Values.artifactory.persistence.size }}
       {{- end }}
-      {{- if not .Values.artifactory.persistence.enabled }}
-      - name: artifactory-volume
-        emptyDir:
-          sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}
