@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.10.2] - Feb 19, 2019
+* Updated Artifactory version to 6.8.2
+
 ## [7.10.1] - Feb 17, 2019
 * Updated Artifactory version to 6.8.1
 * Add example of `SERVER_XML_EXTRA_CONNECTOR` usage
