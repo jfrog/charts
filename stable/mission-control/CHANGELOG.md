@@ -1,6 +1,18 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.0] - Feb 19, 2018
+* Update Mission-Control version 3.4.2
+* Move to using PostgreSQL as Mission-Control database (replace MongoDB)
+* Move setup of database from post install hook to init container of corresponding deployment
+* **NOTE:** For upgrading an existing deployment (pre 3.4.2), Mission-Control must be installed with both databases: MongoDB and PostgreSQL
+* **UPGRADE NOTES:** For upgrading an existing deployment (pre 3.4.2), follow the following:
+  * Pass `--set mongodb.enabled=true` to the `helm upgrade command`.
+  * Mission-Control should be idle.
+  * New Mission-Control must be installed with both databases: MongoDB and PostgreSQL
+    * Upgrade to new version (3.4.2) with the following parameter for the upgrade process `helm upgrade .... --set mongodb.enabled=true ....`
+  * Once Mission-Control is up - it means the migration from MongoDB to PostgreSQL is done!
+
 ## [0.7.3] - Jan 31, 2019
 * Add 0.5G to all memory limits for java services to be higher than java xmx value
 

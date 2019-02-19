@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mission-control.fullname" . }}-jfmc-setup-scripts
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  setProperties.sh: |
+    #!/bin/bash
+    # Setup script to set properties in mission-control.properties on install
+    # Setup script to set properties in mission-control.properties on install
+    addProperty() {
+        local propertyName=$1
+        local propertyValue=$2
+        local propertiesPath=$3
+        local result=
+        local propertyNotSet=1
+        local propertySet=0
+
+        # Return if any of the inputs are empty
+        [[ -z "$propertyName"   || "$propertyName"   == "" ]] && return
+        [[ -z "$propertyValue"  || "$propertyValue"  == "" ]] && return
+        [[ -z "$propertiesPath" || "$propertiesPath" == "" ]] && return
+
+        grep "^${propertyName}\s*=.*$" ${propertiesPath} >/dev/null 2>&1
+        result=$?
+        if [[ ${result} -eq ${propertyNotSet} ]]; then
+            echo "setting ${propertyName} property in ${propertiesPath}"
+            echo -e "\n${propertyName}=${propertyValue}" >> ${propertiesPath}
+        elif [[ ${result} -eq ${propertySet} && {{ .Values.missionControl.propertyOverride | quote  }} == true ]]; then
+            echo "modifying ${propertyName} property in ${propertiesPath}"
+            sed -i -e "s|^${propertyName}\s*=.*$|${propertyName}=${propertyValue}|g;" ${propertiesPath}
+        else
+            echo "skipping ${propertyName} as it is already set"
+        fi
+    }
+
+    JFMC_ETC={{ .Values.missionControl.persistence.mountPath }}/etc
+    JFMC_PROPERTIES=${JFMC_ETC}/mission-control.properties
+
+    if ! [[ -f ${JFMC_PROPERTIES} ]]; then \
+        mkdir -p ${JFMC_ETC}; \
+        touch  ${JFMC_PROPERTIES} || (  echo "unable to create ${JFMC_PROPERTIES} file" && exit 1 )
+    fi
+
+    addProperty "jfmc.db.username" "${JFMC_DB_USERNAME}" ${JFMC_PROPERTIES} && \
+    addProperty "jfmc.db.password" "${JFMC_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
+    addProperty "jfex.db.username" "${JFEX_DB_USERNAME}" ${JFMC_PROPERTIES} && \
+    addProperty "jfex.db.password" "${JFEX_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
+    addProperty "jfsc.db.username" "${JFSC_DB_USERNAME}" ${JFMC_PROPERTIES} && \
+    addProperty "jfsc.db.password" "${JFSC_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
+    addProperty "jfis.db.username" "${JFIS_DB_USERNAME}" ${JFMC_PROPERTIES} && \
+    addProperty "jfis.db.password" "${JFIS_DB_PASSWORD}" ${JFMC_PROPERTIES} || \
+    ( echo "unable to set mission-control properties in ${JFMC_PROPERTIES}" && exit 1 )

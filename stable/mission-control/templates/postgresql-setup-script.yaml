@@ -1,0 +1,170 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mission-control.fullname" . }}-postgresql-setup-script
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  createPostgresUsers.sh: |
+    #!/bin/bash
+    # This can be used to create user, database, schema and grant the required permissions.
+    # This script can handle multiple execution and not with "already exists" error. An entity will get created only if it does not exist.
+    # NOTE : 1. This expects current linux user to be admin user in postgreSQL (this is the case with 'postgres' user)
+    #        2. Execute this by logging as postgres or any other user with similar privilege
+    #        3. This files needs be executed from a location which postgres (or the admin user which will be used) has access to. (/opt can be used)
+    #
+    #        su postgres -c "POSTGRES_PATH=/path/to/postgres/bin PGPASSWORD=postgres bash ./createPostgresUsers.sh"
+
+    POSTGRES_LABEL="Postgres"
+
+    log() {
+        echo -e "$1"
+    }
+
+    errorExit() {
+        echo; echo -e "\033[31mERROR:\033[0m $1"; echo
+        exit 1
+    }
+
+    # Create user if it does not exist
+    createUser(){
+        local user=$1
+        local pass=$2
+
+        [ ! -z ${user} ] || errorExit "user is empty"
+        [ ! -z ${pass} ] || errorExit "password is empty"
+
+        ${PSQL} $POSTGRES_OPTIONS -tAc "SELECT 1 FROM pg_roles WHERE rolname='${user}'" | grep -q 1 1>/dev/null || \
+        ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || \
+        errorExit "Failed creating user ${user} on PostgreSQL"
+    }
+
+    # Create database if it does not exist
+    createDB(){
+        local db=$1
+        local user=$2
+
+        [ ! -z ${db}   ] || errorExit "db is empty"
+        [ ! -z ${user} ] || errorExit "user is empty"
+
+        if ! ${PSQL} $POSTGRES_OPTIONS -lqt | cut -d \| -f 1 | grep -qw ${db} 1>/dev/null; then
+            ${PSQL} $POSTGRES_OPTIONS -c "CREATE DATABASE ${db} WITH ENCODING='UTF8' TABLESPACE=${DB_TABLESPACE} template template0;" 1>/dev/null || errorExit "Failed creating db ${db} on PostgreSQL"
+        fi
+    }
+
+    # Create schema if it does not exist
+    createSchema(){
+        local schema=$1
+        local db=$2
+        local user=$3
+
+        [ ! -z ${schema} ] || errorExit "schema is empty"
+        [ ! -z ${db}     ] || errorExit "db is empty"
+        [ ! -z ${user}   ] || errorExit "user is empty"
+
+        PGOPTIONS='--client-min-messages=warning' ${PSQL} $POSTGRES_OPTIONS --dbname="${db}" -qc "CREATE SCHEMA IF NOT EXISTS ${schema} AUTHORIZATION ${user}" 1>/dev/null
+    }
+
+    postgresIsNotReady() {
+        attempt_number=${attempt_number:-0}
+        ${PSQL} $POSTGRES_OPTIONS --version > /dev/null 2>&1
+        outcome1=$?
+        # Execute a simple db function to verify if mongo is up and running
+        ${PSQL} $POSTGRES_OPTIONS -l > /dev/null 2>&1
+        outcome2=$?
+        if [[ $outcome1 -eq 0 ]] && [[ $outcome2 -eq 0  ]]; then
+            return 0
+        else
+            if [ $attempt_number -gt 10 ]; then
+                errorExit "Unable to proceed. $POSTGRES_LABEL is not reachable. This can occur if the service is not running \
+    or the port is not accepting requests at $DB_PORT (host : $DB_HOST). Gave up after $attempt_number attempts"
+            fi
+            let "attempt_number=attempt_number+1"
+            return 1
+        fi
+    }
+
+    init(){
+        if [[ -z $POSTGRES_PATH ]]; then
+            hash ${PSQL} 2>/dev/null || { echo >&2 "\"${PSQL}\" is not installed or not available in path"; exit 1; }
+        fi
+
+        log "Waiting for $POSTGRES_LABEL to get ready using the commands: \"${PSQL} $POSTGRES_OPTIONS --version\" & \"${PSQL} $POSTGRES_OPTIONS -l\""
+        attempt_number=0
+        while ! postgresIsNotReady
+        do
+                sleep 5
+                echo -n '.'
+        done
+        log "$POSTGRES_LABEL is ready. Executing commands"
+    }
+
+    setupDB(){
+        local user=$1
+        local pass=$2
+        local db=$3
+        local schema=$4
+
+        createUser "${user}" "${pass}"    
+        createDB "${db}" "${user}"
+        createSchema "${schema}" "${db}" "${user}"
+        
+        ${PSQL} $POSTGRES_OPTIONS -c "GRANT ALL ON DATABASE ${db} TO ${user}" 1>/dev/null;
+        ${PSQL} $POSTGRES_OPTIONS -c "GRANT ALL ON SCHEMA ${schema} TO ${user}" --dbname="${db}" 1>/dev/null;
+    }
+
+    # Load default and custom postgres details from below files
+    [ -f setenvDefaults.sh ] && source setenvDefaults.sh || true
+    [ -f setenv.sh         ] && source setenv.sh         || true
+
+    ### Following are the postgres details being setup for each service.
+    ##  Common details
+    : ${DB_PORT:=5432}
+    : ${DB_NAME:="mission_control"}
+    : ${DB_SSLMODE:="false"}
+    : ${DB_TABLESPACE:="pg_default"}
+    : ${DB_HOST:="localhost"}
+
+    ##  Insight Server
+    : ${JFIS_DB_USERNAME:="jfis"}
+    : ${JFIS_DB_PASSWORD:="password"}
+    : ${JFIS_DB_SCHEMA:="insight_server"}
+
+    ##  Insight Scheduler
+    : ${JFSC_DB_USERNAME:="jfsc"}
+    : ${JFSC_DB_PASSWORD:="password"}
+    : ${JFSC_DB_SCHEMA:="insight_scheduler"}
+
+    ##  Insight Executor
+    : ${JFEX_DB_USERNAME:="jfex"}
+    : ${JFEX_DB_PASSWORD:="password"}
+    : ${JFEX_DB_SCHEMA:="insight_executor"}
+
+    ##  Jfmc Server
+    : ${JFMC_DB_USERNAME:="jfmc"}
+    : ${JFMC_DB_PASSWORD:="password"}
+    : ${JFMC_DB_SCHEMA:="jfmc_server"}
+
+    # Enable script to run setup for specific service
+    SERVICE=${1:-all}
+    if ! [[ $SERVICE =~ all|jfmc|jfex|jfsc|jfis ]]; then 
+        SERVICE=all
+    fi
+
+    DB_HOST={{ .Release.Name }}-postgresql
+    [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
+    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresUsername }} -w"
+
+    init
+    [[ $SERVICE =~ all|jfis ]] && setupDB "${JFIS_DB_USERNAME}" "${JFIS_DB_PASSWORD}" "${DB_NAME}" "${JFIS_DB_SCHEMA}" || true
+    [[ $SERVICE =~ all|jfsc ]] && setupDB "${JFSC_DB_USERNAME}" "${JFSC_DB_PASSWORD}" "${DB_NAME}" "${JFSC_DB_SCHEMA}" || true
+    [[ $SERVICE =~ all|jfex ]] && setupDB "${JFEX_DB_USERNAME}" "${JFEX_DB_PASSWORD}" "${DB_NAME}" "${JFEX_DB_SCHEMA}" || true
+    [[ $SERVICE =~ all|jfmc ]] && setupDB "${JFMC_DB_USERNAME}" "${JFMC_DB_PASSWORD}" "${DB_NAME}" "${JFMC_DB_SCHEMA}" || true
+    log "$POSTGRES_LABEL setup is now complete"
+
+    exit 0
+{{- end }}
