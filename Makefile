@@ -1,6 +1,6 @@
 # Lint charts locally
-CHART_TESTING_TAG ?= v2.0.1
-TEST_IMAGE_TAG ?= v3.0.1
+CHART_TESTING_TAG ?= v2.2.0
+TEST_IMAGE_TAG ?= v3.2.0
 CHARTS_REPO ?= https://github.com/jfrog/charts
 MAC_ARGS ?=
 
