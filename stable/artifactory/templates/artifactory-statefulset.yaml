@@ -258,7 +258,7 @@ spec:
         - "-F"
         - "{{ $mountPath }}/logs/{{ . }}.log"
         volumeMounts:
-        - name: volume
+        - name: artifactory-volume
           mountPath: {{ $mountPath }}
       {{- end }}
       {{- end }}
