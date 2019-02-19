@@ -249,7 +249,7 @@ spec:
       {{- $tag := .image.tag }}
       {{- $mountPath := $.Values.artifactory.persistence.mountPath }}
       {{- range .names }}
-      - name: {{ . | replace "_" "-" }}
+      - name: {{ . | replace "_" "-" }}-logger
         image: {{ $image }}
         tag: {{ $tag }}
         command:
