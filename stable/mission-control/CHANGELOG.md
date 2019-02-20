@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.8.1] - Feb 20, 2018
+* Update Mission-Control Readme with new database details
+
 ## [0.8.0] - Feb 19, 2018
 * Update Mission-Control version 3.4.2
 * Move to using PostgreSQL as Mission-Control database (replace MongoDB)
