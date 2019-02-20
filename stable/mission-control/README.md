@@ -7,7 +7,7 @@
 ## Chart Details
 This chart will do the following:
 
-* Deploy Mongodb database.
+* Deploy PostgreSQL database.
 * Deploy Elasticsearch.
 * Deploy Mission Control.
 
