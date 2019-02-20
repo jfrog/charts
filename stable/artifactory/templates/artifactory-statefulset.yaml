@@ -57,10 +57,6 @@ spec:
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
         - name: artifactory-backup
           mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
-      {{- else }}
-        - name: binarystore-xml
-          mountPath: "/artifactory_extra_conf/binarystore.xml"
-          subPath: binarystore.xml
       {{- end }}
     {{- end }}
       - name: "wait-for-db"
@@ -209,6 +205,16 @@ spec:
       {{- if .Values.artifactory.configMapName }}
         - name: bootstrap-config
           mountPath: "/bootstrap/"
+      {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+        - name: artifactory-data
+          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+        - name: artifactory-backup
+          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+      {{- else }}
+        - name: binarystore-xml
+          mountPath: "/artifactory_extra_conf/binarystore.xml"
+          subPath: binarystore.xml
       {{- end }}
       {{- if .Values.artifactory.license.secret }}
         - name: artifactory-license
