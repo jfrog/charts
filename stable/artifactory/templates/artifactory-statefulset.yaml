@@ -255,7 +255,7 @@ spec:
       {{- $tag := .image.tag }}
       {{- $mountPath := $.Values.artifactory.persistence.mountPath }}
       {{- range .names }}
-      - name: {{ . | replace "_" "-" }}-logger
+      - name: {{ . | replace "_" "-" }}
         image: {{ $image }}
         tag: {{ $tag }}
         command:
@@ -312,11 +312,7 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory.fullname" . }}-backup-pvc
       {{- end }}
-      {{- if not .Values.artifactory.persistence.enabled }}
-      - name: artifactory-volume
-        emptyDir:
-          sizeLimit: {{ .Values.artifactory.persistence.size }}
-      {{- else }}
+      {{- if .Values.artifactory.persistence.enabled }}
   volumeClaimTemplates:
   - metadata:
       name: artifactory-volume
@@ -338,4 +334,8 @@ spec:
         requests:
           storage: {{ .Values.artifactory.persistence.size }}
       {{- end }}
+      {{- else }}
+      - name: artifactory-volume
+        emptyDir:
+          sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}
