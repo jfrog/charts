@@ -18,35 +18,11 @@ data:
 {{- if eq .Values.artifactory.persistence.type "google-storage" }}
     <!-- Google storage -->
     <config version="2">
-        <chain>
-            <provider id="sharding-cluster" type="sharding-cluster">
-                <readBehavior>crossNetworkStrategy</readBehavior>
-                <writeBehavior>crossNetworkStrategy</writeBehavior>
-                <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
-                <minSpareUploaderExecutor>2</minSpareUploaderExecutor>
-                <sub-provider id="eventual-cluster" type="eventual-cluster">
-                    <provider id="retry" type="retry">
-                        <provider id="google-storage" type="google-storage"/>
-                    </provider>
-                </sub-provider>
-                <dynamic-provider id="remote" type="remote"/>
-                <property name="zones" value="local,remote"/>
-            </provider>
-        </chain>
+        <chain template="google-storage"/>
 
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
-        </provider>
-
-        <provider id="eventual-cluster" type="eventual-cluster">
-            <zone>local</zone>
-        </provider>
-
-        <provider id="remote" type="remote">
-            <checkPeriod>30</checkPeriod>
-            <timeout>10000</timeout>
-            <zone>remote</zone>
         </provider>
 
         <provider id="file-system" type="file-system">
@@ -69,39 +45,11 @@ data:
 {{- if eq .Values.artifactory.persistence.type "aws-s3" }}
     <!-- AWS S3 -->
     <config version="2">
-        <chain> <!--template="cluster-s3"-->
-            <provider id="cache-fs" type="cache-fs">
-                <provider id="sharding-cluster" type="sharding-cluster">
-                    <sub-provider id="eventual-cluster" type="eventual-cluster">
-                        <provider id="retry-s3" type="retry">
-                            <provider id="s3" type="s3"/>
-                        </provider>
-                    </sub-provider>
-                    <dynamic-provider id="remote" type="remote"/>
-                </provider>
-            </provider>
-        </chain>
+        <chain template="s3"/>
 
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
-        </provider>
-
-        <provider id="eventual-cluster" type="eventual-cluster">
-            <zone>local</zone>
-        </provider>
-
-        <provider id="remote" type="remote">
-            <checkPeriod>30</checkPeriod>
-            <timeout>10000</timeout>
-            <zone>remote</zone>
-        </provider>
-
-        <provider id="sharding-cluster" type="sharding-cluster">
-            <readBehavior>crossNetworkStrategy</readBehavior>
-            <writeBehavior>crossNetworkStrategy</writeBehavior>
-            <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
-            <property name="zones" value="local,remote"/>
         </provider>
 
         <provider id="s3" type="s3">
@@ -133,37 +81,8 @@ data:
 {{- if eq .Values.artifactory.persistence.type "azure-blob" }}
     <!-- Azure Blob Storage -->
     <config version="2">
-        <chain> <!--template="cluster-azure-blob-storage"-->
-            <provider id="cache-fs" type="cache-fs">
-                <provider id="sharding-cluster" type="sharding-cluster">
-                    <sub-provider id="eventual-cluster" type="eventual-cluster">
-                        <provider id="retry-azure-blob-storage" type="retry">
-                            <provider id="azure-blob-storage" type="azure-blob-storage"/>
-                        </provider>
-                    </sub-provider>
-                    <dynamic-provider id="remote" type="remote"/>
-                </provider>
-            </provider>
-        </chain>
+        <chain template="azure-blob-storage"/>
     
-        <!-- cluster eventual Azure Blob Storage Service default chain -->
-        <provider id="sharding-cluster" type="sharding-cluster">
-            <readBehavior>crossNetworkStrategy</readBehavior>
-            <writeBehavior>crossNetworkStrategy</writeBehavior>
-            <redundancy>2</redundancy>
-            <lenientLimit>1</lenientLimit>
-            <property name="zones" value="local,remote"/>
-        </provider>
-    
-        <provider id="remote" type="remote">
-            <zone>remote</zone>
-        </provider>
-    
-        <provider id="eventual-cluster" type="eventual-cluster">
-            <zone>local</zone>
-        </provider>
-    
-        <!--cluster eventual template-->
         <provider id="azure-blob-storage" type="azure-blob-storage">
             <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
             <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
