@@ -186,29 +186,30 @@ artifactory:
       ip:
       haDataMount: "/data"
       haBackupMount: "/backup"
-      dataDir: "/var/opt/jfrog/artifactory-ha"
+      dataDir: "/var/opt/jfrog/artifactory"
       backupDir: "/var/opt/jfrog/artifactory-backup"
       capacity: 200Gi
     ## For artifactory.persistence.type google-storage
     googleStorage:
       # Set a unique bucket name
-      bucketName: "artifactory-ha-gcp"
+      bucketName: "artifactory-gcp"
       identity:
       credential:
-      path: "artifactory-ha/filestore"
+      path: "artifactory/filestore"
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
       # Set a unique bucket name
-      bucketName: "artifactory-ha-aws"
+      bucketName: "artifactory-aws"
       endpoint:
       region:
       roleName:
       identity:
       credential:
-      path: "artifactory-ha/filestore"
+      path: "artifactory/filestore"
       refreshCredentials: true
       testConnection: false
+      s3AwsVersion: AWS4-HMAC-SHA256
       ## Additional properties to set on the s3 provider
       properties: {}
       #  httpclient.max-connections: 100

@@ -344,24 +344,25 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
 | `artifactory.persistence.nfs.haDataMount`   | NFS data directory                   | `/data`                             |
 | `artifactory.persistence.nfs.haBackupMount` | NFS backup directory                 | `/backup`                           |
-| `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory-ha`     |
+| `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory`     |
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
-| `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory-ha`             |
+| `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory`             |
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
-| `artifactory.persistence.googleStorage.path`        | Google Storage path in bucket       | `artifactory-ha/filestore`   |
-| `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                     | `artifactory-ha`             |
+| `artifactory.persistence.googleStorage.path`        | Google Storage path in bucket       | `artifactory/filestore`   |
+| `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                     | `artifactory`             |
 | `artifactory.persistence.awsS3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
 | `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                   |                              |
 | `artifactory.persistence.awsS3.roleName`            | AWS S3 IAM role name                   |                             |
 | `artifactory.persistence.awsS3.identity`            | AWS S3 AWS_ACCESS_KEY_ID               |                              |
 | `artifactory.persistence.awsS3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY           |                              |
 | `artifactory.persistence.awsS3.properties`          | AWS S3 additional properties           |                              |
-| `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
+| `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory/filestore`   |
 | `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true` (When roleName is used, this parameter will be set to true) |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
+| `artifactory.persistence.awsS3.s3AwsVersion`        | AWS S3 signature version               | `AWS4-HMAC-SHA256`                      |
 | `artifactory.persistence.azureBlob.accountName`     | Azure Blob Storage account name        | ``                        |
 | `artifactory.persistence.azureBlob.accountKey`      | Azure Blob Storage account key         | ``                        |
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
