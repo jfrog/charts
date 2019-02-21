@@ -19,8 +19,12 @@ data:
     <!-- Google storage -->
     <config version="2">
         <chain>
-            <provider id="retry" type="retry">
-                <provider id="google-storage" type="google-storage"/>
+            <provider id="cache-fs" type="cache-fs">
+                <provider id="eventual" type="eventual">
+                    <provider id="retry" type="retry">
+                        <provider id="google-storage" type="google-storage"/>
+                    </provider>
+                </provider>
             </provider>
         </chain>
 
@@ -51,8 +55,10 @@ data:
     <config version="2">
         <chain> <!--template="s3"-->
             <provider id="cache-fs" type="cache-fs">
-                <provider id="retry-s3" type="retry">
-                    <provider id="s3" type="s3"/>
+                <provider id="eventual" type="eventual">
+                    <provider id="retry-s3" type="retry">
+                        <provider id="s3" type="s3"/>
+                    </provider>
                 </provider>
             </provider>
         </chain>
@@ -94,11 +100,18 @@ data:
     <config version="2">
         <chain> <!--template="azure-blob-storage"-->
             <provider id="cache-fs" type="cache-fs">
-                <provider id="retry-azure-blob-storage" type="retry">
-                    <provider id="azure-blob-storage" type="azure-blob-storage"/>
+                <provider id="eventual" type="eventual">
+                    <provider id="retry-azure-blob-storage" type="retry">
+                        <provider id="azure-blob-storage" type="azure-blob-storage"/>
+                    </provider>
                 </provider>
             </provider>
         </chain>
+
+        <!-- Set max cache-fs size -->
+        <provider id="cache-fs" type="cache-fs">
+            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+        </provider>
     
         <provider id="azure-blob-storage" type="azure-blob-storage">
             <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
