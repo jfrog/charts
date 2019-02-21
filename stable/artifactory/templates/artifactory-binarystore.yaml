@@ -18,7 +18,11 @@ data:
 {{- if eq .Values.artifactory.persistence.type "google-storage" }}
     <!-- Google storage -->
     <config version="2">
-        <chain template="google-storage"/>
+        <chain>
+            <provider id="retry" type="retry">
+                <provider id="google-storage" type="google-storage"/>
+            </provider>
+        </chain>
 
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
@@ -45,7 +49,13 @@ data:
 {{- if eq .Values.artifactory.persistence.type "aws-s3" }}
     <!-- AWS S3 -->
     <config version="2">
-        <chain template="s3"/>
+        <chain> <!--template="s3"-->
+            <provider id="cache-fs" type="cache-fs">
+                <provider id="retry-s3" type="retry">
+                    <provider id="s3" type="s3"/>
+                </provider>
+            </provider>
+        </chain>
 
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
@@ -82,7 +92,13 @@ data:
 {{- if eq .Values.artifactory.persistence.type "azure-blob" }}
     <!-- Azure Blob Storage -->
     <config version="2">
-        <chain template="azure-blob-storage"/>
+        <chain> <!--template="azure-blob-storage"-->
+            <provider id="cache-fs" type="cache-fs">
+                <provider id="retry-azure-blob-storage" type="retry">
+                    <provider id="azure-blob-storage" type="azure-blob-storage"/>
+                </provider>
+            </provider>
+        </chain>
     
         <provider id="azure-blob-storage" type="azure-blob-storage">
             <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
