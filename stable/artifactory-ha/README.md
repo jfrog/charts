@@ -436,6 +436,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
 | `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true` (When roleName is used, this parameter will be set to true) |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
+| `artifactory.persistence.awsS3.s3AwsVersion`        | AWS S3 signature version               | `AWS4-HMAC-SHA256`           |
 | `artifactory.persistence.azureBlob.accountName`     | Azure Blob Storage account name        | ``                        |
 | `artifactory.persistence.azureBlob.accountKey`      | Azure Blob Storage account key         | ``                        |
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
