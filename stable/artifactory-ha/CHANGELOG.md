@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.10.3] - Feb 21, 2019
+* Add s3AwsVersion option to awsS3 configuration for use with IAM roles
+
 ## [0.10.2] - Feb 19, 2019
 * Updated Artifactory version to 6.8.2
 
