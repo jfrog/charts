@@ -167,6 +167,61 @@ artifactory:
 
     accessMode: ReadWriteOnce
     size: 20Gi
+    maxCacheSize: 50000000000
+
+
+    ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
+    ## Supported types are:
+    ## file-system (default)
+    ## nfs
+    ## google-storage
+    ## aws-s3
+    ## azure-blob
+    type: file-system
+
+    ## For artifactory.persistence.type nfs
+    ## If using NFS as the shared storage, you must have a running NFS server that is accessible by your Kubernetes
+    ## cluster nodes.
+    ## Need to have the following set
+    nfs:
+      # Must pass actual IP of NFS server with '--set For artifactory.persistence.nfs.ip=${NFS_IP}'
+      ip:
+      haDataMount: "/data"
+      haBackupMount: "/backup"
+      dataDir: "/var/opt/jfrog/artifactory"
+      backupDir: "/var/opt/jfrog/artifactory-backup"
+      capacity: 200Gi
+    ## For artifactory.persistence.type google-storage
+    googleStorage:
+      # Set a unique bucket name
+      bucketName: "artifactory-gcp"
+      identity:
+      credential:
+      path: "artifactory/filestore"
+    ## For artifactory.persistence.type aws-s3
+    ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
+    awsS3:
+      # Set a unique bucket name
+      bucketName: "artifactory-aws"
+      endpoint:
+      region:
+      roleName:
+      identity:
+      credential:
+      path: "artifactory/filestore"
+      refreshCredentials: true
+      testConnection: false
+      s3AwsVersion: AWS4-HMAC-SHA256
+      ## Additional properties to set on the s3 provider
+      properties: {}
+      #  httpclient.max-connections: 100
+    ## For artifactory.persistence.type azure-blob
+    azureBlob:
+      accountName:
+      accountKey:
+      endpoint:
+      containerName:
+      testConnection: false
     ## artifactory data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
     ## If set to "-", storageClassName: "", which disables dynamic provisioning
