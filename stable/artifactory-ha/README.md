@@ -348,7 +348,7 @@ helm install --name artifactory-ha --set imagePullSecrets=regsecret jfrog/artifa
 
 ### Logger sidecars
 
-This chart provides thee option to add sidecars to tail various types of logs from artifactory. To see the potential values check the `artifactory.logger.names` value in `values.yaml`
+This chart provides the option to add sidecars to tail various types of logs from artifactory. To see the potential values check the `artifactory.loggers` and `nginx.loggers` values in `values.yaml`
 
 To access a specific log run `kubectl logs -n <ARTIFACTORY_NAMESPACE> <ARTIFACTORY_POD_NAME> -c <LOG_NAME>`.
 
@@ -374,13 +374,13 @@ The following table lists the configurable parameters of the artifactory chart a
 | `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template |
 | `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                     |
+| `logger.image.repository` | repository for logger image       | `busybox`                                                |
+| `logger.image.tag`        | tag for logger image              | `1.30`                                                   |
 | `artifactory.name`                   | Artifactory name                     | `artifactory`                              |
 | `artifactory.image.pullPolicy`       | Container pull policy                | `IfNotPresent`                             |
 | `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
-| `artifactory.logger.image.repository`| repository for logger image | `busybox`                                           |
-| `artifactory.logger.image.tag`       | tag for logger image | `1.30`                                                     |
-| `artifactory.logger.names`           | Artifactory loggers (see values.yaml for possible values) | `[]`                  |
+| `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
@@ -477,6 +477,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
+| `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
 | `nginx.service.annotations` | Nginx service annotations           | `{}`                            |

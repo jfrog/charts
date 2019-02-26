@@ -146,6 +146,22 @@ spec:
           failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.nginx.livenessProbe.successThreshold }}
         {{- end }}
+      {{- $image := .Values.logger.image.repository }}
+      {{- $tag := .Values.logger.image.tag }}
+      {{- $mountPath := .Values.nginx.persistence.mountPath }}
+      {{- range .Values.nginx.loggers }}
+      - name: {{ . | replace "_" "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+        - tail
+        args:
+        - "-F"
+        - "{{ $mountPath }}/logs/{{ . }}.log"
+        volumeMounts:
+        - name: volume
+          mountPath: {{ $mountPath }}
+      {{- end }}
     {{- with .Values.nginx.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
