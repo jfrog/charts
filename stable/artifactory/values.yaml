@@ -56,6 +56,11 @@ ingress:
   #   hosts:
   #     - artifactory.domain.example
 
+logger:
+  image:
+    repository: busybox
+    tag: 1.30
+
 # Artifactory
 artifactory:
   name: artifactory
@@ -66,18 +71,14 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
-  logger:
-    image:
-      repository: busybox
-      tag: 1.30
-    names: []  # add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-    # - request
-    # - event
-    # - binarystore
-    # - request_trace
-    # - access
-    # - artifactory
-    # - build_info_migration
+  loggers: []
+  # - request
+  # - event
+  # - binarystore
+  # - request_trace
+  # - access
+  # - artifactory
+  # - build_info_migration
 
   ## Add custom init containers
   customInitContainers: |
@@ -270,6 +271,11 @@ nginx:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+
+  loggers: []
+  # - access
+  # - error
+
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer

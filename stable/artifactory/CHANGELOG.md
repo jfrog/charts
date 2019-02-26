@@ -1,7 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.11.0] - Feb 20, 2019
+## [7.12.0] - Feb 25, 2019
+* Add nginx support for tail sidecars
+
+## [7.11.1] - Feb 20, 2019
 * Added support for enterprise storage
 
 ## [7.10.2] - Feb 19, 2019
