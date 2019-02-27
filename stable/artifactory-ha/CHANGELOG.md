@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.1] - Feb 27, 2019
+* Updated Artifactory version to 6.8.3
+
 ## [0.11.0] - Feb 25, 2019
 * Add nginx support for tail sidecars
 
