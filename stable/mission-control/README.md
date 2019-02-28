@@ -84,6 +84,19 @@ export POSTGRES_PASSWORD_SECRET_KEY=
 ...
 ```
 
+### Logger sidecars
+This chart provides the option to add sidecars to tail various logs from Mission Control containers. See the available values in `values.yaml`
+
+Get list of containers in the pod
+```bash
+kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
+```
+
+View specific log
+```bash
+kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>`
+```
+
 ### Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
@@ -179,6 +192,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.javaOpts.xms`                 | Elasticsearch ES_JAVA_OPTS -Xms                 | ` `                                   |
 | `elasticsearch.javaOpts.xmx`                 | Elasticsearch ES_JAVA_OPTS -Xmx                 | ` `                                   |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
+| `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
+| `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image`                       | Container image                                 | `docker.jfrog.io/jfrog/mission-control`     |
 | `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
@@ -196,6 +211,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.javaOpts.other`              | Mission Control JAVA_OPTIONS                    | `-server -XX:+UseG1GC -Dfile.encoding=UTF8` |
 | `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | ` `                                   |
 | `missionControl.propertyOverride`            | Force write of properties on mc startup         | ` `                                   |
+| `missionControl.loggers`                     | Mission Control loggers (see values.yaml for possible values)          | ` `            |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
 | `insightServer.image`                        | Container image                                 | `docker.jfrog.io/jfrog/insight-server`|
 | `insightServer.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
@@ -203,6 +219,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
 | `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
 | `insightServer.allowIP`                      | Range of IPs allowed to be served by Insight Server service  | `"0.0.0.0/0"`            |
+| `insightServer.loggers`                      | Insight Server loggers (see values.yaml for possible values)           | ` `            |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
 | `insightScheduler.image`                     | Container image                                 | `docker.jfrog.io/jfrog/insight-scheduler`  |
 | `insightScheduler.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
@@ -212,6 +229,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
 | `insightScheduler.javaOpts.xms`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xms     | ``                                    |
 | `insightScheduler.javaOpts.xmx`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xmx     | ``                                    |
+| `insightServer.loggers`                      | Insight Scheduler loggers (see values.yaml for possible values)           | ` `            |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
 | `insightExecutor.image`                      | Container image                                 | `docker.jfrog.io/jfrog/insight-executor`   |
 | `insightExecutor.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
@@ -221,6 +239,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightExecutor.javaOpts.other`             | Insight Executor JFMC_EXTRA_JAVA_OPTS           | ``                                    |
 | `insightExecutor.javaOpts.xms`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xms      | ``                                    |
 | `insightExecutor.javaOpts.xmx`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xmx      | ``                                    |
+| `insightExecutor.loggers`                    | Insight Executor loggers (see values.yaml for possible values)         | ` `            |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

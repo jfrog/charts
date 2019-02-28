@@ -516,6 +516,9 @@ spec:
         ports:
         - containerPort: {{ .Values.insightServer.internalHttpPort }}
           protocol: TCP
+        volumeMounts:
+        - name: insight-server-logs
+          mountPath: {{ .Values.insightServer.persistence.mountPath }}
         livenessProbe:
           httpGet:
             path: /api/status
@@ -576,6 +579,9 @@ spec:
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
+        volumeMounts:
+        - name: insight-scheduler-logs
+          mountPath: {{ .Values.insightScheduler.persistence.mountPath }}
         livenessProbe:
           httpGet:
             path: /api/status
@@ -634,6 +640,9 @@ spec:
         ports:
         - containerPort: {{ .Values.insightExecutor.internalPort }}
           protocol: TCP
+        volumeMounts:
+        - name: insight-executor-logs
+          mountPath: {{ .Values.insightExecutor.persistence.mountPath }}
         livenessProbe:
           httpGet:
             path: /executorservice/api
@@ -646,6 +655,81 @@ spec:
             port: {{ .Values.insightExecutor.internalPort }}
           initialDelaySeconds: 60
           periodSeconds: 20
+      {{- $image := .Values.logger.image.repository }}
+      {{- $tag := .Values.logger.image.tag }}
+      {{- $uid := .Values.uid }}
+      {{- $name := .Values.missionControl.name }}
+      {{- $mountPath := .Values.missionControl.persistence.mountPath }}
+      {{- range .Values.missionControl.loggers }}
+      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        securityContext:
+          runAsUser: {{ $uid }}
+          allowPrivilegeEscalation: false
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/logs/jfmc-server/{{ . }}"
+        volumeMounts:
+          - name: mission-control-data
+            mountPath: {{ $mountPath }}
+      {{- end }}
+      {{- $name := .Values.insightServer.name }}
+      {{- $mountPath := .Values.insightServer.persistence.mountPath }}
+      {{- range .Values.insightServer.loggers }}
+      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        securityContext:
+          runAsUser: {{ $uid }}
+          allowPrivilegeEscalation: false
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/{{ . }}"
+        volumeMounts:
+          - name: insight-server-logs
+            mountPath: {{ $mountPath }}
+      {{- end }}
+      {{- $name := .Values.insightScheduler.name }}
+      {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
+      {{- range .Values.insightScheduler.loggers }}
+      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        securityContext:
+          runAsUser: {{ $uid }}
+          allowPrivilegeEscalation: false
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/{{ . }}"
+        volumeMounts:
+          - name: insight-scheduler-logs
+            mountPath: {{ $mountPath }}
+      {{- end }}
+      {{- $name := .Values.insightExecutor.name }}
+      {{- $mountPath := .Values.insightExecutor.persistence.mountPath }}
+      {{- range .Values.insightExecutor.loggers }}
+      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        securityContext:
+          runAsUser: {{ $uid }}
+          allowPrivilegeEscalation: false
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/{{ . }}"
+        volumeMounts:
+          - name: insight-executor-logs
+            mountPath: {{ $mountPath }}
+      {{- end }}
     {{- with .Values.missionControl.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -663,6 +747,27 @@ spec:
       {{- if .Values.missionControl.persistence.enabled }}
         persistentVolumeClaim:
           claimName: {{ if .Values.missionControl.persistence.existingClaim }}{{ .Values.missionControl.persistence.existingClaim }}{{ else }}{{ template "mission-control.fullname" . }}{{ end }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: insight-server-logs
+      {{- if .Values.insightServer.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.insightServer.persistence.existingClaim }}{{ .Values.insightServer.persistence.existingClaim }}{{ else }}{{ template "insight-server.fullname" . }}{{ end }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: insight-scheduler-logs
+      {{- if .Values.insightScheduler.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.insightScheduler.persistence.existingClaim }}{{ .Values.insightScheduler.persistence.existingClaim }}{{ else }}{{ template "insight-scheduler.fullname" . }}{{ end }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - name: insight-executor-logs
+      {{- if .Values.insightExecutor.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.insightExecutor.persistence.existingClaim }}{{ .Values.insightExecutor.persistence.existingClaim }}{{ else }}{{ template "insight-executor.fullname" . }}{{ end }}
       {{- else }}
         emptyDir: {}
       {{- end }}
