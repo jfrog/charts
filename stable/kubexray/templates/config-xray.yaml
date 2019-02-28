@@ -12,10 +12,12 @@ data:
     unscanned:
       deployments: {{ .Values.scanPolicy.unscanned.deployments | default "ignore" }}
       statefulSets: {{ .Values.scanPolicy.unscanned.statefulSets | default "ignore" }}
-      whiltelistNamespaces: {{ .Values.scanPolicy.unscanned.whiltelistNamespaces | default "kube-system,kubexray" }} 
+      whitelistNamespaces: {{ .Values.scanPolicy.unscanned.whitelistNamespaces | default "kube-system,kubexray" }}
     security:
       deployments: {{ .Values.scanPolicy.security.deployments | default "ignore" }}
       statefulSets: {{ .Values.scanPolicy.security.statefulSets | default "ignore" }}
+      whitelistNamespaces: {{ .Values.scanPolicy.security.whitelistNamespaces | default "kube-system,kubexray" }}
     license:
       deployments: {{ .Values.scanPolicy.license.deployments | default "ignore"  }}
       statefulSets: {{ .Values.scanPolicy.license.statefulSets | default "ignore" }}
+      whitelistNamespaces: {{ .Values.scanPolicy.license.whitelistNamespaces | default "kube-system,kubexray" }}
