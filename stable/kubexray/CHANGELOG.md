@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.2] - Dec 12, 2018
+* Fixed typo
+
 ## [0.3.1] - Dec 12, 2018
 * Add `whitelistNamespaces` to all policies and fix some errors in [README.md]
 
