@@ -229,7 +229,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
 | `insightScheduler.javaOpts.xms`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xms     | ``                                    |
 | `insightScheduler.javaOpts.xmx`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xmx     | ``                                    |
-| `insightServer.loggers`                      | Insight Scheduler loggers (see values.yaml for possible values)           | ` `            |
+| `insightScheduler.loggers`                      | Insight Scheduler loggers (see values.yaml for possible values)           | ` `            |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
 | `insightExecutor.image`                      | Container image                                 | `docker.jfrog.io/jfrog/insight-executor`   |
 | `insightExecutor.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
