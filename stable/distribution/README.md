@@ -124,6 +124,19 @@ In cases where a new version is not compatible with existing deployed version (l
 * Update DNS to point to new Distribution service
 * Remove old release
 
+## Logger sidecars
+This chart provides the option to add sidecars to tail various logs from Distribution containers. See the available values in `values.yaml`
+
+ Get list of containers in the pod
+```bash
+kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
+```
+
+ View specific log
+```bash
+kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
+```
+
 ## Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
@@ -177,6 +190,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.nodeSelector`                         | Redis node selector                        | `{}`                               |
 | `redis.affinity`                             | Redis node affinity                        | `{}`                               |
 | `redis.tolerations`                          | Redis node tolerations                     | `[]`                               |
+| `logger.image.repository`                    | Repository for logger image                | `busybox`                          |
+| `logger.image.tag`                           | Tag for logger image                       | `1.30`                             |
 | `common.uid`                                 | Distribution and Distributor process user ID               | `1020`             |
 | `common.gid`                                 | Distribution and Distributor process group ID              | `1020`             |
 | `distribution.name`                          | Distribution name                          | `distribution`                     |
@@ -200,6 +215,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.nodeSelector`                  | Distribution node selector                 | `{}`                               |
 | `distribution.affinity`                      | Distribution node affinity                 | `{}`                               |
 | `distribution.tolerations`                   | Distribution node tolerations              | `[]`                               |
+| `distribution.loggers`                       | Distribution loggers (see values.yaml for possible values)     | ` `            |
 | `distributor.name`                           | Distribution name                          | `distribution`                     |
 | `distributor.image.pullPolicy`               | Container pull policy                      | `IfNotPresent`                     |
 | `distributor.image.repository`               | Container image                            | `docker.jfrog.io/jf-distribution`  |
@@ -213,6 +229,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.nodeSelector`                   | Distributor node selector                  | `{}`                               |
 | `distributor.affinity`                       | Distributor node affinity                  | `{}`                               |
 | `distributor.tolerations`                    | Distributor node tolerations               | `[]`                               |
+| `distributor.loggers`                        | Distributor loggers (see values.yaml for possible values)      | ` `            |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

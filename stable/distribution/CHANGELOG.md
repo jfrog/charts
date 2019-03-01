@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.0] - Mar 1, 2019
+* Support loggers sidecars to tail a configured log
+
 ## [3.1.0] - Feb 18, 2019
 * Update Distribution version 1.6.0
 
