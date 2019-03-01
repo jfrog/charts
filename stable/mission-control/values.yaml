@@ -240,7 +240,8 @@ missionControl:
   #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
   #        name: mission-control-data
 
-  loggers: [] # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
   # - audit.log
   # - http.log
   # - init-debug.log
@@ -343,7 +344,8 @@ insightServer:
     ##
     # storageClass: "-"
 
-  loggers: [] # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
   # - insight-server.log
 
 insightScheduler:
@@ -389,7 +391,8 @@ insightScheduler:
     ##
     # storageClass: "-"
 
-  loggers: [] # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
   # - insight-scheduler.log
   # - access.log
 
@@ -436,6 +439,7 @@ insightExecutor:
     ##
     # storageClass: "-"
 
-  loggers: [] # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
   # - insight-executor.log
   # - access.log

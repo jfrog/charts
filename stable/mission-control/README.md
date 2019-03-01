@@ -94,7 +94,7 @@ kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].nam
 
 View specific log
 ```bash
-kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>`
+kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ```
 
 ### Custom init containers
