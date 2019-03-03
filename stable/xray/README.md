@@ -131,6 +131,19 @@ helm install -n xray \
     jfrog/xray
 ```
 
+### Logger sidecars
+This chart provides the option to add sidecars to tail various logs from Xray containers. See the available values in `values.yaml`
+
+  Get list of containers in the pod
+```bash
+kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
+```
+
+  View specific log
+```bash
+kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
+```
+
 ### Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
@@ -211,6 +224,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.rbac.create`                      | If true, create & use RBAC resources         | `true`               |
 | `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
 | `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
+| `logger.image.repository`                      | Repository for logger image                  | `busybox`            |
+| `logger.image.tag`                             | Tag for logger image                         | `1.30`               |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
 | `common.xrayConfigPath`                        | Xray config path                   | `/var/opt/jfrog/xray/data`     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
@@ -229,6 +244,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
 | `analysis.storage.sizeLimit`                   | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
+| `analysis.loggers`                             | Xray Analysis loggers (see values.yaml for possible values)  | ` `  |
 | `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
 | `analysis.affinity`                            | Xray Analysis node affinity                  | `{}`                 |
 | `analysis.tolerations`                         | Xray Analysis node tolerations               | `[]`                 |
@@ -240,6 +256,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
 | `indexer.storage.sizeLimit`                    | Xray Indexer storage size limit              | `10Gi`               |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
+| `indexer.loggers`                              | Xray Indexer loggers (see values.yaml for possible values)   | ` `  |
 | `indexer.nodeSelector`                         | Xray Indexer node selector                   | `{}`                 |
 | `indexer.affinity`                             | Xray Indexer node affinity                   | `{}`                 |
 | `indexer.tolerations`                          | Xray Indexer node tolerations                | `[]`                 |
@@ -250,6 +267,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
 | `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
 | `persist.storage.sizeLimit`                    | Xray Persist storage size limit              | `10Gi`               |
+| `persist.loggers`                              | Xray Persist loggers (see values.yaml for possible values)  | ` `   |
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
 | `persist.nodeSelector`                         | Xray Persist node selector                   | `{}`                 |
 | `persist.affinity`                             | Xray Persist node affinity                   | `{}`                 |
@@ -262,6 +280,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.service.name`                          | Xray server service name                     | `xray`               |
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
 | `server.storage.sizeLimit`                     | Xray server storage size limit               | `10Gi`               |
+| `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
 | `server.affinity`                              | Xray server node affinity                    | `{}`                 |
