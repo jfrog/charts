@@ -71,14 +71,22 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+  # Sidecar containers for tailing Artifactory logs
   loggers: []
-  # - request
-  # - event
-  # - binarystore
-  # - request_trace
-  # - access
-  # - artifactory
-  # - build_info_migration
+  # - request.log
+  # - event.log
+  # - binarystore.log
+  # - request_trace.log
+  # - access.log
+  # - artifactory.log
+  # - build_info_migration.log
+
+  # Sidecar containers for tailing Tomcat (catalina) logs
+  catalinaLoggers: []
+  # - catalina.log
+  # - host-manager.log
+  # - localhost.log
+  # - manager.log
 
   ## Add custom init containers
   customInitContainers: |
@@ -272,9 +280,10 @@ nginx:
     # version:
     pullPolicy: IfNotPresent
 
+  # Sidecar containers for tailing Nginx logs
   loggers: []
-  # - access
-  # - error
+  # - access.log
+  # - error.log
 
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer

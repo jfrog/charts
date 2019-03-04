@@ -347,10 +347,17 @@ helm install --name artifactory-ha --set imagePullSecrets=regsecret jfrog/artifa
 ```
 
 ### Logger sidecars
+This chart provides the option to add sidecars to tail various logs from Artifactory. See the available values in [values.yaml](values.yaml)
 
-This chart provides the option to add sidecars to tail various types of logs from artifactory. To see the potential values check the `artifactory.loggers` and `nginx.loggers` values in `values.yaml`
+Get list of containers in the pod
+```bash
+kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
+```
 
-To access a specific log run `kubectl logs -n <ARTIFACTORY_NAMESPACE> <ARTIFACTORY_POD_NAME> -c <LOG_NAME>`.
+View specific log
+```bash
+kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
+```
 
 
 ### Custom init containers
@@ -381,6 +388,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
+| `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |

@@ -150,16 +150,16 @@ spec:
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
-      - name: {{ . | replace "_" "-" }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
         tag: {{ $tag }}
         command:
         - tail
         args:
         - "-F"
-        - "{{ $mountPath }}/logs/{{ . }}.log"
+        - "{{ $mountPath }}/logs/{{ . }}"
         volumeMounts:
-        - name: volume
+        - name: nginx-volume
           mountPath: {{ $mountPath }}
       {{- end }}
     {{- with .Values.nginx.nodeSelector }}
