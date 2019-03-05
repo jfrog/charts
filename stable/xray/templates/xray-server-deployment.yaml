@@ -149,6 +149,22 @@ spec:
             port: {{ .Values.server.internalPort }}
           initialDelaySeconds: 90
           periodSeconds: 10
+      {{- $image := .Values.logger.image.repository }}
+      {{- $tag := .Values.logger.image.tag }}
+      {{- $mountPath := .Values.common.xrayConfigPath }}
+      {{- range .Values.server.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/logs/{{ . }}"
+        volumeMounts:
+          - name: data-volume
+            mountPath: {{ $mountPath }}
+      {{- end }}
     {{- with .Values.analysis.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
