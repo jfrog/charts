@@ -1,16 +1,23 @@
 {{- if .Values.nginx.enabled -}}
-apiVersion: extensions/v1beta1
+{{- $serviceName := include "artifactory.fullname" . -}}
+{{- $servicePort := .Values.artifactory.externalPort -}}
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: {{ template "artifactory.nginx.fullname" . }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ template "artifactory.chart" . }}
-    component: {{ .Values.nginx.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    component: {{ .Values.nginx.name }}
 spec:
   replicas: {{ .Values.nginx.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "artifactory.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.nginx.name }}
   template:
     metadata:
       labels:
@@ -42,7 +49,7 @@ spec:
         - 'sh'
         - '-c'
         - >
-          until nc -z -w 2 {{ template "artifactory.fullname" . }} {{ .Values.artifactory.externalPort }} && echo artifactory ok; do
+          until nc -z -w 2 {{ $serviceName }} {{ $servicePort }} && echo artifactory ok; do
             sleep 2;
           done;
       securityContext:
@@ -50,7 +57,7 @@ spec:
         fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
-        image: "{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}"
+        image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         lifecycle:
           postStart:
@@ -66,17 +73,17 @@ spec:
                 cp -Lrf /tmp/conf.d/artifactory*.conf /etc/nginx/conf.d/artifactory.conf;
                 {{- else }}
                 if ! grep -q 'upstream' /etc/nginx/conf.d/artifactory.conf; then
-                sed -i -e 's,proxy_pass .*,proxy_pass     http://{{ template "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;,g' \
-                    -e 's,server_name .*,server_name ~(?<repo>.+)\\.{{ template "artifactory.fullname" . }} {{ template "artifactory.fullname" . }};,g' \
+                sed -i -e 's,proxy_pass.*http://artifactory.*/artifactory/\(.*\);,proxy_pass       http://{{ $serviceName }}:{{ $servicePort }}/artifactory/\1;,g' \
+                    -e 's,server_name .*,server_name ~(?<repo>.+)\\.{{ $serviceName }} {{ $serviceName }};,g' \
                     /etc/nginx/conf.d/artifactory.conf;
                 fi;
                 {{- end }}
                 if [ -f /tmp/replicator-nginx.conf ]; then
-                cp -Lfv /tmp/replicator-nginx.conf /etc/nginx/conf.d/replicator-nginx.conf;
+                cp -fv /tmp/replicator-nginx.conf /etc/nginx/conf.d/replicator-nginx.conf;
                 fi;
                 if [ -f /tmp/ssl/*.crt ]; then
                 rm -rf /var/opt/jfrog/nginx/ssl/example.*;
-                cp -Lfv /tmp/ssl/* /var/opt/jfrog/nginx/ssl;
+                cp -fv /tmp/ssl/* /var/opt/jfrog/nginx/ssl;
                 fi;
                 until [ -f /etc/nginx/conf.d/artifactory.conf ]; do sleep 1; done;
                 sleep 5; nginx -s reload; touch /var/log/nginx/conf.done
@@ -85,7 +92,7 @@ spec:
           {{- if .Values.nginx.env.artUrl }}
           value: {{ .Values.nginx.env.artUrl }}
           {{- else }}
-          value: "http://{{ template "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory"
+          value: 'http://{{ $serviceName }}:{{ $servicePort }}/artifactory'
           {{- end }}
         - name: SSL
           value: "{{ .Values.nginx.env.ssl }}"
@@ -184,7 +191,7 @@ spec:
       - name: nginx-config
         configMap:
           name: {{ .Values.nginx.customConfigMap }}
-      {{- end}}
+      {{- end }}
       {{- if .Values.nginx.customArtifactoryConfigMap }}
       - name: artifactory-nginx-config
         configMap:
@@ -201,5 +208,5 @@ spec:
       - name: ssl-secret-volume
         secret:
           secretName: {{ .Values.nginx.tlsSecretName }}
-      {{- end -}}
+      {{- end }}
 {{- end }}

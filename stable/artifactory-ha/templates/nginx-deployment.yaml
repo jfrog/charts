@@ -73,7 +73,7 @@ spec:
                 cp -Lrf /tmp/conf.d/artifactory*.conf /etc/nginx/conf.d/artifactory.conf;
                 {{- else }}
                 if ! grep -q 'upstream' /etc/nginx/conf.d/artifactory.conf; then
-                sed -i -e 's,proxy_pass .*,proxy_pass     http://{{ $serviceName }}:{{ $servicePort }}/artifactory/;,g' \
+                sed -i -e 's,proxy_pass.*http://artifactory.*/artifactory/\(.*\);,proxy_pass       http://{{ $serviceName }}:{{ $servicePort }}/artifactory/\1;,g' \
                     -e 's,server_name .*,server_name ~(?<repo>.+)\\.{{ $serviceName }} {{ $serviceName }};,g' \
                     /etc/nginx/conf.d/artifactory.conf;
                 fi;
