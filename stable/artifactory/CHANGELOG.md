@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.2] - Mar 4, 2019
+* Add support for catalina logs sidecars
+
 ## [7.12.1] - Feb 27, 2019
 * Updated Artifactory version to 6.8.3
 
