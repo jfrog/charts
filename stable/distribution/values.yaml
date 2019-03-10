@@ -142,6 +142,11 @@ common:
   uid: 1020
   gid: 1020
 
+logger:
+  image:
+    repository: busybox
+    tag: 1.30
+
 distribution:
   name: distribution
   image:
@@ -215,6 +220,12 @@ distribution:
     ##
     # storageClass: "-"
 
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - access.log
+  # - distribution.log
+  # - request.log
+
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -256,6 +267,11 @@ distributor:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
+
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - distributor.log
+  # - foreman.log
 
   nodeSelector: {}
   tolerations: []

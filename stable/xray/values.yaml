@@ -171,6 +171,12 @@ rabbitmq:
   rbac:
     create: true
 
+# Logger containers
+logger:
+  image:
+    repository: busybox
+    tag: 1.30
+
 # Common Xray settings
 common:
   ## Note that by default we use appVersion to get image tag
@@ -218,6 +224,9 @@ analysis:
   ## Container storage limit
   storage:
     sizeLimit: 10Gi
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - xray_analysis.log
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -240,6 +249,9 @@ indexer:
   ## Container storage limit
   storage:
     sizeLimit: 10Gi
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - xray_indexer.log
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -262,6 +274,9 @@ persist:
   ## Container storage limit
   storage:
     sizeLimit: 10Gi
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - xray_persist.log
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -288,6 +303,9 @@ server:
   # Whitelist IPs allowed to LoadBalancer type services
   # Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
   loadBalancerSourceRanges: []
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - xray_server.log
   resources: {}
   #  requests:
   #    memory: "1Gi"

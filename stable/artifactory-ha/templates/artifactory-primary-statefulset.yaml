@@ -266,17 +266,34 @@ spec:
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
-      - name: {{ . | replace "_" "-" }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
         tag: {{ $tag }}
         command:
         - tail
         args:
         - "-F"
-        - "{{ $mountPath }}/logs/{{ . }}.log"
+        - "{{ $mountPath }}/logs/{{ . }}"
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
+      {{- end }}
+      {{ if .Values.artifactory.catalinaLoggers }}
+      {{- range .Values.artifactory.catalinaLoggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/logs/catalina {{ . }}'
+        volumeMounts:
+        - name: volume
+          mountPath: {{ $mountPath }}
+        - name: catalina-logger
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+      {{- end }}
       {{- end }}
     {{- with .Values.artifactory.primary.nodeSelector }}
       nodeSelector:
@@ -326,6 +343,11 @@ spec:
         configMap:
           name: {{ .Values.artifactory.configMapName }}
       {{- end}}
+      {{- if .Values.artifactory.catalinaLoggers }}
+      - name: catalina-logger
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-catalina-logger
+      {{- end }}
       {{- if .Values.artifactory.license.secret }}
       - name: artifactory-license
         secret:

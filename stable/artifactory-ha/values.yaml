@@ -119,14 +119,22 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
-  loggers: []  # add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  # - request
-  # - event
-  # - binarystore
-  # - request_trace
-  # - access
-  # - artifactory
-  # - build_info_migration
+  # Sidecar containers for tailing Artifactory logs
+  loggers: []
+  # - request.log
+  # - event.log
+  # - binarystore.log
+  # - request_trace.log
+  # - access.log
+  # - artifactory.log
+  # - build_info_migration.log
+
+  # Sidecar containers for tailing Tomcat (catalina) logs
+  catalinaLoggers: []
+  # - catalina.log
+  # - host-manager.log
+  # - localhost.log
+  # - manager.log
 
   ## Add custom init containers
   customInitContainers: |
@@ -383,9 +391,10 @@ nginx:
     # version:
     pullPolicy: IfNotPresent
 
-  loggers: []  # add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  # - access
-  # - error
+  # Sidecar containers for tailing Nginx logs
+  loggers: []
+  # - access.log
+  # - error.log
 
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer

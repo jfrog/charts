@@ -237,6 +237,38 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}
+      {{- $image := .Values.logger.image.repository }}
+      {{- $tag := .Values.logger.image.tag }}
+      {{- $name := .Values.distribution.name }}
+      {{- $mountPath := .Values.distribution.persistence.mountPath }}
+      {{- range .Values.distribution.loggers }}
+      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/logs/{{ . }}"
+        volumeMounts:
+          - name: distribution-data
+            mountPath: {{ $mountPath }}
+      {{- end }}
+      {{- $name := .Values.distributor.name }}
+      {{- $mountPath := .Values.distributor.persistence.mountPath }}
+      {{- range .Values.distributor.loggers }}
+      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+          - tail
+        args:
+          - "-F"
+          - "{{ $mountPath }}/logs/{{ . }}"
+        volumeMounts:
+          - name: distributor-data
+            mountPath: {{ $mountPath }}
+      {{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
