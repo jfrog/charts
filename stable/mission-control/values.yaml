@@ -211,6 +211,11 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+logger:
+  image:
+    repository: busybox
+    tag: 1.30
+
 missionControl:
   replicaCount: 1
   name: mission-control
@@ -234,6 +239,18 @@ missionControl:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
   #        name: mission-control-data
+
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - audit.log
+  # - http.log
+  # - init-debug.log
+  # - init-err.log
+  # - init.log
+  # - jfmc-server-debug.log
+  # - jfmc-server-err.log
+  # - jfmc-server.log
+  # - monitoring.log
 
   missionControlUrl:
   podRestartTime:
@@ -307,6 +324,30 @@ insightServer:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  # Persistence for the logs
+  persistence:
+    enabled: false
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    mountPath: "/opt/jfrog/insight-server/logs"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    ## Insight Server logs Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - insight-server.log
+
 insightScheduler:
   replicaCount: 1
   name: insight-scheduler
@@ -330,6 +371,31 @@ insightScheduler:
   #    memory: "3.5Gi"
   #    cpu: "1"
 
+  # Persistence for the logs
+  persistence:
+    enabled: false
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    mountPath: "/opt/jfrog/insight-scheduler/logs"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    ## Insight Scheduler logs Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - insight-scheduler.log
+  # - access.log
+
 insightExecutor:
   replicaCount: 1
   name: insight-executor
@@ -352,3 +418,28 @@ insightExecutor:
   #  limits:
   #    memory: "3.5Gi"
   #    cpu: "1"
+
+  # Persistence for the logs
+  persistence:
+    enabled: false
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    mountPath: "/opt/jfrog/insight-executor/logs"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    ## Insight Executor logs Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+  # - insight-executor.log
+  # - access.log

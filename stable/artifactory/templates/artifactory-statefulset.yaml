@@ -254,17 +254,34 @@ spec:
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
-      - name: {{ . | replace "_" "-" }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
         tag: {{ $tag }}
         command:
         - tail
         args:
         - "-F"
-        - "{{ $mountPath }}/logs/{{ . }}.log"
+        - "{{ $mountPath }}/logs/{{ . }}"
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ $mountPath }}
+      {{- end }}
+      {{ if .Values.artifactory.catalinaLoggers }}
+      {{- range .Values.artifactory.catalinaLoggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ $image }}
+        tag: {{ $tag }}
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/logs/catalina {{ . }}'
+        volumeMounts:
+        - name: artifactory-volume
+          mountPath: {{ $mountPath }}
+        - name: catalina-logger
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+      {{- end }}
       {{- end }}
     {{- with .Values.artifactory.nodeSelector }}
       nodeSelector:
@@ -297,6 +314,11 @@ spec:
         configMap:
           name: {{ .Values.artifactory.configMapName }}
       {{- end}}
+      {{- if .Values.artifactory.catalinaLoggers }}
+      - name: catalina-logger
+        configMap:
+          name: {{ template "artifactory.fullname" . }}-catalina-logger
+      {{- end }}
       {{- if .Values.artifactory.license.secret }}
       - name: artifactory-license
         secret:
@@ -310,30 +332,27 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory.fullname" . }}-backup-pvc
       {{- end }}
-      {{- if .Values.artifactory.persistence.enabled }}
-  volumeClaimTemplates:
-  - metadata:
-      name: artifactory-volume
-    spec:
-      {{- if .Values.artifactory.persistence.existingClaim }}
-      selector:
-        matchLabels:
-          app: artifactory
-      {{- else }}
-      {{- if .Values.artifactory.persistence.storageClass }}
-      {{- if (eq "-" .Values.artifactory.persistence.storageClass) }}
-      storageClassName: ""
-      {{- else }}
-      storageClassName: "{{ .Values.artifactory.persistence.storageClass }}"
-      {{- end }}
-      {{- end }}
-      accessModes: [ "{{ .Values.artifactory.persistence.accessMode }}" ]
-      resources:
-        requests:
-          storage: {{ .Values.artifactory.persistence.size }}
-      {{- end }}
-      {{- else }}
+      {{- if not .Values.artifactory.persistence.enabled }}
       - name: artifactory-volume
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}
+{{- with .Values.artifactory.persistence }}
+  {{- if and .enabled (not .existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: artifactory-volume
+    spec:
+      {{- if .storageClass }}
+      {{- if (eq "-" .storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .storageClass }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .accessMode }}" ]
+      resources:
+        requests:
+          storage: {{ .size }}
+  {{- end }}
+{{- end }}
