@@ -5,7 +5,7 @@ All changes to this chart will be documented in this file.
 * Updated values.yaml added an important comment for the MongoDB requirements.
 
 ## [0.10.0] - Mar 3, 2019
-*  Support loggers sidecars to tail a configured log
+* Support loggers sidecars to tail a configured log
 
 ## [0.9.0] - Feb 14, 2019
 * Updated Xray version to 2.7.0
