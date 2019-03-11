@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.10.1] - March 10, 2019
+* Updated values.yaml added an important comment for the MongoDB requirements.
+
 ## [0.10.0] - Mar 3, 2019
 * Support loggers sidecars to tail a configured log
 
