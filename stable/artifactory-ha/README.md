@@ -100,6 +100,27 @@ This is used to set how many replicas of a binary should be stored in the cluste
 Once this value is set on initial deployment, you can not update it using helm.
 It is recommended to set this to a number greater than half of your cluster's size, and never scale your cluster down to a size smaller than this number.
 
+#### Existing volume claim
+
+###### Primary node
+In order to use an existing volume claim for the Artifactory primary storage, you need to:
+- Create a persistent volume claim by the name `volume-<release-name>-artifactory-ha-primary-0`
+- Pass a parameter to `helm install` and `helm upgrade`
+```bash
+...
+--set artifactory.primary.persistence.existingClaim=true 
+```
+
+###### Member nodes
+In order to use an existing volume claim for the Artifactory member nodes storage, you need to:
+- Create persistent volume claims according to the number of replicas defined at `artifactory.node.replicaCount` by the names `volume-<release-name>-artifactory-ha-member-<ordinal-number>`, e.g `volume-myrelease-artifactory-ha-member-0` and `volume-myrelease-artifactory-ha-primary-1`.
+- Pass a parameter to `helm install` and `helm upgrade`
+```bash
+...
+--set artifactory.node.persistence.existingClaim=true 
+```
+
+
 #### NFS
 To use an NFS server as your cluster's storage, you need to
 - Setup an NFS server. Get its IP as `NFS_IP`
@@ -460,6 +481,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.javaOpts.xms`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.xmx`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
+| `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `true`            |
 | `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
 | `artifactory.node.minAvailable`                 | Artifactory member node min available count      | `1`                 |
 | `artifactory.node.resources.requests.memory`    | Artifactory member node initial memory request   |                     |
