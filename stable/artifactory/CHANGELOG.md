@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.5] - Mar 11, 2019
+* Updated Artifactory version to 6.8.6
+
 ## [7.12.4] - Mar 8, 2019
 * Fix existingClaim option
 

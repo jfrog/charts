@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.11.4] - Mar 5, 2019
+## [0.11.5] - Mar 11, 2019
 * Add the option to use existing volume claims for Artifactory storage
+
+## [0.11.4] - Mar 11, 2019
+* Updated Artifactory version to 6.8.6
 
 ## [0.11.3] - Mar 5, 2019
 * Updated Artifactory version to 6.8.4
