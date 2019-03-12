@@ -481,7 +481,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.javaOpts.xms`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.xmx`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
-| `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `true`            |
+| `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `false`            |
 | `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
 | `artifactory.node.minAvailable`                 | Artifactory member node min available count      | `1`                 |
 | `artifactory.node.resources.requests.memory`    | Artifactory member node initial memory request   |                     |
@@ -491,6 +491,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.javaOpts.xms`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.xmx`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.other`               | Artifactory member node additional java options  |                     |
+| `artifactory.node.persistence.existingClaim`    | Whether to use existing PVCs for the member nodes | `false`            |
 | `artifactory.terminationGracePeriodSeconds`     | Termination grace period (seconds)               | `30s`               |
 | `ingress.enabled`           | If true, Artifactory Ingress will be created | `false`                                     |
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
