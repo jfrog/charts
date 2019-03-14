@@ -541,6 +541,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.requests.cpu`    | Nginx initial cpu request                  | `100m`                                  |
 | `nginx.resources.limits.memory`   | Nginx memory limit                         | `250Mi`                                 |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit                            | `500m`                                  |
+| `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/jfrog/nginx"`                           |
+| `nginx.persistence.enabled` | Nginx persistence volume enabled | `false`                                                  |
+| `nginx.persistence.accessMode` | Nginx persistence volume access mode | `ReadWriteOnce`                                  |
+| `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
 | `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                   | `artifactory`                           |
