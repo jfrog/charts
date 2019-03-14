@@ -377,12 +377,8 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: volume
+    {{- if not .Values.artifactory.primary.persistence.existingClaim }}
     spec:
-    {{- if .Values.artifactory.primary.persistence.existingClaim }}
-      selector:
-        matchLabels:
-          app: artifactory-ha-primary
-    {{- else }}
       {{- if .Values.artifactory.persistence.storageClass }}
       {{- if (eq "-" .Values.artifactory.persistence.storageClass) }}
       storageClassName: ""
