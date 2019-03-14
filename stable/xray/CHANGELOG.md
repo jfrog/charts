@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.10.2] - March 13, 2019
+* Move securityContext to container level
+
 ## [0.10.1] - March 10, 2019
 * Updated values.yaml added an important comment for the MongoDB requirements.
 

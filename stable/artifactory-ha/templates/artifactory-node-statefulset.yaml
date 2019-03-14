@@ -37,13 +37,13 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
-      securityContext:
-        runAsUser: {{ .Values.artifactory.uid }}
-        fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
         command:
         - 'sh'
         - '-c'
@@ -79,8 +79,10 @@ spec:
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
           allowPrivilegeEscalation: false
-      {{- if .Values.artifactory.preStartCommand }}
+  {{- if .Values.artifactory.preStartCommand }}
         command:
         - '/bin/sh'
         - '-c'
@@ -256,6 +258,9 @@ spec:
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
+        securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
         tag: {{ $tag }}
         command:
         - tail
@@ -270,6 +275,9 @@ spec:
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
+        securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
         tag: {{ $tag }}
         command:
         - 'sh'

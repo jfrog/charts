@@ -52,11 +52,11 @@ spec:
           until nc -z -w 2 {{ $serviceName }} {{ $servicePort }} && echo artifactory ok; do
             sleep 2;
           done;
-      securityContext:
-        runAsUser: {{ .Values.nginx.uid }}
-        fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
+        securityContext:
+          runAsUser: {{ .Values.nginx.uid }}
+          fsGroup: {{ .Values.nginx.gid }}
         image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         lifecycle:
@@ -159,6 +159,9 @@ spec:
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
+        securityContext:
+          runAsUser: {{ .Values.nginx.uid }}
+          fsGroup: {{ .Values.nginx.gid }}
         tag: {{ $tag }}
         command:
         - tail
