@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.1] - Mar 13, 2019
+* Move securityContext to container level
+
 ## [3.2.0] - Mar 1, 2019
 * Support loggers sidecars to tail a configured log
 

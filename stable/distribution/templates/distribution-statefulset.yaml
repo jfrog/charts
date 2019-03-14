@@ -34,9 +34,6 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
-      securityContext:
-        runAsUser: {{ .Values.common.uid }}
-        fsGroup: {{ .Values.common.gid }}
       initContainers:
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
@@ -57,6 +54,8 @@ spec:
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
+          runAsUser: {{ .Values.common.uid }}
+          fsGroup: {{ .Values.common.gid }}
         ports:
         - name: distribution
           containerPort: {{ .Values.distribution.internalPort }}
@@ -174,6 +173,8 @@ spec:
         image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
         securityContext:
+          runAsUser: {{ .Values.common.uid }}
+          fsGroup: {{ .Values.common.gid }}
           allowPrivilegeEscalation: false
         env:
         - name: DEFAULT_JAVA_OPTS
@@ -205,6 +206,9 @@ spec:
       - name: {{ template "redis.name" . }}
         image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        securityContext:
+          runAsUser: {{ .Values.common.uid }}
+          fsGroup: {{ .Values.common.gid }}
         env:
         - name: REDIS_REPLICATION_MODE
           value: master
@@ -244,6 +248,9 @@ spec:
       {{- range .Values.distribution.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
+        securityContext:
+          runAsUser: {{ .Values.common.uid }}
+          fsGroup: {{ .Values.common.gid }}
         tag: {{ $tag }}
         command:
           - tail
@@ -259,6 +266,9 @@ spec:
       {{- range .Values.distributor.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
+        securityContext:
+          runAsUser: {{ .Values.common.uid }}
+          fsGroup: {{ .Values.common.gid }}
         tag: {{ $tag }}
         command:
           - tail

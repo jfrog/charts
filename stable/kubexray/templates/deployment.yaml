@@ -27,14 +27,14 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
       {{- end }}
-{{- if .Values.securityContext.enabled }}
-      securityContext:
-        runAsUser: {{ .Values.securityContext.kubeXrayUserId }}
-        fsGroup: {{ .Values.securityContext.kubeXrayGroupId }}
-{{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+          {{- if .Values.securityContext.enabled }}
+          securityContext:
+            runAsUser: {{ .Values.securityContext.kubeXrayUserId }}
+            fsGroup: {{ .Values.securityContext.kubeXrayGroupId }}
+          {{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
           - name: KUBE_XRAY_LOG_LEVEL
