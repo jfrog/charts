@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.12.7] - Mar 11, 2019
+## [7.12.7] - Mar 14, 2019
 * Updated Artifactory version to 6.8.7
 * Add support for Artifactory-CE for C++
 
