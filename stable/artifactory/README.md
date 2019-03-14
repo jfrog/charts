@@ -8,7 +8,7 @@
 ## Chart Details
 This chart will do the following:
 
-* Deploy Artifactory-Pro/Artifactory-Edge (or OSS if set custom image)
+* Deploy Artifactory-Pro/Artifactory-Edge (or OSS/CE if custom image is set)
 * Deploy a PostgreSQL database using the stable/postgresql chart (can be changed)
 * Deploy an optional Nginx server
 * Optionally expose Artifactory with Ingress [Ingress documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
@@ -28,9 +28,15 @@ helm install --name artifactory jfrog/artifactory
 ```
 
 ### Deploying Artifactory OSS
-By default it will run Artifactory-Pro to run Artifactory-Oss use following command:
+By default it will run Artifactory-Pro to run Artifactory-OSS use following command:
 ```bash
 helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
+```
+
+### Deploying Artifactory CE for C++ 
+By default it will run Artifactory-Pro to run Artifactory-CE for C++ use following command:
+```bash
+helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-cpp-ce jfrog/artifactory
 ```
 
 ### Deploying Artifactory with embedded Derby database
