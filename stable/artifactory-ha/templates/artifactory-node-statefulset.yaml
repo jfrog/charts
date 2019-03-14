@@ -56,6 +56,9 @@ spec:
           name: volume
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
         command:
         - 'sh'
         - '-c'

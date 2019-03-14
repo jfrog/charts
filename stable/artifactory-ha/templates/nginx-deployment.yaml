@@ -35,6 +35,9 @@ spec:
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
         command:
         - '/bin/sh'
         - '-c'
@@ -45,6 +48,9 @@ spec:
     {{- end }}
       - name: "wait-for-artifactory"
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsUser: {{ .Values.artifactory.uid }}
+          fsGroup: {{ .Values.artifactory.uid }}
         command:
         - 'sh'
         - '-c'
