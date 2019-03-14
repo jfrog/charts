@@ -141,6 +141,9 @@ artifactory:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsUser: {{ .Values.artifactory.uid }}
+  #      fsGroup: {{ .Values.artifactory.uid }}
   #    command:
   #      - 'sh'
   #      - '-c'
