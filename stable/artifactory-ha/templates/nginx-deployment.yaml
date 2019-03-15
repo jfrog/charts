@@ -31,7 +31,7 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
-    {{- if .Values.nginx.persistence.enabled }}
+    {{- if and .Values.nginx.persistence.enabled (eq (int .Values.nginx.replicaCount) 1) }}
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
@@ -198,7 +198,7 @@ spec:
           name: {{ .Values.nginx.customArtifactoryConfigMap }}
       {{- end}}
       - name: nginx-volume
-      {{- if .Values.nginx.persistence.enabled }}
+  {{- if and .Values.nginx.persistence.enabled (eq (int .Values.nginx.replicaCount) 1) }}
         persistentVolumeClaim:
           claimName: {{ .Values.nginx.persistence.existingClaim | default (include "artifactory-ha.nginx.fullname" .) }}
       {{- else }}
