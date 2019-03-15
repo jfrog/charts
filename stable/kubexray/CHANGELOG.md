@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.4] - Mar 15, 2019
+* Revert securityContext change that was causing issues
+
 ## [0.3.2] - Dec 12, 2018
 * Fixed typo
 
