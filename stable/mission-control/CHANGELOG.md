@@ -1,6 +1,12 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.2] - Mar 14, 2019
+* Move securityContext to container level
+
+## [0.9.1] - Mar 14, 2019
+* Updated Mission-Control version to 3.4.3
+
 ## [0.9.0] - Feb 28, 2019
 * Support loggers sidecars to tail a configured log
 

@@ -1,6 +1,13 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.7] - Mar 14, 2019
+* Updated Artifactory version to 6.8.7
+* Add support for Artifactory-CE for C++
+
+## [7.12.6] - Mar 13, 2019
+* Move securityContext to container level
+
 ## [7.12.5] - Mar 11, 2019
 * Updated Artifactory version to 6.8.6
 

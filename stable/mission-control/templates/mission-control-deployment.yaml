@@ -32,8 +32,6 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
-      securityContext:
-        fsGroup: {{ .Values.uid }}
       initContainers:
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
@@ -658,6 +656,7 @@ spec:
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $uid := .Values.uid }}
+      {{- $fsGroup := .Values.uid }}
       {{- $name := .Values.missionControl.name }}
       {{- $mountPath := .Values.missionControl.persistence.mountPath }}
       {{- range .Values.missionControl.loggers }}
@@ -665,6 +664,7 @@ spec:
         image: {{ $image }}
         tag: {{ $tag }}
         securityContext:
+          fsGroup: {{ $fsGroup }}
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
@@ -683,6 +683,7 @@ spec:
         image: {{ $image }}
         tag: {{ $tag }}
         securityContext:
+          fsGroup: {{ $fsGroup }}
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
@@ -701,6 +702,7 @@ spec:
         image: {{ $image }}
         tag: {{ $tag }}
         securityContext:
+          fsGroup: {{ $fsGroup }}
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
@@ -719,6 +721,7 @@ spec:
         image: {{ $image }}
         tag: {{ $tag }}
         securityContext:
+          fsGroup: {{ $fsGroup }}
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:

@@ -66,6 +66,7 @@ artifactory:
   name: artifactory
   image:
     # repository: "docker.bintray.io/jfrog/artifactory-oss"
+    # repository: "docker.bintray.io/jfrog/artifactory-cpp-ce"
     repository: "docker.bintray.io/jfrog/artifactory-pro"
     # Note that by default we use appVersion to get image tag
     # version:
@@ -93,6 +94,9 @@ artifactory:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsUser: {{ .Values.artifactory.uid }}
+  #      fsGroup: {{ .Values.artifactory.uid }}
   #    command:
   #      - 'sh'
   #      - '-c'
