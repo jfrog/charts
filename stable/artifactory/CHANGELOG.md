@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.9] - Mar 15, 2019
+* Revert securityContext changes since they were causing issues
+
 ## [7.12.8] - Mar 15, 2019
 * Fix issue #247 (init container failing to run)
 

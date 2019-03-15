@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.4] - Mar 15, 2019
+* Revert securityContext change that was causing issues
+
 ## [0.3.3] - Mar 13, 2019
 * Move securityContext to container level
 

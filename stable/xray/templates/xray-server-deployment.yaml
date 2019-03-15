@@ -27,12 +27,12 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
+      securityContext:
+        runAsUser: {{ .Values.common.xrayUserId }}
+        fsGroup: {{ .Values.common.xrayGroupId }}
       initContainers:
       - name: init-wait
         image: {{ .Values.initContainerImage | quote }}
-        securityContext:
-          runAsUser: {{ .Values.common.xrayUserId }}
-          fsGroup: {{ .Values.common.xrayGroupId }}
         env:
         {{- if .Values.mongodb.enabled }}
         - name: MONGODB_USER
@@ -134,8 +134,6 @@ spec:
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         securityContext:
           allowPrivilegeEscalation: false
-          runAsUser: {{ .Values.common.xrayUserId }}
-          fsGroup: {{ .Values.common.xrayGroupId }}
         resources:
 {{ toYaml .Values.server.resources | indent 10 }}
         readinessProbe:
@@ -157,9 +155,6 @@ spec:
       {{- range .Values.server.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
-        securityContext:
-          runAsUser: {{ .Values.common.xrayUserId }}
-          fsGroup: {{ .Values.common.xrayGroupId }}
         tag: {{ $tag }}
         command:
           - tail
