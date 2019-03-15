@@ -542,7 +542,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.limits.memory`   | Nginx memory limit                         | `250Mi`                                 |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit                            | `500m`                                  |
 | `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/jfrog/nginx"`                           |
-| `nginx.persistence.enabled` | Nginx persistence volume enabled | `false`                                                  |
+| `nginx.persistence.enabled` | Nginx persistence volume enabled. This is only available when the nginx.replicaCount is set to 1 | `false`                                                  |
 | `nginx.persistence.accessMode` | Nginx persistence volume access mode | `ReadWriteOnce`                                  |
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
