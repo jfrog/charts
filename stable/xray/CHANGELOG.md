@@ -1,9 +1,6 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.10.3] - March 13, 2019
-* Move securityContext to container level
-
 ## [0.10.2] - March 12, 2019
 * Updated Xray version to 2.7.3
 
