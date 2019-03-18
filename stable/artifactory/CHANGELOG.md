@@ -1,16 +1,14 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-<<<<<<< HEAD
-## [7.12.9] - Mar 15, 2019
+## [7.12.11] - Mar 18, 2019
 * Add information about nginx persistence
-=======
+
 ## [7.12.10] - Mar 15, 2019
 * Wait for nginx configuration file before using it
 
 ## [7.12.9] - Mar 15, 2019
 * Revert securityContext changes since they were causing issues
->>>>>>> origin/master
 
 ## [7.12.8] - Mar 15, 2019
 * Fix issue #247 (init container failing to run)
