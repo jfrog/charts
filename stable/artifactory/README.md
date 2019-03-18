@@ -437,7 +437,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.customConfigMap`           | Nginx CustomeConfigMap name for `nginx.conf` | ` `                                   |
 | `nginx.customArtifactoryConfigMap`| Nginx CustomeConfigMap name for `artifactory.conf` | ` `                             |
 | `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/jfrog/nginx"`                           |
-| `nginx.persistence.enabled` | Nginx persistence volume enabled | `true`                                                  |
+| `nginx.persistence.enabled` | Nginx persistence volume enabled | `false`                                                  |
 | `nginx.persistence.accessMode` | Nginx persistence volume access mode | `ReadWriteOnce`                                  |
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
 | `nginx.resources.requests.memory` | Nginx initial memory request  |                                                      |

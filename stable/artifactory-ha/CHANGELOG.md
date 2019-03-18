@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.11] - Mar 18, 2019
+* Disable the option to use nginx PVC with more than one replica
+
 ## [0.11.10] - Mar 15, 2019
 * Wait for nginx configuration file before using it
 
