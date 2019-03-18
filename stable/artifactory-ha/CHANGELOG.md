@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.10] - Mar 15, 2019
+* Wait for nginx configuration file before using it
+
 ## [0.11.9] - Mar 15, 2019
 * Revert securityContext changes since they were causing issues
 

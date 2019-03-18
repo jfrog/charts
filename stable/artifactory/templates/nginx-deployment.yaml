@@ -72,6 +72,7 @@ spec:
                 {{- if .Values.nginx.customArtifactoryConfigMap }}
                 cp -Lrf /tmp/conf.d/artifactory*.conf /etc/nginx/conf.d/artifactory.conf;
                 {{- else }}
+                until [ -f /etc/nginx/conf.d/artifactory.conf ]; do sleep 1; done;
                 if ! grep -q 'upstream' /etc/nginx/conf.d/artifactory.conf; then
                 sed -i -e 's,proxy_pass.*http://artifactory.*/artifactory/\(.*\);,proxy_pass       http://{{ $serviceName }}:{{ $servicePort }}/artifactory/\1;,g' \
                     -e 's,server_name .*,server_name ~(?<repo>.+)\\.{{ $serviceName }} {{ $serviceName }};,g' \
@@ -85,7 +86,6 @@ spec:
                 rm -rf /var/opt/jfrog/nginx/ssl/example.*;
                 cp -fv /tmp/ssl/* /var/opt/jfrog/nginx/ssl;
                 fi;
-                until [ -f /etc/nginx/conf.d/artifactory.conf ]; do sleep 1; done;
                 sleep 5; nginx -s reload; touch /var/log/nginx/conf.done
         env:
         - name: ART_BASE_URL
