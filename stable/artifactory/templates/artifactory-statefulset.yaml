@@ -224,7 +224,7 @@ spec:
           mountPath: "/artifactory_extra_conf/artifactory.lic"
           subPath: {{ .Values.artifactory.license.dataKey }}
       {{- end }}
-        - name: artifactory-bootstrap-creds
+        - name: access-bootstrap-creds
           mountPath: "/tmp/bootstrap.creds"
           {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
           subPath: {{ .Values.artifactory.accessAdmin.dataKey  }}
@@ -334,7 +334,7 @@ spec:
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
-      - name: artifactory-bootstrap-creds
+      - name: access-bootstrap-creds
         secret:
           {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
           secretName: {{ .Values.artifactory.accessAdmin.secret }}
