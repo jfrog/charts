@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.11.11] - Mar 19, 2019
+## [0.11.13] - Mar 19, 2019
 * Move the copy of bootstrap config from postStart to preStart for Primary
+
+## [0.11.12] - Mar 19, 2019
+* Fix existingClaim example
 
 ## [0.11.11] - Mar 18, 2019
 * Disable the option to use nginx PVC with more than one replica

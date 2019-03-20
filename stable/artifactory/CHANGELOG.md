@@ -1,8 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.12.12] - Mar 19, 2019
+## [7.12.13] - Mar 19, 2019
 * Move the copy of bootstrap config from postStart to preStart
+
+## [7.12.12] - Mar 19, 2019
+* Fix existingClaim example
 
 ## [7.12.11] - Mar 18, 2019
 * Add information about nginx persistence
