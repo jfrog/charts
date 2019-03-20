@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.12] - Mar 19, 2019
+* Add the option to change the default access-admin password
+
 ## [7.12.11] - Mar 18, 2019
 * Add information about nginx persistence
 

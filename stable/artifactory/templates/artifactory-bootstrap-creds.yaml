@@ -1,0 +1,15 @@
+{{- with .Values.artifactory.accessAdmin.password }}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: {{ template "artifactory.fullname" $ }}-bootstrap-creds
+  labels:
+    app: {{ template "artifactory.name" $ }}
+    chart: {{ template "artifactory.chart" $ }}
+    heritage: {{ $.Release.Service }}
+    release: {{ $.Release.Name }}
+data:
+  bootstrap.creds: |-
+    {{ (printf "access-admin@127.0.0.1=%s" .) | b64enc }}
+
+{{- end }}

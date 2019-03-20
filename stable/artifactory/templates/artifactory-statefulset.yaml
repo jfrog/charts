@@ -104,6 +104,11 @@ spec:
                 {{- if .Values.artifactory.configMapName }}
                 cp -Lrf /bootstrap/* /artifactory_extra_conf/;
                 {{- end }}
+                {{- if or .Values.artifactory.accessAdmin.password (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
+                mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
+                cp -Lrf /tmp/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+                chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+                {{- end }}
                 {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
@@ -221,6 +226,15 @@ spec:
           mountPath: "/artifactory_extra_conf/artifactory.lic"
           subPath: {{ .Values.artifactory.license.dataKey }}
       {{- end }}
+      {{- if or .Values.artifactory.accessAdmin.password (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
+        - name: artifactory-bootstrap-creds
+          mountPath: "/tmp/bootstrap.creds"
+          {{- if .Values.artifactory.accessAdmin.password }}
+          subPath: bootstrap.creds
+          {{- else }}
+          subPath: {{ .Values.artifactory.accessAdmin.dataKey  }}
+          {{- end }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
         - name: replicator-config
           mountPath: "/replicator_extra_conf/replicator.yaml"
@@ -323,6 +337,15 @@ spec:
       - name: artifactory-license
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
+      {{- end }}
+      {{- if or .Values.artifactory.accessAdmin.password (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
+      - name: artifactory-bootstrap-creds
+        secret:
+          {{- if .Values.artifactory.accessAdmin.password }}
+          secretName: {{ template "artifactory.fullname" . }}-bootstrap-creds
+          {{- else }}
+          secretName: {{ .Values.artifactory.accessAdmin.secret }}
+          {{- end }}
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
       - name: artifactory-data
