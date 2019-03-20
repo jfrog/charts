@@ -85,15 +85,19 @@ spec:
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
-      {{- if .Values.artifactory.preStartCommand }}
         command:
         - '/bin/sh'
         - '-c'
         - >
+          {{- if .Values.artifactory.configMapName }}
+          echo "Copying bootstrap configs";
+          cp -Lrf /bootstrap/* /artifactory_extra_conf/;
+          {{- end }}
+          {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ .Values.artifactory.preStartCommand }};
+          {{- end }}
           /entrypoint-artifactory.sh
-      {{- end }}
         lifecycle:
           postStart:
             exec:
@@ -101,9 +105,6 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-                {{- if .Values.artifactory.configMapName }}
-                cp -Lrf /bootstrap/* /artifactory_extra_conf/;
-                {{- end }}
                 {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
