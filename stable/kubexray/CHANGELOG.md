@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.6]  - Mar 20, 2019
+* Updated Kubexray version to 0.1.2
+
 ## [0.3.5]  - Mar 18, 2019
 * Added label selector for KubeXray ingress
 
