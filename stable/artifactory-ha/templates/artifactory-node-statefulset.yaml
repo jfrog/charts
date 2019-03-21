@@ -72,7 +72,7 @@ spec:
             sleep 2;
           done;
     {{- if .Values.artifactory.customInitContainers }}
-{{ tpl .Values.artifactory.customInitContainers . | indent 6}}
+{{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
@@ -161,17 +161,17 @@ spec:
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
           value: "
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
-      {{- if .Values.artifactory.node.javaOpts.other }}
-          {{ .Values.artifactory.node.javaOpts.other }}
-      {{- end}}
       {{- if .Values.artifactory.node.javaOpts.xms }}
           -Xms{{ .Values.artifactory.node.javaOpts.xms }}
       {{- end}}
       {{- if .Values.artifactory.node.javaOpts.xmx }}
           -Xmx{{ .Values.artifactory.node.javaOpts.xmx }}
+      {{- end}}
+      {{- if .Values.artifactory.javaOpts.other }}
+          {{ .Values.artifactory.javaOpts.other }}
+      {{- end}}
+      {{- if .Values.artifactory.node.javaOpts.other }}
+          {{ .Values.artifactory.node.javaOpts.other }}
       {{- end}}
       {{- if .Values.artifactory.replicator.enabled }}
           -Dartifactory.releasebundle.feature.enabled=true
@@ -283,6 +283,9 @@ spec:
           subPath: tail-log.sh
       {{- end }}
       {{- end }}
+    {{- if .Values.artifactory.customSidecarContainers }}
+{{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
+    {{- end }}
     {{- with .Values.artifactory.node.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -344,6 +347,9 @@ spec:
       - name: artifactory-ha-backup
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
+      {{- end }}
+      {{- if .Values.artifactory.customVolumes }}
+{{ tpl .Values.artifactory.customVolumes . | indent 6 }}
       {{- end }}
       {{- if not .Values.artifactory.persistence.enabled }}
       - name: volume
