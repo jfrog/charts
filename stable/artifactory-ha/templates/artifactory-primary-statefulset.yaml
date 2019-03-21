@@ -367,10 +367,15 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- else }}
+      {{- if .Values.artifactory.persistence.existingSharedClaim }}
+      - name: volume
+        persistentVolumeClaim:
+          claimName: .Values.artifactory.persistence.existingSharedClaim
+      {{- else }}
   volumeClaimTemplates:
   - metadata:
       name: volume
-    {{- if not .Values.artifactory.primary.persistence.existingClaim }}
+    {{- if not (or .Values.artifactory.persistence.existingSharedClaim .Values.artifactory.primary.persistence.existingClaim) }}
     spec:
       {{- if .Values.artifactory.persistence.storageClass }}
       {{- if (eq "-" .Values.artifactory.persistence.storageClass) }}
@@ -384,4 +389,5 @@ spec:
         requests:
           storage: {{ .Values.artifactory.persistence.size }}
     {{- end }}
-  {{- end }}
+    {{- end }}
+      {{- end }}

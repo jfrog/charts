@@ -471,6 +471,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
+| `artifactory.persistence.existingSharedClaim`       | Name of the persistent volume claim to use for all Artifactory primary and member nodes. This PVC must implement the access mode of ReadWriteMany     |                    |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |

@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.14] - Mar 19, 2019
+* Add the option to use a shared PVC that implements the ReadWriteMany access mode for all primary and member Artifactory nodes
+
 ## [0.11.13] - Mar 19, 2019
 * Move the copy of bootstrap config from postStart to preStart for Primary
 

@@ -219,6 +219,8 @@ artifactory:
   persistence:
     enabled: true
     local: false
+    # existingSharedClaim is the name of the persistent volume claim to use for all primary and member nodes. This must be a PVC which implements the ReadWriteMany access mode
+    existingSharedClaim:
     redundancy: 3
     mountPath: "/var/opt/jfrog/artifactory"
     accessMode: ReadWriteOnce

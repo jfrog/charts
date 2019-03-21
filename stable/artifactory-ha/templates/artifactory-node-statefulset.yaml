@@ -353,7 +353,7 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: volume
-    {{- if not .Values.artifactory.node.persistence.existingClaim }}
+    {{- if not (or .Values.artifactory.persistence.existingSharedClaim .Values.artifactory.node.persistence.existingClaim) }}
     spec:
       {{- if .Values.artifactory.persistence.storageClass }}
       {{- if (eq "-" .Values.artifactory.persistence.storageClass) }}
