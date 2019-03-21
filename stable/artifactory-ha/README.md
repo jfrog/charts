@@ -120,6 +120,21 @@ In order to use an existing volume claim for the Artifactory member nodes storag
 --set artifactory.node.persistence.existingClaim=true
 ```
 
+#### Existing shared volume claim
+
+In order to use an existing claim (for data and backup) that is to be shared across all nodes, you need to:
+
+- Create PVCs with ReadWriteMany that match the naming conventions:
+```
+  {{ template "artifactory-ha.fullname" . }}-data-pvc
+  {{ template "artifactory-ha.fullname" . }}-backup-pvc
+```
+- Set the artifactory.persistence.file-system.existingSharedClaim.enabled in values.yaml to true:
+```
+    fileSystem:
+      existingSharedClaim:
+        enabled: true
+```
 
 #### NFS
 To use an NFS server as your cluster's storage, you need to

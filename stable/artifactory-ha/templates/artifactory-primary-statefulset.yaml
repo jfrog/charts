@@ -198,11 +198,11 @@ spec:
             fieldRef:
               fieldPath: metadata.name
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
-        {{- if (index .Values.artifactory.persistence "file-system").existingSharedClaim.enabled }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
         - name: HA_DATA_DIR
-          value: "{{ (index .Values.artifactory.persistence "file-system").existingSharedClaim.dataDir }}"
+          value: "{{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir }}"
         - name: HA_BACKUP_DIR
-          value: "{{ (index .Values.artifactory.persistence  "file-system").existingSharedClaim.backupDir }}"
+          value: "{{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
         {{- end }}
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -224,11 +224,11 @@ spec:
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
-        {{- if (index .Values.artifactory.persistence "file-system").existingSharedClaim.enabled }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
         - name: artifactory-ha-data
-          mountPath: "{{ (index .Values.artifactory.persistence "file-system").existingSharedClaim.dataDir }}"
+          mountPath: "{{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir }}"
         - name: artifactory-ha-backup
-          mountPath: "{{ (index .Values.artifactory.persistence  "file-system").existingSharedClaim.backupDir }}"
+          mountPath: "{{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
         {{- end }}
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -374,7 +374,7 @@ spec:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
-        {{- if (index .Values.artifactory.persistence "file-system").existingSharedClaim.enabled }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
       - name: artifactory-ha-data
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-data-pvc
