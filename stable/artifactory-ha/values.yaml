@@ -151,11 +151,15 @@ artifactory:
   #        name: volume
 
   ## Add custom sidecar containers
-  # Note that the provided example also uses a custom volume (customVolumes)
+  # - The provided example uses a custom volume (customVolumes)
+  # - The provided example shows running container as root (id 0)
   customSidecarContainers: |
   #  - name: "sidecar-list-etc"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsUser: 0
+  #      fsGroup: 0
   #    command:
   #      - 'sh'
   #      - '-c'

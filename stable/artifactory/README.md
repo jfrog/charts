@@ -327,6 +327,14 @@ artifactory:
     ## Custom volume comes here ##
 ```
 
+You can configure the sidecar to run as a custom user if needed by setting the following in the container template
+```
+  # Example of running container as root (id 0)
+  securityContext:
+    runAsUser: 0
+    fsGroup: 0
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 

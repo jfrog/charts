@@ -403,6 +403,14 @@ artifactory:
     ## Sidecar containers template goes here ##
 ```
 
+You can configure the sidecar to run as a custom user if needed by setting the following in the container template
+```
+  # Example of running container as root (id 0)
+  securityContext:
+    runAsUser: 0
+    fsGroup: 0
+```
+
 ### Custom volumes
 If you need to use a custom volume in a custom init or sidecar container, you can use this option.
 
