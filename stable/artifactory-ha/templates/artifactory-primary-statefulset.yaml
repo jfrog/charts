@@ -99,6 +99,9 @@ spec:
                 {{- if .Values.artifactory.configMapName }}
                 cp -Lrf /bootstrap/* /artifactory_extra_conf/;
                 {{- end }}
+                mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
+                cp -Lrf /tmp/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+                chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
                 {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
@@ -233,6 +236,13 @@ spec:
           mountPath: "/artifactory_extra_conf/artifactory.cluster.license"
           subPath: {{ .Values.artifactory.license.dataKey }}
       {{- end }}
+        - name: access-bootstrap-creds
+          mountPath: "/tmp/bootstrap.creds"
+          {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
+          subPath: {{ .Values.artifactory.accessAdmin.dataKey  }}
+          {{- else }}
+          subPath: bootstrap.creds
+          {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
         - name: replicator-config
           mountPath: "/replicator_extra_conf/replicator.yaml"
@@ -353,6 +363,13 @@ spec:
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
+      - name: access-bootstrap-creds
+        secret:
+          {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
+          secretName: {{ .Values.artifactory.accessAdmin.secret }}
+          {{- else }}
+          secretName: {{ template "artifactory-ha.fullname" . }}-bootstrap-creds
+          {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
       - name: artifactory-ha-data
         persistentVolumeClaim:

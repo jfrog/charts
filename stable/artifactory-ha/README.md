@@ -412,7 +412,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
-| `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
+| `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |
+| `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|             |
+| `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                |
+| `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                            |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
