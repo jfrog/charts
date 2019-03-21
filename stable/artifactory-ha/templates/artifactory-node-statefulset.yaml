@@ -196,6 +196,14 @@ spec:
               fieldPath: metadata.name
         - name: ART_PRIMARY_BASE_URL
           value: 'http://{{ template "artifactory-ha.primary.name" . }}:8081/artifactory'
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if (index .Values.artifactory.persistence "file-system").existingSharedClaim.enabled }}
+        - name: HA_DATA_DIR
+          value: "{{ (index .Values.artifactory.persistence "file-system").existingSharedClaim.dataDir }}"
+        - name: HA_BACKUP_DIR
+          value: "{{ (index .Values.artifactory.persistence  "file-system").existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: HA_DATA_DIR
           value: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
@@ -211,6 +219,14 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if (index .Values.artifactory.persistence "file-system").existingSharedClaim.enabled }}
+        - name: artifactory-ha-data
+          mountPath: "{{ (index .Values.artifactory.persistence "file-system").existingSharedClaim.dataDir }}"
+        - name: artifactory-ha-backup
+          mountPath: "{{ (index .Values.artifactory.persistence  "file-system").existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
@@ -336,6 +352,16 @@ spec:
       - name: catalina-logger
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-catalina-logger
+      {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if (index .Values.artifactory.persistence "file-system").existingSharedClaim.enabled }}
+      - name: artifactory-ha-data
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" . }}-data-pvc
+      - name: artifactory-ha-backup
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
+        {{- end }}
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
       - name: artifactory-ha-data
