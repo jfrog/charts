@@ -94,7 +94,7 @@ spec:
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
           {{- end }}
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
-          cp -Lrf /tmp/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+          cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
           chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
           {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
@@ -227,7 +227,7 @@ spec:
           subPath: {{ .Values.artifactory.license.dataKey }}
       {{- end }}
         - name: access-bootstrap-creds
-          mountPath: "/tmp/bootstrap.creds"
+          mountPath: "/tmp/access/bootstrap.creds"
           {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
           subPath: {{ .Values.artifactory.accessAdmin.dataKey  }}
           {{- else }}
