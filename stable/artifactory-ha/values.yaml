@@ -320,7 +320,7 @@ artifactory:
     name: artifactory-ha-primary
     persistence:
       ## Set existingClaim to true or false
-      ## If true, you must prepare a PVC with the name e.g `artifactory-ha-primary`
+      ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-primary-0`
       existingClaim: false
     ## Resources for the primary node
     resources: {}
@@ -351,7 +351,7 @@ artifactory:
     name: artifactory-ha-member
     persistence:
       ## Set existingClaim to true or false
-      ## If true, you must prepare a PVC with the name e.g `artifactory-ha-member`
+      ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-member-0`
       existingClaim: false
     replicaCount: 2
     minAvailable: 1

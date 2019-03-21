@@ -165,6 +165,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.tls`               | Webhook REST API Ingress TLS configuration (YAML) | `[]`                               |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. | `` |
+| `ingress.labels`              | KubeXray Ingress labels                  `{}`                                        |
 | `env.logLevel`              | Logs level                               | `INFO`                                      |
 | `resources.limits.cpu`      | Specifies CPU limit                      | `256m`                                      |
 | `resources.limits.memory`   | Specifies memory limit                   | `128Mi`                                     |

@@ -104,7 +104,7 @@ It is recommended to set this to a number greater than half of your cluster's si
 
 ###### Primary node
 In order to use an existing volume claim for the Artifactory primary storage, you need to:
-- Create a persistent volume claim by the name `volume-<release-name>-artifactory-ha-primary-0`
+- Create a persistent volume claim by the name `volume-<release-name>-artifactory-ha-primary-0` e.g `volume-myrelease-artifactory-ha-primary-0`
 - Pass a parameter to `helm install` and `helm upgrade`
 ```bash
 ...
