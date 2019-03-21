@@ -305,6 +305,36 @@ artifactory:
     ## Init containers template goes here ##
 ```
 
+### Custom sidecar containers
+There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
+
+For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom sidecar containers
+  customSidecarContainers: |
+    ## Sidecar containers template goes here ##
+```
+
+### Custom volumes
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
+
+You can configure the sidecar to run as a custom user if needed by setting the following in the container template
+```
+  # Example of running container as root (id 0)
+  securityContext:
+    runAsUser: 0
+    fsGroup: 0
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -325,6 +355,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
+| `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
+| `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
