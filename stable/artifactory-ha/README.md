@@ -403,6 +403,17 @@ artifactory:
     ## Sidecar containers template goes here ##
 ```
 
+### Custom volumes
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -423,6 +434,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
+| `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |

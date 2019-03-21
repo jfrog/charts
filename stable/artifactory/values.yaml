@@ -104,6 +104,7 @@ artifactory:
   #        name: artifactory-volume
 
   ## Add custom sidecar containers
+  # Note that the provided example also uses a custom volume (customVolumes)
   customSidecarContainers: |
   #  - name: "sidecar-list-etc"
   #    image: "{{ .Values.initContainerImage }}"
@@ -111,10 +112,13 @@ artifactory:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'while true; do echo "I'm a sidecar..."; ls -l {{ .Values.artifactory.persistence.mountPath }}/etc; sleep 60; done'
+  #      - 'sh /scripts/script.sh'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
   #        name: artifactory-volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
   #    resources:
   #      requests:
   #        memory: "32Mi"
@@ -122,6 +126,13 @@ artifactory:
   #      limits:
   #        memory: "128Mi"
   #        cpu: "100m"
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
 
   ## Artifactory license secret.
   ## If artifactory.license.secret is passed, it will be mounted as

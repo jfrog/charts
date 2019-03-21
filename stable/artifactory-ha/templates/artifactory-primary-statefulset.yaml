@@ -72,7 +72,7 @@ spec:
             sleep 2;
           done;
     {{- if .Values.artifactory.customInitContainers }}
-{{ tpl .Values.artifactory.customInitContainers . | indent 6}}
+{{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
@@ -297,7 +297,7 @@ spec:
       {{- end }}
       {{- end }}
     {{- if .Values.artifactory.customSidecarContainers }}
-{{ tpl .Values.artifactory.customSidecarContainers . | indent 6}}
+{{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
     {{- end }}
     {{- with .Values.artifactory.primary.nodeSelector }}
       nodeSelector:
@@ -364,6 +364,9 @@ spec:
       - name: artifactory-ha-backup
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
+      {{- end }}
+      {{- if .Values.artifactory.customVolumes }}
+{{ tpl .Values.artifactory.customVolumes . | indent 6 }}
       {{- end }}
       {{- if not .Values.artifactory.persistence.enabled }}
       - name: volume

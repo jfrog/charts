@@ -316,6 +316,17 @@ artifactory:
     ## Sidecar containers template goes here ##
 ```
 
+### Custom volumes
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -337,6 +348,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
+| `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
