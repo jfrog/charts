@@ -108,7 +108,7 @@ In order to use an existing volume claim for the Artifactory primary storage, yo
 - Pass a parameter to `helm install` and `helm upgrade`
 ```bash
 ...
---set artifactory.primary.persistence.existingClaim=true 
+--set artifactory.primary.persistence.existingClaim=true
 ```
 
 ###### Member nodes
@@ -117,7 +117,7 @@ In order to use an existing volume claim for the Artifactory member nodes storag
 - Pass a parameter to `helm install` and `helm upgrade`
 ```bash
 ...
---set artifactory.node.persistence.existingClaim=true 
+--set artifactory.node.persistence.existingClaim=true
 ```
 
 
@@ -348,7 +348,7 @@ To delete the Artifactory HA cluster
 ```bash
 helm delete --purge artifactory-ha
 ```
-This will completely delete your Artifactory HA cluster.  
+This will completely delete your Artifactory HA cluster.
 **NOTE:** Since Artifactory is running as Kubernetes Stateful Sets, the removal of the helm release will **not** remove the persistent volumes. You need to explicitly remove them
 ```bash
 kubectl delete pvc -l release=artifactory-ha
@@ -392,6 +392,36 @@ artifactory:
     ## Init containers template goes here ##
 ```
 
+### Custom sidecar containers
+There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
+
+For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom sidecar containers
+  customSidecarContainers: |
+    ## Sidecar containers template goes here ##
+```
+
+You can configure the sidecar to run as a custom user if needed by setting the following in the container template
+```
+  # Example of running container as root (id 0)
+  securityContext:
+    runAsUser: 0
+    fsGroup: 0
+```
+
+### Custom volumes
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -411,6 +441,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
+| `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
+| `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
@@ -497,6 +529,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
+| `ingress.path`              | Artifactory Ingress path            | `/`                                                  |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |

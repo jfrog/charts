@@ -1,6 +1,13 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.15] - Mar 21, 2019
+* Added support for `artifactory.customSidecarContainers` to create custom sidecar containers
+* Added support for `artifactory.customVolumes` to create custom volumes
+
+## [7.12.14] - Mar 21, 2019
+* Make ingress path configurable
+
 ## [7.12.13] - Mar 19, 2019
 * Move the copy of bootstrap config from postStart to preStart
 
@@ -82,7 +89,7 @@ All changes to this chart will be documented in this file.
 * Added support for `artifactory.customInitContainers` to create custom init containers
 
 ## [7.8.8] - Jan 17, 2019
-* Added support of values ingress.labels 
+* Added support of values ingress.labels
 
 ## [7.8.7] - Jan 16, 2019
 * Mount replicator.yaml (config) directly to /replicator_extra_conf
@@ -94,7 +101,7 @@ All changes to this chart will be documented in this file.
 * Updated Artifactory version to 6.6.5
 
 ## [7.8.4] - Jan 8, 2019
-* Make artifactory.replicator.publicUrl required when the replicator is enabled 
+* Make artifactory.replicator.publicUrl required when the replicator is enabled
 
 ## [7.8.3] - Jan 1, 2019
 * Updated Artifactory version to 6.6.3
@@ -212,5 +219,5 @@ All changes to this chart will be documented in this file.
 * Enabled RBAC Support
 * Added support for PostStartCommand (To download Database JDBC connector)
 * Increased postgresql max_connections
-* Added support for `nginx.conf` ConfigMap  
+* Added support for `nginx.conf` ConfigMap
 * Updated Artifactory version to 6.1.0

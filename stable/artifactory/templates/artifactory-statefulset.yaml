@@ -77,7 +77,7 @@ spec:
             sleep 2;
           done;
     {{- if .Values.artifactory.customInitContainers }}
-{{ tpl .Values.artifactory.customInitContainers . | indent 6}}
+{{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
@@ -174,14 +174,14 @@ spec:
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
       {{- if .Values.artifactory.javaOpts.xms }}
           -Xms{{ .Values.artifactory.javaOpts.xms }}
       {{- end}}
       {{- if .Values.artifactory.javaOpts.xmx }}
           -Xmx{{ .Values.artifactory.javaOpts.xmx }}
+      {{- end}}
+      {{- if .Values.artifactory.javaOpts.other }}
+          {{ .Values.artifactory.javaOpts.other }}
       {{- end}}
       {{- if .Values.artifactory.replicator.enabled }}
           -Dartifactory.releasebundle.feature.enabled=true
@@ -284,6 +284,9 @@ spec:
           subPath: tail-log.sh
       {{- end }}
       {{- end }}
+    {{- if .Values.artifactory.customSidecarContainers }}
+{{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
+    {{- end }}
     {{- with .Values.artifactory.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -338,6 +341,9 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}
+    {{- if .Values.artifactory.customVolumes }}
+{{ tpl .Values.artifactory.customVolumes . | indent 6 }}
+    {{- end }}
 {{- with .Values.artifactory.persistence }}
   {{- if and .enabled (not .existingClaim) }}
   volumeClaimTemplates:

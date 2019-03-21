@@ -1,6 +1,13 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.15] - Mar 21, 2019
+* Added support for `artifactory.customSidecarContainers` to create custom sidecar containers
+* Added support for `artifactory.customVolumes` to create custom volumes
+
+## [0.11.14] - Mar 21, 2019
+* Make ingress path configurable
+
 ## [0.11.13] - Mar 19, 2019
 * Move the copy of bootstrap config from postStart to preStart for Primary
 
@@ -84,7 +91,7 @@ All changes to this chart will be documented in this file.
 * Added support for `artifactory.customInitContainers` to create custom init containers
 
 ## [0.8.9] - Jan 18, 2019
-* Added support of values ingress.labels 
+* Added support of values ingress.labels
 
 ## [0.8.8] - Jan 16, 2019
 * Mount replicator.yaml (config) directly to /replicator_extra_conf
@@ -124,7 +131,7 @@ All changes to this chart will be documented in this file.
 * AWS S3 add `roleName` for using IAM role
 
 ## [0.7.14] - Dec 6, 2018
-* AWS S3 `identity` and `credential` are now added only if have a value to allow using IAM role 
+* AWS S3 `identity` and `credential` are now added only if have a value to allow using IAM role
 
 ## [0.7.13] - Dec 5, 2018
 * Remove Distribution certificates creation.
@@ -234,4 +241,4 @@ All changes to this chart will be documented in this file.
 * Added support for PostStartCommand (To download Database JDBC connector)
 * Increased postgresql max_connections
 * Added support for `nginx.conf` ConfigMap
-* Updated Artifactory version to 6.1.0  
+* Updated Artifactory version to 6.1.0

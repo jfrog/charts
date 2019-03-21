@@ -44,6 +44,7 @@ ingress:
   # Used to create an Ingress record.
   hosts:
     - artifactory.domain.example
+  path: /
   annotations:
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
@@ -101,6 +102,41 @@ artifactory:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
   #        name: artifactory-volume
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  # - The provided example shows running container as root (id 0)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsUser: 0
+  #      fsGroup: 0
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+  #        name: artifactory-volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
 
   ## Artifactory license secret.
   ## If artifactory.license.secret is passed, it will be mounted as
