@@ -161,17 +161,17 @@ spec:
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
           value: "
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
-      {{- if .Values.artifactory.node.javaOpts.other }}
-          {{ .Values.artifactory.node.javaOpts.other }}
-      {{- end}}
       {{- if .Values.artifactory.node.javaOpts.xms }}
           -Xms{{ .Values.artifactory.node.javaOpts.xms }}
       {{- end}}
       {{- if .Values.artifactory.node.javaOpts.xmx }}
           -Xmx{{ .Values.artifactory.node.javaOpts.xmx }}
+      {{- end}}
+      {{- if .Values.artifactory.javaOpts.other }}
+          {{ .Values.artifactory.javaOpts.other }}
+      {{- end}}
+      {{- if .Values.artifactory.node.javaOpts.other }}
+          {{ .Values.artifactory.node.javaOpts.other }}
       {{- end}}
       {{- if .Values.artifactory.replicator.enabled }}
           -Dartifactory.releasebundle.feature.enabled=true

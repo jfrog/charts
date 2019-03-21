@@ -174,14 +174,14 @@ spec:
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
           value: "
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
       {{- if .Values.artifactory.javaOpts.xms }}
           -Xms{{ .Values.artifactory.javaOpts.xms }}
       {{- end}}
       {{- if .Values.artifactory.javaOpts.xmx }}
           -Xmx{{ .Values.artifactory.javaOpts.xmx }}
+      {{- end}}
+      {{- if .Values.artifactory.javaOpts.other }}
+          {{ .Values.artifactory.javaOpts.other }}
       {{- end}}
       {{- if .Values.artifactory.replicator.enabled }}
           -Dartifactory.releasebundle.feature.enabled=true
