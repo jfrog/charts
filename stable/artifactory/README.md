@@ -33,7 +33,7 @@ By default it will run Artifactory-Pro to run Artifactory-OSS use following comm
 helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
 ```
 
-### Deploying Artifactory CE for C++ 
+### Deploying Artifactory CE for C++
 By default it will run Artifactory-Pro to run Artifactory-CE for C++ use following command:
 ```bash
 helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-cpp-ce jfrog/artifactory
@@ -170,7 +170,7 @@ You can customise other parameters in the same way, by passing them on `helm ins
 ```bash
 helm delete --purge artifactory
 ```
-This will completely delete your Artifactory Pro deployment.  
+This will completely delete your Artifactory Pro deployment.
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
 
 ### Kubernetes Secret for Artifactory License
@@ -230,7 +230,7 @@ helm install --name artifactory --set nginx.customConfigMap=nginx-config jfrog/a
 There are cases where you will want to use a different database and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Database)
 > The official Artifactory Docker images include the PostgreSQL database driver.
-> For other database types, you will have to add the relevant database driver to Artifactory's tomcat/lib 
+> For other database types, you will have to add the relevant database driver to Artifactory's tomcat/lib
 
 This can be done with the following parameters
 ```bash
@@ -267,7 +267,7 @@ To delete the Artifactory.
 ```bash
 helm delete --purge artifactory
 ```
-This will completely delete your Artifactory HA cluster.  
+This will completely delete your Artifactory HA cluster.
 
 ### Custom Docker registry for your images
 If you need to pull your Docker images from a private registry, you need to create a
@@ -396,6 +396,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
+| `ingress.path`              | Artifactory Ingress path            | `/`                                                  |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |

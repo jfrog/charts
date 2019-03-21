@@ -108,7 +108,7 @@ In order to use an existing volume claim for the Artifactory primary storage, yo
 - Pass a parameter to `helm install` and `helm upgrade`
 ```bash
 ...
---set artifactory.primary.persistence.existingClaim=true 
+--set artifactory.primary.persistence.existingClaim=true
 ```
 
 ###### Member nodes
@@ -117,7 +117,7 @@ In order to use an existing volume claim for the Artifactory member nodes storag
 - Pass a parameter to `helm install` and `helm upgrade`
 ```bash
 ...
---set artifactory.node.persistence.existingClaim=true 
+--set artifactory.node.persistence.existingClaim=true
 ```
 
 
@@ -348,7 +348,7 @@ To delete the Artifactory HA cluster
 ```bash
 helm delete --purge artifactory-ha
 ```
-This will completely delete your Artifactory HA cluster.  
+This will completely delete your Artifactory HA cluster.
 **NOTE:** Since Artifactory is running as Kubernetes Stateful Sets, the removal of the helm release will **not** remove the persistent volumes. You need to explicitly remove them
 ```bash
 kubectl delete pvc -l release=artifactory-ha
@@ -497,6 +497,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
+| `ingress.path`              | Artifactory Ingress path            | `/`                                                  |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
