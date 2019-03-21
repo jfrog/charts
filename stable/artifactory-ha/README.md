@@ -131,9 +131,7 @@ In order to use an existing claim (for data and backup) that is to be shared acr
 ```
 - Set the artifactory.persistence.file-system.existingSharedClaim.enabled in values.yaml to true:
 ```
-    fileSystem:
-      existingSharedClaim:
-        enabled: true
+-- set artifactory.persistence.fileSystem.existingSharedClaim.enabled=true
 ```
 
 #### NFS
@@ -518,6 +516,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
+| `artifactory.persistence.fileStorage.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
+| `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory-ha`     |
+| `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
