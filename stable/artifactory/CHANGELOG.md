@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.15] - Mar 21, 2019
+* Added support for `artifactory.customSidecarContainers` to create custom sidecar containers
+
 ## [7.12.14] - Mar 21, 2019
 * Make ingress path configurable
 

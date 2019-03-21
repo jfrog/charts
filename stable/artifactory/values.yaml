@@ -103,6 +103,26 @@ artifactory:
   #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
   #        name: artifactory-volume
 
+  ## Add custom sidecar containers
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'while true; do echo "I'm a sidecar..."; ls -l {{ .Values.artifactory.persistence.mountPath }}/etc; sleep 60; done'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+  #        name: artifactory-volume
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
   ## Artifactory license secret.
   ## If artifactory.license.secret is passed, it will be mounted as
   ## ARTIFACTORY_HOME/etc/artifactory.lic and loaded at run time.

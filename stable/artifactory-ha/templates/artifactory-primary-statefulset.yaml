@@ -296,6 +296,9 @@ spec:
           subPath: tail-log.sh
       {{- end }}
       {{- end }}
+    {{- if .Values.artifactory.customSidecarContainers }}
+{{ tpl .Values.artifactory.customSidecarContainers . | indent 6}}
+    {{- end }}
     {{- with .Values.artifactory.primary.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}

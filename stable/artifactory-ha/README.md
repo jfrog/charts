@@ -392,6 +392,17 @@ artifactory:
     ## Init containers template goes here ##
 ```
 
+### Custom sidecar containers
+There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
+
+For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
+```
+artifactory:
+  ## Add custom sidecar containers
+  customSidecarContainers: |
+    ## Sidecar containers template goes here ##
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -411,6 +422,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
+| `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                                   |                                                                  |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
