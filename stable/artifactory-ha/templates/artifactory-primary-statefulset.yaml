@@ -244,7 +244,7 @@ spec:
         {{- if .Values.artifactory.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: '/artifactory/webapp/#/login'
+            path: {{ .Values.artifactory.readinessProbe.path }}
             port: 8040
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -255,7 +255,7 @@ spec:
         {{- if .Values.artifactory.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: '/artifactory/webapp/#/login'
+            path: {{ .Values.artifactory.livenessProbe.path }}
             port: 8040
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
