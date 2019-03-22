@@ -71,7 +71,7 @@ main() {
     trap "docker rm -f $config_container_id > /dev/null" EXIT
 
     # Get kind container IP
-    kind_container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-1-control-plane)
+    kind_container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' kind-control-plane)
     # Copy kubeconfig file
     docker exec "$config_container_id" mkdir /root/.kube
     docker cp "$KUBECONFIG" "$config_container_id:/root/.kube/config"
