@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.11.16] - Mar 21, 2019
+## [0.11.17] - Mar 22, 2019
 * Add the option to change the default access-admin password
+
+## [0.11.16] - Mar 22, 2019
+* Added support for `<artifactory|nginx>.<readiness|liveness>Probe.path` to customise the paths used for health probes
 
 ## [0.11.15] - Mar 21, 2019
 * Added support for `artifactory.customSidecarContainers` to create custom sidecar containers

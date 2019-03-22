@@ -461,12 +461,14 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.externalPortReplicator` | Replicator service external port | `6061`   |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.livenessProbe.enabled`              | Enable liveness probe                     |  `true`                                               |
+| `artifactory.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`                        |
 | `artifactory.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 180                                                   |
 | `artifactory.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                                                    |
 | `artifactory.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                                                    |
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1  |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.readinessProbe.enabled`              | would you like a readinessProbe to be enabled           |  `true`                                |
+| `artifactory.readinessProbe.path`                      | readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login`           |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                                                    |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                                                    |
 | `artifactory.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                                                    |
@@ -557,12 +559,14 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.internalPortReplicator` | Replicator service internal port | `6061`                          |
 | `nginx.externalPortReplicator` | Replicator service external port | `6061`                          |
 | `nginx.livenessProbe.enabled`              | would you like a liveness Probe to be enabled          |  `true`                                  |
+| `nginx.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`                    |
 | `nginx.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 100                                                   |
 | `nginx.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                                                    |
 | `nginx.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                                                    |
 | `nginx.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1  |
 | `nginx.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `nginx.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`                                 |
+| `nginx.readinessProbe.path`                     | Readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |
 | `nginx.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                                                    |
 | `nginx.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                                                    |
 | `nginx.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                                                    |
