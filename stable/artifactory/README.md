@@ -372,6 +372,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
+| `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|                                               |
+| `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                                                    |
+| `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                                                                    |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
