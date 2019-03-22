@@ -9,8 +9,8 @@ readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 run_kind() {
 
     echo "Get kind binary..."
-    #docker run --rm -it -v "$(pwd)":/go/bin golang go get sigs.k8s.io/kind && chmod +x kind && sudo mv kind /usr/local/bin/
-    curl -Lo kind https://storage.googleapis.com/jfrog-helm-ci-artifacts/kind && chmod +x kind && sudo mv kind /usr/local/bin/
+    # curl -Lo kind https://storage.googleapis.com/jfrog-helm-ci-artifacts/kind && chmod +x kind && sudo mv kind /usr/local/bin/
+    curl -sSLo kind https://github.com/kubernetes-sigs/kind/releases/download/"$KIND_VERSION"/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
 
     echo "Download kubectl..."
     curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/"${K8S_VERSION}"/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
@@ -30,6 +30,7 @@ run_kind() {
 
     echo "Wait for Kubernetes to be up and ready..."
     JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"; do sleep 1; done
+    echo '✔︎'
     echo
 }
 
@@ -45,7 +46,7 @@ run_tillerless() {
 }
 
 install_hostpath-provisioner() {
-     # kind doesn't support Dynamic PVC provisioning yet, this one of ways to get it working
+     # kind doesn't support Dynamic PVC provisioning yet, this one of the ways to get it working
      # https://github.com/rimusz/charts/tree/master/stable/hostpath-provisioner
 
      # delete default storage class
