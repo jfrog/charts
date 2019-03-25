@@ -63,7 +63,7 @@ install_charts() {
     git fetch k8s master
     echo
     
-    docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
+    docker_exec ct install "${CHART_TESTING_ARGS}" --config /workdir/test/ct.yaml
     echo
 }
 
