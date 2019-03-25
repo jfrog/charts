@@ -240,6 +240,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |
 | `analysis.image`                               | Xray Analysis container image                | `docker.bintray.io/jfrog/xray-analysis` |
 | `analysis.replicaCount`                        | Xray Analysis replica count                  | `1`                  |
+| `analysis.updateStrategy`                      | Xray Analysis update strategy                | `RollingUpdate`      |
+| `analysis.podManagementPolicy`                 | Xray Analysis pod management policy          | `Parallel`           |
 | `analysis.internalPort`                        | Xray Analysis internal port                  | `7000`               |
 | `analysis.externalPort`                        | Xray Analysis external port                  | `7000`               |
 | `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
@@ -252,6 +254,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
 | `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
 | `indexer.replicaCount`                         | Xray Indexer replica count                   | `1`                  |
+| `indexer.updateStrategy`                       | Xray Indexer update strategy                 | `RollingUpdate`      |
+| `indexer.podManagementPolicy`                  | Xray Indexer pod management policy           | `Parallel`           |
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
@@ -264,6 +268,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.name`                                 | Xray Persist name                            | `xray-persist`       |
 | `persist.image`                                | Xray Persist container image                 | `docker.bintray.io/jfrog/xray-persist`  |
 | `persist.replicaCount`                         | Xray Persist replica count                   | `1`                  |
+| `persist.updateStrategy`                       | Xray Persist update strategy                 | `RollingUpdate`      |
+| `persist.podManagementPolicy`                  | Xray Persist pod management policy           | `Parallel`           |
 | `persist.internalPort`                         | Xray Persist internal port                   | `7003`               |
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
 | `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
@@ -276,6 +282,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.name`                                  | Xray server name                             | `xray-server`        |
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
 | `server.replicaCount`                          | Xray server replica count                    | `1`                  |
+| `server.updateStrategy`                        | Xray server update strategy                  | `RollingUpdate`      |
+| `server.podManagementPolicy`                   | Xray server pod management policy            | `Parallel`           |
 | `server.internalPort`                          | Xray server internal port                    | `8000`               |
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |

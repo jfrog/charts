@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.0] - Mar 26, 2019
+* Switched to StatefulSets to preserve micro-service Ids
+
 ## [0.10.5] - Mar 18, 2019
 * Added label selector for Xray ingress
 
