@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [0.11.18] - Mar 25, 2019
-* Add to CI test persistence and ingress support
+* Add CI tests for persistence, ingress support and nginx
 
 ## [0.11.17] - Mar 22, 2019
 * Add the option to change the default access-admin password
