@@ -88,8 +88,8 @@ install_charts() {
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
     echo
-    
-    docker_exec ct install "${CHART_TESTING_ARGS}" --config /workdir/test/ct.yaml
+    # shellcheck disable=SC2086
+    docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
     echo
 }
 
