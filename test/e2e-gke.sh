@@ -5,8 +5,6 @@ set -o nounset
 set -o pipefail
 
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
-readonly CLUSTER_NAME=chart-testing
-
 
 get_creds() {
     # shellcheck disable=SC2086
