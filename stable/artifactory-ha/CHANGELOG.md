@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.0] - Mar 26, 2019
+* Updated Artifactory version to 6.9.0
+
 ## [0.11.18] - Mar 25, 2019
 * Add CI tests for persistence, ingress support and nginx
 
