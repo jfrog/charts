@@ -7,6 +7,9 @@ All changes to this chart will be documented in this file.
 ## [7.12.17] - Mar 22, 2019
 * Add the option to change the default access-admin password
 
+## [7.13.0] - Mar 26, 2019
+* Updated Artifactory version to 6.9.0
+
 ## [7.12.16] - Mar 22, 2019
 * Added support for `<artifactory|nginx>.<readiness|liveness>Probe.path` to customise the paths used for health probes
 
