@@ -74,27 +74,29 @@ helm upgrade mission-control jfrog/mission-control
 In cases where a new version is not compatible with existing deployed version (look in CHANGELOG.md) you should
 * Deploy new version along side old version (set a new release name)
 * Copy configurations and data from old deployment to new one (The following instructions were tested for chart migration from 0.9.x to 1.0.0)
-```Copy data and config from old deployment to local filesystem :
-kubectl cp <elasticsearch-pod>:/usr/share/elasticsearch/data                                   /<local_disk_path>/mission-control-data/elastic_data               -n <old_namespace>
-kubectl cp <postgres-pod>:/var/lib/postgresql/data                                             /<local_disk_path>/mission-control-data/postgres_data              -n <old_namespace>
-kubectl cp <mission-control-pod>:/var/opt/jfrog/mission-control/etc/mission-control.properties /<local_disk_path>/mission-control-data/mission-control.properties -n <old_namespace> -c mission-control
-kubectl cp <mission-control-pod>:/var/opt/jfrog/mission-control/data/security/mc.key           /<local_disk_path>/mission-control-data/mc.key                     -n <old_namespace> -c mission-control
-```
-```Copy data and config from local filesystem to new deployment :
-kubectl cp /<local_disk_path>/mission-control-data/mc.key                     <mission-control-pod>:/var/opt/jfrog/mission-control/data/security/mc.key            -n <new_namespace> -c mission-control
-kubectl cp /<local_disk_path>/mission-control-data/mission-control.properties <mission-control-pod>:/var/opt/jfrog/mission-control/etc/mission-control.properties  -n <new_namespace> -c mission-control
-kubectl cp /<local_disk_path>/mission-control-data/elastic_data               <mission-control-pod>:/usr/share/elasticsearch                                       -n <new_namespace> -c elasticsearch
-kubectl cp /<local_disk_path>/mission-control-data/postgres_data              <postgres-pod>:/var/lib/postgresql                                                   -n <new_namespace>
+  * Copy data and config from old deployment to local filesystem
+    ```
+    kubectl cp <elasticsearch-pod>:/usr/share/elasticsearch/data                                   /<local_disk_path>/mission-control-data/elastic_data               -n <old_namespace>
+    kubectl cp <postgres-pod>:/var/lib/postgresql/data                                             /<local_disk_path>/mission-control-data/postgres_data              -n <old_namespace>
+    kubectl cp <mission-control-pod>:/var/opt/jfrog/mission-control/etc/mission-control.properties /<local_disk_path>/mission-control-data/mission-control.properties -n <old_namespace> -c mission-control
+    kubectl cp <mission-control-pod>:/var/opt/jfrog/mission-control/data/security/mc.key           /<local_disk_path>/mission-control-data/mc.key                     -n <old_namespace> -c mission-control
+    ```
+  * Copy data and config from local filesystem to new deployment
+    ```
+    kubectl cp /<local_disk_path>/mission-control-data/mc.key                     <mission-control-pod>:/var/opt/jfrog/mission-control/data/security/mc.key            -n <new_namespace> -c mission-control
+    kubectl cp /<local_disk_path>/mission-control-data/mission-control.properties <mission-control-pod>:/var/opt/jfrog/mission-control/etc/mission-control.properties  -n <new_namespace> -c mission-control
+    kubectl cp /<local_disk_path>/mission-control-data/elastic_data               <mission-control-pod>:/usr/share/elasticsearch                                       -n <new_namespace> -c elasticsearch
+    kubectl cp /<local_disk_path>/mission-control-data/postgres_data              <postgres-pod>:/var/lib/postgresql                                                   -n <new_namespace>
 
-kubectl exec -it <postgres-pod> -n <new_namespace> -- bash
-    rm -fr /var/lib/postgresql/data
-    cp -fr /var/lib/postgresql/postgres_data/* /var/lib/postgresql/data/
-    rm -fr /var/lib/postgresql/postgres_data
-kubectl exec -it <mission-control-pod> -n <new_namespace> -c elasticsearch -- bash
-    rm -fr /usr/share/elasticsearch/data
-    cp -fr /usr/share/elasticsearch/elastic_data/* /usr/share/elasticsearch/data
-    rm -fr /usr/share/elasticsearch/elastic_data
-```
+    kubectl exec -it <postgres-pod> -n <new_namespace> -- bash
+        rm -fr /var/lib/postgresql/data
+        cp -fr /var/lib/postgresql/postgres_data/* /var/lib/postgresql/data/
+        rm -fr /var/lib/postgresql/postgres_data
+    kubectl exec -it <mission-control-pod> -n <new_namespace> -c elasticsearch -- bash
+        rm -fr /usr/share/elasticsearch/data
+        cp -fr /usr/share/elasticsearch/elastic_data/* /usr/share/elasticsearch/data
+        rm -fr /usr/share/elasticsearch/elastic_data
+    ```
 * Restart the new deployment
 ```bash
 kubectl scale deployment <postgres-deployment> --replicas=0 -n <new_namespace>
@@ -105,9 +107,9 @@ kubectl scale statefulset <mission-control-statefulset> --replicas=1 -n <new_nam
 ```
 * Once the new release is up and ready, update mission-control base url with new DNS
   * Login to mission-control pod,
-```bash
-kubectl exec -it <mission-control-pod> -n <new_namespace> -c mission-control -- bash
-```
+    ```bash
+    kubectl exec -it <mission-control-pod> -n <new_namespace> -c mission-control -- bash
+    ```
   * Update mission-control base url by running the api from [Mission Control Rest API](https://www.jfrog.com/confluence/display/MC/Mission+Control+REST+API#MissionControlRESTAPI-UpdateBaseURL)
 * A new mc.key will be generated after this upgrade, save a copy of this key. **NOTE**: This should be passed on all future calls to `helm install` and `helm upgrade`!
 ```bash
@@ -150,7 +152,7 @@ export POSTGRES_PASSWORD_SECRET_KEY=
 ...
 ```
 
-##### Elasticsearch
+#### Elasticsearch
 
 There are cases where you will want to use an external **Elasticsearch** and not the enclosed **Elasticsearch**.
 
