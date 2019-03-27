@@ -102,8 +102,12 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
+            {{- if .Values.postgresql.db.postgresPassword }}
               name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: postgresPassword
+            {{- else }}
+              name: {{ .Release.Name }}-postgresql
+            {{- end }}
+              key: postgres-password
         - name: JFMC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -142,6 +146,7 @@ spec:
               key: jfisPassword
         command:
         - 'bash'
+        - '-x'
         - '-c'
         - 'su postgres -c "PGPASSWORD=${PGPASSWORD} bash /scripts/createPostgresUsers.sh all"'
         volumeMounts:

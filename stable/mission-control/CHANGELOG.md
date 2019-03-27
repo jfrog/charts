@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.4] - Mar 26, 2019
+* Add default auto-generated random password for mission control database users
+
 ## [0.9.3] - Mar 15, 2019
 * Revert securityContext change that was causing issues
 

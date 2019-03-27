@@ -153,10 +153,10 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.db.jfisUsername`                 | PostgreSQL Database insight server User         | `jfis`                                |
 | `postgresql.db.jfscUsername`                 | PostgreSQL Database insight scheduler User      | `jfsc`                                |
 | `postgresql.db.jfexUsername`                 | PostgreSQL Database mission executor User       | `jfex`                                |
-| `postgresql.db.jfmcPassword`                 | PostgreSQL Database mission control Password    | ` `                                   |
-| `postgresql.db.jfisPassword`                 | PostgreSQL Database insight server Password     | ` `                                   |
-| `postgresql.db.jfscPassword`                 | PostgreSQL Database insight scheduler Password  | ` `                                   |
-| `postgresql.db.jfexPassword`                 | PostgreSQL Database mission executor Password   | ` `                                   |
+| `postgresql.db.jfmcPassword`                 | PostgreSQL Database mission control Password    | `random 10 character alphanumeric string` |
+| `postgresql.db.jfisPassword`                 | PostgreSQL Database insight server Password     | `random 10 character alphanumeric string` |
+| `postgresql.db.jfscPassword`                 | PostgreSQL Database insight scheduler Password  | `random 10 character alphanumeric string` |
+| `postgresql.db.jfexPassword`                 | PostgreSQL Database mission executor Password   | `random 10 character alphanumeric string` |
 | `postgresql.db.jfmcSchema`                   | PostgreSQL Database mission control Schema      | `jfmc_server`                         |
 | `postgresql.db.jfisSchema`                   | PostgreSQL Database insight server Schema       | `insight_server`                      |
 | `postgresql.db.jfscSchema`                   | PostgreSQL Database insight scheduler Schema    | `insight_scheduler`                   |
