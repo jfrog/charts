@@ -15,6 +15,11 @@ spec:
     port: {{ .Values.missionControl.externalPort }}
     targetPort: {{ .Values.missionControl.internalPort }}
     protocol: TCP
+{{- if .Values.elasticsearch.enabled }}
+  - name: estransport
+    port: {{ .Values.elasticsearch.transportPort }}
+    targetPort: estransport
+{{- end }}
   selector:
     app: {{ template "mission-control.name" . }}
     component: {{ .Values.missionControl.name }}
