@@ -146,7 +146,6 @@ spec:
               key: jfisPassword
         command:
         - 'bash'
-        - '-x'
         - '-c'
         - 'su postgres -c "PGPASSWORD=${PGPASSWORD} bash /scripts/createPostgresUsers.sh all"'
         volumeMounts:
