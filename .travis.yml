@@ -20,7 +20,7 @@ jobs:
         - TEST_IMAGE_TAG=v3.2.0
         - CHARTS_REPO=https://github.com/jfrog/charts
         - K8S_VERSION=v1.13.4
-        - KIND_VERSION=0.2.0
+        - KIND_VERSION=0.2.1
       script:
         - echo "Run chart-testing linting!"
         - ./test/lint-charts.sh
