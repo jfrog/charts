@@ -219,6 +219,8 @@ global:
 analysis:
   name: xray-analysis
   image: docker.bintray.io/jfrog/xray-analysis
+  updateStrategy: RollingUpdate
+  podManagementPolicy: Parallel
   replicaCount: 1
   internalPort: 7000
   externalPort: 7000
@@ -244,6 +246,8 @@ analysis:
 indexer:
   name: xray-indexer
   image: docker.bintray.io/jfrog/xray-indexer
+  updateStrategy: RollingUpdate
+  podManagementPolicy: Parallel
   replicaCount: 1
   internalPort: 7002
   externalPort: 7002
@@ -269,6 +273,8 @@ indexer:
 persist:
   name: xray-persist
   image: docker.bintray.io/jfrog/xray-persist
+  updateStrategy: RollingUpdate
+  podManagementPolicy: Parallel
   replicaCount: 1
   internalPort: 7003
   externalPort: 7003
@@ -294,6 +300,8 @@ persist:
 server:
   name: xray-server
   image: docker.bintray.io/jfrog/xray-server
+  updateStrategy: RollingUpdate
+  podManagementPolicy: Parallel
   replicaCount: 1
   internalPort: 8000
   externalPort: 80
