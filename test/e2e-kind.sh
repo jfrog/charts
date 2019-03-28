@@ -6,6 +6,7 @@ set -o pipefail
 
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 readonly CLUSTER_NAME=chart-testing
+LOCAL_RUN="${LOCAL_RUN:-""}"
 
 run_ct_container() {
     echo 'Running ct container...'
@@ -21,6 +22,9 @@ cleanup() {
     echo 'Removing ct container...'
     docker kill ct > /dev/null 2>&1
 
+    echo 'Removing kind cluster...'
+    kind delete cluster --name "${CLUSTER_NAME}" > /dev/null 2>&1
+
     echo 'Done!'
 }
 
@@ -31,9 +35,15 @@ docker_exec() {
 create_kind_cluster() {
     echo 'Installing kind...'
 
-    curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64"
-    chmod +x kind
-    sudo mv kind /usr/local/bin/kind
+    if [[ "${LOCAL_RUN}" = "true" ]] 
+    then
+        echo "Local run, not downloading kind cli..."
+    else
+        echo "CI run, downloading kind cli..."
+        curl -sSLo kind "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64"
+        chmod +x kind
+        sudo mv kind /usr/local/bin/kind
+    fi
 
     kind create cluster --name "$CLUSTER_NAME" --image "kindest/node:$K8S_VERSION"
 
@@ -91,7 +101,13 @@ install_charts() {
     git fetch k8s master
     echo
     
-    docker_exec ct install --config /workdir/test/ct.yaml
+    if [[ "${LOCAL_RUN}" = "true" ]] 
+    then
+        # shellcheck disable=SC2086
+        docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
+    else
+        docker_exec ct install --config /workdir/test/ct.yaml
+    fi
     echo
 }
 
