@@ -353,7 +353,7 @@ spec:
         - name: elasticsearch-scripts
           mountPath: "/scripts"
         resources:
-{{ toYaml .Values.resources | indent 10 }}
+{{ toYaml .Values.elasticsearch.resources | indent 10 }}
         livenessProbe:
           exec:
             command:

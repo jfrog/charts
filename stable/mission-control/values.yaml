@@ -58,7 +58,7 @@ postgresql:
   enabled: true
   imageTag: "9.6.11"
   postgresUsername: postgres
-  postgresPassword: postgres
+  postgresPassword: 
   postgresConfig:
     maxConnections: "1500"
   db:
@@ -172,9 +172,18 @@ elasticsearch:
     ##
     # storageClass: "-"
 
+  ## ElasticSearch xms and xmx should be same!
   javaOpts: {}
   #  xms: "2g"
   #  xmx: "2g"
+
+  resources: {}
+  #  requests:
+  #    memory: "2Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "500m"
 
 podRestartTime:
 
