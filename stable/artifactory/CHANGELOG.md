@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.12.19] - Mar 27, 2019
+* Add the option to copy a list of files to ARTIFACTORY_HOME on startup
+
 ## [7.12.18] - Mar 25, 2019
 * Add CI tests for persistence, ingress support and nginx
 

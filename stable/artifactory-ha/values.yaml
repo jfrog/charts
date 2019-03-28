@@ -120,6 +120,13 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+# Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
+#  filesToCopyOnStartup:
+#      absolute path
+#    - source: /artifactory_extra_conf/binarystore.xml
+#      relative to ARTIFACTORY_HOME/
+#      target: etc/
+
   # Sidecar containers for tailing Artifactory logs
   loggers: []
   # - request.log
@@ -432,6 +439,7 @@ nginx:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+
 
   # Sidecar containers for tailing Nginx logs
   loggers: []
