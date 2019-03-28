@@ -93,7 +93,7 @@ spec:
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
           {{- end }}
-          {{- range .Values.artifactory.filesToCopyOnStartup }}
+          {{- range .Values.artifactory.copyOnEveryStartup }}
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
           {{- end }}
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
