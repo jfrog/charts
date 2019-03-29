@@ -1,26 +1,29 @@
 apiVersion: apps/v1beta2
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: {{ template "xray-server.fullname" . }}
+  name: {{ template "xray-persist.fullname" . }}
   labels:
     app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    component: {{ .Values.server.name }}
+    component: {{ .Values.persist.name }}
 spec:
-  replicas: {{ .Values.server.replicaCount }}
+  replicas: {{ .Values.persist.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.persist.updateStrategy }}
+  podManagementPolicy: {{ .Values.persist.podManagementPolicy }}
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
-      component: {{ .Values.server.name }}
+      component: {{ .Values.persist.name }}
   template:
     metadata:
       labels:
         app: {{ template "xray.name" . }}
         release: {{ .Release.Name }}
-        component: {{ .Values.server.name }}
+        component: {{ .Values.persist.name }}
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -112,8 +115,8 @@ spec:
 {{ tpl .Values.common.customInitContainers . | indent 6 }}
       {{- end }}
       containers:
-      - name: {{ .Values.server.name }}
-        image: {{ .Values.server.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+      - name: {{ .Values.persist.name }}
+        image: {{ .Values.persist.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: XRAYCONFIGPATH
@@ -128,31 +131,31 @@ spec:
             fieldRef:
               fieldPath: metadata.name
         ports:
-        - containerPort: {{ .Values.server.internalPort }}
+        - containerPort: {{ .Values.persist.internalPort }}
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         securityContext:
           allowPrivilegeEscalation: false
         resources:
-{{ toYaml .Values.server.resources | indent 10 }}
+{{ toYaml .Values.persist.resources | indent 10 }}
         readinessProbe:
           httpGet:
-            path: /web/
-            port: {{ .Values.server.internalPort }}
+            path: /debug/pprof/
+            port: {{ .Values.persist.internalPort }}
           initialDelaySeconds: 60
           periodSeconds: 10
           failureThreshold: 10
         livenessProbe:
           httpGet:
-            path: /web/
-            port: {{ .Values.server.internalPort }}
+            path: /debug/pprof/
+            port: {{ .Values.persist.internalPort }}
           initialDelaySeconds: 90
           periodSeconds: 10
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.common.xrayConfigPath }}
-      {{- range .Values.server.loggers }}
+      {{- range .Values.persist.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ $image }}
         tag: {{ $tag }}
@@ -180,7 +183,7 @@ spec:
       volumes:
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.server.storage.sizeLimit }}
+          sizeLimit: {{ .Values.persist.storage.sizeLimit }}
       - name: config-volume
         emptyDir:
           sizeLimit: 1Gi

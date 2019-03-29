@@ -12,6 +12,9 @@ uname: jfmc
 
 imagePullSecrets:
 
+# For HA
+replicaCount: 1
+
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
@@ -41,55 +44,11 @@ serviceAccount:
 
 ## Details required for initialization/setup of database
 dbSetup:
-  mongodb:
-    image:
-      repository: mvertes/alpine-mongo
-      tag: 3.6.3-0
-      pullPolicy: IfNotPresent
   postgresql:
     image:
       repository: postgres
       tag: 9.6.11-alpine
       pullPolicy: IfNotPresent
-
-# Sub charts
-## Configuration values for the mongodb dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/mongodb/README.md
-##
-mongodb:
-  enabled: false
-  image:
-    tag: 3.6.8-debian-9
-    pullPolicy: IfNotPresent
-  persistence:
-    size: 50Gi
-  resources: {}
-  #  requests:
-  #    memory: "2Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "250m"
-  ## Make sure the --wiredTigerCacheSizeGB is no more than half the memory limit!
-  ## This is critical to protect against OOMKill by Kubernetes!
-  mongodbExtraFlags:
-  - "--wiredTigerCacheSizeGB=1"
-  usePassword: false
-  db:
-    adminUser: admin
-    adminPassword:
-    mcUser: mission_platform
-    mcPassword:
-    insightUser: jfrog_insight
-    insightPassword:
-    insightSchedulerDb: insight_scheduler
-    insightExecutorDb: insight_executor
-    insightServerDb: insight_team
-    missionControl: mission_platform
-  livenessProbe:
-    initialDelaySeconds: 40
-  readinessProbe:
-    initialDelaySeconds: 30
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
@@ -175,26 +134,56 @@ database:
 
 elasticsearch:
   enabled: true
+  name: elasticsearch
+  initContainerImage: "alpine:3.6"
+  image:
+    repository: docker.bintray.io/jfrog/elasticsearch-oss-sg
+    tag: 6.6.0
+    pullPolicy: IfNotPresent
+  ## Enter elasticsearch connection details
+  url: http://localhost:9200
+  httpPort: 9200
+  transportPort: 9300
+  username: "admin"
+  password: "admin"
+  env:
+    clusterName: "es-cluster"
+    networkHost: "0.0.0.0"
+    transportHost: "0.0.0.0"
+    maxMapCount: 262144
+    minimumMasterNodes: 1
+
   persistence:
-    size: 50Gi
+    enabled: true
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    mountPath: "/usr/share/elasticsearch/data"
+    accessMode: ReadWriteOnce
+    size: 100Gi
+    ## ElasticSearch data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
+  ## ElasticSearch xms and xmx should be same!
+  javaOpts: {}
+  #  xms: "2g"
+  #  xmx: "2g"
+
   resources: {}
   #  requests:
   #    memory: "2Gi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "2Gi"
+  #    memory: "2.5Gi"
   #    cpu: "500m"
-  ## ElasticSearch xms and xmx should be same!
-  javaOpts: {}
-  #  xms: "2g"
-  #  xmx: "2g"
-  env:
-    clusterName: "es-cluster"
-    esUsername: "elastic"
-    esPassword:
-
-  service:
-    port: 9200
 
 podRestartTime:
 
@@ -217,7 +206,6 @@ logger:
     tag: 1.30
 
 missionControl:
-  replicaCount: 1
   name: mission-control
   appName: jfmc-server
   home: /var/opt/jfrog/mission-control
@@ -251,6 +239,14 @@ missionControl:
   # - jfmc-server-err.log
   # - jfmc-server.log
   # - monitoring.log
+
+  ## Mission Control requires a unique mc.key
+  # This will be used to encript sensitive data to be stored in database
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 16'
+  ## Pass it to helm with '--set missionControl.mcKey=${MC_KEY}'
+  ## IMPORTANT: You should NOT use the example mcKey for a production deployment!
+  mcKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
   missionControlUrl:
   podRestartTime:
@@ -306,7 +302,6 @@ missionControl:
 
 
 insightServer:
-  replicaCount: 1
   name: insight-server
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-server
@@ -349,7 +344,6 @@ insightServer:
   # - insight-server.log
 
 insightScheduler:
-  replicaCount: 1
   name: insight-scheduler
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-scheduler
@@ -362,13 +356,13 @@ insightScheduler:
   javaOpts: {}
   #  other:
   #  xms: "500m"
-  #  xmx: "3g"
+  #  xmx: "1g"
   resources: {}
   #  requests:
   #    memory: "500Mi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "3.5Gi"
+  #    memory: "1.5Gi"
   #    cpu: "1"
 
   # Persistence for the logs
@@ -397,7 +391,6 @@ insightScheduler:
   # - access.log
 
 insightExecutor:
-  replicaCount: 1
   name: insight-executor
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-executor
@@ -410,13 +403,13 @@ insightExecutor:
   javaOpts: {}
   #  other:
   #  xms: "500m"
-  #  xmx: "3g"
+  #  xmx: "2g"
   resources: {}
   #  requests:
   #    memory: "500Mi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "3.5Gi"
+  #    memory: "2.5Gi"
   #    cpu: "1"
 
   # Persistence for the logs

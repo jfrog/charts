@@ -73,7 +73,7 @@ data:
         attempt_number=${attempt_number:-0}
         ${PSQL} $POSTGRES_OPTIONS --version > /dev/null 2>&1
         outcome1=$?
-        # Execute a simple db function to verify if mongo is up and running
+        # Execute a simple db function to verify if postgres is up and running
         ${PSQL} $POSTGRES_OPTIONS -l > /dev/null 2>&1
         outcome2=$?
         if [[ $outcome1 -eq 0 ]] && [[ $outcome2 -eq 0  ]]; then

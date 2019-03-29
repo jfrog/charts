@@ -1,5 +1,5 @@
 apiVersion: apps/v1beta2
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ template "xray-indexer.fullname" . }}
   labels:
@@ -10,6 +10,9 @@ metadata:
     component: {{ .Values.indexer.name }}
 spec:
   replicas: {{ .Values.indexer.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.indexer.updateStrategy }}
+  podManagementPolicy: {{ .Values.indexer.podManagementPolicy }}
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}

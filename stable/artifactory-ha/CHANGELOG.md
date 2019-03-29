@@ -1,8 +1,14 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.11.18] - Mar 29, 2019
+## [0.12.1] - Mar 29, 2019
 * Fix issue #253 (use existing PVC for data and backup storage)
+
+## [0.12.0] - Mar 26, 2019
+* Updated Artifactory version to 6.9.0
+
+## [0.11.18] - Mar 25, 2019
+* Add CI tests for persistence, ingress support and nginx
 
 ## [0.11.17] - Mar 22, 2019
 * Add the option to change the default access-admin password

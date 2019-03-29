@@ -288,17 +288,26 @@ artifactory:
 
     ## For artifactory.persistence.type file-system
     fileSystem:
-      ## You may also use an existing shared claims for the data and backup storage. This allows storage (NAS for example) to be used for Data and Backup dirs which are safe to share across multiple artifactory nodes.
+      ## You may also use existing shared claims for the data and backup storage. This allows storage (NAS for example) to be used for Data and Backup dirs which are safe to share across multiple artifactory nodes.
+      ## You may specify numberOfExistingClaims to indicate how many of these existing shared claims to mount. (Default = 1)
       ## Create PVCs with ReadWriteMany that match the naming convetions:
-      ##   {{ template "artifactory-ha.fullname" . }}-data-pvc
-      ##   {{ template "artifactory-ha.fullname" . }}-backup-pvc
+      ##   {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
+      ##   {{ template "artifactory-ha.fullname" . }}-backup-pvc-<claim-ordinal>
+      ## Example (using numberOfExistingClaims: 2)
+      ##   myexample-artifactory-ha-data-pvc-0
+      ##   myexample-artifactory-ha-backup-pvc-0
+      ##   myexample-artifactory-ha-data-pvc-1
+      ##   myexample-artifactory-ha-backup-pvc-1
       ## Note: While you need two PVC fronting two PVs, multiple PVs can be attached to the same storage in many cases allowing you to share an underlying drive.
+
       ## Need to have the following set
       existingSharedClaim:
         enabled: false
-        dataDir: "/var/opt/jfrog/artifactory-ha"
-        # backupPvc Will default to {{ template "artifactory-ha.fullname" . }}-backup-pvc if not specified
+        numberOfExistingClaims: 1
+        ## Should be a child directory of /var/opt/jfrog/artifactory (or whereever .Values.artifactory.persistence.mountPath is pointed to )
+        dataDir: "/var/opt/jfrog/artifactory/artifactory-data"
         backupDir: "/var/opt/jfrog/artifactory-backup"
+
 
     ## For artifactory.persistence.type nfs
     ## If using NFS as the shared storage, you must have a running NFS server that is accessible by your Kubernetes

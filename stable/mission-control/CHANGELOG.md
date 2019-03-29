@@ -1,6 +1,16 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.0.0] - Mar 28, 2019
+* **NOTE:** This chart is not compatible with older versions and should not be used to upgrade them. See README for more details on upgrades
+* Updated Mission Control version to 3.5.0
+* HA support for Mission Control and elasticsearch with Statefulset
+* Elasticsearch now part of Mission Control template
+* New Elasticsearch (6.6.0) with searchguard plugin enabled
+
+## [0.9.4] - Mar 26, 2019
+* Add default auto-generated random password for mission control database users
+
 ## [0.9.3] - Mar 15, 2019
 * Revert securityContext change that was causing issues
 

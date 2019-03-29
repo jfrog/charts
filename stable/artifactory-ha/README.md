@@ -126,8 +126,15 @@ In order to use an existing claim (for data and backup) that is to be shared acr
 
 - Create PVCs with ReadWriteMany that match the naming conventions:
 ```
-  {{ template "artifactory-ha.fullname" . }}-data-pvc
-  {{ template "artifactory-ha.fullname" . }}-backup-pvc
+  {{ template "artifactory-ha.fullname" . }}-data-pvc-{index}
+  {{ template "artifactory-ha.fullname" . }}-backup-pvc-{index}
+```
+Example:
+```
+  myexample-artifactory-ha-data-pvc-0
+  myexample-artifactory-ha-backup-pvc-0
+  myexample-artifactory-ha-data-pvc-1
+  myexample-artifactory-ha-backup-pvc-1
 ```
 - Set the artifactory.persistence.file-system.existingSharedClaim.enabled in values.yaml to true:
 ```
@@ -522,7 +529,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
 | `artifactory.persistence.fileStorage.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
-| `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory-ha`     |
+| `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
 | `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |

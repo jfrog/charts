@@ -1,0 +1,53 @@
+{{- if .Values.elasticsearch.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mission-control.fullname" . }}-elasticsearch-scripts
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  initSG.sh: |
+    LABEL="Elasticsearch"
+    SEARCH_GUARD_DIR=/usr/share/elasticsearch/plugins/search-guard-6
+    : ${ELASTIC_SEARCH_URL:="http://localhost:9200"}
+    : ${ELASTIC_TRANSPORT_PORT:=9300}
+
+    if [ ! -d "${SEARCH_GUARD_DIR}" ]; then
+        echo "Unable to find ${SEARCH_GUARD_DIR} (SEARCH_GUARD_DIR) directory, please install secure guard plugin and retry"
+        exit 1
+    fi
+
+    log() {
+        echo -e "$1"
+    }
+
+    # Source: https://gist.github.com/sj26/88e1c6584397bb7c13bd11108a579746
+    function retry {
+      local retries=$1
+      shift
+
+      local count=0
+      until "$@"; do
+        exit=$?
+        wait=5
+        if [ $count -lt $retries ]; then
+          echo "Retry $count/$retries exited $exit, retrying in $wait seconds..."
+          sleep $wait
+        else
+          echo "Retry $count/$retries exited $exit, no more retries left."
+          exit 1 #return $exit
+        fi
+      done
+      return 0
+    }
+
+    log "Waiting for $LABEL to get ready using the commands: \"curl -sL -I --output /dev/null \"$ELASTIC_SEARCH_URL\"\""
+    retry 5 curl  -sL -I --output /dev/null "$ELASTIC_SEARCH_URL"
+
+    log "Initializing secure guard plugin on elasticsearch"
+    cd ${SEARCH_GUARD_DIR}/tools && ./sgadmin.sh -p ${ELASTIC_TRANSPORT_PORT} -cacert root-ca.pem -cert sgadmin.pem -key sgadmin.key -nhnv -icl -cd ../sgconfig/ 1>/dev/null
+    exit $?
+{{- end }}
