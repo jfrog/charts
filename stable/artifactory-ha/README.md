@@ -126,10 +126,10 @@ In order to use an existing claim (for data and backup) that is to be shared acr
 
 - Create PVCs with ReadWriteMany that match the naming conventions:
 ```
-  {{ template "artifactory-ha.fullname" . }}-data-pvc-{index}
-  {{ template "artifactory-ha.fullname" . }}-backup-pvc-{index}
+  {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
+  {{ template "artifactory-ha.fullname" . }}-backup-pvc-<claim-ordinal>
 ```
-Example:
+An example that shows 2 existing claims to be used:
 ```
   myexample-artifactory-ha-data-pvc-0
   myexample-artifactory-ha-backup-pvc-0
