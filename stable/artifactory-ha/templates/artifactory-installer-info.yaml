@@ -1,0 +1,19 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "artifactory-ha.fullname" . }}-bs
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  installer-info.json: |
+    {
+      "productId": "{{ template "artifactory-ha.chart" . }}",
+      "features": [
+      {
+        "featureId": "AppVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
+      }
+      ]
+    }
