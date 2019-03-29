@@ -205,6 +205,10 @@ spec:
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}
         volumeMounts:
+      {{- if .Values.artifactory.userPluginsSecret }}
+        - name : user-plugins
+          mountPath: "/tmp/plugins/"
+      {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
       {{- if .Values.artifactory.configMapName }}
@@ -314,6 +318,11 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory.fullname" . }}-bs
+      {{- if .Values.artifactory.userPluginsSecret }}
+      - name : user-plugins
+        secret:
+          secretName: {{ .Values.artifactory.userPluginsSecret }}
+      {{- end }}
       {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
       - name: artifactory-volume
         persistentVolumeClaim:

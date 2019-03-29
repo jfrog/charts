@@ -208,6 +208,13 @@ artifactory:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
 
+  ## List of secrets for user plugins.
+  ## One Secret per plugin's files.
+  userPluginSecrets: []
+  # - archiveOldArtifacts
+  # - buildCleanup
+  # - webhook
+
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
   # preStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
   ## Extra post-start command to run extra commands after container starts

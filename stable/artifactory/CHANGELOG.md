@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.1] - Mar 29, 2019
+* Add support for user plugin secret
+
 ## [7.12.18] - Mar 25, 2019
 * Add CI tests for persistence, ingress support and nginx
 

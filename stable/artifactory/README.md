@@ -335,6 +335,26 @@ You can configure the sidecar to run as a custom user if needed by setting the f
     fsGroup: 0
 ```
 
+### Add Artifactory User Plugin during installation
+If you need to use [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this options.
+
+Create secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
+```
+# Secret with single user plugin
+kubectl  create secret generic plugins  --from-file=archiveOldArtifacts.groovy --namespace=artifactory 
+
+# Secret with single user plugin with configuration file
+kubectl  create secret generic plugins  --from-file=webhook.groovy  --from-file=webhook.config.json.sample --namespace=artifactory
+
+# Secret with multiple user plugin
+kubectl  create secret generic plugins  --from-file=webhook.groovy  --from-file=webhook.config.json.sample --from-file=archiveOldArtifacts.groovy --from-file=buildCleanup.groovy --from-file=buildCleanup.properties --namespace=artifactory
+```
+
+You can now pass above create secret with helm install command as follows:
+```
+helm install --name artifactory --set artifactory.userPluginsSecret=plugins jfrog/artifactory
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -357,6 +377,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
+| `artifactory.userPluginsSecret`   | Secret name for Artifactory user plugins |                                           |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
