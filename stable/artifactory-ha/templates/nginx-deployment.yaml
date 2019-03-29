@@ -134,7 +134,7 @@ spec:
         {{- if .Values.nginx.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: '/artifactory/webapp/#/login'
+            path: {{ .Values.nginx.readinessProbe.path }}
             port: 80
           initialDelaySeconds: {{ .Values.nginx.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.nginx.readinessProbe.periodSeconds }}
@@ -145,7 +145,7 @@ spec:
         {{- if .Values.nginx.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: '/artifactory/webapp/#/login'
+            path: {{ .Values.nginx.livenessProbe.path }}
             port: 80
           initialDelaySeconds: {{ .Values.nginx.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.nginx.livenessProbe.periodSeconds }}

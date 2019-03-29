@@ -151,6 +151,12 @@ artifactory:
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   # masterKeySecretName:
 
+  # accessAdmin is the password used for the access-admin user: https://jfrog.com/knowledge-base/how-to-change-the-default-password-for-access-admin-user/
+  accessAdmin:
+    password:
+    secret:
+    dataKey:
+
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
   # preStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
   ## Extra post-start command to run extra commands after container starts
@@ -190,6 +196,7 @@ artifactory:
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: false
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 10
@@ -198,6 +205,7 @@ artifactory:
 
   readinessProbe:
     enabled: false
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10
@@ -345,6 +353,7 @@ nginx:
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10
@@ -353,6 +362,7 @@ nginx:
 
   readinessProbe:
     enabled: true
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10

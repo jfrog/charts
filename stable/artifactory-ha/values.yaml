@@ -193,6 +193,11 @@ artifactory:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   # masterKeySecretName:
 
+  accessAdmin:
+    password:
+    secret:
+    dataKey:
+
   ## Artifactory license secret.
   ## If artifactory.license.secret is passed, it will be mounted as
   ## ARTIFACTORY_HOME/etc/artifactory.cluster.license and loaded at run time.
@@ -238,6 +243,7 @@ artifactory:
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 10
@@ -246,6 +252,7 @@ artifactory:
 
   readinessProbe:
     enabled: true
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10
@@ -467,6 +474,7 @@ nginx:
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 100
     failureThreshold: 10
     timeoutSeconds: 10
@@ -475,6 +483,7 @@ nginx:
 
   readinessProbe:
     enabled: true
+    path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10
