@@ -209,6 +209,10 @@ spec:
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         volumeMounts:
+      {{- if .Values.artifactory.userPluginsSecret }}
+        - name : user-plugins
+          mountPath: "/tmp/plugins/"
+      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -330,6 +334,11 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-bs
+      {{- if .Values.artifactory.userPluginsSecret }}
+      - name : user-plugins
+        secret:
+          secretName: {{ .Values.artifactory.userPluginsSecret }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config
         configMap:
