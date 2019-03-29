@@ -151,7 +151,7 @@ artifactory:
   ## Name of secrets for Artifactory user plugins.
   ## Create one secret for multiple plugins along with their configuration files.
   ## kubectl  create secret generic plugins  --from-file=webhook.groovy  --from-file=webhook.config.json.sample --from-file=archiveOldArtifacts.groovy --from-file=buildCleanup.groovy --from-file=buildCleanup.properties
-  userPluginsSecret: plugins
+  userPluginsSecret:
 
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
