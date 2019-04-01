@@ -120,6 +120,13 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+  # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
+  copyOnEveryStartup:
+  #     # absolute path
+  #    - source: /artifactory_extra_conf/binarystore.xml
+  #     # relative to ARTIFACTORY_HOME/
+  #      target: etc/
+
   # Sidecar containers for tailing Artifactory logs
   loggers: []
   # - request.log
@@ -207,6 +214,13 @@ artifactory:
     dataKey:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
+
+  ## List of secrets for Artifactory user plugins.
+  ## One Secret per plugin's files.
+  userPluginSecrets:
+  #  - archive-old-artifacts
+  #  - build-cleanup
+  #  - webhook
 
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
   # preStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
@@ -432,6 +446,7 @@ nginx:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+
 
   # Sidecar containers for tailing Nginx logs
   loggers: []

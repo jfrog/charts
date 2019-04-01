@@ -88,6 +88,11 @@ spec:
           echo "Copying installer info";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/info;
           cp -Lrf /tmp/info/installer-info.json {{ .Values.artifactory.persistence.mountPath }}/etc/info;
+          {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
+          cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
+          {{- end }}
           echo "Running custom preStartCommand command";
           {{ .Values.artifactory.preStartCommand }};
           /entrypoint-artifactory.sh
@@ -212,6 +217,12 @@ spec:
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         volumeMounts:
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+        - name: {{ . }}
+          mountPath: "/tmp/plugin/{{ . }}"
+      {{- end }}
+      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -339,6 +350,13 @@ spec:
       - name: installer-info
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+      - name: {{ . }}
+        secret:
+          secretName: {{ . }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config
         configMap:
