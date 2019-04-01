@@ -14,6 +14,12 @@ data:
       "features": [
       {
         "featureId": "AppVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
+      },
+      {
+        "featureId": "Installer/{{ default "helm" .Values.installer.type }}"
+      },
+      {
+        "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"
       }
       ]
     }
