@@ -56,6 +56,16 @@ ingress:
   #   hosts:
   #     - artifactory.domain.example
 
+networkpolicy:
+  - name: open
+    podSelector:
+      matchLabels:
+        app: artifactory-ha
+    egress:
+    - {}
+    ingress:
+    - {}
+    
 # Database
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
