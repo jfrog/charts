@@ -10,7 +10,7 @@ metadata:
 data:
   installer-info.json: |
     {
-      "productId": "{{ template "artifactory-ha.chart" . }}",
+      "productId": "JFrogInstaller_Helm_{{ template "artifactory-ha.chart" . }}",
       "features": [
       {
         "featureId": "AppVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
