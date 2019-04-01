@@ -98,6 +98,9 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
           cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
           {{- end }}
+          {{- range .Values.artifactory.copyOnEveryStartup }}
+          cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
+          {{- end }}
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
           cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
           chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
