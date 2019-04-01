@@ -355,7 +355,7 @@ spec:
           name: {{ template "artifactory-ha.fullname" . }}-bs
       - name: installer-info
         configMap:
-          name: {{ template "artifactory-ha.fullname" . }}--installer-info
+          name: {{ template "artifactory-ha.fullname" . }}-installer-info
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config
         configMap:
