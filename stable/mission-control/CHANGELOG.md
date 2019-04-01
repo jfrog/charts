@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.0.1] - Mar 28, 2019
+* Fix error of missing volume when `missionControl.persistence` is disabled
+
 ## [1.0.0] - Mar 28, 2019
 * **NOTE:** This chart is not compatible with older versions and should not be used to upgrade them. See README for more details on upgrades
 * Updated Mission Control version to 3.5.0
