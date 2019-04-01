@@ -84,6 +84,11 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
+          {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
+          cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
+          {{- end }}
           {{- if .Values.artifactory.configMapName }}
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
@@ -216,9 +221,11 @@ spec:
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}
         volumeMounts:
-      {{- if .Values.artifactory.userPluginsSecret }}
-        - name : user-plugins
-          mountPath: "/tmp/plugins/"
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+        - name: {{ . }}
+          mountPath: "/tmp/plugin/{{ . }}"
+      {{- end }}
       {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
@@ -351,10 +358,12 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-bs
-      {{- if .Values.artifactory.userPluginsSecret }}
-      - name : user-plugins
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+      - name: {{ . }}
         secret:
-          secretName: {{ .Values.artifactory.userPluginsSecret }}
+          secretName: {{ . }}
+      {{- end }}
       {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config

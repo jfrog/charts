@@ -208,10 +208,12 @@ artifactory:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
 
-  ## Name of secrets for Artifactory user plugins.
-  ## Create one secret for multiple plugins along with their configuration files.
-  ## kubectl  create secret generic plugins  --from-file=webhook.groovy  --from-file=webhook.config.json.sample --from-file=archiveOldArtifacts.groovy --from-file=buildCleanup.groovy --from-file=buildCleanup.properties
-  userPluginsSecret:
+  ## List of secrets for Artifactory user plugins.
+  ## One Secret per plugin's files.
+  userPluginSecrets:
+  #  - archive-old-artifacts
+  #  - build-cleanup
+  #  - webhook
 
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
   # preStartCommand: "curl -L -o /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"

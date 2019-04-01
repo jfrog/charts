@@ -428,18 +428,23 @@ If you need to use [Artifactory User Plugin](https://github.com/jfrog/artifactor
 Create secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
 ```
 # Secret with single user plugin
-kubectl  create secret generic plugins  --from-file=archiveOldArtifacts.groovy --namespace=artifactory-ha 
+kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory-ha 
 
 # Secret with single user plugin with configuration file
-kubectl  create secret generic plugins  --from-file=webhook.groovy  --from-file=webhook.config.json.sample --namespace=artifactory-ha
-
-# Secret with multiple user plugin
-kubectl  create secret generic plugins  --from-file=webhook.groovy  --from-file=webhook.config.json.sample --from-file=archiveOldArtifacts.groovy --from-file=buildCleanup.groovy --from-file=buildCleanup.properties --namespace=artifactory-ha
+kubectl  create secret generic webhook --from-file=webhook.groovy  --from-file=webhook.config.json.sample --namespace=artifactory-ha
 ```
 
-You can now pass above create secret with helm install command as follows:
+Add plugin secret names to `plugins.yaml` as following:
+```yaml
+artifactory:
+  userPluginSecrets:
+    - archive-old-artifacts
+    - webhook
 ```
-helm install --name artifactory-ha --set artifactory.userPluginsSecret=plugins jfrog/artifactory-ha
+
+You can now pass above created `plugins.yaml` file helm install command to deploy Artifactory with user plugins as follows:
+```
+helm install --name artifactory-ha -f plugins.yaml jfrog/artifactory-ha
 ```
 
 ## Configuration
@@ -463,7 +468,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
-| `artifactory.userPluginsSecret`   | Secret name for Artifactory user plugins |                                           |
+| `artifactory.userPluginSecrets`   | Secret name array for Artifactory user plugins |                                     |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|             |
