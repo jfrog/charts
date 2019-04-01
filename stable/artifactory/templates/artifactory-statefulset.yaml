@@ -104,9 +104,6 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
           cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
           chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
-          echo "Copying installer info";
-          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/info;
-          cp -Lrf /tmp/info/installer-info.json {{ .Values.artifactory.persistence.mountPath }}/etc/info;
           {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ .Values.artifactory.preStartCommand }};
@@ -255,7 +252,7 @@ spec:
           subPath: replicator.yaml
       {{- end }}
         - name: installer-info
-          mountPath: "/tmp/info/installer-info.json"
+          mountPath: "/artifactory_extra_conf/info/installer-info.json"
           subPath: installer-info.json
         resources:
 {{ toYaml .Values.artifactory.resources | indent 10 }}

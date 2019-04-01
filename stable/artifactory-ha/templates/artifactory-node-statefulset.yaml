@@ -85,9 +85,6 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
-          echo "Copying installer info";
-          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/info;
-          cp -Lrf /tmp/info/installer-info.json {{ .Values.artifactory.persistence.mountPath }}/etc/info;
           {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
@@ -241,7 +238,7 @@ spec:
           subPath: replicator.yaml
       {{- end }}
         - name: installer-info
-          mountPath: "/tmp/info/installer-info.json"
+          mountPath: "/artifactory_extra_conf/info/installer-info.json"
           subPath: installer-info.json
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
