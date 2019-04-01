@@ -423,7 +423,7 @@ artifactory:
 ```
 
 ### Add Artifactory User Plugin during installation
-If you need to use [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this options.
+If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
 
 Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
 ```
