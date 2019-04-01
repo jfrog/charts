@@ -236,7 +236,7 @@ Updating the license should be done via Artifactory UI or REST API.
 
 NetworkPolicy specifies what ingress and egress is allowed in this namespace. It is encouraged to be more specific whenever possible to increase security of the system.
 
-In the `networkpolicy` section of Values.yaml you can specify a list of NetworkPolicy objects.
+In the `networkpolicy` section of values.yaml you can specify a list of NetworkPolicy objects.
 
 For podSelector, ingress and egress, if nothing is provided then a default `- {}` is applied which is to allow everything.
 
