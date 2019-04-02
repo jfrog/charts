@@ -2,10 +2,10 @@
 apiVersion: extensions/v1beta1
 kind: NetworkPolicy
 metadata:
-  name: {{ template "artifactory-ha.fullname" $ }}-{{ .name }}-networkpolicy
+  name: {{ template "artifactory.fullname" $ }}-{{ .name }}-networkpolicy
   labels:
-    app: {{ template "artifactory-ha.name" $ }}
-    chart: {{ template "artifactory-ha.chart" $ }}
+    app: {{ template "artifactory.name" $ }}
+    chart: {{ template "artifactory.chart" $ }}
     release: {{ $.Release.Name }}
     heritage: {{ $.Release.Service }}  
 spec:

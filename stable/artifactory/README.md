@@ -201,12 +201,12 @@ networkpolicy:
   - name: artifactory
     podSelector:
       matchLabels:
-        app: artifactory-ha
+        app: artifactory
     egress:
     - {}
     ingress:
     - {}
-  # Allows connectivity from artifactory-ha pods to postgresql pods, but no traffic leaving postgresql pod.
+  # Allows connectivity from artifactory pods to postgresql pods, but no traffic leaving postgresql pod.
   - name: postgres
     podSelector:
       matchLabels:
@@ -215,7 +215,7 @@ networkpolicy:
     - from:
       - podSelector:
           matchLabels:
-            app: artifactory-ha
+            app: artifactory
 ```
 
 ### Bootstrapping Artifactory
@@ -367,6 +367,31 @@ You can configure the sidecar to run as a custom user if needed by setting the f
     fsGroup: 0
 ```
 
+### Add Artifactory User Plugin during installation
+If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
+
+Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
+```
+# Secret with single user plugin
+kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory 
+
+# Secret with single user plugin with configuration file
+kubectl  create secret generic webhook --from-file=webhook.groovy  --from-file=webhook.config.json.sample --namespace=artifactory
+```
+
+Add plugin secret names to `plugins.yaml` as following:
+```yaml
+artifactory:
+  userPluginSecrets:
+    - archive-old-artifacts
+    - webhook
+```
+
+You can now pass the created `plugins.yaml` file to helm install command to deploy Artifactory with user plugins as follows:
+```
+helm install --name artifactory -f plugins.yaml jfrog/artifactory
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -389,6 +414,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
+| `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |

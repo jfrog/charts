@@ -1,8 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.13.2] - Apr 01, 2019
+## [7.13.3] - Apr 02, 2019
 * Allow NetworkPolicy configurations (defaults to allow all)
+
+## [7.13.2] - Aprl 01, 2019
+* Add support for user plugin secret
 
 ## [7.13.1] - Mar 27, 2019
 * Add the option to copy a list of files to ARTIFACTORY_HOME on startup
