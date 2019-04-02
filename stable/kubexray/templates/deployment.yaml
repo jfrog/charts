@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/config-xray.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret-xray.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "kubexray.fullname" . }}
       {{- if .Values.imagePullSecrets }}

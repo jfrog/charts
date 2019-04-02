@@ -1,8 +1,14 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.12.2] - Mar 29, 2019
+## [0.12.4] - Apr 02, 2019
 * Fix issue #253 (use existing PVC for data and backup storage)
+
+## [0.12.3] - Apr 02, 2019
+* Allow NetworkPolicy configurations (defaults to allow all)
+
+## [0.12.2] - Aprl 01, 2019
+* Add support for user plugin secret
 
 ## [0.12.1] - Mar 26, 2019
 * Add the option to copy a list of files to ARTIFACTORY_HOME on startup

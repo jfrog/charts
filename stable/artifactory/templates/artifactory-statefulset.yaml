@@ -93,6 +93,11 @@ spec:
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
           {{- end }}
+          {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
+          cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
+          {{- end }}
           {{- range .Values.artifactory.copyOnEveryStartup }}
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
           {{- end }}
@@ -111,7 +116,6 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-
                 {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
                 {{- end }}
@@ -208,6 +212,12 @@ spec:
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}
         volumeMounts:
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+        - name: {{ . }}
+          mountPath: "/tmp/plugin/{{ . }}"
+      {{- end }}
+      {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
       {{- if .Values.artifactory.configMapName }}
@@ -317,6 +327,13 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory.fullname" . }}-bs
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+      - name: {{ . }}
+        secret:
+          secretName: {{ . }}
+      {{- end }}
+      {{- end }}
       {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
       - name: artifactory-volume
         persistentVolumeClaim:
