@@ -197,7 +197,7 @@ For podSelector, ingress and egress, if nothing is provided then a default `- {}
 A full (but very wide open) example that results in 2 NetworkPolicy objects being created:
 ```
 networkpolicy:
-  # Allows all ingress and egress to/from artifactory primary and member pods.
+  # Allows all ingress and egress to/from artifactory.
   - name: artifactory
     podSelector:
       matchLabels:
@@ -568,9 +568,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
 | `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
 | `networkpolicy.name`             | Becomes part of the NetworkPolicy object name                                  | `artifactory`                           |
-| `networkpolicy.podselector`      | Contains the yaml that specifies how to match pods. Usually using matchLabels. |                                         |
-| `networkpolicy.ingress`          | Yaml snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
-| `networkpolicy.egress`           | Yaml snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
+| `networkpolicy.podselector`      | Contains the YAML that specifies how to match pods. Usually using matchLabels. |                                         |
+| `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
+| `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
