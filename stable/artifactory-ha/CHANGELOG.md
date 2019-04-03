@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.6] - Aprl 03, 2019
+* Added installer info
+
 ## [0.12.5] - Aprl 03, 2019
 * Allow secret names for user plugins to contain template language
 
