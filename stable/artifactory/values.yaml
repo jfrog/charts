@@ -57,6 +57,27 @@ ingress:
   #   hosts:
   #     - artifactory.domain.example
 
+networkpolicy:
+  # Allows all ingress and egress
+  - name: artifactory
+    podSelector:
+      matchLabels:
+        app: artifactory
+    egress:
+    - {}
+    ingress:
+    - {}
+  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgres.enabled is true)
+  # - name: postgres
+  #   podSelector:
+  #     matchLabels:
+  #       app: postgresql
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: artifactory
+
 logger:
   image:
     repository: busybox
