@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.4] - Apr 02, 2019
+* Fix issue #253 (use existing PVC for data and backup storage)
+
 ## [0.12.3] - Apr 02, 2019
 * Allow NetworkPolicy configurations (defaults to allow all)
 
