@@ -499,6 +499,14 @@ You can now pass the created `plugins.yaml` file to helm install command to depl
 helm install --name artifactory-ha -f plugins.yaml jfrog/artifactory-ha
 ```
 
+Alternatively, you may be in a situation in which you would like to create a secret in a Helm chart that depends on this chart. In this scenario, the name of the secret is likely dynamically generated via template functions, so passing a statically named secret isn't possible. In this case, the chart supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function - simply pass the raw string containing the templating language used to name your secret as a value instead by adding the following to your chart's `values.yaml` file:
+```yaml
+artifactory-ha: # Name of the artifactory-ha dependency
+  artifactory:
+    userPluginSecrets:
+      - '{{ template "my-chart.fullname" . }}'
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
