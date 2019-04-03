@@ -1,8 +1,14 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.13.13 - Aprl 02, 2019
+## [7.13.5] - Aprl 03, 2019
 * Added installer info
+
+## [7.13.4] - Aprl 03, 2019
+* Allow secret names for user plugins to contain template language
+
+## [7.13.3] - Apr 02, 2019
+* Allow NetworkPolicy configurations (defaults to allow all)
 
 ## [7.13.2] - Aprl 01, 2019
 * Add support for user plugin secret

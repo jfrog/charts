@@ -120,6 +120,26 @@ In order to use an existing volume claim for the Artifactory member nodes storag
 --set artifactory.node.persistence.existingClaim=true
 ```
 
+#### Existing shared volume claim
+
+In order to use an existing claim (for data and backup) that is to be shared across all nodes, you need to:
+
+- Create PVCs with ReadWriteMany that match the naming conventions:
+```
+  {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
+  {{ template "artifactory-ha.fullname" . }}-backup-pvc-<claim-ordinal>
+```
+An example that shows 2 existing claims to be used:
+```
+  myexample-artifactory-ha-data-pvc-0
+  myexample-artifactory-ha-backup-pvc-0
+  myexample-artifactory-ha-data-pvc-1
+  myexample-artifactory-ha-backup-pvc-1
+```
+- Set the artifactory.persistence.file-system.existingSharedClaim.enabled in values.yaml to true:
+```
+-- set artifactory.persistence.fileSystem.existingSharedClaim.enabled=true
+```
 
 #### NFS
 To use an NFS server as your cluster's storage, you need to
@@ -231,6 +251,38 @@ helm install --name artifactory-ha --set artifactory.license.secret=artifactory-
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
+
+### Configure NetworkPolicy
+
+NetworkPolicy specifies what ingress and egress is allowed in this namespace. It is encouraged to be more specific whenever possible to increase security of the system.
+
+In the `networkpolicy` section of values.yaml you can specify a list of NetworkPolicy objects.
+
+For podSelector, ingress and egress, if nothing is provided then a default `- {}` is applied which is to allow everything.
+
+A full (but very wide open) example that results in 2 NetworkPolicy objects being created:
+```
+networkpolicy:
+  # Allows all ingress and egress to/from artifactory primary and member pods.
+  - name: artifactory
+    podSelector:
+      matchLabels:
+        app: artifactory-ha
+    egress:
+    - {}
+    ingress:
+    - {}
+  # Allows connectivity from artifactory-ha pods to postgresql pods, but no traffic leaving postgresql pod.
+  - name: postgres
+    podSelector:
+      matchLabels:
+        app: postgresql
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: artifactory-ha
+```
 
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
@@ -447,6 +499,14 @@ You can now pass the created `plugins.yaml` file to helm install command to depl
 helm install --name artifactory-ha -f plugins.yaml jfrog/artifactory-ha
 ```
 
+Alternatively, you may be in a situation in which you would like to create a secret in a Helm chart that depends on this chart. In this scenario, the name of the secret is likely dynamically generated via template functions, so passing a statically named secret isn't possible. In this case, the chart supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function - simply pass the raw string containing the templating language used to name your secret as a value instead by adding the following to your chart's `values.yaml` file:
+```yaml
+artifactory-ha: # Name of the artifactory-ha dependency
+  artifactory:
+    userPluginSecrets:
+      - '{{ template "my-chart.fullname" . }}'
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -535,6 +595,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
+| `artifactory.persistence.fileStorage.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
+| `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
+| `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
@@ -636,6 +699,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.secrets.password.key`  | External database password `Secret` key            |                                         |
 | `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
 | `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
+| `networkpolicy.name`             | Becomes part of the NetworkPolicy object name                                  | `artifactory`                           |
+| `networkpolicy.podselector`      | Contains the YAML that specifies how to match pods. Usually using matchLabels. |                                         |
+| `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
+| `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.

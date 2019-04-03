@@ -11,6 +11,34 @@ data:
   binarystore.xml: |-
 {{- if eq .Values.artifactory.persistence.type "file-system" }}
     <!-- File system replication -->
+    {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+    <!-- File Storage- Dynamic for Artifactory files, pre-created for DATA and BACKUP -->
+    <config version="4">
+        <chain>
+            <provider id="cache-fs" type="cache-fs">                   <!-- This is a cached filestore -->
+                <provider id="sharding" type="sharding">                   <!-- This is a sharding provider -->
+                    {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) -}}
+                    <sub-provider id="shard{{ $sharedClaimNumber }}" type="state-aware"/>
+                    {{- end }}
+                </provider>
+            </provider>
+        </chain>
+        
+        // Specify the read and write strategy and redundancy for the sharding binary provider
+        <provider id="sharding" type="sharding">
+            <readBehavior>roundRobin</readBehavior>                     
+            <writeBehavior>percentageFreeSpace</writeBehavior>
+            <redundancy>2</redundancy>
+        </provider>
+        
+        {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) -}}
+        //For each sub-provider (mount), specify the filestore location
+        <provider id="shard{{ $sharedClaimNumber }}" type="state-aware">
+            <fileStoreDir>filestore{{ $sharedClaimNumber }}</fileStoreDir>
+        </provider>
+        {{- end }}
+    </config>
+    {{- else }}
     <config version="2">
         <chain>
             <provider id="cache-fs" type="cache-fs">
@@ -41,6 +69,7 @@ data:
             <zone>remote</zone>
             <property name="header.remote.block" value="true"/>
         </provider>
+    {{- end }}
     </config>
 {{- end }}
 

@@ -1,8 +1,17 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.12.3] - Aprl 02, 2019
+## [0.12.6] - Aprl 03, 2019
 * Added installer info
+
+## [0.12.5] - Aprl 03, 2019
+* Allow secret names for user plugins to contain template language
+
+## [0.12.4] - Apr 02, 2019
+* Fix issue #253 (use existing PVC for data and backup storage)
+
+## [0.12.3] - Apr 02, 2019
+* Allow NetworkPolicy configurations (defaults to allow all)
 
 ## [0.12.2] - Aprl 01, 2019
 * Add support for user plugin secret

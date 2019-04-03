@@ -1,6 +1,12 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.8]  - Apr 2, 2019
+* Updated Kubexray version to 0.1.3
+
+## [0.3.7]  - Apr 2, 2019
+* Rolling update to kubexray when secret-xray.yaml changes
+
 ## [0.3.6]  - Mar 20, 2019
 * Updated Kubexray version to 0.1.2
 

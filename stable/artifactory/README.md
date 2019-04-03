@@ -186,6 +186,38 @@ helm install --name artifactory --set artifactory.license.secret=artifactory-lic
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
 
+### Configure NetworkPolicy
+
+NetworkPolicy specifies what ingress and egress is allowed in this namespace. It is encouraged to be more specific whenever possible to increase security of the system.
+
+In the `networkpolicy` section of values.yaml you can specify a list of NetworkPolicy objects.
+
+For podSelector, ingress and egress, if nothing is provided then a default `- {}` is applied which is to allow everything.
+
+A full (but very wide open) example that results in 2 NetworkPolicy objects being created:
+```
+networkpolicy:
+  # Allows all ingress and egress to/from artifactory.
+  - name: artifactory
+    podSelector:
+      matchLabels:
+        app: artifactory
+    egress:
+    - {}
+    ingress:
+    - {}
+  # Allows connectivity from artifactory pods to postgresql pods, but no traffic leaving postgresql pod.
+  - name: postgres
+    podSelector:
+      matchLabels:
+        app: postgresql
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: artifactory
+```
+
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
@@ -358,6 +390,14 @@ artifactory:
 You can now pass the created `plugins.yaml` file to helm install command to deploy Artifactory with user plugins as follows:
 ```
 helm install --name artifactory -f plugins.yaml jfrog/artifactory
+```
+
+Alternatively, you may be in a situation in which you would like to create a secret in a Helm chart that depends on this chart. In this scenario, the name of the secret is likely dynamically generated via template functions, so passing a statically named secret isn't possible. In this case, the chart supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function - simply pass the raw string containing the templating language used to name your secret as a value instead by adding the following to your chart's `values.yaml` file:
+```yaml
+artifactory: # Name of the artifactory dependency
+  artifactory:
+    userPluginSecrets:
+      - '{{ template "my-chart.fullname" . }}'
 ```
 
 ## Configuration
@@ -535,6 +575,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.secrets.password.key`  | External database password `Secret` key            |                                         |
 | `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
 | `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
+| `networkpolicy.name`             | Becomes part of the NetworkPolicy object name                                  | `artifactory`                           |
+| `networkpolicy.podselector`      | Contains the YAML that specifies how to match pods. Usually using matchLabels. |                                         |
+| `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
+| `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

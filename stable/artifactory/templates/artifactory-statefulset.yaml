@@ -214,8 +214,8 @@ spec:
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}
       {{- range .Values.artifactory.userPluginSecrets }}
-        - name: {{ . }}
-          mountPath: "/tmp/plugin/{{ . }}"
+        - name: {{ tpl . $ }}
+          mountPath: "/tmp/plugin/{{ tpl . $ }}"
       {{- end }}
       {{- end }}
         - name: artifactory-volume
@@ -335,9 +335,9 @@ spec:
           name: {{ template "artifactory.fullname" . }}-installer-info
       {{- if .Values.artifactory.userPluginSecrets }}
       {{- range .Values.artifactory.userPluginSecrets }}
-      - name: {{ . }}
+      - name: {{ tpl . $ }}
         secret:
-          secretName: {{ . }}
+          secretName: {{ tpl . $ }}
       {{- end }}
       {{- end }}
       {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
