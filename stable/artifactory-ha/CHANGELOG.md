@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.1] - Apr 4, 2019
+* Add information about upgrading Artifactory with auto-generated postgres password
+
 ## [0.12.0] - Mar 26, 2019
 * Updated Artifactory version to 6.9.0
 
