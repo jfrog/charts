@@ -1,8 +1,11 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.0.2] - Apr 4, 2019
+## [1.0.3] - Apr 4, 2019
 * Add information about upgrading mission-control with auto-generated postgres password
+
+## [1.0.2] - Apr 4, 2019
+* Change mission-control auto-generated DB password to update the password on every startup
 
 ## [1.0.1] - Apr 1, 2019
 * Fix error of missing volume when `missionControl.persistence` is disabled
