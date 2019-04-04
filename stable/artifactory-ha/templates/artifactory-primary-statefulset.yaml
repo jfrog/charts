@@ -99,14 +99,13 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
-          {{- if .Values.artifactory.userPluginSecrets }}
-          echo "Copying plugins";
-          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
-          cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
-          {{- end }}
           {{- if .Values.artifactory.configMapName }}
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
+          {{- end }}
+          {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          cp -Lrf /tmp/plugin/*/* /tmp/plugins;
           {{- end }}
           {{- range .Values.artifactory.copyOnEveryStartup }}
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
@@ -248,6 +247,8 @@ spec:
         {{- end }}
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}
+        - name: tmp-plugins
+          mountPath: "/tmp/plugins/"
       {{- range .Values.artifactory.userPluginSecrets }}
         - name: {{ tpl . $ }}
           mountPath: "/tmp/plugin/{{ tpl . $ }}"
@@ -401,6 +402,8 @@ spec:
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info
       {{- if .Values.artifactory.userPluginSecrets }}
+      - name: tmp-plugins
+        emptyDir: {}
       {{- range .Values.artifactory.userPluginSecrets }}
       - name: {{ tpl . $ }}
         secret:
