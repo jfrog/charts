@@ -1,10 +1,13 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.12.7] - Aprl 04, 2019
+## [0.12.8] - Aprl 04, 2019
 * Apply the existing PVC for members (in addition to primary)
 
 ## [0.12.7] - Aprl 03, 2019
+* Add information about upgrading Artifactory with auto-generated postgres password
+
+## [0.12.6] - Aprl 03, 2019
 * Added installer info
 
 ## [0.12.5] - Aprl 03, 2019

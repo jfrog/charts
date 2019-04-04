@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.3] - Apr 1, 2019
+* Add information about upgrading distribution with the auto-generated redis password
+
 ## [3.2.2] - Mar 15, 2019
 * Revert securityContext change that was causing issues
 
