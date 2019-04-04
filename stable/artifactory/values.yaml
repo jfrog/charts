@@ -7,6 +7,10 @@
 # Common
 initContainerImage: "alpine:3.8"
 
+installer:
+  type:
+  platform:
+
 # For supporting pulling from private registries
 imagePullSecrets:
 
@@ -57,6 +61,27 @@ ingress:
   #   hosts:
   #     - artifactory.domain.example
 
+networkpolicy:
+  # Allows all ingress and egress
+  - name: artifactory
+    podSelector:
+      matchLabels:
+        app: artifactory
+    egress:
+    - {}
+    ingress:
+    - {}
+  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgres.enabled is true)
+  # - name: postgres
+  #   podSelector:
+  #     matchLabels:
+  #       app: postgresql
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: artifactory
+
 logger:
   image:
     repository: busybox
@@ -72,6 +97,13 @@ artifactory:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+
+  # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
+    copyOnEveryStartup:
+  #     # absolute path
+  #    - source: /artifactory_extra_conf/binarystore.xml
+  #     # relative to ARTIFACTORY_HOME/
+  #      target: etc/
 
   # Sidecar containers for tailing Artifactory logs
   loggers: []
@@ -147,6 +179,15 @@ artifactory:
     dataKey:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
+
+  ## List of secrets for Artifactory user plugins.
+  ## One Secret per plugin's files.
+  userPluginSecrets:
+  #  - archive-old-artifacts
+  #  - build-cleanup
+  #  - webhook
+  #  - '{{ template "my-chart.fullname" . }}'
+
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   # masterKeySecretName:

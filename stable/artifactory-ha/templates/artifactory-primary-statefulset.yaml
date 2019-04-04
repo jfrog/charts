@@ -41,6 +41,21 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
+    {{- if eq .Values.artifactory.persistence.type "file-system" }}
+      {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+      - name: "create-artifactory-data-dir"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+        - 'sh'
+        - '-c'
+        - >
+          mkdir {{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir }}
+        volumeMounts:
+        - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          name: volume
+      {{- end }}          
+    {{- end }}          
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -84,9 +99,17 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
+          {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
+          cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
+          {{- end }}
           {{- if .Values.artifactory.configMapName }}
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
+          {{- end }}
+          {{- range .Values.artifactory.copyOnEveryStartup }}
+          cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
           {{- end }}
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
           cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
@@ -96,6 +119,7 @@ spec:
           {{ .Values.artifactory.preStartCommand }};
           {{- end }}
           /entrypoint-artifactory.sh
+      {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
           postStart:
             exec:
@@ -103,9 +127,8 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-                {{- if .Values.artifactory.postStartCommand }}
                 {{ .Values.artifactory.postStartCommand }}
-                {{- end }}
+      {{- end }}
         env:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
@@ -200,6 +223,14 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+        - name: HA_DATA_DIR
+          value: "{{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir }}"
+        - name: HA_BACKUP_DIR
+          value: "{{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: HA_DATA_DIR
           value: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
@@ -216,8 +247,24 @@ spec:
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}
         volumeMounts:
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+        - name: {{ tpl . $ }}
+          mountPath: "/tmp/plugin/{{ tpl . $ }}"
+      {{- end }}
+      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
+        - name: artifactory-ha-data-{{ $sharedClaimNumber }}
+          mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir }}/filestore{{ $sharedClaimNumber }}"
+          {{- end }}
+        - name: artifactory-ha-backup
+          mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
@@ -249,6 +296,9 @@ spec:
           mountPath: "/replicator_extra_conf/replicator.yaml"
           subPath: replicator.yaml
       {{- end }}
+        - name: installer-info
+          mountPath: "/artifactory_extra_conf/info/installer-info.json"
+          subPath: installer-info.json
         resources:
 {{ toYaml .Values.artifactory.primary.resources | indent 10 }}
         {{- if .Values.artifactory.readinessProbe.enabled }}
@@ -347,6 +397,16 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-bs
+      - name: installer-info
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-installer-info
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+      - name: {{ tpl . $ }}
+        secret:
+          secretName: {{ tpl . $ }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config
         configMap:
@@ -374,6 +434,18 @@ spec:
           {{- else }}
           secretName: {{ template "artifactory-ha.fullname" . }}-bootstrap-creds
           {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
+      - name: artifactory-ha-data-{{ $sharedClaimNumber }}
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" $ }}-data-pvc-{{ $sharedClaimNumber }}
+          {{- end }}
+      - name: artifactory-ha-backup
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" $ }}-backup-pvc
+        {{- end }}
+      {{- end }}
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
       - name: artifactory-ha-data
         persistentVolumeClaim:

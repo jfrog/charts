@@ -1,8 +1,11 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.0.1] - Apr 4, 2019
+## [1.0.2] - Apr 4, 2019
 * Add information about upgrading mission-control with auto-generated postgres password
+
+## [1.0.1] - Apr 1, 2019
+* Fix error of missing volume when `missionControl.persistence` is disabled
 
 ## [1.0.0] - Mar 28, 2019
 * **NOTE:** This chart is not compatible with older versions and should not be used to upgrade them. See README for more details on upgrades

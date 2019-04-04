@@ -85,6 +85,11 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
+          {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/plugins;
+          cp -Lrf /tmp/plugin/*/* {{ .Values.artifactory.persistence.mountPath }}/etc/plugins/;
+          {{- end }}
           echo "Running custom preStartCommand command";
           {{ .Values.artifactory.preStartCommand }};
           /entrypoint-artifactory.sh
@@ -209,6 +214,12 @@ spec:
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         volumeMounts:
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+        - name: {{ tpl . $ }}
+          mountPath: "/tmp/plugin/{{ tpl . $ }}"
+      {{- end }}
+      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -226,6 +237,9 @@ spec:
           mountPath: "/replicator_extra_conf/replicator.yaml"
           subPath: replicator.yaml
       {{- end }}
+        - name: installer-info
+          mountPath: "/artifactory_extra_conf/info/installer-info.json"
+          subPath: installer-info.json
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
         {{- if .Values.artifactory.readinessProbe.enabled }}
@@ -330,6 +344,16 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-bs
+      - name: installer-info
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-installer-info
+      {{- if .Values.artifactory.userPluginSecrets }}
+      {{- range .Values.artifactory.userPluginSecrets }}
+      - name: {{ tpl . $ }}
+        secret:
+          secretName: {{ tpl . $ }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: replicator-config
         configMap:

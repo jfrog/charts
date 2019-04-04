@@ -196,6 +196,38 @@ helm install --name artifactory --set artifactory.license.secret=artifactory-lic
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
 
+### Configure NetworkPolicy
+
+NetworkPolicy specifies what ingress and egress is allowed in this namespace. It is encouraged to be more specific whenever possible to increase security of the system.
+
+In the `networkpolicy` section of values.yaml you can specify a list of NetworkPolicy objects.
+
+For podSelector, ingress and egress, if nothing is provided then a default `- {}` is applied which is to allow everything.
+
+A full (but very wide open) example that results in 2 NetworkPolicy objects being created:
+```
+networkpolicy:
+  # Allows all ingress and egress to/from artifactory.
+  - name: artifactory
+    podSelector:
+      matchLabels:
+        app: artifactory
+    egress:
+    - {}
+    ingress:
+    - {}
+  # Allows connectivity from artifactory pods to postgresql pods, but no traffic leaving postgresql pod.
+  - name: postgres
+    podSelector:
+      matchLabels:
+        app: postgresql
+    ingress:
+    - from:
+      - podSelector:
+          matchLabels:
+            app: artifactory
+```
+
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
@@ -345,6 +377,39 @@ You can configure the sidecar to run as a custom user if needed by setting the f
     fsGroup: 0
 ```
 
+### Add Artifactory User Plugin during installation
+If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
+
+Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
+```
+# Secret with single user plugin
+kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory 
+
+# Secret with single user plugin with configuration file
+kubectl  create secret generic webhook --from-file=webhook.groovy  --from-file=webhook.config.json.sample --namespace=artifactory
+```
+
+Add plugin secret names to `plugins.yaml` as following:
+```yaml
+artifactory:
+  userPluginSecrets:
+    - archive-old-artifacts
+    - webhook
+```
+
+You can now pass the created `plugins.yaml` file to helm install command to deploy Artifactory with user plugins as follows:
+```
+helm install --name artifactory -f plugins.yaml jfrog/artifactory
+```
+
+Alternatively, you may be in a situation in which you would like to create a secret in a Helm chart that depends on this chart. In this scenario, the name of the secret is likely dynamically generated via template functions, so passing a statically named secret isn't possible. In this case, the chart supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function - simply pass the raw string containing the templating language used to name your secret as a value instead by adding the following to your chart's `values.yaml` file:
+```yaml
+artifactory: # Name of the artifactory dependency
+  artifactory:
+    userPluginSecrets:
+      - '{{ template "my-chart.fullname" . }}'
+```
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -367,6 +432,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
+| `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
@@ -395,6 +461,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                        |
 | `artifactory.readinessProbe.successThreshold`    | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
+| `artifactory.copyOnEveryStartup`     | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.existingClaim` | Artifactory persistence volume claim name |                                       |
@@ -518,6 +585,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `database.secrets.password.key`  | External database password `Secret` key            |                                         |
 | `database.secrets.url.name     ` | External database url `Secret` name                |                                         |
 | `database.secrets.url.key`       | External database url `Secret` key                 |                                         |
+| `networkpolicy.name`             | Becomes part of the NetworkPolicy object name                                  | `artifactory`                           |
+| `networkpolicy.podselector`      | Contains the YAML that specifies how to match pods. Usually using matchLabels. |                                         |
+| `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
+| `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
