@@ -174,6 +174,7 @@ This will completely delete your Artifactory Pro deployment.
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
 
 ### Kubernetes Secret for Artifactory License
+##### Use an existing secret
 You can deploy the Artifactory license as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 Prepare a text file with the license written in it and create a Kubernetes secret from it.
 ```bash
@@ -185,6 +186,16 @@ helm install --name artifactory --set artifactory.license.secret=artifactory-lic
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
+If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
+ 
+##### Create the secret as part of the helm release
+```bash
+helm install --name artifactory --set artifactory.license.licenseKey=<LICENSE_KEY> jfrog/artifactory
+```
+**NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
+Updating the license should be done via Artifactory UI or REST API.
+If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
+
 
 ### Configure NetworkPolicy
 
