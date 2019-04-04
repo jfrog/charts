@@ -256,6 +256,10 @@ kubectl apply -f bootstrap-config.yaml
 ```bash
 helm install --name artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
 ```
+OR
+```bash
+helm install --name artifactory --set artifactory.license.licenseKey=<LICENSE_KEY>,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
+```
 
 ### Use custom nginx.conf with Nginx
 
