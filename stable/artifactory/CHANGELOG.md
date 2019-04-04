@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.8] - Aprl 04, 2019
+* Add support for templated extraEnvironmentVariables
+
 ## [7.13.7] - Aprl 04, 2019
 * Bugfix for userPluginSecrets
 

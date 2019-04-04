@@ -208,7 +208,7 @@ spec:
       {{- end }}
       {{- range .Values.artifactory.extraEnvironmentVariables }}
         - name: {{ .name }}
-          value: '{{ .value }}'
+          value: '{{ tpl .value $ }}'
       {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
