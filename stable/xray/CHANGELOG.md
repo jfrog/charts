@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.1] - Mar 26, 2019
+* Add information about upgrading Xray with auto-generated postgres password
+
 ## [0.11.0] - Mar 26, 2019
 * Switched to StatefulSets to preserve micro-service Ids
 
