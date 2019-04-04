@@ -409,6 +409,7 @@ artifactory: # Name of the artifactory dependency
     userPluginSecrets:
       - '{{ template "my-chart.fullname" . }}'
 ```
+NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
 
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
