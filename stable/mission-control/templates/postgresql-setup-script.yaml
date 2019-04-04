@@ -38,18 +38,9 @@ data:
         [ ! -z ${user} ] || errorExit "user is empty"
         [ ! -z ${pass} ] || errorExit "password is empty"
 
-        ${PSQL} $POSTGRES_OPTIONS -tAc "SELECT 1 FROM pg_roles WHERE rolname='${user}'" | grep -q 1 1>/dev/null
-        local rc=$?
-        # If the user already exists, change the password
-        if [[ ${rc} -eq 0 ]]; then
-          echo "Changing password for user ${user}..."
-          ${PSQL} $POSTGRES_OPTIONS -c "ALTER USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || errorExit "Failed updating user ${user} password on PostgreSQL"
-          echo "Done"
-        else
-          echo "Creating user ${user}..."
-          ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || errorExit "Failed creating user ${user} on PostgreSQL"
-          echo "Done"
-        fi
+        ${PSQL} $POSTGRES_OPTIONS -tAc "SELECT 1 FROM pg_roles WHERE rolname='${user}'" | grep -q 1 1>/dev/null || \
+        ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || \
+        errorExit "Failed creating user ${user} on PostgreSQL"
     }
 
     # Create database if it does not exist
