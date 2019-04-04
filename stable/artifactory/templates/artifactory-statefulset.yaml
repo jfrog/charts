@@ -370,7 +370,7 @@ spec:
           {{- if .Values.artifactory.license.secret }}
           secretName: {{ .Values.artifactory.license.secret }}
           {{- else if .Values.artifactory.license.licenseKey }}
-          secretName: {{ .Values.artifactory.license.licenseKey }}
+          secretName: {{ template "artifactory.fullname" . }}-license
           {{- end }}
       {{- end }}
       - name: access-bootstrap-creds
