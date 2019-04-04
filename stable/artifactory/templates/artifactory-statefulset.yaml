@@ -251,6 +251,9 @@ spec:
           mountPath: "/replicator_extra_conf/replicator.yaml"
           subPath: replicator.yaml
       {{- end }}
+        - name: installer-info
+          mountPath: "/artifactory_extra_conf/info/installer-info.json"
+          subPath: installer-info.json
         resources:
 {{ toYaml .Values.artifactory.resources | indent 10 }}
       {{- if .Values.artifactory.readinessProbe.enabled }}
@@ -327,6 +330,9 @@ spec:
       - name: binarystore-xml
         configMap:
           name: {{ template "artifactory.fullname" . }}-bs
+      - name: installer-info
+        configMap:
+          name: {{ template "artifactory.fullname" . }}-installer-info
       {{- if .Values.artifactory.userPluginSecrets }}
       {{- range .Values.artifactory.userPluginSecrets }}
       - name: {{ tpl . $ }}
