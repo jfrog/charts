@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.6] - Aprl 04, 2019
+* Bugfix for userPluginSecrets
+
 ## [7.13.5] - Aprl 03, 2019
 * Added installer info
 
