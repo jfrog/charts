@@ -556,7 +556,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
 | `artifactory.internalPortReplicator` | Replicator service internal port | `6061`   |
 | `artifactory.externalPortReplicator` | Replicator service external port | `6061`   |
-| `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
+| `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.livenessProbe.enabled`              | Enable liveness probe                     |  `true`                                               |
 | `artifactory.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`                        |
 | `artifactory.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 180                                                   |

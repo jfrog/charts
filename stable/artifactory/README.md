@@ -454,7 +454,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                                                                    |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
-| `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
+| `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
 | `artifactory.readinessProbe.path`                     | Readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                        |
