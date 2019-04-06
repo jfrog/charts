@@ -69,8 +69,8 @@ data:
             <zone>remote</zone>
             <property name="header.remote.block" value="true"/>
         </provider>
-    {{- end }}
     </config>
+    {{- end }}
 {{- end }}
 
 {{- if eq .Values.artifactory.persistence.type "google-storage" }}
