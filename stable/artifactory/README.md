@@ -457,6 +457,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
+| `artifactory.license.licenseKey` | Artifactory license key. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used |           |
+| `artifactory.license.secret` | Artifactory license secret name              |                                            |
+| `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |

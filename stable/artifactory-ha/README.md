@@ -569,6 +569,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                            |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
+| `artifactory.license.licenseKey` | Artifactory license key. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used |           |
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |
