@@ -174,14 +174,16 @@ artifactory:
   #      name: custom-script
 
 
-  ## Artifactory license secret.
-  ## If artifactory.license.secret is passed, it will be mounted as
-  ## ARTIFACTORY_HOME/etc/artifactory.lic and loaded at run time.
-  ## The dataKey should be the name of the secret data key created.
+  ## Artifactory license.
   license:
+    ## licenseKey is the license key in plain text. Use either this or the license.secret setting
     licenseKey:
+    ## If artifactory.license.secret is passed, it will be mounted as
+    ## ARTIFACTORY_HOME/etc/artifactory.lic and loaded at run time.
     secret:
+    ## The dataKey should be the name of the secret data key created.
     dataKey:
+
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
 
