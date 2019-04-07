@@ -199,8 +199,16 @@ Updating the license should be done via Artifactory UI or REST API.
 If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
  
 ##### Create the secret as part of the helm release
+values.yaml
+```yaml
+artifactory:
+  license:
+    licenseKey: |-
+      <LICENSE_KEY>
+```
+
 ```bash
-helm install --name artifactory --set artifactory.license.licenseKey=<LICENSE_KEY> jfrog/artifactory
+helm install --name artifactory-ha -f values.yaml jfrog/artifactory-ha
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.

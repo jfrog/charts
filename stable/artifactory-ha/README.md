@@ -262,6 +262,28 @@ helm install --name artifactory-ha --set artifactory.license.secret=artifactory-
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
 
+##### Create the secret as part of the helm release
+values.yaml
+```yaml
+artifactory:
+  license:
+    licenseKey: |-
+      <LICENSE_KEY1>
+      
+      
+      <LICENSE_KEY2>
+      
+      
+      <LICENSE_KEY3>
+```
+
+```bash
+helm install --name artifactory-ha -f values.yaml jfrog/artifactory-ha
+```
+**NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
+Updating the license should be done via Artifactory UI or REST API.
+If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
+
 ### Configure NetworkPolicy
 
 NetworkPolicy specifies what ingress and egress is allowed in this namespace. It is encouraged to be more specific whenever possible to increase security of the system.

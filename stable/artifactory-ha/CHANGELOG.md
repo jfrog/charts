@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.10] - Aprl 07, 2019
+* Add support for providing the Artifactory license as a parameter
+
 ## [0.12.9] - Aprl 04, 2019
 * Apply the existing PVC for members (in addition to primary)
 
