@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.0.4] - Apr 7, 2019
+* Add network policy support
+
 ## [1.0.3] - Apr 4, 2019
 * Add information about upgrading mission-control with auto-generated postgres password
 
