@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.4] - Apr 7, 2019
+* Add network policy support
+
 ## [3.2.3] - Apr 1, 2019
 * Add information about upgrading distribution with the auto-generated redis password
 

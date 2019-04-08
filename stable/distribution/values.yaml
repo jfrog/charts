@@ -30,6 +30,37 @@ rbac:
       - watch
       - list
 
+networkpolicy:
+  # Allows all ingress and egress
+  - name: distribution
+    podSelector:
+      matchLabels:
+        app: distribution
+    egress:
+      - {}
+    ingress:
+      - {}
+  # Uncomment to allow only distribution pods to communicate with postgresql (if postgresql.enabled is true)
+  # - name: postgres
+  #   podSelector:
+  #     matchLabels:
+  #       app: postgresql
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: distribution
+  # Uncomment to allow only distribution pods to communicate with redis
+  # - name: redis
+  #   podSelector:
+  #     matchLabels:
+  #       app: redis
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: distribution
+
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##

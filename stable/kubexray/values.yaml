@@ -21,6 +21,17 @@ xrayConfig: ""
 # Specify an existing secret holding the Xray config
 existingSecret: ""
 
+networkpolicy:
+  # Allows all ingress and egress
+  - name: kubexray
+    podSelector:
+      matchLabels:
+        app: kubexray
+    egress:
+      - {}
+    ingress:
+      - {}
+
 # Set kubexray scanning policy
 scanPolicy:
   unscanned:

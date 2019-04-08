@@ -2,12 +2,11 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ template "artifactory-ha.fullname" $ }}-{{ .name }}-networkpolicy
+  name: {{ template "mission-control.fullname" $ }}-{{ .name }}-networkpolicy
   labels:
-    app: {{ template "artifactory-ha.name" $ }}
-    chart: {{ template "artifactory-ha.chart" $ }}
+    app: {{ template "mission-control.name" $ }}
+    component: {{ $.Values.missionControl.name }}
     release: {{ $.Release.Name }}
-    heritage: {{ $.Release.Service }}  
 spec:
 {{- if .podSelector }}
   podSelector:
