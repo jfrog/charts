@@ -26,6 +26,57 @@ rbac:
       - watch
       - list
 
+networkpolicy:
+  # Allows all ingress and egress
+  - name: xray
+    podSelector:
+      matchLabels:
+        app: xray
+    egress:
+      - {}
+    ingress:
+      - {}
+  # Uncomment to allow only xray pods to communicate with postgresql (if postgresql.enabled is true)
+  # - name: postgres
+  #   podSelector:
+  #     matchLabels:
+  #       app: postgresql
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: xray
+  # Uncomment to allow only xray pods to communicate with mongo (if mongodb.enabled is true)
+  # - name: mongo
+  #   podSelector:
+  #     matchLabels:
+  #       app: mongodb
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: xray
+  # Uncomment to allow only xray pods to communicate with rabbitmq (if rabbitmq.enabled is true)
+  # - name: rabbitmq
+  #   podSelector:
+  #     matchLabels:
+  #       app: rabbitmq
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: xray
+  # Uncomment to allow only xray pods to communicate with rabbitmq-ha (if rabbitmq-ha.enabled is true)
+  # - name: rabbitmq-ha
+  #   podSelector:
+  #     matchLabels:
+  #       app: rabbitmq-ha
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app: xray
+
 ingress:
   enabled: false
   defaultBackend:

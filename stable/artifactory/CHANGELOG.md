@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.8] - Aprl 07, 2019
+* Change network policy API group
+
 ## [7.13.7] - Aprl 04, 2019
 * Bugfix for userPluginSecrets
 
