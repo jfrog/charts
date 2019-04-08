@@ -53,16 +53,6 @@ networkpolicy:
   #     - podSelector:
   #         matchLabels:
   #           app: mission-control
-  # Uncomment to allow only mission-control pods to communicate with elasticsearch (if elasticsearch.enabled is true)
-  # - name: elasticsearch
-  #   podSelector:
-  #     matchLabels:
-  #       app: elasticsearch
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: mission-control
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
