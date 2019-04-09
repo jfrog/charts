@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.0] - Apr 9, 2019
+* Updated Xray version to 2.8.0
+
 ## [0.11.2] - Apr 7, 2019
 * Add network policy support
 
