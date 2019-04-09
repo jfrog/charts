@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.11.2] - Apr 7, 2019
+* Add network policy support
+
 ## [0.11.1] - Mar 26, 2019
 * Add information about upgrading Xray with auto-generated postgres password
 

@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.9]  - Apr 7, 2019
+* Add network policy support
+
 ## [0.3.8]  - Apr 2, 2019
 * Updated Kubexray version to 0.1.3
 
