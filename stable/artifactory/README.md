@@ -184,6 +184,7 @@ This will completely delete your Artifactory Pro deployment.
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
 
 ### Kubernetes Secret for Artifactory License
+##### Use an existing secret
 You can deploy the Artifactory license as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 Prepare a text file with the license written in it and create a Kubernetes secret from it.
 ```bash
@@ -195,6 +196,24 @@ helm install --name artifactory --set artifactory.license.secret=artifactory-lic
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
+If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
+ 
+##### Create the secret as part of the helm release
+values.yaml
+```yaml
+artifactory:
+  license:
+    licenseKey: |-
+      <LICENSE_KEY>
+```
+
+```bash
+helm install --name artifactory-ha -f values.yaml jfrog/artifactory-ha
+```
+**NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
+Updating the license should be done via Artifactory UI or REST API.
+If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
+
 
 ### Configure NetworkPolicy
 
@@ -254,6 +273,10 @@ kubectl apply -f bootstrap-config.yaml
 3. Pass the configMap to helm
 ```bash
 helm install --name artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
+```
+OR
+```bash
+helm install --name artifactory --set artifactory.license.licenseKey=<LICENSE_KEY>,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
 ```
 
 ### Use custom nginx.conf with Nginx
@@ -434,6 +457,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
+| `artifactory.license.licenseKey` | Artifactory license key. Providing the license key as a parameter will cause a secret containing the license key to be created as part of the release. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used.  |           |
+| `artifactory.license.secret` | Artifactory license secret name              |                                            |
+| `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |

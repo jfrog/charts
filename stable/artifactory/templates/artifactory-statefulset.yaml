@@ -235,10 +235,14 @@ spec:
           mountPath: "/artifactory_extra_conf/binarystore.xml"
           subPath: binarystore.xml
       {{- end }}
-      {{- if .Values.artifactory.license.secret }}
+      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
         - name: artifactory-license
           mountPath: "/artifactory_extra_conf/artifactory.lic"
+          {{- if .Values.artifactory.license.secret }}
           subPath: {{ .Values.artifactory.license.dataKey }}
+          {{- else if .Values.artifactory.license.licenseKey }}
+          subPath: artifactory.lic
+          {{- end }}
       {{- end }}
         - name: access-bootstrap-creds
           mountPath: "/tmp/access/bootstrap.creds"
@@ -363,10 +367,14 @@ spec:
         configMap:
           name: {{ template "artifactory.fullname" . }}-catalina-logger
       {{- end }}
-      {{- if .Values.artifactory.license.secret }}
+      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
       - name: artifactory-license
         secret:
+          {{- if .Values.artifactory.license.secret }}
           secretName: {{ .Values.artifactory.license.secret }}
+          {{- else if .Values.artifactory.license.licenseKey }}
+          secretName: {{ template "artifactory.fullname" . }}-license
+          {{- end }}
       {{- end }}
       - name: access-bootstrap-creds
         secret:
