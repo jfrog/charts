@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.0.5] - Apr 9, 2019
+* Update Mission-Control version to 3.5.1
+
 ## [1.0.4] - Apr 7, 2019
 * Add network policy support
 

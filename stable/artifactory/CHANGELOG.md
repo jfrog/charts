@@ -1,8 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.13.9] - Aprl 07, 2019
+## [7.13.10] - Aprl 07, 2019
 * Add support for providing the Artifactory license as a parameter
+
+## [7.13.9] - Aprl 04, 2019
+* Add support for templated extraEnvironmentVariables
 
 ## [7.13.8] - Aprl 07, 2019
 * Change network policy API group
