@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.12] - Apr 10, 2019
+* Updated Artifactory version to 6.9.1
+
 ## [0.12.11] - Aprl 04, 2019
 * Add support for templated extraEnvironmentVariables
 
