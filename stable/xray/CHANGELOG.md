@@ -1,5 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
+
+## [0.12.2] - Apr 10, 2019
+* Added support for customizing the xray_config.yaml file using a configmap 
+
 ## [0.12.1] - Apr 9, 2019
 * Added Xray server service annotations 
   
