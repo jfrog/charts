@@ -319,6 +319,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
+| `server.service.annotations`                   | Xray server service annotations              | `{}`                 |
 | `server.storage.sizeLimit`                     | Xray server storage size limit               | `10Gi`               |
 | `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
