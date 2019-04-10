@@ -8,6 +8,10 @@ metadata:
     component: {{ .Values.server.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+  annotations:
+    {{- range $key, $value := .Values.server.service.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
 spec:
   type: {{ .Values.server.service.type }}
 {{- if .Values.server.loadBalancerSourceRanges }}
