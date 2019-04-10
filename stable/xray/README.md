@@ -78,7 +78,9 @@ MONGODB_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-mongodb -o json
 helm upgrade <myrelease> jfrog/xray --set mongodb.mongodbRootPassword=${MONGODB_ROOT_PASSWORD} --set mongodb.mongodbPassword=${MONGODB_PASSWORD}
 ```
 
-If you installed the Xray helm chart using all the default values:
+If Xray was installed with all of the default values (e.g. with no user-provided values for mongo/rabbit/postgres), follow these steps:
+1. Retrieve all current passwords (rabbitmq/postgresql/mongodb) as explained in the above section.
+2. Upgrade the release by passing the previously auto-generated secrets:
 ```bash
 helm upgrade --name xray jfrog/xray --set mongodb.mongodbRootPassword=<mongo-root-password> --set mongodb.mongodbPassword=<mongo-password> --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresPassword=<postgres-password>
 ```
