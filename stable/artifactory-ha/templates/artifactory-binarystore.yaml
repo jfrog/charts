@@ -120,6 +120,7 @@ data:
             <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
             <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
             <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
+            <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
         </provider>
     </config>
 {{- end }}

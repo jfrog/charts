@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.12] - Aprl 12, 2019
+* Added support for `bucketExists` flag for googleStorage
+
 ## [7.13.11] - Aprl 07, 2019
 * Add support for providing the Artifactory license as a parameter
 
