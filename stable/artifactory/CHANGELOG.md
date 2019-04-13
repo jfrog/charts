@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.12] - Apr 11, 2019
+* Replace `curl` examples with `wget` due to the new base image
+
 ## [7.13.11] - Aprl 07, 2019
 * Add support for providing the Artifactory license as a parameter
 
