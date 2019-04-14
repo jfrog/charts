@@ -613,6 +613,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
 | `artifactory.persistence.googleStorage.path`        | Google Storage path in bucket       | `artifactory-ha/filestore`   |
+| `artifactory.persistence.googleStorage.bucketExists`| Google Storage bucket exists therefore does not need to be created.| `false`             |
 | `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                     | `artifactory-ha`             |
 | `artifactory.persistence.awsS3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
 | `artifactory.persistence.awsS3.region`              | AWS S3 bucket region                   |                              |
