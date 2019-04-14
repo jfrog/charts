@@ -78,6 +78,13 @@ MONGODB_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-mongodb -o json
 helm upgrade <myrelease> jfrog/xray --set mongodb.mongodbRootPassword=${MONGODB_ROOT_PASSWORD} --set mongodb.mongodbPassword=${MONGODB_PASSWORD}
 ```
 
+If Xray was installed with all of the default values (e.g. with no user-provided values for mongo/rabbit/postgres), follow these steps:
+1. Retrieve all current passwords (rabbitmq/postgresql/mongodb) as explained in the above section.
+2. Upgrade the release by passing the previously auto-generated secrets:
+```bash
+helm upgrade --name xray jfrog/xray --set mongodb.mongodbRootPassword=<mongo-root-password> --set mongodb.mongodbPassword=<mongo-password> --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresPassword=<postgres-password>
+```
+
 ## Remove
 Removing a **helm** release is done with
 ```bash
@@ -262,10 +269,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.xrayConfigPath`                        | Xray config path                   | `/var/opt/jfrog/xray/data`     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
-| `common.stdOutEnabled`                         | Xray enable standard output                  | `true`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `common.customInitContainers`                  | Custom init containers                       | ` `                  |
-| `common.indexAllBuilds`                        | Whether to index all builds in artifactory   | false                |
+| `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |

@@ -24,6 +24,8 @@ spec:
         app: {{ template "xray.name" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.analysis.name }}
+      annotations:
+        checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

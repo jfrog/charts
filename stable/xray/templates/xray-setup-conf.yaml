@@ -81,12 +81,12 @@ data:
   xray_config.yaml: |
     # Generated Xray config
     ---
-        ver:            1.0
-        XrayServerPort: "{{ .Values.server.internalPort }}"
-        mqBaseUrl:      "RABBITMQ_URL"
-        mongoUrl:       "MONGODB_URL"
-        postgresqlUrl:  "POSTGRES_URL"
-        stdOutEnabled:  {{ .Values.common.stdOutEnabled }}
-        skipEntLicCheckForCloud: true
-        indexAllBuilds: {{ .Values.common.indexAllBuilds }}
-    # End generated config
+    ver:            1.0
+    mqBaseUrl:      "RABBITMQ_URL"
+    mongoUrl:       "MONGODB_URL"
+    postgresqlUrl:  "POSTGRES_URL"
+    XrayServerPort: "{{ .Values.server.internalPort }}"
+{{- with .Values.common.xrayConfig }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+  # End generated config

@@ -238,7 +238,6 @@ common:
   xrayConfigPath: /var/opt/jfrog/xray/data
   xrayUserId: 1035
   xrayGroupId: 1035
-  stdOutEnabled: true
   ## Xray requires a unique master key
   ## You can generate one with the command:
   ## 'openssl rand -hex 32'
@@ -246,8 +245,11 @@ common:
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
-  # Configure Xray to index all the builds in artifactory
-  indexAllBuilds: false
+  # Xray configuration to be written to xray_config.yaml
+  xrayConfig:
+    stdOutEnabled: true
+    skipEntLicCheckForCloud: true
+    indexAllBuilds: false
 
   ## Add custom init containers
   customInitContainers: |
