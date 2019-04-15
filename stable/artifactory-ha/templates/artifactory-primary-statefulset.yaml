@@ -304,6 +304,9 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_extra_conf/info/installer-info.json"
           subPath: installer-info.json
+      {{- if .Values.artifactory.customVolumeMounts }}
+{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.artifactory.primary.resources | indent 10 }}
         {{- if .Values.artifactory.readinessProbe.enabled }}

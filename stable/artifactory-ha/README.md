@@ -561,6 +561,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customInitContainers`| Custom init containers                  |                                            |
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
+| `artifactory.customVolumeMounts`  | Custom Artifactory volumeMounts   |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |

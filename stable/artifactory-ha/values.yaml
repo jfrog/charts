@@ -220,6 +220,12 @@ artifactory:
   #    configMap:
   #      name: custom-script
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
   ## Artifactory requires a unique master key
   ## You can generate one with the command:
   ## 'openssl rand -hex 32'
