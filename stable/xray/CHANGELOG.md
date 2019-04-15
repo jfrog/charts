@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.3] - Apr 15, 2019
+* Move `skipEntLicCheckForCloud: true` config to be part of default Xray config
+
 ## [0.12.2] - Apr 10, 2019
 * Added support for customizing the xray_config.yaml file using a configmap 
 

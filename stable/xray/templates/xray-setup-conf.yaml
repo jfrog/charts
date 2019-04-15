@@ -86,7 +86,8 @@ data:
     mongoUrl:       "MONGODB_URL"
     postgresqlUrl:  "POSTGRES_URL"
     XrayServerPort: "{{ .Values.server.internalPort }}"
+    skipEntLicCheckForCloud: true
 {{- with .Values.common.xrayConfig }}
 {{ toYaml . | indent 4 }}
 {{- end }}
-  # End generated config
+    # End generated config
