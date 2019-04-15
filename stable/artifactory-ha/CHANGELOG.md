@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.16] - Apr 12, 2019
+* Added support for `customVolumeMounts`
+
 ## [0.12.15] - Aprl 12, 2019
 * Added support for `bucketExists` flag for googleStorage
 

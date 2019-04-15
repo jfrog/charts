@@ -456,6 +456,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
+| `artifactory.customVolumeMounts`  | Custom Artifactory volumeMounts   |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
 | `artifactory.license.licenseKey` | Artifactory license key. Providing the license key as a parameter will cause a secret containing the license key to be created as part of the release. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used.  |           |
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
