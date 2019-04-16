@@ -30,10 +30,13 @@ the required configuration snippet which you can then download and install direc
 *   Once configuration is saved Nginx will automatically fetch reverse proxy configuration snippet from Artifactory and apply it immediately.
   
 #### Steps to use static configuration for reverse proxy in nginx.
-1.  Create `artifactory-ha.conf` file with nginx configuration. More [nginx configuration examples](https://github.com/jfrog/artifactory-docker-examples/tree/master/files/nginx/conf.d) 
+1.  Get Artifactory service name using this command `kubectl get svc -n $NAMESPACE`
+
+2.  Create `artifactory-ha.conf` file with nginx configuration. More [nginx configuration examples](https://github.com/jfrog/artifactory-docker-examples/tree/master/files/nginx/conf.d) 
     * Following is example `artifactory-ha.conf`
     ```bash
     ## add HA entries when ha is configure
+    ## Replace server names with Artifactory service names (primary and member service names)
     upstream artifactory {
         server artifactory-ha-artifactory-ha-primary:8081;
         server artifactory-ha:8081;
@@ -78,11 +81,11 @@ the required configuration snippet which you can then download and install direc
     }
     ```
     
-2.  Create configMap of `artifactory-ha.conf` created with step above.
+3.  Create configMap of `artifactory-ha.conf` created with step above.
     ```bash
     kubectl create configmap art-nginx-conf --from-file=artifactory-ha.conf
     ```
-3.  Deploy Artifactory using helm chart with auto configuration update disabled in nginx.
+4.  Deploy Artifactory using helm chart with auto configuration update disabled in nginx.
     You can achieve it by setting value to `true` for `nginx.env.skipAutoConfigUpdate` and providing name of configMap created above to `nginx.customArtifactoryConfigMap` in [values.yaml](values.yaml)
     Which sets Environment Variable `SKIP_AUTO_UPDATE_CONFIG=true` in Nginx container. 
     

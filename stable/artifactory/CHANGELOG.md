@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.15] - Apr 16, 2019
+* Updated documentation for Reverse Proxy Configuration
+
 ## [7.13.14] - Apr 15, 2019
 * Added support for `customVolumeMounts`
 
