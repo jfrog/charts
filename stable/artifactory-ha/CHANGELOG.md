@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.18] - Apr 18, 2019
+* Changing API StatefulSet version to `v1` and permission fix for custom `artifactory.conf` for Nginx
+
 ## [0.12.17] - Apr 16, 2019
 * Updated documentation for Reverse Proxy Configuration
 

@@ -1,7 +1,7 @@
 {{- if .Values.nginx.enabled -}}
 {{- $serviceName := include "artifactory-ha.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "artifactory-ha.nginx.fullname" . }}
@@ -22,7 +22,9 @@ spec:
     metadata:
       labels:
         app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
         component: {{ .Values.nginx.name }}
+        heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
@@ -66,9 +68,7 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-                {{- if .Values.nginx.customArtifactoryConfigMap }}
-                cp -Lrf /tmp/conf.d/artifactory*.conf /etc/nginx/conf.d/artifactory.conf;
-                {{- else }}
+                {{- if (not .Values.nginx.customArtifactoryConfigMap) }}
                 until [ -f /etc/nginx/conf.d/artifactory.conf ]; do sleep 1 ; done;
                 if ! grep -q 'upstream' /etc/nginx/conf.d/artifactory.conf; then
                 sed -i -e 's,proxy_pass.*http://artifactory.*/artifactory/\(.*\);,proxy_pass       http://{{ $serviceName }}:{{ $servicePort }}/artifactory/\1;,g' \
@@ -125,7 +125,8 @@ spec:
         {{- end }}
         {{- if .Values.nginx.customArtifactoryConfigMap }}
         - name: artifactory-nginx-config
-          mountPath: "/tmp/conf.d"
+          mountPath: "/tmp/conf.d/artifactory-ha.conf"
+          subPath: "artifactory-ha.conf"
         {{- end }}
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
