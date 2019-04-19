@@ -125,7 +125,7 @@ spec:
         {{- end }}
         {{- if .Values.nginx.customArtifactoryConfigMap }}
         - name: artifactory-nginx-config
-          mountPath: "/tmp/conf.d/artifactory-ha.conf"
+          mountPath: "/etc/nginx/conf.d/artifactory-ha.conf"
           subPath: "artifactory-ha.conf"
         {{- end }}
         resources:
