@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "artifactory-ha.primary.name" . }}
@@ -22,8 +22,10 @@ spec:
     metadata:
       labels:
         app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
         role: {{ template "artifactory-ha.primary.name" . }}
         component: {{ .Values.artifactory.name }}
+        heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore.yaml") . | sha256sum }}

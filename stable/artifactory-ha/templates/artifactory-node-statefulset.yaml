@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "artifactory-ha.node.name" . }}
@@ -22,7 +22,9 @@ spec:
     metadata:
       labels:
         app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
         role: {{ template "artifactory-ha.node.name" . }}
+        heritage: {{ .Release.Service }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
       annotations:
