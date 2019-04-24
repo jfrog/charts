@@ -33,7 +33,10 @@ the required configuration snippet which you can then download and install direc
 1.  Get Artifactory service name using this command `kubectl get svc -n $NAMESPACE`
 
 2.  Create `artifactory-ha.conf` file with nginx configuration. More [nginx configuration examples](https://github.com/jfrog/artifactory-docker-examples/tree/master/files/nginx/conf.d) 
-    * Following is example `artifactory-ha.conf`
+    
+    **Note**: Create file with name `artifactory-ha.conf` as it's fixed in configMap key.
+    
+    Following is example `artifactory-ha.conf`
     ```bash
     ## add HA entries when ha is configure
     ## Replace server names with Artifactory service names (primary and member service names)

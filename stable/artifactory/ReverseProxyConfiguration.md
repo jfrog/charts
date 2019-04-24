@@ -33,9 +33,13 @@ the required configuration snippet which you can then download and install direc
 1.  Get Artifactory service name using this command `kubectl get svc -n $NAMESPACE`
 
 2.  Create `artifactory.conf` file with nginx configuration. More [nginx configuration examples](https://github.com/jfrog/artifactory-docker-examples/tree/master/files/nginx/conf.d) 
-    * Following is example `artifactory.conf`
     
-    **Note**: Replace `artifactory-artifactory` with service name taken from step 1.
+    Following is example `artifactory.conf`
+    
+    **Note**: 
+    *   Create file with name `artifactory.conf` as it's fixed in configMap key. 
+    *   Replace `artifactory-artifactory` with service name taken from step 1.
+    
     ```bash
     ## add ssl entries when https has been set in config
     ssl_certificate      /var/opt/jfrog/nginx/ssl/tls.crt;
