@@ -31,6 +31,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
 
         <provider id="file-system" type="file-system">
@@ -67,6 +68,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
 
         <provider id="s3" type="s3">
@@ -112,6 +114,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
     
         <provider id="azure-blob-storage" type="azure-blob-storage">
