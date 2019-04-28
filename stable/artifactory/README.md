@@ -504,9 +504,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.existingClaim` | Artifactory persistence volume claim name |                                       |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
 | `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
-| `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.maxCacheSize` | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
 | `artifactory.persistence.cacheProviderDir` | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
+| `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`   | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
 | `artifactory.persistence.nfs.haDataMount`   | NFS data directory                   | `/data`                             |
