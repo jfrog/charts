@@ -63,43 +63,11 @@ spec:
           postStart:
             exec:
               command:
-              - '/bin/sh'
-              - '-c'
-              - >
-                {{- if .Values.nginx.customArtifactoryConfigMap }}
-                cp -Lrf /tmp/conf.d/artifactory*.conf /etc/nginx/conf.d/artifactory.conf;
-                {{- else }}
-                until [ -f /etc/nginx/conf.d/artifactory.conf ]; do sleep 1; done;
-                if ! grep -q 'upstream' /etc/nginx/conf.d/artifactory.conf; then
-                sed -i -e 's,proxy_pass.*http://artifactory.*/artifactory/\(.*\);,proxy_pass       http://{{ $serviceName }}:{{ $servicePort }}/artifactory/\1;,g' \
-                    -e 's,server_name .*,server_name ~(?<repo>.+)\\.{{ $serviceName }} {{ $serviceName }};,g' \
-                    /etc/nginx/conf.d/artifactory.conf;
-                fi;
-                {{- end }}
-                if [ -f /tmp/replicator-nginx.conf ]; then
-                cp -fv /tmp/replicator-nginx.conf /etc/nginx/conf.d/replicator-nginx.conf;
-                fi;
-                if [ -f /tmp/ssl/*.crt ]; then
-                rm -rf /var/opt/jfrog/nginx/ssl/example.*;
-                cp -fv /tmp/ssl/* /var/opt/jfrog/nginx/ssl;
-                fi;
-                sleep 5; nginx -s reload; touch /var/log/nginx/conf.done
-        env:
-        - name: ART_BASE_URL
-          {{- if .Values.nginx.env.artUrl }}
-          value: {{ .Values.nginx.env.artUrl }}
-          {{- else }}
-          value: 'http://{{ $serviceName }}:{{ $servicePort }}/artifactory'
-          {{- end }}
-        - name: SSL
-          value: "{{ .Values.nginx.env.ssl }}"
-        {{- if .Values.nginx.customArtifactoryConfigMap }}
-        - name: SKIP_AUTO_UPDATE_CONFIG
-          value: "true"
-        {{- else }}
-        - name: SKIP_AUTO_UPDATE_CONFIG
-          value: "{{ .Values.nginx.env.skipAutoConfigUpdate }}"
-        {{- end }}
+                - '/bin/sh'
+                - '-c'
+                - >
+                  ln -s /dev/stdout /var/log/nginx/access.log;
+                  ln -s /dev/stderr /var/log/nginx/error.log;
         ports:
         - containerPort: {{ .Values.nginx.internalPortHttp }}
         - containerPort: {{ .Values.nginx.internalPortHttps }}
@@ -107,26 +75,35 @@ spec:
         - containerPort: {{ .Values.nginx.internalPortReplicator }}
         {{- end }}
         volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: nginx-cache
+          mountPath: /var/cache/nginx
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-        {{- if .Values.artifactory.replicator.enabled }}
-        - name: replicator-nginx-config
-          mountPath: "/tmp/replicator-nginx.conf"
-          subPath: replicator-nginx.conf
-        {{- end }}
-        {{- if .Values.nginx.tlsSecretName }}
-        - name: ssl-secret-volume
-          mountPath: "/tmp/ssl"
-        {{- end }}
         {{- if .Values.nginx.customConfigMap }}
+        - name: custom-nginx-config
+        {{- else }}
         - name: nginx-config
+        {{- end }}
           mountPath: "/etc/nginx/nginx.conf"
           subPath: "nginx.conf"
-        {{- end }}
         {{- if .Values.nginx.customArtifactoryConfigMap }}
-        - name: artifactory-nginx-config
-          mountPath: "/tmp/conf.d"
+        - name: custom-artifactory-nginx-config
+          mountPath: "/etc/nginx/conf.d/custom"
+        {{- else }}
+        - name: nginx-config
+          mountPath: "/etc/nginx/conf.d/artifactory.conf"
+          subPath: artifactory.conf
         {{- end }}
+        {{- if .Values.artifactory.replicator.enabled }}
+        - name: nginx-config
+          mountPath: "/etc/nginx/conf.d/replicator-nginx.conf"
+          subPath: replicator-nginx.conf
+        {{- end }}
+        - name: ssl-secret-volume
+          mountPath: "/var/opt/jfrog/nginx/ssl"
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.readinessProbe.enabled }}
@@ -180,31 +157,33 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      {{- if .Values.artifactory.replicator.enabled }}
-      - name: replicator-nginx-config
-        configMap:
-          name: {{ template "artifactory.fullname" . }}-replicator-nginx-config
-      {{- end}}
-      {{- if .Values.nginx.customConfigMap }}
       - name: nginx-config
         configMap:
-          name: {{ .Values.nginx.customConfigMap }}
-      {{- end }}
+          name: {{ template "artifactory.fullname" . }}-nginx-config
       {{- if .Values.nginx.customArtifactoryConfigMap }}
-      - name: artifactory-nginx-config
+      - name: custom-artifactory-nginx-config
         configMap:
           name: {{ .Values.nginx.customArtifactoryConfigMap }}
       {{- end}}
+      {{- if .Values.nginx.customConfigMap }}
+      - name: custom-nginx-config
+        configMap:
+          name: {{ .Values.nginx.customConfigMap }}
+      {{- end }}
       - name: nginx-volume
       {{- if .Values.nginx.persistence.enabled }}
         persistentVolumeClaim:
           claimName: {{ .Values.nginx.persistence.existingClaim | default (include "artifactory.nginx.fullname" .) }}
       {{- else }}
         emptyDir: {}
-      {{- end -}}
-      {{- if .Values.nginx.tlsSecretName }}
+      {{- end }}
+      - name: nginx-cache
+        emptyDir: {}
       - name: ssl-secret-volume
         secret:
+      {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}
+      {{- else }}
+          secretName: {{ template "artifactory.fullname" . }}-nginx-certificate
       {{- end }}
 {{- end }}
