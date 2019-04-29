@@ -168,6 +168,15 @@ To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Bi
 ...
 ```
 
+* To use a persistent volume claim as cache dir together with Azure Blob Storage, additionally pass the following parameters to `helm  install` and `helm upgrade` (make sure `mountPath` and `cacheProviderDir` point to the same location)
+```bash
+...
+--set artifactory.persistence.existingClaim=${YOUR_CLAIM} \
+--set artifactory.persistence.mountPath=/opt/cache-dir \
+--set artifactory.persistence.cacheProviderDir=/opt/cache-dir \
+...
+```
+
 ### Customizing Database password
 You can override the specified database password (set in [values.yaml](values.yaml)), by passing it as a parameter in the install command line
 ```bash
@@ -495,6 +504,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.existingClaim` | Artifactory persistence volume claim name |                                       |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
 | `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
+| `artifactory.persistence.maxCacheSize` | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
+| `artifactory.persistence.cacheProviderDir` | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
 | `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`   | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |

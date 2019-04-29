@@ -95,6 +95,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
 
         <provider id="eventual-cluster" type="eventual-cluster">
@@ -144,6 +145,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
 
         <provider id="eventual-cluster" type="eventual-cluster">
@@ -206,6 +208,12 @@ data:
             </provider>
         </chain>
     
+        <!-- Set max cache-fs size -->
+        <provider id="cache-fs" type="cache-fs">
+            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        </provider>
+
         <!-- cluster eventual Azure Blob Storage Service default chain -->
         <provider id="sharding-cluster" type="sharding-cluster">
             <readBehavior>crossNetworkStrategy</readBehavior>

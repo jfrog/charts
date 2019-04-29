@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.19] - Apr 28, 2019
+* Added support for `cacheProviderDir`
+
 ## [0.12.18] - Apr 18, 2019
 * Changing API StatefulSet version to `v1` and permission fix for custom `artifactory.conf` for Nginx
 
