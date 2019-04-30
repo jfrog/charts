@@ -225,7 +225,7 @@ spec:
         {{- if .Values.artifactory.replicator.enabled }}
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}
-        {{- if .Values.artifactory.javaOpts.enabled }}
+        {{- if .Values.artifactory.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.javaOpts.jmx.port }}
         {{- end }}
         volumeMounts:
