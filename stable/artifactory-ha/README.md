@@ -575,6 +575,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |
 | `artifactory.service.type`   | Artifactory service type                                  | `ClusterIP`                   |
+| `artifactory.service.clusterIP`| Specific cluster IP or `None` for headless services     | `nil`                         |
 | `artifactory.service.pool`   | Artifactory instances to be in the load balancing pool. `members` or `all` | `members`    |
 | `artifactory.externalPort`   | Artifactory service external port                         | `8081`                        |
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
@@ -675,6 +676,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
+| `nginx.service.clusterIP`   | Specific cluster IP or `None` for headless services     | `nil`                         |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
 | `nginx.service.annotations` | Nginx service annotations           | `{}`                            |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |

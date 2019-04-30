@@ -11,6 +11,9 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   type: {{ .Values.artifactory.service.type }}
+  {{- if and (eq .Values.artifactory.service.type "ClusterIP") .Values.artifactory.service.clusterIP }}
+  clusterIP: {{ .Values.artifactory.service.clusterIP }}
+  {{- end }}
   ports:
   - port: {{ .Values.artifactory.externalPort }}
     targetPort: {{ .Values.artifactory.internalPort }}
@@ -38,6 +41,9 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   type: {{ .Values.artifactory.service.type }}
+  {{- if and (eq .Values.artifactory.service.type "ClusterIP") .Values.artifactory.service.clusterIP }}
+  clusterIP: {{ .Values.artifactory.service.clusterIP }}
+  {{- end }}
   ports:
   - port: {{ .Values.artifactory.externalPort }}
     targetPort: {{ .Values.artifactory.internalPort }}
