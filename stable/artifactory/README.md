@@ -575,7 +575,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.xmx`              | Artifactory java Xms size           |                                          |
 | `artifactory.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
 | `artifactory.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
-| `artifactory.javaOpts.jmx.host`              | JMX hostname (parsed as an helm template)           |  `{{ template "artifactory.fullname" $ }}` |
+| `artifactory.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory.fullname" $ }}` |
 | `artifactory.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
 | `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
