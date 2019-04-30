@@ -25,6 +25,12 @@ spec:
     protocol: TCP
     name: replicator
   {{- end}}
+  {{- with .Values.artifactory.javaOpts.jmx }}
+  - port: {{ .port }}
+    targetPort: {{ .port }}
+    protocol: TCP
+    name: jmx
+  {{- end }}
   selector:
     app: {{ template "artifactory.name" . }}
     component: "{{ .Values.artifactory.name }}"

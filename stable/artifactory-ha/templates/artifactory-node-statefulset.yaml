@@ -181,23 +181,36 @@ spec:
         {{- end }}
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
-          value: "
-      {{- if .Values.artifactory.node.javaOpts.xms }}
-          -Xms{{ .Values.artifactory.node.javaOpts.xms }}
-      {{- end}}
-      {{- if .Values.artifactory.node.javaOpts.xmx }}
-          -Xmx{{ .Values.artifactory.node.javaOpts.xmx }}
-      {{- end}}
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
-      {{- if .Values.artifactory.node.javaOpts.other }}
-          {{ .Values.artifactory.node.javaOpts.other }}
-      {{- end}}
-      {{- if .Values.artifactory.replicator.enabled }}
-          -Dartifactory.releasebundle.feature.enabled=true
-      {{- end }}
-            "
+          value: >
+        {{- with .Values.artifactory.node.javaOpts }}
+          {{- if .xms }}
+            -Xms{{ .xms }}
+          {{- end}}
+          {{- if .xmx }}
+            -Xmx{{ .xmx }}
+          {{- end}}
+          {{- if .jmx.enabled }}
+            -Dcom.sun.management.jmxremote
+            -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
+            -Dcom.sun.management.jmxremote.rmi.port={{ .jmx.port }}
+            -Dcom.sun.management.jmxremote.ssl={{ .jmx.ssl }}
+          {{- if .jmx.host }}
+            -Djava.rmi.server.hostname={{ tpl .jmx.host $ }}
+          {{- else }}
+            -Djava.rmi.server.hostname={{ template "artifactory-ha.fullname" $ }}
+          {{- end }}
+            -Dcom.sun.management.jmxremote.authenticate=false
+          {{- end }}
+          {{- if .other }}
+            {{ .other }}
+          {{- end}}
+          {{- if $.Values.artifactory.javaOpts.other }}
+            {{ $.Values.artifactory.javaOpts.other }}
+          {{- end}}
+        {{- end }}
+          {{- if .Values.artifactory.replicator.enabled }}
+            -Dartifactory.releasebundle.feature.enabled=true
+          {{- end }}
         {{- if .Values.artifactory.replicator.enabled }}
         - name: START_LOCAL_REPLICATOR
           value: "true"

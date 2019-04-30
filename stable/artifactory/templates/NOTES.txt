@@ -30,3 +30,19 @@ Congratulations. You have just deployed JFrog Artifactory!
    Default credential for Artifactory:
    user: admin
    password: password
+
+{{ if .Values.artifactory.javaOpts.jmx.enabled }}
+JMX configuration:
+{{- if not (contains "LoadBalancer"  .Values.artifactory.service.type) }}
+If you want to access JMX from you computer with jconsole, you should set ".Values.artifactory.service.type=LoadBalancer" !!!
+{{ end }}
+
+1. Get the Artifactory service IP:
+export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+2. Map the service name to the service IP in /etc/hosts:
+sudo sh -c "echo \"${SERVICE_IP}    {{ template "artifactory.fullname" . }}\" >> /etc/hosts"
+
+3. Launch jconsole:
+jconsole {{ template "artifactory.fullname" . }}:{{ .Values.artifactory.javaOpts.jmx.port }}
+{{- end }}

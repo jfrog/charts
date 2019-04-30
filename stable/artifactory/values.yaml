@@ -351,10 +351,16 @@ artifactory:
   #    cpu: "1"
   ## The following Java options are passed to the java process running Artifactory.
   ## You should set them according to the resources set above
-  javaOpts: {}
-  #  xms: "1g"
-  #  xmx: "2g"
-  #  other: ""
+  javaOpts:
+   # xms: "1g"
+   # xmx: "2g"
+    jmx:
+      enabled: false
+      port: 9010
+      host:
+      ssl: false
+   # other: ""
+
   nodeSelector: {}
 
   tolerations: []
