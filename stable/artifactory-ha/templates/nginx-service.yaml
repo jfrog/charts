@@ -15,6 +15,9 @@ metadata:
 {{- end }}
 spec:
   type: {{ .Values.nginx.service.type }}
+  {{- if and (eq .Values.nginx.service.type "ClusterIP") .Values.nginx.service.clusterIP }}
+  clusterIP: {{ .Values.nginx.service.clusterIP }}
+  {{- end }}
 {{- if eq .Values.nginx.service.type "LoadBalancer" }}
   {{ if .Values.nginx.service.loadBalancerIP -}}
   loadBalancerIP: {{ .Values.nginx.service.loadBalancerIP }}
