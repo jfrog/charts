@@ -323,7 +323,7 @@ Enable JMX in your deployment:
 ```bash
 helm install --name artifactory \
     --set artifactory.primary.javaOpts.jmx.enabled=true \
-    artifactory.node.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
     jfrog/artifactory-ha
 ```
 This will enable access to Artifactory with JMX on the default port (9010).
@@ -335,8 +335,9 @@ In order to connect to Artifactory using JMX with jconsole (or any similar tool)
 ```bash
 helm install --name artifactory \
     --set artifactory.primary.javaOpts.jmx.enabled=true \
-    artifactory.node.javaOpts.jmx.enabled=true \
-    --set artifactory.service.type=LoadBalancer
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    --set artifactory.service.type=LoadBalancer \
+    jfrog/artifactory-ha
 ``` 
 2. The default setting for java.rmi.server.hostname is the service name (this is also configurable with 
 ```artifactory.primary.javaOpts.jmx.host``` and ```artifactory.node.javaOpts.jmx.host```), So in order to connect to Artifactory 
