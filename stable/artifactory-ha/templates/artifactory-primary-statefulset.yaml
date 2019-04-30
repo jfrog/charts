@@ -194,10 +194,10 @@ spec:
         {{- with .Values.artifactory.primary.javaOpts }}
           {{- if .xms }}
             -Xms{{ .xms }}
-          {{- end}}
+          {{- end }}
           {{- if .xmx }}
             -Xmx{{ .xmx }}
-          {{- end}}
+          {{- end }}
           {{- if .jmx.enabled }}
             -Dcom.sun.management.jmxremote
             -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
@@ -212,10 +212,10 @@ spec:
           {{- end }}
           {{- if .other }}
             {{ .other }}
-          {{- end}}
+          {{- end }}
           {{- if $.Values.artifactory.javaOpts.other }}
             {{ $.Values.artifactory.javaOpts.other }}
-          {{- end}}
+          {{- end }}
         {{- end }}
           {{- if .Values.artifactory.replicator.enabled }}
             -Dartifactory.releasebundle.feature.enabled=true
@@ -257,6 +257,9 @@ spec:
       {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
+        {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
+        - containerPort: {{ .Values.artifactory.primary.javaOpts.jmx.port }}
+        {{- end }}
         {{- if .Values.artifactory.replicator.enabled }}
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}

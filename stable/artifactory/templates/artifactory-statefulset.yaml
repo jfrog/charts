@@ -189,10 +189,10 @@ spec:
       {{- with .Values.artifactory.javaOpts }}
           {{- if .xms }}
             -Xms{{ .xms }}
-          {{- end}}
+          {{- end }}
           {{- if .xmx }}
             -Xmx{{ .xmx }}
-          {{- end}}
+          {{- end }}
           {{- if .jmx.enabled }}
             -Dcom.sun.management.jmxremote
             -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
@@ -207,7 +207,7 @@ spec:
           {{- end }}
           {{- if .other }}
             {{ .other }}
-          {{- end}}
+          {{- end }}
       {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
           -Dartifactory.releasebundle.feature.enabled=true
