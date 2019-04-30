@@ -256,6 +256,7 @@ networkpolicy:
             app: artifactory
 ```
 ### Artifactory JMX Configuration
+** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
 Enable JMX in your deployment:
 ```bash
 helm install --name artifactory \
