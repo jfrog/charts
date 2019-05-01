@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.19] - May 1, 2019
+* Fix indentation issue with the replicator system property
+
 ## [7.13.18] - Apr 30, 2019
 * Add support for JMX monitoring
 
