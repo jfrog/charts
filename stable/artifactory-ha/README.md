@@ -316,6 +316,42 @@ networkpolicy:
             app: artifactory-ha
 ```
 
+### Artifactory JMX Configuration
+** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
+
+Enable JMX in your deployment:
+```bash
+helm install --name artifactory \
+    --set artifactory.primary.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    jfrog/artifactory-ha
+```
+This will enable access to Artifactory with JMX on the default port (9010).
+** You have the option to change the port by setting ```artifactory.primary.javaOpts.jmx.port``` and ```artifactory.node.javaOpts.jmx.port``` 
+to your choice of port
+
+In order to connect to Artifactory using JMX with jconsole (or any similar tool) installed on your computer, follow the following steps:
+1. Enable JMX as described above and Change the Artifactory service to be of type LoadBalancer:
+```bash
+helm install --name artifactory \
+    --set artifactory.primary.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    --set artifactory.service.type=LoadBalancer \
+    jfrog/artifactory-ha
+``` 
+2. The default setting for java.rmi.server.hostname is the service name (this is also configurable with 
+```artifactory.primary.javaOpts.jmx.host``` and ```artifactory.node.javaOpts.jmx.host```), So in order to connect to Artifactory 
+with jconsole you should map the Artifactory kuberentes service IP to the service name using your hosts file as such:
+```
+<artifactory-primary-service-ip>    artifactory-ha-<release-name>-primary
+<artifactory-node-service-ip>       <release-name>
+```
+3. Launch jconsole with the service address and port:
+```bash
+jconsole artifactory-ha-<release-name>-primary:<primary-jmx-port>
+jconsole <release-name>:<node-jmx-port>
+```
+
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
@@ -645,6 +681,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.resources.limits.cpu`      | Artifactory primary node cpu limit               |                     |
 | `artifactory.primary.javaOpts.xms`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.xmx`              | Artifactory primary node java Xms size           |                     |
+| `artifactory.primary.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
+| `artifactory.primary.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
+| `artifactory.primary.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)   |  `{{ template "artifactory-ha.primary.name" $ }}` |
+| `artifactory.primary.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
 | `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `false`            |
 | `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
@@ -655,6 +695,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.resources.limits.cpu`         | Artifactory member node cpu limit                |                     |
 | `artifactory.node.javaOpts.xms`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.xmx`                 | Artifactory member node java Xms size            |                     |
+| `artifactory.node.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
+| `artifactory.node.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
+| `artifactory.node.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory-ha.fullname" $ }}` |
+| `artifactory.node.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.node.javaOpts.other`               | Artifactory member node additional java options  |                     |
 | `artifactory.node.persistence.existingClaim`    | Whether to use existing PVCs for the member nodes | `false`            |
 | `artifactory.terminationGracePeriodSeconds`     | Termination grace period (seconds)               | `30s`               |

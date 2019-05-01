@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.18] - Apr 30, 2019
+* Add support for JMX monitoring
+
 ## [7.13.17] - Apr 25, 2019
 * Added support for `cacheProviderDir`
 

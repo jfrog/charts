@@ -185,20 +185,33 @@ spec:
               name: '{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}'
               key: master-key
         - name: EXTRA_JAVA_OPTIONS
-          value: "
-      {{- if .Values.artifactory.javaOpts.xms }}
-          -Xms{{ .Values.artifactory.javaOpts.xms }}
-      {{- end}}
-      {{- if .Values.artifactory.javaOpts.xmx }}
-          -Xmx{{ .Values.artifactory.javaOpts.xmx }}
-      {{- end}}
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
+          value: >
+      {{- with .Values.artifactory.javaOpts }}
+          {{- if .xms }}
+            -Xms{{ .xms }}
+          {{- end }}
+          {{- if .xmx }}
+            -Xmx{{ .xmx }}
+          {{- end }}
+          {{- if .jmx.enabled }}
+            -Dcom.sun.management.jmxremote
+            -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
+            -Dcom.sun.management.jmxremote.rmi.port={{ .jmx.port }}
+            -Dcom.sun.management.jmxremote.ssl={{ .jmx.ssl }}
+          {{- if .jmx.host }}
+            -Djava.rmi.server.hostname={{ tpl .jmx.host $ }}
+          {{- else }}
+            -Djava.rmi.server.hostname={{ template "artifactory.fullname" $ }}
+          {{- end }}
+            -Dcom.sun.management.jmxremote.authenticate=false
+          {{- end }}
+          {{- if .other }}
+            {{ .other }}
+          {{- end }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
           -Dartifactory.releasebundle.feature.enabled=true
       {{- end }}
-            "
         {{- if .Values.artifactory.replicator.enabled }}
         - name: START_LOCAL_REPLICATOR
           value: "true"
@@ -211,6 +224,9 @@ spec:
         - containerPort: {{ .Values.artifactory.internalPort }}
         {{- if .Values.artifactory.replicator.enabled }}
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
+        {{- end }}
+        {{- if .Values.artifactory.javaOpts.jmx.enabled }}
+        - containerPort: {{ .Values.artifactory.javaOpts.jmx.port }}
         {{- end }}
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}

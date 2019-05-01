@@ -255,6 +255,37 @@ networkpolicy:
           matchLabels:
             app: artifactory
 ```
+### Artifactory JMX Configuration
+** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
+
+Enable JMX in your deployment:
+```bash
+helm install --name artifactory \
+    --set artifactory.javaOpts.jmx.enabled=true \
+    jfrog/artifactory
+```
+This will enable access to Artifactory with JMX on the default port (9010).
+** You have the option to change the port by setting ```artifactory.javaOpts.jmx.port``` to your choice of port
+
+In order to connect to Artifactory using JMX with jconsole (or any similar tool) installed on your computer, follow the following steps:
+1. Enable JMX as described above and Change the Artifactory service to be of type LoadBalancer:
+```bash
+helm install --name artifactory \
+    --set artifactory.javaOpts.jmx.enabled=true \
+    --set artifactory.service.type=LoadBalancer \
+    jfrog/artifactory 
+
+``` 
+2. The default setting for java.rmi.server.hostname is the service name (this is also configurable with ```artifactory.javaOpts.jmx.host```).
+So in order to connect to Artifactory with jconsole you should map the Artifactory kuberentes service IP to the service name using your hosts file as such:
+```
+<artifactory-service-ip>    artifactory-<release-name>
+```
+3. Launch jconsole with the service address and port:
+```bash
+jconsole artifactory-<release-name>:<jmx-port>
+```
+
 
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
@@ -542,6 +573,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.resources.limits.cpu`      | Artifactory cpu limit               |                                          |
 | `artifactory.javaOpts.xms`              | Artifactory java Xms size           |                                          |
 | `artifactory.javaOpts.xmx`              | Artifactory java Xms size           |                                          |
+| `artifactory.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
+| `artifactory.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
+| `artifactory.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory.fullname" $ }}` |
+| `artifactory.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
 | `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
 | `artifactory.replicator.publicUrl`            | Artifactory Replicator Public URL |                                      |

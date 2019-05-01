@@ -19,6 +19,14 @@ spec:
     targetPort: {{ .Values.artifactory.internalPort }}
     protocol: TCP
     name: http
+  {{- with .Values.artifactory.node.javaOpts.jmx }}
+  {{- if .enabled }}
+  - port: {{ .port }}
+    targetPort: {{ .port }}
+    protocol: TCP
+    name: jmx
+  {{- end }}
+  {{- end }}
   selector:
 {{- if eq .Values.artifactory.service.pool "members" }}
     role: {{ template "artifactory-ha.node.name" . }}
@@ -55,6 +63,14 @@ spec:
     protocol: TCP
     name: replicator
   {{- end}}
+  {{- with .Values.artifactory.primary.javaOpts.jmx }}
+  {{- if .enabled }}
+  - port: {{ .port }}
+    targetPort: {{ .port }}
+    protocol: TCP
+    name: jmx
+  {{- end }}
+  {{- end }}
   selector:
     role: {{ template "artifactory-ha.primary.name" . }}
     app: {{ template "artifactory-ha.name" . }}
