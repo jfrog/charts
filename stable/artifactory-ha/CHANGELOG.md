@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.22] - May 2, 2019
+* Remove unused property `artifactory.releasebundle.feature.enabled`
+
 ## [0.12.21] - Apr 30, 2019
 * Add support for JMX monitoring
 
