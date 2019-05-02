@@ -217,9 +217,6 @@ spec:
             {{ $.Values.artifactory.javaOpts.other }}
           {{- end }}
         {{- end }}
-          {{- if .Values.artifactory.replicator.enabled }}
-            -Dartifactory.releasebundle.feature.enabled=true
-          {{- end }}
         {{- if .Values.artifactory.replicator.enabled }}
         - name: START_LOCAL_REPLICATOR
           value: "true"
