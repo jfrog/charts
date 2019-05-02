@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.20] - May 2, 2019
+* Remove unused property `artifactory.releasebundle.feature.enabled`
+
 ## [7.13.19] - May 1, 2019
 * Fix indentation issue with the replicator system property
 
