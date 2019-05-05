@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.13.21] - May 5, 2019
+* Add support for setting `artifactory.async.corePoolSize`
+
 ## [7.13.20] - May 2, 2019
 * Remove unused property `artifactory.releasebundle.feature.enabled`
 
