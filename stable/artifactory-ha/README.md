@@ -681,6 +681,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.resources.limits.cpu`      | Artifactory primary node cpu limit               |                     |
 | `artifactory.primary.javaOpts.xms`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.xmx`              | Artifactory primary node java Xms size           |                     |
+| `artifactory.primary.javaOpts.corePoolSize` | The number of async processes that can run in parallel in the primary node - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `16` |
 | `artifactory.primary.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
 | `artifactory.primary.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
 | `artifactory.primary.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)   |  `{{ template "artifactory-ha.primary.name" $ }}` |
@@ -695,6 +696,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.resources.limits.cpu`         | Artifactory member node cpu limit                |                     |
 | `artifactory.node.javaOpts.xms`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.xmx`                 | Artifactory member node java Xms size            |                     |
+| `artifactory.node.javaOpts.corePoolSize` | The number of async processes that can run in parallel in the member nodes - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `16` |
 | `artifactory.node.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
 | `artifactory.node.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
 | `artifactory.node.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory-ha.fullname" $ }}` |
