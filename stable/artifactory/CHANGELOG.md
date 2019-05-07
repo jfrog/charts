@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.14.0] - May 7, 2019
+* Updated Artifactory version to 6.10.0
+
 ## [7.13.21] - May 5, 2019
 * Add support for setting `artifactory.async.corePoolSize`
 
