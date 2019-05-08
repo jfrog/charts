@@ -52,7 +52,7 @@ data:
 
     # Creating Mongodb URL
     {{- if .Values.mongodb.enabled }}
-    MONGODB_URL="mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@{{ .Release.Name }}-mongodb:27017/?authSource=${MONGODB_DATABASE}\&authMechanism=SCRAM-SHA-1"
+    MONGODB_URL="mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@{{ .Release.Name }}-mongodb:27017/?authSource=${MONGODB_DATABASE}&authMechanism=SCRAM-SHA-1"
     {{- else }}
     MONGODB_URL="${MONGODB_URL}"
     {{- end }}
@@ -73,21 +73,16 @@ data:
     {{- end }}
     cp -vf ${SCRIPTS_DIR}/xray_config.yaml ${XRAY_CONFIG_FILE}
 
-    # Preparing xray_config.yaml
-    sed -i "s RABBITMQ_URL ${RABBITMQ_URL} " ${XRAY_CONFIG_FILE}
-    sed -i "s MONGODB_URL ${MONGODB_URL} " ${XRAY_CONFIG_FILE}
-    sed -i "s POSTGRES_URL ${POSTGRES_URL} " ${XRAY_CONFIG_FILE}
+    echo "mqBaseUrl: \"${RABBITMQ_URL}\""     >> ${XRAY_CONFIG_FILE}
+    echo "mongoUrl: \"${MONGODB_URL}\""       >> ${XRAY_CONFIG_FILE}
+    echo "postgresqlUrl: \"${POSTGRES_URL}\"" >> ${XRAY_CONFIG_FILE}
 
   xray_config.yaml: |
     # Generated Xray config
     ---
     ver:            1.0
-    mqBaseUrl:      "RABBITMQ_URL"
-    mongoUrl:       "MONGODB_URL"
-    postgresqlUrl:  "POSTGRES_URL"
     XrayServerPort: "{{ .Values.server.internalPort }}"
     skipEntLicCheckForCloud: true
 {{- with .Values.common.xrayConfig }}
 {{ toYaml . | indent 4 }}
 {{- end }}
-    # End generated config

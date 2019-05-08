@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.4] - Apr 15, 2019
+* Simplify handling connection strings setup in `xray_config.yaml` to better support ampersand in external connection strings
+* **IMPORTANT:** If using an external connection string for PostgreSQL or MongoDB, **do not escape** the ampersand with `\`
+
 ## [0.12.3] - Apr 15, 2019
 * Move `skipEntLicCheckForCloud: true` config to be part of default Xray config
 
