@@ -140,10 +140,10 @@ For this, pass the parameter: `mongodb.enabled=false` and `global.mongoUrl=${XRA
 # MongoDB user: xray
 # MongoDB password: password1_X
 
-export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABASE}\&authMechanism=SCRAM-SHA-1'
+export XRAY_MONGODB_CONN_URL='mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@custom-mongodb.local:27017/?authSource=${MONGODB_DATABASE}&authMechanism=SCRAM-SHA-1'
 helm install -n xray \
     --set mongodb.enabled=false \
-    --set global.mongoUrl=${XRAY_MONGODB_CONN_URL} \
+    --set global.mongoUrl="${XRAY_MONGODB_CONN_URL}" \
     jfrog/xray
 ```
 
@@ -165,7 +165,7 @@ For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql
 export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable'
 helm install -n xray \
     --set postgresql.enabled=false \
-    --set global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL} \
+    --set global.postgresqlUrl="${XRAY_POSTGRESQL_CONN_URL}" \
     jfrog/xray
 ```
 
