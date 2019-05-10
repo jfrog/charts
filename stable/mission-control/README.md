@@ -225,6 +225,25 @@ missionControl:
     ## Init containers template goes here ##
 ```
 
+### Custom volumes
+There are also cases where you'd like custom files or for your init container to make changes to the file system the mission control container will see.
+
+Two sections exist to allow for custom volume mounts using either an emptyDir volume or an existing PVC in the [vaules.yaml](values.yaml).  By default they are left empty.
+```
+missionControl:
+  ## Add custom volume mounts
+  customVolumeMounts: []
+  #  - name: extra-volume
+  #    mountPath: /mnt/volume
+  #    readOnly: true
+  #    existingClaim: volume-claim
+
+  ## Add custom empty dir mounts
+  customEmptyDirMounts: []
+  #  - name: "my-empty-dir"
+  #    mountPath: /opt/my-empty-dir
+```
+
 ## Configuration
 The following table lists the configurable parameters of the mission-control chart and their default values.
 

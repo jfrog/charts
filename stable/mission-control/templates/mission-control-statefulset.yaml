@@ -449,6 +449,16 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+      {{- range .Values.missionControl.customVolumeMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+          subPath: {{ .subPath | default "" }}
+          readOnly: {{ .readOnly }}
+      {{- end }}
+      {{- range .Values.missionControl.customEmptyDirMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+      {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
         livenessProbe:
@@ -720,6 +730,15 @@ spec:
       - name: elasticsearch-scripts
         configMap:
           name: {{ template "mission-control.fullname" . }}-elasticsearch-scripts
+    {{- end }}
+    {{- range .Values.missionControl.customVolumeMounts }}
+      - name: {{ .name }}
+        persistentVolumeClaim:
+          claimName: {{ .existingClaim }}
+    {{- end }}
+    {{- range .Values.missionControl.customEmptyDirMounts }}
+      - name: {{ .name }}
+        emptyDir: {}
     {{- end }}
   {{- if not .Values.missionControl.persistence.enabled }}
       - name: mission-control-data

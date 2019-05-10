@@ -249,6 +249,18 @@ missionControl:
   #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
   #        name: mission-control-data
 
+  ## Add custom volume mounts
+  customVolumeMounts: []
+  #  - name: extra-volume
+  #    mountPath: /mnt/volume
+  #    readOnly: true
+  #    existingClaim: volume-claim
+
+  ## Add custom empty dir mounts
+  customEmptyDirMounts: []
+  #  - name: "my-empty-dir"
+  #    mountPath: /opt/my-empty-dir
+
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - audit.log
