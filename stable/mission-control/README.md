@@ -228,20 +228,20 @@ missionControl:
 ### Custom volumes
 There are also cases where you'd like custom files or for your init container to make changes to the file system the mission control container will see.
 
-Two sections exist to allow for custom volume mounts using either an emptyDir volume or an existing PVC in the [vaules.yaml](values.yaml).  By default they are left empty.
+For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
 ```
 missionControl:
-  ## Add custom volume mounts
-  customVolumeMounts: []
-  #  - name: extra-volume
-  #    mountPath: /mnt/volume
-  #    readOnly: true
-  #    existingClaim: volume-claim
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
 
-  ## Add custom empty dir mounts
-  customEmptyDirMounts: []
-  #  - name: "my-empty-dir"
-  #    mountPath: /opt/my-empty-dir
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
 ```
 
 ## Configuration
