@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.5] - May 12, 2019
+* Updated rabbitmq-ha chart version to 1.13.1
+
 ## [0.12.4] - Apr 15, 2019
 * Simplify handling connection strings setup in `xray_config.yaml` to better support ampersand in external connection strings
 * **IMPORTANT:** If using an external connection string for PostgreSQL or MongoDB, **do not escape** the ampersand with `\`
