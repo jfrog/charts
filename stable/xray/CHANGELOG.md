@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.6] - Apr 15, 2019
+* Updated Xray version to 2.8.2
+
 ## [0.12.5] - May 12, 2019
 * Updated rabbitmq-ha chart version to 1.26.0
 
