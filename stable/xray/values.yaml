@@ -182,17 +182,18 @@ rabbitmq-ha:
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
   rabbitmqMemoryHighWatermark: 500MB
   rabbitmqNodePort: 5672
-  policies: |-
-    {
-      "name": "ha-all",
-      "apply-to": "all",
-      "pattern": ".*",
-      "vhost": "/",
-      "definition": {
-        "ha-mode": "all",
-        "ha-sync-mode": "automatic",
+  definitions:
+    policies: |-
+      {
+        "name": "ha-all",
+        "apply-to": "all",
+        "pattern": ".*",
+        "vhost": "/",
+        "definition": {
+          "ha-mode": "all",
+          "ha-sync-mode": "automatic",
+        }
       }
-    }
   resources: {}
   #  requests:
   #    memory: "250Mi"
