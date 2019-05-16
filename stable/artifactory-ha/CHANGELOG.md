@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.13.1] - May 15, 2019
+* Support `artifactory.persistence.cacheProviderDir` for on-premise cluster 
+
 ## [0.13.0] - May 7, 2019
 * Updated Artifactory version to 6.10.0
 
