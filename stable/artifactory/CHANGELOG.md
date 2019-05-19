@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.14.1] - May 19, 2019
+* Fix missing logger image tag
+
 ## [7.14.0] - May 7, 2019
 * Updated Artifactory version to 6.10.0
 
