@@ -2,11 +2,11 @@ artifactory:
   persistence:
     enabled: true
   loggers:
-   - request.log
-   - access.log
+    - request.log
+    - access.log
 
   catalinaLoggers:
-   - localhost.log
+    - localhost.log
 
 postgresql:
   postgresPassword: "password"
@@ -21,5 +21,5 @@ nginx:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: NodePort
   loggers:
-   - access.log
-   - error.log
+    - access.log
+    - error.log
