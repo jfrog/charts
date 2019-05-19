@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.13.2] - May 19, 2019
+* Fix missing logger image tag
+
 ## [0.13.1] - May 15, 2019
 * Support `artifactory.persistence.cacheProviderDir` for on-premise cluster 
 
