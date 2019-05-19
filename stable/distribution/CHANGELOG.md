@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.5] - May 19, 2019
+* Fix missing logger image tag
+
 ## [3.2.4] - Apr 7, 2019
 * Add network policy support
 
