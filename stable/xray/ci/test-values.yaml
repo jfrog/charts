@@ -6,6 +6,22 @@
 # serviceAccount:
 #   create: false
 
+analysis:
+  loggers:
+    - xray_analysis.log
+
+indexer:
+  loggers:
+    - xray_indexer.log
+
+persist:
+  loggers:
+    - xray_persist.log
+
+server:
+  loggers:
+    - xray_server.log
+
 postgresql:
   postgresDatabase: xraydb
   postgresUser: xray
