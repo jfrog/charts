@@ -163,7 +163,7 @@ spec:
         command:
           - tail
         args:
-          - '-F"'
+          - '-F'
           - '{{ $mountPath }}/logs/{{ . }}'
         volumeMounts:
           - name: data-volume
