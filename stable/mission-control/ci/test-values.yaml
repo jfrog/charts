@@ -6,6 +6,23 @@
 # serviceAccount:
 #   create: false
 
+missionControl:
+  loggers:
+    - jfmc-server.log
+    - http.log
+
+insightServer:
+  loggers:
+    - insight-server.log
+
+insightScheduler:
+  loggers:
+    - insight-scheduler.log
+
+insightExecutor:
+  loggers:
+    - insight-executor.log
+
 postgresql:
   postgresPassword: postgres
   db:
