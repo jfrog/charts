@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "xray-indexer.fullname" . }}
@@ -9,6 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     component: {{ .Values.indexer.name }}
 spec:
+  serviceName: {{ template "xray-indexer.fullname" . }}
   replicas: {{ .Values.indexer.replicaCount }}
   updateStrategy:
     type: {{ .Values.indexer.updateStrategy }}
