@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.9] - May 24, 2019
+* Update stateful set api and add serviceName spec
+
 ## [0.12.8] - May 20, 2019
 * Fix missing logger image tag
 
