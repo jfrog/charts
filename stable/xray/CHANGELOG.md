@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.10] - May 28, 2019
+* Update Xray version to 2.8.6
+
 ## [0.12.9] - May 24, 2019
 * Update stateful set api and add serviceName spec
 
