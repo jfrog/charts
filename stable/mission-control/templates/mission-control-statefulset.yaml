@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "mission-control.fullname" . }}
@@ -11,7 +11,7 @@ metadata:
 spec:
   serviceName: {{ template "mission-control.fullname" . }}
   replicas: {{ .Values.replicaCount }}
-  strategy:
+  updateStrategy:
       type: RollingUpdate
   selector:
     matchLabels:
