@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.2] - Jun 3, 2019
+* Update Mission-Control version to 3.5.3
+
 ## [1.1.1] - May 20, 2019
 * Fix missing logger image tag
 
