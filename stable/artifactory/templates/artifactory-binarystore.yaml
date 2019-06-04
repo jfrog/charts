@@ -41,8 +41,8 @@ data:
 
         <provider id="google-storage" type="google-storage">
             <providerId>google-cloud-storage</providerId>
-            <endpoint>commondatastorage.googleapis.com</endpoint>
-            <httpsOnly>false</httpsOnly>
+            <endpoint>storage.googleapis.com</endpoint>
+            <httpsOnly>true</httpsOnly>
             <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
             <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
             <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
