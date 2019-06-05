@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.14.4] - Jun 5, 2019
+* Updated Google Cloud Storage API URL and https settings
+
 ## [7.14.3] - Jun 3, 2019
 * Updated Artifactory version to 6.10.2
 
