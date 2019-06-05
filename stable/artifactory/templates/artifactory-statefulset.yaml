@@ -44,6 +44,24 @@ spec:
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
     {{- if .Values.artifactory.persistence.enabled }}
+    {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
+      - name: "delete-db-properties"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - 'sh'
+          - '-c'
+          - 'rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/db.properties'
+        volumeMounts:
+          - name: artifactory-volume
+            mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+          {{- if eq .Values.artifactory.persistence.type "nfs" }}
+          - name: artifactory-data
+            mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+          - name: artifactory-backup
+            mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+          {{- end }}
+    {{- end }}
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
