@@ -57,7 +57,19 @@ spec:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
       {{- end }}          
-    {{- end }}          
+    {{- end }}
+      {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
+      - name: "delete-db-properties"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - 'sh'
+          - '-c'
+          - 'rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/db.properties'
+        volumeMounts:
+          - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+            name: volume
+      {{- end }}
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
