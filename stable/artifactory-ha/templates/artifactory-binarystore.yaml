@@ -125,7 +125,7 @@ data:
 
         <provider id="google-storage" type="google-storage">
             <providerId>google-cloud-storage</providerId>
-            <endpoint>storage.googleapis.com</endpoint>
+            <endpoint>{{ .Values.artifactory.persistence.googleStorage.endpoint }}</endpoint>
             <httpsOnly>{{ .Values.artifactory.persistence.googleStorage.httpsOnly }}</httpsOnly>
             <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
             <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>

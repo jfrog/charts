@@ -377,13 +377,14 @@ artifactory:
       capacity: 200Gi
     ## For artifactory.persistence.type google-storage
     googleStorage:
+      endpoint: storage.googleapis.com
+      httpsOnly: false
       # Set a unique bucket name
       bucketName: "artifactory-ha-gcp"
       identity:
       credential:
       path: "artifactory-ha/filestore"
       bucketExists: false
-      httpsOnly: false
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
