@@ -303,6 +303,8 @@ artifactory:
       capacity: 200Gi
     ## For artifactory.persistence.type google-storage
     googleStorage:
+      endpoint: storage.googleapis.com
+      httpsOnly: false
       # Set a unique bucket name
       bucketName: "artifactory-gcp"
       identity:

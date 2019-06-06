@@ -547,6 +547,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
+| `artifactory.persistence.googleStorage.endpoint`    | Google Storage API endpoint| `storage.googleapis.com`             |
+| `artifactory.persistence.googleStorage.httpsOnly`   | Google Storage API has to be consumed https only| `false`             |
 | `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory`             |
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |

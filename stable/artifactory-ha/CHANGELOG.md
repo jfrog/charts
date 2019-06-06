@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.13.6] - Jun 6, 2019
+* Updated Google Cloud Storage API URL and https settings
+
 ## [0.13.5] - Jun 5, 2019
 * Delete the db.properties file on Artifactory startup
 
