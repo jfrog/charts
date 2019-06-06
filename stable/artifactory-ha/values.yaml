@@ -145,6 +145,9 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+  # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
+  deleteDBPropertiesOnStartup: true
+
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
   #     # absolute path
