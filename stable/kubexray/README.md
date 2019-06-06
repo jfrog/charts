@@ -178,6 +178,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `podDisruptionBudget.enabled`        | Enables Pod Disruption Budget   | `false`                                     |
 | `podDisruptionBudget.maxUnavailable` | Max unavailable Pods            | `1`                                         |
 | `podDisruptionBudget.minAvailable`   | min unavailable Pods            | ``                                          |
+| `priorityClassName`        | priorityClassName                         | `""`                                        |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install/upgrade`.
 
