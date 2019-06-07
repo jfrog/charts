@@ -296,7 +296,12 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
-| `indexer.storage.sizeLimit`                    | Xray Indexer storage size limit              | `10Gi`               |
+| `indexer.storage.sizeLimit`                    | Xray Indexer container storage size limit    | `10Gi`               |
+| `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
+| `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
+| `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `true`                             |
+| `indexer.persistence.accessMode`               | Xray Indexer persistence volume access mode  | `ReadWriteOnce`                    |
+| `indexer.persistence.size`                     | Xray Indexer persistence volume size         | `50Gi`                             |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
 | `indexer.loggers`                              | Xray Indexer loggers (see values.yaml for possible values)   | ` `  |
 | `indexer.nodeSelector`                         | Xray Indexer node selector                   | `{}`                 |
@@ -326,7 +331,12 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.service.name`                          | Xray server service name                     | `xray`               |
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
 | `server.service.annotations`                   | Xray server service annotations              | `{}`                 |
-| `server.storage.sizeLimit`                     | Xray server storage size limit               | `10Gi`               |
+| `server.storage.sizeLimit`                     | Xray server container storage size limit     | `10Gi`               |
+| `server.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                              |
+| `server.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
+| `server.persistence.enabled`                   | Xray server persistence volume enabled       | `true`                             |
+| `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`                    |
+| `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`                             |
 | `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
@@ -376,7 +386,6 @@ Include the secret's name, along with the desired hostnames, in the Xray Ingress
         hosts:
           - xray.domain.com
 ```
-
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability
