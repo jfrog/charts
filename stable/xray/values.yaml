@@ -280,8 +280,8 @@ analysis:
   service:
     type: ClusterIP
   ## Container storage limit
-  storage:
-    sizeLimit: 10Gi
+  persistence:
+    size: 10Gi
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_analysis.log
@@ -307,11 +307,6 @@ indexer:
   service:
     type: ClusterIP
 
-  ## Container storage limit
-  ## Used only if persistence.enabled: false
-  storage:
-    sizeLimit: 50Gi
-
   persistence:
     enabled: false
     ## A manually managed Persistent Volume and Claim
@@ -320,6 +315,8 @@ indexer:
     # existingClaim:
 
     accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
     size: 50Gi
     ## indexer data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -355,8 +352,8 @@ persist:
   service:
     type: ClusterIP
   ## Container storage limit
-  storage:
-    sizeLimit: 10Gi
+  persistence:
+    size: 10Gi
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_persist.log
@@ -387,11 +384,6 @@ server:
     # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
     # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
 
-  ## Container storage limit
-  ## Used only if persistence.enabled: false
-  storage:
-    sizeLimit: 10Gi
-
   persistence:
     enabled: false
     ## A manually managed Persistent Volume and Claim
@@ -400,6 +392,8 @@ server:
     # existingClaim:
 
     accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
     size: 50Gi
     ## server data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>

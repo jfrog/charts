@@ -185,7 +185,7 @@ spec:
       volumes:
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.analysis.storage.sizeLimit }}
+          sizeLimit: {{ .Values.analysis.persistence.size }}
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup

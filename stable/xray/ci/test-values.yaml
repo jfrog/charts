@@ -30,13 +30,13 @@ postgresql:
     enabled: false
 
 mongodb:
-  persistence:
-    enabled: false
   mongodbRootPassword: password
   mongodbUsername: xray
   mongodbPassword: password
   mongodbDatabase: xray
-
+  persistence:
+    enabled: false
+    
 rabbitmq-ha:
   rabbitmqUsername: guest
   rabbitmqPassword: guest

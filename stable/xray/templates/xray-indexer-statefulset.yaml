@@ -186,7 +186,7 @@ spec:
       {{- if not .Values.indexer.persistence.enabled }}
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.indexer.storage.sizeLimit }}
+          sizeLimit: {{ .Values.indexer.persistence.size }}
       {{- end }}
       {{- if and .Values.indexer.persistence.enabled .Values.indexer.persistence.existingClaim }}
       - name: data-volume
