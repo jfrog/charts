@@ -186,9 +186,6 @@ spec:
       - name: data-volume
         emptyDir:
           sizeLimit: {{ .Values.persist.storage.sizeLimit }}
-      - name: config-volume
-        emptyDir:
-          sizeLimit: 1Gi
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup

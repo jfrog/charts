@@ -299,7 +299,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.storage.sizeLimit`                    | Xray Indexer container storage size limit    | `10Gi`               |
 | `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
-| `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `true`                             |
+| `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `false`                             |
 | `indexer.persistence.accessMode`               | Xray Indexer persistence volume access mode  | `ReadWriteOnce`                    |
 | `indexer.persistence.size`                     | Xray Indexer persistence volume size         | `50Gi`                             |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
@@ -334,7 +334,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.storage.sizeLimit`                     | Xray server container storage size limit     | `10Gi`               |
 | `server.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `server.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
-| `server.persistence.enabled`                   | Xray server persistence volume enabled       | `true`                             |
+| `server.persistence.enabled`                   | Xray server persistence volume enabled       | `false`                             |
 | `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`                    |
 | `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`                             |
 | `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |

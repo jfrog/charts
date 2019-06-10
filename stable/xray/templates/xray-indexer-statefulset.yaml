@@ -191,11 +191,8 @@ spec:
       {{- if and .Values.indexer.persistence.enabled .Values.indexer.persistence.existingClaim }}
       - name: data-volume
         persistentVolumeClaim:
-          claimName: {{ .Values.artifactory.persistence.existingClaim }}
+          claimName: {{ .Values.indexer.persistence.existingClaim }}
       {{- end }}
-      - name: config-volume
-        emptyDir:
-          sizeLimit: 1Gi
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup
