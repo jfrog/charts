@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.11] - June 7, 2019
+* Update Xray version to 2.8.7
+* Add persistence to Server and Indexer
+
 ## [0.12.10] - May 28, 2019
 * Update Xray version to 2.8.6
 

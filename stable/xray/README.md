@@ -282,7 +282,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.internalPort`                        | Xray Analysis internal port                  | `7000`               |
 | `analysis.externalPort`                        | Xray Analysis external port                  | `7000`               |
 | `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
-| `analysis.storage.sizeLimit`                   | Xray Analysis storage size limit             | `10Gi`               |
+| `analysis.persistence.size`                    | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
 | `analysis.loggers`                             | Xray Analysis loggers (see values.yaml for possible values)  | ` `  |
 | `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
@@ -296,7 +296,11 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
-| `indexer.storage.sizeLimit`                    | Xray Indexer storage size limit              | `10Gi`               |
+| `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
+| `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
+| `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `false`                             |
+| `indexer.persistence.accessMode`               | Xray Indexer persistence volume access mode  | `ReadWriteOnce`                    |
+| `indexer.persistence.size`                     | Xray Indexer persistence volume size         | `50Gi`                             |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
 | `indexer.loggers`                              | Xray Indexer loggers (see values.yaml for possible values)   | ` `  |
 | `indexer.nodeSelector`                         | Xray Indexer node selector                   | `{}`                 |
@@ -310,7 +314,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.internalPort`                         | Xray Persist internal port                   | `7003`               |
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
 | `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
-| `persist.storage.sizeLimit`                    | Xray Persist storage size limit              | `10Gi`               |
+| `persist.persistence.size`                     | Xray Persist storage size limit              | `10Gi`               |
 | `persist.loggers`                              | Xray Persist loggers (see values.yaml for possible values)  | ` `   |
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
 | `persist.nodeSelector`                         | Xray Persist node selector                   | `{}`                 |
@@ -325,8 +329,12 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
-| `server.service.annotations`                   | Xray server service annotations              | `{}`                 |
-| `server.storage.sizeLimit`                     | Xray server storage size limit               | `10Gi`               |
+| `server.service.annotations`                   | Xray server service annotations              | `{}`           |
+| `server.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                              |
+| `server.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
+| `server.persistence.enabled`                   | Xray server persistence volume enabled       | `false`                             |
+| `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`                    |
+| `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`                             |
 | `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
@@ -345,7 +353,7 @@ helm install --name xray \
   jfrog/xray
 ```
 
-If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [kube-lego](https://github.com/jetstack/kube-lego)), please refer to the documentation for that mechanism.
+If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
@@ -376,7 +384,6 @@ Include the secret's name, along with the desired hostnames, in the Xray Ingress
         hosts:
           - xray.domain.com
 ```
-
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability

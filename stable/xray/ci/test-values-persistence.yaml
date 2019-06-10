@@ -1,11 +1,5 @@
 # CI values for Xray
 
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
-
 analysis:
   loggers:
     - xray_analysis.log
@@ -13,6 +7,8 @@ analysis:
 indexer:
   loggers:
     - xray_indexer.log
+  persistence:
+    enabled: true
 
 persist:
   loggers:
@@ -21,13 +17,15 @@ persist:
 server:
   loggers:
     - xray_server.log
+  persistence:
+    enabled: true
 
 postgresql:
   postgresDatabase: xraydb
   postgresUser: xray
   postgresPassword: xray
   persistence:
-    enabled: false
+    enabled: true
 
 mongodb:
   mongodbRootPassword: password
@@ -35,10 +33,10 @@ mongodb:
   mongodbPassword: password
   mongodbDatabase: xray
   persistence:
-    enabled: false
+    enabled: true
 
 rabbitmq-ha:
   rabbitmqUsername: guest
   rabbitmqPassword: guest
   persistentVolume:
-    enabled: false
+    enabled: true

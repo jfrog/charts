@@ -183,12 +183,35 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if not .Values.indexer.persistence.enabled }}
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.indexer.storage.sizeLimit }}
-      - name: config-volume
-        emptyDir:
-          sizeLimit: 1Gi
+          sizeLimit: {{ .Values.indexer.persistence.size }}
+      {{- end }}
+      {{- if and .Values.indexer.persistence.enabled .Values.indexer.persistence.existingClaim }}
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.indexer.persistence.existingClaim }}
+      {{- end }}
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup
+{{- with .Values.indexer.persistence }}
+  {{- if and .enabled (not .existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data-volume
+    spec:
+      {{- if .storageClass }}
+      {{- if (eq "-" .storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .storageClass }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .accessMode }}" ]
+      resources:
+        requests:
+          storage: {{ .size }}
+  {{- end }}
+{{- end }}
