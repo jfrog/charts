@@ -17,6 +17,9 @@ data:
       },
       {
         "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ default "derby" .Values.database.type }}{{ end }}/0.0.0"
+      },
+      {
+        "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"
       }
       ]
     }
