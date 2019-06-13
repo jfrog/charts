@@ -1,6 +1,32 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.11] - June 7, 2019
+* Update Xray version to 2.8.7
+* Add persistence to Server and Indexer
+
+## [0.12.10] - May 28, 2019
+* Update Xray version to 2.8.6
+
+## [0.12.9] - May 24, 2019
+* Update stateful set api and add serviceName spec
+
+## [0.12.8] - May 20, 2019
+* Fix missing logger image tag
+
+## [0.12.7] - Apr 16, 2019
+* Updated Xray version to 2.8.3
+
+## [0.12.6] - Apr 15, 2019
+* Updated Xray version to 2.8.2
+
+## [0.12.5] - May 12, 2019
+* Updated rabbitmq-ha chart version to 1.26.0
+
+## [0.12.4] - Apr 15, 2019
+* Simplify handling connection strings setup in `xray_config.yaml` to better support ampersand in external connection strings
+* **IMPORTANT:** If using an external connection string for PostgreSQL or MongoDB, **do not escape** the ampersand with `\`
+
 ## [0.12.3] - Apr 15, 2019
 * Move `skipEntLicCheckForCloud: true` config to be part of default Xray config
 

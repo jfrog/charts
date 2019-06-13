@@ -1,6 +1,49 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.13.7] - Jun 6, 2019
+* Updated Artifactory version to 6.10.3
+* Updated installer-info template
+
+## [0.13.6] - Jun 6, 2019
+* Updated Google Cloud Storage API URL and https settings
+
+## [0.13.5] - Jun 5, 2019
+* Delete the db.properties file on Artifactory startup
+
+## [0.13.4] - Jun 3, 2019
+* Updated Artifactory version to 6.10.2
+
+## [0.13.3] - May 21, 2019
+* Updated Artifactory version to 6.10.1
+
+## [0.13.2] - May 19, 2019
+* Fix missing logger image tag
+
+## [0.13.1] - May 15, 2019
+* Support `artifactory.persistence.cacheProviderDir` for on-premise cluster 
+
+## [0.13.0] - May 7, 2019
+* Updated Artifactory version to 6.10.0
+
+## [0.12.23] - May 5, 2019
+* Add support for setting `artifactory.async.corePoolSize`
+
+## [0.12.22] - May 2, 2019
+* Remove unused property `artifactory.releasebundle.feature.enabled`
+
+## [0.12.21] - Apr 30, 2019
+* Add support for JMX monitoring
+
+## [0.12.20] - Apr29, 2019
+* Added support for headless services
+
+## [0.12.19] - Apr 28, 2019
+* Added support for `cacheProviderDir`
+
+## [0.12.18] - Apr 18, 2019
+* Changing API StatefulSet version to `v1` and permission fix for custom `artifactory.conf` for Nginx
+
 ## [0.12.17] - Apr 16, 2019
 * Updated documentation for Reverse Proxy Configuration
 

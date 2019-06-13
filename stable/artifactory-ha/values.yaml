@@ -133,8 +133,8 @@ database:
 
 logger:
   image:
-    repository: busybox
-    tag: 1.30
+    repository: 'busybox'
+    tag: '1.30'
 
 # Artifactory
 artifactory:
@@ -144,6 +144,9 @@ artifactory:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+
+  # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
+  deleteDBPropertiesOnStartup: true
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
@@ -319,6 +322,7 @@ artifactory:
     accessMode: ReadWriteOnce
     size: 200Gi
     maxCacheSize: 50000000000
+    cacheProviderDir: cache
     eventual:
       numberOfThreads: 10
     ## artifactory data Persistent Volume Storage Class
@@ -376,6 +380,8 @@ artifactory:
       capacity: 200Gi
     ## For artifactory.persistence.type google-storage
     googleStorage:
+      endpoint: storage.googleapis.com
+      httpsOnly: false
       # Set a unique bucket name
       bucketName: "artifactory-ha-gcp"
       identity:
@@ -446,10 +452,16 @@ artifactory:
     #    cpu: "1"
     ## The following Java options are passed to the java process running Artifactory primary node.
     ## You should set them according to the resources set above
-    javaOpts: {}
-    #  xms: "1g"
-    #  xmx: "2g"
-    #  other: ""
+    javaOpts:
+      # xms: "1g"
+      # xmx: "2g"
+      corePoolSize: 16
+      jmx:
+        enabled: false
+        port: 9010
+        host:
+        ssl: false
+      # other: ""
     nodeSelector: {}
 
     tolerations: []
@@ -479,7 +491,16 @@ artifactory:
     #    cpu: "1"
     ## The following Java options are passed to the java process running Artifactory member nodes.
     ## You should set them according to the resources set above
-    javaOpts: {}
+    javaOpts:
+      # xms: "1g"
+      # xmx: "2g"
+      corePoolSize: 16
+      jmx:
+        enabled: false
+        port: 9010
+        host:
+        ssl: false
+      # other: ""
     #  xms: "1g"
     #  xmx: "2g"
     #  other: ""

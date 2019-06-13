@@ -223,8 +223,8 @@ ingress:
 
 logger:
   image:
-    repository: busybox
-    tag: 1.30
+    repository: 'busybox'
+    tag: '1.30'
 
 missionControl:
   name: mission-control
@@ -248,6 +248,18 @@ missionControl:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
   #        name: mission-control-data
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
 
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []

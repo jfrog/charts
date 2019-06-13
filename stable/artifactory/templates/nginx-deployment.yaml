@@ -1,7 +1,7 @@
 {{- if .Values.nginx.enabled -}}
 {{- $serviceName := include "artifactory.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "artifactory.nginx.fullname" . }}
@@ -22,7 +22,9 @@ spec:
     metadata:
       labels:
         app: {{ template "artifactory.name" . }}
+        chart: {{ template "artifactory.chart" . }}
         component: {{ .Values.nginx.name }}
+        heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
@@ -88,10 +90,10 @@ spec:
           mountPath: "/etc/nginx/conf.d/artifactory.conf"
           subPath: artifactory.conf
         {{- end }}
-        {{- if .Values.artifactory.replicator.enabled }}
-        - name: nginx-config
-          mountPath: "/etc/nginx/conf.d/replicator-nginx.conf"
-          subPath: replicator-nginx.conf
+        {{- if .Values.nginx.customArtifactoryConfigMap }}
+        - name: artifactory-nginx-config
+          mountPath: "/etc/nginx/conf.d/artifactory.conf"
+          subPath: "artifactory.conf"
         {{- end }}
         - name: ssl-secret-volume
           mountPath: "/var/opt/jfrog/nginx/ssl"
@@ -124,13 +126,12 @@ spec:
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         command:
         - tail
         args:
-        - "-F"
-        - "{{ $mountPath }}/logs/{{ . }}"
+        - '-F'
+        - '{{ $mountPath }}/logs/{{ . }}'
         volumeMounts:
         - name: nginx-volume
           mountPath: {{ $mountPath }}

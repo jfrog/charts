@@ -1,6 +1,17 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.2] - Jun 3, 2019
+* Update Mission-Control version to 3.5.3
+* Use correct key to specify UpdateStrategy
+* Update apiVersion to apps/v1
+
+## [1.1.1] - May 20, 2019
+* Fix missing logger image tag
+
+## [1.1.0] - May 10, 2019
+* Added support for `missionControl.customVolumeMounts` and `missionControl.customVolumes` to create custom volume mounts
+
 ## [1.0.6] - Apr 17, 2019
 * Update Mission-Control version to 3.5.2
 

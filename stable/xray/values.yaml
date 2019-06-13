@@ -182,17 +182,18 @@ rabbitmq-ha:
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
   rabbitmqMemoryHighWatermark: 500MB
   rabbitmqNodePort: 5672
-  policies: |-
-    {
-      "name": "ha-all",
-      "apply-to": "all",
-      "pattern": ".*",
-      "vhost": "/",
-      "definition": {
-        "ha-mode": "all",
-        "ha-sync-mode": "automatic",
+  definitions:
+    policies: |-
+      {
+        "name": "ha-all",
+        "apply-to": "all",
+        "pattern": ".*",
+        "vhost": "/",
+        "definition": {
+          "ha-mode": "all",
+          "ha-sync-mode": "automatic",
+        }
       }
-    }
   resources: {}
   #  requests:
   #    memory: "250Mi"
@@ -228,8 +229,8 @@ rabbitmq:
 # Logger containers
 logger:
   image:
-    repository: busybox
-    tag: 1.30
+    repository: 'busybox'
+    tag: '1.30'
 
 # Common Xray settings
 common:
@@ -279,8 +280,8 @@ analysis:
   service:
     type: ClusterIP
   ## Container storage limit
-  storage:
-    sizeLimit: 10Gi
+  persistence:
+    size: 10Gi
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_analysis.log
@@ -305,9 +306,27 @@ indexer:
   externalPort: 7002
   service:
     type: ClusterIP
-  ## Container storage limit
-  storage:
-    sizeLimit: 10Gi
+
+  persistence:
+    enabled: false
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
+    size: 50Gi
+    ## indexer data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_indexer.log
@@ -333,8 +352,8 @@ persist:
   service:
     type: ClusterIP
   ## Container storage limit
-  storage:
-    sizeLimit: 10Gi
+  persistence:
+    size: 10Gi
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_persist.log
@@ -365,9 +384,26 @@ server:
     # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
     # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
 
-  ## Container storage limit
-  storage:
-    sizeLimit: 10Gi
+  persistence:
+    enabled: false
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
+    size: 50Gi
+    ## server data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
   # Whitelist IPs allowed to LoadBalancer type services
   # Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
   loadBalancerSourceRanges: []

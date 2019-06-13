@@ -316,6 +316,42 @@ networkpolicy:
             app: artifactory-ha
 ```
 
+### Artifactory JMX Configuration
+** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
+
+Enable JMX in your deployment:
+```bash
+helm install --name artifactory \
+    --set artifactory.primary.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    jfrog/artifactory-ha
+```
+This will enable access to Artifactory with JMX on the default port (9010).
+** You have the option to change the port by setting ```artifactory.primary.javaOpts.jmx.port``` and ```artifactory.node.javaOpts.jmx.port``` 
+to your choice of port
+
+In order to connect to Artifactory using JMX with jconsole (or any similar tool) installed on your computer, follow the following steps:
+1. Enable JMX as described above and Change the Artifactory service to be of type LoadBalancer:
+```bash
+helm install --name artifactory \
+    --set artifactory.primary.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    --set artifactory.service.type=LoadBalancer \
+    jfrog/artifactory-ha
+``` 
+2. The default setting for java.rmi.server.hostname is the service name (this is also configurable with 
+```artifactory.primary.javaOpts.jmx.host``` and ```artifactory.node.javaOpts.jmx.host```), So in order to connect to Artifactory 
+with jconsole you should map the Artifactory kuberentes service IP to the service name using your hosts file as such:
+```
+<artifactory-primary-service-ip>    artifactory-ha-<release-name>-primary
+<artifactory-node-service-ip>       <release-name>
+```
+3. Launch jconsole with the service address and port:
+```bash
+jconsole artifactory-ha-<release-name>-primary:<primary-jmx-port>
+jconsole <release-name>:<node-jmx-port>
+```
+
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
@@ -575,6 +611,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |
 | `artifactory.service.type`   | Artifactory service type                                  | `ClusterIP`                   |
+| `artifactory.service.clusterIP`| Specific cluster IP or `None` for headless services     | `nil`                         |
 | `artifactory.service.pool`   | Artifactory instances to be in the load balancing pool. `members` or `all` | `members`    |
 | `artifactory.externalPort`   | Artifactory service external port                         | `8081`                        |
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
@@ -596,11 +633,13 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.successThreshold`    | Minimum consecutive successes for the probe to be considered successful after having failed. | 1  |
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.copyOnEveryStartup`     | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
+| `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
 | `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
 | `artifactory.persistence.size`         | Artifactory persistence or local volume size        | `200Gi`                         |
 | `artifactory.persistence.maxCacheSize` | Artifactory cache-fs provider maxCacheSize in bytes | `50000000000`                   |
+| `artifactory.persistence.cacheProviderDir` | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
 | `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`   | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
@@ -610,6 +649,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
+| `artifactory.persistence.googleStorage.endpoint`    | Google Storage API endpoint| `storage.googleapis.com`             |
+| `artifactory.persistence.googleStorage.httpsOnly`   | Google Storage API has to be consumed https only| `false`             |
 | `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory-ha`             |
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
@@ -643,6 +684,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.resources.limits.cpu`      | Artifactory primary node cpu limit               |                     |
 | `artifactory.primary.javaOpts.xms`              | Artifactory primary node java Xms size           |                     |
 | `artifactory.primary.javaOpts.xmx`              | Artifactory primary node java Xms size           |                     |
+| `artifactory.primary.javaOpts.corePoolSize` | The number of async processes that can run in parallel in the primary node - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `16` |
+| `artifactory.primary.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
+| `artifactory.primary.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
+| `artifactory.primary.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)   |  `{{ template "artifactory-ha.primary.name" $ }}` |
+| `artifactory.primary.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
 | `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `false`            |
 | `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
@@ -653,6 +699,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.resources.limits.cpu`         | Artifactory member node cpu limit                |                     |
 | `artifactory.node.javaOpts.xms`                 | Artifactory member node java Xms size            |                     |
 | `artifactory.node.javaOpts.xmx`                 | Artifactory member node java Xms size            |                     |
+| `artifactory.node.javaOpts.corePoolSize` | The number of async processes that can run in parallel in the member nodes - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `16` |
+| `artifactory.node.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
+| `artifactory.node.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
+| `artifactory.node.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory-ha.fullname" $ }}` |
+| `artifactory.node.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.node.javaOpts.other`               | Artifactory member node additional java options  |                     |
 | `artifactory.node.persistence.existingClaim`    | Whether to use existing PVCs for the member nodes | `false`            |
 | `artifactory.terminationGracePeriodSeconds`     | Termination grace period (seconds)               | `30s`               |
@@ -674,6 +725,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
+| `nginx.service.clusterIP`   | Specific cluster IP or `None` for headless services     | `nil`                         |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
 | `nginx.service.annotations` | Nginx service annotations           | `{}`                            |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |

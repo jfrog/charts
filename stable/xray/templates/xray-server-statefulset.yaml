@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "xray-server.fullname" . }}
@@ -9,6 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     component: {{ .Values.server.name }}
 spec:
+  serviceName: {{ template "xray-server.fullname" . }}
   replicas: {{ .Values.server.replicaCount }}
   updateStrategy:
     type: {{ .Values.server.updateStrategy }}
@@ -159,13 +160,12 @@ spec:
       {{- $mountPath := .Values.common.xrayConfigPath }}
       {{- range .Values.server.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         command:
           - tail
         args:
-          - "-F"
-          - "{{ $mountPath }}/logs/{{ . }}"
+          - '-F'
+          - '{{ $mountPath }}/logs/{{ . }}'
         volumeMounts:
           - name: data-volume
             mountPath: {{ $mountPath }}
@@ -183,12 +183,35 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if not .Values.server.persistence.enabled }}
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.server.storage.sizeLimit }}
-      - name: config-volume
-        emptyDir:
-          sizeLimit: 1Gi
+          sizeLimit: {{ .Values.server.persistence.size }}
+      {{- end }}
+      {{- if and .Values.server.persistence.enabled .Values.server.persistence.existingClaim }}
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.server.persistence.existingClaim }}
+      {{- end }}
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup
+{{- with .Values.server.persistence }}
+  {{- if and .enabled (not .existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data-volume
+    spec:
+      {{- if .storageClass }}
+      {{- if (eq "-" .storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .storageClass }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .accessMode }}" ]
+      resources:
+        requests:
+          storage: {{ .size }}
+  {{- end }}
+{{- end }}

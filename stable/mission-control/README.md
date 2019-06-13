@@ -225,6 +225,25 @@ missionControl:
     ## Init containers template goes here ##
 ```
 
+### Custom volumes
+There are also cases where you'd like custom files or for your init container to make changes to the file system the mission control container will see.
+
+For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
+```
+missionControl:
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+```
+
 ## Configuration
 The following table lists the configurable parameters of the mission-control chart and their default values.
 

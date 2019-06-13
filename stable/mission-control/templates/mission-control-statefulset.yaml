@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "mission-control.fullname" . }}
@@ -11,7 +11,7 @@ metadata:
 spec:
   serviceName: {{ template "mission-control.fullname" . }}
   replicas: {{ .Values.replicaCount }}
-  strategy:
+  updateStrategy:
       type: RollingUpdate
   selector:
     matchLabels:
@@ -449,6 +449,9 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+      {{- if .Values.missionControl.customVolumeMounts }}
+{{ tpl .Values.missionControl.customVolumeMounts . | indent 8 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
         livenessProbe:
@@ -627,16 +630,15 @@ spec:
       {{- $mountPath := .Values.missionControl.persistence.mountPath }}
       {{- range .Values.missionControl.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
           - tail
         args:
-          - "-F"
-          - "{{ $mountPath }}/logs/jfmc-server/{{ . }}"
+          - '-F'
+          - '{{ $mountPath }}/logs/jfmc-server/{{ . }}'
         volumeMounts:
           - name: mission-control-data
             mountPath: {{ $mountPath }}
@@ -645,16 +647,15 @@ spec:
       {{- $mountPath := .Values.insightServer.persistence.mountPath }}
       {{- range .Values.insightServer.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
           - tail
         args:
-          - "-F"
-          - "{{ $mountPath }}/{{ . }}"
+          - '-F'
+          - '{{ $mountPath }}/{{ . }}'
         volumeMounts:
           - name: insight-server-logs
             mountPath: {{ $mountPath }}
@@ -663,16 +664,15 @@ spec:
       {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
       {{- range .Values.insightScheduler.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
           - tail
         args:
-          - "-F"
-          - "{{ $mountPath }}/{{ . }}"
+          - '-F'
+          - '{{ $mountPath }}/{{ . }}'
         volumeMounts:
           - name: insight-scheduler-logs
             mountPath: {{ $mountPath }}
@@ -681,16 +681,15 @@ spec:
       {{- $mountPath := .Values.insightExecutor.persistence.mountPath }}
       {{- range .Values.insightExecutor.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
         command:
           - tail
         args:
-          - "-F"
-          - "{{ $mountPath }}/{{ . }}"
+          - '-F'
+          - '{{ $mountPath }}/{{ . }}'
         volumeMounts:
           - name: insight-executor-logs
             mountPath: {{ $mountPath }}
@@ -720,6 +719,9 @@ spec:
       - name: elasticsearch-scripts
         configMap:
           name: {{ template "mission-control.fullname" . }}-elasticsearch-scripts
+    {{- end }}
+    {{- if .Values.missionControl.customVolumes }}
+{{ tpl .Values.missionControl.customVolumes . | indent 6 }}
     {{- end }}
   {{- if not .Values.missionControl.persistence.enabled }}
       - name: mission-control-data

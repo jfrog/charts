@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "xray-analysis.fullname" . }}
@@ -9,6 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     component: {{ .Values.analysis.name }}
 spec:
+  serviceName: {{ template "xray-analysis.fullname" . }}
   replicas: {{ .Values.analysis.replicaCount }}
   updateStrategy:
     type: {{ .Values.analysis.updateStrategy }}
@@ -159,13 +160,12 @@ spec:
       {{- $mountPath := .Values.common.xrayConfigPath }}
       {{- range .Values.analysis.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         command:
           - tail
         args:
-          - "-F"
-          - "{{ $mountPath }}/logs/{{ . }}"
+          - '-F'
+          - '{{ $mountPath }}/logs/{{ . }}'
         volumeMounts:
           - name: data-volume
             mountPath: {{ $mountPath }}
@@ -185,10 +185,7 @@ spec:
       volumes:
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.analysis.storage.sizeLimit }}
-      - name: config-volume
-        emptyDir:
-          sizeLimit: 1Gi
+          sizeLimit: {{ .Values.analysis.persistence.size }}
       - name: setup
         configMap:
           name: {{ template "xray.fullname" . }}-setup

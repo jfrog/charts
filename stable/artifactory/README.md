@@ -168,6 +168,15 @@ To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Bi
 ...
 ```
 
+* To use a persistent volume claim as cache dir together with Azure Blob Storage, additionally pass the following parameters to `helm  install` and `helm upgrade` (make sure `mountPath` and `cacheProviderDir` point to the same location)
+```bash
+...
+--set artifactory.persistence.existingClaim=${YOUR_CLAIM} \
+--set artifactory.persistence.mountPath=/opt/cache-dir \
+--set artifactory.persistence.cacheProviderDir=/opt/cache-dir \
+...
+```
+
 ### Customizing Database password
 You can override the specified database password (set in [values.yaml](values.yaml)), by passing it as a parameter in the install command line
 ```bash
@@ -246,6 +255,37 @@ networkpolicy:
           matchLabels:
             app: artifactory
 ```
+### Artifactory JMX Configuration
+** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
+
+Enable JMX in your deployment:
+```bash
+helm install --name artifactory \
+    --set artifactory.javaOpts.jmx.enabled=true \
+    jfrog/artifactory
+```
+This will enable access to Artifactory with JMX on the default port (9010).
+** You have the option to change the port by setting ```artifactory.javaOpts.jmx.port``` to your choice of port
+
+In order to connect to Artifactory using JMX with jconsole (or any similar tool) installed on your computer, follow the following steps:
+1. Enable JMX as described above and Change the Artifactory service to be of type LoadBalancer:
+```bash
+helm install --name artifactory \
+    --set artifactory.javaOpts.jmx.enabled=true \
+    --set artifactory.service.type=LoadBalancer \
+    jfrog/artifactory 
+
+``` 
+2. The default setting for java.rmi.server.hostname is the service name (this is also configurable with ```artifactory.javaOpts.jmx.host```).
+So in order to connect to Artifactory with jconsole you should map the Artifactory kuberentes service IP to the service name using your hosts file as such:
+```
+<artifactory-service-ip>    artifactory-<release-name>
+```
+3. Launch jconsole with the service address and port:
+```bash
+jconsole artifactory-<release-name>:<jmx-port>
+```
+
 
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
@@ -489,12 +529,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                        |
 | `artifactory.readinessProbe.successThreshold`    | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
+| `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
 | `artifactory.copyOnEveryStartup`     | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
 | `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
 | `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
 | `artifactory.persistence.existingClaim` | Artifactory persistence volume claim name |                                       |
 | `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
 | `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
+| `artifactory.persistence.maxCacheSize` | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
+| `artifactory.persistence.cacheProviderDir` | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
 | `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`   | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
@@ -504,6 +547,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
+| `artifactory.persistence.googleStorage.endpoint`    | Google Storage API endpoint| `storage.googleapis.com`             |
+| `artifactory.persistence.googleStorage.httpsOnly`   | Google Storage API has to be consumed https only| `false`             |
 | `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory`             |
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
@@ -531,6 +576,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.resources.limits.cpu`      | Artifactory cpu limit               |                                          |
 | `artifactory.javaOpts.xms`              | Artifactory java Xms size           |                                          |
 | `artifactory.javaOpts.xmx`              | Artifactory java Xms size           |                                          |
+| `artifactory.javaOpts.corePoolSize` | The number of async processes that can run in parallel - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `8` |
+| `artifactory.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
+| `artifactory.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
+| `artifactory.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory.fullname" $ }}` |
+| `artifactory.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
 | `artifactory.replicator.enabled`            | Enable Artifactory Replicator | `false`                                    |
 | `artifactory.replicator.publicUrl`            | Artifactory Replicator Public URL |                                      |

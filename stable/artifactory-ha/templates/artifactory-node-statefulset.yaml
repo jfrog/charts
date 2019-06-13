@@ -1,4 +1,4 @@
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "artifactory-ha.node.name" . }}
@@ -22,7 +22,9 @@ spec:
     metadata:
       labels:
         app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
         role: {{ template "artifactory-ha.node.name" . }}
+        heritage: {{ .Release.Service }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
       annotations:
@@ -55,7 +57,19 @@ spec:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
       {{- end }}          
-    {{- end }}          
+    {{- end }}
+      {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
+      - name: "delete-db-properties"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - 'sh'
+          - '-c'
+          - 'rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/db.properties'
+        volumeMounts:
+          - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+            name: volume
+      {{- end }}
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -179,23 +193,34 @@ spec:
         {{- end }}
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
-          value: "
-      {{- if .Values.artifactory.node.javaOpts.xms }}
-          -Xms{{ .Values.artifactory.node.javaOpts.xms }}
-      {{- end}}
-      {{- if .Values.artifactory.node.javaOpts.xmx }}
-          -Xmx{{ .Values.artifactory.node.javaOpts.xmx }}
-      {{- end}}
-      {{- if .Values.artifactory.javaOpts.other }}
-          {{ .Values.artifactory.javaOpts.other }}
-      {{- end}}
-      {{- if .Values.artifactory.node.javaOpts.other }}
-          {{ .Values.artifactory.node.javaOpts.other }}
-      {{- end}}
-      {{- if .Values.artifactory.replicator.enabled }}
-          -Dartifactory.releasebundle.feature.enabled=true
-      {{- end }}
-            "
+          value: >
+        {{- with .Values.artifactory.node.javaOpts }}
+            -Dartifactory.async.corePoolSize={{ .corePoolSize }}
+          {{- if .xms }}
+            -Xms{{ .xms }}
+          {{- end }}
+          {{- if .xmx }}
+            -Xmx{{ .xmx }}
+          {{- end }}
+          {{- if .jmx.enabled }}
+            -Dcom.sun.management.jmxremote
+            -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
+            -Dcom.sun.management.jmxremote.rmi.port={{ .jmx.port }}
+            -Dcom.sun.management.jmxremote.ssl={{ .jmx.ssl }}
+          {{- if .jmx.host }}
+            -Djava.rmi.server.hostname={{ tpl .jmx.host $ }}
+          {{- else }}
+            -Djava.rmi.server.hostname={{ template "artifactory-ha.fullname" $ }}
+          {{- end }}
+            -Dcom.sun.management.jmxremote.authenticate=false
+          {{- end }}
+          {{- if .other }}
+            {{ .other }}
+          {{- end }}
+          {{- if $.Values.artifactory.javaOpts.other }}
+            {{ $.Values.artifactory.javaOpts.other }}
+          {{- end }}
+        {{- end }}
         {{- if .Values.artifactory.replicator.enabled }}
         - name: START_LOCAL_REPLICATOR
           value: "true"
@@ -235,6 +260,9 @@ spec:
       {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
+        {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
+        - containerPort: {{ .Values.artifactory.node.javaOpts.jmx.port }}
+        {{- end }}
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}
         - name: tmp-plugins
@@ -303,13 +331,12 @@ spec:
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         command:
         - tail
         args:
-        - "-F"
-        - "{{ $mountPath }}/logs/{{ . }}"
+        - '-F'
+        - '{{ $mountPath }}/logs/{{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
@@ -317,8 +344,7 @@ spec:
       {{ if .Values.artifactory.catalinaLoggers }}
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ $image }}
-        tag: {{ $tag }}
+        image: '{{ $image }}:{{ $tag }}'
         command:
         - 'sh'
         - '-c'

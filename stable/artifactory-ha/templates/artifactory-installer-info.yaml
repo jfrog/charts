@@ -10,13 +10,13 @@ metadata:
 data:
   installer-info.json: |
     {
-      "productId": "JFrogInstaller_Helm_{{ template "artifactory-ha.chart" . }}",
+      "productId": "Helm_artifactory-ha/{{ .Chart.Version }}",
       "features": [
       {
-        "featureId": "AppVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
+        "featureId": "ArtifactoryVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}"
       },
       {
-        "featureId": "Installer/{{ default "helm" .Values.installer.type }}"
+        "featureId": "{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ default "derby" .Values.database.type }}{{ end }}/0.0.0"
       },
       {
         "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"

@@ -24,6 +24,11 @@ data:
             </provider>
         </chain>
         
+        <provider id="cache-fs" type="cache-fs">
+            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        </provider>
+        
         // Specify the read and write strategy and redundancy for the sharding binary provider
         <provider id="sharding" type="sharding">
             <readBehavior>roundRobin</readBehavior>                     
@@ -55,6 +60,11 @@ data:
             </provider>
         </chain>
 
+        <provider id="cache-fs" type="cache-fs">
+            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        </provider>
+        
         <!-- Shards add local file-system provider configuration -->
         <provider id="state-aware" type="state-aware">
             <fileStoreDir>shard-fs-1</fileStoreDir>
@@ -95,6 +105,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
 
         <provider id="eventual-cluster" type="eventual-cluster">
@@ -114,8 +125,8 @@ data:
 
         <provider id="google-storage" type="google-storage">
             <providerId>google-cloud-storage</providerId>
-            <endpoint>commondatastorage.googleapis.com</endpoint>
-            <httpsOnly>false</httpsOnly>
+            <endpoint>{{ .Values.artifactory.persistence.googleStorage.endpoint }}</endpoint>
+            <httpsOnly>{{ .Values.artifactory.persistence.googleStorage.httpsOnly }}</httpsOnly>
             <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
             <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
             <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
@@ -144,6 +155,7 @@ data:
         <!-- Set max cache-fs size -->
         <provider id="cache-fs" type="cache-fs">
             <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         </provider>
 
         <provider id="eventual-cluster" type="eventual-cluster">
@@ -206,6 +218,12 @@ data:
             </provider>
         </chain>
     
+        <!-- Set max cache-fs size -->
+        <provider id="cache-fs" type="cache-fs">
+            <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+            <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        </provider>
+
         <!-- cluster eventual Azure Blob Storage Service default chain -->
         <provider id="sharding-cluster" type="sharding-cluster">
             <readBehavior>crossNetworkStrategy</readBehavior>
