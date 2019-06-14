@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.14.7] - Jun 14, 2019
+* Updated readme with improved external database setup example
+
 ## [7.14.6] - Jun 11, 2019
 * Updated Artifactory version to 6.10.3
 * Updated installer-info template
