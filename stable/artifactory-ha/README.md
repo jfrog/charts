@@ -430,6 +430,23 @@ kubectl delete pvc volume-artifactory-node-2
 ```
 
 ### Use an external Database
+
+#### PostgreSQL
+There are cases where you will want to use external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `databaseName=my-artifactory-db`.
+
+This can be done with the following parameters
+```bash
+...
+--set postgresql.enabled=false \
+--set database.type=postgresql \
+--set database.url='jdbc:sqlserver://${DB_HOST}:${DB_PORT};databaseName=my-artifactory-db;sendStringParametersAsUnicode=false;applicationName=Artifactory Binary Repository' \
+--set database.user=${DB_USER} \
+--set database.password=${DB_PASSWORD} \
+...
+```
+**NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
+
+#### Other DB type
 There are cases where you will want to use a different database and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Database)
 > The official Artifactory Docker images include the PostgreSQL database driver.
@@ -450,6 +467,7 @@ This can be done with the following parameters
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
+#### Using pre-existing Kubernetes Secret
 If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:
 ```bash
 # Create a secret containing the database credentials
