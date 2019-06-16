@@ -45,6 +45,16 @@ spec:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
           name: nginx-volume
     {{- end }}
+      - name: "create-logs-directory"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - 'mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs/'
+        volumeMounts:
+          - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
+            name: nginx-volume
       - name: "wait-for-artifactory"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -62,11 +72,9 @@ spec:
         image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         command:
-          - '/bin/sh'
-          - '-c'
-          - >
-            mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs/;
-            nginx -g 'daemon off;';
+          - 'nginx'
+          - '-g'
+          - 'daemon off;'
         ports:
         - containerPort: {{ .Values.nginx.internalPortHttp }}
         - containerPort: {{ .Values.nginx.internalPortHttps }}
