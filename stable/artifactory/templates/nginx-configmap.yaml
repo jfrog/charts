@@ -8,9 +8,6 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 data:
-  default.conf: |
-
-
 {{- if .Values.artifactory.replicator.enabled }}
   replicator-nginx.conf: |
       ## Artifactory replicator
@@ -73,8 +70,7 @@ data:
     # Main Nginx configuration file
     worker_processes  4;
 
-    error_log  /var/log/nginx/error.log warn;
-    access_log  /var/log/nginx/access.log  timing;
+    error_log  {{ .Values.nginx.persistence.mountPath }}/logs//error.log warn;
     pid        /tmp/nginx.pid;
 
 
@@ -122,6 +118,7 @@ data:
       'referer = \"$http_referer\" '
       'UA = \"$http_user_agent\"';
 
+      access_log  {{ .Values.nginx.persistence.mountPath }}/logs/access.log  timing;
 
       sendfile        on;
       #tcp_nopush     on;

@@ -61,6 +61,12 @@ spec:
       - name: {{ .Values.nginx.name }}
         image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs/;
+            nginx -g 'daemon off;';
         ports:
         - containerPort: {{ .Values.nginx.internalPortHttp }}
         - containerPort: {{ .Values.nginx.internalPortHttps }}
@@ -68,11 +74,6 @@ spec:
         - containerPort: {{ .Values.nginx.internalPortReplicator }}
         {{- end }}
         volumeMounts:
-        - name: nginx-config
-          mountPath: /etc/nginx/conf.d/default.conf
-          subPath: default.conf
-        - name: nginx-cache
-          mountPath: /var/cache/nginx
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
         {{- if .Values.nginx.customConfigMap }}
@@ -84,19 +85,14 @@ spec:
           subPath: "nginx.conf"
         {{- if .Values.nginx.customArtifactoryConfigMap }}
         - name: custom-artifactory-nginx-config
-          mountPath: "/etc/nginx/conf.d/custom"
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/custom"
         {{- else }}
         - name: nginx-config
-          mountPath: "/etc/nginx/conf.d/artifactory.conf"
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/artifactory.conf"
           subPath: artifactory.conf
         {{- end }}
-        {{- if .Values.nginx.customArtifactoryConfigMap }}
-        - name: artifactory-nginx-config
-          mountPath: "/etc/nginx/conf.d/artifactory.conf"
-          subPath: "artifactory.conf"
-        {{- end }}
-        - name: ssl-secret-volume
-          mountPath: "/var/opt/jfrog/nginx/ssl"
+        - name: ssl-secret
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.readinessProbe.enabled }}
@@ -171,7 +167,7 @@ spec:
       {{- end }}
       - name: nginx-cache
         emptyDir: {}
-      - name: ssl-secret-volume
+      - name: ssl-secret
         secret:
       {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}

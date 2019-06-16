@@ -386,9 +386,9 @@ nginx:
   uid: 104
   gid: 107
   image:
-    repository: "nginx"
+    repository: "docker.bintray.io/jfrog/nginx-artifactory-pro"
     # Note that by default we use appVersion to get image tag
-    version: 1.15-alpine
+    # version:
     pullPolicy: IfNotPresent
 
   # Sidecar containers for tailing Nginx logs
@@ -411,9 +411,9 @@ nginx:
     ## There are two available options: “Cluster” (default) and “Local”.
     externalTrafficPolicy: Cluster
   externalPortHttp: 80
-  internalPortHttp: 8080
+  internalPortHttp: 80
   externalPortHttps: 443
-  internalPortHttps: 8443
+  internalPortHttps: 443
   internalPortReplicator: 6061
   externalPortReplicator: 6061
   ## The following settings are to configure the frequency of the liveness and readiness probes
