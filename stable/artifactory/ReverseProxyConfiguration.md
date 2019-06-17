@@ -23,8 +23,8 @@ the required configuration snippet which you can then download and install direc
     Server Provider: Nginx
     Internal Hostname: $ARTIFACTORY_SERVICE_NAME (Get Artifactory Service Name by running `kubectl get svc` command)
     Public Server Name: $DOMAIN_NAME
-    SSL Key Path: /var/opt/jfrog/nginx/ssl/tls.key (If SSL Cert is provided via Secret)
-    SSL Certificate Path: /var/opt/jfrog/nginx/ssl/tls.crt (If SSL Cert is provided via Secret)
+    SSL Key Path: /var/opt/jfrog/nginx/ssl/tls.key
+    SSL Certificate Path: /var/opt/jfrog/nginx/ssl/tls.crt
     ```
 *   Provide appropriate values and save configuration.
 *   Once configuration is saved Nginx will automatically fetch reverse proxy configuration snippet from Artifactory and apply it immediately.
@@ -84,11 +84,10 @@ the required configuration snippet which you can then download and install direc
     ```bash
     kubectl create configmap art-nginx-conf --from-file=artifactory.conf
     ```
-4.  Deploy Artifactory using helm chart with auto configuration update disabled in nginx.
-    You can achieve it by setting value to `true` for `nginx.env.skipAutoConfigUpdate` and providing name of configMap created above to `nginx.customArtifactoryConfigMap` in [values.yaml](values.yaml)
-    Which sets Environment Variable `SKIP_AUTO_UPDATE_CONFIG=true` in Nginx container. 
+4.  Deploy Artifactory using helm chart.
+    You can achieve this by providing the name of configMap created above to `nginx.customArtifactoryConfigMap` in [values.yaml](values.yaml) 
     
     Following is command to set values at runtime:
     ```bash
-    helm install --name artifactory-ha --set nginx.env.skipAutoConfigUpdate=true,nginx.customArtifactoryConfigMap=art-nginx-conf jfrog/artifactory
+    helm install --name artifactory nginx.customArtifactoryConfigMap=art-nginx-conf jfrog/artifactory
     ```
