@@ -20,6 +20,10 @@ spec:
       component: {{ .Values.nginx.name }}
   template:
     metadata:
+      annotations:
+        checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
+        checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
+        checksum/replicator-conf: {{ include (print $.Template.BasePath "/replicator-configmap.yaml") . | sha256sum }}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
@@ -82,24 +86,18 @@ spec:
         - containerPort: {{ .Values.nginx.internalPortReplicator }}
         {{- end }}
         volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-artifactory-conf
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
+        {{- if .Values.artifactory.replicator.enabled }}
+        - name: nginx-replicator-conf
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/replicator/"
+        {{- end }}
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-        {{- if .Values.nginx.customConfigMap }}
-        - name: custom-nginx-config
-        {{- else }}
-        - name: nginx-config
-        {{- end }}
-          mountPath: "/etc/nginx/nginx.conf"
-          subPath: "nginx.conf"
-        {{- if .Values.nginx.customArtifactoryConfigMap }}
-        - name: custom-artifactory-nginx-config
-          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/custom"
-        {{- else }}
-        - name: nginx-config
-          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/artifactory.conf"
-          subPath: artifactory.conf
-        {{- end }}
-        - name: ssl-secret
+        - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
@@ -153,19 +151,28 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      - name: nginx-config
+      - name: nginx-conf
         configMap:
-          name: {{ template "artifactory.fullname" . }}-nginx-config
-      {{- if .Values.nginx.customArtifactoryConfigMap }}
-      - name: custom-artifactory-nginx-config
-        configMap:
-          name: {{ .Values.nginx.customArtifactoryConfigMap }}
-      {{- end}}
-      {{- if .Values.nginx.customConfigMap }}
-      - name: custom-nginx-config
-        configMap:
+        {{- if .Values.nginx.customConfigMap }}
           name: {{ .Values.nginx.customConfigMap }}
+        {{- else }}
+          name: {{ template "artifactory.fullname" . }}-nginx-conf
+        {{- end }}
+
+      - name: nginx-artifactory-conf
+        configMap:
+      {{- if .Values.nginx.customArtifactoryConfigMap }}
+          name: {{ .Values.nginx.customArtifactoryConfigMap }}
+      {{- else }}
+          name: {{ template "artifactory.fullname" . }}-nginx-artifactory-conf
       {{- end }}
+
+      {{- if .Values.artifactory.replicator.enabled }}
+      - name: nginx-replicator-conf
+        configMap:
+          name: {{ template "artifactory.fullname" . }}-replicator-config
+      {{- end }}
+
       - name: nginx-volume
       {{- if .Values.nginx.persistence.enabled }}
         persistentVolumeClaim:
@@ -173,9 +180,7 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      - name: nginx-cache
-        emptyDir: {}
-      - name: ssl-secret
+      - name: ssl-certificates
         secret:
       {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}
