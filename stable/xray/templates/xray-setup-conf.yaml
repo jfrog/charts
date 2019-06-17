@@ -15,10 +15,19 @@ data:
     SCRIPTS_DIR=/scripts
     XRAYCONFIGPATH={{ .Values.common.xrayConfigPath }}
     XRAY_CONFIG_DIR=${XRAYCONFIGPATH}/config
+    XRAY_TLS_DIR=${XRAYCONFIGPATH}/tls
     XRAY_CONFIG_FILE=${XRAY_CONFIG_DIR}/xray_config.yaml
 
     echo "Creating directories"
     mkdir -pv ${XRAY_CONFIG_DIR}
+
+    # Set Postgres TLS certs
+    {{- if and .Values.global.postgresql.url .Values.global.postgresql.tlsSecret (not .Values.postgresql.enabled) }}
+    mkdir -pv ${XRAY_TLS_DIR}
+    echo "Copying Postgres TLS certificates..."
+    cp -fv /tmp/tls/* ${XRAY_TLS_DIR}/
+    chmod 0400 ${XRAY_TLS_DIR}/*
+    {{- end }}
 
     # Wait for DBs to be ready
     {{- if .Values.mongodb.enabled }}

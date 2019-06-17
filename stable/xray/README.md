@@ -147,10 +147,12 @@ helm install -n xray \
     jfrog/xray
 ```
 
-#### PostgreSQL
-To use an external **PostgreSQL**, You need to disable the use of the bundled **PostgreSQL** and set a custom **PostgreSQL** connection URL.
+#### External PostgreSQL
 
-For this, pass the parameters: `postgresql.enabled=false` and `global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL}`.
+##### PostgreSQL without TLS
+To use an external **PostgreSQL**, you need to disable the use of the bundled **PostgreSQL** and set a custom **PostgreSQL** connection URL.
+
+For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql.url=${XRAY_POSTGRESQL_CONN_URL}`.
 
 **IMPORTANT:** Make sure the DB is already created before deploying Xray services
 ```bash
@@ -162,10 +164,39 @@ For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql
 # PostgreSQL user: xray
 # PostgreSQL password: password2_X
 
-export XRAY_POSTGRESQL_CONN_URL='postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable'
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable"
 helm install -n xray \
     --set postgresql.enabled=false \
-    --set global.postgresqlUrl="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set global.postgresql.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    jfrog/xray
+```
+##### PostgreSQL with TLS
+If external **PostgreSQL** is set with TLS, you need to disable the use of the bundled **PostgreSQL**, set a custom **PostgreSQL** connection URL and provide a secret with **PostgreSQL** TLS certificates.
+
+Create the Kubernetes secret (assuming the local files are `client-cert.pem	client-key.pem server-ca.pem`)
+```bash
+kubectl create secret generic postgres-tls --from-file=client-key.pem --from-file=client-cert.pem --from-file=server-ca.pem
+```
+
+**PostgreSQL** connection URL needs to have listed TLS files and `sslmode==verify-ca`
+
+```bash
+# Passing a custom PostgreSQL with TLS to Xray
+
+# Example
+# PostgreSQL host: custom-postgresql.local
+# PostgreSQL port: 5432
+# PostgreSQL user: xray
+# PostgreSQL password: password2_X
+# PostgreSQL server CA: server-ca.pem
+# PostgreSQL client cert: client-key.pem
+# PostgreSQL clinet key: client-cert.pem
+
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
+helm install -n xray \
+    --set postgresql.enabled=false \
+    --set global.postgresql.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set global.postgresql.tlsSecret=postgres-tls
     jfrog/xray
 ```
 
@@ -273,7 +304,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.customInitContainers`                  | Custom init containers                       | ` `                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
-| `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
+| `global.postgresql.url`                        | Xray external PostgreSQL URL                 | ` `                  |
+| `global.postgresql.tlsSecret`                  | Xray external PostgreSQL TLS files secret    | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |
 | `analysis.image`                               | Xray Analysis container image                | `docker.bintray.io/jfrog/xray-analysis` |
 | `analysis.replicaCount`                        | Xray Analysis replica count                  | `1`                  |
