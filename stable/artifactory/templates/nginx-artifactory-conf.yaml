@@ -11,8 +11,8 @@ metadata:
 data:
   artifactory.conf: |
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
-    ssl_certificate  /var/opt/jfrog/nginx/ssl/tls.crt;
-    ssl_certificate_key  /var/opt/jfrog/nginx/ssl/tls.key;
+    ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
+    ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
     ssl_session_cache shared:SSL:1m;
     ssl_prefer_server_ciphers   on;
     ## server configuration
@@ -39,7 +39,7 @@ data:
         if ( $request_uri ~ ^/artifactory/(.*)$ ) {
           proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
         }
-        proxy_pass          http://{{ include "artifactory.fullname" . }}:8081/artifactory/;
+        proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.internalPort }}/artifactory/;
         proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
         proxy_set_header    X-Forwarded-Port  $server_port;
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
