@@ -147,7 +147,7 @@ helm install -n xray \
     jfrog/xray
 ```
 
-#### External PostgreSQL
+#### PostgreSQL
 
 ##### PostgreSQL without TLS
 To use an external **PostgreSQL**, you need to disable the use of the bundled **PostgreSQL** and set a custom **PostgreSQL** connection URL.
