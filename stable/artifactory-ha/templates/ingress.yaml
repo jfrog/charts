@@ -35,6 +35,10 @@ spec:
             servicePort: {{ $servicePort }}
   {{- end -}}
 {{- end -}}
+  {{- with .Values.ingress.additionalRules }}
+{{ toYaml . | indent 2 }}
+  {{- end }}
+
   {{- if .Values.ingress.tls }}
   tls:
 {{ toYaml .Values.ingress.tls | indent 4 }}
