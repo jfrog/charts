@@ -22,7 +22,7 @@ data:
     mkdir -pv ${XRAY_CONFIG_DIR}
 
     # Set Postgres TLS certs
-    {{- if and .Values.global.postgresql.url .Values.global.postgresql.tlsSecret (not .Values.postgresql.enabled) }}
+    {{- if and .Values.global.postgresqlUrl .Values.global.postgresqlTlsSecret (not .Values.postgresql.enabled) }}
     mkdir -pv ${XRAY_TLS_DIR}
     echo "Copying Postgres TLS certificates..."
     cp -fv /tmp/tls/* ${XRAY_TLS_DIR}/

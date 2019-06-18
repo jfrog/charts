@@ -114,7 +114,7 @@ spec:
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         - name: setup
           mountPath: "/scripts"
-        {{- if and .Values.global.postgresql.url .Values.global.postgresql.tlsSecret (not .Values.postgresql.enabled) }}
+        {{- if and .Values.global.postgresqlUrl .Values.global.postgresqlTlsSecret (not .Values.postgresql.enabled) }}
         - name: tls-volume
           mountPath: /tmp/tls
         {{- end }}
@@ -190,10 +190,10 @@ spec:
       - name: data-volume
         emptyDir:
           sizeLimit: {{ .Values.analysis.persistence.size }}
-      {{- if and .Values.global.postgresql.url .Values.global.postgresql.tlsSecret (not .Values.postgresql.enabled) }}
+      {{- if and .Values.global.postgresqlUrl .Values.global.postgresqlTlsSecret (not .Values.postgresql.enabled) }}
       - name: tls-volume
         secret:
-          secretName: {{ .Values.global.postgresql.tlsSecret }}
+          secretName: {{ .Values.global.postgresqlTlsSecret }}
       {{- end }}
       - name: setup
         configMap:

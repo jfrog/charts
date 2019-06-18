@@ -152,7 +152,7 @@ helm install -n xray \
 ##### PostgreSQL without TLS
 To use an external **PostgreSQL**, you need to disable the use of the bundled **PostgreSQL** and set a custom **PostgreSQL** connection URL.
 
-For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql.url=${XRAY_POSTGRESQL_CONN_URL}`.
+For this, pass the parameters: `postgresql.enabled=false` and `global.postgresqlUrl=${XRAY_POSTGRESQL_CONN_URL}`.
 
 **IMPORTANT:** Make sure the DB is already created before deploying Xray services
 ```bash
@@ -167,7 +167,7 @@ For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql
 export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable"
 helm install -n xray \
     --set postgresql.enabled=false \
-    --set global.postgresql.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set global.postgresqlUrl="${XRAY_POSTGRESQL_CONN_URL}" \
     jfrog/xray
 ```
 ##### PostgreSQL with TLS
@@ -195,8 +195,8 @@ kubectl create secret generic postgres-tls --from-file=client-key.pem --from-fil
 export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
 helm install -n xray \
     --set postgresql.enabled=false \
-    --set global.postgresql.url="${XRAY_POSTGRESQL_CONN_URL}" \
-    --set global.postgresql.tlsSecret=postgres-tls
+    --set global.postgresqlUrl="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set global.postgresqlTlsSecret=postgres-tls
     jfrog/xray
 ```
 
@@ -304,8 +304,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.customInitContainers`                  | Custom init containers                       | ` `                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
-| `global.postgresql.url`                        | Xray external PostgreSQL URL                 | ` `                  |
-| `global.postgresql.tlsSecret`                  | Xray external PostgreSQL TLS files secret    | ` `                  |
+| `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
+| `global.postgresqlTlsSecret`                   | Xray external PostgreSQL TLS files secret    | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |
 | `analysis.image`                               | Xray Analysis container image                | `docker.bintray.io/jfrog/xray-analysis` |
 | `analysis.replicaCount`                        | Xray Analysis replica count                  | `1`                  |
