@@ -762,7 +762,7 @@ ingress:
 ### Ingress additional rules
 
 You have the option to add additional ingress rules to the Artifactory ingress. An example for this use case can be routing the /xray path to Xray.
-In order to do that, simply add the following to a `xray-values.yaml` file:
+In order to do that, simply add the following to a `artifactory-values.yaml` file:
 ```yaml
 ingress:
   additionalRules:
@@ -778,7 +778,7 @@ ingress:
 
 and running:
 ```bash
-helm upgrade --install xray jfrog/xray -f xray-values.yaml
+helm upgrade --install xray jfrog/artifactory -f artifactory-values.yaml
 ```
 
 ## Useful links
