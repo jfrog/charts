@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.14.8] - Jun 18, 2019
+* Add the option to provide additional ingress rules
+
 ## [7.14.7] - Jun 14, 2019
 * Updated readme with improved external database setup example
 
