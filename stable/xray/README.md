@@ -159,17 +159,19 @@ For this, pass the parameters: `postgresql.enabled=false` and `global.postgresql
 # Passing a custom PostgreSQL to Xray
 
 # Example
-# PostgreSQL host: custom-postgresql.local
-# PostgreSQL port: 5432
-# PostgreSQL user: xray
-# PostgreSQL password: password2_X
+export POSTGRESQL_HOST=custom-postgresql-host
+export POSTGRESQL_PORT=5432
+export POSTGRESQL_USER=xray
+export POSTGRESQL_PASSWORD=password2_X
+export POSTGRESQL_DATABASE=xraydb
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslmode=disable"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set global.postgresqlUrl="${XRAY_POSTGRESQL_CONN_URL}" \
     jfrog/xray
 ```
+
 ##### PostgreSQL with TLS
 If external **PostgreSQL** is set with TLS, you need to disable the use of the bundled **PostgreSQL**, set a custom **PostgreSQL** connection URL and provide a secret with **PostgreSQL** TLS certificates.
 
@@ -178,25 +180,28 @@ Create the Kubernetes secret (assuming the local files are `client-cert.pem	clie
 kubectl create secret generic postgres-tls --from-file=client-key.pem --from-file=client-cert.pem --from-file=server-ca.pem
 ```
 
-**PostgreSQL** connection URL needs to have listed TLS files and `sslmode==verify-ca`
+**IMPORTANT:** `PostgreSQL` connection URL needs to have listed TLS files with the path `/var/opt/jfrog/xray/data/tls/` 
+and `sslmode==verify-ca` otherwise Xray will fail to connect to Postgres.
 
 ```bash
 # Passing a custom PostgreSQL with TLS to Xray
 
 # Example
-# PostgreSQL host: custom-postgresql.local
-# PostgreSQL port: 5432
-# PostgreSQL user: xray
-# PostgreSQL password: password2_X
-# PostgreSQL server CA: server-ca.pem
-# PostgreSQL client cert: client-key.pem
-# PostgreSQL clinet key: client-cert.pem
+export POSTGRESQL_HOST=custom-postgresql-host
+export POSTGRESQL_PORT=5432
+export POSTGRESQL_USER=xray
+export POSTGRESQL_PASSWORD=password2_X
+export POSTGRESQL_DATABASE=xraydb
+export POSTGRESQL_SERVER_CA=server-ca.pem
+export POSTGRESQL_CLIENT_CERT=client-key.pem
+export POSTGRESQL_CLIENT_KEY=client-cert.pem
+export POSTGRESQL_TLS_SECRET=postgres-tls
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@custom-postgresql.local:5432/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set global.postgresqlUrl="${XRAY_POSTGRESQL_CONN_URL}" \
-    --set global.postgresqlTlsSecret=postgres-tls
+    --set global.postgresqlTlsSecret=${POSTGRESQL_TLS_SECRET}
     jfrog/xray
 ```
 
