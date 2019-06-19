@@ -20,7 +20,7 @@ lint:
 	$(eval export CHART_TESTING_TAG)
 	$(eval export CHARTS_REPO)
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
-	test/lint-charts-local.sh
+	test/lint-charts.sh
 
 .PHONY: mac
 mac:
