@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.13.10] - Jun 19, 2019
+* Updated Artifactory version to 6.10.4
+
 ## [0.13.9] - Jun 18, 2019
 * Add the option to provide additional ingress rules
 
