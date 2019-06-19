@@ -7,11 +7,6 @@ set -o pipefail
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 readonly CLUSTER_NAME=chart-testing
 LOCAL_RUN="${LOCAL_RUN:-""}"
-CT_ARGS=""
-if [[ ${LOCAL_RUN} = "true" ]]; then
-    CT_ARGS=${CHART_TESTING_ARGS}
-fi
-
 
 run_ct_container() {
     echo 'Running ct container...'
@@ -100,37 +95,19 @@ install_tiller() {
      echo
 }
 
-git_fetch() {
+install_charts() {
     echo "Add git remote k8s ${CHARTS_REPO}"
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
     git fetch k8s master
     echo
-}
-
-get_changed_charts() {
-    local changed_charts=($(docker_exec ct list-changed ${CT_ARGS} --config /workdir/test/ct.yaml))
-    echo "${changed_charts}"
-}
-
-check_changelog_version() {
-    local changed_charts=$(get_changed_charts)
-    echo "Changed Charts: ${changed_charts}"
-    for chart_name in ${changed_charts} ; do
-        echo "Checking CHANGELOG for chart ${chart_name}"
-        local chart_version=$(grep 'version:' ${REPO_ROOT}/stable/${chart_name}/Chart.yaml)
-        ## Check that the version has an entry in the changelog
-        if grep -q "\[${chart_version}\]" ${REPO_ROOT}/stable/${chart_name}/CHANGELOG.md; then
-            echo "No CHANGELOG entry for chart ${chart_name} version ${chart_version}"
-            exit 1
-        else
-            echo "Found CHANGELOG entry for chart ${chart_name} version ${chart_version}"
-        fi
-    done
-
-}
-
-install_charts() {
-    docker_exec ct install ${CT_ARGS} --config /workdir/test/ct.yaml
+    
+    if [[ "${LOCAL_RUN}" = "true" ]] 
+    then
+        # shellcheck disable=SC2086
+        docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
+    else
+        docker_exec ct install --config /workdir/test/ct.yaml
+    fi
     echo
 }
 
@@ -141,8 +118,6 @@ main() {
     create_kind_cluster
     install_local-path-provisioner
     install_tiller
-    git_fetch
-    check_changelog_version
     install_charts
 }
 
