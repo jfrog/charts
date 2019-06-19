@@ -611,6 +611,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
+| `ingress.additionalRules`       | Ingress additional rules to be added to the Artifactory ingress. | `[]`  |
 | `nginx.name` | Nginx name | `nginx`                                                                                      |
 | `nginx.enabled` | Deploy nginx server | `true`                                                                           |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
@@ -753,6 +754,28 @@ ingress:
   tls:
     - hosts:
       - "myhost.example.com"
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Artifactory ingress. An example for this use case can be routing the /xray path to Xray.
+In order to do that, simply add the following to a `artifactory-values.yaml` file:
+```yaml
+ingress:
+  additionalRules:
+  - host: <INGRESS_HOSTNAME>
+    http:
+      paths:
+        - path: /xray
+          backend:
+            serviceName: <XRAY_SERVICE_NAME>
+            servicePort: <XRAY_SERVICE_PORT>
+
+``` 
+
+and running:
+```bash
+helm upgrade --install xray jfrog/artifactory -f artifactory-values.yaml
 ```
 
 ## Useful links
