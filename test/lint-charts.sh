@@ -8,6 +8,10 @@ readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
+docker_exec() {
+    docker exec --interactive -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true ct "$@"
+}
+
 git_fetch() {
     echo "Add git remote k8s ${CHARTS_REPO}"
     git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
@@ -16,19 +20,21 @@ git_fetch() {
 }
 
 get_changed_charts() {
-    mapfile -t changed_charts < <(docker_exec ct list-changed --config /workdir/test/ct.yaml)
+    local changed_charts=("")
+    while IFS='' read -r line; do changed_charts+=("$line"); done < <(docker_exec ct list-changed --config /workdir/test/ct.yaml)
     echo "${changed_charts[*]}"
 }
 
 check_changelog_version() {
-    mapfile -t changed_charts < <(get_changed_charts)
+    local changed_charts=("")
+    while IFS='' read -r line; do changed_charts+=("$line"); done < <(get_changed_charts)
     echo "Changed Charts: ${changed_charts[*]}"
     for chart_name in ${changed_charts[*]} ; do
         echo "Checking CHANGELOG for chart ${chart_name}"
         local chart_version
-        chart_version=$(grep "version:" "${REPO_ROOT}/stable/${chart_name}/Chart.yaml")
+        chart_version=$(grep "version:" "${REPO_ROOT}/${chart_name}/Chart.yaml")
         ## Check that the version has an entry in the changelog
-        if grep -q "\[${chart_version}\]" "${REPO_ROOT}/stable/${chart_name}/CHANGELOG.md"; then
+        if ! grep -q "\[${chart_version}\]" "${REPO_ROOT}/${chart_name}/CHANGELOG.md"; then
             echo "No CHANGELOG entry for chart ${chart_name} version ${chart_version}"
             exit 1
         else
