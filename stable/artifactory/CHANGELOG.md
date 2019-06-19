@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.15.0] - Jun 17, 2019
+* Use configmaps for nginx configuration and remove nginx postStart command
+
 ## [7.14.8] - Jun 18, 2019
 * Add the option to provide additional ingress rules
 

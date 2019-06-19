@@ -11,6 +11,23 @@ metadata:
 data:
   replicator.yaml: |
     externalUrl: {{ required "artifactory.replicator.publicUrl is required when artifactory.replicator.enabled is true" .Values.artifactory.replicator.publicUrl }}
-    internalUrl: http://localhost:6061
-    listenPort: 6061
+    internalUrl: http://localhost:{{ .Values.nginx.internalPortReplicator }}
+    listenPort: {{ .Values.nginx.internalPortReplicator }}
+
+  replicator-nginx.conf: |
+    ## Artifactory replicator
+    server {
+      listen         {{ .Values.nginx.internalPortReplicator }};
+      server_name    {{ include "artifactory.fullname" . }};
+
+      client_max_body_size 0;
+
+      location / {
+        proxy_read_timeout  900;
+        proxy_pass_header   Server;
+        proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.nginx.internalPortReplicator }};
+        proxy_http_version  1.1;
+      }
+    }
+
 {{- end -}}
