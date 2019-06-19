@@ -16,18 +16,19 @@ git_fetch() {
 }
 
 get_changed_charts() {
-    local changed_charts=($(docker_exec ct list-changed --config /workdir/test/ct.yaml))
-    echo "${changed_charts}"
+    mapfile -t changed_charts < <(docker_exec ct list-changed --config /workdir/test/ct.yaml)
+    echo "${changed_charts[*]}"
 }
 
 check_changelog_version() {
-    local changed_charts=$(get_changed_charts)
-    echo "Changed Charts: ${changed_charts}"
-    for chart_name in ${changed_charts} ; do
+    mapfile -t changed_charts < <(get_changed_charts)
+    echo "Changed Charts: ${changed_charts[*]}"
+    for chart_name in ${changed_charts[*]} ; do
         echo "Checking CHANGELOG for chart ${chart_name}"
-        local chart_version=$(grep 'version:' ${REPO_ROOT}/stable/${chart_name}/Chart.yaml)
+        local chart_version
+        chart_version=$(grep "version:" "${REPO_ROOT}/stable/${chart_name}/Chart.yaml")
         ## Check that the version has an entry in the changelog
-        if grep -q "\[${chart_version}\]" ${REPO_ROOT}/stable/${chart_name}/CHANGELOG.md; then
+        if grep -q "\[${chart_version}\]" "${REPO_ROOT}/stable/${chart_name}/CHANGELOG.md"; then
             echo "No CHANGELOG entry for chart ${chart_name} version ${chart_version}"
             exit 1
         else
