@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
 
 set -o errexit
 set -o nounset
@@ -7,7 +7,6 @@ set -o pipefail
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
-readonly DESIRED_VERSION=${HELM_VERSION}
 
 install_kubeval() {
     echo 'Installing kubeval...'
@@ -30,6 +29,7 @@ install_helm() {
     then
         echo "Local run, not downloading helm cli..."
     else
+        DESIRED_VERSION=${HELM_VERSION}
         echo "CI run, downloading helm cli..."
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > /tmp/get_helm.sh \
         && chmod 700 /tmp/get_helm.sh \
@@ -61,7 +61,7 @@ check_changelog_version() {
         echo "==> Checking CHANGELOG for chart ${chart_name}"
         echo "------------------------------------------------------------------------------------------------------------------------"
         local chart_version
-        chart_version=$(grep "version:" "${REPO_ROOT}/${chart_name}/Chart.yaml" | cut -d":" -f 2 | cut -d" " -f 2)
+        chart_version=$(grep "version:" "${REPO_ROOT}/${chart_name}/Chart.yaml" | cut -d" " -f 2)
         ## Check that the version has an entry in the changelog
         if ! grep -q "\[${chart_version}\]" "${REPO_ROOT}/${chart_name}/CHANGELOG.md"; then
             echo "No CHANGELOG entry for chart ${chart_name} version ${chart_version}"
