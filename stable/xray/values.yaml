@@ -156,7 +156,7 @@ mongodb:
   ## Make sure the --wiredTigerCacheSizeGB is no more than half the memory limit!
   ## This is critical to protect against OOMKill by Kubernetes!
   mongodbExtraFlags:
-  #The wiredTiger is suggested to be set to 3GB.
+  # The wiredTiger is suggested to be set to 3GB.
   - "--wiredTigerCacheSizeGB=1"
   mongodbRootPassword:
   mongodbUsername: xray
