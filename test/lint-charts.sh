@@ -29,7 +29,7 @@ install_helm() {
     then
         echo "Local run, not downloading helm cli..."
     else
-        DESIRED_VERSION=${HELM_VERSION}
+        readonly DESIRED_VERSION=${HELM_VERSION}
         echo "CI run, downloading helm cli..."
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > /tmp/get_helm.sh \
         && chmod 700 /tmp/get_helm.sh \
