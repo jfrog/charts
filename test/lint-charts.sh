@@ -86,19 +86,24 @@ validate_manifests() {
     echo "------------------------------------------------------------------------------------------------------------------------"
     for chart_name in ${changed_charts[*]} ; do
         echo "Validating chart ${chart_name}"
+        rm -rf "tmp/${chart_name}/"
+        mkdir -p tmp/stable
+        cp -r "${chart_name}" tmp/stable/
+        rm -rf tmp/"${chart_name}"/charts/
+        rm -rf tmp/"${chart_name}"/requirements.*
         echo "------------------------------------------------------------------------------------------------------------------------"
-        echo "==> Processing with ${REPO_ROOT}/${chart_name}/values.yaml"
+        echo "==> Processing with tmp/${chart_name}/values.yaml"
         echo "------------------------------------------------------------------------------------------------------------------------"
-        helm template "${REPO_ROOT}/${chart_name}" | kubeval
-        if [ -d "${REPO_ROOT}/${chart_name}/ci" ]
+        helm template tmp/"${chart_name}" | kubeval
+        if [ -d "tmp/${chart_name}/ci" ]
         then
-            FILES="${REPO_ROOT}/${chart_name}/ci/*"
+            FILES="tmp/${chart_name}/ci/*"
             for file in $FILES
             do
                 echo "------------------------------------------------------------------------------------------------------------------------"
                 echo "==> Processing with $file "
                 echo "------------------------------------------------------------------------------------------------------------------------"
-                helm template "${REPO_ROOT}/${chart_name}" -f "$file" | kubeval
+                helm template tmp/"${chart_name}" -f "$file" | kubeval
             done
         fi 
     done

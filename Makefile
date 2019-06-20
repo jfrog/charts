@@ -46,6 +46,7 @@ lint:
 	$(eval export CHART_TESTING_TAG)
 	$(eval export CHARTS_REPO)
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
+	$(eval export HELM_VERSION)
 	$(eval export LOCAL_RUN=true)
 	test/lint-charts.sh
 
