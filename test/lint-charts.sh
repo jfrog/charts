@@ -7,6 +7,7 @@ set -o pipefail
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
+readonly DESIRED_VERSION=${HELM_VERSION}
 LOCAL_RUN="${LOCAL_RUN:-""}"
 
 install_kubeval() {
@@ -30,11 +31,10 @@ install_helm() {
     then
         echo "Local run, not downloading helm cli..."
     else
-        readonly DESIRED_VERSION=${HELM_VERSION}
         echo "CI run, downloading helm cli..."
-        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > /tmp/get_helm.sh \
-        && chmod 700 /tmp/get_helm.sh \
-        && sudo /tmp/get_helm.sh
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > tmp/get_helm.sh \
+        && chmod 700 tmp/get_helm.sh \
+        && sudo tmp/get_helm.sh
     fi
 }
 
@@ -108,11 +108,10 @@ validate_manifests() {
 }
 
 main() {
+    mkdir -p tmp
     install_kubeval
     install_helm
     git_fetch
-    #
-    mkdir -p tmp
     # Lint helm charts
     docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint --config /workdir/test/ct.yaml | tee tmp/lint.log
     echo "Done Charts Linting!"
