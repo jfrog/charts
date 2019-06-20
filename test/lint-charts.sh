@@ -7,6 +7,7 @@ set -o pipefail
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
+LOCAL_RUN="${LOCAL_RUN:-""}"
 
 install_kubeval() {
     echo 'Installing kubeval...'
