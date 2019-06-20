@@ -21,9 +21,11 @@ jobs:
         - CHARTS_REPO=https://github.com/jfrog/charts
         - K8S_VERSION=v1.14.2
         - KIND_VERSION=v0.3.0
+        - KUBEVAL_VERSION=0.9.2
+        - HELM_VERSION=v2.14.1
       script:
         - echo "Run chart-testing linting!"
-        - ./test/lint-charts.sh
+        - ./test/lint-charts.sh || travis_terminate 1
         - >
           if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
               echo "No chart changes detected, stopping TravisCI pipeline!"
