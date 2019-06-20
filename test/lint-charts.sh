@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -e
 
 set -o errexit
 set -o nounset
@@ -7,6 +7,7 @@ set -o pipefail
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
+readonly DESIRED_VERSION=${HELM_VERSION}
 
 install_kubeval() {
     echo 'Installing kubeval...'
@@ -19,6 +20,20 @@ install_kubeval() {
         curl -sSLo kubeval "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-darwin-amd64.tar.gz"
         chmod +x kubeval
         sudo mv kubeval /usr/local/bin/kubeval
+    fi
+}
+
+install_helm() {
+    echo 'Installing helm...'
+
+    if [[ "${LOCAL_RUN}" = "true" ]] 
+    then
+        echo "Local run, not downloading helm cli..."
+    else
+        echo "CI run, downloading helm cli..."
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > /tmp/get_helm.sh \
+        && chmod 700 /tmp/get_helm.sh \
+        && sudo /tmp/get_helm.sh
     fi
 }
 
@@ -92,6 +107,8 @@ validate_manifests() {
 }
 
 main() {
+    install_kubeval
+    install_helm
     git_fetch
     #
     mkdir -p tmp
