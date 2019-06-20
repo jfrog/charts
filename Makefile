@@ -15,11 +15,39 @@ ifneq ( $(filter wordlist 1,lint mac gke kind), $(firstword $(MAKECMDGOALS)))
   $(eval $(MAC_ARGS):;@:)
 endif
 
+# check for binaries
+HELM_CMD := $(shell command -v helm 2> /dev/null)
+KUBECTL_CMD := $(shell command -v kubectl 2> /dev/null)
+KUBEVAL_CMD := $(shell command -v kubeval 2> /dev/null)
+
+.PHONY: check-cli
+check-cli: check-helm check-kubectl check-kubeval
+
+.PHONY: check-helm
+check-helm:
+ifndef HELM_CMD
+	$(error "$n$nNo helm command found! $n$nPlease download required helm binary.$n$n")
+endif
+
+.PHONY: check-kubectl
+check-kubectl:
+ifndef KUBECTL_CMD
+	$(error "$n$nNo kubectl command found! $n$nPlease download required kubectl binary.$n$n")
+endif
+
+.PHONY: check-kubeval
+check-kubeval:
+ifndef KUBEVAL_CMD
+	$(error "$n$nNo kubeval command found! $n$nPlease install: brew tap instrumenta/instrumenta && brew install kubeval $n$n")
+endif
+
 .PHONY: lint
 lint:
 	$(eval export CHART_TESTING_TAG)
 	$(eval export CHARTS_REPO)
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
+	$(eval export HELM_VERSION)
+	$(eval export LOCAL_RUN=true)
 	test/lint-charts.sh
 
 .PHONY: mac

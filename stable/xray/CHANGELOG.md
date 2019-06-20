@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.13] - June 20, 2019
+* Document the mongoDB resources values suggestion
+* Fix xray-server service annotation
+
 ## [0.12.12] - June 17, 2019
 * Optional support for PostgreSQL with TLS
 
