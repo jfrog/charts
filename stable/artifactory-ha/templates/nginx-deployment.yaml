@@ -97,8 +97,6 @@ spec:
         - name: nginx-replicator-conf
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/replicator/"
         {{- end }}
-        - name: nginx-volume
-          mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
 
