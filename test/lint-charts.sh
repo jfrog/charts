@@ -18,9 +18,9 @@ install_kubeval() {
         echo "Local run, not downloading kubeval cli..."
     else
         echo "CI run, downloading kubeval cli..."
-        curl -sSLo kubeval "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-linux-amd64.tar.gz"
-        chmod +x kubeval
-        sudo mv kubeval /usr/local/bin/kubeval
+        curl -sSLo tmp/kubeval.tar.gz "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-linux-amd64.tar.gz"
+        tar xf tmp/kubeval.tar.gz -C tmp && chmod +x tmp/kubeval
+        sudo mv tmp/kubeval /usr/local/bin/kubeval
     fi
 }
 
@@ -32,7 +32,7 @@ install_helm() {
         echo "Local run, not downloading helm cli..."
     else
         echo "CI run, downloading helm cli..."
-        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > tmp/get_helm.sh \
+        curl -s https://raw.githubusercontent.com/helm/helm/master/scripts/get > tmp/get_helm.sh \
         && chmod 700 tmp/get_helm.sh \
         && sudo tmp/get_helm.sh
     fi
