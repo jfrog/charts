@@ -145,16 +145,18 @@ mongodb:
   persistence:
     size: 50Gi
   resources: {}
+  # The following values are suggested to be used when working with mongoDB and Xray. The DB sync in Xray needs more resources than the defaults in mongoDB.
   #  requests:
-  #    memory: "12Gi"
-  #    cpu: "200m"
+  #    memory: "6Gi"
+  #    cpu: "2"
   #  limits:
-  #    memory: "12Gi"
+  #    memory: "6Gi"
   #    cpu: "2"
   ## Make sure the limits.memory value is the same as the requests.memory value!
   ## Make sure the --wiredTigerCacheSizeGB is no more than half the memory limit!
   ## This is critical to protect against OOMKill by Kubernetes!
   mongodbExtraFlags:
+  #The wiredTiger is suggested to be set to 3GB.
   - "--wiredTigerCacheSizeGB=1"
   mongodbRootPassword:
   mongodbUsername: xray

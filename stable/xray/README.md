@@ -18,6 +18,7 @@ This chart will do the following:
 - A running Artifactory
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
+- mongoDB with enough resources, see suggested values in values.yaml file
 
 
 ## Install JFrog Xray
