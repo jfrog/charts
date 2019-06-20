@@ -8,18 +8,8 @@ readonly IMAGE_TAG=${CHART_TESTING_TAG}
 readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
-git_fetch() {
-    echo "Add git remote k8s ${CHARTS_REPO}"
-    git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
-    git fetch k8s master
-    echo
-}
-
-get_changed_charts() {
-    local changed_charts=("")
-    while IFS='' read -r line; do changed_charts+=("$line"); done < <(docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct list-changed --chart-dirs stable )
-    echo "${changed_charts[*]}"
-}
+# shellcheck source=test/common.sh
+source "${REPO_ROOT}/test/common.sh"
 
 check_changelog_version() {
     local changed_charts=("")
