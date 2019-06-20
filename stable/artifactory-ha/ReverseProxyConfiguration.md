@@ -88,11 +88,9 @@ the required configuration snippet which you can then download and install direc
     ```bash
     kubectl create configmap art-nginx-conf --from-file=artifactory-ha.conf
     ```
-4.  Deploy Artifactory using helm chart with auto configuration update disabled in nginx.
-    You can achieve it by setting value to `true` for `nginx.env.skipAutoConfigUpdate` and providing name of configMap created above to `nginx.customArtifactoryConfigMap` in [values.yaml](values.yaml)
-    Which sets Environment Variable `SKIP_AUTO_UPDATE_CONFIG=true` in Nginx container. 
+4.  Deploy Artifactory using helm chart, providing the name of configMap created above to `nginx.customArtifactoryConfigMap` in [values.yaml](values.yaml). 
     
     Following is command to set values at runtime:
     ```bash
-    helm install --name artifactory-ha --set nginx.env.skipAutoConfigUpdate=true,nginx.customArtifactoryConfigMap=art-nginx-conf jfrog/artifactory-ha
+    helm install --name artifactory-ha --set nginx.customArtifactoryConfigMap=art-nginx-conf jfrog/artifactory-ha
     ```
