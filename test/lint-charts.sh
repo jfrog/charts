@@ -28,7 +28,7 @@ check_changelog_version() {
     for chart_name in ${changed_charts[*]} ; do
         echo "Checking CHANGELOG for chart ${chart_name}"
         local chart_version
-        chart_version=$(grep "version:" "${REPO_ROOT}/${chart_name}/Chart.yaml")
+        chart_version=$(grep "version:" "${REPO_ROOT}/${chart_name}/Chart.yaml" | awk '{print $2}')
         ## Check that the version has an entry in the changelog
         if ! grep -q "\[${chart_version}\]" "${REPO_ROOT}/${chart_name}/CHANGELOG.md"; then
             echo "No CHANGELOG entry for chart ${chart_name} version ${chart_version}"
