@@ -18,7 +18,7 @@ install_kubeval() {
         echo "Local run, not downloading kubeval cli..."
     else
         echo "CI run, downloading kubeval cli..."
-        curl -sSLo kubeval "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-darwin-amd64.tar.gz"
+        curl -sSLo kubeval "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-linux-amd64.tar.gz"
         chmod +x kubeval
         sudo mv kubeval /usr/local/bin/kubeval
     fi
