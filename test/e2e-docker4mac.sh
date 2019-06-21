@@ -32,16 +32,6 @@ connect_to_cluster() {
     docker_exec kubectl config use-context docker-for-desktop
 }
 
-install_tiller() {
-     docker_exec apk add bash
-     echo "Install Tillerless Helm plugin..."
-     docker_exec helm init --client-only
-     docker_exec helm plugin install https://github.com/rimusz/helm-tiller
-     docker_exec bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
-     docker_exec bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
-     echo
-}
-
 main() {
     run_ct_container
     trap cleanup EXIT
