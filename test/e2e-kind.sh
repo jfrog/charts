@@ -80,10 +80,7 @@ install_local-path-provisioner() {
 }
 
 install_charts() {
-    echo "Add git remote k8s ${CHARTS_REPO}"
-    git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
-    git fetch k8s master
-    echo
+    git_fetch
     
     if [[ "${LOCAL_RUN}" = "true" ]] 
     then
