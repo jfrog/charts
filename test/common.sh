@@ -39,26 +39,3 @@ cleanup() {
 
     echo 'Done!'
 }
-
-install_charts() {
-    git_fetch
-
-    local ct_command="docker_exec ct install --config /workdir/test/ct.yaml"
-    local ct_args
-
-    [[ "${LOCAL_RUN}" = "true" ]] && ct_args=${CHART_TESTING_ARGS}
-
-    ${ct_command} "${ct_args}"
-    echo
-}
-
-run_ct_container() {
-    echo 'Running ct container...'
-    docker run --rm --interactive --detach --name ct \
-        --volume "$HOME/.config/gcloud:/root/.config/gcloud" \
-        --volume "$REPO_ROOT:/workdir" \
-        --workdir /workdir \
-        "$IMAGE_REPOSITORY:$IMAGE_TAG" \
-        cat
-    echo
-}

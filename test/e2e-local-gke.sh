@@ -11,6 +11,17 @@ readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 # shellcheck source=test/common.sh
 source "${REPO_ROOT}/test/common.sh"
 
+run_ct_container() {
+    echo 'Running ct container...'
+    docker run --rm --interactive --detach --name ct \
+        --volume "$HOME/.config/gcloud:/root/.config/gcloud" \
+        --volume "$REPO_ROOT:/workdir" \
+        --workdir /workdir \
+        "$IMAGE_REPOSITORY:$IMAGE_TAG" \
+        cat
+    echo
+}
+
 connect_to_cluster() {
     # copy and update kubeconfig file
     docker cp "$HOME/.kube"  ct:/root/.kube
@@ -26,6 +37,13 @@ connect_to_cluster() {
             echo
         fi
     fi
+}
+
+install_charts() {
+    git_fetch
+    # shellcheck disable=SC2086
+    docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
+    echo
 }
 
 main() {
