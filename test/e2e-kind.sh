@@ -79,6 +79,22 @@ install_local-path-provisioner() {
     echo
 }
 
+install_charts() {
+    echo "Add git remote k8s ${CHARTS_REPO}"
+    git remote add k8s "${CHARTS_REPO}" &> /dev/null || true
+    git fetch k8s master
+    echo
+    
+    if [[ "${LOCAL_RUN}" = "true" ]] 
+    then
+        # shellcheck disable=SC2086
+        docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
+    else
+        docker_exec ct install --config /workdir/test/ct.yaml
+    fi
+    echo
+}
+
 main() {
     run_ct_container
     trap cleanup EXIT
