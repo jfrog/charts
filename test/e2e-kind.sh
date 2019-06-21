@@ -22,6 +22,7 @@ run_ct_container() {
 
 cleanup_kind() {
     cleanup
+    echo 'Removing kind container...'
     kind delete cluster --name "${CLUSTER_NAME}" > /dev/null 2>&1
     echo 'Done!'
 }
@@ -94,7 +95,7 @@ install_charts() {
 
 main() {
     run_ct_container
-    trap cleanup EXIT
+    trap cleanup_kind EXIT
 
     create_kind_cluster
     install_local-path-provisioner
