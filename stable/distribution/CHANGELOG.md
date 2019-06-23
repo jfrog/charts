@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.6] - Jun 23, 2019
+* Add values files for small, medium and large installations
+
 ## [3.2.5] - May 19, 2019
 * Fix missing logger image tag
 

@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.14] - June 23, 2019
+* Add values files for small, medium and large installations
+
 ## [0.12.13] - June 20, 2019
 * Document the mongoDB resources values suggestion
 * Fix xray-server service annotation

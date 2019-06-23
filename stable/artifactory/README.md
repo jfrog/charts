@@ -55,6 +55,9 @@ The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replic
 helm install --name artifactory --set artifactory.replicator.enabled=true --set artifactory.replicator.publicUrl=<artifactory_url>:<replicator_port> jfrog/artifactory
 ```
 
+### Deploying Artifactory for small/medium/large instllations
+In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
+
 ### Accessing Artifactory
 **NOTE:** It might take a few minutes for Artifactory's public IP to become available.
 Follow the instructions outputted by the install command to get the Artifactory IP to access it.

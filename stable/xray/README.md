@@ -96,6 +96,9 @@ helm delete --purge xray
 kubectl delete pvc -l release=xray
 ```
 
+### Deploying Xray for small/medium/large instllations
+In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
+
 ### Create a unique Master Key
 JFrog Xray requires a unique master key to be used by all micro-services in the same cluster. By default the chart has one set in values.yaml (`common.masterKey`).
 
