@@ -287,7 +287,7 @@ jconsole artifactory-<release-name>:<jmx-port>
 ```
 
 ### Access creds. bootstraping
-**IMPORTANT:** Bootsrapping access creds. would require Artifactory pod restart which by default will generate a random DB password if the password was not provided on initial setup.
+**IMPORTANT:** Bootsrapping access creds. will allow access for the user access-admin from certain IP's.
 
 * User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
 
@@ -298,7 +298,6 @@ artifactory:
     ip: "<IP_RANGE>" #Example: "10.13.89.*"
     password: "<PASSWD>"
 
-#Need to provide the DB password for the change since db.properties file will get deleted upon every Artifactory startup.
 postgresql:
   postgresPassword: "<DB_PASSWD>"
 ```
