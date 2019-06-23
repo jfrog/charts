@@ -54,6 +54,9 @@ Following parameter can be set during upgrade,
 ...
 ```
 
+### Deploying JFMC for small/medium/large instllations
+In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
+
 ### Create a unique MC Key
 Mission Control HA cluster uses a unique mc key. By default the chart has one set in values.yaml (`missionControl.mcKey`).
 

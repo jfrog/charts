@@ -1,0 +1,67 @@
+elasticsearch:
+  resources:
+    requests:
+      memory: "6Gi"
+      cpu: "500m"
+    limits:
+      memory: "6Gi"
+      cpu: "2"
+  ## ElasticSearch xms and xmx should be same!
+  javaOpts:
+    xms: "5g"
+    xmx: "5g"
+mongodb:
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "1"
+  ## Make sure the --wiredTigerCacheSizeGB is
+  ## no more than half the memory limit!
+  ## This is critical to protect against
+  ## OOMKill by Kubernetes!
+  mongodbExtraFlags:
+    - "--wiredTigerCacheSizeGB=2"
+missionControl:
+  resources:
+    requests:
+      memory: "3Gi"
+      cpu: "500m"
+    limits:
+      memory: "6Gi"
+      cpu: "2"
+  javaOpts:
+    xms: "3g"
+    xmx: "6g"
+insightServer:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "4Gi"
+      cpu: "1"
+insightExecutor:
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "500m"
+    limits:
+      memory: "6Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "2g"
+    xmx: "6g"
+insightScheduler:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "3Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "3g"

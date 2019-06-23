@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.15.3] - Jun 23, 2019
+* Add values files for small, medium and large installations
+
 ## [7.15.2] - Jun 20, 2019
 * Add missing terminationGracePeriodSeconds to values.yaml
 
