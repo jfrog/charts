@@ -289,6 +289,27 @@ So in order to connect to Artifactory with jconsole you should map the Artifacto
 jconsole artifactory-<release-name>:<jmx-port>
 ```
 
+### Access creds. bootstraping
+**IMPORTANT:** Bootsrapping access creds. will allow access for the user access-admin from certain IP's.
+
+* User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
+
+1. Create `access-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
+```
+artifactory:
+   accessAdmin:
+    ip: "<IP_RANGE>" #Example: "10.13.89.*"
+    password: "<PASSWD>"
+
+postgresql:
+  postgresPassword: "<DB_PASSWD>"
+```
+
+2. Apply the `access-creds-values.yaml` file:
+
+ `helm upgrade <helm_release_name> --install jfrog/artifactory -f access-creds-values.yaml`
+ 
+3. Restart Artifactory Pod (`Kubectl delete pod <pod_name>`)
 
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
@@ -537,6 +558,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
+| `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|                                               |
 | `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                                                    |
 | `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                                                                    |

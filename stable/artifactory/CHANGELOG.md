@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.15.4] - Jun 23, 2019
+* Add the option to provide an IP for the access-admin endpoints
+
 ## [7.15.3] - Jun 23, 2019
 * Add values files for small, medium and large installations
 
