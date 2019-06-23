@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.14.1] - Jun 23, 2019
+* Add values files for small, medium and large installations
+
 ## [0.14.0] - Jun 20, 2019
 * Use ConfigMaps for nginx configuration and remove nginx postStart command
 

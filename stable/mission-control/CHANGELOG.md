@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.3] - Jun 23, 2019
+* Add values files for small, medium and large installations
+
 ## [1.1.2] - Jun 3, 2019
 * Update Mission-Control version to 3.5.3
 * Use correct key to specify UpdateStrategy
