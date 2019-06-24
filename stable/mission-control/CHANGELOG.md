@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.4] - Jun 24, 2019
+* Update chart maintainers
+
 ## [1.1.3] - Jun 23, 2019
 * Add values files for small, medium and large installations
 
