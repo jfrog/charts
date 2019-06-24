@@ -47,10 +47,14 @@ spec:
             - name: http
               containerPort: 8765
               protocol: TCP
+    {{ if .Values.livenessProbe }}
           livenessProbe:
 {{ toYaml .Values.livenessProbe | indent 12 }}
+    {{ end }}
+    {{ if .Values.readinessProbe }}
           readinessProbe:
 {{ toYaml .Values.readinessProbe | indent 12 }}
+    {{ end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:
