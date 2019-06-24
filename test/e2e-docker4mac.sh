@@ -66,13 +66,6 @@ connect_to_cluster() {
     docker_exec kubectl config use-context docker-desktop
 }
 
-install_charts() {
-    git_fetch
-    # shellcheck disable=SC2086
-    docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
-    echo
-}
-
 main() {
     run_ct_container
     trap cleanup EXIT

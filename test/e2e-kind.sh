@@ -80,19 +80,6 @@ install_local-path-provisioner() {
     echo
 }
 
-install_charts() {
-    git_fetch
-    
-    if [[ "${LOCAL_RUN}" = "true" ]] 
-    then
-        # shellcheck disable=SC2086
-        docker_exec ct install ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml
-    else
-        docker_exec ct install --config /workdir/test/ct.yaml
-    fi
-    echo
-}
-
 main() {
     run_ct_container
     trap cleanup_kind EXIT

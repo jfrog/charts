@@ -39,3 +39,27 @@ cleanup() {
 
     echo 'Done!'
 }
+
+install_charts() {
+    git_fetch
+    local ct_args
+    if [[ ${LOCAL_RUN} = "true" ]]; then
+        ct_args=${CHART_TESTING_ARGS}
+    fi
+    docker_exec ct install ${ct_args} --config /workdir/test/ct.yaml
+    echo
+}
+
+install_helm() {
+    echo 'Installing helm...'
+
+    if [[ "${LOCAL_RUN}" = "true" ]]
+    then
+        echo "Local run, not downloading helm cli..."
+    else
+        echo "CI run, downloading helm cli..."
+        curl -s https://raw.githubusercontent.com/helm/helm/master/scripts/get > tmp/get_helm.sh \
+        && chmod 700 tmp/get_helm.sh \
+        && sudo tmp/get_helm.sh
+    fi
+}

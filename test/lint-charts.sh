@@ -26,20 +26,6 @@ install_kubeval() {
     fi
 }
 
-install_helm() {
-    echo 'Installing helm...'
-
-    if [[ "${LOCAL_RUN}" = "true" ]] 
-    then
-        echo "Local run, not downloading helm cli..."
-    else
-        echo "CI run, downloading helm cli..."
-        curl -s https://raw.githubusercontent.com/helm/helm/master/scripts/get > tmp/get_helm.sh \
-        && chmod 700 tmp/get_helm.sh \
-        && sudo tmp/get_helm.sh
-    fi
-}
-
 check_changelog_version() {
     local changed_charts=("")
     while IFS='' read -r line; do changed_charts+=("$line"); done < <(get_changed_charts)
