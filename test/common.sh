@@ -42,7 +42,7 @@ cleanup() {
 
 install_charts() {
     git_fetch
-    local ct_args
+    local ct_args=""
     if [[ ${LOCAL_RUN} = "true" ]]; then
         ct_args=${CHART_TESTING_ARGS}
     fi
