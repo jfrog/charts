@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.11]  - June 24, 2019
+* Update chart maintainers
+
 ## [0.3.10]  - June 6, 2019
 * Adding priority class support
 

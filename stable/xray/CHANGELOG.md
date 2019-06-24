@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.12.15] - June 24, 2019
+* Update chart maintainers
+
 ## [0.12.14] - June 23, 2019
 * Add values files for small, medium and large installations
 
