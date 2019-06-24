@@ -355,6 +355,26 @@ jconsole artifactory-ha-<release-name>-primary:<primary-jmx-port>
 jconsole <release-name>:<node-jmx-port>
 ```
 
+### Access creds. bootstraping
+**IMPORTANT:** Bootsrapping access creds. will allow access for the user access-admin from certain IP's.
+
+* User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
+
+1. Create `access-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
+```
+artifactory:
+   accessAdmin:
+    ip: "<IP_RANGE>" #Example: "10.13.89.*"
+    password: "<PASSWD>"
+
+postgresql:
+  postgresPassword: "<DB_PASSWD>"
+```
+
+2. Apply the `access-creds-values.yaml` file:
+
+ `helm upgrade <helm_release_name> --install jfrog/artifactory-ha -f access-creds-values.yaml`
+
 ### Bootstrapping Artifactory
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
@@ -622,6 +642,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
 | `artifactory.masterKey`           | Artifactory Master Key. Can be generated with `openssl rand -hex 32` |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |
+| `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|             |
 | `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                |
 | `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                            |
