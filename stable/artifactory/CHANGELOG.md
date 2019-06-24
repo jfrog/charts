@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.15.5] - Jun 24, 2019
+* Change Nginx to point to the artifactory externalPort
+
 ## [7.15.4] - Jun 23, 2019
 * Add the option to provide an IP for the access-admin endpoints
 
