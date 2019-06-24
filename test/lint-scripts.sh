@@ -15,6 +15,7 @@ main() {
     ${SHELLCHECK_CMD} test/e2e-kind.sh
     ${SHELLCHECK_CMD} test/e2e-local-gke.sh
     ${SHELLCHECK_CMD} test/lint-charts.sh
+    ${SHELLCHECK_CMD} test/common.sh
 
     echo "Done Scripts Linting!"
 }

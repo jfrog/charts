@@ -46,7 +46,7 @@ install_charts() {
     if [[ ${LOCAL_RUN} = "true" ]]; then
         ct_args=${CHART_TESTING_ARGS}
     fi
-    docker_exec ct install ${ct_args} --config /workdir/test/ct.yaml
+    docker_exec ct install "${ct_args}" --config /workdir/test/ct.yaml
     echo
 }
 
