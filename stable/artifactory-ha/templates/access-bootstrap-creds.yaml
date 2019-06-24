@@ -10,8 +10,8 @@ metadata:
     release: {{ .Release.Name }}
 data:
 {{- if .Values.artifactory.accessAdmin.password }}
-  bootstrap.creds: {{ (printf "access-admin@127.0.0.1=%s" .Values.artifactory.accessAdmin.password) | b64enc }}
+   bootstrap.creds: {{ (printf "access-admin@%s=%s" .Values.artifactory.accessAdmin.ip .Values.artifactory.accessAdmin.password) | b64enc }}
 {{- else }}
-  bootstrap.creds: {{ (printf "access-admin@127.0.0.1=%s" (randAlphaNum 10)) | b64enc }}
+   bootstrap.creds: {{ (printf "access-admin@%s=%s" .Values.artifactory.accessAdmin.ip (randAlphaNum 10)) | b64enc }}
 {{- end }}
 {{- end }}
