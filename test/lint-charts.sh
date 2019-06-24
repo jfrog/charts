@@ -12,20 +12,6 @@ readonly DESIRED_VERSION=${HELM_VERSION}
 # shellcheck source=test/common.sh
 source "${REPO_ROOT}/test/common.sh"
 
-install_kubeval() {
-    echo 'Installing kubeval...'
-
-    if [[ "${LOCAL_RUN}" = "true" ]] 
-    then
-        echo "Local run, not downloading kubeval cli..."
-    else
-        echo "CI run, downloading kubeval cli..."
-        curl -sSLo tmp/kubeval.tar.gz "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-linux-amd64.tar.gz"
-        tar xf tmp/kubeval.tar.gz -C tmp && chmod +x tmp/kubeval
-        sudo mv tmp/kubeval /usr/local/bin/kubeval
-    fi
-}
-
 check_changelog_version() {
     local changed_charts=("")
     while IFS='' read -r line; do changed_charts+=("$line"); done < <(get_changed_charts)
