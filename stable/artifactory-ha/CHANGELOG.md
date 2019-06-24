@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.14.3] - Jun 24, 2019
+* Update chart maintainers
+
 ## [0.14.2] - Jun 24, 2019
 * Change Nginx to point to the artifactory externalPort
 
