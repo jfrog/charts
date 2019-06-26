@@ -33,13 +33,6 @@ connect_to_cluster() {
     docker_exec gcloud container clusters get-credentials "$CLUSTER_NAME" --project "$PROJECT_NAME" --zone "$CLOUDSDK_COMPUTE_ZONE"
 }
 
-install_charts() {
-    git_fetch
-    #
-    docker_exec ct install --config /workdir/test/ct.yaml
-    echo
-}
-
 main() {
     get_creds
     run_ct_container
