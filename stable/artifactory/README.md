@@ -298,7 +298,7 @@ jconsole artifactory-<release-name>:<jmx-port>
 ```
 artifactory:
    accessAdmin:
-    ip: "<IP_RANGE>" #Example: "10.13.89.*"
+    ip: "<IP_RANGE>" #Example: "*"
     password: "<PASSWD>"
 
 postgresql:
