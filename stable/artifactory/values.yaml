@@ -481,7 +481,7 @@ nginx:
     server {
       listen {{ .Values.nginx.internalPortHttps }} ssl;
       listen {{ .Values.nginx.internalPortHttp }} ;
-      server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }} blabla.com;
+      server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }};
 
       if ($http_x_forwarded_proto = '') {
         set $http_x_forwarded_proto  $scheme;
