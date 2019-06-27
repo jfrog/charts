@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.15.8] - Jun 27, 2019
+## [7.15.8] - Jun 27, 2019
 * Update Artifactory version to 6.11 and add ability to Artifactory when bootstrap.creds file has been modified
 
 ## [7.15.7] - Jun 23, 2019
