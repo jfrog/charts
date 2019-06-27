@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.14.6] - Jun 27, 2019
+* Updated Artifactory version to 6.11.0
+
 ## [0.14.5] - Jun 27, 2019
 * Restart Primary node when bootstrap.creds file has been modified in artifactory-ha
 
