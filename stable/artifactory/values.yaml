@@ -401,6 +401,117 @@ nginx:
   # - access.log
   # - error.log
 
+  mainConf: |
+    # Main Nginx configuration file
+    worker_processes  4;
+
+    error_log  {{ .Values.nginx.persistence.mountPath }}/logs//error.log warn;
+    pid        /tmp/nginx.pid;
+
+
+    events {
+      worker_connections  1024;
+    }
+
+
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      variables_hash_max_size 1024;
+      variables_hash_bucket_size 64;
+      server_names_hash_max_size 4096;
+      server_names_hash_bucket_size 128;
+      types_hash_max_size 2048;
+      types_hash_bucket_size 64;
+      proxy_read_timeout 2400s;
+      client_header_timeout 2400s;
+      client_body_timeout 2400s;
+      proxy_connect_timeout 75s;
+      proxy_send_timeout 2400s;
+      proxy_buffer_size 32k;
+      proxy_buffers 40 32k;
+      proxy_busy_buffers_size 64k;
+      proxy_temp_file_write_size 250m;
+      proxy_http_version 1.1;
+      client_body_buffer_size 128k;
+
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+      '$status $body_bytes_sent "$http_referer" '
+      '"$http_user_agent" "$http_x_forwarded_for"';
+
+      log_format timing 'ip = $remote_addr '
+      'user = \"$remote_user\" '
+      'local_time = \"$time_local\" '
+      'host = $host '
+      'request = \"$request\" '
+      'status = $status '
+      'bytes = $body_bytes_sent '
+      'upstream = \"$upstream_addr\" '
+      'upstream_time = $upstream_response_time '
+      'request_time = $request_time '
+      'referer = \"$http_referer\" '
+      'UA = \"$http_user_agent\"';
+
+      access_log  {{ .Values.nginx.persistence.mountPath }}/logs/access.log  timing;
+
+      sendfile        on;
+      #tcp_nopush     on;
+
+      keepalive_timeout  65;
+
+      #gzip  on;
+
+      include /etc/nginx/conf.d/*.conf;
+
+    {{- if .Values.artifactory.replicator.enabled }}
+      include /etc/nginx/conf.d/replicator/*.conf;
+    {{- end }}
+
+    }
+
+
+  artifactoryConf: |
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
+    ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
+    ssl_session_cache shared:SSL:1m;
+    ssl_prefer_server_ciphers   on;
+    ## server configuration
+    server {
+      listen {{ .Values.nginx.internalPortHttps }} ssl;
+      listen {{ .Values.nginx.internalPortHttp }} ;
+      server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }};
+
+      if ($http_x_forwarded_proto = '') {
+        set $http_x_forwarded_proto  $scheme;
+      }
+      ## Application specific logs
+      ## access_log /var/log/nginx/artifactory-access.log timing;
+      ## error_log /var/log/nginx/artifactory-error.log;
+      rewrite ^/$ /artifactory/webapp/ redirect;
+      rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
+      if ( $repo != "" ) {
+        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2;
+      }
+      chunked_transfer_encoding on;
+      client_max_body_size 0;
+      location /artifactory/ {
+        proxy_read_timeout  900;
+        proxy_pass_header   Server;
+        proxy_cookie_path   ~*^/.* /;
+        if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+          proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
+        }
+        proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;
+        proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
+        proxy_set_header    X-Forwarded-Port  $server_port;
+        proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+        proxy_set_header    Host              $http_host;
+        proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+      }
+    }
+
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
