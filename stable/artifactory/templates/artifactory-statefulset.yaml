@@ -30,7 +30,7 @@ spec:
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore.yaml") . | sha256sum }}
         checksum/access-creds: {{ include (print $.Template.BasePath "/access-bootstrap-creds.yaml") . | sha256sum }}
-              {{- range $key, $value := .Values.artifactory.annotations }}
+      {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
