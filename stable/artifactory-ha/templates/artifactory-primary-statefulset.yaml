@@ -29,7 +29,9 @@ spec:
         release: {{ .Release.Name }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore.yaml") . | sha256sum }}
+      {{- if not (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
         checksum/access-creds: {{ include (print $.Template.BasePath "/access-bootstrap-creds.yaml") . | sha256sum }}
+      {{-end}}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
