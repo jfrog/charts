@@ -290,7 +290,7 @@ jconsole artifactory-<release-name>:<jmx-port>
 ```
 
 ### Access creds. bootstraping
-**IMPORTANT:** Bootsrapping access creds. will allow access for the user access-admin from certain IP's.
+**IMPORTANT:** Bootsrapping access creds. will automatically trigger a restart to the Artifactory pod and will allow access for the user `access-admin` from certain IP's.
 
 * User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
 
