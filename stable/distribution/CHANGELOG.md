@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.2.9] - Jun 30, 2019
+* Update statfulset apiVersion to apps/v1
+
 ## [3.2.8] - Jun 27, 2019
 * Update Distribution version 1.6.1
 
