@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.2] - Jul 1, 2019
+* Allow path based docker repos in the nginx config
+
 ## [7.16.1] - Jul 1, 2019
 * Updated Artifactory version to 6.11.1
 
