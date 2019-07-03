@@ -1,8 +1,14 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.14.5] - Jun 28, 2019
-* Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation  
+## [0.15.3] - Jul 3, 2019
+* Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation
+
+## [0.15.1] - Jul 1, 2019
+* Updated Artifactory version to 6.11.1
+
+## [0.15.0] - Jun 27, 2019
+* Updated Artifactory version to 6.11.0 and Restart Primary node when bootstrap.creds file has been modified in artifactory-ha
 
 ## [0.14.4] - Jun 24, 2019
 * Add the option to provide an IP for the access-admin endpoints

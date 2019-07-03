@@ -45,26 +45,32 @@ validate_manifests() {
     echo " Validating Manifests!"
     echo " Charts to be processed: ${changed_charts[*]}"
     echo "------------------------------------------------------------------------------------------------------------------------"
+    cd tmp
     for chart_name in ${changed_charts[*]} ; do
         echo "Validating chart ${chart_name}"
-        rm -rf "tmp/${chart_name}/"
-        mkdir -p tmp/stable
-        cp -r "${chart_name}" tmp/stable/
-        rm -rf tmp/"${chart_name}"/charts/
-        rm -rf tmp/"${chart_name}"/requirements.*
+        rm -rf stable
+        mkdir stable
+        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable > /dev/null 2>&1
         echo "------------------------------------------------------------------------------------------------------------------------"
-        echo "==> Processing with tmp/${chart_name}/values.yaml"
+        echo "==> Processing with default values..."
         echo "------------------------------------------------------------------------------------------------------------------------"
-        helm template tmp/"${chart_name}" | kubeval
-        if [ -d "tmp/${chart_name}/ci" ]
+        TEMPLATE_FILES="${chart_name}/templates/*"
+        # shellcheck disable=SC2086
+        kubeval ${TEMPLATE_FILES}
+        if [ -d "${REPO_ROOT}/${chart_name}/ci" ]
         then
-            FILES="tmp/${chart_name}/ci/*"
+            FILES="${REPO_ROOT}/${chart_name}/ci/*"
             for file in $FILES
             do
                 echo "------------------------------------------------------------------------------------------------------------------------"
-                echo "==> Processing with $file "
+                echo "==> Processing with $file..."
                 echo "------------------------------------------------------------------------------------------------------------------------"
-                helm template tmp/"${chart_name}" -f "$file" | kubeval
+                rm -rf stable
+                mkdir stable
+                helm template "${REPO_ROOT}/${chart_name}" -f "$file" --output-dir stable > /dev/null 2>&1
+                TEMPLATE_FILES="${chart_name}/templates/*" 
+                # shellcheck disable=SC2086
+                kubeval ${TEMPLATE_FILES}
             done
         fi 
     done

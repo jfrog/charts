@@ -1,6 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.1] - Jul 1, 2019
+* Updated Artifactory version to 6.11.1
+
+## [7.16.0] - Jun 27, 2019
+* Update Artifactory version to 6.11 and add restart to Artifactory when bootstrap.creds file has been modified
+
 ## [7.15.8] - Jun 27, 2019
 * Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation  
 
