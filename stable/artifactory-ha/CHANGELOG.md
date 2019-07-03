@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.15.3] - Jul 3, 2019
+## [0.15.2] - Jul 3, 2019
 * Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation
 
 ## [0.15.1] - Jul 1, 2019
