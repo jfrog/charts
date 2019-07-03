@@ -616,8 +616,11 @@ nginx:
       rewrite ^/$ /artifactory/webapp/ redirect;
       rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
       if ( $repo != "" ) {
-        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2;
+        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
       }
+      rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+      rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
+
       chunked_transfer_encoding on;
       client_max_body_size 0;
       location /artifactory/ {
