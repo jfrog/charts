@@ -35,7 +35,7 @@ jobs:
         # ping stdout every 9 minutes or Travis kills the build
         # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
         - while sleep 20m; do echo "=====[ $SECONDS seconds still running ]====="; done &
-        - travis_wait 20 ./test/e2e-github.sh
+        - ./test/e2e-github.sh
 
 stages:
   - lint-scripts
