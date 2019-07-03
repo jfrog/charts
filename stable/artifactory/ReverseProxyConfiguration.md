@@ -29,7 +29,8 @@ nginx:
     server {
         listen 443 ssl;
         listen 80 ;
-        server_name ~(?<repo>.+)\.jfrog.team jfrog.team;
+          ## Change to you DNS name you use to access Artifactory 
+          server_name ~(?<repo>.+)\.jfrog.team jfrog.team;
         
         if ($http_x_forwarded_proto = '') {
             set $http_x_forwarded_proto  $scheme;
