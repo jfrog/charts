@@ -20,7 +20,7 @@ For example:
 1. Create a values file `nginx-values.yaml` with the following values:
 ```yaml
 nginx:
-  mainConf: |
+  artifactoryConf: |
     ssl_certificate      /var/opt/jfrog/nginx/ssl/tls.crt;
     ssl_certificate_key  /var/opt/jfrog/nginx/ssl/tls.key;
     ssl_session_cache shared:SSL:1m;
