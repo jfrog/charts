@@ -48,8 +48,10 @@ nginx:
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
         if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass          http://artifactory-artifactory:8081/artifactory/$1;
+            proxy_pass          http://artifactory-artifactory:8081/artifactory/$1 break;
         }
+        rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+        rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
         proxy_pass          http://artifactory-artifactory:8081/artifactory/;
         proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
         proxy_set_header    X-Forwarded-Port  $server_port;
@@ -106,8 +108,10 @@ helm upgrade --install artifactory jfrog/artifactory -f nginx-values.yaml
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
         if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass          http://artifactory-artifactory:8081/artifactory/$1;
+            proxy_pass          http://artifactory-artifactory:8081/artifactory/$1 break;
         }
+        rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+        rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
         proxy_pass          http://artifactory-artifactory:8081/artifactory/;
         proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
         proxy_set_header    X-Forwarded-Port  $server_port;
