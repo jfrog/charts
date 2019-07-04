@@ -28,10 +28,10 @@ nginx:
     ssl_prefer_server_ciphers   on;
     ## server configuration
     server {
-      listen 443 ssl;
-      listen 80;
+      listen {{ .Values.nginx.internalPortHttps }} ssl;
+      listen {{ .Values.nginx.internalPortHttp }} ;
       ## Change to you DNS name you use to access Artifactory 
-      server_name ~(?<repo>.+)\.jfrog.team jfrog.team;
+      server_name ~(?<repo>.+)\.{{ include "artifactory-ha.fullname" . }} {{ include "artifactory-ha.fullname" . }};
 
       if ($http_x_forwarded_proto = '') {
         set $http_x_forwarded_proto  $scheme;
@@ -42,8 +42,10 @@ nginx:
       rewrite ^/$ /artifactory/webapp/ redirect;
       rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
       if ( $repo != "" ) {
-        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2;
+        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
       }
+      rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+      rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
       chunked_transfer_encoding on;
       client_max_body_size 0;
       location /artifactory/ {
@@ -51,11 +53,9 @@ nginx:
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
         if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-          proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1 break;
+          proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
         }
-        rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
-        rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
-        proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;
+        proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;
         proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
         proxy_set_header    X-Forwarded-Port  $server_port;
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
@@ -83,12 +83,6 @@ helm upgrade --install artifactory-ha jfrog/artifactory-ha -f nginx-values.yaml
     *   Replace `artifactory-artifactory` with service name taken from step 1.
     
     ```bash
-    ## add HA entries when ha is configure
-    ## Replace server names with Artifactory service names (primary and member service names)
-    upstream artifactory {
-        server artifactory-ha-artifactory-ha-primary:8081;
-        server artifactory-ha:8081;
-    }
     ## add ssl entries when https has been set in config
     ssl_certificate      /var/opt/jfrog/nginx/ssl/tls.crt;
     ssl_certificate_key  /var/opt/jfrog/nginx/ssl/tls.key;
@@ -96,38 +90,40 @@ helm upgrade --install artifactory-ha jfrog/artifactory-ha -f nginx-values.yaml
     ssl_prefer_server_ciphers   on;
     ## server configuration
     server {
-        listen 443 ssl;
-        listen 80 ;
-        server_name ~(?<repo>.+)\.jfrog.team jfrog.team;
-        
-        if ($http_x_forwarded_proto = '') {
-            set $http_x_forwarded_proto  $scheme;
-        }
-        ## Application specific logs
-        ## access_log /var/log/nginx/jfrog.team-access.log timing;
-        ## error_log /var/log/nginx/jfrog.team-error.log;
-        rewrite ^/$ /artifactory/webapp/ redirect;
-        rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
-        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2;
-        chunked_transfer_encoding on;
-        client_max_body_size 0;
-        location /artifactory/ {
+      listen 443 ssl;
+      listen 80;
+      ## Change to you DNS name you use to access Artifactory 
+      server_name ~(?<repo>.+)\.artifactory-artifactory artifactory-artifactory;
+
+      if ($http_x_forwarded_proto = '') {
+        set $http_x_forwarded_proto  $scheme;
+      }
+      ## Application specific logs
+      ## access_log /var/log/nginx/artifactory-access.log timing;
+      ## error_log /var/log/nginx/artifactory-error.log;
+      rewrite ^/$ /artifactory/webapp/ redirect;
+      rewrite ^/artifactory/?(/webapp)?$ /artifactory/webapp/ redirect;
+      if ( $repo != "" ) {
+        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
+      }
+      rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+      rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
+      chunked_transfer_encoding on;
+      client_max_body_size 0;
+      location /artifactory/ {
         proxy_read_timeout  900;
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
         if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass          http://artifactory/artifactory/$1 break;
+            proxy_pass          http://artifactory-artifactory:8081/artifactory/$1 break;
         }
-        rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
-        rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
-        proxy_pass          http://artifactory/artifactory/;
-        proxy_next_upstream http_503 non_idempotent;
+        proxy_pass          http://artifactory-artifactory:8081/artifactory/;
         proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
         proxy_set_header    X-Forwarded-Port  $server_port;
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
-        }
+      }
     }
     ```
     
