@@ -83,7 +83,11 @@ If Xray was installed with all of the default values (e.g. with no user-provided
 1. Retrieve all current passwords (rabbitmq/postgresql/mongodb) as explained in the above section.
 2. Upgrade the release by passing the previously auto-generated secrets:
 ```bash
-helm upgrade --name xray jfrog/xray --set mongodb.mongodbRootPassword=<mongo-root-password> --set mongodb.mongodbPassword=<mongo-password> --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresPassword=<postgres-password>
+helm upgrade --name xray jfrog/xray \
+    --set mongodb.mongodbRootPassword=${MONGODB_ROOT_PASSWORD} \
+    --set mongodb.mongodbPassword=${MONGODB_PASSWORD} \
+    --set rabbitmq-ha.rabbitmqPassword=${RABBITMQ_PASSWORD} \
+    --set postgresql.postgresPassword=${POSTGRES_PASSWORD}
 ```
 
 ## Remove

@@ -312,7 +312,7 @@ indexer:
     type: ClusterIP
 
   persistence:
-    enabled: false
+    enabled: true
     ## A manually managed Persistent Volume and Claim
     ## Requires persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
@@ -389,7 +389,7 @@ server:
     # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
 
   persistence:
-    enabled: false
+    enabled: true
     ## A manually managed Persistent Volume and Claim
     ## Requires persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound

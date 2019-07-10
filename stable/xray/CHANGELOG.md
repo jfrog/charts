@@ -1,6 +1,14 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.0.0] - Jul 9, 2019
+* Set default server and indexer services persistence to `true`.
+* **IMPORTANT:**
+  * To upgrade from a previous Xray deployment, you have to pass the `--force` flag to the `helm upgrade` command.
+  * This is mandatory to force the change services persistence to `true`.
+  * This change will recreate the server and indexer pods!
+  * **NOTE:** Don't forget to pass the DBs passwords to the `helm upgrade` if these were auto generated. See [README.md](README.md) for details in the **Upgrade** section.
+
 ## [0.12.17] - Jul 1, 2019
 * Update Xray version to 2.8.9
 
