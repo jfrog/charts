@@ -46,8 +46,7 @@ ingress:
   defaultBackend:
     enabled: true
   # Used to create an Ingress record.
-  hosts:
-    - artifactory.domain.example
+  hosts: []
   path: /
   annotations:
   # kubernetes.io/ingress.class: nginx
@@ -481,7 +480,12 @@ nginx:
     server {
       listen {{ .Values.nginx.internalPortHttps }} ssl;
       listen {{ .Values.nginx.internalPortHttp }} ;
-      server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }};
+      server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }}
+      {{- range .Values.ingress.hosts -}}
+        {{- if contains "." . -}}
+          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ (splitn "." 2 .)._1  }} {{ . }}
+        {{- end -}}
+      {{- end -}};
 
       if ($http_x_forwarded_proto = '') {
         set $http_x_forwarded_proto  $scheme;

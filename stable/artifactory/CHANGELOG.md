@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.3] - Jul 11, 2019
+* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration 
+
 ## [7.16.2] - Jul 3, 2019
 * Fix values key in reverse proxy example
 
