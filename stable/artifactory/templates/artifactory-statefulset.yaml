@@ -69,6 +69,16 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        {{- if .Values.artifactory.cacheFs.enabled }}
+        - name: artifactory-cachefs-volume
+          mountPath: "{{ .Values.artifactory.cacheFs.persistence.mountPath }}"
+        {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+        - name: artifactory-data
+          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+        - name: artifactory-backup
+          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+      {{- end }}
     {{- end }}
     {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
       - name: "access-bootstrap-creds"
@@ -461,5 +471,26 @@ spec:
       resources:
         requests:
           storage: {{ .size }}
+      {{- end }}
+      {{- else }}
+      - name: artifactory-volume
+        emptyDir:
+          sizeLimit: {{ .size }}
+      {{- end }}
+  {{- if .Values.artifactory.cacheFs.enabled }}
+  - metadata:
+      name: artifactory-cachefs-volume
+    spec:
+      {{- if .Values.artifactory.cacheFs.persistence.storageClass }}
+      {{- if (eq "-" .Values.artifactory.cacheFs.persistence.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.artifactory.cacheFs.persistence.storageClass }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .Values.artifactory.cacheFs.persistence.accessMode }}" ]
+      resources:
+        requests:
+          {{- $cacheBytes := add .Values.artifactory.cacheFs.persistence.bytes 1073741824 }}
+          storage: {{ div $cacheBytes 1073741824 }}Gi
   {{- end }}
-{{- end }}

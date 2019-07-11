@@ -271,6 +271,14 @@ artifactory:
     timeoutSeconds: 10
     periodSeconds: 10
     successThreshold: 1
+
+  cacheFs:
+    enabled: true
+    persistence:
+      accessMode: ReadWriteOnce
+      bytes: 182536110080
+      mountPath: /jfrog/cache
+
   persistence:
     mountPath: "/var/opt/jfrog/artifactory"
     enabled: true
@@ -287,8 +295,6 @@ artifactory:
     customBinarystoreXmlSecret:
 
     maxCacheSize: 50000000000
-    cacheProviderDir: cache
-
     ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
     ## Supported types are:
     ## file-system (default)
@@ -303,8 +309,14 @@ artifactory:
     binarystoreXml: |
       {{- if eq .Values.artifactory.persistence.type "file-system" -}}
       <!-- File system filestore -->
-      <config version="v1">
+      <config version="v2">
           <chain template="file-system"/>
+          {{- if .Values.artifactory.cacheFs.enabled }}
+          <provider id="cache-fs" type="cache-fs">
+              <cacheProviderDir>{{ .Values.artifactory.cacheFs.persistence.mountPath }}</cacheProviderDir>
+              <maxCacheSize>{{ .Values.artifactory.cacheFs.persistence.bytes }}</maxCacheSize>
+          </provider>
+          {{- end }}
       </config>
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "google-storage" }}
