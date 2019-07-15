@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [1.0.1] - Jul 15, 2019
-* Updated README.md to the default of version 1.0.0.
+* Updated README.md to the new defaults of version 1.0.0.
 
 ## [1.0.0] - Jul 9, 2019
 * Set default server and indexer services persistence to `true`.
