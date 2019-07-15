@@ -15,16 +15,16 @@ metadata:
 {{- end}}
   annotations:
     {{- range $key, $value := .Values.ingress.annotations }}
-      {{ $key }}: {{ $value | quote }}
+      {{ $key }}: {{ tpl $value $ | quote }}
     {{- end }}
 spec:
   {{- if .Values.ingress.defaultBackend.enabled }}
   backend:
     serviceName: {{ $serviceName }}
     servicePort: {{ $servicePort }}
-  {{- end -}}
-{{- if .Values.ingress.hosts }}
+  {{- end }}
   rules:
+{{- if .Values.ingress.hosts }}
   {{- range $host := .Values.ingress.hosts }}
   - host: {{ $host | quote }}
     http:
@@ -35,6 +35,10 @@ spec:
             servicePort: {{ $servicePort }}
   {{- end -}}
 {{- end -}}
+{{- with .Values.ingress.additionalRules }}
+{{ tpl . $ | indent 2 }}
+{{- end }}
+
   {{- if .Values.ingress.tls }}
   tls:
 {{ toYaml .Values.ingress.tls | indent 4 }}
