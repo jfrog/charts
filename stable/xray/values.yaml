@@ -82,8 +82,7 @@ ingress:
   defaultBackend:
     enabled: true
   # Used to create an Ingress record.
-  hosts:
-    - xray.domain.example
+  hosts: []
   annotations:
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
@@ -95,6 +94,8 @@ ingress:
 # labels:
   # traffic-type: external
   # traffic-type: internal
+
+  additionalRules: []
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
