@@ -2,6 +2,9 @@
 All changes to this chart will be documented in this file.
 
 ## [0.15.3] - Jul 11, 2019
+* Add `artifactory.customVolumeMounts` to member node statefulset template
+
+## [0.15.3] - Jul 11, 2019
 * Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration 
 
 ## [0.15.2] - Jul 3, 2019
