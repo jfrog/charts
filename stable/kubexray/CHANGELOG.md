@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.3.12]  - Jul 22, 2019
+* Change Ingress API to be compatible with recent kubernetes versions and remove the beta API group from the Deployment
+
 ## [0.3.11]  - June 24, 2019
 * Update chart maintainers
 

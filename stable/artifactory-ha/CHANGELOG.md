@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.15.5] - Jul 22, 2019
+* Change Ingress API to be compatible with recent kubernetes versions
+
 ## [0.15.4] - Jul 11, 2019
 * Add `artifactory.customVolumeMounts` support to member node statefulset template
 

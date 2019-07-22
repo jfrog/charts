@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.4] - Jul 22, 2019
+* Change Ingress API to be compatible with recent kubernetes versions 
+
 ## [7.16.3] - Jul 11, 2019
 * Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration 
 
