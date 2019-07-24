@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.5] - Jul 22, 2019
+* Change Ingress API to be compatible with recent kubernetes versions 
+
 ## [7.16.4] - Jul 22, 2019
 * Updated Artifactory version to 6.11.3
 

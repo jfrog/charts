@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.3.0] - Jul 22, 2019
+* Change Ingress API to be compatible with recent kubernetes versions
+
 ## [3.2.9] - Jun 30, 2019
 * Update statfulset apiVersion to apps/v1
 
