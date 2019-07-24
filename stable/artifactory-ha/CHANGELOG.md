@@ -3,6 +3,9 @@ All changes to this chart will be documented in this file.
 ## [0.15.7] - Jul 25, 2019
 * Updated README about how to apply Artifactory licenses
 
+## [0.15.7] - Jul 24, 2019
+* Simplify nginx setup and shorten initial wait for probes 
+
 ## [0.15.6] - Jul 22, 2019
 * Change Ingress API to be compatible with recent kubernetes versions
 
