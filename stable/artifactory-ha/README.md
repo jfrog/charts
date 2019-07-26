@@ -243,14 +243,17 @@ helm install --name artifactory-ha --set artifactory.masterKeySecretName=my-secr
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set artifactory.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set artifactory.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
 ### Install Artifactory HA license
-For activating Artifactory HA, you must install an appropriate license. There are two ways to manage the license. **Artifactory UI** or a **Kubernetes Secret**.
+For activating Artifactory HA, you must install an appropriate license. There are three ways to manage the license. **Artifactory UI**, **REST API**, or a **Kubernetes Secret**.
 
-The easier and recommended way is the **Artifactory UI**. Using the **Kubernetes Secret** is for advanced users and is better suited for automation.
+The easier and recommended way is the **Artifactory UI**. Using the **Kubernetes Secret** or **REST API** is for advanced users and is better suited for automation.
 
 **IMPORTANT:** You should use only one of the following methods. Switching between them while a cluster is running might disable your Artifactory HA cluster!
 
 ##### Artifactory UI
-Once primary cluster is running, open Artifactory UI and insert the license(s) in the UI. See [HA installation and setup](https://www.jfrog.com/confluence/display/RTF/HA+Installation+and+Setup) for more details
+Once primary cluster is running, open Artifactory UI and insert the license(s) in the UI. See [HA installation and setup](https://www.jfrog.com/confluence/display/RTF/HA+Installation+and+Setup) for more details. **Note that you should enter all licenses at once, with each license is separated by a newline.** If you add the licenses one at a time, you may get redirected to a node without a license and the UI won't load for that node.
+
+##### REST API
+You can add licenses via REST API (https://www.jfrog.com/confluence/display/RTF/Artifactory+REST+API#ArtifactoryRESTAPI-InstallHAClusterLicenses). Note that the REST API expects "\n" for the newlines in the licenses.
 
 ##### Kubernetes Secret
 You can deploy the Artifactory license(s) as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
