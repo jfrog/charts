@@ -44,7 +44,7 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
-          [ -d {{ .Values.nginx.persistence.mountPath }}/lost+found ] && rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found;
+          rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found;
           mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs;
         volumeMounts:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
