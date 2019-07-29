@@ -1,5 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
+
+## [0.15.8] - Jul 29, 2019
+* Don't create the nginx configmaps when nginx.enabled is false
+
 ## [0.15.7] - Jul 25, 2019
 * Updated README about how to apply Artifactory licenses
 

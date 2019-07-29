@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.6] - Jul 29, 2019
+* Don't create the nginx configmaps when nginx.enabled is false 
+
 ## [7.16.5] - Jul 22, 2019
 * Change Ingress API to be compatible with recent kubernetes versions 
 
