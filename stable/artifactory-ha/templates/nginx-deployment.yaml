@@ -37,37 +37,18 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
-    {{- if and .Values.nginx.persistence.enabled (eq (int .Values.nginx.replicaCount) 1) }}
-      - name: "remove-lost-found"
+      - name: "setup"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         command:
         - '/bin/sh'
         - '-c'
-        - 'rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found'
+        - >
+          rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found;
+          mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs;
         volumeMounts:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
           name: nginx-volume
-    {{- end }}
-      - name: "wait-for-artifactory"
-        image: "{{ .Values.initContainerImage }}"
-        command:
-        - 'sh'
-        - '-c'
-        - >
-          until nc -z -w 2 {{ $serviceName }} {{ $servicePort }} && echo artifactory ok; do
-            sleep 2;
-          done;
-      - name: "create-logs-directory"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
-        command:
-        - '/bin/sh'
-        - '-c'
-        - 'mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs/'
-        volumeMounts:
-          - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-            name: nginx-volume
       securityContext:
         runAsUser: {{ .Values.nginx.uid }}
         fsGroup: {{ .Values.nginx.gid }}
@@ -86,8 +67,6 @@ spec:
         - containerPort: {{ .Values.nginx.internalPortReplicator }}
         {{- end }}
         volumeMounts:
-        - name: nginx-volume
-          mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
         - name: nginx-conf
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf
@@ -97,9 +76,10 @@ spec:
         - name: nginx-replicator-conf
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/replicator/"
         {{- end }}
+        - name: nginx-volume
+          mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
-
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.readinessProbe.enabled }}
@@ -152,14 +132,6 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      - name: nginx-volume
-      {{- if and .Values.nginx.persistence.enabled (eq (int .Values.nginx.replicaCount) 1) }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.nginx.persistence.existingClaim | default (include "artifactory-ha.nginx.fullname" .) }}
-      {{- else }}
-        emptyDir: {}
-      {{- end }}
-
       - name: nginx-conf
         configMap:
         {{- if .Values.nginx.customConfigMap }}
@@ -170,11 +142,11 @@ spec:
 
       - name: nginx-artifactory-conf
         configMap:
-        {{- if .Values.nginx.customArtifactoryConfigMap }}
+      {{- if .Values.nginx.customArtifactoryConfigMap }}
           name: {{ .Values.nginx.customArtifactoryConfigMap }}
-        {{- else }}
+      {{- else }}
           name: {{ template "artifactory-ha.fullname" . }}-nginx-artifactory-conf
-        {{- end }}
+      {{- end }}
 
       {{- if .Values.artifactory.replicator.enabled }}
       - name: nginx-replicator-conf
@@ -182,11 +154,18 @@ spec:
           name: {{ template "artifactory-ha.fullname" . }}-replicator-config
       {{- end }}
 
+      - name: nginx-volume
+      {{- if .Values.nginx.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.nginx.persistence.existingClaim | default (include "artifactory-ha.nginx.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
       - name: ssl-certificates
         secret:
-        {{- if .Values.nginx.tlsSecretName }}
+      {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}
-        {{- else }}
+      {{- else }}
           secretName: {{ template "artifactory-ha.fullname" . }}-nginx-certificate
-        {{- end }}
+      {{- end }}
 {{- end }}
