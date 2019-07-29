@@ -404,7 +404,7 @@ nginx:
     # Main Nginx configuration file
     worker_processes  4;
 
-    error_log  {{ .Values.nginx.persistence.mountPath }}/logs//error.log warn;
+    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log warn;
     pid        /tmp/nginx.pid;
 
 
@@ -542,7 +542,7 @@ nginx:
   livenessProbe:
     enabled: true
     path: '/artifactory/webapp/#/login'
-    initialDelaySeconds: 60
+    initialDelaySeconds: 10
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -551,7 +551,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: '/artifactory/webapp/#/login'
-    initialDelaySeconds: 60
+    initialDelaySeconds: 10
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10

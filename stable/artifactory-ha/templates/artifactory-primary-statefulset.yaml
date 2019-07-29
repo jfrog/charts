@@ -80,9 +80,7 @@ spec:
         - 'sh'
         - '-c'
         - >
-          if [ -d {{ .Values.artifactory.persistence.mountPath }}/lost+found ]; then
-            rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found
-          fi
+          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume

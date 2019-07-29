@@ -37,37 +37,18 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
-    {{- if .Values.nginx.persistence.enabled }}
-      - name: "remove-lost-found"
+      - name: "setup"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         command:
         - '/bin/sh'
         - '-c'
-        - 'rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found'
+        - >
+          rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found;
+          mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs;
         volumeMounts:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
           name: nginx-volume
-    {{- end }}
-      - name: "create-logs-directory"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
-        command:
-          - '/bin/sh'
-          - '-c'
-          - 'mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs/'
-        volumeMounts:
-          - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-            name: nginx-volume
-      - name: "wait-for-artifactory"
-        image: "{{ .Values.initContainerImage }}"
-        command:
-        - 'sh'
-        - '-c'
-        - >
-          until nc -z -w 2 {{ $serviceName }} {{ $servicePort }} && echo artifactory ok; do
-            sleep 2;
-          done;
       securityContext:
         runAsUser: {{ .Values.nginx.uid }}
         fsGroup: {{ .Values.nginx.gid }}
