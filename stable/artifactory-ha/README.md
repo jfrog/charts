@@ -35,6 +35,18 @@ To install the chart with the release name `artifactory-ha`:
 helm install --name artifactory-ha jfrog/artifactory-ha
 ```
 
+### Install with External PostgreSQL
+At this time, production-ready Artifactory-HA installations need to use an external PostgreSQL with a static password. This is for performance and stability reasons.
+```bash
+helm install --name artifactory-ha \
+--set postgresql.enabled=false \
+--set database.type=postgresql \
+--set database.url='jdbc:sqlserver://${DB_HOST}:${DB_PORT};databaseName=my-artifactory-db;sendStringParametersAsUnicode=false;applicationName=Artifactory Binary Repository' \
+--set database.user=${DB_USER} \
+--set database.password=${DB_PASSWORD} \
+  jfrog/artifactory-ha
+```
+
 ### Deploying Artifactory with replicator
 The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replicator) is used with an [Enterprise Plus](https://www.jfrog.com/confluence/display/EP/Welcome+to+JFrog+Enterprise+Plus) license.
 ```bash
