@@ -1,6 +1,6 @@
 Congratulations. You have just deployed JFrog Artifactory HA!
 
-{{- if (not .Values.artifactory.masterKeySecretName) and eq .Values.artifactory.masterKey "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF" }}
+{{- if and (not .Values.artifactory.masterKeySecretName) (eq .Values.artifactory.masterKey "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") }}
 
 
 ***************************************** WARNING ******************************************
