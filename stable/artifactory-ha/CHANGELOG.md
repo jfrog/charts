@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.15.9] - Aug 1, 2019
+* Fix masterkey/masterKeySecretName not specified warning render logic in NOTES.txt
+
 ## [0.15.8] - Jul 28, 2019
 * Simplify nginx setup and shorten initial wait for probes 
 
