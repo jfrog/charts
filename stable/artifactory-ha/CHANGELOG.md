@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.15.9] - Jul 29, 2019
+## [0.15.10] - Aug 5, 2019
 * Don't create the nginx configmaps when nginx.enabled is false
+
+## [0.15.9] - Aug 1, 2019
+* Fix masterkey/masterKeySecretName not specified warning render logic in NOTES.txt
 
 ## [0.15.8] - Jul 28, 2019
 * Simplify nginx setup and shorten initial wait for probes 
