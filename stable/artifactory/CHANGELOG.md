@@ -1,6 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.8] - Aug 4, 2019
+* Improve binarystore config
+    1. Convert to a secret
+    2. Move config to values.yaml
+    3. Support an external secret 
+
 ## [7.16.7] - Jul 29, 2019
 * Don't create the nginx configmaps when nginx.enabled is false 
 

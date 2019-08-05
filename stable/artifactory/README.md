@@ -102,15 +102,10 @@ helm install --name artifactory \
 Get more details on configuring Artifactory in the [official documentation](https://www.jfrog.com/confluence/).
 
 ### Artifactory storage
-When using an enterprise license. Artifactory supports a wide range of storage back ends. You can see more details on [Artifactory HA storage options](https://www.jfrog.com/confluence/display/RTF/HA+Installation+and+Setup#HAInstallationandSetup-SettingUpYourStorageConfiguration)
+When using an enterprise license. Artifactory supports a wide range of storage back ends. You can see more details on [Artifactory Filestore options](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore)
 
 In this chart, you set the type of storage you want with `artifactory.persistence.type` and pass the required configuration settings.
 The default storage in this chart is the `file-system` replication, where the data is replicated to all nodes.
-
-> **IMPORTANT:** All storage configurations (except NFS) come with a default `artifactory.persistence.redundancy` parameter.
-This is used to set how many replicas of a binary should be stored in the cluster's nodes.
-Once this value is set on initial deployment, you can not update it using helm.
-It is recommended to set this to a number greater than half of your cluster's size, and never scale your cluster down to a size smaller than this number.
 
 #### NFS
 To use an NFS server as your cluster's storage, you need to
@@ -179,6 +174,49 @@ To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Bi
 --set artifactory.persistence.cacheProviderDir=/opt/cache-dir \
 ...
 ```
+
+#### Custom binarystore.xml
+You have an option to provide a custom [binarystore.xml](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore).<br>
+There are two options for this
+
+1. Editing directly in [values.yaml](values.yaml)
+```yaml
+artifactory:
+  persistence:
+    binarystoreXml: |
+      <!-- The custom XML snippet -->
+      <config version="v1">
+          <chain template="file-system"/>
+      </config>
+
+```
+
+2. Create your own [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) and pass it to your `helm install` command
+```yaml
+# Prepare your custom Secret file (custom-binarystore.yaml)
+kind: Secret
+apiVersion: v1
+metadata:
+  name: custom-binarystore
+  labels:
+    app: artifactory
+    chart: artifactory
+stringData:
+  binarystore.xml: |-
+      <!-- The custom XML snippet -->
+      <config version="v1">
+          <chain template="file-system"/>
+      </config>
+```
+
+```bash
+# Create a secret from the file
+kubectl apply -n artifactory -f ./custom-binarystore.yaml
+
+# Pass it to your helm install command:
+helm install --name artifactory --namespace artifactory --set artifactory.persistence.customBinarystoreXmlSecret=custom-binarystore jfrog/artifactory
+```
+
 
 ### Customizing Database password
 You can override the specified database password (set in [values.yaml](values.yaml)), by passing it as a parameter in the install command line
@@ -573,16 +611,18 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.successThreshold`    | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
-| `artifactory.copyOnEveryStartup`     | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
-| `artifactory.persistence.mountPath` | Artifactory persistence volume mount path | `"/var/opt/jfrog/artifactory"`         |
-| `artifactory.persistence.enabled` | Artifactory persistence volume enabled | `true`                                      |
-| `artifactory.persistence.existingClaim` | Artifactory persistence volume claim name |                                       |
-| `artifactory.persistence.accessMode` | Artifactory persistence volume access mode | `ReadWriteOnce`                      |
-| `artifactory.persistence.size` | Artifactory persistence or local volume size | `20Gi`                                   |
-| `artifactory.persistence.maxCacheSize` | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
-| `artifactory.persistence.cacheProviderDir` | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
-| `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
-| `artifactory.persistence.redundancy`   | Artifactory HA storage redundancy                   | `3`                             |
+| `artifactory.copyOnEveryStartup`         | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
+| `artifactory.persistence.mountPath`      | Artifactory persistence volume mount path        | `"/var/opt/jfrog/artifactory"`       |
+| `artifactory.persistence.enabled`        | Artifactory persistence volume enabled           | `true`                               |
+| `artifactory.persistence.existingClaim`  | Artifactory persistence volume claim name        |                                      |
+| `artifactory.persistence.accessMode`     | Artifactory persistence volume access mode       | `ReadWriteOnce`                      |
+| `artifactory.persistence.size`           | Artifactory persistence or local volume size     | `20Gi`                               |
+| `artifactory.persistence.binarystoreXml` | Artifactory binarystore.xml template             | See `values.yaml`                    |
+| `artifactory.persistence.customBinarystoreXmlSecret` | A custom Secret for binarystore.xml  | ``                                   |
+| `artifactory.persistence.maxCacheSize`   | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
+| `artifactory.persistence.cacheProviderDir`  | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
+| `artifactory.persistence.type`              | Artifactory HA storage type                         | `file-system`                   |
+| `artifactory.persistence.redundancy`        | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
 | `artifactory.persistence.nfs.haDataMount`   | NFS data directory                   | `/data`                             |
 | `artifactory.persistence.nfs.haBackupMount` | NFS backup directory                 | `/backup`                           |

@@ -139,7 +139,6 @@ spec:
         {{- else }}
           name: {{ template "artifactory.fullname" . }}-nginx-conf
         {{- end }}
-
       - name: nginx-artifactory-conf
         configMap:
       {{- if .Values.nginx.customArtifactoryConfigMap }}
@@ -147,13 +146,11 @@ spec:
       {{- else }}
           name: {{ template "artifactory.fullname" . }}-nginx-artifactory-conf
       {{- end }}
-
       {{- if .Values.artifactory.replicator.enabled }}
       - name: nginx-replicator-conf
         configMap:
           name: {{ template "artifactory.fullname" . }}-replicator-config
       {{- end }}
-
       - name: nginx-volume
       {{- if .Values.nginx.persistence.enabled }}
         persistentVolumeClaim:
