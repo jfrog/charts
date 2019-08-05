@@ -333,19 +333,17 @@ jconsole artifactory-<release-name>:<jmx-port>
 * User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
 
 1. Create `access-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
-```
+```yaml
 artifactory:
-   accessAdmin:
+  accessAdmin:
     ip: "<IP_RANGE>" #Example: "*"
     password: "<PASSWD>"
-
-postgresql:
-  postgresPassword: "<DB_PASSWD>"
 ```
 
 2. Apply the `access-creds-values.yaml` file:
-
- `helm upgrade <helm_release_name> --install jfrog/artifactory -f access-creds-values.yaml`
+```bash
+helm upgrade --install artifactory jfrog/artifactory -f access-creds-values.yaml
+```
  
 3. Restart Artifactory Pod (`Kubectl delete pod <pod_name>`)
 
@@ -356,7 +354,7 @@ postgresql:
 * User guide to [bootstrap Artifactory Security Configuration](https://www.jfrog.com/confluence/display/RTF/Configuration+Files#ConfigurationFiles-BootstrappingtheSecurityConfiguration)
 
 1. Create `bootstrap-config.yaml` with artifactory.config.import.xml and security.import.xml as shown below:
-```
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:

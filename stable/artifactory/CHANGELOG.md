@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.9] - Aug 5, 2019
+* Do not mount `access/etc/bootstrap.creds` unless user specifies a custom password or secret (Access already generates a random password if not provided one)
+* If custom `bootstrap.creds` is provided (using keys or custom secret), prepare it with an init container so the temp file does not persist
+
 ## [7.16.8] - Aug 4, 2019
 * Improve binarystore config
     1. Convert to a secret
