@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.7] - Jul 29, 2019
+* Don't create the nginx configmaps when nginx.enabled is false 
+
 ## [7.16.6] - Jul 24, 2019
 * Simplify nginx setup and shorten initial wait for probes 
 
