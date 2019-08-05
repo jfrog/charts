@@ -213,6 +213,42 @@ To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Bi
 ...
 ```
 
+#### Custom binarystore.xml
+You have an option to provide a custom [binarystore.xml](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore).<br>
+There are two options for this
+
+1. Editing directly in [values.yaml](values.yaml)
+```yaml
+artifactory:
+  persistence:
+    binarystoreXml: |
+      <!-- Your custom binarystore.xml snippet -->
+
+```
+
+2. Create your own [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) and pass it to your `helm install` command
+```yaml
+# Prepare your custom Secret file (custom-binarystore.yaml)
+kind: Secret
+apiVersion: v1
+metadata:
+  name: custom-binarystore
+  labels:
+    app: artifactory
+    chart: artifactory
+stringData:
+  binarystore.xml: |-
+      <!-- Your custom binarystore.xml snippet -->
+```
+
+```bash
+# Create a secret from the file
+kubectl apply -n artifactory -f ./custom-binarystore.yaml
+
+# Pass it to your helm install command:
+helm install --name artifactory-ha --set artifactory.persistence.customBinarystoreXmlSecret=custom-binarystore jfrog/artifactory-ha
+```
+
 ### Create a unique Master Key
 Artifactory HA cluster requires a unique master key. By default the chart has one set in values.yaml (`artifactory.masterKey`).
 
@@ -683,6 +719,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
 | `artifactory.persistence.size`         | Artifactory persistence or local volume size        | `200Gi`                         |
+| `artifactory.persistence.binarystoreXml` | Artifactory binarystore.xml template              | See `values.yaml`               |
+| `artifactory.persistence.customBinarystoreXmlSecret` | A custom Secret for binarystore.xml   | ``                              |
 | `artifactory.persistence.maxCacheSize` | Artifactory cache-fs provider maxCacheSize in bytes | `50000000000`                   |
 | `artifactory.persistence.cacheProviderDir` | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
 | `artifactory.persistence.type`         | Artifactory HA storage type                         | `file-system`                   |
