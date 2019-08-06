@@ -9,8 +9,6 @@ readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 # shellcheck disable=SC2034  # This variable is used by the script get_helm.sh
 readonly DESIRED_VERSION=${HELM_VERSION}
-# shellcheck disable=SC2034  # This variable is used by the Makefile
-readonly CHART_TESTING_ARGS=${CHART_TESTING_ARGS}
 
 # shellcheck source=test/common.sh
 source "${REPO_ROOT}/test/common.sh"
