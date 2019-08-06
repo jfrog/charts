@@ -55,9 +55,9 @@ validate_manifests() {
         echo "------------------------------------------------------------------------------------------------------------------------"
         echo "==> Processing with default values..."
         echo "------------------------------------------------------------------------------------------------------------------------"
-        TEMPLATE_FILES="${chart_name}/templates/*"
+        TEMPLATE_FILES="${chart_name}/templates"
         # shellcheck disable=SC2086
-        kubeval ${TEMPLATE_FILES}
+        kubeval -d ${TEMPLATE_FILES}
         if [ -d "${REPO_ROOT}/${chart_name}/ci" ]
         then
             FILES="${REPO_ROOT}/${chart_name}/ci/*"
@@ -86,13 +86,17 @@ main() {
     install_helm
     git_fetch
     # Lint helm charts
-    docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint --config /workdir/test/ct.yaml | tee tmp/lint.log
+    # shellcheck disable=SC2086
+    docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml | tee tmp/lint.log
     echo "Done Charts Linting!"
     echo
-    # Check for changelog version
-    check_changelog_version
-    # Validate Kubernetes manifests
-    validate_manifests
+    if [[ -z "${CHART_TESTING_ARGS}" ]]
+    then
+        # Check for changelog version
+        check_changelog_version
+        # Validate Kubernetes manifests
+        validate_manifests
+    fi
 }
 
 main
