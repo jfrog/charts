@@ -84,6 +84,29 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
+    {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
+      - name: "access-bootstrap-creds"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Preparing custom Access bootstrap.creds";
+            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
+            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+        volumeMounts:
+          - name: volume
+            mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+          - name: access-bootstrap-creds
+            mountPath: "/tmp/access/bootstrap.creds"
+            {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
+            subPath: {{ .Values.artifactory.accessAdmin.dataKey }}
+            {{- else }}
+            subPath: bootstrap.creds
+            {{- end }}
+    {{- end }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -125,9 +148,6 @@ spec:
           {{- range .Values.artifactory.copyOnEveryStartup }}
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
           {{- end }}
-          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
-          cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
-          chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
           {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ .Values.artifactory.preStartCommand }};
@@ -318,13 +338,6 @@ spec:
           subPath: artifactory.lic
           {{- end }}
       {{- end }}
-        - name: access-bootstrap-creds
-          mountPath: "/tmp/access/bootstrap.creds"
-          {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
-          subPath: {{ .Values.artifactory.accessAdmin.dataKey  }}
-          {{- else }}
-          subPath: bootstrap.creds
-          {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
         - name: replicator-config
           mountPath: "/replicator_extra_conf/replicator.yaml"
@@ -472,6 +485,7 @@ spec:
           secretName: {{ template "artifactory-ha.fullname" . }}-license
           {{- end }}
       {{- end }}
+      {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
       - name: access-bootstrap-creds
         secret:
           {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
@@ -479,6 +493,7 @@ spec:
           {{- else }}
           secretName: {{ template "artifactory-ha.fullname" . }}-bootstrap-creds
           {{- end }}
+      {{- end }}
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
         {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
           {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}

@@ -1,4 +1,5 @@
 {{- if not (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
+{{- if .Values.artifactory.accessAdmin.password }}
 kind: Secret
 apiVersion: v1
 metadata:
@@ -9,9 +10,6 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 data:
-{{- if .Values.artifactory.accessAdmin.password }}
-   bootstrap.creds: {{ (printf "access-admin@%s=%s" .Values.artifactory.accessAdmin.ip .Values.artifactory.accessAdmin.password) | b64enc }}
-{{- else }}
-   bootstrap.creds: {{ (printf "access-admin@%s=%s" .Values.artifactory.accessAdmin.ip (randAlphaNum 10)) | b64enc }}
+  bootstrap.creds: {{ (printf "access-admin@%s=%s" .Values.artifactory.accessAdmin.ip .Values.artifactory.accessAdmin.password) | b64enc }}
 {{- end }}
 {{- end }}
