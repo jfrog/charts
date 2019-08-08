@@ -48,6 +48,19 @@ helm install --name artifactory --set postgresql.enabled=false jfrog/artifactory
 ```
 Artifactory will start with it's embedded Derby database.
 
+### Install with External PostgreSQL
+At this time, for production-ready Artifactory-HA installations it's recommended to use an external PostgreSQL with a static password. This is for performance and stability reasons.
+
+```bash
+helm install --name artifactory-ha \
+--set postgresql.enabled=false \
+--set database.type=postgresql \
+--set database.url='jdbc:postgresql://<Database_URL>:5432/artifactory' \
+--set database.user=${DB_USER} \
+--set database.password=${DB_PASSWORD} \
+  jfrog/artifactory-ha
+```
+
 ### Deploying Artifactory with replicator
 The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replicator) is used with an [Enterprise Plus](https://www.jfrog.com/confluence/display/EP/Welcome+to+JFrog+Enterprise+Plus) license.
 ```bash

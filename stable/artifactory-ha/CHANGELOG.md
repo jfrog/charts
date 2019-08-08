@@ -398,4 +398,7 @@ All changes to this chart will be documented in this file.
 * Added support for PostStartCommand (To download Database JDBC connector)
 * Increased postgresql max_connections
 * Added support for `nginx.conf` ConfigMap
-* Updated Artifactory version to 6.1.0
+*jdbc:sqlserver://${DB_HOST}:${DB_PORT};databaseName=my-artifactory-db;sendStringParametersAbsUnicode=false;applicationName=Artifactory Binary Repository Updated Artifactory version to 6.1.0
+
+## [0.3.1] - Aug 08, 2019
+* Updated README with recommendations
