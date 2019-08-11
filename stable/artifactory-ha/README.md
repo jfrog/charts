@@ -335,7 +335,7 @@ In the `networkpolicy` section of values.yaml you can specify a list of NetworkP
 For podSelector, ingress and egress, if nothing is provided then a default `- {}` is applied which is to allow everything.
 
 A full (but very wide open) example that results in 2 NetworkPolicy objects being created:
-```
+```yaml
 networkpolicy:
   # Allows all ingress and egress to/from artifactory primary and member pods.
   - name: artifactory
@@ -583,7 +583,7 @@ kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
 For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
-```
+```yaml
 artifactory:
   ## Add custom init containers
   customInitContainers: |
@@ -594,7 +594,7 @@ artifactory:
 There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
 
 For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
-```
+```yaml
 artifactory:
   ## Add custom sidecar containers
   customSidecarContainers: |
@@ -602,7 +602,7 @@ artifactory:
 ```
 
 You can configure the sidecar to run as a custom user if needed by setting the following in the container template
-```
+```yaml
   # Example of running container as root (id 0)
   securityContext:
     runAsUser: 0
@@ -613,7 +613,7 @@ You can configure the sidecar to run as a custom user if needed by setting the f
 If you need to use a custom volume in a custom init or sidecar container, you can use this option.
 
 For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
-```
+```yaml
 artifactory:
   ## Add custom volumes
   customVolumes: |
@@ -624,7 +624,7 @@ artifactory:
 If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
 
 Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
-```
+```bash
 # Secret with single user plugin
 kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory-ha 
 
@@ -641,7 +641,7 @@ artifactory:
 ```
 
 You can now pass the created `plugins.yaml` file to helm install command to deploy Artifactory with user plugins as follows:
-```
+```bash
 helm install --name artifactory-ha -f plugins.yaml jfrog/artifactory-ha
 ```
 
@@ -879,7 +879,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
-```
+```bash
 helm install --name artifactory-ha \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="artifactory.company.com" \
@@ -892,13 +892,13 @@ If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [c
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
-```console
+```bash
 kubectl create secret tls artifactory-tls --cert=path/to/tls.cert --key=path/to/tls.key
 ```
 
 Include the secret's name, along with the desired hostnames, in the Artifactory Ingress TLS section of your custom `values.yaml` file:
 
-```
+```yaml
   ingress:
     ## If true, Artifactory Ingress will be created
     ##
@@ -924,7 +924,7 @@ Include the secret's name, along with the desired hostnames, in the Artifactory 
 
 This example specifically enables Artifactory to work as a Docker Registry using the Repository Path method. See [Artifactory as Docker Registry](https://www.jfrog.com/confluence/display/RTF/Getting+Started+with+Artifactory+as+a+Docker+Registry) documentation for more information about this setup.
 
-```
+```yaml
 ingress:
   enabled: true
   defaultBackend:
