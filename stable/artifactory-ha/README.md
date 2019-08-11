@@ -492,14 +492,14 @@ kubectl delete pvc volume-artifactory-node-2
 ### Use an external Database
 
 #### PostgreSQL
-There are cases where you will want to use external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `databaseName=my-artifactory-db`.
+There are cases where you will want to use external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `my-artifactory-db` is the database name.
 
 This can be done with the following parameters
 ```bash
 ...
 --set postgresql.enabled=false \
 --set database.type=postgresql \
---set database.url='jdbc:postgresql://${DB_HOST}:${DB_PORT};databaseName=my-artifactory-db;sendStringParametersAsUnicode=false;applicationName=Artifactory Binary Repository' \
+--set database.url='jdbc:postgresql://${DB_HOST}:${DB_PORT}/my-artifactory-db' \
 --set database.user=${DB_USER} \
 --set database.password=${DB_PASSWORD} \
 ...
