@@ -26,9 +26,9 @@ spec:
   backend:
     serviceName: {{ $serviceName }}
     servicePort: {{ $servicePort }}
-  {{- end -}}
-{{- if .Values.ingress.hosts }}
+  {{- end }}
   rules:
+{{- if .Values.ingress.hosts }}
   {{- range $host := .Values.ingress.hosts }}
   - host: {{ $host | quote }}
     http:
@@ -38,11 +38,11 @@ spec:
             serviceName: {{ $serviceName }}
             servicePort: {{ $servicePort }}
   {{- end -}}
+{{- end -}}
   {{- with .Values.ingress.additionalRules }}
-{{ toYaml . | indent 2 }}
+{{ tpl . $ | indent 2 }}
   {{- end }}
 
-{{- end -}}
   {{- if .Values.ingress.tls }}
   tls:
 {{ toYaml .Values.ingress.tls | indent 4 }}
