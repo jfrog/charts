@@ -952,14 +952,32 @@ You have the option to add additional ingress rules to the Artifactory ingress. 
 In order to do that, simply add the following to a `artifactory-ha-values.yaml` file:
 ```yaml
 ingress:
-  additionalRules:
-  - host: <INGRESS_HOSTNAME>
-    http:
-      paths:
-        - path: /xray
-          backend:
-            serviceName: <XRAY_SERVICE_NAME>
-            servicePort: <XRAY_SERVICE_PORT>
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite "(?i)/xray(/|$)(.*)" /$2 break;
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: <XRAY_SERVER_SERVICE_NAME>
+              servicePort: <XRAY_SERVER_SERVICE_PORT>
+          - path: /xray
+            backend:
+              serviceName: <XRAY_SERVER_SERVICE_NAME>
+              servicePort: <XRAY_SERVER_SERVICE_PORT>
+          - path: /artifactory
+            backend:
+              serviceName: {{ template "artifactory.nginx.fullname" . }}
+              servicePort: {{ .Values.nginx.externalPortHttp }}
 ``` 
 
 and running:

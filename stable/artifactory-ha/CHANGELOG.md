@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.15.13] - Aug 11, 2019
+* Fix Ingress routing and add an example
+
 ## [0.15.12] - Aug 6, 2019
 * Do not mount `access/etc/bootstrap.creds` unless user specifies a custom password or secret (Access already generates a random password if not provided one)
 * If custom `bootstrap.creds` is provided (using keys or custom secret), prepare it with an init container so the temp file does not persist
