@@ -499,7 +499,7 @@ This can be done with the following parameters
 ...
 --set postgresql.enabled=false \
 --set database.type=postgresql \
---set database.url='jdbc:sqlserver://${DB_HOST}:${DB_PORT};databaseName=my-artifactory-db;sendStringParametersAsUnicode=false;applicationName=Artifactory Binary Repository' \
+--set database.url='jdbc:postgresql://${DB_HOST}:${DB_PORT};databaseName=my-artifactory-db;sendStringParametersAsUnicode=false;applicationName=Artifactory Binary Repository' \
 --set database.user=${DB_USER} \
 --set database.password=${DB_PASSWORD} \
 ...
