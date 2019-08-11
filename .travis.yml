@@ -34,7 +34,7 @@ jobs:
           fi
         - echo "Run charts-testing install test!"
         # https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
-        - travis_wait 30 ./test/e2e-github.sh
+        - travis_wait 50 ./test/e2e-github.sh
 
 stages:
   - lint-scripts
