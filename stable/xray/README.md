@@ -255,6 +255,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.labels`              | Xray Ingress labels                             | `{}`                               |
+| `ingress.additionalRules`              | Xray Ingress labels                             | `{}`                               |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |
@@ -428,6 +429,45 @@ Include the secret's name, along with the desired hostnames, in the Xray Ingress
       - secretName: xray-tls
         hosts:
           - xray.domain.com
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Xray ingress. An example for this use case can be routing the /artifactory path to Artifactory.
+In order to do that, simply add the following to a `xray-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite "(?i)/xray(/|$)(.*)" /$2 break;
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "xray-server.fullname" . }}
+              servicePort: {{ .Values.server.externalPort }}
+          - path: /xray
+            backend:
+              serviceName: {{ template "xray-server.fullname" . }}
+              servicePort: {{ .Values.server.externalPort }}
+          - path: /artifactory
+            backend:
+              serviceName: <ARTIFACTORY_SERVICE_NAME>
+              servicePort: <ARTIFACTORY_SERVICE_PORT>
+``` 
+
+and running:
+```bash
+helm upgrade --install xray jfrog/xray -f xray-values.yaml
 ```
 
 ## Useful links
