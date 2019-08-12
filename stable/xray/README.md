@@ -230,7 +230,7 @@ kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
 For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
-```
+```yaml
 common:
   ## Add custom init containers
   customInitContainers: |
@@ -255,6 +255,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.labels`              | Xray Ingress labels                             | `{}`                               |
+| `ingress.additionalRules`              | Xray Ingress labels                             | `{}`                               |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |
@@ -390,7 +391,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
-```
+```bash
 helm install --name xray \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="xray.company.com" \
@@ -402,13 +403,13 @@ If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [c
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
-```console
+```bash
 kubectl create secret tls xray-tls --cert=path/to/tls.cert --key=path/to/tls.key
 ```
 
 Include the secret's name, along with the desired hostnames, in the Xray Ingress TLS section of your custom `values.yaml` file:
 
-```
+```yaml
   ingress:
     ## If true, Xray Ingress will be created
     ##
@@ -428,6 +429,45 @@ Include the secret's name, along with the desired hostnames, in the Xray Ingress
       - secretName: xray-tls
         hosts:
           - xray.domain.com
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Xray ingress. An example for this use case can be routing the /artifactory path to Artifactory.
+In order to do that, simply add the following to a `xray-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite "(?i)/xray(/|$)(.*)" /$2 break;
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "xray-server.fullname" . }}
+              servicePort: {{ .Values.server.externalPort }}
+          - path: /xray
+            backend:
+              serviceName: {{ template "xray-server.fullname" . }}
+              servicePort: {{ .Values.server.externalPort }}
+          - path: /artifactory
+            backend:
+              serviceName: <ARTIFACTORY_SERVICE_NAME>
+              servicePort: <ARTIFACTORY_SERVICE_PORT>
+``` 
+
+and running:
+```bash
+helm upgrade --install xray jfrog/xray -f xray-values.yaml
 ```
 
 ## Useful links
