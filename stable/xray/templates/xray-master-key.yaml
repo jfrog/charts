@@ -1,7 +1,8 @@
+{{- if not .Values.common.masterKeySecretName }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ template "xray.fullname" . }}-master-key
+  name: {{ template "xray.fullname" . }}
   labels:
     app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
@@ -10,4 +11,4 @@ metadata:
 type: Opaque
 data:
   master-key: {{ .Values.common.masterKey | b64enc | quote }}
-
+{{- end }}

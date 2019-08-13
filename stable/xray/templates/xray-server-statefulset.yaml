@@ -131,7 +131,7 @@ spec:
         - name: XRAY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ template "xray.fullname" . }}-master-key
+              name: "{{ .Values.common.masterKeySecretName | default (include "xray.fullname" .) }}"
               key: master-key
         - name: XRAY_HA_NODE_ID
           valueFrom:

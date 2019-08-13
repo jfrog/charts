@@ -315,6 +315,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `common.masterKeySecretName`  | Name of precreated secret which contains xray masterKey, key for secret must contain `master-key`  | ` ` |
 | `common.customInitContainers`                  | Custom init containers                       | ` `                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
