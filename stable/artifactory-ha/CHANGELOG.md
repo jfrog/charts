@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.15.14] - Aug 14, 2019
+* Updated Artifactory version to 6.11.6
+
 ## [0.15.13] - Aug 11, 2019
 * Fix Ingress routing and add an example
 
