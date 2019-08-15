@@ -19,7 +19,9 @@ metadata:
 {{- end}}
 {{- if .Values.ingress.annotations }}
   annotations:
-{{ .Values.ingress.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
+    {{- range $key, $value := .Values.ingress.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
 {{- end }}
 spec:
   {{- if .Values.ingress.defaultBackend.enabled }}
