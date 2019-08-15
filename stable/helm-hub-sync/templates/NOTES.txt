@@ -1,0 +1,23 @@
+{{ if not (or .Values.env.artifactory.authData .Values.existingSecret) -}}
+################################################################################
+####   WARNING: You did not provide Artifactory authentication data         ####
+################################################################################
+
+Helm-hub-sync requires access to Artifactory instance.
+
+This deployment will be incomplete until you provide a valid Artifactory authentication data
+in `values.yaml`:
+  env.artifactory.authData or existingSecret
+
+{{- else if not (or .Values.env.artifactory.host .Values.existingConfigMap) -}}
+Helm-hub-sync requires access to Artifactory instance.
+
+This deployment will be incomplete until you provide a valid Artifactory URL
+in `values.yaml`:
+  env.artifactory.host or existingConfigMap
+{{- else }}
+You can check the Helm-hub-sync application by running:
+
+kubectl get pods --namespace {{ .Release.Namespace }}
+
+{{- end }}

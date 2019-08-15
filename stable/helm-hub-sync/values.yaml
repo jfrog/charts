@@ -1,0 +1,74 @@
+# Default values for helm-hub-sync.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## Chart name overrides
+nameOverride: ""
+fullnameOverride: ""
+
+## Specify an existing secret holding secrets
+existingSecret:
+## Specify an existing configmap holding env vars
+existingConfigMap:
+
+replicaCount: 1
+
+image:
+  repository: docker.bintray.io/helm-hub-sync
+  # tag:
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+## Set which user:group you want helm-hub-sync to be run with
+securityContext:
+  enabled: true
+  userId: 1000
+  groupId: 1000
+
+## Environment variables
+env:
+  # The time in seconds between two successive runs (if not set, or set to -1, only one run will be done)
+  timeInterval: 14400
+
+  # The log level to use (possible values are panic, fatal, error, warn, info, and debug)
+  logLevel: info
+
+  # Boolean value to create human-friendly, colorized output (set to true for console logging)
+  consoleLog: true
+
+  #
+  artifactory:
+    # The hostname of JFrog Artifactory to connect to (like https://art.domain.com/artifactory)
+    host:
+    # The Helm Virtual Repository to use (like helmhub)
+    helmRepo: helmhub
+    # The authentication type to use (either basic or apikey)
+    authType: basic
+    # Set to "username:password"
+    authData:
+    # A comma separated list containing Helm Remote repos that will never be removed (like myAwesomeRepo, stable)
+    keepList:
+    # Boolean value whether to keep repos that have been removed from the https://hub.helm.sh
+    keepDeletedRepos: true
+
+  # A comma separated list containing Helm repos that should never be created (like stable, another-repo)
+  githubIgnoreList: stable
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

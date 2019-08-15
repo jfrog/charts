@@ -1,0 +1,24 @@
+{{- if not .Values.existingConfigMap -}}
+{{- if .Values.env.artifactory.host }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "helm-hub-sync.fullname" . }}
+  labels:
+{{ include "helm-hub-sync.labels" . | indent 4 }}
+data:
+   TIMEINTERVAL: {{ .Values.env.timeInterval | quote  }}
+   LOGLEVEL: {{ .Values.env.logLevel | quote  }}
+   CONSOLELOG: {{ .Values.env.consoleLog | quote }}
+   ARTIFACTORY_HOST: {{ .Values.env.artifactory.host | quote }}
+   ARTIFACTORY_HELM_REPO: {{ .Values.env.artifactory.helmRepo | quote }}
+   ARTIFACTORY_AUTH_TYPE: {{ .Values.env.artifactory.authType | quote }}
+{{- if .Values.env.artifactory.keepList }}
+   ARTIFACTORY_KEEP_LIST: {{ .Values.env.artifactory.keepList | quote }}
+{{- end }}
+   ARTIFACTORY_KEEP_DELETED_REPOS: {{ .Values.env.artifactory.keepDeletedRepos | default "false" | quote }} 
+{{- if .Values.env.githubIgnoreList }}
+   GITHUB_IGNORE_LIST: {{ .Values.env.githubIgnoreList | quote }}
+{{- end }}
+{{- end }}
+{{- end -}}
