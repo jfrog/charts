@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.16.12] - Aug 15, 2019
+* Fix Ingress annotations support (quote values) to support Google Kubernetes Engine
+
 ## [7.16.11] - Aug 14, 2019
 * Updated Artifactory version to 6.11.6
 
