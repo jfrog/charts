@@ -39,7 +39,7 @@ helm repo update
 
 **Note:** You need to have Artifactory URL, username and password.
 
-Install chart
+#### Install chart
 
 ```console
 helm upgrade --install helm-hub-sync --namespace helm-hub-sync jfrog/helm-hub-sync \
