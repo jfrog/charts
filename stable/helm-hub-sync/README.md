@@ -37,7 +37,7 @@ helm repo update
 
 ### Install Helm-hub-sync Chart
 
-*Note:* You need to have Artifactory URL, username and password.
+**Note:** You need to have Artifactory URL, username and password.
 
 Install chart
 
@@ -54,7 +54,7 @@ helm repo update
 helm search helmhub
 ```
 
-*Note:* As Artifactory Virtual Repositories do not support showing remote repositories names, if there are charts with the
+**Note:** As Artifactory Virtual Repositories do not support showing remote repositories names, if there are charts with the
 same names in different repositories, only the chart with most highest version will be shown.
 
 To see the same named charts from few repositories you need to specify `-l` flag:
@@ -63,7 +63,7 @@ To see the same named charts from few repositories you need to specify `-l` flag
 helm search helmhub/chart-name -l
 ```
 
-*Note:* As `stable` charts repo is going away it is excluded from being added in to `helmhub` virtual repository.
+**Note:** As `stable` charts repo is going away it is excluded from being added in to `helmhub` virtual repository.
 The reason is that `stable` and some repos from the Helm Hub might have charts with the same name.
 
 If you want to see `stable` repo chart in `helmhub` remove it from `githubIgnoreList:`.
