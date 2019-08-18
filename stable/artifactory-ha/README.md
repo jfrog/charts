@@ -140,18 +140,18 @@ In order to use an existing claim (for data and backup) that is to be shared acr
 - Create PVCs with ReadWriteMany that match the naming conventions:
 ```
   {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
-  {{ template "artifactory-ha.fullname" . }}-backup-pvc-<claim-ordinal>
+  {{ template "artifactory-ha.fullname" . }}-backup-pvc
 ```
 An example that shows 2 existing claims to be used:
 ```
-  myexample-artifactory-ha-data-pvc-0
-  myexample-artifactory-ha-backup-pvc-0
-  myexample-artifactory-ha-data-pvc-1
-  myexample-artifactory-ha-backup-pvc-1
+  myexample-data-pvc-0
+  myexample-data-pvc-1
+  myexample-backup-pvc
 ```
-- Set the artifactory.persistence.file-system.existingSharedClaim.enabled in values.yaml to true:
+- Set the artifactory.persistence.fileSystem.existingSharedClaim.enabled in values.yaml to true:
 ```
 -- set artifactory.persistence.fileSystem.existingSharedClaim.enabled=true
+-- set artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims=2
 ```
 
 #### NFS
@@ -753,7 +753,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
-| `artifactory.persistence.fileStorage.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
+| `artifactory.persistence.fileSystem.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
 | `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
 | `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |

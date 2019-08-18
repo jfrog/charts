@@ -602,20 +602,19 @@ artifactory:
       ## You may specify numberOfExistingClaims to indicate how many of these existing shared claims to mount. (Default = 1)
       ## Create PVCs with ReadWriteMany that match the naming convetions:
       ##   {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
-      ##   {{ template "artifactory-ha.fullname" . }}-backup-pvc-<claim-ordinal>
+      ##   {{ template "artifactory-ha.fullname" . }}-backup-pvc
       ## Example (using numberOfExistingClaims: 2)
-      ##   myexample-artifactory-ha-data-pvc-0
-      ##   myexample-artifactory-ha-backup-pvc-0
-      ##   myexample-artifactory-ha-data-pvc-1
-      ##   myexample-artifactory-ha-backup-pvc-1
+      ##   myexample-data-pvc-0
+      ##   myexample-data-pvc-1
+      ##   myexample-backup-pvc
       ## Note: While you need two PVC fronting two PVs, multiple PVs can be attached to the same storage in many cases allowing you to share an underlying drive.
 
       ## Need to have the following set
       existingSharedClaim:
         enabled: false
         numberOfExistingClaims: 1
-        ## Should be a child directory of /var/opt/jfrog/artifactory (or whereever .Values.artifactory.persistence.mountPath is pointed to )
-        dataDir: "/var/opt/jfrog/artifactory/artifactory-data"
+        ## Should be a child directory of {{ .Values.artifactory.persistence.mountPath }}
+        dataDir: "{{ .Values.artifactory.persistence.mountPath }}/artifactory-data"
         backupDir: "/var/opt/jfrog/artifactory-backup"
 
 
