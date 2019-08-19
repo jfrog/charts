@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.4.0] - Aug 19, 2019
+* Update Distribution version 1.7.0
+
 ## [3.3.0] - Jul 22, 2019
 * Change Ingress API to be compatible with recent kubernetes versions
 
