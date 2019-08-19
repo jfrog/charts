@@ -9,7 +9,7 @@ You might still want to have a single central location where you can find the He
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 
