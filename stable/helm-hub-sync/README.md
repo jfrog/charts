@@ -20,7 +20,7 @@ This chart will do the following:
 ## Requirements
 
 - A running Kubernetes cluster
-- A running Artifactory
+- A running Artifactory and user which can add/edit/delete virtual and remote Helm repositories
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init) or or [Tillerless Helm](https://github.com/rimusz/helm-tiller)
 
@@ -43,13 +43,13 @@ helm repo update
 
 ```console
 helm upgrade --install helm-hub-sync --namespace helm-hub-sync jfrog/helm-hub-sync \
-    --set artifactory.host="https://art.domain.com/artifactory",artifactory.authData="username:password"
+    --set artifactory.host="https://art.domain.com/artifactory",artifactory.authData="username:artifactory_api_key"
 ```
 
 After install you will be able to access Artifactory Virtual helm repository `helmhub`
 
 ```console
-helm repo add helmhub https://art.domain.com/artifactory/helmhub/ --username username --password password
+helm repo add helmhub https://art.domain.com/artifactory/helmhub/ --username username --password artifactory_api_key
 helm repo update
 helm search helmhub
 ```
@@ -78,7 +78,7 @@ Alternatively, you can create a secret containing the Artifactory Authentication
 
 ```console
 # Create a secret containing the Authentication data. The key in the secret must be named artifactory-auth-data
-kubectl create secret generic my-secret --from-literal=artifactory-auth-data="username:password"
+kubectl create secret generic my-secret --from-literal=artifactory-auth-data="username:api_key"
 
 # Pass the created secret to helm
 helm upgrade --install helm-hub-sync --namespace helm-hub-sync jfrog/helm-hub-sync \
