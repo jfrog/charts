@@ -255,16 +255,16 @@ artifactory:
   terminationGracePeriodSeconds: 30
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
-    enabled: false
+    enabled: true
     path: '/artifactory/webapp/#/login'
-    initialDelaySeconds: 180
+    initialDelaySeconds: 90
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
     successThreshold: 1
 
   readinessProbe:
-    enabled: false
+    enabled: true
     path: '/artifactory/webapp/#/login'
     initialDelaySeconds: 60
     failureThreshold: 10
