@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.16.0] - Aug 21, 2019
+* Updated Artifactory version to 6.12.0
+
 ## [0.15.15] - Aug 18, 2019
 * Fix existingSharedClaim permissions issue and example 
 
