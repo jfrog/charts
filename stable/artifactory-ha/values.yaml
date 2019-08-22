@@ -856,7 +856,7 @@ nginx:
       server_name ~(?<repo>.+)\.{{ include "artifactory-ha.fullname" . }} {{ include "artifactory-ha.fullname" . }}
       {{- range .Values.ingress.hosts -}}
         {{- if contains "." . -}}
-          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ (splitn "." 2 .)._1  }} {{ . }}
+          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
         {{- end -}}
       {{- end -}};
       if ($http_x_forwarded_proto = '') {
