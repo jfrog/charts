@@ -2,6 +2,8 @@
 
 A tool to synchronize [Helm Hub](https://github.com/helm/hub) repositories with [JFrog Artifactory](https://jfrog.com/artifactory/)
 
+![diagram](https://raw.githubusercontent.com/jfrog/helm-hub-sync/master/images/helm-hub-sync.png)
+
 ## Why do I need this
 
 That's a really good question to begin with! [Helm Hub](https://hub.helm.sh) with the new UI is super awesome, but it only can be used as distributed public repository to search for charts in UI.
