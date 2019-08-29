@@ -2,6 +2,8 @@
 
 A tool to synchronize [Helm Hub](https://github.com/helm/hub) repositories with [JFrog Artifactory](https://jfrog.com/artifactory/)
 
+![diagram](https://raw.githubusercontent.com/jfrog/helm-hub-sync/master/images/helm-hub-sync.png)
+
 ## Why do I need this
 
 That's a really good question to begin with! [Helm Hub](https://hub.helm.sh) with the new UI is super awesome, but it only can be used as distributed public repository to search for charts in UI.
@@ -54,21 +56,17 @@ helm repo update
 helm search helmhub
 ```
 
-**Note:** As Artifactory Virtual Repositories do not support showing remote repositories names, if there are charts with the
-same names in different repositories, only the chart with most highest version will be shown.
-
-To see the same named charts from few repositories you need to specify `-l` flag:
+**Note:** The remote repository where the chart is actually held is not identified. That’s the way Artifactory’s virtual repositories work -- they masquerade as a single repo for your convenience.
+But if there are two or more charts with the same name, each in different remote repositories, then `helm search` will only show the chart of that name whose version number is the highest.To see all charts of the same name from all remote repositories, specify `-l` flag.
+This will force the Helm CLI to show the long listing, with each version of the chart:
 
 ```console
 helm search helmhub/chart-name -l
 ```
 
-**Note:** As `stable` charts repo is going away it is excluded from being added in to `helmhub` virtual repository.
-The reason is that `stable` and some repos from the Helm Hub might have charts with the same name.
+It’s also worth noting that the `stable` charts repository is excluded from the `helmhub` virtual repository. We’ve chosen to do that because Helm Hub is expected to replace stable as the common public repository, and Helm v3 beta no longer adds the `stable` repo by default. The charts that `stable` contains are increasingly likely to be duplicated in other repos. 
 
-If you want to see `stable` repo chart in `helmhub` remove it from `githubIgnoreList:`.
-
-Or you can add it manually as Artifactory helm remote repository.
+If you want to access stable repo charts through an Artifactory helm remote repository, you must add it manually. If you choose, you can also add that remote repo to the `helmhub` virtual repository.
 
 #### Use external secret
 
