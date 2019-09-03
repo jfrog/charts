@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.0] - Sep 3, 2019
+* Update Xray version to 2.9.0
+
 ## [1.0.5] - Aug 13, 2019
 * Add the option to provide a precreated secret for XRAY_MASTER_KEY
 
