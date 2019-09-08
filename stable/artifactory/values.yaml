@@ -607,7 +607,7 @@ nginx:
       server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }}
       {{- range .Values.ingress.hosts -}}
         {{- if contains "." . -}}
-          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ (splitn "." 2 .)._1  }} {{ . }}
+          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
         {{- end -}}
       {{- end -}};
 

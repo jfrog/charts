@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.17.2] - Aug 22, 2019
+* Fix the nginx server_name directive used with ingress.hosts
+
 ## [7.17.1] - Aug 21, 2019
 * Enable the Artifactory container's liveness and readiness probes
 
