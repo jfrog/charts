@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.17.3] - Sep 9, 2019
+* Updated Artifactory version to 6.12.1
+
 ## [7.17.2] - Aug 22, 2019
 * Fix the nginx server_name directive used with ingress.hosts
 
