@@ -9,12 +9,12 @@ This deployment will be incomplete until you provide a valid Artifactory authent
 in `values.yaml`:
   env.artifactory.authData or existingSecret
 
-{{- else if not (or .Values.env.artifactory.host .Values.existingConfigMap) -}}
+{{- else if not (or .Values.env.artifactory.url .Values.existingConfigMap) -}}
 Helm-hub-sync requires access to Artifactory instance.
 
 This deployment will be incomplete until you provide a valid Artifactory URL
 in `values.yaml`:
-  env.artifactory.host or existingConfigMap
+  env.artifactory.url or existingConfigMap
 {{- else }}
 You can check the Helm-hub-sync application by running:
 
