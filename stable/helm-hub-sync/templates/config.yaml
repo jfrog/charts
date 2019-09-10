@@ -1,5 +1,5 @@
 {{- if not .Values.existingConfigMap -}}
-{{- if .Values.env.artifactory.host }}
+{{- if .Values.env.artifactory.url }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,7 +10,7 @@ data:
    TIMEINTERVAL: {{ .Values.env.timeInterval | quote  }}
    LOGLEVEL: {{ .Values.env.logLevel | quote  }}
    CONSOLELOG: {{ .Values.env.consoleLog | quote }}
-   ARTIFACTORY_HOST: {{ .Values.env.artifactory.host | quote }}
+   ARTIFACTORY_HOST: {{ .Values.env.artifactory.url | quote }}
    ARTIFACTORY_HELM_REPO: {{ .Values.env.artifactory.helmRepo | quote }}
    ARTIFACTORY_AUTH_TYPE: {{ .Values.env.artifactory.authType | quote }}
 {{- if .Values.env.artifactory.keepList }}

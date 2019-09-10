@@ -45,7 +45,7 @@ helm repo update
 
 ```console
 helm upgrade --install helm-hub-sync --namespace helm-hub-sync jfrog/helm-hub-sync \
-    --set artifactory.host="https://art.domain.com/artifactory",artifactory.authData="username:artifactory_api_key"
+    --set artifactory.url="https://art.domain.com/artifactory",artifactory.authData="username:artifactory_api_key"
 ```
 
 After install you will be able to access Artifactory Virtual helm repository `helmhub`
@@ -80,7 +80,7 @@ kubectl create secret generic my-secret --from-literal=artifactory-auth-data="us
 
 # Pass the created secret to helm
 helm upgrade --install helm-hub-sync --namespace helm-hub-sync jfrog/helm-hub-sync \
-    --set artifactory.host="https://art.domain.com/artifactory",existingSecret="my-secret"
+    --set artifactory.url="https://art.domain.com/artifactory",existingSecret="my-secret"
 ```
 
 ## Remove
@@ -113,7 +113,7 @@ The following table lists the configurable parameters of the helm-hub-sync chart
 | `env.timeInterval`           | The time in seconds between two successive runs  | `14400`                            |
 | `env.logLevel`               | Logs level                                       | `info`                             |
 | `env.consoleLog`             | To create human-friendly, colorized output       | `true`                             |
-| `env.artifactory.host`       | The hostname of JFrog Artifactory to connect to  | ``                                 |
+| `env.artifactory.url`        | The JFrog Artifactory URL to connect to          | ``                                 |
 | `env.artifactory.helmRepo`   | The Helm Virtual Repository to use               | `helmhub`                          |
 | `env.artifactory.authType`   | The authentication type to use                   | `basic`                            |
 | `env.artifactory.authData`   | The authentication data to use                   | ``                                 |

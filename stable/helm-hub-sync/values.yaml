@@ -37,15 +37,15 @@ env:
   # Boolean value to create human-friendly, colorized output (set to true for console logging)
   consoleLog: true
 
-  #
+  # Artifactory details
   artifactory:
-    # The hostname of JFrog Artifactory to connect to (like https://art.domain.com/artifactory)
-    host:
+    # The JFrog Artifactory URL to connect to (like https://art.domain.com/artifactory)
+    url:
     # The Helm Virtual Repository to use (like helmhub)
     helmRepo: helmhub
     # The authentication type to use (either basic or apikey)
     authType: basic
-    # Set to "username:password"
+    # Set to "username:password" or "username:apikey"
     authData:
     # A comma separated list containing Helm Remote repos that will never be removed (like myAwesomeRepo, stable)
     keepList:
