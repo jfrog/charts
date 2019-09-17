@@ -1,5 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
+## [7.18.0] - Sep 17, 2019
+* Enabled configuring cache as a secondary disk mount
 
 ## [7.17.4] - Sep 11, 2019
 * Updated Artifactory version to 6.12.2

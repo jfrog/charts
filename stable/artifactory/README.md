@@ -618,7 +618,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.binarystoreXml` | Artifactory binarystore.xml template             | See `values.yaml`                    |
 | `artifactory.persistence.customBinarystoreXmlSecret` | A custom Secret for binarystore.xml  | ``                                   |
 | `artifactory.persistence.maxCacheSize`   | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
-| `artifactory.persistence.cacheProviderDir`  | the root folder of binaries for the filestore cache. If the value specified starts with a forward slash ("/") it is considered the fully qualified path to the filestore folder. Otherwise, it is considered relative to the *baseDataDir*. | `cache`                   |
+| `artifactory.cacheFs.enabled` | Enabled a cache persistent volume | `false` |
+| `artifactory.cacheFs.persistence.accessMode` | Access mode for the cache persistent volume | `ReadWriteOnce`         |
+| `artifactory.cacheFs.persistence.bytes`      | Desired size in bytes of the persistent volume | `182536110080`       |
+| `artifactory.cacheFs.persistence.mountPath`  | Location on the filesystem to mount the cache volume | `/jfrog/cache` |
 | `artifactory.persistence.type`              | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`        | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
