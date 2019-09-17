@@ -618,10 +618,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.binarystoreXml` | Artifactory binarystore.xml template             | See `values.yaml`                    |
 | `artifactory.persistence.customBinarystoreXmlSecret` | A custom Secret for binarystore.xml  | ``                                   |
 | `artifactory.persistence.maxCacheSize`   | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
-| `artifactory.cacheFs.enabled` | Enabled a cache persistent volume | `false` |
-| `artifactory.cacheFs.persistence.accessMode` | Access mode for the cache persistent volume | `ReadWriteOnce`         |
-| `artifactory.cacheFs.persistence.bytes`      | Desired size in bytes of the persistent volume | `182536110080`       |
-| `artifactory.cacheFs.persistence.mountPath`  | Location on the filesystem to mount the cache volume | `/jfrog/cache` |
+| `artifactory.persistence.cacheFs.enabled` | Enabled a cache persistent volume | `false` |
+| `artifactory.persistence.cacheFs.persistence.accessMode` | Access mode for the cache persistent volume | `ReadWriteOnce`         |
+| `artifactory.persistence.cacheFs.persistence.bytes`      | Desired size in bytes of the persistent volume | `182536110080`       |
+| `artifactory.persistence.cacheFs.persistence.mountPath`  | Location on the filesystem to mount the cache volume | `/jfrog/cache` |
 | `artifactory.persistence.type`              | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`        | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
