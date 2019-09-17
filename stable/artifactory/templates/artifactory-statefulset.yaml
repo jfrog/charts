@@ -73,12 +73,6 @@ spec:
         - name: artifactory-cachefs-volume
           mountPath: "{{ .Values.artifactory.cacheFs.persistence.mountPath }}"
         {{- end }}
-      {{- if eq .Values.artifactory.persistence.type "nfs" }}
-        - name: artifactory-data
-          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
-        - name: artifactory-backup
-          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
-      {{- end }}
     {{- end }}
     {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
       - name: "access-bootstrap-creds"

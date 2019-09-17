@@ -119,6 +119,16 @@ To use an NFS server as your cluster's storage, you need to
 ...
 ```
 
+To enable a second volume for cache storage: 
+```bash
+...
+--set artifactory.persistence.cacheFs.enabled=true \
+--set artifactory.persistence.cacheFs.mountPath=/jfrog/cache \
+--set artifactory.persistence.cacheFs.storageClass=your-class-name \
+```
+
+This will allow you to mount a faster disk volume to use as cache.
+
 #### Google Storage
 To use a Google Storage bucket as the cluster's filestore. See [Google Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-GoogleStorageBinaryProvider)
 - Pass Google Storage parameters to `helm install` and `helm upgrade`
