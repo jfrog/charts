@@ -71,7 +71,7 @@ spec:
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
         {{- if .Values.artifactory.persistence.cacheFs.enabled }}
         - name: artifactory-cachefs-volume
-          mountPath: "{{ .Values.artifactory.cacheFs.persistence.mountPath }}"
+          mountPath: "{{ .Values.artifactory.persistence.cacheFs.persistence.mountPath }}"
         {{- end }}
     {{- end }}
     {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
