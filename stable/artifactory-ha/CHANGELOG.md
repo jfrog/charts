@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.16.4] - Sep 20, 2019
+* Add support for setting `initContainers.resources`
+
 ## [0.16.3] - Sep 11, 2019
 * Updated Artifactory version to 6.12.2
 
