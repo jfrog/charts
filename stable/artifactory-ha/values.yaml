@@ -929,6 +929,8 @@ nginx:
     loadBalancerIP:
     ## There are two available options: “Cluster” (default) and “Local”.
     externalTrafficPolicy: Cluster
+    labels: {}
+    #  label-key: label-value
   externalPortHttp: 80
   internalPortHttp: 80
   externalPortHttps: 443
