@@ -48,6 +48,8 @@ spec:
       - name: "create-artifactory-data-dir"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -62,6 +64,8 @@ spec:
       - name: "delete-db-properties"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -73,6 +77,8 @@ spec:
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -95,6 +101,8 @@ spec:
       {{- end }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'

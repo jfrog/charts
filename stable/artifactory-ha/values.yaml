@@ -770,6 +770,17 @@ artifactory:
       type: ""
       topologyKey: "kubernetes.io/hostname"
 
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
+
 # Nginx
 nginx:
   enabled: true
