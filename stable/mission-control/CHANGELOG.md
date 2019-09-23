@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.6] - Sep 23, 2019
+* Update Mission-Control version to 3.5.4
+
 ## [1.1.5] - Jul 22, 2019
 * Change Ingress API to be compatible with recent kubernetes versions
 
