@@ -586,10 +586,13 @@ kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ### Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
-For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+For this, there is a section for writing custom init containers before and after the predefined init containers in the [values.yaml](values.yaml) . By default it's commented out
 ```yaml
 artifactory:
-  ## Add custom init containers
+  ## Add custom init containers executed before predefined init containers
+  customInitContainersBegin: |
+    ## Init containers template goes here ##
+  ## Add custom init containers executed after predefined init containers
   customInitContainers: |
     ## Init containers template goes here ##
 ```
@@ -676,7 +679,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
-| `artifactory.customInitContainers`| Custom init containers                  |                                            |
+| `artifactory.customInitContainersBegin`| Custom init containers to run before existing init containers |                 |
+| `artifactory.customInitContainers`| Custom init containers to run after existing init containers |                       |
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.customVolumeMounts`  | Custom Artifactory volumeMounts   |                                                  |

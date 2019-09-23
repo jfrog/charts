@@ -43,6 +43,9 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
+    {{- if .Values.artifactory.customInitContainersBegin }}
+{{ tpl .Values.artifactory.customInitContainersBegin . | indent 6 }}
+    {{- end }}
     {{- if eq .Values.artifactory.persistence.type "file-system" }}
       {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
       - name: "create-artifactory-data-dir"

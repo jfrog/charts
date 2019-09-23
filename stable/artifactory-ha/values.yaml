@@ -179,7 +179,21 @@ artifactory:
   # - localhost.log
   # - manager.log
 
-  ## Add custom init containers
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+  #        name: volume
+    ## Add custom init containers
+
+  ## Add custom init containers execution after predefined init containers
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
