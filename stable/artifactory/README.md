@@ -119,15 +119,17 @@ To use an NFS server as your cluster's storage, you need to
 ...
 ```
 
-To enable a second volume for cache storage: 
+Sometimes enabling a second volume for cache storage is desirable. This is useful so that you can put your primary storage on a slower (cheaper) medium while the cache is on a faster (more expensive) medium.
+
+The following shows which parameters to set in order to enable the cache volume:
 ```bash
 ...
 --set artifactory.persistence.cacheFs.enabled=true \
 --set artifactory.persistence.cacheFs.mountPath=/jfrog/cache \
 --set artifactory.persistence.cacheFs.storageClass=your-class-name \
 ```
+This is useful so that you can put your primary storage on a slower (cheaper) medium while the cache is on a faster (more expensive) medium
 
-This will allow you to mount a faster disk volume to use as cache.
 
 #### Google Storage
 To use a Google Storage bucket as the cluster's filestore. See [Google Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-GoogleStorageBinaryProvider)
@@ -629,9 +631,10 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.customBinarystoreXmlSecret` | A custom Secret for binarystore.xml  | ``                                   |
 | `artifactory.persistence.maxCacheSize`   | The maximum storage allocated for the cache in bytes. | `50000000000`                   |
 | `artifactory.persistence.cacheFs.enabled` | Enabled a cache persistent volume | `false` |
-| `artifactory.persistence.cacheFs.persistence.accessMode` | Access mode for the cache persistent volume | `ReadWriteOnce`         |
-| `artifactory.persistence.cacheFs.persistence.bytes`      | Desired size in bytes of the persistent volume | `182536110080`       |
-| `artifactory.persistence.cacheFs.persistence.mountPath`  | Location on the filesystem to mount the cache volume | `/jfrog/cache` |
+| `artifactory.persistence.cacheFs.persistence.accessMode`         | Access mode for the cache persistent volume | `ReadWriteOnce`         |
+| `artifactory.persistence.cacheFs.persistence.bytes`              | Desired size in bytes of the persistent volume | `60000000000`        |
+| `artifactory.persistence.cacheFs.persistence.mountPath`          | Location on the filesystem to mount the cache volume | `/jfrog/cache` |
+| `artifactory.persistence.cacheFs.persistence.storageClass.bytes` | Storageclass of the persistent volume | See `values.yaml`             |
 | `artifactory.persistence.type`              | Artifactory HA storage type                         | `file-system`                   |
 | `artifactory.persistence.redundancy`        | Artifactory HA storage redundancy                   | `3`                             |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
