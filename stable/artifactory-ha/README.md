@@ -858,6 +858,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.persistence.enabled` | Nginx persistence volume enabled. This is only available when the nginx.replicaCount is set to 1 | `false`                                                  |
 | `nginx.persistence.accessMode` | Nginx persistence volume access mode | `ReadWriteOnce`                                  |
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
+| `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       | 
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
 | `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                   | `artifactory`                           |
