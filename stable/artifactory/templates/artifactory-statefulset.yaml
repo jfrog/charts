@@ -93,6 +93,7 @@ spec:
             subPath: bootstrap.creds
             {{- end }}
     {{- end }}
+    {{- if .Values.waitForDatabase }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -110,6 +111,7 @@ spec:
       {{- end }}
             sleep 2;
           done;
+    {{- end }}
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
