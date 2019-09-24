@@ -102,6 +102,7 @@ spec:
             mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
         {{- end }}
       {{- end }}
+    {{- if .Values.waitForDatabase }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         resources:
@@ -121,6 +122,7 @@ spec:
       {{- end }}
             sleep 2;
           done;
+    {{- end }}
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
