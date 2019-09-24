@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.17.5] - Sep 24, 2019
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+
 ## [7.17.4] - Sep 11, 2019
 * Updated Artifactory version to 6.12.2
 

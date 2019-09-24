@@ -718,6 +718,10 @@ nginx:
 
   affinity: {}
 
+## Database configurations
+## Use the wait-for-db init container. Set to false to skip
+waitForDatabase: true
+
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
 ##

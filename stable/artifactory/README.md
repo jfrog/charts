@@ -721,6 +721,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.requests.cpu`    | Nginx initial cpu request     |                                                      |
 | `nginx.resources.limits.memory`   | Nginx memory limit            |                                                      |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit               |                                                      |
+| `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
 | `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                   | `artifactory`                           |
