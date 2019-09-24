@@ -823,6 +823,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
 | `nginx.service.clusterIP`   | Specific cluster IP or `None` for headless services     | `nil`                         |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
+| `nginx.service.labels`       | Nginx service labels     | `{}`                                                           |
 | `nginx.service.annotations` | Nginx service annotations           | `{}`                            |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |
 | `nginx.loadBalancerIP`| Provide Static IP to configure with Nginx |                                 |
