@@ -229,10 +229,14 @@ kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ### Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
-For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
+For this, there is a section for writing custom init containers before and after the predefined init containers in the [values.yaml](values.yaml) . By default it's commented out
 ```yaml
 common:
-  ## Add custom init containers
+  ## Add custom init containers executed before predefined init containers
+  customInitContainersBegin: |
+    ## Init containers template goes here ##
+
+    ## Add custom init containers executed after predefined init containers
   customInitContainers: |
     ## Init containers template goes here ##
 ```
@@ -316,7 +320,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `common.masterKeySecretName`  | Name of precreated secret which contains xray masterKey, key for secret must contain `master-key`  | ` ` |
-| `common.customInitContainers`                  | Custom init containers                       | ` `                  |
+| `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
+| `common.customInitContainers`                  | Custom init containers to run after existing init containers                       | ` `                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
