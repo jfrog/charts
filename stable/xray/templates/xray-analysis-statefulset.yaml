@@ -37,6 +37,9 @@ spec:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
       initContainers:
+      {{- if .Values.common.customInitContainersBegin }}
+{{ tpl .Values.common.customInitContainersBegin . | indent 6 }}
+      {{- end }}
       - name: init-wait
         image: {{ .Values.initContainerImage | quote }}
         env:
