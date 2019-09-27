@@ -5,7 +5,7 @@ CHART_TESTING_IMAGE ?= quay.io/helmpack/chart-testing
 CHART_TESTING_TAG ?= v2.3.3
 TEST_IMAGE_TAG ?= v3.3.2
 K8S_VERSION ?= v1.15.3
-KIND_VERSION ?= v0.5.0
+KIND_VERSION ?= v0.5.1
 
 # If the first argument is "lint" or "mac" or "gke" or "kind"
 ifneq ( $(filter wordlist 1,lint mac gke kind), $(firstword $(MAKECMDGOALS)))
