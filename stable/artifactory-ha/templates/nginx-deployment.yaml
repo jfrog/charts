@@ -11,7 +11,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.nginx.name }}
-{{- if .Values.artifactory.primary.labels }}
+{{- if .Values.nginx.labels }}
 {{ toYaml .Values.nginx.labels | indent 4 }}
 {{- end }}
 spec:
