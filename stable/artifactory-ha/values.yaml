@@ -708,6 +708,7 @@ artifactory:
   ## Customising their resources and java parameters is done here.
   primary:
     name: artifactory-ha-primary
+    labels: {}
     persistence:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-primary-0`
@@ -745,6 +746,7 @@ artifactory:
 
   node:
     name: artifactory-ha-member
+    labels: {}
     persistence:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-member-0`
@@ -803,6 +805,7 @@ initContainers:
 nginx:
   enabled: true
   name: nginx
+  labels: {}
   replicaCount: 1
   uid: 104
   gid: 107
