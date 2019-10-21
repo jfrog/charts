@@ -569,6 +569,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.image.pullPolicy`         | Container pull policy             | `IfNotPresent`                              |
 | `artifactory.image.repository`    | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`        |
 | `artifactory.image.version`       | Container tag                     |  `.Chart.AppVersion`                             |
+| `artifactory.labels`              | Artifactory labels                | `{}`                                             |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
@@ -683,6 +684,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container tag                     | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
+| `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
 | `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |

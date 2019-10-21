@@ -767,6 +767,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
+| `artifactory.primary.labels`                    | Artifactory primary node labels                  | `{}`                |
 | `artifactory.primary.resources.requests.memory` | Artifactory primary node initial memory request  |                     |
 | `artifactory.primary.resources.requests.cpu`    | Artifactory primary node initial cpu request     |                     |
 | `artifactory.primary.resources.limits.memory`   | Artifactory primary node memory limit            |                     |
@@ -780,6 +781,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
 | `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `false`            |
+| `artifactory.node.labels`                       | Artifactory member node labels                   | `{}`                |
 | `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
 | `artifactory.node.minAvailable`                 | Artifactory member node min available count      | `1`                 |
 | `artifactory.node.resources.requests.memory`    | Artifactory member node initial memory request   |                     |
@@ -817,6 +819,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
+| `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
 | `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
