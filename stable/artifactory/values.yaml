@@ -99,6 +99,7 @@ artifactory:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+  labels: {}
 
   # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
   deleteDBPropertiesOnStartup: true
@@ -510,6 +511,7 @@ artifactory:
 nginx:
   enabled: true
   name: nginx
+  labels: {}
   replicaCount: 1
   uid: 104
   gid: 107

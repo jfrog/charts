@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.18.2] - Oct 21, 2019
+* Add support for setting `artifactory.labels`
+* Add support for setting `nginx.labels`
+
 ## [7.18.1] - Oct 10, 2019
 * Updated Artifactory version to 6.13.1
 
