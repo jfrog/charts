@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.17.3] - Oct 24, 2019
+* Change the preStartCommand to support templating
+
 ## [0.17.2] - Oct 21, 2019
 * Add support for setting `artifactory.primary.labels`
 * Add support for setting `artifactory.node.labels`

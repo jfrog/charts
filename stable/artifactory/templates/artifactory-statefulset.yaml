@@ -141,7 +141,7 @@ spec:
           {{- end }}
           {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
-          {{ .Values.artifactory.preStartCommand }};
+          {{ tpl .Values.artifactory.preStartCommand . }};
           {{- end }}
           /entrypoint-artifactory.sh
         lifecycle:
