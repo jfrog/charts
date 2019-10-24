@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [7.18.3] - Oct 24, 2019
+* Change the preStartCommand to support templating
+
 ## [7.18.2] - Oct 21, 2019
 * Add support for setting `artifactory.labels`
 * Add support for setting `nginx.labels`

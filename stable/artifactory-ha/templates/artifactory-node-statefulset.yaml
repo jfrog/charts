@@ -135,7 +135,6 @@ spec:
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
-      {{- if .Values.artifactory.preStartCommand }}
         command:
         - '/bin/sh'
         - '-c'
@@ -144,10 +143,11 @@ spec:
           echo "Copying plugins";
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
           {{- end }}
+        {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
-          {{ .Values.artifactory.preStartCommand }};
+          {{ tpl .Values.artifactory.preStartCommand . }};
+        {{- end }}
           /entrypoint-artifactory.sh
-      {{- end }}
       {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
           postStart:
