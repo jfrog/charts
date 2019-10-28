@@ -1,6 +1,17 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.0.0] - Oct 27, 2019
+**IMPORTANT - BREAKING CHANGES!**<br>
+**DOWNTIME MIGHT BE REQUIRED FOR AN UPGRADE!**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), must use the upgrade instructions in [UPGRADE_NOTES.md](UPGRADE_NOTES.md)!
+* PostgreSQL sub chart was upgraded to version `6.5.x`. This version is **not backward compatible** with the old version (`0.9.5`)!
+* Note the following **PostgreSQL** Helm chart changes
+  * The chart configuration has changed! See [values.yaml](values.yaml) for the new keys used
+  * **PostgreSQL** is deployed as a StatefulSet
+  * See [PostgreSQL helm chart](https://hub.helm.sh/charts/stable/postgresql) for all available configurations
+
 ## [7.18.3] - Oct 24, 2019
 * Change the preStartCommand to support templating
 

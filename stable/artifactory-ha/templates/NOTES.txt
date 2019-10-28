@@ -22,7 +22,7 @@ Congratulations. You have just deployed JFrog Artifactory HA!
 
 DATABASE:
 To extract the database password, run the following
-export DB_PASSWORD=$(kubectl get --namespace {{ .Release.Namespace }} $(kubectl get secret --namespace {{ .Release.Namespace }} -o name | grep postgresql) -o jsonpath="{.data.postgres-password}" | base64 --decode)
+export DB_PASSWORD=$(kubectl get --namespace {{ .Release.Namespace }} $(kubectl get secret --namespace {{ .Release.Namespace }} -o name | grep postgresql) -o jsonpath="{.data.postgresql-password}" | base64 --decode)
 echo ${DB_PASSWORD}
 {{- end }}
 

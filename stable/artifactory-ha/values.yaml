@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.8"
+initContainerImage: "alpine:3.10"
 
 installer:
   type:
@@ -73,8 +73,8 @@ networkpolicy:
     - {}
     ingress:
     - {}
-  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgres.enabled is true)
-  # - name: postgres
+  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgresql.enabled is true)
+  # - name: postgresql
   #   podSelector:
   #     matchLabels:
   #       app: postgresql
@@ -94,17 +94,21 @@ waitForDatabase: true
 ##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "artifactory"
-  postgresUser: "artifactory"
-  postgresPassword:
-  postgresConfig:
-    maxConnections: "1500"
-  service:
-    port: 5432
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.15-debian-9-r77
+  postgresqlUsername: artifactory
+  postgresqlPassword:
+  postgresqlDatabase: artifactory
+  postgresqlConfiguration:
+    listen_addresses: "'*'"
+    max_connections: "1500"
   persistence:
     enabled: true
     size: 50Gi
+  service:
+    port: 5432
   resources: {}
   #  requests:
   #    memory: "512Mi"
