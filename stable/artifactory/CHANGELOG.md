@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.1.0] - Nov 3, 2019
+* Updated Artifactory version to 6.14.0
+
 ## [8.0.1] - Nov 3, 2019
 * Make sure the artifactory pod exits when one of the pre-start stages fail
 
