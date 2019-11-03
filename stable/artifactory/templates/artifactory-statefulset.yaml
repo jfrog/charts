@@ -131,6 +131,7 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
+          set -e;
           {{- if .Values.artifactory.configMapName }}
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
