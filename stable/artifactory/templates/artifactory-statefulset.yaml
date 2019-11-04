@@ -141,6 +141,9 @@ spec:
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
           {{- end }}
           {{- range .Values.artifactory.copyOnEveryStartup }}
+          {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
+          {{- $baseDirectory := regexFind ".*/" $targetPath }}
+          mkdir -p {{ $baseDirectory }};
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
           {{- end }}
           {{- if .Values.artifactory.preStartCommand }}
