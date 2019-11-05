@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.2] - Nov 5, 2019
+* Add support for the aws-s3-v3 filestore, which adds support for pod IAM roles
+
 ## [1.1.0] - Nov 3, 2019
 * Updated Artifactory version to 6.14.0
 
