@@ -503,6 +503,82 @@ artifactory:
           </provider>
       </config>
       {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "aws-s3-v3" }}
+      <!-- AWS S3 V3 -->
+      <config version="2">
+          <chain> <!--template="cluster-s3-storage-v3"-->
+              <provider id="cache-fs-eventual-s3" type="cache-fs">
+                  <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                      <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
+                          <provider id="retry-s3" type="retry">
+                              <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                          </provider>
+                      </sub-provider>
+                      <dynamic-provider id="remote-s3" type="remote"/>
+                  </provider>
+              </provider>
+          </chain>
+
+          <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+              <readBehavior>crossNetworkStrategy</readBehavior>
+              <writeBehavior>crossNetworkStrategy</writeBehavior>
+              <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+              <property name="zones" value="local,remote"/>
+          </provider>
+
+          <provider id="remote-s3" type="remote">
+              <zone>remote</zone>
+          </provider>
+
+          <provider id="eventual-cluster-s3" type="eventual-cluster">
+              <zone>local</zone>
+          </provider>
+
+          <!-- Set max cache-fs size -->
+          <provider id="cache-fs-eventual-s3" type="cache-fs">
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+          </provider>
+
+        {{- with .Values.artifactory.persistence.awsS3V3 }}
+          <provider id="s3-storage-v3" type="s3-storage-v3">
+              <testConnection>{{ .testConnection }}</testConnection>
+            {{- if .identity }}
+              <identity>{{ .identity }}</identity>
+            {{- end }}
+            {{- if .credential }}
+              <credential>{{ .credential }}</credential>
+            {{- end }}
+              <region>{{ .region }}</region>
+              <bucketName>{{ .bucketName }}</bucketName>
+              <path>{{ .path }}</path>
+              <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .kmsServerSideEncryptionKeyId }}
+              <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
+            {{- end }}
+            {{- with .kmsKeyRegion }}
+              <kmsKeyRegion>{{ . }}</kmsKeyRegion>
+            {{- end }}
+            {{- with .kmsCryptoMode }}
+              <kmsCryptoMode>{{ . }}</kmsCryptoMode>
+            {{- end }}
+              <useInstanceCredentials>true</useInstanceCredentials>
+              <usePresigning>{{ .usePresigning }}</usePresigning>
+              <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
+            {{- with .cloudFrontDomainName }}
+              <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
+            {{- end }}
+            {{- with .cloudFrontKeyPairId }}
+              <cloudFrontKeyPairId>{{ .cloudFrontKeyPairId }}</cloudFrontKeyPairId>
+            {{- end }}
+            {{- with .cloudFrontPrivateKey }}
+              <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
+            {{- end }}
+          </provider>
+        {{- end }}
+      </config>
+      {{- end }}
+
       {{- if eq .Values.artifactory.persistence.type "aws-s3" }}
       <!-- AWS S3 -->
       <config version="2">
@@ -552,7 +628,7 @@ artifactory:
           {{- end }}
               <s3AwsVersion>{{ .Values.artifactory.persistence.awsS3.s3AwsVersion }}</s3AwsVersion>
               <testConnection>{{ .Values.artifactory.persistence.awsS3.testConnection }}</testConnection>
-              <httpsOnly>true</httpsOnly>
+              <httpsOnly>{{ .Values.artifactory.persistence.awsS3.httpsOnly }}</httpsOnly>
               <region>{{ .Values.artifactory.persistence.awsS3.region }}</region>
               <bucketName>{{ .Values.artifactory.persistence.awsS3.bucketName }}</bucketName>
           {{- if .Values.artifactory.persistence.awsS3.identity }}
@@ -662,6 +738,26 @@ artifactory:
       credential:
       path: "artifactory-ha/filestore"
       bucketExists: false
+
+    ## For artifactory.persistence.type aws-s3-v3
+    awsS3V3:
+      testConnection: false
+      identity:
+      credential:
+      region:
+      bucketName: artifactory-aws
+      path: artifactory/filestore
+      endpoint:
+      kmsServerSideEncryptionKeyId:
+      kmsKeyRegion:
+      kmsCryptoMode:
+      useInstanceCredentials: true
+      usePresigning: false
+      signatureExpirySeconds: 300
+      cloudFrontDomainName:
+      cloudFrontKeyPairId:
+      cloudFrontPrivateKey:
+
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
@@ -674,6 +770,7 @@ artifactory:
       credential:
       path: "artifactory-ha/filestore"
       refreshCredentials: true
+      httpsOnly: true
       testConnection: false
       s3AwsVersion: "AWS4-HMAC-SHA256"
 
