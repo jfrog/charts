@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.1] - Nov 4, 2019
+* When using `copyOnEveryStartup`, make sure that the target base directories are created before copying the files
+
 ## [1.1.0] - Nov 3, 2019
 * Updated Artifactory version to 6.14.0
 
