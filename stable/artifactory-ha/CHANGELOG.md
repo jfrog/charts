@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.3] - Nov 6, 2019
+* Add nodeselector support for Postgresql
+
 ## [1.1.2] - Nov 5, 2019
 * Add support for the aws-s3-v3 filestore, which adds support for pod IAM roles
 
