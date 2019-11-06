@@ -182,6 +182,10 @@ To use a Google Storage bucket as the cluster's filestore. See [Google Storage B
 ```
 
 #### AWS S3
+**NOTE** Keep in mind that when using the `aws-s3` persistence type, you will not be able to provide an IAM on the pod level. 
+In order to grant permissions to Artifactory using an IAM role, you will have to attach the IAM role to the machine(s) on which Artifactory is running.
+This is due to the fact that the `aws-s3` template uses the `JetS3t` library to interact with AWS. If you want to grant an IAM role at the pod level, see the `AWS S3 Vs` section.
+
 To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-S3BinaryProvider)
 - Pass AWS S3 parameters to `helm install` and `helm upgrade`
 ```bash
@@ -203,6 +207,34 @@ To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](htt
 ...
 ```
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
+
+#### AWS S3 V3
+To use an AWS S3 bucket as the cluster's filestore and access it with the official AWS SDK, See [S3 Official SDK Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate). 
+This filestore template uses the official AWS SDK, unlike the `aws-s3` implementation that uses the `JetS3t` library.
+Use this template if you want to attach an IAM role to the Artifactory pod directly (as opposed to attaching it to the machine/s that Artifactory will run on).
+
+**NOTE** This will have to be combined with a k8s mechanism for attaching IAM roles to pods, like [kube2iam](https://github.com/helm/charts/tree/master/stable/kube2iam) or anything similar.
+ 
+- Pass AWS S3 V3 parameters and the annotation pointing to the IAM role (when using an IAM role. this is kube2iam specific and may vary depending on the implementation) to `helm install` and `helm upgrade`
+
+```bash
+# With explicit credentials:
+--set artifactory.persistence.type=aws-s3-v3 \
+--set artifactory.persistence.awsS3V3.region=${AWS_REGION} \
+--set artifactory.persistence.awsS3V3.bucketName=${AWS_S3_BUCKET_NAME} \
+--set artifactory.persistence.awsS3V3.identity=${AWS_ACCESS_KEY_ID} \
+--set artifactory.persistence.awsS3V3.credential=${AWS_SECRET_ACCESS_KEY} \
+...
+```
+
+```bash
+# With using existing IAM role
+--set artifactory.persistence.type=aws-s3-v3 \
+--set artifactory.persistence.awsS3V3.region=${AWS_REGION} \
+--set artifactory.persistence.awsS3V3.bucketName=${AWS_S3_BUCKET_NAME} \
+--set artifactory.annotations.'iam\.amazonaws\.com/role'=${AWS_IAM_ROLE_ARN}
+...
+```
 
 #### Microsoft Azure Blob Storage
 To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider)
@@ -754,8 +786,25 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3.properties`          | AWS S3 additional properties           |                              |
 | `artifactory.persistence.awsS3.path`                | AWS S3 path in bucket                  | `artifactory-ha/filestore`   |
 | `artifactory.persistence.awsS3.refreshCredentials`  | AWS S3 renew credentials on expiration | `true` (When roleName is used, this parameter will be set to true) |
+| `artifactory.persistence.awsS3.httpsOnly`  | AWS S3 https access to the bucket only | `true` |
 | `artifactory.persistence.awsS3.testConnection`      | AWS S3 test connection on start up     | `false`                      |
 | `artifactory.persistence.awsS3.s3AwsVersion`        | AWS S3 signature version               | `AWS4-HMAC-SHA256`           |
+| `artifactory.persistence.awsS3V3.testConnection`        | AWS S3 test connection on start up               | `false`                      |
+| `artifactory.persistence.awsS3V3.identity`            | AWS S3 AWS_ACCESS_KEY_ID               |                              |
+| `artifactory.persistence.awsS3V3.credential`          | AWS S3 AWS_SECRET_ACCESS_KEY           |                              |
+| `artifactory.persistence.awsS3V3.region`        | AWS S3 bucket region               |                       |
+| `artifactory.persistence.awsS3V3.bucketName`        | AWS S3 bucket name               | `artifactory-aws`                      |
+| `artifactory.persistence.awsS3V3.path`                | AWS S3 path in bucket                  | `artifactory/filestore`   |
+| `artifactory.persistence.awsS3V3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
+| `artifactory.persistence.awsS3V3.kmsServerSideEncryptionKeyId`        | AWS S3 encryption key ID or alias  |              |
+| `artifactory.persistence.awsS3V3.kmsKeyRegion`        | AWS S3 KMS Key region  |              |
+| `artifactory.persistence.awsS3V3.kmsCryptoMode`        | AWS S3 KMS encryption mode  | See https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate |
+| `artifactory.persistence.awsS3V3.useInstanceCredentials`        | AWS S3 Use default authentication mechanism  | See https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-authentication             |
+| `artifactory.persistence.awsS3V3.usePresigning`        | AWS S3 Use URL signing  | `false`            |
+| `artifactory.persistence.awsS3V3.signatureExpirySeconds`        | AWS S3 Validity period in seconds for signed URLs  | `300`            |
+| `artifactory.persistence.awsS3V3.cloudFrontDomainName`        | AWS CloudFront domain name  | See https://www.jfrog.com/confluence/display/RTF/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-UsingCloudFront(Optional)|
+| `artifactory.persistence.awsS3V3.cloudFrontKeyPairId`        | AWS CloudFront key pair ID  | See https://www.jfrog.com/confluence/display/RTF/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-UsingCloudFront(Optional)|
+| `artifactory.persistence.awsS3V3.cloudFrontPrivateKey`        | AWS CloudFront private key  | See https://www.jfrog.com/confluence/display/RTF/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-UsingCloudFront(Optional)|
 | `artifactory.persistence.azureBlob.accountName`     | Azure Blob Storage account name        | ``                        |
 | `artifactory.persistence.azureBlob.accountKey`      | Azure Blob Storage account key         | ``                        |
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
