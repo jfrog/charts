@@ -280,10 +280,9 @@ spec:
         - name: HA_BACKUP_DIR
           value: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
       {{- end }}
-      {{- range .Values.artifactory.extraEnvironmentVariables }}
-        - name: {{ .name }}
-          value: '{{ tpl .value $ }}'
-      {{- end }}
+{{- with .Values.artifactory.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}

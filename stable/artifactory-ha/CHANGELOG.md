@@ -2,6 +2,9 @@
 All changes to this chart will be documented in this file.
 
 ## [1.1.2] - Nov 5, 2019
+* Add support for any time of environment variable by using `extraEnvironmentVariables` as-is
+
+## [1.1.2] - Nov 5, 2019
 * Add support for the aws-s3-v3 filestore, which adds support for pod IAM roles
 
 ## [1.1.1] - Nov 4, 2019
