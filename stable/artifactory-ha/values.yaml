@@ -315,11 +315,11 @@ artifactory:
 #     value: "100"
 #    - name: DB_POOL_MAX_IDLE
 #     value: "10"
-#    - name: DB_PASSWORD
+#    - name: MY_SECRET_ENV_VAR
 #      valueFrom:
 #        secretKeyRef:
-#          name: my-postgresql-secret-name
-#          key: postgresql-password
+#          name: my-secret-name
+#          key: my-secret-key
 
   membershipPort: 10017
   externalPort: 8081
