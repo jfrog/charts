@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [1.1.5] - Nov 8, 2019
-* Add support `artifactory.service.loadBalancerSourceRanges` for whitelisting IPs
+* Add support `artifactory.service.loadBalancerSourceRanges` for whitelisting when setting `artifactory.service.type=LoadBalancer`
 
 ## [1.1.4] - Nov 6, 2019
 * Add support for any type of environment variable by using `extraEnvironmentVariables` as-is
