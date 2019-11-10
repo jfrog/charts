@@ -27,6 +27,10 @@ spec:
     targetPort: {{ .Values.artifactory.internalPort }}
     protocol: TCP
     name: http
+  - port: {{ .Values.artifactory.externalPortSsh }}
+    targetPort: {{ .Values.artifactory.internalPortSsh }}
+    protocol: TCP
+    name: ssh    
   {{- with .Values.artifactory.node.javaOpts.jmx }}
   {{- if .enabled }}
   - port: {{ .port }}
@@ -65,6 +69,10 @@ spec:
     targetPort: {{ .Values.artifactory.internalPort }}
     protocol: TCP
     name: http
+  - port: {{ .Values.artifactory.externalPortSsh }}
+    targetPort: {{ .Values.artifactory.internalPortSsh }}
+    protocol: TCP
+    name: ssh
   {{- if .Values.artifactory.replicator.enabled }}
   - port: {{ .Values.artifactory.externalPortReplicator }}
     targetPort: {{ .Values.artifactory.internalPortReplicator }}

@@ -66,6 +66,7 @@ spec:
         ports:
         - containerPort: {{ .Values.nginx.internalPortHttp }}
         - containerPort: {{ .Values.nginx.internalPortHttps }}
+        - containerPort: {{ .Values.nginx.internalPortSsh }}
         {{- if .Values.artifactory.replicator.enabled }}
         - containerPort: {{ .Values.nginx.internalPortReplicator }}
         {{- end }}

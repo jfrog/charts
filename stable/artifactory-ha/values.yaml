@@ -324,6 +324,8 @@ artifactory:
   membershipPort: 10017
   externalPort: 8081
   internalPort: 8081
+  externalPortSsh: 1339
+  internalPortSsh: 1339  
   internalPortReplicator: 6061
   externalPortReplicator: 6061
   uid: 1030
@@ -934,9 +936,14 @@ nginx:
   loggers: []
   # - access.log
   # - error.log
+  externalPortSsh: 22
+  internalPortSsh: 22
 
   mainConf: |
     # Main Nginx configuration file
+    #enable stream to support git via ssh
+    load_module /usr/lib/nginx/modules/ngx_stream_module.so;
+
     worker_processes  4;
     error_log  {{ .Values.nginx.persistence.mountPath }}/logs//error.log warn;
     pid        /tmp/nginx.pid;
@@ -987,6 +994,17 @@ nginx:
     {{- if .Values.artifactory.replicator.enabled }}
       include /etc/nginx/conf.d/replicator/*.conf;
     {{- end }}
+    }
+
+    # this stream is to support git via ssh
+    stream { 
+      upstream backend {
+        server {{ template "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPortSsh }};
+      }
+      server {
+        listen {{ .Values.nginx.internalPortSsh }}; 
+        proxy_pass backend; 
+      }
     }
 
   artifactoryConf: |
@@ -1056,6 +1074,8 @@ nginx:
   internalPortHttp: 80
   externalPortHttps: 443
   internalPortHttps: 443
+  externalPortSsh: 22
+  internalPortSsh: 22  
   internalPortReplicator: 6061
   externalPortReplicator: 6061
   ## The following settings are to configure the frequency of the liveness and readiness probes

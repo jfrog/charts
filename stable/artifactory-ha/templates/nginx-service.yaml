@@ -48,6 +48,10 @@ spec:
     targetPort: {{ .Values.nginx.internalPortHttps }}
     protocol: TCP
     name: https
+  - port: {{ .Values.nginx.externalPortSsh }}
+    targetPort: {{ .Values.nginx.internalPortSsh }}
+    protocol: TCP
+    name: ssh
   selector:
     app: {{ template "artifactory-ha.name" . }}
     component: {{ .Values.nginx.name }}
