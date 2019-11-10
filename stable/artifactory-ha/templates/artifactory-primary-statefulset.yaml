@@ -70,7 +70,7 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
-      {{- end }}          
+      {{- end }}
     {{- end }}
       {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"

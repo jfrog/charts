@@ -37,7 +37,7 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds}}
+      terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
@@ -64,7 +64,7 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
-      {{- end }}          
+      {{- end }}
     {{- end }}
       {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"

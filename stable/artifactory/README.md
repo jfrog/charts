@@ -614,6 +614,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`| Artifactory service name to be set in Nginx configuration | `artifactory`                    |
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
+| `artifactory.service.loadBalancerSourceRanges`| Artifactory service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
+| `artifactory.service.annotations` | Artifactory service annotations           | `{}`                            |
 | `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
 | `artifactory.internalPort` | Artifactory service internal port | `8081`                                                  |
 | `artifactory.internalPortReplicator` | Replicator service internal port | `6061`                                         |
@@ -635,7 +637,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
-| `artifactory.readinessProbe.path`                     | Readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |
+| `artifactory.readinessProbe.path`                | Readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                        |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                        |
 | `artifactory.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                        |

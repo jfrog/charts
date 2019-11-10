@@ -731,6 +731,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |
 | `artifactory.service.type`   | Artifactory service type                                  | `ClusterIP`                   |
 | `artifactory.service.clusterIP`| Specific cluster IP or `None` for headless services     | `nil`                         |
+| `artifactory.service.loadBalancerSourceRanges`| Artifactory service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
+| `artifactory.service.annotations` | Artifactory service annotations           | `{}`                            |
 | `artifactory.service.pool`   | Artifactory instances to be in the load balancing pool. `members` or `all` | `members`    |
 | `artifactory.externalPort`   | Artifactory service external port                         | `8081`                        |
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
@@ -810,7 +812,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
-| `artifactory.persistence.fileSystem.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
+| `artifactory.persistence.fileSystem.existingSharedClaim`  | Enable using an existing shared pvc | `false`                             |
 | `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
 | `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |

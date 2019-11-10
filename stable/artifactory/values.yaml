@@ -252,7 +252,14 @@ artifactory:
   service:
     name: artifactory
     type: ClusterIP
+    ## For supporting whitelist on the Artifactory service (useful if setting service.type=LoadBalancer)
+    ## Set this to a list of IP CIDR ranges
+    ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
+    ## or pass from helm command line
+    ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
+    loadBalancerSourceRanges: []
     annotations: {}
+
   externalPort: 8081
   internalPort: 8081
   internalPortReplicator: 6061
