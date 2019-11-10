@@ -9,10 +9,18 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+{{- if .Values.artifactory.service.annotations }}
+  annotations:
+{{ toYaml .Values.artifactory.service.annotations | indent 4 }}
+{{- end }}
 spec:
   type: {{ .Values.artifactory.service.type }}
   {{- if and (eq .Values.artifactory.service.type "ClusterIP") .Values.artifactory.service.clusterIP }}
   clusterIP: {{ .Values.artifactory.service.clusterIP }}
+  {{- end }}
+  {{- if .Values.artifactory.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml .Values.artifactory.service.loadBalancerSourceRanges | indent 4 }}
   {{- end }}
   ports:
   - port: {{ .Values.artifactory.externalPort }}

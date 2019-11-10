@@ -731,6 +731,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |
 | `artifactory.service.type`   | Artifactory service type                                  | `ClusterIP`                   |
 | `artifactory.service.clusterIP`| Specific cluster IP or `None` for headless services     | `nil`                         |
+| `artifactory.service.loadBalancerSourceRanges`| Artifactory service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
+| `artifactory.service.annotations` | Artifactory service annotations           | `{}`                            |
 | `artifactory.service.pool`   | Artifactory instances to be in the load balancing pool. `members` or `all` | `members`    |
 | `artifactory.externalPort`   | Artifactory service external port                         | `8081`                        |
 | `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
