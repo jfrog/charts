@@ -812,7 +812,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.endpoint`        | Azure Blob Storage endpoint            | ``                        |
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
-| `artifactory.persistence.fileSystem.existingSharedClaim` | Enable using an existing shared pvc | `false`                             |
+| `artifactory.persistence.fileSystem.existingSharedClaim`  | Enable using an existing shared pvc | `false`                             |
 | `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
 | `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
