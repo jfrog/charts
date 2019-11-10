@@ -822,13 +822,13 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.15-debian-9-r77
+    tag: 9.6.15-debian-9-r91
   postgresqlUsername: artifactory
   postgresqlPassword:
   postgresqlDatabase: artifactory
   postgresqlConfiguration:
-    listen_addresses: "'*'"
-    max_connections: "1500"
+    listenAddresses: "'*'"
+    maxConnections: "1500"
   persistence:
     enabled: true
     size: 50Gi
