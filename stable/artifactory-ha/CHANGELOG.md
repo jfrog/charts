@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.6] - Nov 10, 2019
+* Update PostgreSQL chart version to 7.0.1
+* Use formal PostgreSQL configuration format
+
 ## [1.1.5] - Nov 8, 2019
 * Add support `artifactory.service.loadBalancerSourceRanges` for whitelisting when setting `artifactory.service.type=LoadBalancer`
 
