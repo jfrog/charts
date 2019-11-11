@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.1.7] - Nov 9, 2019
+* Additional documentation for masterKey
+
 ## [8.1.6] - Nov 10, 2019
 * Update PostgreSQL chart version to 7.0.1
 * Use formal PostgreSQL configuration format

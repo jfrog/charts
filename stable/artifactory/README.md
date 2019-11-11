@@ -627,7 +627,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                        |
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
-| `artifactory.masterKey`                          | master.key to be used on bootstrap | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `artifactory.masterKey`                          | Artifactory masterkey. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`.
+NOTE: This key can be generated only once and cannot be updated once created | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|                                               |
