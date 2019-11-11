@@ -323,6 +323,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.mcKey`           | Mission Control mc Key. Can be generated with `openssl rand -hex 16` |`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`|
 | `missionControl.customInitContainers`        | Custom init containers                          | ` `                                   |
 | `missionControl.service.type`                | Mission Control service type                    | `LoadBalancer`                        |
+| `missionControl.service.annotations`                | Mission Control service annotations                    | `{}`                        |
 | `missionControl.externalPort`                | Mission Control service external port           | `80`                                  |
 | `missionControl.internalPort`                | Mission Control service internal port           | `8080`                                |
 | `missionControl.missionControlUrl`           | Mission Control URL                             | ` `                                   |
