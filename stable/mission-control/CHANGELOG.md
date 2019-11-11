@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.7] - Nov 11, 2019
+* Add annotation options to Mission-Control service
+* 
 ## [1.1.6] - Sep 23, 2019
 * Update Mission-Control version to 3.5.4
 
