@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.8] - Nov 12, 2019
+* Updated Artifactory version to 6.14.1
+
 ## [1.1.7] - Nov 11, 2019
 * Additional documentation for masterKey
 
