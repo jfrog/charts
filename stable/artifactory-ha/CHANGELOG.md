@@ -1,6 +1,62 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.8] - Nov 12, 2019
+* Updated Artifactory version to 6.14.1
+
+## [1.1.7] - Nov 11, 2019
+* Additional documentation for masterKey
+
+## [1.1.6] - Nov 10, 2019
+* Update PostgreSQL chart version to 7.0.1
+* Use formal PostgreSQL configuration format
+
+## [1.1.5] - Nov 8, 2019
+* Add support `artifactory.service.loadBalancerSourceRanges` for whitelisting when setting `artifactory.service.type=LoadBalancer`
+
+## [1.1.4] - Nov 6, 2019
+* Add support for any type of environment variable by using `extraEnvironmentVariables` as-is
+
+## [1.1.3] - Nov 6, 2019
+* Add nodeselector support for Postgresql
+
+## [1.1.2] - Nov 5, 2019
+* Add support for the aws-s3-v3 filestore, which adds support for pod IAM roles
+
+## [1.1.1] - Nov 4, 2019
+* When using `copyOnEveryStartup`, make sure that the target base directories are created before copying the files
+
+## [1.1.0] - Nov 3, 2019
+* Updated Artifactory version to 6.14.0
+
+## [1.0.1] - Nov 3, 2019
+* Make sure the artifactory pod exits when one of the pre-start stages fail
+
+## [1.0.0] - Oct 27, 2019
+**IMPORTANT - BREAKING CHANGES!**<br>
+**DOWNTIME MIGHT BE REQUIRED FOR AN UPGRADE!**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), must use the upgrade instructions in [UPGRADE_NOTES.md](UPGRADE_NOTES.md)!
+* PostgreSQL sub chart was upgraded to version `6.5.x`. This version is **not backward compatible** with the old version (`0.9.5`)!
+* Note the following **PostgreSQL** Helm chart changes
+  * The chart configuration has changed! See [values.yaml](values.yaml) for the new keys used
+  * **PostgreSQL** is deployed as a StatefulSet
+  * See [PostgreSQL helm chart](https://hub.helm.sh/charts/stable/postgresql) for all available configurations
+
+## [0.17.3] - Oct 24, 2019
+* Change the preStartCommand to support templating
+
+## [0.17.2] - Oct 21, 2019
+* Add support for setting `artifactory.primary.labels`
+* Add support for setting `artifactory.node.labels`
+* Add support for setting `nginx.labels`
+
+## [0.17.1] - Oct 10, 2019
+* Updated Artifactory version to 6.13.1
+
+## [0.17.0] - Oct 7, 2019
+* Updated Artifactory version to 6.13.0
+
 ## [0.16.7] - Sep 24, 2019
 * Option to skip wait-for-db init container with '--set waitForDatabase=false'
 

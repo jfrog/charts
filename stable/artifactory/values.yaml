@@ -5,7 +5,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.8"
+initContainerImage: "alpine:3.10"
 
 installer:
   type:
@@ -73,8 +73,8 @@ networkpolicy:
     - {}
     ingress:
     - {}
-  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgres.enabled is true)
-  # - name: postgres
+  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgresql.enabled is true)
+  # - name: postgresql
   #   podSelector:
   #     matchLabels:
   #       app: postgresql
@@ -99,6 +99,7 @@ artifactory:
     # Note that by default we use appVersion to get image tag
     # version:
     pullPolicy: IfNotPresent
+  labels: {}
 
   # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
   deleteDBPropertiesOnStartup: true
@@ -224,29 +225,41 @@ artifactory:
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
-  # - name: SERVER_XML_ARTIFACTORY_PORT
-  #   value: "8081"
-  # - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
-  #   value: "200"
-  # - name: SERVER_XML_ACCESS_MAX_THREADS
-  #   value: "50"
-  # - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
-  #   value: ""
-  # - name: SERVER_XML_ACCESS_EXTRA_CONFIG
-  #   value: ""
-  # - name: SERVER_XML_EXTRA_CONNECTOR
-  #   value: ""
-  # - name: DB_POOL_MAX_ACTIVE
-  #   value: "100"
-  # - name: DB_POOL_MAX_IDLE
-  #   value: "10"
+  #    - name: SERVER_XML_ARTIFACTORY_PORT
+  #     value: "8081"
+  #    - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
+  #     value: "200"
+  #    - name: SERVER_XML_ACCESS_MAX_THREADS
+  #     value: "50"
+  #    - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
+  #     value: ""
+  #    - name: SERVER_XML_ACCESS_EXTRA_CONFIG
+  #     value: ""
+  #    - name: SERVER_XML_EXTRA_CONNECTOR
+  #     value: ""
+  #    - name: DB_POOL_MAX_ACTIVE
+  #     value: "100"
+  #    - name: DB_POOL_MAX_IDLE
+  #     value: "10"
+  #    - name: MY_SECRET_ENV_VAR
+  #      valueFrom:
+  #        secretKeyRef:
+  #          name: my-secret-name
+  #          key: my-secret-key
 
   annotations: {}
 
   service:
     name: artifactory
     type: ClusterIP
+    ## For supporting whitelist on the Artifactory service (useful if setting service.type=LoadBalancer)
+    ## Set this to a list of IP CIDR ranges
+    ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
+    ## or pass from helm command line
+    ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
+    loadBalancerSourceRanges: []
     annotations: {}
+
   externalPort: 8081
   internalPort: 8081
   internalPortReplicator: 6061
@@ -343,6 +356,64 @@ artifactory:
           </provider>
       </config>
       {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "aws-s3-v3" }}
+      <!-- AWS S3 V3 -->
+      <config version="2">
+          <chain>
+              <provider id="cache-fs" type="cache-fs">
+                  <provider id="eventual" type="eventual">
+                      <provider id="retry" type="retry">
+                          <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                      </provider>
+                  </provider>
+              </provider>
+          </chain>
+
+          <!-- Set max cache-fs size -->
+          <provider id="cache-fs" type="cache-fs">
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+          </provider>
+
+        {{- with .Values.artifactory.persistence.awsS3V3 }}
+          <provider id="s3-storage-v3" type="s3-storage-v3">
+              <testConnection>{{ .testConnection }}</testConnection>
+            {{- if .identity }}
+              <identity>{{ .identity }}</identity>
+            {{- end }}
+            {{- if .credential }}
+              <credential>{{ .credential }}</credential>
+            {{- end }}
+              <region>{{ .region }}</region>
+              <bucketName>{{ .bucketName }}</bucketName>
+              <path>{{ .path }}</path>
+              <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .kmsServerSideEncryptionKeyId }}
+              <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
+            {{- end }}
+            {{- with .kmsKeyRegion }}
+              <kmsKeyRegion>{{ . }}</kmsKeyRegion>
+            {{- end }}
+            {{- with .kmsCryptoMode }}
+              <kmsCryptoMode>{{ . }}</kmsCryptoMode>
+            {{- end }}
+              <useInstanceCredentials>true</useInstanceCredentials>
+              <usePresigning>{{ .usePresigning }}</usePresigning>
+              <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
+            {{- with .cloudFrontDomainName }}
+              <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
+            {{- end }}
+            {{- with .cloudFrontKeyPairId }}
+              <cloudFrontKeyPairId>{{ .cloudFrontKeyPairId }}</cloudFrontKeyPairId>
+            {{- end }}
+            {{- with .cloudFrontPrivateKey }}
+              <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
+            {{- end }}
+          </provider>
+        {{- end }}
+      </config>
+      {{- end }}
+
       {{- if eq .Values.artifactory.persistence.type "aws-s3" }}
       <!-- AWS S3 -->
       <config version="2">
@@ -372,7 +443,7 @@ artifactory:
           {{- end }}
               <s3AwsVersion>{{ .Values.artifactory.persistence.awsS3.s3AwsVersion }}</s3AwsVersion>
               <testConnection>{{ .Values.artifactory.persistence.awsS3.testConnection }}</testConnection>
-              <httpsOnly>true</httpsOnly>
+              <httpsOnly>{{ .Values.artifactory.persistence.awsS3.httpsOnly }}</httpsOnly>
               <region>{{ .Values.artifactory.persistence.awsS3.region }}</region>
               <bucketName>{{ .Values.artifactory.persistence.awsS3.bucketName }}</bucketName>
           {{- if .Values.artifactory.persistence.awsS3.identity }}
@@ -439,6 +510,26 @@ artifactory:
       credential:
       path: "artifactory/filestore"
       bucketExists: false
+
+    ## For artifactory.persistence.type aws-s3-v3
+    awsS3V3:
+      testConnection: false
+      identity:
+      credential:
+      region:
+      bucketName: artifactory-aws
+      path: artifactory/filestore
+      endpoint:
+      kmsServerSideEncryptionKeyId:
+      kmsKeyRegion:
+      kmsCryptoMode:
+      useInstanceCredentials: true
+      usePresigning: false
+      signatureExpirySeconds: 300
+      cloudFrontDomainName:
+      cloudFrontKeyPairId:
+      cloudFrontPrivateKey:
+
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
@@ -451,6 +542,7 @@ artifactory:
       credential:
       path: "artifactory/filestore"
       refreshCredentials: true
+      httpsOnly: true
       testConnection: false
       s3AwsVersion: AWS4-HMAC-SHA256
       ## Additional properties to set on the s3 provider
@@ -510,6 +602,7 @@ artifactory:
 nginx:
   enabled: true
   name: nginx
+  labels: {}
   replicaCount: 1
   uid: 104
   gid: 107
@@ -722,16 +815,19 @@ nginx:
 ## Use the wait-for-db init container. Set to false to skip
 waitForDatabase: true
 
-## Configuration values for the postgresql dependency
+## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
-##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresUser: "artifactory"
-  postgresPassword:
-  postgresDatabase: "artifactory"
-  postgresConfig:
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.15-debian-9-r91
+  postgresqlUsername: artifactory
+  postgresqlPassword:
+  postgresqlDatabase: artifactory
+  postgresqlConfiguration:
+    listenAddresses: "'*'"
     maxConnections: "1500"
   persistence:
     enabled: true
@@ -745,6 +841,7 @@ postgresql:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "500m"
+  nodeSelector: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby

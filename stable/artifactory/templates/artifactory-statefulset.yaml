@@ -8,6 +8,12 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE FAILED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md) and prepare PostgreSQL DB migration before upgrading.\nOnce ready, explicitly pass 'databaseUpgradeReady=yes' to upgrade and complete migration after server starts!\n" .Values.databaseUpgradeReady | quote }}
+{{- end }}
+{{- if .Values.artifactory.labels }}
+{{ toYaml .Values.artifactory.labels | indent 4 }}
+{{- end }}
 spec:
   serviceName: {{ template "artifactory.name" . }}
   replicas: 1
@@ -31,7 +37,7 @@ spec:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
       {{- if not (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
         checksum/access-creds: {{ include (print $.Template.BasePath "/access-bootstrap-creds.yaml") . | sha256sum }}
-      {{- end}}
+      {{- end }}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
@@ -125,6 +131,7 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
+          set -e;
           {{- if .Values.artifactory.configMapName }}
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
@@ -134,11 +141,14 @@ spec:
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
           {{- end }}
           {{- range .Values.artifactory.copyOnEveryStartup }}
+          {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
+          {{- $baseDirectory := regexFind ".*/" $targetPath }}
+          mkdir -p {{ $baseDirectory }};
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
           {{- end }}
           {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
-          {{ .Values.artifactory.preStartCommand }};
+          {{ tpl .Values.artifactory.preStartCommand . }};
           {{- end }}
           /entrypoint-artifactory.sh
         lifecycle:
@@ -160,12 +170,12 @@ spec:
         - name: DB_PORT
           value: '{{ .Values.postgresql.service.port }}'
         - name: DB_USER
-          value: {{.Values.postgresql.postgresUser | quote }}
+          value: {{ .Values.postgresql.postgresqlUsername | quote }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
-              key: postgres-password
+              key: postgresql-password
       {{- else }}
         - name: DB_TYPE
           value: '{{ .Values.database.type }}'
@@ -245,10 +255,9 @@ spec:
         - name: START_LOCAL_REPLICATOR
           value: "true"
         {{- end }}
-        {{- range .Values.artifactory.extraEnvironmentVariables }}
-        - name: {{ .name }}
-          value: '{{ tpl .value $ }}'
-        {{- end }}
+{{- with .Values.artifactory.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         {{- if .Values.artifactory.replicator.enabled }}

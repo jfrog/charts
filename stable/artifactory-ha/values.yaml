@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.8"
+initContainerImage: "alpine:3.10"
 
 installer:
   type:
@@ -73,8 +73,8 @@ networkpolicy:
     - {}
     ingress:
     - {}
-  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgres.enabled is true)
-  # - name: postgres
+  # Uncomment to allow only artifactory pods to communicate with postgresql (if postgresql.enabled is true)
+  # - name: postgresql
   #   podSelector:
   #     matchLabels:
   #       app: postgresql
@@ -94,17 +94,21 @@ waitForDatabase: true
 ##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "artifactory"
-  postgresUser: "artifactory"
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.15-debian-9-r91
+  postgresqlUsername: artifactory
+  postgresqlPassword:
+  postgresqlDatabase: artifactory
+  postgresqlConfiguration:
+    listenAddresses: "'*'"
     maxConnections: "1500"
-  service:
-    port: 5432
   persistence:
     enabled: true
     size: 50Gi
+  service:
+    port: 5432
   resources: {}
   #  requests:
   #    memory: "512Mi"
@@ -112,6 +116,7 @@ postgresql:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "500m"
+  nodeSelector: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## you MUST specify custom database details here or Artifactory will NOT start
@@ -294,22 +299,27 @@ artifactory:
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
-  # - name: SERVER_XML_ARTIFACTORY_PORT
-  #   value: "8081"
-  # - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
-  #   value: "200"
-  # - name: SERVER_XML_ACCESS_MAX_THREADS
-  #   value: "50"
-  # - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
-  #   value: ""
-  # - name: SERVER_XML_ACCESS_EXTRA_CONFIG
-  #   value: ""
-  # - name: SERVER_XML_EXTRA_CONNECTOR
-  #   value: ""
-  # - name: DB_POOL_MAX_ACTIVE
-  #   value: "100"
-  # - name: DB_POOL_MAX_IDLE
-  #   value: "10"
+#    - name: SERVER_XML_ARTIFACTORY_PORT
+#     value: "8081"
+#    - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
+#     value: "200"
+#    - name: SERVER_XML_ACCESS_MAX_THREADS
+#     value: "50"
+#    - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
+#     value: ""
+#    - name: SERVER_XML_ACCESS_EXTRA_CONFIG
+#     value: ""
+#    - name: SERVER_XML_EXTRA_CONNECTOR
+#     value: ""
+#    - name: DB_POOL_MAX_ACTIVE
+#     value: "100"
+#    - name: DB_POOL_MAX_IDLE
+#     value: "10"
+#    - name: MY_SECRET_ENV_VAR
+#      valueFrom:
+#        secretKeyRef:
+#          name: my-secret-name
+#          key: my-secret-key
 
   membershipPort: 10017
   externalPort: 8081
@@ -499,6 +509,82 @@ artifactory:
           </provider>
       </config>
       {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "aws-s3-v3" }}
+      <!-- AWS S3 V3 -->
+      <config version="2">
+          <chain> <!--template="cluster-s3-storage-v3"-->
+              <provider id="cache-fs-eventual-s3" type="cache-fs">
+                  <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                      <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
+                          <provider id="retry-s3" type="retry">
+                              <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                          </provider>
+                      </sub-provider>
+                      <dynamic-provider id="remote-s3" type="remote"/>
+                  </provider>
+              </provider>
+          </chain>
+
+          <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+              <readBehavior>crossNetworkStrategy</readBehavior>
+              <writeBehavior>crossNetworkStrategy</writeBehavior>
+              <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+              <property name="zones" value="local,remote"/>
+          </provider>
+
+          <provider id="remote-s3" type="remote">
+              <zone>remote</zone>
+          </provider>
+
+          <provider id="eventual-cluster-s3" type="eventual-cluster">
+              <zone>local</zone>
+          </provider>
+
+          <!-- Set max cache-fs size -->
+          <provider id="cache-fs-eventual-s3" type="cache-fs">
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+          </provider>
+
+        {{- with .Values.artifactory.persistence.awsS3V3 }}
+          <provider id="s3-storage-v3" type="s3-storage-v3">
+              <testConnection>{{ .testConnection }}</testConnection>
+            {{- if .identity }}
+              <identity>{{ .identity }}</identity>
+            {{- end }}
+            {{- if .credential }}
+              <credential>{{ .credential }}</credential>
+            {{- end }}
+              <region>{{ .region }}</region>
+              <bucketName>{{ .bucketName }}</bucketName>
+              <path>{{ .path }}</path>
+              <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .kmsServerSideEncryptionKeyId }}
+              <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
+            {{- end }}
+            {{- with .kmsKeyRegion }}
+              <kmsKeyRegion>{{ . }}</kmsKeyRegion>
+            {{- end }}
+            {{- with .kmsCryptoMode }}
+              <kmsCryptoMode>{{ . }}</kmsCryptoMode>
+            {{- end }}
+              <useInstanceCredentials>true</useInstanceCredentials>
+              <usePresigning>{{ .usePresigning }}</usePresigning>
+              <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
+            {{- with .cloudFrontDomainName }}
+              <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
+            {{- end }}
+            {{- with .cloudFrontKeyPairId }}
+              <cloudFrontKeyPairId>{{ .cloudFrontKeyPairId }}</cloudFrontKeyPairId>
+            {{- end }}
+            {{- with .cloudFrontPrivateKey }}
+              <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
+            {{- end }}
+          </provider>
+        {{- end }}
+      </config>
+      {{- end }}
+
       {{- if eq .Values.artifactory.persistence.type "aws-s3" }}
       <!-- AWS S3 -->
       <config version="2">
@@ -548,7 +634,7 @@ artifactory:
           {{- end }}
               <s3AwsVersion>{{ .Values.artifactory.persistence.awsS3.s3AwsVersion }}</s3AwsVersion>
               <testConnection>{{ .Values.artifactory.persistence.awsS3.testConnection }}</testConnection>
-              <httpsOnly>true</httpsOnly>
+              <httpsOnly>{{ .Values.artifactory.persistence.awsS3.httpsOnly }}</httpsOnly>
               <region>{{ .Values.artifactory.persistence.awsS3.region }}</region>
               <bucketName>{{ .Values.artifactory.persistence.awsS3.bucketName }}</bucketName>
           {{- if .Values.artifactory.persistence.awsS3.identity }}
@@ -658,6 +744,26 @@ artifactory:
       credential:
       path: "artifactory-ha/filestore"
       bucketExists: false
+
+    ## For artifactory.persistence.type aws-s3-v3
+    awsS3V3:
+      testConnection: false
+      identity:
+      credential:
+      region:
+      bucketName: artifactory-aws
+      path: artifactory/filestore
+      endpoint:
+      kmsServerSideEncryptionKeyId:
+      kmsKeyRegion:
+      kmsCryptoMode:
+      useInstanceCredentials: true
+      usePresigning: false
+      signatureExpirySeconds: 300
+      cloudFrontDomainName:
+      cloudFrontKeyPairId:
+      cloudFrontPrivateKey:
+
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
@@ -670,6 +776,7 @@ artifactory:
       credential:
       path: "artifactory-ha/filestore"
       refreshCredentials: true
+      httpsOnly: true
       testConnection: false
       s3AwsVersion: "AWS4-HMAC-SHA256"
 
@@ -686,6 +793,13 @@ artifactory:
   service:
     name: artifactory
     type: ClusterIP
+    ## For supporting whitelist on the Artifactory service (useful if setting service.type=LoadBalancer)
+    ## Set this to a list of IP CIDR ranges
+    ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
+    ## or pass from helm command line
+    ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
+    loadBalancerSourceRanges: []
+    annotations: {}
     ## Which nodes in the cluster should be in the external load balancer pool (have external traffic routed to them)
     ## Supported pool values
     ## members
@@ -708,6 +822,7 @@ artifactory:
   ## Customising their resources and java parameters is done here.
   primary:
     name: artifactory-ha-primary
+    labels: {}
     persistence:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-primary-0`
@@ -745,6 +860,7 @@ artifactory:
 
   node:
     name: artifactory-ha-member
+    labels: {}
     persistence:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-member-0`
@@ -803,6 +919,7 @@ initContainers:
 nginx:
   enabled: true
   name: nginx
+  labels: {}
   replicaCount: 1
   uid: 104
   gid: 107

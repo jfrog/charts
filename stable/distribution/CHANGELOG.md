@@ -1,6 +1,12 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.4.3] - Oct 18, 2019
+* Update Distribution version 1.7.3
+
+## [3.4.2] - Oct 6, 2019
+* Update Distribution version 1.7.2
+
 ## [3.4.1] - Sep 25, 2019
 * Update Distribution version 1.7.1
 

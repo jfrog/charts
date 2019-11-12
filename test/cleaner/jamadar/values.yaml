@@ -1,0 +1,29 @@
+# Generated from deployments/kubernetes/templates/chart/values.yaml.tmpl
+
+kubernetes:
+  host: https://kubernetes.default
+
+jamadar:
+  labels:
+    provider: stakater
+    group: com.stakater.platform
+    version: v0.0.15
+  image:
+    name: stakater/jamadar
+    tag: "v0.0.15"
+    pullPolicy: IfNotPresent
+  pollTimeInterval: 20m
+  age: 7d
+  resources:
+  - namespaces
+  actions:
+  - name: slack
+    params:
+      token: <token>
+      channel: <channel-name>
+  restrictedNamespaces:
+  - kube-system
+  - default
+  - kube-public
+
+  configFilePath: /configs/config.yaml

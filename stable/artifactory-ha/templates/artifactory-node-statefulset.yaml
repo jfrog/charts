@@ -8,6 +8,9 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+{{- if .Values.artifactory.node.labels }}
+{{ toYaml .Values.artifactory.node.labels | indent 4 }}
+{{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.node.name" . }}
   replicas: {{ .Values.artifactory.node.replicaCount }}
@@ -34,7 +37,7 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds}}
+      terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
@@ -61,7 +64,7 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
-      {{- end }}          
+      {{- end }}
     {{- end }}
       {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"
@@ -132,7 +135,6 @@ spec:
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
-      {{- if .Values.artifactory.preStartCommand }}
         command:
         - '/bin/sh'
         - '-c'
@@ -141,10 +143,11 @@ spec:
           echo "Copying plugins";
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
           {{- end }}
+        {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
-          {{ .Values.artifactory.preStartCommand }};
+          {{ tpl .Values.artifactory.preStartCommand . }};
+        {{- end }}
           /entrypoint-artifactory.sh
-      {{- end }}
       {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
           postStart:
@@ -165,12 +168,12 @@ spec:
         - name: DB_PORT
           value: '{{ .Values.postgresql.service.port }}'
         - name: DB_USER
-          value: '{{ .Values.postgresql.postgresUser }}'
+          value: '{{ .Values.postgresql.postgresqlUsername }}'
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
-              key: postgres-password
+              key: postgresql-password
       {{- else }}
         - name: DB_TYPE
           value: '{{ required "Must set database.type when not using the PostgreSQL sub-chart (postgresql.enabled=false) " .Values.database.type }}'
@@ -277,10 +280,9 @@ spec:
         - name: HA_BACKUP_DIR
           value: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
       {{- end }}
-      {{- range .Values.artifactory.extraEnvironmentVariables }}
-        - name: {{ .name }}
-          value: '{{ tpl .value $ }}'
-      {{- end }}
+{{- with .Values.artifactory.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
         {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}

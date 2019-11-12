@@ -14,6 +14,10 @@ metadata:
 {{- end }}
 spec:
   type: {{ .Values.artifactory.service.type }}
+{{- if .Values.artifactory.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml .Values.artifactory.service.loadBalancerSourceRanges | indent 4 }}
+{{- end }}
   ports:
   - port: {{ .Values.artifactory.externalPort }}
     targetPort: {{ .Values.artifactory.internalPort }}
