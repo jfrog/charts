@@ -8,6 +8,10 @@ metadata:
     component: {{ .Values.missionControl.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+{{- if .Values.missionControl.service.annotations }}
+  annotations:
+{{ toYaml .Values.missionControl.service.annotations | indent 4 }}
+{{- end }}
 spec:
   type: {{ .Values.missionControl.service.type }}
   ports:
