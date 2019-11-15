@@ -373,6 +373,15 @@ spec:
       - name: {{ .Values.missionControl.name }}
         image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if .Values.missionControl.preStartCommand }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          echo "Running custom preStartCommand command";
+          {{ tpl .Values.missionControl.preStartCommand . }};
+          /opt/entrypoint-mc.sh;
+        {{- end }}
         env:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE

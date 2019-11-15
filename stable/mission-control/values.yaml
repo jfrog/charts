@@ -334,6 +334,8 @@ missionControl:
   internalPort: 8080
   externalPort: 80
 
+  ## Extra pre-start command to import trusted keystore, need to mount the certificates first
+  # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
 
 insightServer:
   name: insight-server
