@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.1.10] - Nov 17, 2019
+* Fix creation of double slash in nginx artifactory configuration
+
 ## [8.1.9] - Nov 14, 2019
 * Set explicit `postgresql.postgresqlPassword=""` to avoid helm v3 error
 
