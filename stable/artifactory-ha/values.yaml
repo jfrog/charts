@@ -1016,7 +1016,7 @@ nginx:
       if ( $repo != "" ) {
         rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
       }
-      rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+      rewrite ^/(v1|v2)/([^/]+)/(.*)$ /artifactory/api/docker/$2/$1/$3;
       rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
 
       chunked_transfer_encoding on;
