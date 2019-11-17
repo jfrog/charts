@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.11] - Nov 17, 2019
+* Update comment on Artifactory master key
+
 ## [1.1.10] - Nov 17, 2019
 * Fix creation of double slash in nginx artifactory configuration
 
