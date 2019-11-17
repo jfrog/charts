@@ -220,11 +220,13 @@ spec:
         {{- end }}
         {{- end }}
       {{- end }}
+      {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
               name: '{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}'
               key: master-key
+      {{- end }}
         - name: EXTRA_JAVA_OPTIONS
           value: >
         {{- with .Values.artifactory.javaOpts }}
