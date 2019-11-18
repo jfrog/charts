@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [1.1.9] - Nov 14, 2019
-Support missionControl.preStartCommand for running command before entrypoint starts
+* Support missionControl.preStartCommand for running command before entrypoint starts
 
 ## [1.1.8] - Nov 12, 2019
 * Add annotation options to Mission-Control service
