@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.1] - Nov 18, 2019
+* Add the option to provide service account annotations (in order to support stuff like https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html)
+
 ## [1.2.0] - Nov 18, 2019
 * Updated Artifactory version to 6.15.0
 
