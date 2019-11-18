@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.1.9] - Nov 14, 2019
+* Set explicit `postgresql.postgresqlPassword=""` to avoid helm v3 error
+
 ## [8.1.8] - Nov 12, 2019
 * Updated Artifactory version to 6.14.1
 
