@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.12] - Nov 17, 2019
+* Fix `README.md` format (broken table)
+
 ## [1.1.11] - Nov 17, 2019
 * Update comment on Artifactory master key
 
