@@ -592,6 +592,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `imagePullSecrets`        | Docker registry pull secret       |                                                          |
 | `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                                |
 | `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template |
+| `serviceAccount.annotations`     | Artifactory service account annotations       | `` |
 | `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                     |
 | `logger.image.repository` | repository for logger image       | `busybox`                                                |
