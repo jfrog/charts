@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.6+
+* Kubernetes 1.10+
 
 ## Chart Details
 This chart will do the following:
