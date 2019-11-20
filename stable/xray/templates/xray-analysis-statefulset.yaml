@@ -129,6 +129,8 @@ spec:
         image: {{ .Values.analysis.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
+        - name: XRAY_K8S_ENV
+          value: "true"
         - name: XRAYCONFIGPATH
           value: "{{ .Values.common.xrayConfigPath }}"
         - name: XRAY_MASTER_KEY
