@@ -61,7 +61,7 @@ artifactory:
     enabled: true
 
   ## This key is required for upgrades to protect old PostgreSQL chart's breaking changes.
-  databaseUpgradeReady: true
+  databaseUpgradeReady: "yes"
 
   ## If NOT using the PostgreSQL in this chart (artifactory.postgresql.enabled=false),
   ## specify custom database details here or leave empty and Artifactory will use embedded derby.
