@@ -1,6 +1,9 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.1.3] - Nov 20, 2019
+* Fix JCR logo url
+
 ## [0.1.2] - Nov 20, 2019
 * Update JCR logo
 
