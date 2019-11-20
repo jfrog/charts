@@ -1,6 +1,24 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.2] - Nov 20, 2019
+* Update Artfactory logo
+
+## [1.2.1] - Nov 18, 2019
+* Add the option to provide service account annotations (in order to support stuff like https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html)
+
+## [1.2.0] - Nov 18, 2019
+* Updated Artifactory version to 6.15.0
+
+## [1.1.12] - Nov 17, 2019
+* Fix `README.md` format (broken table)
+
+## [1.1.11] - Nov 17, 2019
+* Update comment on Artifactory master key
+
+## [1.1.10] - Nov 17, 2019
+* Fix creation of double slash in nginx artifactory configuration
+
 ## [1.1.9] - Nov 14, 2019
 * Set explicit `postgresql.postgresqlPassword=""` to avoid helm v3 error
 

@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.6+
+* Kubernetes 1.8+
 * Artifactory Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details
@@ -25,18 +25,6 @@ helm repo add jfrog https://charts.jfrog.io
 To install the chart with the release name `artifactory`:
 ```bash
 helm install --name artifactory jfrog/artifactory
-```
-
-### Deploying Artifactory OSS
-By default it will run Artifactory-Pro to run Artifactory-OSS use following command:
-```bash
-helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
-```
-
-### Deploying Artifactory CE for C++
-By default it will run Artifactory-Pro to run Artifactory-CE for C++ use following command:
-```bash
-helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-cpp-ce jfrog/artifactory
 ```
 
 ### Deploying Artifactory with embedded Derby database
@@ -592,6 +580,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `imagePullSecrets`        | Docker registry pull secret       |                                                          |
 | `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                                |
 | `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template |
+| `serviceAccount.annotations`     | Artifactory service account annotations       | `` |
 | `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                     |
 | `logger.image.repository` | repository for logger image       | `busybox`                                                |
@@ -628,7 +617,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.masterKey`                          | Artifactory masterkey. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`.
-NOTE: This key can be generated only once and cannot be updated once created | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|                                               |

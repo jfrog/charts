@@ -1,6 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.6] - Nov 20, 2019
+* Prevent probes failing on 403 (Forbidden)
+
+## [1.2.5] - Nov 20, 2019
+* Update Xray logo
+
 ## [1.2.4] - Nov 7, 2019
 * Update Xray version to 2.10.7
 

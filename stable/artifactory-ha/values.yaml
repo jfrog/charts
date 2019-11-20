@@ -39,6 +39,7 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name:
+  annotations: {}
 
 ingress:
   enabled: false
@@ -255,9 +256,8 @@ artifactory:
   #    mountPath: "/scripts/script.sh"
   #    subPath: script.sh
 
-  ## Artifactory requires a unique master key
-  ## You can generate one with the command:
-  ## 'openssl rand -hex 32'
+  ## Artifactory HA requires a unique master key. Each Artifactory node must have the same master key!
+  ## You can generate one with the command: 'openssl rand -hex 16'
   ## Pass it to helm with '--set artifactory.masterKey=${MASTER_KEY}'
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
@@ -1016,7 +1016,7 @@ nginx:
       if ( $repo != "" ) {
         rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
       }
-      rewrite ^/(v1|v2)/([^/]+)(.*)$ /artifactory/api/docker/$2/$1/$3;
+      rewrite ^/(v1|v2)/([^/]+)/(.*)$ /artifactory/api/docker/$2/$1/$3;
       rewrite ^/(v1|v2)/ /artifactory/api/docker/$1/;
 
       chunked_transfer_encoding on;

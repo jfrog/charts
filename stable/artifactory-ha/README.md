@@ -701,6 +701,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `imagePullSecrets`           | Docker registry pull secret       |                                                       |
 | `serviceAccount.create`   | Specifies whether a ServiceAccount should be created | `true`                                |
 | `serviceAccount.name`     | The name of the ServiceAccount to create             | Generated using the fullname template |
+| `serviceAccount.annotations`     | Artifactory service account annotations       | `` |
 | `rbac.create`             | Specifies whether RBAC resources should be created   | `true`                                |
 | `rbac.role.rules`         | Rules to create                   | `[]`                                                     |
 | `logger.image.repository` | repository for logger image       | `busybox`                                                |
@@ -717,8 +718,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.customVolumeMounts`  | Custom Artifactory volumeMounts   |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
-| `artifactory.masterKey`           | Artifactory master key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`.
-                                      NOTE: This key can be generated only once and cannot be updated once created |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
+| `artifactory.masterKey`           | Artifactory master key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`. NOTE: This key can be generated only once and cannot be updated once created |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |
 | `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|             |
