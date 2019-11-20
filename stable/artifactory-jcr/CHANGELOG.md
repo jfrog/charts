@@ -1,6 +1,9 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.1.4] - Nov 20, 2019
+* Update Readme
+
 ## [0.1.3] - Nov 20, 2019
 * Fix JCR logo url
 * Update dependency to Artifactory 8.2.2 chart

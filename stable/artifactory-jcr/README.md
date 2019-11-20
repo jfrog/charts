@@ -1,5 +1,7 @@
 # JFrog Container Registry Helm Chart
 
+JFrog Container Registry is a free Artifactory edition with Docker and Helm repositories support.
+
 ## Prerequisites Details
 
 * Kubernetes 1.10+
