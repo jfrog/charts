@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [0.1.3] - Nov 20, 2019
 * Fix JCR logo url
+* Update dependency to Artifactory 8.2.2 chart
 
 ## [0.1.2] - Nov 20, 2019
 * Update JCR logo

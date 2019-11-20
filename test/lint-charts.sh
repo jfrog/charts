@@ -52,28 +52,31 @@ validate_manifests() {
         rm -rf stable
         mkdir stable
         helm template "${REPO_ROOT}/${chart_name}" --output-dir stable > /dev/null 2>&1
-        echo "------------------------------------------------------------------------------------------------------------------------"
-        echo "==> Processing with default values..."
-        echo "------------------------------------------------------------------------------------------------------------------------"
         TEMPLATE_FILES="${chart_name}/templates"
-        # shellcheck disable=SC2086
-        kubeval -d ${TEMPLATE_FILES}
-        if [ -d "${REPO_ROOT}/${chart_name}/ci" ]
+        if [ -d "${TEMPLATE_FILES}" ] 
         then
-            FILES="${REPO_ROOT}/${chart_name}/ci/*"
-            for file in $FILES
-            do
-                echo "------------------------------------------------------------------------------------------------------------------------"
-                echo "==> Processing with $file..."
-                echo "------------------------------------------------------------------------------------------------------------------------"
-                rm -rf stable
-                mkdir stable
-                helm template "${REPO_ROOT}/${chart_name}" -f "$file" --output-dir stable > /dev/null 2>&1
-                TEMPLATE_FILES="${chart_name}/templates/*" 
-                # shellcheck disable=SC2086
-                kubeval ${TEMPLATE_FILES}
-            done
-        fi 
+            echo "------------------------------------------------------------------------------------------------------------------------"
+            echo "==> Processing with default values..."
+            echo "------------------------------------------------------------------------------------------------------------------------"
+            # shellcheck disable=SC2086
+            kubeval -d ${TEMPLATE_FILES}
+            if [ -d "${REPO_ROOT}/${chart_name}/ci" ]
+            then
+                FILES="${REPO_ROOT}/${chart_name}/ci/*"
+                for file in $FILES
+                do
+                    echo "------------------------------------------------------------------------------------------------------------------------"
+                    echo "==> Processing with $file..."
+                    echo "------------------------------------------------------------------------------------------------------------------------"
+                    rm -rf stable
+                    mkdir stable
+                    helm template "${REPO_ROOT}/${chart_name}" -f "$file" --output-dir stable > /dev/null 2>&1
+                    TEMPLATE_FILES="${chart_name}/templates/*" 
+                    # shellcheck disable=SC2086
+                    kubeval ${TEMPLATE_FILES}
+                done
+            fi
+        fi
     done
     echo "------------------------------------------------------------------------------------------------------------------------"
     echo "Done Manifests validating!"
@@ -87,7 +90,6 @@ main() {
     git_fetch
     # Lint helm charts
     # shellcheck disable=SC2086
-    docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" helm repo add jfrog https://charts.jfrog.io && help repo up
     docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml | tee tmp/lint.log
     echo "Done Charts Linting!"
     echo
