@@ -17,7 +17,7 @@ artifactory:
       repository: docker.bintray.io/jfrog/artifactory-jcr
 
       ## Default version is from the artifactory sub-chart in the requirements.yaml
-      #version:
+      # version:
 
     ## Uncomment the following resources definitions or pass them from command line
     ## to control the cpu and memory resources allocated by the Kubernetes cluster
@@ -61,7 +61,7 @@ artifactory:
     enabled: true
 
   ## This key is required for upgrades to protect old PostgreSQL chart's breaking changes.
-  databaseUpgradeReady: yes
+  databaseUpgradeReady: "yes"
 
   ## If NOT using the PostgreSQL in this chart (artifactory.postgresql.enabled=false),
   ## specify custom database details here or leave empty and Artifactory will use embedded derby.
