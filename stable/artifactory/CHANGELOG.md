@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.2.3] - Nov 20, 2019
+* Update Artifactory Readme
+
 ## [8.2.2] - Nov 20, 2019
 * Update Artfactory logo
 

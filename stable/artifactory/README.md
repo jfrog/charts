@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.6+
+* Kubernetes 1.8+
 * Artifactory Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details
@@ -25,18 +25,6 @@ helm repo add jfrog https://charts.jfrog.io
 To install the chart with the release name `artifactory`:
 ```bash
 helm install --name artifactory jfrog/artifactory
-```
-
-### Deploying Artifactory OSS
-By default it will run Artifactory-Pro to run Artifactory-OSS use following command:
-```bash
-helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-oss jfrog/artifactory
-```
-
-### Deploying Artifactory CE for C++
-By default it will run Artifactory-Pro to run Artifactory-CE for C++ use following command:
-```bash
-helm install --name artifactory --set artifactory.image.repository=docker.bintray.io/jfrog/artifactory-cpp-ce jfrog/artifactory
 ```
 
 ### Deploying Artifactory with embedded Derby database
