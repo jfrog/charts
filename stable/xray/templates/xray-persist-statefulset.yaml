@@ -43,8 +43,6 @@ spec:
       - name: init-wait
         image: {{ .Values.initContainerImage | quote }}
         env:
-        - name: XRAY_K8S_ENV
-          value: "true"
         {{- if .Values.mongodb.enabled }}
         - name: MONGODB_USER
           value: {{ .Values.mongodb.mongodbUsername }}
@@ -131,6 +129,8 @@ spec:
         image: {{ .Values.persist.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
+        - name: XRAY_K8S_ENV
+          value: "true"
         - name: XRAYCONFIGPATH
           value: "{{ .Values.common.xrayConfigPath }}"
         - name: XRAY_MASTER_KEY
