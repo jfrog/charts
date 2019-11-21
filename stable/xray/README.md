@@ -323,13 +323,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
 | `common.customInitContainers`                  | Custom init containers to run after existing init containers                       | ` `                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
-| `common.livenessProbe.enabled`                 | Xray liveness probe enabled                       | `true`                  |
-| `common.livenessProbe.path`                    | Xray liveness probe path                       | `/debug/pprof`                  |
-| `common.livenessProbe.initialDelaySeconds`     | Delay before liveness probe is initiated                       | `90`                  |
-| `common.livenessProbe.periodSeconds`           | How often to perform the probe                       | `10`                  |
-| `common.livenessProbe.timeoutSeconds`          | When the probe times out                       | `1`                  |
-| `common.livenessProbe.failureThreshold`        | Minimum consecutive failures for the probe to be considered failed after having succeeded                       | `3`           |
-| `common.livenessProbe.successThreshold`        | Minimum consecutive successes for the probe to be considered successful after having failed             | `1`                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `global.postgresqlTlsSecret`                   | Xray external PostgreSQL TLS files secret    | ` `                  |
@@ -341,6 +334,20 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.internalPort`                        | Xray Analysis internal port                  | `7000`               |
 | `analysis.externalPort`                        | Xray Analysis external port                  | `7000`               |
 | `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
+| `analysis.livenessProbe.enabled`               | Xray Analysis liveness probe enabled                       | `true`                  |
+| `analysis.livenessProbe.path`                  | Xray Analysis liveness probe path                       | `/debug/pprof`                  |
+| `analysis.livenessProbe.initialDelaySeconds`   | Xray Analysis delay before liveness probe is initiated                       | `90`                  |
+| `analysis.livenessProbe.periodSeconds`         | Xray Analysis how often to perform the probe                       | `10`                  |
+| `analysis.livenessProbe.timeoutSeconds`        | Xray Analysis when the probe times out                       | `1`                  |
+| `analysis.livenessProbe.failureThreshold`      | Xray Analysis minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `analysis.livenessProbe.successThreshold`      | Xray Analysis minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
+| `analysis.readinessProbe.enabled`               | Xray Analysis readiness probe enabled                       | `true`                  |
+| `analysis.readinessProbe.path`                  | Xray Analysis readiness probe path                       | `/debug/pprof`                  |
+| `analysis.readinessProbe.initialDelaySeconds`   | Xray Analysis delay before readiness probe is initiated                       | `90`                  |
+| `analysis.readinessProbe.periodSeconds`         | Xray Analysis how often to perform the probe                       | `10`                  |
+| `analysis.readinessProbe.timeoutSeconds`        | Xray Analysis when the probe times out                       | `1`                  |
+| `analysis.readinessProbe.failureThreshold`      | Xray Analysis minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `analysis.readinessProbe.successThreshold`      | Xray Analysis minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `analysis.persistence.size`                    | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
 | `analysis.loggers`                             | Xray Analysis loggers (see values.yaml for possible values)  | ` `  |
@@ -355,6 +362,20 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
+| `indexer.livenessProbe.enabled`               | Xray Indexer liveness probe enabled                       | `true`                  |
+| `indexer.livenessProbe.path`                  | Xray Indexer liveness probe path                       | `/debug/pprof`                  |
+| `indexer.livenessProbe.initialDelaySeconds`   | Xray Indexer delay before liveness probe is initiated                       | `90`                  |
+| `indexer.livenessProbe.periodSeconds`         | Xray Indexer how often to perform the probe                       | `10`                  |
+| `indexer.livenessProbe.timeoutSeconds`        | Xray Indexer when the probe times out                       | `1`                  |
+| `indexer.livenessProbe.failureThreshold`      | Xray Indexer minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `indexer.livenessProbe.successThreshold`      | Xray Indexer minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
+| `indexer.readinessProbe.enabled`               | Xray Indexer readiness probe enabled                       | `true`                  |
+| `indexer.readinessProbe.path`                  | Xray Indexer readiness probe path                       | `/debug/pprof`                  |
+| `indexer.readinessProbe.initialDelaySeconds`   | Xray Indexer delay before readiness probe is initiated                       | `90`                  |
+| `indexer.readinessProbe.periodSeconds`         | Xray Indexer how often to perform the probe                       | `10`                  |
+| `indexer.readinessProbe.timeoutSeconds`        | Xray Indexer when the probe times out                       | `1`                  |
+| `indexer.readinessProbe.failureThreshold`      | Xray Indexer minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `indexer.readinessProbe.successThreshold`      | Xray Indexer minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
 | `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `true`                             |
@@ -373,6 +394,20 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.internalPort`                         | Xray Persist internal port                   | `7003`               |
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
 | `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
+| `persist.livenessProbe.enabled`               | Xray Persist liveness probe enabled                       | `true`                  |
+| `persist.livenessProbe.path`                  | Xray Persist liveness probe path                       | `/debug/pprof`                  |
+| `persist.livenessProbe.initialDelaySeconds`   | Xray Persist delay before liveness probe is initiated                       | `90`                  |
+| `persist.livenessProbe.periodSeconds`         | Xray Persist how often to perform the probe                       | `10`                  |
+| `persist.livenessProbe.timeoutSeconds`        | Xray Persist when the probe times out                       | `1`                  |
+| `persist.livenessProbe.failureThreshold`      | Xray Persist minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `persist.livenessProbe.successThreshold`      | Xray Persist minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
+| `persist.readinessProbe.enabled`               | Xray Persist readiness probe enabled                       | `true`                  |
+| `persist.readinessProbe.path`                  | Xray Persist readiness probe path                       | `/debug/pprof`                  |
+| `persist.readinessProbe.initialDelaySeconds`   | Xray Persist delay before readiness probe is initiated                       | `90`                  |
+| `persist.readinessProbe.periodSeconds`         | Xray Persist how often to perform the probe                       | `10`                  |
+| `persist.readinessProbe.timeoutSeconds`        | Xray Persist when the probe times out                       | `1`                  |
+| `persist.readinessProbe.failureThreshold`      | Xray Persist minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `persist.readinessProbe.successThreshold`      | Xray Persist minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `persist.persistence.size`                     | Xray Persist storage size limit              | `10Gi`               |
 | `persist.loggers`                              | Xray Persist loggers (see values.yaml for possible values)  | ` `   |
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
@@ -389,6 +424,20 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.service.name`                          | Xray server service name                     | `xray`               |
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
 | `server.service.annotations`                   | Xray server service annotations              | `{}`           |
+| `server.livenessProbe.enabled`               | Xray server liveness probe enabled                       | `true`                  |
+| `server.livenessProbe.path`                  | Xray server liveness probe path                       | `/web/`                  |
+| `server.livenessProbe.initialDelaySeconds`   | Xray server delay before liveness probe is initiated                       | `90`                  |
+| `server.livenessProbe.periodSeconds`         | Xray server how often to perform the probe                       | `10`                  |
+| `server.livenessProbe.timeoutSeconds`        | Xray server when the probe times out                       | `1`                  |
+| `server.livenessProbe.failureThreshold`      | Xray server minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `server.livenessProbe.successThreshold`      | Xray server minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
+| `server.readinessProbe.enabled`               | Xray server readiness probe enabled                       | `true`                  |
+| `server.readinessProbe.path`                  | Xray server readiness probe path                       | `/web/`                  |
+| `server.readinessProbe.initialDelaySeconds`   | Xray server delay before readiness probe is initiated                       | `90`                  |
+| `server.readinessProbe.periodSeconds`         | Xray server how often to perform the probe                       | `10`                  |
+| `server.readinessProbe.timeoutSeconds`        | Xray server when the probe times out                       | `1`                  |
+| `server.readinessProbe.failureThreshold`      | Xray server minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
+| `server.readinessProbe.successThreshold`      | Xray server minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `server.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `server.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
 | `server.persistence.enabled`                   | Xray server persistence volume enabled       | `true`                             |

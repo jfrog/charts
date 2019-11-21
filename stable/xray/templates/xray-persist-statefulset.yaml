@@ -151,27 +151,27 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.persist.resources | indent 10 }}
-      {{- if .Values.common.livenessProbe.enabled }}
+      {{- if .Values.persist.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.common.livenessProbe.path }}
+            path: {{ .Values.persist.livenessProbe.path }}
             port: {{ .Values.persist.internalPort }}
-          initialDelaySeconds: {{ .Values.common.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.common.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.common.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.common.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.common.livenessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.persist.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.persist.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.persist.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.persist.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.persist.livenessProbe.successThreshold }}
       {{- end }}
-      {{- if .Values.common.readinessProbe.enabled }}
+      {{- if .Values.persist.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.common.readinessProbe.path }}
+            path: {{ .Values.persist.readinessProbe.path }}
             port: {{ .Values.persist.internalPort }}
-          initialDelaySeconds: {{ .Values.common.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.common.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.common.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.common.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.common.readinessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.persist.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.persist.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.persist.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.persist.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.persist.readinessProbe.successThreshold }}
       {{- end }}
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}

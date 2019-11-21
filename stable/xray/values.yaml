@@ -254,24 +254,6 @@ common:
     stdOutEnabled: true
     indexAllBuilds: false
 
-  livenessProbe:
-    enabled: true
-    path: /debug/pprof
-    initialDelaySeconds: 90
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    path: /debug/pprof
-    initialDelaySeconds: 60
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 10
-    successThreshold: 1
-
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"
@@ -315,6 +297,25 @@ analysis:
   externalPort: 7000
   service:
     type: ClusterIP
+
+  livenessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 10
+    successThreshold: 1
+
   ## Container storage limit
   persistence:
     size: 10Gi
@@ -342,6 +343,24 @@ indexer:
   externalPort: 7002
   service:
     type: ClusterIP
+
+  livenessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 10
+    successThreshold: 1
 
   persistence:
     enabled: true
@@ -387,6 +406,25 @@ persist:
   externalPort: 7003
   service:
     type: ClusterIP
+
+  livenessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 10
+    successThreshold: 1
+
   ## Container storage limit
   persistence:
     size: 10Gi
@@ -419,6 +457,24 @@ server:
     # external-dns.alpha.kubernetes.io/hostname:  example.org
     # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
     # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
+
+  livenessProbe:
+    enabled: true
+    path: /web/
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    path: /web/
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 10
+    successThreshold: 1
 
   persistence:
     enabled: true

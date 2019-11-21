@@ -151,27 +151,27 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.indexer.resources | indent 10 }}
-      {{- if .Values.common.livenessProbe.enabled }}
+      {{- if .Values.indexer.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.common.livenessProbe.path }}
+            path: {{ .Values.indexer.livenessProbe.path }}
             port: {{ .Values.indexer.internalPort }}
-          initialDelaySeconds: {{ .Values.common.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.common.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.common.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.common.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.common.livenessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.indexer.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.indexer.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.indexer.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.indexer.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.indexer.livenessProbe.successThreshold }}
       {{- end }}
-      {{- if .Values.common.readinessProbe.enabled }}
+      {{- if .Values.indexer.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.common.readinessProbe.path }}
+            path: {{ .Values.indexer.readinessProbe.path }}
             port: {{ .Values.indexer.internalPort }}
-          initialDelaySeconds: {{ .Values.common.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.common.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.common.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.common.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.common.readinessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.indexer.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.indexer.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.indexer.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.indexer.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.indexer.readinessProbe.successThreshold }}
       {{- end }}
 
       {{- $image := .Values.logger.image.repository }}
@@ -189,15 +189,15 @@ spec:
           - name: data-volume
             mountPath: {{ $mountPath }}
       {{- end }}
-    {{- with .Values.analysis.nodeSelector }}
+    {{- with .Values.indexer.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.analysis.affinity }}
+    {{- with .Values.indexer.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.analysis.tolerations }}
+    {{- with .Values.indexer.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
