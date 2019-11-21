@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 
-## [1.2.0] - Nov 20, 2019
+## [1.1.10] - Nov 21, 2019
 * Support missionControl.preStartCommand for running command before entrypoint starts
 
 ## [1.1.9] - Nov 20, 2019
