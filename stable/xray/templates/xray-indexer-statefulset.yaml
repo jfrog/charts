@@ -166,7 +166,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.common.readinessProbe.path }}
-            port: 8040
+            port: {{ .Values.indexer.internalPort }}
           initialDelaySeconds: {{ .Values.common.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.common.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.common.readinessProbe.timeoutSeconds }}

@@ -155,7 +155,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.common.livenessProbe.path }}
-            port: 8040
+            port: {{ .Values.server.internalPort }}
           initialDelaySeconds: {{ .Values.common.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.common.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.common.livenessProbe.timeoutSeconds }}
