@@ -2,6 +2,9 @@
 All changes to this chart will be documented in this file.
 
 ## [1.2.7] - Nov 21, 2019
+* Make the Xray probes customisable 
+
+## [1.2.7] - Nov 21, 2019
 * Prevent probes failing on 403 (Forbidden) - fixes
 
 ## [1.2.6] - Nov 20, 2019

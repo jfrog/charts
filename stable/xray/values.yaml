@@ -254,6 +254,24 @@ common:
     stdOutEnabled: true
     indexAllBuilds: false
 
+  livenessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    path: /debug/pprof
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 10
+    successThreshold: 1
+
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"

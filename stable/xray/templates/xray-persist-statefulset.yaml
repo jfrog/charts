@@ -151,19 +151,28 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.persist.resources | indent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /debug/pprof/
-            port: {{ .Values.persist.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          failureThreshold: 10
+      {{- if .Values.xray.common.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /debug/pprof/
-            port: {{ .Values.persist.internalPort }}
-          initialDelaySeconds: 90
-          periodSeconds: 10
+            path: {{ .Values.xray.common.livenessProbe.path }}
+            port: 8040
+          initialDelaySeconds: {{ .Values.xray.common.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.xray.common.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.xray.common.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.xray.common.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.xray.common.livenessProbe.successThreshold }}
+      {{- end }}
+      {{- if .Values.xray.common.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.xray.common.readinessProbe.path }}
+            port: 8040
+          initialDelaySeconds: {{ .Values.xray.common.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.xray.common.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.xray.common.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.xray.common.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.xray.common.readinessProbe.successThreshold }}
+      {{- end }}
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.common.xrayConfigPath }}

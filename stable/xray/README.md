@@ -323,6 +323,13 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
 | `common.customInitContainers`                  | Custom init containers to run after existing init containers                       | ` `                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file                       | ``                  |
+| `common.livenessProbe.enabled`                 | Xray liveness probe enabled                       | `true`                  |
+| `common.livenessProbe.path`                    | Xray liveness probe path                       | `/debug/pprof`                  |
+| `common.livenessProbe.initialDelaySeconds`     | Delay before liveness probe is initiated                       | `90`                  |
+| `common.livenessProbe.periodSeconds`           | How often to perform the probe                       | `10`                  |
+| `common.livenessProbe.timeoutSeconds`          | When the probe times out                       | `1`                  |
+| `common.livenessProbe.failureThreshold`        | Minimum consecutive failures for the probe to be considered failed after having succeeded                       | `3`           |
+| `common.livenessProbe.successThreshold`        | Minimum consecutive successes for the probe to be considered successful after having failed             | `1`                  |
 | `global.mongoUrl`                              | Xray external MongoDB URL                    | ` `                  |
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `global.postgresqlTlsSecret`                   | Xray external PostgreSQL TLS files secret    | ` `                  |
