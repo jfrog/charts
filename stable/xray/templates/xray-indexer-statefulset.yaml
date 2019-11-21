@@ -151,27 +151,27 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.indexer.resources | indent 10 }}
-      {{- if .Values.xray.common.livenessProbe.enabled }}
+      {{- if .Values.common.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.xray.common.livenessProbe.path }}
+            path: {{ .Values.common.livenessProbe.path }}
             port: 8040
-          initialDelaySeconds: {{ .Values.xray.common.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.xray.common.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.xray.common.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.xray.common.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.xray.common.livenessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.common.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.common.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.common.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.common.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.common.livenessProbe.successThreshold }}
       {{- end }}
-      {{- if .Values.xray.common.readinessProbe.enabled }}
+      {{- if .Values.common.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.xray.common.readinessProbe.path }}
+            path: {{ .Values.common.readinessProbe.path }}
             port: 8040
-          initialDelaySeconds: {{ .Values.xray.common.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.xray.common.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.xray.common.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.xray.common.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.xray.common.readinessProbe.successThreshold }}
+          initialDelaySeconds: {{ .Values.common.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.common.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.common.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.common.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.common.readinessProbe.successThreshold }}
       {{- end }}
 
       {{- $image := .Values.logger.image.repository }}
