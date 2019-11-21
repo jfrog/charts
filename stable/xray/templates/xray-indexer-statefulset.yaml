@@ -151,19 +151,29 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.indexer.resources | indent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /debug/pprof/
-            port: {{ .Values.indexer.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          failureThreshold: 10
+      {{- if .Values.indexer.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /debug/pprof/
+            path: {{ .Values.indexer.livenessProbe.path }}
             port: {{ .Values.indexer.internalPort }}
-          initialDelaySeconds: 90
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.indexer.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.indexer.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.indexer.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.indexer.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.indexer.livenessProbe.successThreshold }}
+      {{- end }}
+      {{- if .Values.indexer.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.indexer.readinessProbe.path }}
+            port: {{ .Values.indexer.internalPort }}
+          initialDelaySeconds: {{ .Values.indexer.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.indexer.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.indexer.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.indexer.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.indexer.readinessProbe.successThreshold }}
+      {{- end }}
+
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.common.xrayConfigPath }}
@@ -179,15 +189,15 @@ spec:
           - name: data-volume
             mountPath: {{ $mountPath }}
       {{- end }}
-    {{- with .Values.analysis.nodeSelector }}
+    {{- with .Values.indexer.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.analysis.affinity }}
+    {{- with .Values.indexer.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.analysis.tolerations }}
+    {{- with .Values.indexer.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}

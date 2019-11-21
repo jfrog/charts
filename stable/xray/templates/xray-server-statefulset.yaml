@@ -151,19 +151,28 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.server.resources | indent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /web/
-            port: {{ .Values.server.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          failureThreshold: 10
+      {{- if .Values.server.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /web/
+            path: {{ .Values.server.livenessProbe.path }}
             port: {{ .Values.server.internalPort }}
-          initialDelaySeconds: 90
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.server.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.server.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.server.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.server.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.server.livenessProbe.successThreshold }}
+      {{- end }}
+      {{- if .Values.server.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.server.readinessProbe.path }}
+            port: {{ .Values.server.internalPort }}
+          initialDelaySeconds: {{ .Values.server.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.server.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.server.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.server.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.server.readinessProbe.successThreshold }}
+      {{- end }}
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.common.xrayConfigPath }}

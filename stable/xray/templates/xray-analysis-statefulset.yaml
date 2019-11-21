@@ -151,19 +151,29 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.analysis.resources | indent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /debug/pprof/
-            port: {{ .Values.analysis.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          failureThreshold: 10
+      {{- if .Values.analysis.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /debug/pprof/
+            path: {{ .Values.analysis.livenessProbe.path }}
             port: {{ .Values.analysis.internalPort }}
-          initialDelaySeconds: 90
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.analysis.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.analysis.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.analysis.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.analysis.livenessProbe.failureThreshold }}
+          successThreshold: {{ .Values.analysis.livenessProbe.successThreshold }}
+      {{- end }}
+      {{- if .Values.analysis.readinessProbe.enabled }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.analysis.readinessProbe.path }}
+            port: {{ .Values.analysis.internalPort }}
+          initialDelaySeconds: {{ .Values.analysis.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.analysis.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.analysis.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.analysis.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.analysis.readinessProbe.successThreshold }}
+      {{- end }}
+
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.common.xrayConfigPath }}
