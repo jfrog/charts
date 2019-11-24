@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+
+## [1.1.10] - Nov 21, 2019
+* Support missionControl.preStartCommand for running command before entrypoint starts
+
 ## [1.1.9] - Nov 20, 2019
 * Update Mission-Control logo
 

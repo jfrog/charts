@@ -322,7 +322,22 @@ artifactory:
       {{- if eq .Values.artifactory.persistence.type "file-system" -}}
       <!-- File system filestore -->
       <config version="v1">
-          <chain template="file-system"/>
+          <chain>
+            {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
+              <provider id="cache-fs" type="cache-fs">
+            {{- end }}
+                  <provider id="file-system" type="file-system"/>
+            {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
+              </provider>
+            {{- end }}
+          </chain>
+
+        {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
+          <provider id="cache-fs" type="cache-fs">
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+          </provider>
+        {{- end }}
       </config>
       {{- end }}
       {{- if eq .Values.artifactory.persistence.type "google-storage" }}
@@ -505,6 +520,12 @@ artifactory:
       dataDir: "/var/opt/jfrog/artifactory"
       backupDir: "/var/opt/jfrog/artifactory-backup"
       capacity: 200Gi
+
+    ## For artifactory.persistence.type file-system
+    fileSystem:
+      cache:
+        enabled: false
+
     ## For artifactory.persistence.type google-storage
     googleStorage:
       endpoint: storage.googleapis.com

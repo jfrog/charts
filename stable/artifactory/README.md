@@ -107,6 +107,40 @@ To use an NFS server as your cluster's storage, you need to
 ...
 ```
 
+#### Using a network file system with the file-system persistence type
+In some cases, it is not possible for the helm chart to set up your NFS mounts automatically for Artiactory.
+In such cases, such as using AWS EFS, you will use the `artifactory.persistnece.type=file-system` even though your underlying persistence is actually a network file system.
+The same thing applies when using a slow storage device (such as cheap disks) as your main storage solution for Artifactory.
+This means that serving highly used files from the network file system/slow storage can take time, 
+and that's why you would want a cache filesystem that's stored locally on disk (fast disks like SSD).
+
+This is how you would configure it:
+Create a values file with the following content:
+1. Set up your volume mount to your fast storage device
+```yaml
+artifactory:
+  ## Set up your volume mount to your fast storage device
+  customVolumes: |
+    - name: my-cache-fast-storage
+      persistentVolumeClaim:
+        claimName: my-cache-fast-storage-pvc
+  ## Enable caching and configure the cache directory
+  customVolumeMounts: |
+    - name: my-cache-fast-storage
+      mountPath: /my-fast-cache-mount
+  ## Install the helm chart with the values file you created
+  persistence:
+    cacheProviderDir: /my-fast-cache-mount
+    fileSystem:
+      cache:
+        enabled: true
+
+```
+2. Install Artifactory with the values file you created: 
+```bash
+helm upgrade --install artifactory jfrog/artifactory -f values.yaml
+``` 
+
 #### Google Storage
 To use a Google Storage bucket as the cluster's filestore. See [Google Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-GoogleStorageBinaryProvider)
 - Pass Google Storage parameters to `helm install` and `helm upgrade`
@@ -284,6 +318,50 @@ helm install --name artifactory-ha -f values.yaml jfrog/artifactory-ha
 Updating the license should be done via Artifactory UI or REST API.
 If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
 
+
+### copyOnEveryStartup feature
+Files stored in the `/artifactory-extra-conf` directory are only copied to the `ARTIFACTORY_HOME/etc` directory upon the first startup.
+In some cases, you want your configuration files to be copied to the `ARTIFACTORY_HOME/etc` directory on every startup.
+Two examples for that would be:
+
+1. the binarstore.xml file. If you use the default behaviour, your binarystore.xml configuration will only be copied on the first startup, 
+which means that changes you make over time to the `binaryStoreXml` configuration will not be applied. In order to make sure your changes are applied on every startup, do the following:
+Create a values file with the following values:
+```yaml
+artifactory:
+  copyOnEveryStartup:
+    - source: /artifactory_extra_conf/binarystore.xml
+      target: etc/
+``` 
+
+Install the helm chart with the values file you created:
+```bash
+helm upgrade --install artifactory jfrog/artifactory -f values.yaml
+```
+
+2. Any custom configuration file you have to configure artifactory, such as `logabck.xml`:
+Create a config map with your `logback.xml` configuration.
+
+Create a values file with the following values:
+```yaml
+artifactory:
+  ## Create a volume pointing to the config map with your configuration file
+  customVolumes: |
+    - name: logback-xml-configmap
+      configMap:
+        name: logback-xml-configmap
+  customVolumeMounts: |
+    - name: logback-xml-configmap
+      mountPath: /tmp/artifactory-logback/
+  copyOnEveryStartup:
+    - source: /tmp/artifactory-logback/*
+      target: etc/
+```
+
+Install the helm chart with the values file you created:
+```bash
+helm upgrade --install artifactory jfrog/artifactory -f values.yaml
+```
 
 ### Configure NetworkPolicy
 
@@ -652,6 +730,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory`     |
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
+| `artifactory.persistence.fileSystem.cache.enabled`        | Enable Artifactory cache when using the file-system persistence type    | `false`                             |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
 | `artifactory.persistence.googleStorage.endpoint`    | Google Storage API endpoint| `storage.googleapis.com`             |
 | `artifactory.persistence.googleStorage.httpsOnly`   | Google Storage API has to be consumed https only| `false`             |
