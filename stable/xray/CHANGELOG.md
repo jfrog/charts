@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.9] - Nov 24, 2019
+* Fix the Xray probes path
+
 ## [1.2.8] - Nov 21, 2019
 * Make the Xray probes customisable 
 
