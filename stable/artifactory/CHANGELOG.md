@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.2.5] - Nov 27, 2019
+* Add support for PriorityClass
+
 ## [8.2.4] - Nov 21, 2019
 * Add an option to use a file system cache-fs with the file-system binarystore template 
 
