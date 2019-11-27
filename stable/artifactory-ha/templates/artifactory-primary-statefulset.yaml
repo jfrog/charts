@@ -43,7 +43,7 @@ spec:
       {{- end }}
     spec:
     {{- if .Values.artifactory.priorityClass.create }}
-      priorityClassName: {{ .Values.artifactory.priorityClass.name }}
+      priorityClassName: {{ default (include "artifactory-ha.fullname" .) .Values.artifactory.priorityClass.name }}
     {{- end }}
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}

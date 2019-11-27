@@ -671,7 +671,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.labels`                  | Artifactory labels                | `{}`                                         |
 | `artifactory.priorityClass.create`    | Create a PriorityClass object     | `false`                                      |
 | `artifactory.priorityClass.value`     | Priority Class value              | `1000000000`                                 |
-| `artifactory.priorityClass.name`      | Priority Class name               | `artifactory-priority-class`                 |
+| `artifactory.priorityClass.name`      | Priority Class name               | `{{ template "artifactory.fullname" . }}`    |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
