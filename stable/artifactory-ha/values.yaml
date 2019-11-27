@@ -158,6 +158,13 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+  # Create a priority class for the Artifactory pods
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    name: artifactory-priority-class
+
   # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
   deleteDBPropertiesOnStartup: true
 

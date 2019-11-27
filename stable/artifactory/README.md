@@ -665,10 +665,13 @@ The following table lists the configurable parameters of the artifactory chart a
 | `logger.image.tag`        | tag for logger image              | `1.30`                                                   |
 | `artifactory.name`        | Artifactory name                  | `artifactory`                                            |
 | `artifactory.replicaCount`            | Replica count for Artifactory deployment| `1`                                    |
-| `artifactory.image.pullPolicy`         | Container pull policy             | `IfNotPresent`                              |
-| `artifactory.image.repository`    | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`        |
-| `artifactory.image.version`       | Container tag                     |  `.Chart.AppVersion`                             |
-| `artifactory.labels`              | Artifactory labels                | `{}`                                             |
+| `artifactory.image.pullPolicy`        | Container pull policy             | `IfNotPresent`                               |
+| `artifactory.image.repository`        | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`    |
+| `artifactory.image.version`           | Container tag                     |  `.Chart.AppVersion`                         |
+| `artifactory.labels`                  | Artifactory labels                | `{}`                                         |
+| `artifactory.priorityClass.create`    | Create a PriorityClass object     | `false`                                      |
+| `artifactory.priorityClass.value`     | Priority Class value              | `1000000000`                                 |
+| `artifactory.priorityClass.name`      | Priority Class name               | `artifactory-priority-class`                 |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
