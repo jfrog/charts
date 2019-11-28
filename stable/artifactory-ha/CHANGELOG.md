@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.4] - Nov 28, 2019
+* Add support for using existing PriorityClass
+
 ## [1.2.3] - Nov 27, 2019
 * Add support for PriorityClass
 
