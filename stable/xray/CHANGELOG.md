@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.10] - Nov 28, 2019
+* Add option `server.service.loadBalancerIP`
+
 ## [1.2.9] - Nov 24, 2019
 * Fix the Xray probes path
 

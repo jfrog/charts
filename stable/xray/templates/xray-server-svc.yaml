@@ -20,6 +20,9 @@ spec:
   loadBalancerSourceRanges:
 {{ toYaml .Values.server.loadBalancerSourceRanges | indent 4 }}
 {{- end }}
+{{- if and (eq .Values.server.service.type "LoadBalancer") .Values.server.service.loadBalancerIP  }} ##
+  loadBalancerIP: {{ .Values.server.service.loadBalancerIP }}
+{{- end }}
   ports:
   - port: {{ .Values.server.externalPort }}
     protocol: TCP

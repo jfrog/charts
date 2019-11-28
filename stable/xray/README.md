@@ -424,6 +424,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.service.name`                          | Xray server service name                     | `xray`               |
 | `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
 | `server.service.annotations`                   | Xray server service annotations              | `{}`           |
+| `server.service.loadBalancerIP`                | Provide Static IP to for server service      |                      |
 | `server.livenessProbe.enabled`               | Xray server liveness probe enabled                       | `true`                  |
 | `server.livenessProbe.path`                  | Xray server liveness probe path                       | `/web/`                  |
 | `server.livenessProbe.initialDelaySeconds`   | Xray server delay before liveness probe is initiated                       | `90`                  |
