@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.1] - Dec 9, 2019
+* Added the ability to define a custom CA certificate in the OS
+
 ## [1.3.0] - Dec 3, 2019
 * Update Xray version to 2.11.0
 
