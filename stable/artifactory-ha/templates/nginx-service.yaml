@@ -35,19 +35,23 @@ spec:
 {{- end }}
   ports:
   {{- if .Values.artifactory.replicator.enabled }}
-  - port: {{ .Values.nginx.externalPortReplicator }}
-    targetPort: {{ .Values.nginx.internalPortReplicator }}
+  - port: {{ .Values.nginx.replicator.externalPort }}
+    targetPort: {{ .Values.nginx.replicator.internalPort }}
     protocol: TCP
     name: replicator
   {{- end }}
-  - port: {{ .Values.nginx.externalPortHttp }}
-    targetPort: {{ .Values.nginx.internalPortHttp }}
+  {{- if .Values.nginx.http.enabled }}
+  - port: {{ .Values.nginx.http.externalPort }}
+    targetPort: {{ .Values.nginx.http.internalPort }}
     protocol: TCP
     name: http
-  - port: {{ .Values.nginx.externalPortHttps }}
-    targetPort: {{ .Values.nginx.internalPortHttps }}
+  {{- end }}
+  {{- if .Values.nginx.https.enabled }}
+  - port: {{ .Values.nginx.https.externalPort }}
+    targetPort: {{ .Values.nginx.https.internalPort }}
     protocol: TCP
     name: https
+  {{- end }}
   selector:
     app: {{ template "artifactory-ha.name" . }}
     component: {{ .Values.nginx.name }}
