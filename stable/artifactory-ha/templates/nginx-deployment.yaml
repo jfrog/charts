@@ -64,10 +64,14 @@ spec:
           - '-g'
           - 'daemon off;'
         ports:
-        - containerPort: {{ .Values.nginx.internalPortHttp }}
-        - containerPort: {{ .Values.nginx.internalPortHttps }}
+        {{- if .Values.nginx.http.enabled }}
+        - containerPort: {{ .Values.nginx.http.internalPort }}
+        {{- end }}
+        {{- if .Values.nginx.https.enabled }}
+        - containerPort: {{ .Values.nginx.https.internalPort }}
+        {{- end }}
         {{- if .Values.artifactory.replicator.enabled }}
-        - containerPort: {{ .Values.nginx.internalPortReplicator }}
+        - containerPort: {{ .Values.nginx.replicator.internalPort }}
         {{- end }}
         volumeMounts:
         - name: nginx-conf
