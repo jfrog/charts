@@ -448,6 +448,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
 | `server.affinity`                              | Xray server node affinity                    | `{}`                 |
 | `server.tolerations`                           | Xray server node tolerations                 | `[]`                 |
+| `customCA.enabled`                             | Enable to add a custom CA cert to xray       | `false`              |
+| `customCA.name`                                | The config map name and the key of the CA Cert (must match)         | `nil`                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
