@@ -4,6 +4,9 @@ All changes to this chart will be documented in this file.
 ## [1.3.2] - Dec 10, 2019
 * Added velero/rustic backup options to helm
 
+## [1.3.1] - Dec 9, 2019
+* Added the ability to define a custom CA certificate in the container
+
 ## [1.3.0] - Dec 3, 2019
 * Update Xray version to 2.11.0
 

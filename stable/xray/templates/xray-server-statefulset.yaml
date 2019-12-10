@@ -150,6 +150,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.common.xrayConfigPath }}"
+        {{- if .Values.customCA.enabled }}
+        - name: custom-ca
+          mountPath: "/etc/ssl/certs/custom-ca.crt"
+          subPath: "custom-ca.crt"
+        {{- end}}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -204,6 +209,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if .Values.customCA.enabled}}
+      - name: custom-ca
+        configMap:
+          name: {{ .Values.customCA.name }}
+      {{- end }}
       {{- if not .Values.server.persistence.enabled }}
       - name: data-volume
         emptyDir:

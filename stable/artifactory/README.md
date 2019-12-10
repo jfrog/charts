@@ -877,6 +877,8 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
 | `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
 | `velero.restic.enabled`          | Enabled Restic PVC annotations for velero backup               | `false`                 |
+| `customCA.enabled`                             | Enable to add a custom CA cert to xray       | `false`              |
+| `customCA.name`                                | The config map name and the key of the CA Cert (must match)         | `nil`                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
