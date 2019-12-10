@@ -276,6 +276,11 @@ spec:
         - containerPort: {{ .Values.artifactory.javaOpts.jmx.port }}
         {{- end }}
         volumeMounts:
+      {{- if .Values.customCA.enabled }}
+        - name: custom-ca
+          mountPath: "/etc/ssl/certs/custom-ca.crt"
+          subPath: "custom-ca.crt"
+      {{- end}}
       {{- if .Values.artifactory.userPluginSecrets }}
         - name: tmp-plugins
           mountPath: "/tmp/plugins/"
@@ -391,6 +396,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if .Values.customCA.enabled}}
+      - name: custom-ca
+        configMap:
+          name: {{ .Values.customCA.name }}
+      {{- end }}
       - name: binarystore-xml
         secret:
           {{- if .Values.artifactory.persistence.customBinarystoreXmlSecret }}
