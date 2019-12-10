@@ -8,6 +8,11 @@ imagePullPolicy: IfNotPresent
 initContainerImage: "alpine:3.10"
 imagePullSecrets:
 
+# Add options for velero/restic backup
+velero:
+  restic:
+    enabled: false
+
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:

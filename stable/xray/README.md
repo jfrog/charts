@@ -448,6 +448,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
 | `server.affinity`                              | Xray server node affinity                    | `{}`                 |
 | `server.tolerations`                           | Xray server node tolerations                 | `[]`                 |
+| `velero.restic.enabled`                        | Enabled Restic PVC annotations for velero backup               | `false`                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

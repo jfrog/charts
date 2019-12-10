@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.3.2] - Dec 10, 2019
+* Added velero/rustic backup options to helm
+
 ## [8.3.0] - Dec 1, 2019
 * Updated Artifactory version to 6.16.0
 

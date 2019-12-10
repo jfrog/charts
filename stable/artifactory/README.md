@@ -876,6 +876,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `networkpolicy.podselector`      | Contains the YAML that specifies how to match pods. Usually using matchLabels. |                                         |
 | `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
 | `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
+| `velero.restic.enabled`          | Enabled Restic PVC annotations for velero backup               | `false`                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

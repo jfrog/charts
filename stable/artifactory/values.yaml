@@ -14,6 +14,11 @@ installer:
 # For supporting pulling from private registries
 imagePullSecrets:
 
+# Add options for velero/restic backup
+velero:
+  restic:
+    enabled: false
+
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
