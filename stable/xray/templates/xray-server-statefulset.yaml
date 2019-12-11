@@ -27,8 +27,8 @@ spec:
         component: {{ .Values.server.name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
-        {{- range $key, $value := .Values.server.annotations }}
-            {{ $key }}: {{ tpl $value $ | quote }}
+        {{- with .Values.server.annotations }}
+        {{ toYaml . }}
         {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}

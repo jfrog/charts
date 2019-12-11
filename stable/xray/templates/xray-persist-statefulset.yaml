@@ -27,8 +27,8 @@ spec:
         component: {{ .Values.persist.name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
-        {{- range $key, $value := .Values.persist.annotations }}
-            {{ $key }}: {{ tpl $value $ | quote }}
+        {{- with .Values.persist.annotations }}
+        {{ toYaml . }}
         {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}
