@@ -1071,8 +1071,17 @@ nginx:
     externalPort: 443
     internalPort: 443
   replicator:
+    # Replicator is enabled by Values.artifactory.replicator.enabled
     internalPort: 6061
     externalPort: 6061
+  # DEPRECATED: The following will be replaced by L1065-L1076 in a future release
+  # externalPortHttp: 80
+  # internalPortHttp: 80
+  # externalPortHttps: 443
+  # internalPortHttps: 443
+  # internalPortReplicator: 6061
+  # externalPortReplicator: 6061
+
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
