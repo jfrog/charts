@@ -298,6 +298,8 @@ analysis:
   service:
     type: ClusterIP
 
+  annotations:
+
   livenessProbe:
     enabled: true
     path: /debug/pprof/
@@ -343,6 +345,8 @@ indexer:
   externalPort: 7002
   service:
     type: ClusterIP
+
+  annotations:
 
   livenessProbe:
     enabled: true
@@ -407,6 +411,8 @@ persist:
   service:
     type: ClusterIP
 
+  annotations:
+
   livenessProbe:
     enabled: true
     path: /debug/pprof/
@@ -450,6 +456,20 @@ server:
   replicaCount: 1
   internalPort: 8000
   externalPort: 80
+  annotations:
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
   service:
     type: LoadBalancer
     name: xray

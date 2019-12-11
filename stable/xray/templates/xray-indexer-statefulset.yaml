@@ -27,6 +27,9 @@ spec:
         component: {{ .Values.indexer.name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
+        {{- range $key, $value := .Values.indexer.annotations }}
+            {{ $key }}: {{ tpl $value $ | quote }}
+        {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:

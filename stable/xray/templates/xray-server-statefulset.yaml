@@ -27,6 +27,9 @@ spec:
         component: {{ .Values.server.name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
+        {{- range $key, $value := .Values.server.annotations }}
+            {{ $key }}: {{ tpl $value $ | quote }}
+        {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -121,6 +124,9 @@ spec:
         - name: tls-volume
           mountPath: /tmp/tls
         {{- end }}
+        {{- if .Values.server.customVolumeMounts }}
+          {{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+        {{- end }}
       {{- if .Values.common.customInitContainers }}
 {{ tpl .Values.common.customInitContainers . | indent 6 }}
       {{- end }}
@@ -147,6 +153,9 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.common.xrayConfigPath }}"
+        {{- if .Values.server.customVolumeMounts }}
+          {{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+        {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
