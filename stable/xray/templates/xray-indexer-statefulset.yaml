@@ -148,6 +148,9 @@ spec:
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
         volumeMounts:
+{{- if .Values.server.customVolumeMounts }}
+{{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+{{- end }}
         - name: data-volume
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         securityContext:
@@ -205,6 +208,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+{{- if .Values.server.customVolumes }}
+{{ tpl .Values.server.customVolumes . | indent 6 }}
+{{- end }}
       {{- if not .Values.indexer.persistence.enabled }}
       - name: data-volume
         emptyDir:
