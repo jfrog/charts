@@ -928,9 +928,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       | 
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
 | `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
-| `postgresql.postgresqlDatabase`     | PostgreSQL database name                   | `artifactory`                           |
-| `postgresql.postgresqlUsername`         | PostgreSQL database user                   | `artifactory`                           |
-| `postgresql.postgresqlPassword`     | PostgreSQL database password               |                                         |
+| `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
+| `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
+| `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage          | `true`                                  |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size         | `50Gi`                                  |
 | `postgresql.service.port`         | PostgreSQL database port                   | `5432`                                  |

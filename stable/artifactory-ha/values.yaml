@@ -48,7 +48,7 @@ ingress:
   # Used to create an Ingress record.
   hosts: []
   path: /
-  annotations:
+  annotations: {}
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
   labels:
@@ -173,14 +173,14 @@ artifactory:
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
-  #     # absolute path
-  #    - source: /artifactory_extra_conf/binarystore.xml
-  #     # relative to ARTIFACTORY_HOME/
-  #      target: etc/
-  #     # absolute path
-  #    - source: /artifactory_extra_conf/artifactory.lic
-  #     # relative to ARTIFACTORY_HOME/
-  #      target: etc/
+  #  # Absolute path
+  #  - source: /artifactory_extra_conf/binarystore.xml
+  #    # Relative to ARTIFACTORY_HOME/
+  #    target: etc/
+  #  # Absolute path
+  #  - source: /artifactory_extra_conf/artifactory.lic
+  #    # Relative to ARTIFACTORY_HOME/
+  #    target: etc/
 
   # Sidecar containers for tailing Artifactory logs
   loggers: []
@@ -309,27 +309,27 @@ artifactory:
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
-#    - name: SERVER_XML_ARTIFACTORY_PORT
-#     value: "8081"
-#    - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
-#     value: "200"
-#    - name: SERVER_XML_ACCESS_MAX_THREADS
-#     value: "50"
-#    - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
-#     value: ""
-#    - name: SERVER_XML_ACCESS_EXTRA_CONFIG
-#     value: ""
-#    - name: SERVER_XML_EXTRA_CONNECTOR
-#     value: ""
-#    - name: DB_POOL_MAX_ACTIVE
-#     value: "100"
-#    - name: DB_POOL_MAX_IDLE
-#     value: "10"
-#    - name: MY_SECRET_ENV_VAR
-#      valueFrom:
-#        secretKeyRef:
-#          name: my-secret-name
-#          key: my-secret-key
+  # - name: SERVER_XML_ARTIFACTORY_PORT
+  #   value: "8081"
+  # - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
+  #   value: "200"
+  # - name: SERVER_XML_ACCESS_MAX_THREADS
+  #   value: "50"
+  # - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
+  #   value: ""
+  # - name: SERVER_XML_ACCESS_EXTRA_CONFIG
+  #   value: ""
+  # - name: SERVER_XML_EXTRA_CONNECTOR
+  #   value: ""
+  # - name: DB_POOL_MAX_ACTIVE
+  #   value: "100"
+  # - name: DB_POOL_MAX_IDLE
+  #   value: "10"
+  # - name: MY_SECRET_ENV_VAR
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: my-secret-name
+  #       key: my-secret-key
 
   membershipPort: 10017
   externalPort: 8081
@@ -1007,8 +1007,12 @@ nginx:
     ssl_prefer_server_ciphers   on;
     ## server configuration
     server {
-      listen {{ .Values.nginx.internalPortHttps }} ssl;
-      listen {{ .Values.nginx.internalPortHttp }} ;
+      {{- if .Values.nginx.https.enabled }}
+      listen {{ .Values.nginx.https.internalPort }} ssl;
+      {{- end }}
+      {{- if .Values.nginx.http.enabled }}
+      listen {{ .Values.nginx.http.internalPort }} ;
+      {{- end }}
       server_name ~(?<repo>.+)\.{{ include "artifactory-ha.fullname" . }} {{ include "artifactory-ha.fullname" . }}
       {{- range .Values.ingress.hosts -}}
         {{- if contains "." . -}}

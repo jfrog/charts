@@ -1,4 +1,4 @@
-{{- if .Values.artifactory.replicator.enabled }}
+{{- if .Values.artifactory.replicator.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,4 +28,4 @@ data:
         proxy_http_version  1.1;
       }
     }
-{{- end }}
+{{- end -}}
