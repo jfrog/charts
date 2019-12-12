@@ -118,14 +118,14 @@ artifactory:
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
-#     # absolute path
-#    - source: /artifactory_extra_conf/binarystore.xml
-#     # relative to ARTIFACTORY_HOME/
-#      target: etc/
-#     # absolute path
-#    - source: /artifactory_extra_conf/artifactory.lic
-#     # relative to ARTIFACTORY_HOME/
-#      target: etc/
+  #  # Absolute path
+  #  - source: /artifactory_extra_conf/binarystore.xml
+  #    # Relative to ARTIFACTORY_HOME/
+  #    target: etc/
+  #  # Absolute path
+  #  - source: /artifactory_extra_conf/artifactory.lic
+  #    # Relative to ARTIFACTORY_HOME/
+  #    target: etc/
 
   # Sidecar containers for tailing Artifactory logs
   loggers: []
@@ -240,27 +240,27 @@ artifactory:
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
-  #    - name: SERVER_XML_ARTIFACTORY_PORT
-  #     value: "8081"
-  #    - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
-  #     value: "200"
-  #    - name: SERVER_XML_ACCESS_MAX_THREADS
-  #     value: "50"
-  #    - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
-  #     value: ""
-  #    - name: SERVER_XML_ACCESS_EXTRA_CONFIG
-  #     value: ""
-  #    - name: SERVER_XML_EXTRA_CONNECTOR
-  #     value: ""
-  #    - name: DB_POOL_MAX_ACTIVE
-  #     value: "100"
-  #    - name: DB_POOL_MAX_IDLE
-  #     value: "10"
-  #    - name: MY_SECRET_ENV_VAR
-  #      valueFrom:
-  #        secretKeyRef:
-  #          name: my-secret-name
-  #          key: my-secret-key
+  # - name: SERVER_XML_ARTIFACTORY_PORT
+  #   value: "8081"
+  # - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
+  #   value: "200"
+  # - name: SERVER_XML_ACCESS_MAX_THREADS
+  #   value: "50"
+  # - name: SERVER_XML_ARTIFACTORY_EXTRA_CONFIG
+  #   value: ""
+  # - name: SERVER_XML_ACCESS_EXTRA_CONFIG
+  #   value: ""
+  # - name: SERVER_XML_EXTRA_CONNECTOR
+  #   value: ""
+  # - name: DB_POOL_MAX_ACTIVE
+  #   value: "100"
+  # - name: DB_POOL_MAX_IDLE
+  #   value: "10"
+  # - name: MY_SECRET_ENV_VAR
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: my-secret-name
+  #       key: my-secret-key
 
   annotations: {}
 
@@ -281,6 +281,7 @@ artifactory:
   externalPortReplicator: 6061
   uid: 1030
   terminationGracePeriodSeconds: 30
+
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
@@ -299,6 +300,7 @@ artifactory:
     timeoutSeconds: 10
     periodSeconds: 10
     successThreshold: 1
+
   persistence:
     mountPath: "/var/opt/jfrog/artifactory"
     enabled: true
@@ -731,8 +733,12 @@ nginx:
     ssl_prefer_server_ciphers   on;
     ## server configuration
     server {
-      listen {{ .Values.nginx.internalPortHttps }} ssl;
-      listen {{ .Values.nginx.internalPortHttp }} ;
+      {{- if .Values.nginx.https.enabled }}
+      listen {{ .Values.nginx.https.internalPort }} ssl;
+      {{- end }}
+      {{- if .Values.nginx.http.enabled }}
+      listen {{ .Values.nginx.http.internalPort }} ;
+      {{- end }}
       server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }}
       {{- range .Values.ingress.hosts -}}
         {{- if contains "." . -}}
@@ -785,12 +791,28 @@ nginx:
     loadBalancerIP:
     ## There are two available options: “Cluster” (default) and “Local”.
     externalTrafficPolicy: Cluster
-  externalPortHttp: 80
-  internalPortHttp: 80
-  externalPortHttps: 443
-  internalPortHttps: 443
-  internalPortReplicator: 6061
-  externalPortReplicator: 6061
+
+  http:
+    enabled: true
+    externalPort: 80
+    internalPort: 80
+  https:
+    enabled: true
+    externalPort: 443
+    internalPort: 443
+  replicator:
+    # Replicator is enabled by Values.artifactory.replicator.enabled
+    internalPort: 6061
+    externalPort: 6061
+
+  # DEPRECATED: The following will be removed in a future release
+  # externalPortHttp: 80
+  # internalPortHttp: 80
+  # externalPortHttps: 443
+  # internalPortHttps: 443
+  # internalPortReplicator: 6061
+  # externalPortReplicator: 6061
+
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
