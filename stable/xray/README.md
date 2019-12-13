@@ -354,6 +354,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
 | `analysis.affinity`                            | Xray Analysis node affinity                  | `{}`                 |
 | `analysis.tolerations`                         | Xray Analysis node tolerations               | `[]`                 |
+| `analysis.annotations`                          | Xray Analysis annotations                     | `{}`                               |
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
 | `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
 | `indexer.replicaCount`                         | Xray Indexer replica count                   | `1`                  |

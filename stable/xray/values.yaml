@@ -346,31 +346,17 @@ indexer:
   service:
     type: ClusterIP
 
-  ## Add custom init containers execution before predefined init containers
-  customInitContainersBegin: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.common.xrayConfigPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.common.xrayConfigPath }}"
-  #        name: data-volume
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
 
-  ## Add custom init containers execution after predefined init containers
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.common.xrayConfigPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.common.xrayConfigPath }}"
-  #        name: data-volume
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
 
   annotations: {}
 

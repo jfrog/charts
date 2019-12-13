@@ -28,7 +28,7 @@ spec:
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
         {{- with .Values.server.annotations }}
-        {{ toYaml . }}
+{{ toYaml . | indent 8}}
         {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}

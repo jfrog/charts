@@ -27,8 +27,8 @@ spec:
         component: {{ .Values.indexer.name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
-        {{- with .Values.analysis.annotations }}
-        {{ toYaml . }}
+        {{- with .Values.indexer.annotations }}
+{{ toYaml . | indent 8 }}
         {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}
@@ -148,8 +148,8 @@ spec:
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
         volumeMounts:
-{{- if .Values.server.customVolumeMounts }}
-{{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+{{- if .Values.indexer.customVolumeMounts }}
+{{ tpl .Values.indexer.customVolumeMounts . | indent 8 }}
 {{- end }}
         - name: data-volume
           mountPath: "{{ .Values.common.xrayConfigPath }}"
