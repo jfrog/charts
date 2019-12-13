@@ -815,15 +815,23 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |
-| `nginx.loadBalancerIP`| Provide Static IP to configure with Nginx |                                                      |
-| `nginx.externalPortHttp` | Nginx service external port | `80`                                                            |
-| `nginx.internalPortHttp` | Nginx service internal port | `80`                                                            |
-| `nginx.externalPortHttps` | Nginx service external port | `443`                                                          |
-| `nginx.internalPortHttps` | Nginx service internal port | `443`                                                          |
-| `nginx.internalPortReplicator` | Replicator service internal port | `6061`                                               |
-| `nginx.externalPortReplicator` | Replicator service external port | `6061`                                               |
+| `nginx.loadBalancerIP`                     | Provide Static IP to configure with Nginx |                                 |
+| `nginx.http.enabled`                       | Nginx http service enabled/disabled       | true                            |
+| `nginx.http.externalPort`                  | Nginx service external port               | `80`                            |
+| `nginx.http.internalPort`                  | Nginx service internal port               | `80`                            |
+| `nginx.https.enabled`                      | Nginx http service enabled/disabled       | true                            |
+| `nginx.https.externalPort`                 | Nginx service external port               | `443`                           |
+| `nginx.https.internalPort`                 | Nginx service internal port               | `443`                           |
+| `nginx.replicator.internalPort`            | Replicator service internal port          | `6061`                          |
+| `nginx.replicator.externalPort`            | Replicator service external port          | `6061`                          |
+| `nginx.externalPortHttp`                   | DEPRECATED: Nginx service external port   | `80`                            |
+| `nginx.internalPortHttp`                   | DEPRECATED:Nginx service internal port    | `80`                            |
+| `nginx.externalPortHttps`                  | DEPRECATED: Nginx service external port   | `443`                           |
+| `nginx.internalPortHttps`                  | DEPRECATED: Nginx service internal port   | `443`                           |
+| `nginx.internalPortReplicator`             | DEPRECATED: Replicator service internal port | `6061`                       |
+| `nginx.externalPortReplicator`             | DEPRECATED: Replicator service external port | `6061`                       |
 | `nginx.livenessProbe.enabled`              | Enable liveness probe                     | `true`                          |
-| `nginx.livenessProbe.path`                     | Liveness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |
+| `nginx.livenessProbe.path`                 | Liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`  |
 | `nginx.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 60                              |
 | `nginx.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                              |
 | `nginx.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                              |
