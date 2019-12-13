@@ -886,12 +886,20 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.service.annotations` | Nginx service annotations           | `{}`                            |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |
 | `nginx.loadBalancerIP`| Provide Static IP to configure with Nginx |                                 |
-| `nginx.externalPortHttp` | Nginx service external port            | `80`                            |
-| `nginx.internalPortHttp` | Nginx service internal port            | `80`                            |
-| `nginx.externalPortHttps` | Nginx service external port           | `443`                           |
-| `nginx.internalPortHttps` | Nginx service internal port           | `443`                           |
-| `nginx.internalPortReplicator` | Replicator service internal port | `6061`                          |
-| `nginx.externalPortReplicator` | Replicator service external port | `6061`                          |
+| `nginx.http.enabled` | Nginx http service enabled/disabled            | true                            |
+| `nginx.http.externalPort` | Nginx service external port            | `80`                            |
+| `nginx.http.internalPort` | Nginx service internal port            | `80`                            |
+| `nginx.https.enabled` | Nginx http service enabled/disabled            | true                            |
+| `nginx.https.externalPort` | Nginx service external port           | `443`                           |
+| `nginx.https.internalPort` | Nginx service internal port           | `443`                           |
+| `nginx.replicator.internalPort` | Replicator service internal port | `6061`                          |
+| `nginx.replicator.externalPort` | Replicator service external port | `6061`                          |
+| `nginx.externalPortHttp` | DEPRECATED: Nginx service external port            | `80`                            |
+| `nginx.internalPortHttp` | DEPRECATED: Nginx service internal port            | `80`                            |
+| `nginx.externalPortHttps` | DEPRECATED: Nginx service external port           | `443`                           |
+| `nginx.internalPortHttps` | DEPRECATED: Nginx service internal port           | `443`                           |
+| `nginx.internalPortReplicator` | DEPRECATED: Replicator service internal port | `6061`                          |
+| `nginx.externalPortReplicator` | DEPRECATED: Replicator service external port | `6061`                          |
 | `nginx.livenessProbe.enabled`              | would you like a liveness Probe to be enabled          |  `true`                                  |
 | `nginx.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`                    |
 | `nginx.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 100                                                   |
@@ -920,9 +928,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       | 
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
 | `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
-| `postgresql.postgresqlDatabase`     | PostgreSQL database name                   | `artifactory`                           |
-| `postgresql.postgresqlUsername`         | PostgreSQL database user                   | `artifactory`                           |
-| `postgresql.postgresqlPassword`     | PostgreSQL database password               |                                         |
+| `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
+| `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
+| `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage          | `true`                                  |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size         | `50Gi`                                  |
 | `postgresql.service.port`         | PostgreSQL database port                   | `5432`                                  |
