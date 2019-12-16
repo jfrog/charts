@@ -209,7 +209,7 @@ spec:
     {{- end }}
       volumes:
 {{- if .Values.server.customVolumes }}
-{{ tpl .Values.server.customVolumes . | indent 6 }}
+{{ tpl .Values.indexer.customVolumes . | indent 6 }}
 {{- end }}
       {{- if not .Values.indexer.persistence.enabled }}
       - name: data-volume
