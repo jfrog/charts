@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.3] - Dec 16, 2019
+* Another fix for toggling nginx service ports
+
 ## [1.3.2] - Dec 12, 2019
 * Fix for toggling nginx service ports
 

@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.3.2] - Dec 16, 2019
+* Fix for toggling nginx service ports
+
 ## [8.3.1] - Dec 12, 2019
 * Add support for toggling nginx service ports
 
