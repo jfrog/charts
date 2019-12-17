@@ -1007,11 +1007,19 @@ nginx:
     ssl_prefer_server_ciphers   on;
     ## server configuration
     server {
+      {{- if .Values.nginx.internalPortHttps }}
+      listen {{ .Values.nginx.internalPortHttps }} ssl;
+      {{- else -}}
       {{- if .Values.nginx.https.enabled }}
       listen {{ .Values.nginx.https.internalPort }} ssl;
       {{- end }}
+      {{- end }}
+      {{- if .Values.nginx.internalPortHttp }}
+      listen {{ .Values.nginx.internalPortHttp }};
+      {{- else -}}
       {{- if .Values.nginx.http.enabled }}
-      listen {{ .Values.nginx.http.internalPort }} ;
+      listen {{ .Values.nginx.http.internalPort }};
+      {{- end }}
       {{- end }}
       server_name ~(?<repo>.+)\.{{ include "artifactory-ha.fullname" . }} {{ include "artifactory-ha.fullname" . }}
       {{- range .Values.ingress.hosts -}}

@@ -65,7 +65,7 @@ spec:
           - 'daemon off;'
         ports:
         # DEPRECATION NOTE: The following is to maintain support for values pre 1.3.1 and
-        # will be cleaned up in a later verion
+        # will be cleaned up in a later version
         {{- if .Values.nginx.http }}
         {{- if .Values.nginx.http.enabled }}
         - containerPort: {{ .Values.nginx.http.internalPort }}
@@ -160,7 +160,6 @@ spec:
         {{- else }}
           name: {{ template "artifactory-ha.fullname" . }}-nginx-conf
         {{- end }}
-
       - name: nginx-artifactory-conf
         configMap:
       {{- if .Values.nginx.customArtifactoryConfigMap }}
@@ -168,13 +167,11 @@ spec:
       {{- else }}
           name: {{ template "artifactory-ha.fullname" . }}-nginx-artifactory-conf
       {{- end }}
-
       {{- if .Values.artifactory.replicator.enabled }}
       - name: nginx-replicator-conf
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-replicator-config
       {{- end }}
-
       - name: nginx-volume
       {{- if .Values.nginx.persistence.enabled }}
         persistentVolumeClaim:
