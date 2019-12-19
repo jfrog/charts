@@ -378,6 +378,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.readinessProbe.timeoutSeconds`        | Xray Indexer when the probe times out                       | `1`                  |
 | `indexer.readinessProbe.failureThreshold`      | Xray Indexer minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
 | `indexer.readinessProbe.successThreshold`      | Xray Indexer minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
+| `indexer.customVolumes`                         | Custom volumes                               |                                                  |
+| `indexer.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
 | `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
 | `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `true`                             |
