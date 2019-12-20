@@ -208,7 +208,7 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-{{- if .Values.server.customVolumes }}
+{{- if .Values.indexer.customVolumes }}
 {{ tpl .Values.indexer.customVolumes . | indent 6 }}
 {{- end }}
       {{- if not .Values.indexer.persistence.enabled }}
