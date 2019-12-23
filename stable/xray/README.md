@@ -354,9 +354,11 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
 | `analysis.affinity`                            | Xray Analysis node affinity                  | `{}`                 |
 | `analysis.tolerations`                         | Xray Analysis node tolerations               | `[]`                 |
+| `analysis.annotations`                          | Xray Analysis annotations                     | `{}`                               |
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
 | `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
 | `indexer.replicaCount`                         | Xray Indexer replica count                   | `1`                  |
+| `indexer.annotations`                          | Xray Indexer annotations                     | `{}`                               |
 | `indexer.updateStrategy`                       | Xray Indexer update strategy                 | `RollingUpdate`      |
 | `indexer.podManagementPolicy`                  | Xray Indexer pod management policy           | `Parallel`           |
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
@@ -376,6 +378,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.readinessProbe.timeoutSeconds`        | Xray Indexer when the probe times out                       | `1`                  |
 | `indexer.readinessProbe.failureThreshold`      | Xray Indexer minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
 | `indexer.readinessProbe.successThreshold`      | Xray Indexer minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
+| `indexer.customVolumes`                         | Custom volumes                               |                                                  |
+| `indexer.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
 | `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
 | `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `true`                             |
@@ -388,6 +392,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.tolerations`                          | Xray Indexer node tolerations                | `[]`                 |
 | `persist.name`                                 | Xray Persist name                            | `xray-persist`       |
 | `persist.image`                                | Xray Persist container image                 | `docker.bintray.io/jfrog/xray-persist`  |
+| `persist.annotations`                          | Xray Persist annotations                     | `{}`                               |
 | `persist.replicaCount`                         | Xray Persist replica count                   | `1`                  |
 | `persist.updateStrategy`                       | Xray Persist update strategy                 | `RollingUpdate`      |
 | `persist.podManagementPolicy`                  | Xray Persist pod management policy           | `Parallel`           |
@@ -416,6 +421,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.tolerations`                          | Xray Persist node tolerations                | `[]`                 |
 | `server.name`                                  | Xray server name                             | `xray-server`        |
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
+| `server.annotations`                           | Xray server annotations                      | `{}`                               |
+| `server.customVolumes`                         | Custom volumes                               |                                                  |
+| `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
 | `server.replicaCount`                          | Xray server replica count                    | `1`                  |
 | `server.updateStrategy`                        | Xray server update strategy                  | `RollingUpdate`      |
 | `server.podManagementPolicy`                   | Xray server pod management policy            | `Parallel`           |
@@ -530,6 +538,17 @@ ingress:
 and running:
 ```bash
 helm upgrade --install xray jfrog/xray -f xray-values.yaml
+```
+
+### Custom volumes
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+```yaml
+server:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
 ```
 
 ## Useful links

@@ -27,6 +27,9 @@ spec:
         component: {{ .Values.server.name }}
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/xray-setup-conf.yaml") . | sha256sum }}
+        {{- with .Values.server.annotations }}
+{{ toYaml . | indent 8}}
+        {{- end }}
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -145,6 +148,9 @@ spec:
         ports:
         - containerPort: {{ .Values.server.internalPort }}
         volumeMounts:
+{{- if .Values.server.customVolumeMounts }}
+{{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+{{- end }}
         - name: data-volume
           mountPath: "{{ .Values.common.xrayConfigPath }}"
         securityContext:
@@ -201,6 +207,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+  {{- if .Values.server.customVolumes }}
+{{ tpl .Values.server.customVolumes . | indent 6 }}
+  {{- end }}
       {{- if not .Values.server.persistence.enabled }}
       - name: data-volume
         emptyDir:

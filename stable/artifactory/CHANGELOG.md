@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.3.3] - Dec 23, 2019
+* Mark empty map values with `{}`
+
 ## [8.3.2] - Dec 16, 2019
 * Fix for toggling nginx service ports
 
