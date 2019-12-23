@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.1] - Dec 1, 2019
+* Added custom volume mounts to the server stateful set
+* Added custom annotations to the server, indexer, analysis, and persist stateful sets
+
 ## [1.3.0] - Dec 3, 2019
 * Update Xray version to 2.11.0
 
