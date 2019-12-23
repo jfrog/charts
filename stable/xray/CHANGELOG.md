@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.2] - Dec 23, 2019
+* Mark empty map values with `{}`
+
 ## [1.3.1] - Dec 1, 2019
 * Added custom volume mounts to the server stateful set
 * Added custom annotations to the server, indexer, analysis, and persist stateful sets
