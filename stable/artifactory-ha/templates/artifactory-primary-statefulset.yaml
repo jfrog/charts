@@ -326,6 +326,14 @@ spec:
         - name: HA_BACKUP_DIR
           value: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
       {{- end }}
+        - name: SERVER_XML_ARTIFACTORY_PORT
+          value: "{{ .Values.artifactory.internalPort }}"
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: HA_CONTEXT_URL
+          value: "http://$(POD_IP):{{ .Values.artifactory.internalPort }}/artifactory"
 {{- with .Values.artifactory.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}

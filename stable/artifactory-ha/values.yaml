@@ -309,8 +309,6 @@ artifactory:
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
-  # - name: SERVER_XML_ARTIFACTORY_PORT
-  #   value: "8081"
   # - name: SERVER_XML_ARTIFACTORY_MAX_THREADS
   #   value: "200"
   # - name: SERVER_XML_ACCESS_MAX_THREADS
@@ -331,6 +329,8 @@ artifactory:
   #       name: my-secret-name
   #       key: my-secret-key
 
+  ## IMPORTANT: If overriding artifactory.internalPort:
+  ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
   membershipPort: 10017
   externalPort: 8081
   internalPort: 8081
