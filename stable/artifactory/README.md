@@ -687,8 +687,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.service.type`| Artifactory service type | `ClusterIP`                                                       |
 | `artifactory.service.loadBalancerSourceRanges`| Artifactory service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
 | `artifactory.service.annotations` | Artifactory service annotations           | `{}`                            |
-| `artifactory.externalPort` | Artifactory service external port | `8081`                                                  |
-| `artifactory.internalPort` | Artifactory service internal port | `8081`                                                  |
+| `artifactory.externalPort`   | Artifactory service external port                                         | `8081`        |
+| `artifactory.internalPort`   | Artifactory service internal port (**DO NOT** use port lower than 1024)   | `8081`        |
 | `artifactory.internalPortReplicator` | Replicator service internal port | `6061`                                         |
 | `artifactory.externalPortReplicator` | Replicator service external port | `6061`                                         |
 | `artifactory.livenessProbe.enabled`              | Enable liveness probe                     | `true`                    |
