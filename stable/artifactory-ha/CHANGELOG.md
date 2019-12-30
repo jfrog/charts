@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.6] - Dec 30, 2019
+* Fix for nginx probes failing when launched with http disabled
+
 ## [1.3.5] - Dec 24, 2019
 * Better support for custom `artifactory.internalPort`
 
