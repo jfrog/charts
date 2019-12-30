@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.3.4] - Dec 30, 2019
+* Fix for nginx probes failing when launched with http disabled
+
 ## [8.3.3] - Dec 23, 2019
 * Mark empty map values with `{}`
 
