@@ -740,7 +740,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.service.annotations` | Artifactory service annotations           | `{}`                            |
 | `artifactory.service.pool`   | Artifactory instances to be in the load balancing pool. `members` or `all` | `members`    |
 | `artifactory.externalPort`   | Artifactory service external port                         | `8081`                        |
-| `artifactory.internalPort`   | Artifactory service internal port                         | `8081`                        |
+| `artifactory.internalPort`   | Artifactory service internal port (**DO NOT** use port lower than 1024)   | `8081`        |
 | `artifactory.internalPortReplicator` | Replicator service internal port | `6061`   |
 | `artifactory.externalPortReplicator` | Replicator service external port | `6061`   |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
