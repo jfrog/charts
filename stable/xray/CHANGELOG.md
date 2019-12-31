@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.3] - Dec 31, 2019
+* Update Xray version to 2.11.3
+
 ## [1.3.2] - Dec 23, 2019
 * Mark empty map values with `{}`
 
