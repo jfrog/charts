@@ -1000,11 +1000,13 @@ nginx:
     }
 
   artifactoryConf: |
+    {{- if .Values.nginx.https.enabled }}
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
     ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
     ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
     ssl_session_cache shared:SSL:1m;
     ssl_prefer_server_ciphers   on;
+    {{- end }}
     ## server configuration
     server {
       {{- if .Values.nginx.internalPortHttps }}
@@ -1030,6 +1032,18 @@ nginx:
       if ($http_x_forwarded_proto = '') {
         set $http_x_forwarded_proto  $scheme;
       }
+      {{- if .Values.nginx.service.ssloffload }}
+      if ($host = $server_addr) {
+        rewrite ^/artifactory/webapp/(.*) http://$host:8081/artifactory/webapp/$1 redirect;
+      }
+      if ($http_x_forwarded_proto != "https") {
+        rewrite ^/artifactory/webapp/(.*) https://$host/artifactory/webapp/$1 redirect;
+        rewrite ^/$ $scheme://$host/artifactory/webapp/#/home redirect;
+      }
+      if ($http_x_forwarded_proto = "https") {
+        rewrite ^/$ https://$host/artifactory/webapp/#/home redirect;
+      }
+      {{- else }}
       ## Application specific logs
       ## access_log /var/log/nginx/artifactory-access.log timing;
       ## error_log /var/log/nginx/artifactory-error.log;
@@ -1051,13 +1065,23 @@ nginx:
           proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
         }
         proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;
-        proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
+        proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host{{- if eq .Values.nginx.service.ssloffload false}}:$server_port{{- end }}/artifactory;
+        {{- if eq .Values.nginx.service.ssloffload false}}
         proxy_set_header    X-Forwarded-Port  $server_port;
+        {{- end }}
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
       }
     }
+    {{- if .Values.nginx.service.ssloffload }}
+    server {
+      listen 8081;
+      location /artifactory/ {
+        proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
+      }
+    }
+    {{- end }}
 
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
@@ -1068,6 +1092,7 @@ nginx:
     ## or pass from helm command line
     ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
     loadBalancerSourceRanges: []
+    ssloffload: false
     ## Provide static ip address
     loadBalancerIP:
     ## There are two available options: “Cluster” (default) and “Local”.
