@@ -1043,7 +1043,7 @@ nginx:
       if ($http_x_forwarded_proto = "https") {
         rewrite ^/$ https://$host/artifactory/webapp/#/home redirect;
       }
-      {{- else }}
+      {{- end }}
       ## Application specific logs
       ## access_log /var/log/nginx/artifactory-access.log timing;
       ## error_log /var/log/nginx/artifactory-error.log;
@@ -1065,8 +1065,10 @@ nginx:
           proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/$1;
         }
         proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/;
-        proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host{{- if eq .Values.nginx.service.ssloffload false}}:$server_port{{- end }}/artifactory;
-        {{- if eq .Values.nginx.service.ssloffload false}}
+        {{- if .Values.nginx.service.ssloffload}}
+        proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host/artifactory;
+        {{- else }}
+        proxy_set_header    X-Artifactory-Override-Base-Url $http_x_forwarded_proto://$host:$server_port/artifactory;
         proxy_set_header    X-Forwarded-Port  $server_port;
         {{- end }}
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
