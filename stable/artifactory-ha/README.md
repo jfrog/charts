@@ -884,6 +884,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |        |
 | `nginx.service.labels`       | Nginx service labels     | `{}`                                                           |
 | `nginx.service.annotations` | Nginx service annotations           | `{}`                            |
+| `nginx.service.ssloffload`  | Nginx service SSL offload           |  false                          |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |
 | `nginx.loadBalancerIP`| Provide Static IP to configure with Nginx |                                 |
 | `nginx.http.enabled` | Nginx http service enabled/disabled            | true                            |
@@ -957,6 +958,20 @@ The following table lists the configurable parameters of the artifactory chart a
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+
+### Install Artifactory HA with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx. 
+For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer. 
+
+```bash
+helm install --name artifactory-ha \ 
+   --set nginx.service.ssloffload=true \
+   --set nginx.https.enabled=false \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert"="arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx" \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-backend-protocol=http \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-ssl-ports=https \
+   jfrog/artifactory-ha
+```
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
