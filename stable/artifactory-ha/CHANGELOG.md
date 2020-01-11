@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.7] - Jan 07, 2020
+* Add support for customizable `mountOptions` of NFS PVs
+
 ## [1.3.6] - Dec 30, 2019
 * Fix for nginx probes failing when launched with http disabled
 
