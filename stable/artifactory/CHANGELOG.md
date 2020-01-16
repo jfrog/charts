@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.3.6] - Jan 16, 2020
+* Added example for external nginx-ingress
+
 ## [8.3.5] - Dec 30, 2019
 * Fix for nginx probes failing when launched with http disabled
 
