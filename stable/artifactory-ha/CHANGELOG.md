@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.8] - Jan 16, 2020
+* Added example for external nginx-ingress
+
 ## [1.3.7] - Jan 07, 2020
 * Add support for customizable `mountOptions` of NFS PVs
 
