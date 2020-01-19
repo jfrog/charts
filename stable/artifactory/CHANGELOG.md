@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.4.0] - Jan 19, 2020
+* Updated Artifactory version to 6.17.0
+
 ## [8.3.6] - Jan 16, 2020
 * Added example for external nginx-ingress
 
