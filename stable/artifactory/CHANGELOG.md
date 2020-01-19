@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.4.1] - Jan 19, 2020
+* Fix replicator port config in nginx replicator configmap
+
 ## [8.4.0] - Jan 19, 2020
 * Updated Artifactory version to 6.17.0
 
