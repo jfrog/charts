@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.4.2] - Jan 22, 2020
+* Refined pod disruption budgets to separate nginx and Artifactory pods
+
 ## [1.4.1] - Jan 19, 2020
 * Fix replicator port config in nginx replicator configmap
 
