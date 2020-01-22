@@ -877,6 +877,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
+| `nginx.minAvailable`                 | Nginx node min available count      | `0`                 |
 | `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
