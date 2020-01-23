@@ -1,7 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.1.11] - Jav 19, 2020
+## [1.1.12] - Jan 22, 2020
+* Add support for providing resources to the init containers and the insight container
+
+## [1.1.11] - Jan 19, 2020
 * Update Mission-Control version to 3.5.6
 
 ## [1.1.10] - Nov 21, 2019

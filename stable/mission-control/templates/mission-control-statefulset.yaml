@@ -47,6 +47,8 @@ spec:
         volumeMounts:
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
@@ -62,6 +64,8 @@ spec:
             do sleep 2;
           done;
     {{- if .Values.postgresql.enabled }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
       - name: postgresql-setup
         image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
         env:
@@ -128,6 +132,8 @@ spec:
         volumeMounts:
         - name: postgresql-setup
           mountPath: "/scripts"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
       - name: "set-properties"
         image: "{{ .Values.initContainerImage }}"
@@ -283,6 +289,8 @@ spec:
           mountPath: "/scripts"
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
       - name: "prepare-storage"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -546,6 +554,8 @@ spec:
         volumeMounts:
         - name: insight-server-logs
           mountPath: {{ .Values.insightServer.persistence.mountPath }}
+        resources:
+{{ toYaml .Values.insightServer.resources | indent 10 }}
         livenessProbe:
           httpGet:
             path: /api/status
@@ -583,6 +593,8 @@ spec:
         volumeMounts:
         - name: insight-scheduler-logs
           mountPath: {{ .Values.insightScheduler.persistence.mountPath }}
+        resources:
+{{ toYaml .Values.insightScheduler.resources | indent 10 }}
         livenessProbe:
           httpGet:
             path: /api/status
@@ -620,6 +632,8 @@ spec:
         volumeMounts:
         - name: insight-executor-logs
           mountPath: {{ .Values.insightExecutor.persistence.mountPath }}
+        resources:
+{{ toYaml .Values.insightExecutor.resources | indent 10 }}
         livenessProbe:
           httpGet:
             path: /executorservice/api
