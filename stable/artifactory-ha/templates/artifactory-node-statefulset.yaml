@@ -268,9 +268,7 @@ spec:
         - name: HA_MEMBERSHIP_PORT
           value: "{{ .Values.artifactory.membershipPort }}"
         - name: HA_NODE_ID
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
+          value: "{{ trimPrefix .Release.Name metadata.name }}"
         - name: ART_PRIMARY_BASE_URL
           value: 'http://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.internalPort }}/artifactory'
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
