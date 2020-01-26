@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [1.4.3] - Jan 27, 2020
-* Removed release name from HA Node ID. Removes risk of the HA Node ID exceeding 40 characters which causes nuget issues. See https://www.jfrog.com/jira/browse/RTFACT-18851.
+* Update HA Node ID to use the pods unique ID. Removes risk of the HA Node ID exceeding 40 characters which causes nuget issues. See https://www.jfrog.com/jira/browse/RTFACT-18851.
 
 ## [1.4.2] - Jan 22, 2020
 * Refined pod disruption budgets to separate nginx and Artifactory pods
