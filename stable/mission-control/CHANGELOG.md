@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.13] - Jan 30, 2020
+* Add the option to configure resources for the logger containers
+
 ## [1.1.12] - Jan 22, 2020
 * Add support for providing resources to the init containers and the insight container
 

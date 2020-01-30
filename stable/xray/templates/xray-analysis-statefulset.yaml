@@ -191,6 +191,8 @@ spec:
         volumeMounts:
           - name: data-volume
             mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml .Values.analysis.loggersResources | indent 10 }}
       {{- end }}
     {{- with .Values.analysis.nodeSelector }}
       nodeSelector:

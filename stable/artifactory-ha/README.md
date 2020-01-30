@@ -715,7 +715,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.priorityClass.name`     | Priority Class name                  | `{{ template "artifactory-ha.fullname" . }}` |
 | `artifactory.priorityClass.existingPriorityClass`      | Use existing priority class  | ``                               |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
+| `artifactory.loggersResources.requests.memory` | Artifactory loggers initial memory request                  |                          |
+| `artifactory.loggersResources.requests.cpu`    | Artifactory loggers initial cpu request     |                                          |
+| `artifactory.loggersResources.limits.memory`   | Artifactory loggers memory limit            |                                          |
+| `artifactory.loggersResources.limits.cpu`      | Artifactory loggers cpu limit               |                                          |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
+| `artifactory.catalinaLoggersResources.requests.memory` | Artifactory Tomcat loggers initial memory request                  |                          |
+| `artifactory.catalinaLoggersResources.requests.cpu`    | Artifactory Tomcat loggers initial cpu request     |                                          |
+| `artifactory.catalinaLoggersResources.limits.memory`   | Artifactory Tomcat loggers memory limit            |                                          |
+| `artifactory.catalinaLoggersResources.limits.cpu`      | Artifactory Tomcat loggers cpu limit               |                                          |
 | `artifactory.customInitContainersBegin`| Custom init containers to run before existing init containers |                 |
 | `artifactory.customInitContainers`| Custom init containers to run after existing init containers |                       |
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
@@ -878,7 +886,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
 | `nginx.minAvailable`                 | Nginx node min available count      | `0`                 |
-| `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
+| `nginx.loggers`        | Nginx loggers (see values.yaml for possible values) | `[]`                           |
+| `nginx.loggersResources.requests.memory` | Nginx logger initial memory request                  |                          |
+| `nginx.loggersResources.requests.cpu`    | Nginx logger initial cpu request     |                                          |
+| `nginx.loggersResources.limits.memory`   | Nginx logger memory limit            |                                          |
+| `nginx.loggersResources.limits.cpu`      | Nginx logger cpu limit               |                                          |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
