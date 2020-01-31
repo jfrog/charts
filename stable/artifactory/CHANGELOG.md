@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.4.2] - Jan 26, 2020
+* Improve `database.user` and `database.password` logic in order to support more use cases and make the configuration less repetitive
+
 ## [8.4.1] - Jan 19, 2020
 * Fix replicator port config in nginx replicator configmap
 

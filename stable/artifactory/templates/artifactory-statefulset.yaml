@@ -188,43 +188,42 @@ spec:
           value: '{{ .Values.database.type }}'
         {{- if or .Values.database.url .Values.database.secrets.url }}
         - name: DB_URL
-        {{- if .Values.database.url }}
+          {{- if .Values.database.url }}
           value: '{{.Values.database.url }}'
-        {{- else }}
+          {{- else }}
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.url.name }}
               key: {{ .Values.database.secrets.url.key }}
-        {{- end }}
+          {{- end }}
         {{- else }}
         - name: DB_HOST
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
         {{- end }}
-        {{- if .Values.database.secrets.user }}
+        {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: DB_USER
+          {{- if .Values.database.user }}
+          value: {{ .Values.database.user }}
+          {{- else }}
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.user.name }}
               key: {{ .Values.database.secrets.user.key }}
+          {{- end }}
         {{- end }}
-        {{- if .Values.database.secrets.password }}
+        {{- if or .Values.database.password .Values.database.secrets.password }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-        {{- else }}
-        {{- if and .Values.database.type .Values.database.user }}
-        - name: DB_USER
-          value: '{{ .Values.database.user }}'
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
+              {{- if .Values.database.password }}
               name: {{ template "artifactory.fullname" . }}
               key: db-password
-        {{- end }}
+              {{- else }}
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+              {{- end }}
         {{- end }}
       {{- end }}
       {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
