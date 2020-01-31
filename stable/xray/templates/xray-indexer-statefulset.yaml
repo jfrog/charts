@@ -195,7 +195,7 @@ spec:
           - name: data-volume
             mountPath: {{ $mountPath }}
         resources:
-{{ toYaml .Values.indexer.loggersResources | indent 10 }}
+{{ toYaml $.Values.indexer.loggersResources | indent 10 }}
       {{- end }}
     {{- with .Values.indexer.nodeSelector }}
       nodeSelector:

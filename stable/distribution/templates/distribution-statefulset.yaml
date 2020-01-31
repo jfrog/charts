@@ -253,7 +253,7 @@ spec:
           - name: distribution-data
             mountPath: {{ $mountPath }}
         resources:
-{{ toYaml .Values.distribution.loggersResources | indent 10 }}
+{{ toYaml $.Values.distribution.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.distributor.name }}
       {{- $mountPath := .Values.distributor.persistence.mountPath }}
@@ -269,7 +269,7 @@ spec:
           - name: distributor-data
             mountPath: {{ $mountPath }}
         resources:
-{{ toYaml .Values.distributor.loggersResources | indent 10 }}
+{{ toYaml $.Values.distributor.loggersResources | indent 10 }}
       {{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
