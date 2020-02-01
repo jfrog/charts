@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.4.3] - Jan 30, 2020
+## [1.4.4] - Jan 30, 2020
 * Add the option to configure resources for the logger containers
+
+## [1.4.3] - Jan 26, 2020
+* Improve `database.user` and `database.password` logic in order to support more use cases and make the configuration less repetitive
 
 ## [1.4.2] - Jan 22, 2020
 * Refined pod disruption budgets to separate nginx and Artifactory pods
