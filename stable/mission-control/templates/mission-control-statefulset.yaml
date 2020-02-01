@@ -665,6 +665,8 @@ spec:
         volumeMounts:
           - name: mission-control-data
             mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.missionControl.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.insightServer.name }}
       {{- $mountPath := .Values.insightServer.persistence.mountPath }}
@@ -682,6 +684,8 @@ spec:
         volumeMounts:
           - name: insight-server-logs
             mountPath: {{ $mountPath }}
+        resources:
+ {{ toYaml $.Values.insightServer.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.insightScheduler.name }}
       {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
@@ -699,6 +703,8 @@ spec:
         volumeMounts:
           - name: insight-scheduler-logs
             mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.insightScheduler.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.insightExecutor.name }}
       {{- $mountPath := .Values.insightExecutor.persistence.mountPath }}
@@ -716,6 +722,8 @@ spec:
         volumeMounts:
           - name: insight-executor-logs
             mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.insightExecutor.loggersResources | indent 10 }}
       {{- end }}
     {{- with .Values.missionControl.nodeSelector }}
       nodeSelector:

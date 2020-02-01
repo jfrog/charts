@@ -283,6 +283,15 @@ missionControl:
   # - jfmc-server.log
   # - monitoring.log
 
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   ## Mission Control requires a unique mc.key
   # This will be used to encript sensitive data to be stored in database
   ## You can generate one with the command:
@@ -391,6 +400,15 @@ insightServer:
   loggers: []
   # - insight-server.log
 
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
 insightScheduler:
   name: insight-scheduler
   home: /opt/jfrog
@@ -438,6 +456,15 @@ insightScheduler:
   # - insight-scheduler.log
   # - access.log
 
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
 insightExecutor:
   name: insight-executor
   home: /opt/jfrog
@@ -484,3 +511,12 @@ insightExecutor:
   loggers: []
   # - insight-executor.log
   # - access.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"

@@ -151,6 +151,8 @@ spec:
         volumeMounts:
         - name: nginx-volume
           mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.nginx.loggersResources | indent 10 }}
       {{- end }}
     {{- with .Values.nginx.nodeSelector }}
       nodeSelector:

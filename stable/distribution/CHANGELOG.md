@@ -1,7 +1,10 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [3.5.0] - Jav 8, 2020
+## [3.5.1] - Jan 30, 2020
+* Add the option to configure resources for the logger containers
+
+## [3.5.0] - Jan 8, 2020
 * Update Distribution version 1.8.0
 
 ## [3.4.4] - Oct 20, 2019

@@ -354,6 +354,10 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.resources.limits.cpu`        | Mission Control cpu limit                       |                                       |
 | `missionControl.propertyOverride`            | Force write of properties on mc startup         | ` `                                   |
 | `missionControl.loggers`                     | Mission Control loggers (see values.yaml for possible values)          | ` `            |
+| `missionControl.loggersResources.requests.memory`  | Mission Control loggers initial memory request                             |                                                                    |
+| `missionControl.loggersResources.requests.cpu`     | Mission Control loggers initial cpu request                                |                                                                    |
+| `missionControl.loggersResources.limits.memory`    | Mission Control loggers memory limit                                       |                                                                    |
+| `missionControl.loggersResources.limits.cpu`       | Mission Control loggers cpu limit                                          |                                                                    |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
 | `insightServer.image`                        | Container image                                 | `docker.jfrog.io/jfrog/insight-server`|
 | `insightServer.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
@@ -366,6 +370,10 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.resources.limits.memory`      | Insight Server memory limit                     |                                        |
 | `insightServer.resources.limits.cpu`         | Insight Server cpu limit                        |                                        |
 | `insightServer.loggers`                      | Insight Server loggers (see values.yaml for possible values)           | ` `            |
+| `insightServer.loggersResources.requests.memory`  | Insight Server loggers initial memory request                             |                                                                    |
+| `insightServer.loggersResources.requests.cpu`     | Insight Server loggers initial cpu request                                |                                                                    |
+| `insightServer.loggersResources.limits.memory`    | Insight Server loggers memory limit                                       |                                                                    |
+| `insightServer.loggersResources.limits.cpu`       | Insight Server loggers cpu limit                                          |                                                                    |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
 | `insightScheduler.image`                     | Container image                                 | `docker.jfrog.io/jfrog/insight-scheduler`  |
 | `insightScheduler.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
@@ -380,6 +388,10 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.resources.limits.memory`   | Insight Scheduler memory limit                  |                                       |
 | `insightScheduler.resources.limits.cpu`      | Insight Scheduler cpu limit                     |                                       |
 | `insightScheduler.loggers`                   | Insight Scheduler loggers (see values.yaml for possible values)           | ` `            |
+| `insightScheduler.loggersResources.requests.memory`  | Insight Scheduler loggers initial memory request |                              |
+| `insightScheduler.loggersResources.requests.cpu`     | Insight Scheduler loggers initial cpu request    |                              |
+| `insightScheduler.loggersResources.limits.memory`    | Insight Scheduler loggers memory limit           |                              |
+| `insightScheduler.loggersResources.limits.cpu`       | Insight Scheduler loggers cpu limit              |                              |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
 | `insightExecutor.image`                      | Container image                                 | `docker.jfrog.io/jfrog/insight-executor`   |
 | `insightExecutor.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
@@ -394,6 +406,10 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightExecutorr.resources.limits.memory`   | Insight Executor memory limit                   |                                       |
 | `insightExecutorr.resources.limits.cpu`      | Insight Executor cpu limit                      |                                       |
 | `insightExecutor.loggers`                    | Insight Executor loggers (see values.yaml for possible values)         | ` `            |
+| `insightExecutor.loggersResources.requests.memory`  | Insight Executor loggers initial memory request |                              |
+| `insightExecutor.loggersResources.requests.cpu`     | Insight Executor loggers initial cpu request    |                              |
+| `insightExecutor.loggersResources.limits.memory`    | Insight Executor loggers memory limit           |                              |
+| `insightExecutor.loggersResources.limits.cpu`       | Insight Executor loggers cpu limit              |                              |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
