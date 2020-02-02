@@ -851,6 +851,7 @@ artifactory:
   ## Customising their resources and java parameters is done here.
   primary:
     name: artifactory-ha-primary
+    preStartCommand:
     labels: {}
     persistence:
       ## Set existingClaim to true or false
@@ -889,6 +890,7 @@ artifactory:
 
   node:
     name: artifactory-ha-member
+    preStartCommand:
     labels: {}
     persistence:
       ## Set existingClaim to true or false
