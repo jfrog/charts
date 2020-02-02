@@ -851,6 +851,7 @@ artifactory:
   ## Customising their resources and java parameters is done here.
   primary:
     name: artifactory-ha-primary
+    # preStartCommand specific to the primary node, to be run after artifactory.preStartCommand
     preStartCommand:
     labels: {}
     persistence:
@@ -890,6 +891,7 @@ artifactory:
 
   node:
     name: artifactory-ha-member
+    # preStartCommand specific to the member node, to be run after artifactory.preStartCommand
     preStartCommand:
     labels: {}
     persistence:
