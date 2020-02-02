@@ -131,6 +131,9 @@ helm install -n xray --set analysis.replicaCount=3,server.replicaCount=3,indexer
 ```
 
 ### External Databases
+
+**For production grade installations it is recommended to use an external PostgreSQL and MongoDB with a static password**
+
 There is an option to use external database services (MongoDB or PostgreSQL) for your Xray.
 
 #### MongoDB

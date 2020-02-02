@@ -157,6 +157,8 @@ export MC_KEY=$(kubectl exec -it <mission-control-pod> -n <new_namespace> -c mis
 
 ### Use external Database
 
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+
 #### PostgreSQL
 There are cases where you will want to use an external **PostgreSQL** and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/MC/Using+External+Databases#UsingExternalDatabases-ExternalizingPostgreSQL)

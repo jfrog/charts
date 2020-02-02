@@ -93,6 +93,9 @@ helm install --name distribution --set replicaCount=3 jfrog/distribution
 ```
 
 ### External Database
+
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+
 There is an option to use an external PostgreSQL database for your Distribution.
 
 To use an external **PostgreSQL**, You need to set the Distribution **PostgreSQL** connection details

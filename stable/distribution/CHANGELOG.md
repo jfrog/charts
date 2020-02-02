@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.5.2] - Feb 2, 2020
+* Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
+
 ## [3.5.1] - Jan 30, 2020
 * Add the option to configure resources for the logger containers
 
