@@ -178,24 +178,28 @@ spec:
         - '-c'
         - >
           set -e;
-          {{- if .Values.artifactory.configMapName }}
+        {{- if .Values.artifactory.configMapName }}
           echo "Copying bootstrap configs";
           cp -Lrf /bootstrap/* /artifactory_extra_conf/;
-          {{- end }}
-          {{- if .Values.artifactory.userPluginSecrets }}
+        {{- end }}
+        {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
-          {{- end }}
-          {{- range .Values.artifactory.copyOnEveryStartup }}
+        {{- end }}
+        {{- range .Values.artifactory.copyOnEveryStartup }}
           {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
           {{- $baseDirectory := regexFind ".*/" $targetPath }}
           mkdir -p {{ $baseDirectory }};
           cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
-          {{- end }}
-          {{- if .Values.artifactory.preStartCommand }}
+        {{- end }}
+        {{- with .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
-          {{ tpl .Values.artifactory.preStartCommand . }};
-          {{- end }}
+          {{ tpl . $ }};
+        {{- end }}
+        {{- with .Values.artifactory.primary.preStartCommand }}
+          echo "Running primary specific custom preStartCommand command";
+          {{ tpl . $ }};
+        {{- end }}
           /entrypoint-artifactory.sh
       {{- if .Values.artifactory.postStartCommand }}
         lifecycle:

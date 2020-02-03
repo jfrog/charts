@@ -154,6 +154,10 @@ spec:
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
         {{- end }}
+        {{- with .Values.artifactory.node.preStartCommand }}
+          echo "Running member node specific custom preStartCommand command";
+          {{ tpl . $ }};
+        {{- end }}
           /entrypoint-artifactory.sh
       {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
