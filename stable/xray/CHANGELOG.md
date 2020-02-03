@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.5] - Feb 2, 2019
+* Add a comment stating that it is recommended to use external databases with a static password for production installations
+
 ## [1.3.4] - Jan 30, 2019
 * Add the option to configure resources for the logger containers
 

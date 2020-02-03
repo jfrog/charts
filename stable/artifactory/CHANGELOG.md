@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.4.4] - Feb 2, 2020
+* Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
+
 ## [8.4.3] - Jan 30, 2020
 * Add the option to configure resources for the logger containers
 

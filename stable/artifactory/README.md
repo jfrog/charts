@@ -491,6 +491,8 @@ helm install --name artifactory --set nginx.customConfigMap=nginx-config jfrog/a
 
 ### Use an external Database
 
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+
 #### PostgreSQL
 There are cases where you will want to use an external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `my-artifactory-db` is the name of the database.
 
