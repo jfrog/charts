@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.4.5] - Feb 2, 2020
+## [1.4.6] - Feb 2, 2020
 * Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
+
+## [1.4.5] - Feb 2, 2020
+* Add support for primary or member node specific preStartCommand
 
 ## [1.4.4] - Jan 30, 2020
 * Add the option to configure resources for the logger containers
