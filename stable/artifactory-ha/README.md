@@ -881,7 +881,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
 | `ingress.additionalRules`       | Ingress additional rules to be added to the Artifactory ingress. | `[]`  |
 | `nginx.enabled`             | Deploy nginx server                      | `true`                                          |
-| `nginx.kind`                | Nginx object kind, for example `DaemonSet` or `Deployment`                                 | `Deployment`                                          |
+| `nginx.kind`                | Nginx object kind, for example `DaemonSet`, `Deployment` or `StatefulSet`                  | `Deployment`                                          |
 | `nginx.name`                | Nginx name                        | `nginx`                                                |
 | `nginx.replicaCount`        | Nginx replica count               | `1`                                                    |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
