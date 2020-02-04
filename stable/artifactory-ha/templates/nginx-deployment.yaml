@@ -15,7 +15,7 @@ metadata:
 {{ toYaml .Values.nginx.labels | indent 4 }}
 {{- end }}
 spec:
-{{- if eq .Values.nginx.kind "DaemonSet" }}
+{{- if ne .Values.nginx.kind "DaemonSet" }}
   replicas: {{ .Values.nginx.replicaCount }}
   selector:
     matchLabels:
