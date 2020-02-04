@@ -2,7 +2,7 @@
 {{- $serviceName := include "artifactory.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ .Values.nginx.kind }}
 metadata:
   name: {{ template "artifactory.nginx.fullname" . }}
   labels:
@@ -15,12 +15,14 @@ metadata:
 {{ toYaml .Values.nginx.labels | indent 4 }}
 {{- end }}
 spec:
+{{- if ! eq .Values.nginx.kind "DaemonSet" }}
   replicas: {{ .Values.nginx.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "artifactory.name" . }}
       release: {{ .Release.Name }}
       component: {{ .Values.nginx.name }}
+{{- end }}
   template:
     metadata:
       annotations:
