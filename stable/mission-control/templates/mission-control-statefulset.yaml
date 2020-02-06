@@ -63,9 +63,9 @@ spec:
       {{- end }}
             do sleep 2;
           done;
-    {{- if .Values.postgresql.enabled }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
+    {{- if .Values.postgresql.enabled }}
       - name: postgresql-setup
         image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
         env:
