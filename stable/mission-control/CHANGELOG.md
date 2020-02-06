@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.15] - Feb 6, 2020
+* Fix init containers resources
+
 ## [1.1.14] - Feb 2, 2020
 * Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
 
