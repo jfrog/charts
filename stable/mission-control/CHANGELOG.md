@@ -1,6 +1,20 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.15] - Feb 6, 2020
+* Fix init containers resources
+
+## [1.1.14] - Feb 2, 2020
+* Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
+
+## [1.1.13] - Jan 30, 2020
+* Add the option to configure resources for the logger containers
+
+## [1.1.12] - Jan 22, 2020
+* Add support for providing resources to the init containers and the insight container
+
+## [1.1.11] - Jan 19, 2020
+* Update Mission-Control version to 3.5.6
 
 ## [1.1.10] - Nov 21, 2019
 * Support missionControl.preStartCommand for running command before entrypoint starts

@@ -154,6 +154,10 @@ spec:
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
         {{- end }}
+        {{- with .Values.artifactory.node.preStartCommand }}
+          echo "Running member node specific custom preStartCommand command";
+          {{ tpl . $ }};
+        {{- end }}
           /entrypoint-artifactory.sh
       {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
@@ -186,43 +190,42 @@ spec:
           value: '{{ required "Must set database.type when not using the PostgreSQL sub-chart (postgresql.enabled=false) " .Values.database.type }}'
         {{- if or .Values.database.url .Values.database.secrets.url }}
         - name: DB_URL
-        {{- if .Values.database.url }}
+          {{- if .Values.database.url }}
           value: '{{.Values.database.url }}'
-        {{- else }}
+          {{- else }}
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.url.name }}
               key: {{ .Values.database.secrets.url.key }}
-        {{- end }}
+          {{- end }}
         {{- else }}
         - name: DB_HOST
           value: '{{ .Values.database.host }}'
         - name: DB_PORT
           value: '{{ .Values.database.port }}'
         {{- end }}
-        {{- if .Values.database.secrets.user }}
+        {{- if or .Values.database.user .Values.database.secrets.user }}
         - name: DB_USER
+          {{- if .Values.database.user }}
+          value: {{ .Values.database.user }}
+          {{- else }}
           valueFrom:
             secretKeyRef:
               name: {{ .Values.database.secrets.user.name }}
               key: {{ .Values.database.secrets.user.key }}
+          {{- end }}
         {{- end }}
-        {{- if .Values.database.secrets.password }}
+        {{- if or .Values.database.password .Values.database.secrets.password }}
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-        {{- else }}
-        {{- if and .Values.database.type .Values.database.user }}
-        - name: DB_USER
-          value: '{{ .Values.database.user }}'
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "artifactory-ha.fullname" . }}
-              key: db-password
-        {{- end }}
+            {{- if .Values.database.password }}
+            name: {{ template "artifactory-ha.fullname" . }}
+            key: db-password
+            {{- else }}
+            name: {{ .Values.database.secrets.password.name }}
+            key: {{ .Values.database.secrets.password.key }}
+            {{- end }}
         {{- end }}
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
@@ -383,6 +386,8 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
       {{- end }}
       {{ if .Values.artifactory.catalinaLoggers }}
       {{- range .Values.artifactory.catalinaLoggers }}
@@ -398,6 +403,8 @@ spec:
         - name: catalina-logger
           mountPath: /scripts/tail-log.sh
           subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.artifactory.catalinaLoggersResources | indent 10 }}
       {{- end }}
       {{- end }}
     {{- if .Values.artifactory.customSidecarContainers }}

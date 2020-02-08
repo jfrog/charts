@@ -1,20 +1,17 @@
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ template "artifactory-ha.fullname" . }}-node
+  name: {{ template "artifactory-ha.nginx.fullname" . }}
   labels:
     app: {{ template "artifactory-ha.name" . }}
     chart: {{ template "artifactory-ha.chart" . }}
-    component: {{ .Values.artifactory.name }}
+    component: {{ .Values.nginx.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
-      component: {{ .Values.artifactory.name }}
+      component: {{ .Values.nginx.name }}
       app: {{ template "artifactory-ha.name" . }}
-      {{- if eq .Values.artifactory.service.pool "members" }}
-      role: {{ template "artifactory-ha.node.name" . }}
-      {{- end }}
       release: {{ .Release.Name }}
-  minAvailable: {{ .Values.artifactory.node.minAvailable }}
+  minAvailable: {{ .Values.nginx.minAvailable }}

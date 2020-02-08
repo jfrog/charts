@@ -257,6 +257,15 @@ distribution:
   # - distribution.log
   # - request.log
 
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -303,6 +312,15 @@ distributor:
   loggers: []
   # - distributor.log
   # - foreman.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
 
   nodeSelector: {}
   tolerations: []

@@ -131,6 +131,9 @@ helm install -n xray --set analysis.replicaCount=3,server.replicaCount=3,indexer
 ```
 
 ### External Databases
+
+**For production grade installations it is recommended to use an external PostgreSQL and MongoDB with a static password**
+
 There is an option to use external database services (MongoDB or PostgreSQL) for your Xray.
 
 #### MongoDB
@@ -351,6 +354,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.persistence.size`                    | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
 | `analysis.loggers`                             | Xray Analysis loggers (see values.yaml for possible values)  | ` `  |
+| `analysis.loggersResources.requests.memory`    | Xray Analysis loggers initial memory request                        |               |
+| `analysis.loggersResources.requests.cpu`       | Xray Analysis loggers initial cpu request                           |               |
+| `analysis.loggersResources.limits.memory`      | Xray Analysis loggers memory limit                                  |               |
+| `analysis.loggersResources.limits.cpu`         | Xray Analysis loggers cpu limit                                     |               |
 | `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
 | `analysis.affinity`                            | Xray Analysis node affinity                  | `{}`                 |
 | `analysis.tolerations`                         | Xray Analysis node tolerations               | `[]`                 |
@@ -387,6 +394,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.persistence.size`                     | Xray Indexer persistence volume size         | `50Gi`                             |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
 | `indexer.loggers`                              | Xray Indexer loggers (see values.yaml for possible values)   | ` `  |
+| `indexer.loggersResources.requests.memory`     | Xray Indexer loggers initial memory request                                 |               |
+| `indexer.loggersResources.requests.cpu`        | Xray Indexer loggers initial cpu request                                    |               |
+| `indexer.loggersResources.limits.memory`       | Xray Indexer loggers memory limit                                           |               |
+| `indexer.loggersResources.limits.cpu`          | Xray Indexer loggers cpu limit                                              |               |
 | `indexer.nodeSelector`                         | Xray Indexer node selector                   | `{}`                 |
 | `indexer.affinity`                             | Xray Indexer node affinity                   | `{}`                 |
 | `indexer.tolerations`                          | Xray Indexer node tolerations                | `[]`                 |
@@ -415,6 +426,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.readinessProbe.successThreshold`      | Xray Persist minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `persist.persistence.size`                     | Xray Persist storage size limit              | `10Gi`               |
 | `persist.loggers`                              | Xray Persist loggers (see values.yaml for possible values)  | ` `   |
+| `persist.loggersResources.requests.memory`     | Xray Persist loggers initial memory request                                 |               |
+| `persist.loggersResources.requests.cpu`        | Xray Persist loggers initial cpu request                                    |               |
+| `persist.loggersResources.limits.memory`       | Xray Persist loggers memory limit                                           |               |
+| `persist.loggersResources.limits.cpu`          | Xray Persist loggers cpu limit                                              |               |
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
 | `persist.nodeSelector`                         | Xray Persist node selector                   | `{}`                 |
 | `persist.affinity`                             | Xray Persist node affinity                   | `{}`                 |
@@ -452,6 +467,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`                    |
 | `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`                             |
 | `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |
+| `server.loggersResources.requests.memory`      | Xray server loggers initial memory request                          |             |
+| `server.loggersResources.requests.cpu`         | Xray server loggers initial cpu request                             |             |
+| `server.loggersResources.limits.memory`        | Xray server loggers memory limit                                    |             |
+| `server.loggersResources.limits.cpu`           | Xray server loggers cpu limit                                       |             |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
 | `server.affinity`                              | Xray server node affinity                    | `{}`                 |

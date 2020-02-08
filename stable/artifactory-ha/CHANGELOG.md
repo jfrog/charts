@@ -1,8 +1,38 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.3.7] - Jan 4, 2020
+## [1.4.8] - Feb 8, 2020
 * Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
+## [1.4.7] - Feb 4, 2020
+* Support customisable Nginx kind 
+
+## [1.4.6] - Feb 2, 2020
+* Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
+
+## [1.4.5] - Feb 2, 2020
+* Add support for primary or member node specific preStartCommand
+
+## [1.4.4] - Jan 30, 2020
+* Add the option to configure resources for the logger containers
+
+## [1.4.3] - Jan 26, 2020
+* Improve `database.user` and `database.password` logic in order to support more use cases and make the configuration less repetitive
+
+## [1.4.2] - Jan 22, 2020
+* Refined pod disruption budgets to separate nginx and Artifactory pods
+
+## [1.4.1] - Jan 19, 2020
+* Fix replicator port config in nginx replicator configmap
+
+## [1.4.0] - Jan 19, 2020
+* Updated Artifactory version to 6.17.0
+
+## [1.3.8] - Jan 16, 2020
+* Added example for external nginx-ingress
+
+## [1.3.7] - Jan 07, 2020
+* Add support for customizable `mountOptions` of NFS PVs
 
 ## [1.3.6] - Dec 30, 2019
 * Fix for nginx probes failing when launched with http disabled

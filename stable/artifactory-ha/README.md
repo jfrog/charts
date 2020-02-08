@@ -527,6 +527,8 @@ kubectl delete pvc volume-artifactory-node-2
 
 ### Use an external Database
 
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+
 #### PostgreSQL
 There are cases where you will want to use external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `my-artifactory-db` is the database name.
 
@@ -715,7 +717,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.priorityClass.name`     | Priority Class name                  | `{{ template "artifactory-ha.fullname" . }}` |
 | `artifactory.priorityClass.existingPriorityClass`      | Use existing priority class  | ``                               |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
+| `artifactory.loggersResources.requests.memory` | Artifactory loggers initial memory request                  |                          |
+| `artifactory.loggersResources.requests.cpu`    | Artifactory loggers initial cpu request     |                                          |
+| `artifactory.loggersResources.limits.memory`   | Artifactory loggers memory limit            |                                          |
+| `artifactory.loggersResources.limits.cpu`      | Artifactory loggers cpu limit               |                                          |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
+| `artifactory.catalinaLoggersResources.requests.memory` | Artifactory Tomcat loggers initial memory request                  |                          |
+| `artifactory.catalinaLoggersResources.requests.cpu`    | Artifactory Tomcat loggers initial cpu request     |                                          |
+| `artifactory.catalinaLoggersResources.limits.memory`   | Artifactory Tomcat loggers memory limit            |                                          |
+| `artifactory.catalinaLoggersResources.limits.cpu`      | Artifactory Tomcat loggers cpu limit               |                                          |
 | `artifactory.customInitContainersBegin`| Custom init containers to run before existing init containers |                 |
 | `artifactory.customInitContainers`| Custom init containers to run after existing init containers |                       |
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
@@ -776,6 +786,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory-ha`     |
 | `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
+| `artifactory.persistence.nfs.mountOptions`            | NFS mount options | `[]`                                    |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
 | `artifactory.persistence.googleStorage.endpoint`    | Google Storage API endpoint| `storage.googleapis.com`             |
 | `artifactory.persistence.googleStorage.httpsOnly`   | Google Storage API has to be consumed https only| `false`             |
@@ -823,6 +834,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
+| `artifactory.primary.preStartCommand`           | Artifactory primary node preStartCommand to be run after `artifactory.preStartCommand`         |                     |
 | `artifactory.primary.labels`                    | Artifactory primary node labels                  | `{}`                |
 | `artifactory.primary.resources.requests.memory` | Artifactory primary node initial memory request  |                     |
 | `artifactory.primary.resources.requests.cpu`    | Artifactory primary node initial cpu request     |                     |
@@ -837,6 +849,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
 | `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `false`            |
+| `artifactory.node.preStartCommand`              | Artifactory member node preStartCommand to be run after `artifactory.preStartCommand`          |                     |
 | `artifactory.node.labels`                       | Artifactory member node labels                   | `{}`                |
 | `artifactory.node.replicaCount`                 | Artifactory member node replica count            | `2`                 |
 | `artifactory.node.minAvailable`                 | Artifactory member node min available count      | `1`                 |
@@ -868,6 +881,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
 | `ingress.additionalRules`       | Ingress additional rules to be added to the Artifactory ingress. | `[]`  |
 | `nginx.enabled`             | Deploy nginx server                      | `true`                                          |
+| `nginx.kind`                | Nginx object kind, for example `DaemonSet`, `Deployment` or `StatefulSet`                  | `Deployment`                                          |
 | `nginx.name`                | Nginx name                        | `nginx`                                                |
 | `nginx.replicaCount`        | Nginx replica count               | `1`                                                    |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
@@ -876,7 +890,12 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
-| `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
+| `nginx.minAvailable`                 | Nginx node min available count      | `0`                 |
+| `nginx.loggers`        | Nginx loggers (see values.yaml for possible values) | `[]`                           |
+| `nginx.loggersResources.requests.memory` | Nginx logger initial memory request                  |                          |
+| `nginx.loggersResources.requests.cpu`    | Nginx logger initial cpu request     |                                          |
+| `nginx.loggersResources.limits.memory`   | Nginx logger memory limit            |                                          |
+| `nginx.loggersResources.limits.cpu`      | Nginx logger cpu limit               |                                          |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
 | `nginx.service.type`        | Nginx service type                | `LoadBalancer`                                         |
@@ -1081,7 +1100,27 @@ and running:
 helm upgrade --install artifactory-ha jfrog/artifactory-ha -f artifactory-ha-values.yaml
 ```
 
+### Ingress behind another load balancer
+If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
 
+To enable it with `helm install`
+```bash
+helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
+```
+or `helm upgrade`
+```bash
+helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true stable/nginx-ingress
+```
+or create a values.yaml file with the following content:
+```bash
+controller:
+  config:
+    use-forwarded-headers: "true"
+```
+Then install nginx-ingress with the values file you created:
+```bash
+helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
+```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started

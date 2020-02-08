@@ -1,6 +1,27 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.4.5] - Feb 4, 2020
+* Support customisable Nginx kind 
+
+## [8.4.4] - Feb 2, 2020
+* Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
+
+## [8.4.3] - Jan 30, 2020
+* Add the option to configure resources for the logger containers
+
+## [8.4.2] - Jan 26, 2020
+* Improve `database.user` and `database.password` logic in order to support more use cases and make the configuration less repetitive
+
+## [8.4.1] - Jan 19, 2020
+* Fix replicator port config in nginx replicator configmap
+
+## [8.4.0] - Jan 19, 2020
+* Updated Artifactory version to 6.17.0
+
+## [8.3.6] - Jan 16, 2020
+* Added example for external nginx-ingress
+
 ## [8.3.5] - Dec 30, 2019
 * Fix for nginx probes failing when launched with http disabled
 

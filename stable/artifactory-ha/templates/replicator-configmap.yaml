@@ -11,12 +11,21 @@ metadata:
 data:
   replicator.yaml: |-
     externalUrl: {{ required "artifactory.replicator.publicUrl is required when artifactory.replicator.enabled is true" .Values.artifactory.replicator.publicUrl }}
+  {{- if .Values.nginx.replicator }}
+    internalUrl: http://localhost:{{ .Values.nginx.replicator.internalPort }}
+    listenPort: {{ .Values.nginx.replicator.internalPort }}
+  {{- else }}
     internalUrl: http://localhost:{{ .Values.nginx.internalPortReplicator }}
     listenPort: {{ .Values.nginx.internalPortReplicator }}
+  {{- end }}
   replicator-nginx.conf: |
     ## Artifactory replicator
     server {
-      listen         {{ .Values.nginx.externalPortReplicator }};
+    {{- if .Values.nginx.replicator }}
+      listen         {{ .Values.nginx.replicator.internalPort }};
+    {{- else }}
+      listen         {{ .Values.nginx.internalPortReplicator }};
+    {{- end }}
       server_name    {{ include "artifactory-ha.fullname" . }};
 
       client_max_body_size 0;
@@ -24,8 +33,12 @@ data:
       location / {
         proxy_read_timeout  900;
         proxy_pass_header   Server;
+      {{- if .Values.nginx.replicator }}
+        proxy_pass          http://{{ include "artifactory-ha.primary.name" . }}:{{ .Values.nginx.replicator.internalPort }};
+      {{- else }}
         proxy_pass          http://{{ include "artifactory-ha.primary.name" . }}:{{ .Values.nginx.internalPortReplicator }};
+      {{- end }}
         proxy_http_version  1.1;
       }
     }
-{{- end -}}
+{{- end }}

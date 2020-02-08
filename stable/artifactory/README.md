@@ -491,6 +491,8 @@ helm install --name artifactory --set nginx.customConfigMap=nginx-config jfrog/a
 
 ### Use an external Database
 
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+
 #### PostgreSQL
 There are cases where you will want to use an external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `my-artifactory-db` is the name of the database.
 
@@ -674,7 +676,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.priorityClass.name`      | Priority Class name               | `{{ template "artifactory.fullname" . }}`    |
 | `artifactory.priorityClass.existingPriorityClass`      | Use existing priority class  | ``                               |
 | `artifactory.loggers`             | Artifactory loggers (see values.yaml for possible values) | `[]`                     |
+| `artifactory.loggersResources.requests.memory` | Artifactory loggers initial memory request                  |                          |
+| `artifactory.loggersResources.requests.cpu`    | Artifactory loggers initial cpu request     |                                          |
+| `artifactory.loggersResources.limits.memory`   | Artifactory loggers memory limit            |                                          |
+| `artifactory.loggersResources.limits.cpu`      | Artifactory loggers cpu limit               |                                          |
 | `artifactory.catalinaLoggers`     | Artifactory Tomcat loggers (see values.yaml for possible values) | `[]`              |
+| `artifactory.catalinaLoggersResources.requests.memory` | Artifactory Tomcat loggers initial memory request                  |                          |
+| `artifactory.catalinaLoggersResources.requests.cpu`    | Artifactory Tomcat loggers initial cpu request     |                                          |
+| `artifactory.catalinaLoggersResources.limits.memory`   | Artifactory Tomcat loggers memory limit            |                                          |
+| `artifactory.catalinaLoggersResources.limits.cpu`      | Artifactory Tomcat loggers cpu limit               |                                          |
 | `artifactory.customInitContainers`| Custom init containers            |                                                  |
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
@@ -800,8 +810,9 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
 | `ingress.additionalRules`       | Ingress additional rules to be added to the Artifactory ingress. | `[]`  |
-| `nginx.name` | Nginx name | `nginx`                                                                                      |
 | `nginx.enabled` | Deploy nginx server | `true`                                                                           |
+| `nginx.kind`                | Nginx object kind, for example `DaemonSet`, `Deployment` or `StatefulSet`                  | `Deployment`                                          |
+| `nginx.name` | Nginx name | `nginx`                                                                                      |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.gid`                 | Nginx Group Id                    | `107`                                                  |
@@ -809,7 +820,11 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.image.version`       | Container tag                     | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
-| `nginx.loggers`        | Artifactory loggers (see values.yaml for possible values) | `[]`                           |
+| `nginx.loggers`        | Nginx loggers (see values.yaml for possible values) | `[]`                           |
+| `nginx.loggersResources.requests.memory` | Nginx logger initial memory request                  |                          |
+| `nginx.loggersResources.requests.cpu`    | Nginx logger initial cpu request     |                                          |
+| `nginx.loggersResources.limits.memory`   | Nginx logger memory limit            |                                          |
+| `nginx.loggersResources.limits.cpu`      | Nginx logger cpu limit               |                                          |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
@@ -993,6 +1008,28 @@ ingress:
 and running:
 ```bash
 helm upgrade --install xray jfrog/artifactory -f artifactory-values.yaml
+```
+
+### Ingress behind another load balancer
+If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
+
+To enable it with `helm install`
+```bash
+helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
+```
+or `helm upgrade`
+```bash
+helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true stable/nginx-ingress
+```
+or create a values.yaml file with the following content:
+```bash
+controller:
+  config:
+    use-forwarded-headers: "true"
+```
+Then install nginx-ingress with the values file you created:
+```bash
+helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
 ```
 
 ## Useful links

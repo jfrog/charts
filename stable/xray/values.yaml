@@ -324,6 +324,16 @@ analysis:
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_analysis.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -331,6 +341,7 @@ analysis:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+
   nodeSelector: {}
   affinity: {}
   tolerations: []
@@ -401,6 +412,16 @@ indexer:
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_indexer.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -408,6 +429,7 @@ indexer:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+
   nodeSelector: {}
   affinity: {}
   tolerations: []
@@ -449,6 +471,16 @@ persist:
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_persist.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -456,6 +488,7 @@ persist:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+
   nodeSelector: {}
   affinity: {}
   tolerations: []
@@ -534,6 +567,16 @@ server:
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_server.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -541,6 +584,7 @@ server:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+
   nodeSelector: {}
   affinity: {}
   tolerations: []

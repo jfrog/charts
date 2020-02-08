@@ -2,7 +2,7 @@
 {{- $serviceName := include "artifactory-ha.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ .Values.nginx.kind }}
 metadata:
   name: {{ template "artifactory-ha.nginx.fullname" . }}
   labels:
@@ -15,7 +15,9 @@ metadata:
 {{ toYaml .Values.nginx.labels | indent 4 }}
 {{- end }}
 spec:
+{{- if ne .Values.nginx.kind "DaemonSet" }}
   replicas: {{ .Values.nginx.replicaCount }}
+{{- end }}
   selector:
     matchLabels:
       app: {{ template "artifactory-ha.name" . }}
@@ -151,6 +153,8 @@ spec:
         volumeMounts:
         - name: nginx-volume
           mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.nginx.loggersResources | indent 10 }}
       {{- end }}
     {{- with .Values.nginx.nodeSelector }}
       nodeSelector:

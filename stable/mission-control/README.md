@@ -157,6 +157,8 @@ export MC_KEY=$(kubectl exec -it <mission-control-pod> -n <new_namespace> -c mis
 
 ### Use external Database
 
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+
 #### PostgreSQL
 There are cases where you will want to use an external **PostgreSQL** and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/MC/Using+External+Databases#UsingExternalDatabases-ExternalizingPostgreSQL)
@@ -253,6 +255,10 @@ The following table lists the configurable parameters of the mission-control cha
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
 | `initContainerImage`                         | Init Container Image                            | `alpine:3.6`                          |
+| `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
+| `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
+| `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
+| `initContainers.resources.limits.cpu`        | Init containers cpu limit                       |                                       |
 | `imagePullPolicy`                            | Container pull policy                           | `IfNotPresent`                        |
 | `imagePullSecrets`                           | Docker registry pull secret                     |                                       |
 | `replicaCount`                               | Number of replicas                              | `1`                                   |
@@ -266,6 +272,10 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.persistence.enabled`             | PostgreSQL persistence volume enabled           | `true`                                |
 | `postgresql.persistence.existingClaim`       | Use an existing PVC to persist data             | `nil`                                 |
 | `postgresql.persistence.size`                | PostgreSQL persistence volume size              | `50Gi`                                |
+| `postgresql.resources.requests.memory`       | PostgreSQL initial memory request               |                                       |
+| `postgresql.resources.requests.cpu`          | PostgreSQL initial cpu request                  |                                       |
+| `postgresql.resources.limits.memory`         | PostgreSQL memory limit                         |                                       |
+| `postgresql.resources.limits.cpu`            | PostgreSQL cpu limit                            |                                       |
 | `postgresql.postgresUsername`                | PostgreSQL admin username                       | `postgres`                            |
 | `postgresql.postgresPassword`                | PostgreSQL admin password                       | ` `                                   |
 | `postgresql.db.name`                         | PostgreSQL Database name                        | `mission_control`                     |
@@ -313,8 +323,12 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.persistence.size`             | Elasticsearch persistence volume size           | `50Gi`                                |
 | `elasticsearch.javaOpts.xms`                 | Elasticsearch ES_JAVA_OPTS -Xms                 | ` `                                   |
 | `elasticsearch.javaOpts.xmx`                 | Elasticsearch ES_JAVA_OPTS -Xmx                 | ` `                                   |
+| `elasticsearch.resources.requests.memory`    | Elasticsearch initial memory request            |                                       |
+| `elasticsearch.resources.requests.cpu`       | Elasticsearch initial cpu request               |                                       |
+| `elasticsearch.resources.limits.memory`      | Elasticsearch memory limit                      |                                       |
+| `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
-| `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1                      | `1`                          |
+| `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1 | `1` |
 | `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
 | `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
@@ -333,11 +347,19 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.persistence.enabled`         | Mission Control persistence volume enabled      | `true`                                |
 | `missionControl.persistence.accessMode`      | Mission Control persistence volume access mode  | `ReadWriteOnce`                       |
 | `missionControl.persistence.size`            | Mission Control persistence volume size         | `100Gi`                               |
-| `missionControl.preStartCommand`            | Command to run before mission control app starts         | ``                               |
+| `missionControl.preStartCommand`             | Command to run before mission control app starts         | ``                               |
 | `missionControl.javaOpts.other`              | Mission Control JAVA_OPTIONS                    | `-server -XX:+UseG1GC -Dfile.encoding=UTF8` |
 | `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | ` `                                   |
+| `missionControl.resources.requests.memory`   | Mission Control initial memory request          |                                       |
+| `missionControl.resources.requests.cpu`      | Mission Control initial cpu request             |                                       |
+| `missionControl.resources.limits.memory`     | Mission Control memory limit                    |                                       |
+| `missionControl.resources.limits.cpu`        | Mission Control cpu limit                       |                                       |
 | `missionControl.propertyOverride`            | Force write of properties on mc startup         | ` `                                   |
 | `missionControl.loggers`                     | Mission Control loggers (see values.yaml for possible values)          | ` `            |
+| `missionControl.loggersResources.requests.memory`  | Mission Control loggers initial memory request                             |                                                                    |
+| `missionControl.loggersResources.requests.cpu`     | Mission Control loggers initial cpu request                                |                                                                    |
+| `missionControl.loggersResources.limits.memory`    | Mission Control loggers memory limit                                       |                                                                    |
+| `missionControl.loggersResources.limits.cpu`       | Mission Control loggers cpu limit                                          |                                                                    |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
 | `insightServer.image`                        | Container image                                 | `docker.jfrog.io/jfrog/insight-server`|
 | `insightServer.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
@@ -345,7 +367,15 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
 | `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
 | `insightServer.allowIP`                      | Range of IPs allowed to be served by Insight Server service  | `"0.0.0.0/0"`            |
+| `insightServer.resources.requests.memory`    | Insight Server initial memory request           |                                        |
+| `insightServer.resources.requests.cpu`       | Insight Server initial cpu request              |                                        |
+| `insightServer.resources.limits.memory`      | Insight Server memory limit                     |                                        |
+| `insightServer.resources.limits.cpu`         | Insight Server cpu limit                        |                                        |
 | `insightServer.loggers`                      | Insight Server loggers (see values.yaml for possible values)           | ` `            |
+| `insightServer.loggersResources.requests.memory`  | Insight Server loggers initial memory request                             |                                                                    |
+| `insightServer.loggersResources.requests.cpu`     | Insight Server loggers initial cpu request                                |                                                                    |
+| `insightServer.loggersResources.limits.memory`    | Insight Server loggers memory limit                                       |                                                                    |
+| `insightServer.loggersResources.limits.cpu`       | Insight Server loggers cpu limit                                          |                                                                    |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
 | `insightScheduler.image`                     | Container image                                 | `docker.jfrog.io/jfrog/insight-scheduler`  |
 | `insightScheduler.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
@@ -355,7 +385,15 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
 | `insightScheduler.javaOpts.xms`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xms     | ``                                    |
 | `insightScheduler.javaOpts.xmx`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xmx     | ``                                    |
-| `insightScheduler.loggers`                      | Insight Scheduler loggers (see values.yaml for possible values)           | ` `            |
+| `insightScheduler.resources.requests.memory` | Insight Scheduler initial memory request        |                                       |
+| `insightScheduler.resources.requests.cpu`    | Insight Scheduler initial cpu request           |                                       |
+| `insightScheduler.resources.limits.memory`   | Insight Scheduler memory limit                  |                                       |
+| `insightScheduler.resources.limits.cpu`      | Insight Scheduler cpu limit                     |                                       |
+| `insightScheduler.loggers`                   | Insight Scheduler loggers (see values.yaml for possible values)           | ` `            |
+| `insightScheduler.loggersResources.requests.memory`  | Insight Scheduler loggers initial memory request |                              |
+| `insightScheduler.loggersResources.requests.cpu`     | Insight Scheduler loggers initial cpu request    |                              |
+| `insightScheduler.loggersResources.limits.memory`    | Insight Scheduler loggers memory limit           |                              |
+| `insightScheduler.loggersResources.limits.cpu`       | Insight Scheduler loggers cpu limit              |                              |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
 | `insightExecutor.image`                      | Container image                                 | `docker.jfrog.io/jfrog/insight-executor`   |
 | `insightExecutor.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
@@ -365,7 +403,15 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightExecutor.javaOpts.other`             | Insight Executor JFMC_EXTRA_JAVA_OPTS           | ``                                    |
 | `insightExecutor.javaOpts.xms`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xms      | ``                                    |
 | `insightExecutor.javaOpts.xmx`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xmx      | ``                                    |
+| `insightExecutorr.resources.requests.memory` | Insight Executor initial memory request         |                                       |
+| `insightExecutorr.resources.requests.cpu`    | Insight Executor initial cpu request            |                                       |
+| `insightExecutorr.resources.limits.memory`   | Insight Executor memory limit                   |                                       |
+| `insightExecutorr.resources.limits.cpu`      | Insight Executor cpu limit                      |                                       |
 | `insightExecutor.loggers`                    | Insight Executor loggers (see values.yaml for possible values)         | ` `            |
+| `insightExecutor.loggersResources.requests.memory`  | Insight Executor loggers initial memory request |                              |
+| `insightExecutor.loggersResources.requests.cpu`     | Insight Executor loggers initial cpu request    |                              |
+| `insightExecutor.loggersResources.limits.memory`    | Insight Executor loggers memory limit           |                              |
+| `insightExecutor.loggersResources.limits.cpu`       | Insight Executor loggers cpu limit              |                              |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

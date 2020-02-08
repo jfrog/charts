@@ -192,12 +192,30 @@ artifactory:
   # - artifactory.log
   # - build_info_migration.log
 
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
+
   # Sidecar containers for tailing Tomcat (catalina) logs
   catalinaLoggers: []
   # - catalina.log
   # - host-manager.log
   # - localhost.log
   # - manager.log
+
+  # Tomcat (catalina) loggers resources
+  catalinaLoggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
 
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
@@ -744,6 +762,7 @@ artifactory:
       dataDir: "/var/opt/jfrog/artifactory-ha"
       backupDir: "/var/opt/jfrog/artifactory-backup"
       capacity: 200Gi
+      mountOptions: []
     ## For artifactory.persistence.type google-storage
     googleStorage:
       endpoint: storage.googleapis.com
@@ -832,6 +851,8 @@ artifactory:
   ## Customising their resources and java parameters is done here.
   primary:
     name: artifactory-ha-primary
+    # preStartCommand specific to the primary node, to be run after artifactory.preStartCommand
+    preStartCommand:
     labels: {}
     persistence:
       ## Set existingClaim to true or false
@@ -870,6 +891,8 @@ artifactory:
 
   node:
     name: artifactory-ha-member
+    # preStartCommand specific to the member node, to be run after artifactory.preStartCommand
+    preStartCommand:
     labels: {}
     persistence:
       ## Set existingClaim to true or false
@@ -928,9 +951,11 @@ initContainers:
 # Nginx
 nginx:
   enabled: true
+  kind: Deployment
   name: nginx
   labels: {}
   replicaCount: 1
+  minAvailable: 0
   uid: 104
   gid: 107
   image:
@@ -944,6 +969,15 @@ nginx:
   loggers: []
   # - access.log
   # - error.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #  requests:
+  #    memory: "64Mi"
+  #    cpu: "25m"
+  #  limits:
+  #    memory: "128Mi"
+  #    cpu: "50m"
 
   mainConf: |
     # Main Nginx configuration file
