@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.4.8] - Feb 9, 2020
+* Add support for `tpl` in the `postStartCommand`
+
 ## [1.4.7] - Feb 4, 2020
 * Support customisable Nginx kind 
 
