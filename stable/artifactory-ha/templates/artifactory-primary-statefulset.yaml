@@ -201,7 +201,6 @@ spec:
           {{ tpl . $ }};
         {{- end }}
           /entrypoint-artifactory.sh
-      {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
           postStart:
             exec:
@@ -209,8 +208,10 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-                {{ .Values.artifactory.postStartCommand }}
-      {{- end }}
+                echo;
+              {{- with .Values.artifactory.postStartCommand }}
+                {{ tpl . $ }}
+              {{- end }}
         env:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE

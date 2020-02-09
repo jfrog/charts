@@ -165,9 +165,10 @@ spec:
               - '/bin/sh'
               - '-c'
               - >
-                {{- if .Values.artifactory.postStartCommand }}
-                {{ .Values.artifactory.postStartCommand }}
-                {{- end }}
+                echo;
+              {{- with .Values.artifactory.postStartCommand }}
+                {{ tpl . $ }}
+              {{- end }}
         env:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
