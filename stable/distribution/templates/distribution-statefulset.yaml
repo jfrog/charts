@@ -68,7 +68,7 @@ spec:
             echo "Running custom Distribution preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            {{ .Values.distribution.persistence.mountPath }}/wrapper.sh;
+            /opt/jfrog/distribution-{{ .Values.distribution.name }}/wrapper.sh;
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distribution.persistence.mountPath }}
@@ -195,7 +195,7 @@ spec:
             echo "Running Distributor custom preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            {{ .Values.distributor.persistence.mountPath }}/wrapper.sh;
+            /opt/jfrog/distribution-{{ .Values.distributor.name }}/wrapper.sh;
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distributor.persistence.mountPath }}

@@ -143,7 +143,7 @@ spec:
             echo "Running custom Analysis preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            {{ .Values.common.xrayConfigPath }}/wrapper.sh;
+            /opt/jfrog/{{ .Values.analysis.name }}/wrapper.sh;
         env:
         - name: XRAY_K8S_ENV
           value: "true"
