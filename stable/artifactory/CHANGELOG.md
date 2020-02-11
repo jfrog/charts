@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.4.7] - Feb 11, 2020
+* Change Artifactory service port name to be hard-coded to `http` instead of using `{{ .Release.Name }}` 
+
 ## [8.4.6] - Feb 9, 2020
 * Add support for `tpl` in the `postStartCommand`
 
