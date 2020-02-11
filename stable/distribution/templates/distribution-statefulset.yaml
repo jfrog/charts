@@ -60,6 +60,15 @@ spec:
         ports:
         - name: distribution
           containerPort: {{ .Values.distribution.internalPort }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.distribution.preStartCommand }}
+            echo "Running custom Distribution preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            {{ .Values.distribution.persistence.mountPath }}/wrapper.sh;
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distribution.persistence.mountPath }}
@@ -155,6 +164,9 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+        {{- with .Values.distribution.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.distribution.resources | indent 10 }}
         readinessProbe:
@@ -175,6 +187,15 @@ spec:
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.distributor.preStartCommand }}
+            echo "Running Distributor custom preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            {{ .Values.distributor.persistence.mountPath }}/wrapper.sh;
         env:
         - name: DEFAULT_JAVA_OPTS
           value: '-Ddistribution.home={{ .Values.distributor.persistence.mountPath }}
@@ -284,6 +305,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- with .Values.distribution.customVolumes }}
+{{ tpl . $ | indent 6 }}
+      {{- end }}
   {{- if not .Values.distribution.persistence.enabled }}
       - name: distribution-data
         emptyDir: {}

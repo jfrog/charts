@@ -381,15 +381,15 @@ spec:
       - name: {{ .Values.missionControl.name }}
         image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        {{- if .Values.missionControl.preStartCommand }}
         command:
         - '/bin/sh'
         - '-c'
         - >
+        {{- with .Values.missionControl.preStartCommand }}
           echo "Running custom preStartCommand command";
-          {{ tpl .Values.missionControl.preStartCommand . }};
-          /opt/entrypoint-mc.sh;
+          {{ tpl . $ }};
         {{- end }}
+          /opt/entrypoint-mc.sh;
         env:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
@@ -466,8 +466,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-      {{- if .Values.missionControl.customVolumeMounts }}
-{{ tpl .Values.missionControl.customVolumeMounts . | indent 8 }}
+      {{- with .Values.missionControl.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
@@ -751,8 +751,8 @@ spec:
         configMap:
           name: {{ template "mission-control.fullname" . }}-elasticsearch-scripts
     {{- end }}
-    {{- if .Values.missionControl.customVolumes }}
-{{ tpl .Values.missionControl.customVolumes . | indent 6 }}
+    {{- with .Values.missionControl.customVolumes }}
+{{ tpl . $ | indent 6 }}
     {{- end }}
   {{- if not .Values.missionControl.persistence.enabled }}
       - name: mission-control-data

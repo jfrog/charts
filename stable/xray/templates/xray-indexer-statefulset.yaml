@@ -131,6 +131,19 @@ spec:
       - name: {{ .Values.indexer.name }}
         image: {{ .Values.indexer.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.indexer.preStartCommand }}
+            echo "Running custom Indexer preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            {{ .Values.common.xrayConfigPath }}/wrapper.sh;
         env:
         - name: XRAY_K8S_ENV
           value: "true"

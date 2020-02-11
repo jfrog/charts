@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.1.16] - Feb 11, 2020
+* Use a with clause for `preStartCommand`, `customVolumes` and `customVolumeMounts`
+
 ## [1.1.15] - Feb 6, 2020
 * Fix init containers resources
 
