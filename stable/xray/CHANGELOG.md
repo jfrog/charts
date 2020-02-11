@@ -1,13 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.3.6] - Feb 10, 2019
+## [1.3.6] - Feb 11, 2020
 * Add support for `preStartCommand`
 
-## [1.3.5] - Feb 2, 2019
+## [1.3.5] - Feb 2, 2020
 * Add a comment stating that it is recommended to use external databases with a static password for production installations
 
-## [1.3.4] - Jan 30, 2019
+## [1.3.4] - Jan 30, 2020
 * Add the option to configure resources for the logger containers
 
 ## [1.3.3] - Dec 31, 2019
