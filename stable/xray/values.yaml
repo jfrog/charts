@@ -254,6 +254,9 @@ common:
     stdOutEnabled: true
     indexAllBuilds: false
 
+  ## Custom command to run before Xray startup. Runs BEFORE any microservice-specific preStartCommand
+  preStartCommand:
+
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"
@@ -322,6 +325,10 @@ analysis:
   persistence:
     size: 10Gi
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+
+  ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
   loggers: []
   # - xray_analysis.log
 
@@ -409,6 +416,9 @@ indexer:
     ##
     # storageClass: "-"
 
+  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_indexer.log
@@ -468,6 +478,10 @@ persist:
   ## Container storage limit
   persistence:
     size: 10Gi
+
+  ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - xray_persist.log
@@ -560,6 +574,9 @@ server:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
+
+  ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
 
   # Whitelist IPs allowed to LoadBalancer type services
   # Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
