@@ -844,6 +844,11 @@ artifactory:
     enabled: false
     publicUrl:
 
+  ssh:
+    enabled: false
+    internalPort: 1339
+    externalPort: 1339
+
   annotations: {}
 
   ## Type specific configurations.
@@ -984,6 +989,19 @@ nginx:
     worker_processes  4;
     error_log  {{ .Values.nginx.persistence.mountPath }}/logs//error.log warn;
     pid        /tmp/nginx.pid;
+
+    {{- if .Values.artifactory.ssh.enabled }}
+    # Load the stream module to support TCP streaming
+    load_module /usr/lib/nginx/modules/ngx_stream_module.so;
+    ## SSH Server Configuration
+    stream {
+      server {
+        listen {{ .Values.nginx.ssh.internalPort }};
+        proxy_pass {{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.ssh.externalPort }};
+      }
+    }
+    {{- end }}
+
     events {
       worker_connections  1024;
     }
@@ -1127,6 +1145,10 @@ nginx:
   # internalPortHttps: 443
   # internalPortReplicator: 6061
   # externalPortReplicator: 6061
+
+  ssh:
+    internalPort: 22
+    externalPort: 22
 
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:

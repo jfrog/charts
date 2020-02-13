@@ -69,6 +69,12 @@ spec:
     protocol: TCP
     name: https
   {{- end }}
+  {{- if .Values.artifactory.ssh.enabled }}
+  - port: {{ .Values.nginx.ssh.externalPort }}
+    targetPort: {{ .Values.nginx.ssh.internalPort }}
+    protocol: TCP
+    name: ssh
+  {{- end }}
   selector:
     app: {{ template "artifactory.name" . }}
     component: {{ .Values.nginx.name }}

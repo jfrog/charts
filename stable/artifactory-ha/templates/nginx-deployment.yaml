@@ -89,6 +89,9 @@ spec:
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortReplicator }}
         {{- end }}
+        {{- if .Values.artifactory.ssh.enabled }}
+        - containerPort: {{ .Values.nginx.ssh.internalPort }}
+        {{- end }}
         volumeMounts:
         - name: nginx-conf
           mountPath: /etc/nginx/nginx.conf
