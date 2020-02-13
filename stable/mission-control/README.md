@@ -74,6 +74,75 @@ helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/m
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
 
+### Ingress and TLS
+To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+```bash
+helm install --name mission-control \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="mission-control.company.com" \
+  --set server.service.type=NodePort \
+  jfrog/mission-control
+```
+
+If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
+
+To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
+
+```bash
+kubectl create secret tls mission-control-tls --cert=path/to/tls.cert --key=path/to/tls.key
+```
+
+Include the secret's name, along with the desired hostnames, in the Mission Control Ingress TLS section of your custom `values.yaml` file:
+
+```yaml
+  ingress:
+    ## If true, Mission Control Ingress will be created
+    ##
+    enabled: true
+
+    ## Mission Control Ingress hostnames
+    ## Must be provided if Ingress is enabled
+    ##
+    hosts:
+      - mission-control.domain.com
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    ## Mission Control Ingress TLS configuration
+    ## Secrets must be manually created in the namespace
+    ##
+    tls:
+      - secretName: mission-control-tls
+        hosts:
+          - mission-control.domain.com
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Mission Control ingress. An example for this use case can be routing the /artifactory path to Artifactory.
+In order to do that, simply add the following to a `mission-control-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "mission-control.fullname" . }}
+              servicePort: {{ .Values.missionControl.externalPort }}
+          - path: /artifactory
+            backend:
+              serviceName: <ARTIFACTORY_SERVICE_NAME>
+              servicePort: <ARTIFACTORY_SERVICE_PORT>
+```
 
 ## Set Mission Control base URL
 * Get mission-control url by running following commands:
@@ -263,9 +332,15 @@ The following table lists the configurable parameters of the mission-control cha
 | `imagePullSecrets`                           | Docker registry pull secret                     |                                       |
 | `replicaCount`                               | Number of replicas                              | `1`                                   |
 | `serviceAccount.create`                      | Specifies whether a ServiceAccount should be created | `true`                           |
-| `serviceAccount.name`                        | The name of the ServiceAccount to create             | Generated using the fullname template |
+| `serviceAccount.name`                        | The name of the ServiceAccount to create        | Generated using the fullname template |
 | `rbac.create`                                | Specifies whether RBAC resources should be created   | `true`                           |
 | `rbac.role.rules`                            | Rules to create                                 | `[]`                                  |
+| `ingress.enabled`                            | If true, Mission Control Ingress will be created| `false`                               |
+| `ingress.annotations`                        | Mission Control Ingress annotations             | `{}`                                  |
+| `ingress.hosts`                              | Mission Control Ingress hostnames               | `[]`                                  |
+| `ingress.tls`                                | Mission Control Ingress TLS configuration (YAML)| `[]`                                  |
+| `ingress.defaultBackend.enabled`             | If true, the default `backend` will be added using serviceName and servicePort | `true` |
+| `ingress.additionalRules`                    | Mission Control Ingress additional rules        | `{}`                                  |
 | `postgresql.enabled`                         | Enable PostgreSQL                               | `true`                                |
 | `postgresql.imageTag`                        | PostgreSQL docker image tag                     | `9.6.11`                              |
 | `postgresql.image.pullPolicy`                | PostgreSQL Container pull policy                | `IfNotPresent`                        |
