@@ -174,6 +174,24 @@ distribution:
     ## Init containers template goes here ##
 ```
 
+### Custom volumes
+There are cases where you'd like custom files mounted onto your container's file system.
+
+For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
+```
+distribution:
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+```
 
 ## Configuration
 The following table lists the configurable parameters of the distribution chart and their default values.
@@ -227,6 +245,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.service.type`                     | Distribution service type                                              | `LoadBalancer`                                                     |
 | `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                         | `[]`                                                               |
 | `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
+| `distribution.customVolumeMounts`               | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
+| `distribution.customVolumes`                    | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
 | `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
@@ -238,6 +258,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.persistence.existingClaim`        | Provide an existing PersistentVolumeClaim                              | `nil`                                                              |
 | `distribution.persistence.accessMode`           | Distribution persistence volume access mode                            | `ReadWriteOnce`                                                    |
 | `distribution.persistence.size`                 | Distribution persistence volume size                                   | `50Gi`                                                             |
+| `distribution.preStartCommand`                  | Distribution Command to run before the startup                         |                                                                    |
 | `distribution.nodeSelector`                     | Distribution node selector                                             | `{}`                                                               |
 | `distribution.affinity`                         | Distribution node affinity                                             | `{}`                                                               |
 | `distribution.tolerations`                      | Distribution node tolerations                                          | `[]`                                                               |
@@ -256,6 +277,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.persistence.enabled`               | Distributor persistence volume enabled                                 | `true`                                                             |
 | `distributor.persistence.accessMode`            | Distributor persistence volume access mode                             | `ReadWriteOnce`                                                    |
 | `distributor.persistence.size`                  | Distributor persistence volume size                                    | `50Gi`                                                             |
+| `distributor.preStartCommand`                   | Distributor Command to run before the startup                          |                                                                    |
 | `distributor.nodeSelector`                      | Distributor node selector                                              | `{}`                                                               |
 | `distributor.affinity`                          | Distributor node affinity                                              | `{}`                                                               |
 | `distributor.tolerations`                       | Distributor node tolerations                                           | `[]`                                                               |

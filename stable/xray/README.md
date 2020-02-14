@@ -318,7 +318,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `logger.image.repository`                      | Repository for logger image                  | `busybox`            |
 | `logger.image.tag`                             | Tag for logger image                         | `1.30`               |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
-| `common.xrayConfigPath`                        | Xray config path                   | `/var/opt/jfrog/xray/data`     |
+| `common.xrayConfigPath`                        | Xray config path                             | `/var/opt/jfrog/xray/data`     |
+| `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
 | `common.masterKey`  | Xray Master Key Can be generated with `openssl rand -hex 32` | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
@@ -353,6 +354,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.readinessProbe.successThreshold`      | Xray Analysis minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `analysis.persistence.size`                    | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
+| `analysis.preStartCommand`                     | Xray Analysis Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `analysis.loggers`                             | Xray Analysis loggers (see values.yaml for possible values)  | ` `  |
 | `analysis.loggersResources.requests.memory`    | Xray Analysis loggers initial memory request                        |               |
 | `analysis.loggersResources.requests.cpu`       | Xray Analysis loggers initial cpu request                           |               |
@@ -393,6 +395,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.persistence.accessMode`               | Xray Indexer persistence volume access mode  | `ReadWriteOnce`                    |
 | `indexer.persistence.size`                     | Xray Indexer persistence volume size         | `50Gi`                             |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
+| `indexer.preStartCommand`                      | Xray Indexer Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `indexer.loggers`                              | Xray Indexer loggers (see values.yaml for possible values)   | ` `  |
 | `indexer.loggersResources.requests.memory`     | Xray Indexer loggers initial memory request                                 |               |
 | `indexer.loggersResources.requests.cpu`        | Xray Indexer loggers initial cpu request                                    |               |
@@ -425,6 +428,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.readinessProbe.failureThreshold`      | Xray Persist minimum consecutive failures for the probe to be considered failed after having succeeded        | `3`           |
 | `persist.readinessProbe.successThreshold`      | Xray Persist minimum consecutive successes for the probe to be considered successful after having failed | `1`                  |
 | `persist.persistence.size`                     | Xray Persist storage size limit              | `10Gi`               |
+| `persist.preStartCommand`                      | Xray Persist Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `persist.loggers`                              | Xray Persist loggers (see values.yaml for possible values)  | ` `   |
 | `persist.loggersResources.requests.memory`     | Xray Persist loggers initial memory request                                 |               |
 | `persist.loggersResources.requests.cpu`        | Xray Persist loggers initial cpu request                                    |               |
@@ -466,6 +470,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.persistence.enabled`                   | Xray server persistence volume enabled       | `true`                             |
 | `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`                    |
 | `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`                             |
+| `server.preStartCommand`                       | Xray server Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `server.loggers`                               | Xray server loggers (see values.yaml for possible values)  | ` `    |
 | `server.loggersResources.requests.memory`      | Xray server loggers initial memory request                          |             |
 | `server.loggersResources.requests.cpu`         | Xray server loggers initial cpu request                             |             |

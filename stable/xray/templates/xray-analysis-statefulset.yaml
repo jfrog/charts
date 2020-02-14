@@ -131,6 +131,19 @@ spec:
       - name: {{ .Values.analysis.name }}
         image: {{ .Values.analysis.image }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.analysis.preStartCommand }}
+            echo "Running custom Analysis preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            /opt/jfrog/{{ .Values.analysis.name }}/wrapper.sh;
         env:
         - name: XRAY_K8S_ENV
           value: "true"

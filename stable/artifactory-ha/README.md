@@ -739,7 +739,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                |
 | `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                            |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
-| `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
+| `artifactory.postStartCommand`                   | Command to run after container starts. Supports templating with `tpl`   |                             |
 | `artifactory.license.licenseKey` | Artifactory license key. Providing the license key as a parameter will cause a secret containing the license key to be created as part of the release. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used.  |           |
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |

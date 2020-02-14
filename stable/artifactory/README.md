@@ -716,7 +716,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                                                    |
 | `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                                                                    |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
-| `artifactory.postStartCommand`                   | Command to run after container starts   |                             |
+| `artifactory.postStartCommand`                   | Command to run after container starts. Supports templating with `tpl`   |                             |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`     |
 | `artifactory.readinessProbe.path`                | Readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |

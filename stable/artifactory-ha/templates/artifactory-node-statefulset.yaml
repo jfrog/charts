@@ -159,7 +159,6 @@ spec:
           {{ tpl . $ }};
         {{- end }}
           /entrypoint-artifactory.sh
-      {{- if .Values.artifactory.postStartCommand }}
         lifecycle:
           postStart:
             exec:
@@ -168,8 +167,9 @@ spec:
               - '-c'
               - >
                 echo;
-                {{ .Values.artifactory.postStartCommand }}
-      {{- end }}
+              {{- with .Values.artifactory.postStartCommand }}
+                {{ tpl . $ }}
+              {{- end }}
         env:
       {{- if .Values.postgresql.enabled }}
         - name: DB_TYPE
@@ -220,11 +220,11 @@ spec:
           valueFrom:
             secretKeyRef:
             {{- if .Values.database.password }}
-            name: {{ template "artifactory-ha.fullname" . }}
-            key: db-password
+              name: {{ template "artifactory-ha.fullname" . }}
+              key: db-password
             {{- else }}
-            name: {{ .Values.database.secrets.password.name }}
-            key: {{ .Values.database.secrets.password.key }}
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
             {{- end }}
         {{- end }}
       {{- end }}
