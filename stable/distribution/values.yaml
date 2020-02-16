@@ -19,16 +19,16 @@ rbac:
   role:
     ## Rules to create. It follows the role specification
     rules:
-    - apiGroups:
-      - ''
-      resources:
-      - services
-      - endpoints
-      - pods
-      verbs:
-      - get
-      - watch
-      - list
+      - apiGroups:
+          - ''
+        resources:
+          - services
+          - endpoints
+          - pods
+        verbs:
+          - get
+          - watch
+          - list
 
 networkpolicy:
   # Allows all ingress and egress
@@ -103,12 +103,12 @@ postgresql:
     size: 50Gi
     existingClaim:
   resources: {}
-#    requests:
-#      memory: "1Gi"
-#      cpu: "250m"
-#    limits:
-#      memory: "2Gi"
-#      cpu: "1"
+  #    requests:
+  #      memory: "1Gi"
+  #      cpu: "250m"
+  #    limits:
+  #      memory: "2Gi"
+  #      cpu: "1"
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -173,6 +173,12 @@ common:
   uid: 1020
   gid: 1020
 
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
 logger:
   image:
     repository: 'busybox'
@@ -219,12 +225,6 @@ distribution:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
   #        name: distribution-data
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
 
   ## Add custom volumeMounts
   customVolumeMounts: |
@@ -324,6 +324,12 @@ distributor:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
+
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
 
   ## Custom command to run before Distribution startup.
   preStartCommand:
