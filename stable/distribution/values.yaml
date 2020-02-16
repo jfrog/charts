@@ -173,12 +173,6 @@ common:
   uid: 1020
   gid: 1020
 
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
 logger:
   image:
     repository: 'busybox'
@@ -225,6 +219,12 @@ distribution:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
   #        name: distribution-data
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
 
   ## Add custom volumeMounts
   customVolumeMounts: |
@@ -324,12 +324,6 @@ distributor:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
-
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
 
   ## Custom command to run before Distribution startup.
   preStartCommand:
