@@ -19,16 +19,16 @@ rbac:
   role:
     ## Rules to create. It follows the role specification
     rules:
-      - apiGroups:
-          - ''
-        resources:
-          - services
-          - endpoints
-          - pods
-        verbs:
-          - get
-          - watch
-          - list
+    - apiGroups:
+      - ''
+      resources:
+      - services
+      - endpoints
+      - pods
+      verbs:
+      - get
+      - watch
+      - list
 
 networkpolicy:
   # Allows all ingress and egress
@@ -103,12 +103,12 @@ postgresql:
     size: 50Gi
     existingClaim:
   resources: {}
-  #    requests:
-  #      memory: "1Gi"
-  #      cpu: "250m"
-  #    limits:
-  #      memory: "2Gi"
-  #      cpu: "1"
+#    requests:
+#      memory: "1Gi"
+#      cpu: "250m"
+#    limits:
+#      memory: "2Gi"
+#      cpu: "1"
   nodeSelector: {}
   tolerations: []
   affinity: {}
