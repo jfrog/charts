@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.8] - Feb 18, 2020
+* Update Xray version to 2.11.4
+
 ## [1.3.7] - Feb 13, 2020
 * Fix Xray README `ingerss.additionalRules` description
 
