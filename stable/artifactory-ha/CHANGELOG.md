@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.4.10] - Feb 13, 2020
+* Add support for SSH authentication to Artifactory
+
 ## [1.4.9] - Feb 10, 2020
 * Fix custom DB password indention
 

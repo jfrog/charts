@@ -262,7 +262,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `ingress.tls`                | Xray Ingress TLS configuration (YAML)            | `[]`                               |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.labels`              | Xray Ingress labels                             | `{}`                               |
-| `ingress.additionalRules`              | Xray Ingress labels                             | `{}`                               |
+| `ingress.additionalRules`              | Xray Ingress addtional rules                             | `{}`                               |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.postgresDatabase`     | PostgreSQL database name                    | `xraydb`                           |
 | `postgresql.postgresUser`         | PostgreSQL database user                    | `xray`                             |

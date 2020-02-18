@@ -349,6 +349,9 @@ spec:
         {{- if .Values.artifactory.replicator.enabled }}
         - containerPort: {{ .Values.artifactory.internalPortReplicator }}
         {{- end }}
+        {{- if .Values.artifactory.ssh.enabled }}
+        - containerPort: {{ .Values.artifactory.ssh.internalPort }}
+        {{- end }}
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}
         - name: tmp-plugins

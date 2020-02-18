@@ -217,6 +217,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `ingress.annotations`                           | distribution Ingress annotations                                       | `{}`                                                               |
 | `ingress.hosts`                                 | distribution Ingress hostnames                                         | `[]`                                                               |
 | `ingress.tls`                                   | distribution Ingress TLS configuration (YAML)                          | `[]`                                                               |
+| `ingress.defaultBackend.enabled`                | If true, the default `backend` will be added using serviceName and servicePort | `true`                                                             |
+| `ingress.additionalRules`                       | distribution Ingress additional rules                                          | `{}`                                                               |
 | `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
 | `postgresql.imageTag`                           | PostgreSQL image tag                                                   | `9.6.11`                                                           |
 | `postgresql.postgresDatabase`                   | PostgreSQL database name                                               | `distribution`                                                     |
@@ -247,7 +249,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `logger.image.tag`                              | Tag for logger image                                                   | `1.30`                                                             |
 | `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
 | `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
-| `distribution.customVolumes`                    | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
+| `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
 | `distribution.name`                             | Distribution name                                                      | `distribution`                                                     |
 | `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
 | `distribution.image.repository`                 | Container image                                                        | `docker.jfrog.io/jf-distribution`                                  |
@@ -255,7 +257,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.service.type`                     | Distribution service type                                              | `LoadBalancer`                                                     |
 | `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                         | `[]`                                                               |
 | `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
-| `distribution.customVolumeMounts`               | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
+| `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
 | `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
@@ -286,7 +288,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.persistence.enabled`               | Distributor persistence volume enabled                                 | `true`                                                             |
 | `distributor.persistence.accessMode`            | Distributor persistence volume access mode                             | `ReadWriteOnce`                                                    |
 | `distributor.persistence.size`                  | Distributor persistence volume size                                    | `50Gi`                                                             |
-| `distributor.customVolumeMounts`                | Distributor Custom Volumes                                             | see [values.yaml](values.yaml)                                     |
+| `distributor.customVolumeMounts`                | Distributor Custom Volume Mounts                                       | see [values.yaml](values.yaml)                                     |
 | `distributor.preStartCommand`                   | Distributor Command to run before the startup                          |                                                                    |
 | `distributor.nodeSelector`                      | Distributor node selector                                              | `{}`                                                               |
 | `distributor.affinity`                          | Distributor node affinity                                              | `{}`                                                               |
@@ -339,6 +341,34 @@ Include the secret's name, along with the desired hostnames, in the Distribution
       - secretName: distribution-tls
         hosts:
           - distribution.domain.com
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Distribution ingress. An example for this use case can be routing the /artifactory path to Artifactory.
+In order to do that, simply add the following to a `distribution-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "distribution.fullname" . }}
+              servicePort: {{ .Values.distribution.externalPort }}
+          - path: /artifactory
+            backend:
+              serviceName: <ARTIFACTORY_SERVICE_NAME>
+              servicePort: <ARTIFACTORY_SERVICE_PORT>
 ```
 
 ## Useful links
