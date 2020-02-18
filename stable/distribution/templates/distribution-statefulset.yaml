@@ -221,6 +221,9 @@ spec:
         volumeMounts:
         - name: distributor-data
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
+        {{- with .Values.distributor.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.distributor.resources | indent 10 }}
       - name: {{ template "redis.name" . }}
@@ -305,7 +308,7 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      {{- with .Values.distribution.customVolumes }}
+      {{- with .Values.common.customVolumes }}
 {{ tpl . $ | indent 6 }}
       {{- end }}
   {{- if not .Values.distribution.persistence.enabled }}

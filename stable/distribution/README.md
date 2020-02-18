@@ -178,14 +178,23 @@ distribution:
 There are cases where you'd like custom files mounted onto your container's file system.
 
 For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
+You can mount custom volumes onto both the distribution and the distributor podsm like so:
 ```
-distribution:
+common:
   ## Add custom volumes
   customVolumes: |
   #  - name: custom-script
   #    configMap:
   #      name: custom-script
 
+distribution:
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
+distributor:
   ## Add custom volumeMounts
   customVolumeMounts: |
   #  - name: custom-script
@@ -196,98 +205,99 @@ distribution:
 ## Configuration
 The following table lists the configurable parameters of the distribution chart and their default values.
 
-|         Parameter                               |           Description                                                          |               Default                                              |
-|------------------------------------------------ |------------------------------------------------------------------------------- |--------------------------------------------------------------------|
-| `imagePullSecrets`                              | Docker registry pull secret                                                    |                                                                    |
-| `replicaCount`                                  | HA - Number of instances per service                                           |                                                                    |
-| `serviceAccount.create`                         | Specifies whether a ServiceAccount should be created                           | `true`                                                             |
-| `serviceAccount.name`                           | The name of the ServiceAccount to create                                       | Generated using fullname template                                  |
-| `rbac.create`                                   | Specifies whether RBAC resources should be created                             | `true`                                                             |
-| `rbac.role.rules`                               | Rules to create                                                                | `[]`                                                               |
-| `ingress.enabled`                               | If true, distribution Ingress will be created                                  | `false`                                                            |
-| `ingress.annotations`                           | distribution Ingress annotations                                               | `{}`                                                               |
-| `ingress.hosts`                                 | distribution Ingress hostnames                                                 | `[]`                                                               |
-| `ingress.tls`                                   | distribution Ingress TLS configuration (YAML)                                  | `[]`                                                               |
+|         Parameter                               |           Description                                                  |               Default                                              |
+|------------------------------------------------ |------------------------------------------------------------------------|--------------------------------------------------------------------|
+| `imagePullSecrets`                              | Docker registry pull secret                                            |                                                                    |
+| `replicaCount`                                  | HA - Number of instances per service                                   |                                                                    |
+| `serviceAccount.create`                         | Specifies whether a ServiceAccount should be created                   | `true`                                                             |
+| `serviceAccount.name`                           | The name of the ServiceAccount to create                               | Generated using fullname template                                  |
+| `rbac.create`                                   | Specifies whether RBAC resources should be created                     | `true`                                                             |
+| `rbac.role.rules`                               | Rules to create                                                        | `[]`                                                               |
+| `ingress.enabled`                               | If true, distribution Ingress will be created                          | `false`                                                            |
+| `ingress.annotations`                           | distribution Ingress annotations                                       | `{}`                                                               |
+| `ingress.hosts`                                 | distribution Ingress hostnames                                         | `[]`                                                               |
+| `ingress.tls`                                   | distribution Ingress TLS configuration (YAML)                          | `[]`                                                               |
 | `ingress.defaultBackend.enabled`                | If true, the default `backend` will be added using serviceName and servicePort | `true`                                                             |
 | `ingress.additionalRules`                       | distribution Ingress additional rules                                          | `{}`                                                               |
-| `postgresql.enabled`                            | Enable PostgreSQL                                                              | `true`                                                             |
-| `postgresql.imageTag`                           | PostgreSQL image tag                                                           | `9.6.11`                                                           |
-| `postgresql.postgresDatabase`                   | PostgreSQL database name                                                       | `distribution`                                                     |
-| `postgresql.postgresUser`                       | PostgreSQL database username                                                   | `distribution`                                                     |
-| `postgresql.postgresPassword`                   | PostgreSQL database password                                                   | ` `                                                                |
-| `postgresql.postgresConfig.maxConnections`      | PostgreSQL max_connections                                                     | `1500`                                                             |
-| `postgresql.service.port`                       | PostgreSQL service port                                                        | `5432`                                                             |
-| `postgresql.persistence.enabled`                | PostgreSQL persistence enabled                                                 | `true`                                                             |
-| `postgresql.persistence.size`                   | PostgreSQL persistent disk size                                                | `50Gi`                                                             |
-| `postgresql.persistence.existingClaim`          | PostgreSQL persistence use existing PVC                                        | ` `                                                                |
-| `postgresql.resources.requests.memory`          | PostgreSQL initial memory request                                              | ` `                                                                |
-| `postgresql.resources.requests.cpu`             | PostgreSQL initial cpu request                                                 | ` `                                                                |
-| `postgresql.resources.limits.memory`            | PostgreSQL memory limit                                                        | ` `                                                                |
-| `postgresql.resources.limits.cpu`               | PostgreSQL cpu limit                                                           | ` `                                                                |
-| `postgresql.nodeSelector`                       | PostgreSQL node selector                                                       | `{}`                                                               |
-| `postgresql.affinity`                           | PostgreSQL node affinity                                                       | `{}`                                                               |
-| `postgresql.tolerations`                        | PostgreSQL node tolerations                                                    | `[]`                                                               |
-| `redis.password`                                | Redis password                                                                 | ` `                                                                |
-| `redis.port`                                    | Redis Port                                                                     | `6379`                                                             |
-| `redis.persistence.enabled`                     | Redis use a PVC to persist data                                                | `true`                                                             |
-| `redis.persistence.existingClaim`               | Redis use an existing PVC to persist data                                      | `nil`                                                              |
-| `redis.persistence.storageClass`                | Redis storage class of backing PVC                                             | `generic`                                                          |
-| `redis.persistence.size`                        | Redis size of data volume                                                      | `10Gi`                                                             |
-| `redis.nodeSelector`                            | Redis node selector                                                            | `{}`                                                               |
-| `redis.affinity`                                | Redis node affinity                                                            | `{}`                                                               |
-| `redis.tolerations`                             | Redis node tolerations                                                         | `[]`                                                               |
-| `logger.image.repository`                       | Repository for logger image                                                    | `busybox`                                                          |
-| `logger.image.tag`                              | Tag for logger image                                                           | `1.30`                                                             |
-| `common.uid`                                    | Distribution and Distributor process user ID                                   | `1020`                                                             |
-| `common.gid`                                    | Distribution and Distributor process group ID                                  | `1020`                                                             |
-| `distribution.name`                             | Distribution name                                                              | `distribution`                                                     |
-| `distribution.image.pullPolicy`                 | Container pull policy                                                          | `IfNotPresent`                                                     |
-| `distribution.image.repository`                 | Container image                                                                | `docker.jfrog.io/jf-distribution`                                  |
-| `distribution.image.version`                    | Container image tag                                                            | `.Chart.AppVersion`                                                |
-| `distribution.service.type`                     | Distribution service type                                                      | `LoadBalancer`                                                     |
-| `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                                 | `[]`                                                               |
-| `distribution.customInitContainers`             | Custom init containers for Distribution                                        |                                                                    |
-| `distribution.customVolumeMounts`               | Custom Volumes for Distribution                                                | see [values.yaml](values.yaml)                                     |
-| `distribution.customVolumes`                    | Custom Volume Mounts for Distribution                                          | see [values.yaml](values.yaml)                                     |
-| `distribution.externalPort`                     | Distribution service external port                                             | `80`                                                               |
-| `distribution.internalPort`                     | Distribution service internal port                                             | `8080`                                                             |
-| `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`)         | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
-| `distribution.serviceId`                        | Distribution service ID                                                        | ` `                                                                |
-| `distribution.env.artifactoryUrl`               | Distribution Environment Artifactory URL                                       | ` `                                                                |
-| `distribution.persistence.mountPath`            | Distribution persistence volume mount path                                     | `"/jf-distribution"`                                               |
-| `distribution.persistence.enabled`              | Distribution persistence volume enabled                                        | `true`                                                             |
-| `distribution.persistence.storageClass`         | Storage class of backing PVC                                                   | `nil`                                                              |
-| `distribution.persistence.existingClaim`        | Provide an existing PersistentVolumeClaim                                      | `nil`                                                              |
-| `distribution.persistence.accessMode`           | Distribution persistence volume access mode                                    | `ReadWriteOnce`                                                    |
-| `distribution.persistence.size`                 | Distribution persistence volume size                                           | `50Gi`                                                             |
-| `distribution.preStartCommand`                  | Distribution Command to run before the startup                                 |                                                                    |
-| `distribution.nodeSelector`                     | Distribution node selector                                                     | `{}`                                                               |
-| `distribution.affinity`                         | Distribution node affinity                                                     | `{}`                                                               |
-| `distribution.tolerations`                      | Distribution node tolerations                                                  | `[]`                                                               |
-| `distribution.loggers`                          | Distribution loggers (see values.yaml for possible values)                     | ` `                                                                |
-| `distribution.loggersResources.requests.memory` | Distribution loggers initial memory request                                    |                                                                    |
-| `distribution.loggersResources.requests.cpu`    | Distribution loggers initial cpu request                                       |                                                                    |
-| `distribution.loggersResources.limits.memory`   | Distribution loggers memory limit                                              |                                                                    |
-| `distribution.loggersResources.limits.cpu`      | Distribution loggers cpu limit                                                 |                                                                    |
-| `distributor.name`                              | Distribution name                                                              | `distribution`                                                     |
-| `distributor.image.pullPolicy`                  | Container pull policy                                                          | `IfNotPresent`                                                     |
-| `distributor.image.repository`                  | Container image                                                                | `docker.jfrog.io/jf-distribution`                                  |
-| `distributor.image.version`                     | Container image tag                                                            | `.Chart.AppVersion`                                                |
-| `distributor.persistence.mountPath`             | Distributor persistence volume mount path                                      | `"/bt-distributor"`                                                |
-| `distributor.persistence.existingClaim`         | Provide an existing PersistentVolumeClaim                                      | `nil`                                                              |
-| `distributor.persistence.storageClass`          | Storage class of backing PVC                                                   | `nil (uses alpha storage class annotation)`                        |
-| `distributor.persistence.enabled`               | Distributor persistence volume enabled                                         | `true`                                                             |
-| `distributor.persistence.accessMode`            | Distributor persistence volume access mode                                     | `ReadWriteOnce`                                                    |
-| `distributor.persistence.size`                  | Distributor persistence volume size                                            | `50Gi`                                                             |
-| `distributor.preStartCommand`                   | Distributor Command to run before the startup                                  |                                                                    |
-| `distributor.nodeSelector`                      | Distributor node selector                                                      | `{}`                                                               |
-| `distributor.affinity`                          | Distributor node affinity                                                      | `{}`                                                               |
-| `distributor.tolerations`                       | Distributor node tolerations                                                   | `[]`                                                               |
-| `distributor.loggers`                           | Distributor loggers (see values.yaml for possible values)                      | ` `                                                                |
-| `distributor.loggersResources.requests.memory`  | Distributor loggers initial memory request                                     |                                                                    |
-| `distributor.loggersResources.requests.cpu`     | Distributor loggers initial cpu request                                        |                                                                    |
-| `distributor.loggersResources.limits.memory`    | Distributor loggers memory limit                                               |                                                                    |
-| `distributor.loggersResources.limits.cpu`       | Distributor loggers cpu limit                                                  |                                                                    |
+| `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
+| `postgresql.imageTag`                           | PostgreSQL image tag                                                   | `9.6.11`                                                           |
+| `postgresql.postgresDatabase`                   | PostgreSQL database name                                               | `distribution`                                                     |
+| `postgresql.postgresUser`                       | PostgreSQL database username                                           | `distribution`                                                     |
+| `postgresql.postgresPassword`                   | PostgreSQL database password                                           | ` `                                                                |
+| `postgresql.postgresConfig.maxConnections`      | PostgreSQL max_connections                                             | `1500`                                                             |
+| `postgresql.service.port`                       | PostgreSQL service port                                                | `5432`                                                             |
+| `postgresql.persistence.enabled`                | PostgreSQL persistence enabled                                         | `true`                                                             |
+| `postgresql.persistence.size`                   | PostgreSQL persistent disk size                                        | `50Gi`                                                             |
+| `postgresql.persistence.existingClaim`          | PostgreSQL persistence use existing PVC                                | ` `                                                                |
+| `postgresql.resources.requests.memory`          | PostgreSQL initial memory request                                      | ` `                                                                |
+| `postgresql.resources.requests.cpu`             | PostgreSQL initial cpu request                                         | ` `                                                                |
+| `postgresql.resources.limits.memory`            | PostgreSQL memory limit                                                | ` `                                                                |
+| `postgresql.resources.limits.cpu`               | PostgreSQL cpu limit                                                   | ` `                                                                |
+| `postgresql.nodeSelector`                       | PostgreSQL node selector                                               | `{}`                                                               |
+| `postgresql.affinity`                           | PostgreSQL node affinity                                               | `{}`                                                               |
+| `postgresql.tolerations`                        | PostgreSQL node tolerations                                            | `[]`                                                               |
+| `redis.password`                                | Redis password                                                         | ` `                                                                |
+| `redis.port`                                    | Redis Port                                                             | `6379`                                                             |
+| `redis.persistence.enabled`                     | Redis use a PVC to persist data                                        | `true`                                                             |
+| `redis.persistence.existingClaim`               | Redis use an existing PVC to persist data                              | `nil`                                                              |
+| `redis.persistence.storageClass`                | Redis storage class of backing PVC                                     | `generic`                                                          |
+| `redis.persistence.size`                        | Redis size of data volume                                              | `10Gi`                                                             |
+| `redis.nodeSelector`                            | Redis node selector                                                    | `{}`                                                               |
+| `redis.affinity`                                | Redis node affinity                                                    | `{}`                                                               |
+| `redis.tolerations`                             | Redis node tolerations                                                 | `[]`                                                               |
+| `logger.image.repository`                       | Repository for logger image                                            | `busybox`                                                          |
+| `logger.image.tag`                              | Tag for logger image                                                   | `1.30`                                                             |
+| `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
+| `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
+| `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
+| `distribution.name`                             | Distribution name                                                      | `distribution`                                                     |
+| `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
+| `distribution.image.repository`                 | Container image                                                        | `docker.jfrog.io/jf-distribution`                                  |
+| `distribution.image.version`                    | Container image tag                                                    | `.Chart.AppVersion`                                                |
+| `distribution.service.type`                     | Distribution service type                                              | `LoadBalancer`                                                     |
+| `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                         | `[]`                                                               |
+| `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
+| `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
+| `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
+| `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
+| `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
+| `distribution.serviceId`                        | Distribution service ID                                                | ` `                                                                |
+| `distribution.env.artifactoryUrl`               | Distribution Environment Artifactory URL                               | ` `                                                                |
+| `distribution.persistence.mountPath`            | Distribution persistence volume mount path                             | `"/jf-distribution"`                                               |
+| `distribution.persistence.enabled`              | Distribution persistence volume enabled                                | `true`                                                             |
+| `distribution.persistence.storageClass`         | Storage class of backing PVC                                           | `nil`                                                              |
+| `distribution.persistence.existingClaim`        | Provide an existing PersistentVolumeClaim                              | `nil`                                                              |
+| `distribution.persistence.accessMode`           | Distribution persistence volume access mode                            | `ReadWriteOnce`                                                    |
+| `distribution.persistence.size`                 | Distribution persistence volume size                                   | `50Gi`                                                             |
+| `distribution.preStartCommand`                  | Distribution Command to run before the startup                         |                                                                    |
+| `distribution.nodeSelector`                     | Distribution node selector                                             | `{}`                                                               |
+| `distribution.affinity`                         | Distribution node affinity                                             | `{}`                                                               |
+| `distribution.tolerations`                      | Distribution node tolerations                                          | `[]`                                                               |
+| `distribution.loggers`                          | Distribution loggers (see values.yaml for possible values)             | ` `                                                                |
+| `distribution.loggersResources.requests.memory` | Distribution loggers initial memory request                            |                                                                    |
+| `distribution.loggersResources.requests.cpu`    | Distribution loggers initial cpu request                               |                                                                    |
+| `distribution.loggersResources.limits.memory`   | Distribution loggers memory limit                                      |                                                                    |
+| `distribution.loggersResources.limits.cpu`      | Distribution loggers cpu limit                                         |                                                                    |
+| `distributor.name`                              | Distribution name                                                      | `distribution`                                                     |
+| `distributor.image.pullPolicy`                  | Container pull policy                                                  | `IfNotPresent`                                                     |
+| `distributor.image.repository`                  | Container image                                                        | `docker.jfrog.io/jf-distribution`                                  |
+| `distributor.image.version`                     | Container image tag                                                    | `.Chart.AppVersion`                                                |
+| `distributor.persistence.mountPath`             | Distributor persistence volume mount path                              | `"/bt-distributor"`                                                |
+| `distributor.persistence.existingClaim`         | Provide an existing PersistentVolumeClaim                              | `nil`                                                              |
+| `distributor.persistence.storageClass`          | Storage class of backing PVC                                           | `nil (uses alpha storage class annotation)`                        |
+| `distributor.persistence.enabled`               | Distributor persistence volume enabled                                 | `true`                                                             |
+| `distributor.persistence.accessMode`            | Distributor persistence volume access mode                             | `ReadWriteOnce`                                                    |
+| `distributor.persistence.size`                  | Distributor persistence volume size                                    | `50Gi`                                                             |
+| `distributor.customVolumeMounts`                | Distributor Custom Volume Mounts                                       | see [values.yaml](values.yaml)                                     |
+| `distributor.preStartCommand`                   | Distributor Command to run before the startup                          |                                                                    |
+| `distributor.nodeSelector`                      | Distributor node selector                                              | `{}`                                                               |
+| `distributor.affinity`                          | Distributor node affinity                                              | `{}`                                                               |
+| `distributor.tolerations`                       | Distributor node tolerations                                           | `[]`                                                               |
+| `distributor.loggers`                           | Distributor loggers (see values.yaml for possible values)              | ` `                                                                |
+| `distributor.loggersResources.requests.memory`  | Distributor loggers initial memory request                             |                                                                    |
+| `distributor.loggersResources.requests.cpu`     | Distributor loggers initial cpu request                                |                                                                    |
+| `distributor.loggersResources.limits.memory`    | Distributor loggers memory limit                                       |                                                                    |
+| `distributor.loggersResources.limits.cpu`       | Distributor loggers cpu limit                                          |                                                                    |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.6.0] - Feb 16, 2020
+* Add support for distributor `customVolumeMounts` and move `customVolumes` to `common`
+
 ## [3.5.4] - Feb 13, 2020
 * Add support for `ingress.additionalRules` and `ingress.defaultBackend`
 
