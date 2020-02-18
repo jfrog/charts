@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.3.7] - Feb 13, 2020
+* Fix Xray README `ingerss.additionalRules` description
+
 ## [1.3.6] - Feb 11, 2020
 * Add support for `preStartCommand`
 
