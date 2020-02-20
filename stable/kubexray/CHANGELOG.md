@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.4.1]  - feb 20, 2020
+* Add Deprecation Notice
+
 ## [0.4.0]  - Sep 27, 2019
 * Updated Kubexray version to 0.1.5
 
