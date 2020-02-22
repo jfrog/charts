@@ -1066,18 +1066,6 @@ nginx:
       if ($http_x_forwarded_proto = '') {
         set $http_x_forwarded_proto  $scheme;
       }
-      {{- if .Values.nginx.service.ssloffload }}
-      if ($host = $server_addr) {
-        rewrite ^/artifactory/webapp/(.*) http://$host:8081/artifactory/webapp/$1 redirect;
-      }
-      if ($http_x_forwarded_proto != "https") {
-        rewrite ^/artifactory/webapp/(.*) https://$host/artifactory/webapp/$1 redirect;
-        rewrite ^/$ $scheme://$host/artifactory/webapp/#/home redirect;
-      }
-      if ($http_x_forwarded_proto = "https") {
-        rewrite ^/$ https://$host/artifactory/webapp/#/home redirect;
-      }
-      {{- end }}
       ## Application specific logs
       ## access_log /var/log/nginx/artifactory-access.log timing;
       ## error_log /var/log/nginx/artifactory-error.log;
