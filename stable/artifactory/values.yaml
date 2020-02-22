@@ -655,6 +655,11 @@ artifactory:
     enabled: false
     publicUrl:
 
+  ssh:
+    enabled: false
+    internalPort: 1339
+    externalPort: 1339
+
 # Nginx
 nginx:
   enabled: true
@@ -691,6 +696,17 @@ nginx:
     error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log warn;
     pid        /tmp/nginx.pid;
 
+    {{- if .Values.artifactory.ssh.enabled }}
+    # Load the stream module to support TCP streaming
+    load_module /usr/lib/nginx/modules/ngx_stream_module.so;
+    ## SSH Server Configuration
+    stream {
+      server {
+        listen {{ .Values.nginx.ssh.internalPort }};
+        proxy_pass {{ include "artifactory.fullname" . }}:{{ .Values.artifactory.ssh.externalPort }};
+      }
+    }
+    {{- end }}
 
     events {
       worker_connections  1024;
@@ -762,20 +778,20 @@ nginx:
     ssl_prefer_server_ciphers   on;
     ## server configuration
     server {
-      {{- if .Values.nginx.internalPortHttps }}
+    {{- if .Values.nginx.internalPortHttps }}
       listen {{ .Values.nginx.internalPortHttps }} ssl;
-      {{- else -}}
+    {{- else -}}
       {{- if .Values.nginx.https.enabled }}
       listen {{ .Values.nginx.https.internalPort }} ssl;
       {{- end }}
-      {{- end }}
-      {{- if .Values.nginx.internalPortHttp }}
+    {{- end }}
+    {{- if .Values.nginx.internalPortHttp }}
       listen {{ .Values.nginx.internalPortHttp }};
-      {{- else -}}
+    {{- else -}}
       {{- if .Values.nginx.http.enabled }}
       listen {{ .Values.nginx.http.internalPort }};
       {{- end }}
-      {{- end }}
+    {{- end }}
       server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }}
       {{- range .Values.ingress.hosts -}}
         {{- if contains "." . -}}
@@ -841,6 +857,10 @@ nginx:
     # Replicator is enabled by Values.artifactory.replicator.enabled
     internalPort: 6061
     externalPort: 6061
+
+  ssh:
+    internalPort: 1339
+    externalPort: 1339
 
   # DEPRECATED: The following will be removed in a future release
   # externalPortHttp: 80

@@ -4,6 +4,9 @@ All changes to this chart will be documented in this file.
 ## [1.5.0] - Feb 14, 2020
 * Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
 
+## [1.4.10] - Feb 13, 2020
+* Add support for SSH authentication to Artifactory
+
 ## [1.4.9] - Feb 10, 2020
 * Fix custom DB password indention
 

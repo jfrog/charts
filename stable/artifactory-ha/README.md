@@ -834,6 +834,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
 | `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
+| `artifactory.ssh.enabled`                       | Enable Artifactory SSH access     |                                      |
+| `artifactory.ssh.internalPort`                  | Artifactory SSH internal port     | `1339`                                      |
+| `artifactory.ssh.externalPort`                  | Artifactory SSH external port     | `1339`                                     |
 | `artifactory.primary.preStartCommand`           | Artifactory primary node preStartCommand to be run after `artifactory.preStartCommand`         |                     |
 | `artifactory.primary.labels`                    | Artifactory primary node labels                  | `{}`                |
 | `artifactory.primary.resources.requests.memory` | Artifactory primary node initial memory request  |                     |
@@ -914,6 +917,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.https.internalPort` | Nginx service internal port           | `443`                           |
 | `nginx.replicator.internalPort` | Replicator service internal port | `6061`                          |
 | `nginx.replicator.externalPort` | Replicator service external port | `6061`                          |
+| `nginx.ssh.internalPort`        | Nginx SSH internal port          | `22`                            |
+| `nginx.ssh.externalPort`        | Nginx SSH external port          | `22`                            |
 | `nginx.externalPortHttp` | DEPRECATED: Nginx service external port            | `80`                            |
 | `nginx.internalPortHttp` | DEPRECATED: Nginx service internal port            | `80`                            |
 | `nginx.externalPortHttps` | DEPRECATED: Nginx service external port           | `443`                           |
