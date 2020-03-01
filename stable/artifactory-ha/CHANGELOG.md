@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.5.0] - Mar 1, 2020
+* Updated Artifactory version to 6.18.0
+
 ## [1.4.10] - Feb 13, 2020
 * Add support for SSH authentication to Artifactory
 
