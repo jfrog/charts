@@ -6,6 +6,7 @@
 * Artifactory Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details
+
 This chart will do the following:
 
 * Deploy Artifactory-Pro/Artifactory-Edge (or OSS/CE if custom image is set)
@@ -16,6 +17,7 @@ This chart will do the following:
 ## Installing the Chart
 
 ### Add JFrog Helm repository
+
 Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
 
 ```bash
@@ -23,6 +25,7 @@ helm repo add jfrog https://charts.jfrog.io
 ```
 
 ### Install Chart
+
 To install the chart with the release name `artifactory`:
 
 ```bash
@@ -30,6 +33,7 @@ helm install --name artifactory jfrog/artifactory
 ```
 
 ### Deploying Artifactory with embedded Derby database
+
 By default, this chart deploys Artifactory with PostgreSQL (running in a separate pod).
 It's possible to deploy Artifactory without PostgreSQL (or any other external database), which will default to the embedded [Derby database](https://db.apache.org/derby/).
 
@@ -41,6 +45,7 @@ helm install --name artifactory --set postgresql.enabled=false jfrog/artifactory
 Artifactory will start with it's embedded Derby database.
 
 ### Deploying Artifactory with replicator
+
 The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replicator) is used with an [Enterprise Plus](https://www.jfrog.com/confluence/display/EP/Welcome+to+JFrog+Enterprise+Plus) license.
 
 ```bash
@@ -49,13 +54,16 @@ helm install --name artifactory --set artifactory.replicator.enabled=true --set 
 ```
 
 ### Deploying Artifactory for small/medium/large instllations
+
 In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
 
 ### Accessing Artifactory
+
 **NOTE:** It might take a few minutes for Artifactory's public IP to become available.
 Follow the instructions outputted by the install command to get the Artifactory IP to access it.
 
 ### Updating Artifactory
+
 Once you have a new chart version, you can update your deployment with
 
 ```bash
@@ -78,6 +86,7 @@ helm upgrade <myrelease> jfrog/artifactory --set postgresql.postgresqlPassword=$
 This will apply any configuration changes on your existing deployment.
 
 ### Artifactory memory and CPU resources
+
 The Artifactory Helm chart comes with support for configured resource requests and limits to Artifactory, Nginx and PostgreSQL. By default, these settings are commented out.
 It is **highly** recommended to set these so you have full control of the allocated resources and limits.
 Artifactory java memory parameters can (and should) also be set to match the allocated resources with `artifactory.javaOpts.xms` and `artifactory.javaOpts.xmx`.
@@ -101,12 +110,14 @@ helm install --name artifactory \
 Get more details on configuring Artifactory in the [official documentation](https://www.jfrog.com/confluence/).
 
 ### Artifactory storage
+
 When using an enterprise license. Artifactory supports a wide range of storage back ends. You can see more details on [Artifactory Filestore options](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore)
 
 In this chart, you set the type of storage you want with `artifactory.persistence.type` and pass the required configuration settings.
 The default storage in this chart is the `file-system` replication, where the data is replicated to all nodes.
 
 #### NFS
+
 To use an NFS server as your cluster's storage, you need to
 - Setup an NFS server. Get its IP as `NFS_IP`
 - Create a `data` and `backup` directories on the NFS exported directory with write permissions to all
@@ -120,6 +131,7 @@ To use an NFS server as your cluster's storage, you need to
 ```
 
 #### Using a network file system with the file-system persistence type
+
 In some cases, it is not possible for the helm chart to set up your NFS mounts automatically for Artiactory.
 In such cases, such as using AWS EFS, you will use the `artifactory.persistnece.type=file-system` even though your underlying persistence is actually a network file system.
 The same thing applies when using a slow storage device (such as cheap disks) as your main storage solution for Artifactory.
@@ -157,6 +169,7 @@ helm upgrade --install artifactory jfrog/artifactory -f values.yaml
 ``` 
 
 #### Google Storage
+
 To use a Google Storage bucket as the cluster's filestore. See [Google Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-GoogleStorageBinaryProvider)
 - Pass Google Storage parameters to `helm install` and `helm upgrade`
 
@@ -169,6 +182,7 @@ To use a Google Storage bucket as the cluster's filestore. See [Google Storage B
 ```
 
 #### AWS S3
+
 **NOTE** Keep in mind that when using the `aws-s3` persistence type, you will not be able to provide an IAM on the pod level. 
 In order to grant permissions to Artifactory using an IAM role, you will have to attach the said IAM role to the machine(s) on which Artifactory is running.
 This is due to the fact that the `aws-s3` template uses the `JetS3t` library to interact with AWS. If you want to grant an IAM role at the pod level, see the `AWS S3 Vs` section.
@@ -198,6 +212,7 @@ To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](htt
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
 
 #### AWS S3 V3
+
 To use an AWS S3 bucket as the cluster's filestore and access it with the official AWS SDK, See [S3 Official SDK Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate). 
 This filestore template uses the official AWS SDK, unlike th`aws-s3` implementation that uses the `JetS3t` library.
 Use this template if you want to attach an IAM role to the Artifactory pod directly (as opposed to attaching it to the machine/s that Artifactory will run on).
@@ -226,6 +241,7 @@ Use this template if you want to attach an IAM role to the Artifactory pod direc
 ```
 
 #### Microsoft Azure Blob Storage
+
 To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider)
 - Pass Azure Blob Storage parameters to `helm install` and `helm upgrade`
 
@@ -250,6 +266,7 @@ To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Bi
 ```
 
 #### Custom binarystore.xml
+
 You have an option to provide a custom [binarystore.xml](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore).<br>
 There are two options for this
 
@@ -295,6 +312,7 @@ helm install --name artifactory --namespace artifactory --set artifactory.persis
 
 
 ### Customizing Database password
+
 You can override the specified database password (set in [values.yaml](values.yaml)), by passing it as a parameter in the install command line
 
 ```bash
@@ -313,7 +331,9 @@ This will completely delete your Artifactory Pro deployment.
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
 
 ### Kubernetes Secret for Artifactory License
+
 ##### Use an existing secret
+
 You can deploy the Artifactory license as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 Prepare a text file with the license written in it and create a Kubernetes secret from it.
 
@@ -329,8 +349,9 @@ helm install --name artifactory --set artifactory.license.secret=artifactory-lic
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
 If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
- 
+
 ##### Create the secret as part of the helm release
+
 values.yaml
 
 ```yaml
@@ -350,6 +371,7 @@ If you want to keep managing the artifactory license using the same method, you 
 
 
 ### copyOnEveryStartup feature
+
 Files stored in the `/artifactory-extra-conf` directory are only copied to the `ARTIFACTORY_HOME/etc` directory upon the first startup.
 In some cases, you want your configuration files to be copied to the `ARTIFACTORY_HOME/etc` directory on every startup.
 Two examples for that would be:
@@ -431,6 +453,7 @@ networkpolicy:
 ```
 
 ### Artifactory JMX Configuration
+
 ** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
 
 Enable JMX in your deployment:
@@ -469,6 +492,7 @@ jconsole artifactory-<release-name>:<jmx-port>
 ```
 
 ### Access creds. bootstraping
+
 **IMPORTANT:** Bootsrapping access creds. will automatically trigger a restart to the Artifactory pod and will allow access for the user `access-admin` from certain IP's.
 
 * User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
@@ -491,6 +515,7 @@ helm upgrade --install artifactory jfrog/artifactory -f access-creds-values.yaml
 3. Restart Artifactory Pod (`Kubectl delete pod <pod_name>`)
 
 ### Bootstrapping Artifactory
+
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
 * User guide to [bootstrap Artifactory Global Configuration](https://www.jfrog.com/confluence/display/RTF/Configuration+Files#ConfigurationFiles-BootstrappingtheGlobalConfiguration)
@@ -548,6 +573,7 @@ helm install --name artifactory --set nginx.customConfigMap=nginx-config jfrog/a
 **For production grade installations it is recommended to use an external PostgreSQL with a static password**
 
 #### PostgreSQL
+
 There are cases where you will want to use an external PostgreSQL with a different database name e.g. `my-artifactory-db`, then you need set a custom PostgreSQL connection URL, where `my-artifactory-db` is the name of the database.
 
 This can be done with the following parameters
@@ -565,6 +591,7 @@ This can be done with the following parameters
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
 #### Other DB type
+
 There are cases where you will want to use a different database and not the enclosed **PostgreSQL**.
 See more details on [configuring the database](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Database)
 > The official Artifactory Docker images include the PostgreSQL database driver.
@@ -588,6 +615,7 @@ This can be done with the following parameters
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
 #### Using pre-existing Kubernetes Secret
+
 If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:
 
 ```bash
@@ -605,6 +633,7 @@ kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-li
 ```
 
 ### Deleting Artifactory
+
 To delete the Artifactory.
 
 ```bash
@@ -614,6 +643,7 @@ helm delete --purge artifactory
 This will completely delete your Artifactory HA cluster.
 
 ### Custom Docker registry for your images
+
 If you need to pull your Docker images from a private registry, you need to create a
 [Kubernetes Docker registry secret](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) and pass it to helm
 
@@ -629,6 +659,7 @@ helm install --name artifactory --set imagePullSecrets=regsecret jfrog/artifacto
 ```
 
 ### Logger sidecars
+
 This chart provides the option to add sidecars to tail various logs from Artifactory. See the available values in [values.yaml](values.yaml)
 
 Get list of containers in the pod
@@ -644,6 +675,7 @@ kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ```
 
 ### Custom init containers
+
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
 For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
@@ -656,6 +688,7 @@ artifactory:
 ```
 
 ### Custom sidecar containers
+
 There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
 
 For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
@@ -668,6 +701,7 @@ artifactory:
 ```
 
 ### Custom volumes
+
 If you need to use a custom volume in a custom init or sidecar container, you can use this option.
 
 For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
@@ -689,6 +723,7 @@ You can configure the sidecar to run as a custom user if needed by setting the f
 ```
 
 ### Add Artifactory User Plugin during installation
+
 If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
 
 Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
@@ -728,6 +763,7 @@ artifactory: # Name of the artifactory dependency
 NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
 
 ## Configuration
+
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
 |         Parameter         |           Description             |                         Default                          |
@@ -983,6 +1019,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 ### Ingress and TLS
+
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
 
 ```bash
@@ -1094,6 +1131,7 @@ helm upgrade --install xray jfrog/artifactory -f artifactory-values.yaml
 ```
 
 ### Ingress behind another load balancer
+
 If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
 
 To enable it with `helm install`
@@ -1123,5 +1161,6 @@ helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress
 ```
 
 ## Useful links
+
 https://www.jfrog.com
 https://www.jfrog.com/confluence/
