@@ -588,7 +588,7 @@ This can be done with the following parameters
 ...
 ```
 
-**NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
+**NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the ```database.*``` parameters. Without it, they will be ignored!
 
 #### Other DB type
 
@@ -612,7 +612,7 @@ This can be done with the following parameters
 ...
 ```
 
-**NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
+**NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the ```database.*``` parameters. Without it, they will be ignored!
 
 #### Using pre-existing Kubernetes Secret
 
@@ -1132,7 +1132,7 @@ helm upgrade --install xray jfrog/artifactory -f artifactory-values.yaml
 
 ### Ingress behind another load balancer
 
-If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
+If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting ```X-Forwarded-*``` headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
 
 To enable it with `helm install`
 
