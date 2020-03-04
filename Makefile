@@ -2,8 +2,8 @@
 MAC_ARGS ?=
 CHARTS_REPO ?= https://github.com/jfrog/charts
 CHART_TESTING_IMAGE ?= quay.io/helmpack/chart-testing
-CHART_TESTING_TAG ?= v2.3.3
-TEST_IMAGE_TAG ?= v3.3.2
+CHART_TESTING_TAG ?= v2.4.0
+TEST_IMAGE_TAG ?= v3.4.0
 K8S_VERSION ?= v1.15.3
 KIND_VERSION ?= v0.6.0
 
