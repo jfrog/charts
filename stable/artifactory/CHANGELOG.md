@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.5.2] - Mar 4, 2020
+* Testing fork CI
+
 ## [8.5.1] - Mar 2, 2020
 * Fix broken readme on Helm Hub (and Kubeapps Hub)
 
