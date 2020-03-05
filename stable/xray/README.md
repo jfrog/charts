@@ -1,5 +1,8 @@
 # JFrog Xray HA on Kubernetes Helm Chart
 
+## Before you begin
+The Helm Charts in this repository apply to Xray version 2.x. For latest version which is Xray 3.x please refer to https://hub.helm.sh/charts/jfrog/xray
+
 ## Prerequisites Details
 
 * Kubernetes 1.8+
