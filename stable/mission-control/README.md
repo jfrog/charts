@@ -1,5 +1,8 @@
 # JFrog Mission-Control Helm Chart
 
+## Before you begin
+The Helm Charts in this repository apply to Artifactory version 3.x. For latest version which is mission control 4.x please refer to https://hub.helm.sh/charts/jfrog/mission-control
+
 ## Prerequisites Details
 
 * Kubernetes 1.8+
