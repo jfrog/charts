@@ -1,5 +1,8 @@
 # JFrog Artifactory Helm Chart
 
+## These charts are old
+The  charts in this  repo are old and pre-unified  platform versions. The latest ones are at https://hub.helm.sh/charts/jfrog/
+
 ## Prerequisites Details
 
 * Kubernetes 1.8+
