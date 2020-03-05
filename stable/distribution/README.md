@@ -1,5 +1,8 @@
 # JFrog Distribution Helm Chart
 
+## Before you begin
+The Helm Charts in this repository apply to Artifactory version 1.x. For latest version which is distribution 2.x please refer to https://hub.helm.sh/charts/jfrog/distribution
+
 ## Prerequisites Details
 
 * Kubernetes 1.8+
