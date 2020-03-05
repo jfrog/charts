@@ -1,7 +1,7 @@
 # JFrog Artifactory Helm Chart
 
-## These charts are old
-The  charts in this  repo are old and pre-unified  platform versions. The latest ones are at https://hub.helm.sh/charts/jfrog/
+## Before you begin
+The Helm Charts in this repository apply to Artifactory version 6.x. For latest version which  is  artifactory 7.x please refer to https://hub.helm.sh/charts/jfrog/
 
 ## Prerequisites Details
 
