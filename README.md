@@ -2,7 +2,7 @@
 
 This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** for deploying **JFrog** products to [Kubernetes](https://kubernetes.io/)
 
-Please note that these support the following product versions and not latest. For latest refer https://hub.helm.sh/charts/jfrog
+Please note that these charts support the following product versions and NOT latest. For latest refer https://hub.helm.sh/charts/jfrog
 
 - Artifactory Version 6.x
 - Xray Version Version 2.x
