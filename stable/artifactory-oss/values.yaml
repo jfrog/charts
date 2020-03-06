@@ -72,3 +72,26 @@ artifactory:
 ## Enable the PostgreSQL sub chart
 postgresql:
   enabled: true
+  
+database:
+  type:
+  host:
+  port:
+  ## If you set the url, leave host and port empty
+  url:
+  ## If you would like this chart to create the secret containing the db
+  ## password, use these values, please change the sample values
+  user:
+  password:
+  ## If you have existing Kubernetes secrets containing db credentials, use
+  ## these values
+  secrets: {}
+  #  user:
+  #    name: "rds-artifactory"
+  #    key: "db-user"
+  #  password:
+  #    name: "rds-artifactory"
+  #    key: "db-password"
+  #  url:
+  #    name: "rds-artifactory"
+  #    key: "db-url"
