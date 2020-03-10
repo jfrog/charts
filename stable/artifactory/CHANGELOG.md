@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.5.2] - Mar 10, 2020
+* Fix service account annotations
+
 ## [8.5.1] - Mar 2, 2020
 * Fix broken readme on Helm Hub (and Kubeapps Hub)
 
@@ -11,13 +14,13 @@ All changes to this chart will be documented in this file.
 * Add support for SSH authentication to Artifactory
 
 ## [8.4.7] - Feb 11, 2020
-* Change Artifactory service port name to be hard-coded to `http` instead of using `{{ .Release.Name }}` 
+* Change Artifactory service port name to be hard-coded to `http` instead of using `{{ .Release.Name }}`
 
 ## [8.4.6] - Feb 9, 2020
 * Add support for `tpl` in the `postStartCommand`
 
 ## [8.4.5] - Feb 4, 2020
-* Support customisable Nginx kind 
+* Support customisable Nginx kind
 
 ## [8.4.4] - Feb 2, 2020
 * Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
@@ -62,7 +65,7 @@ All changes to this chart will be documented in this file.
 * Add support for PriorityClass
 
 ## [8.2.4] - Nov 21, 2019
-* Add an option to use a file system cache-fs with the file-system binarystore template 
+* Add an option to use a file system cache-fs with the file-system binarystore template
 
 ## [8.2.3] - Nov 20, 2019
 * Update Artifactory Readme
@@ -172,22 +175,22 @@ All changes to this chart will be documented in this file.
 * Improve binarystore config
     1. Convert to a secret
     2. Move config to values.yaml
-    3. Support an external secret 
+    3. Support an external secret
 
 ## [7.16.7] - Jul 29, 2019
-* Don't create the nginx configmaps when nginx.enabled is false 
+* Don't create the nginx configmaps when nginx.enabled is false
 
 ## [7.16.6] - Jul 24, 2019
-* Simplify nginx setup and shorten initial wait for probes 
+* Simplify nginx setup and shorten initial wait for probes
 
 ## [7.16.5] - Jul 22, 2019
-* Change Ingress API to be compatible with recent kubernetes versions 
+* Change Ingress API to be compatible with recent kubernetes versions
 
 ## [7.16.4] - Jul 22, 2019
 * Updated Artifactory version to 6.11.3
 
 ## [7.16.3] - Jul 11, 2019
-* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration 
+* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration
 
 ## [7.16.2] - Jul 3, 2019
 * Fix values key in reverse proxy example
@@ -199,7 +202,7 @@ All changes to this chart will be documented in this file.
 * Update Artifactory version to 6.11 and add restart to Artifactory when bootstrap.creds file has been modified
 
 ## [7.15.8] - Jun 27, 2019
-* Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation  
+* Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation
 
 ## [7.15.6] - Jun 24, 2019
 * Update chart maintainers
