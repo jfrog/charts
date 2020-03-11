@@ -32,14 +32,16 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
 ```bash
-helm install --name artifactory-ha jfrog/artifactory-ha
+helm install --name artifactory-ha --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-ha
 ```
 
-### Deploying Artifactory with replicator
-The [Artifactory replicator](https://www.jfrog.com/confluence/display/RTF/Replicator) is used with an [Enterprise Plus](https://www.jfrog.com/confluence/display/EP/Welcome+to+JFrog+Enterprise+Plus) license.
+### System Configuration
+Artifactory uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
+In order to override the default `system.yaml` configuration, do the following:
 ```bash
-## Artifactory replicator is disabled by default. When the replicator is enabled, the replicator.publicUrl parameter is required. To enable it use the following:
-helm install --name artifactory --set artifactory.replicator.enabled=true --set artifactory.replicator.publicUrl=<artifactory_url>:<replicator_port> jfrog/artifactory-ha
+artifactory:
+  systemYaml: |
+    <YOUR_SYSTEM_YAML_CONFIGURATION>
 ```
 
 ### Deploying Artifactory for small/medium/large instllations
@@ -66,6 +68,17 @@ helm upgrade <myrelease> jfrog/artifactory-ha --set postgresql.postgresqlPasswor
 ```
 
 This will apply any configuration changes on your existing deployment.
+
+### Special Upgrade Notes
+#### Artifactory upgrade from 6.x to 7.x (App Version)
+Arifactory 6.x to 7.x upgrade requires a one time migration process. This is done automatically on pod startup if needed.
+It's possible to configure the migration timeout with the following configuration in extreme cases. The provided default should be more than enough for completion of the migration.
+```yaml
+artifactory:
+  # Migration support from 6.x to 7.x
+  migration:
+    timeoutSeconds: 3600
+```
 
 ### Artifactory memory and CPU resources
 The Artifactory HA Helm chart comes with support for configured resource requests and limits to all pods. By default, these settings are commented out.
@@ -106,6 +119,12 @@ helm install --name artifactory-ha \
 
 Get more details on configuring Artifactory in the [official documentation](https://www.jfrog.com/confluence/).
 
+Although it is possible to set resources limits and requests this way, it is recommended to use the pre-built values files
+for small, medium and large installation and change them according to your needs (if necessary), as described [here](#Deploying-Artifactory-for-small/medium/large-installations)
+
+### Deploying Artifactory for small/medium/large installations
+In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
+
 ### Artifactory storage
 Artifactory HA support a wide range of storage back ends. You can see more details on [Artifactory HA storage options](https://www.jfrog.com/confluence/display/RTF/HA+Installation+and+Setup#HAInstallationandSetup-SettingUpYourStorageConfiguration)
 
@@ -144,13 +163,14 @@ In order to use an existing claim (for data and backup) that is to be shared acr
 - Create PVCs with ReadWriteMany that match the naming conventions:
 ```
   {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
-  {{ template "artifactory-ha.fullname" . }}-backup-pvc
+  {{ template "artifactory-ha.fullname" . }}-backup-pvc-<claim-ordinal>
 ```
 An example that shows 2 existing claims to be used:
 ```
-  myexample-data-pvc-0
-  myexample-data-pvc-1
-  myexample-backup-pvc
+  myexample-artifactory-ha-data-pvc-0
+  myexample-artifactory-ha-backup-pvc-0
+  myexample-artifactory-ha-data-pvc-1
+  myexample-artifactory-ha-backup-pvc-1
 ```
 - Set the artifactory.persistence.fileSystem.existingSharedClaim.enabled in values.yaml to true:
 ```
@@ -258,7 +278,10 @@ There are two options for this
 artifactory:
   persistence:
     binarystoreXml: |
-      <!-- Your custom binarystore.xml snippet -->
+      <!-- The custom XML snippet -->
+      <config version="v1">
+          <chain template="file-system"/>
+      </config>
 
 ```
 
@@ -274,7 +297,10 @@ metadata:
     chart: artifactory
 stringData:
   binarystore.xml: |-
-      <!-- Your custom binarystore.xml snippet -->
+      <!-- The custom XML snippet -->
+      <config version="v1">
+          <chain template="file-system"/>
+      </config>
 ```
 
 ```bash
@@ -288,6 +314,7 @@ helm install --name artifactory-ha --set artifactory.persistence.customBinarysto
 ### Create a unique Master Key
 Artifactory HA cluster requires a unique master key. By default the chart has one set in values.yaml (`artifactory.masterKey`).
 
+**For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage**
 **This key is for demo purpose and should not be used in a production environment!**
 
 You should generate a unique one and pass it to the template at install/upgrade time.
@@ -313,6 +340,35 @@ kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 helm install --name artifactory-ha --set artifactory.masterKeySecretName=my-secret jfrog/artifactory-ha
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set artifactory.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set artifactory.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
+### Create a unique Join Key
+Artifactory requires a unique join key. By default the chart has one set in values.yaml (`artifactory.joinKey`).
+
+**This key is for demo purpose and should not be used in a production environment!**
+
+You should generate a unique key and pass it to the template at install/upgrade time.
+```bash
+# Create a key
+export JOIN_KEY=$(openssl rand -hex 16)
+echo ${JOIN_KEY}
+
+# Pass the created join key to helm
+helm install --name artifactory --set artifactory.joinKey=${JOIN_KEY} jfrog/artifactory-ha
+```
+
+Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
+```bash
+# Create a key
+export JOIN_KEY=$(openssl rand -hex 16)
+echo ${JOIN_KEY}
+
+# Create a secret containing the key. The key in the secret must be named join-key
+kubectl create secret generic my-secret --from-literal=join-key=${JOIN_KEY}
+
+# Pass the created secret to helm
+helm install --name artifactory --set artifactory.joinKeySecretName=my-secret jfrog/artifactory-ha
+```
+**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set artifactory.joinKey=${JOIN_KEY}`. In the second, this means always passing `--set artifactory.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged..
 
 ### Install Artifactory HA license
 For activating Artifactory HA, you must install an appropriate license. There are three ways to manage the license. **Artifactory UI**, **REST API**, or a **Kubernetes Secret**.
@@ -361,6 +417,51 @@ helm install --name artifactory-ha -f values.yaml jfrog/artifactory-ha
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
 If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
+
+
+### copyOnEveryStartup feature
+Files stored in the `/artifactory-extra-conf` directory are only copied to the `ARTIFACTORY_HOME/etc` directory upon the first startup.
+In some cases, you want your configuration files to be copied to the `ARTIFACTORY_HOME/etc` directory on every startup.
+Two examples for that would be:
+
+1. the binarstore.xml file. If you use the default behaviour, your binarystore.xml configuration will only be copied on the first startup, 
+which means that changes you make over time to the `binaryStoreXml` configuration will not be applied. In order to make sure your changes are applied on every startup, do the following:
+Create a values file with the following values:
+```yaml
+artifactory:
+  copyOnEveryStartup:
+    - source: /artifactory_bootstrap/binarystore.xml
+      target: etc/artifactory/
+``` 
+
+Install the helm chart with the values file you created:
+```bash
+helm upgrade --install artifactory-ha jfrog/artifactory-ha -f values.yaml
+```
+
+2. Any custom configuration file you have to configure artifactory, such as `logabck.xml`:
+Create a config map with your `logback.xml` configuration.
+
+Create a values file with the following values:
+```yaml
+artifactory:
+  ## Create a volume pointing to the config map with your configuration file
+  customVolumes: |
+    - name: logback-xml-configmap
+      configMap:
+        name: logback-xml-configmap
+  customVolumeMounts: |
+    - name: logback-xml-configmap
+      mountPath: /tmp/artifactory-logback/
+  copyOnEveryStartup:
+    - source: /tmp/artifactory-logback/*
+      target: etc/
+```
+
+Install the helm chart with the values file you created:
+```bash
+helm upgrade --install artifactory-ha jfrog/artifactory-ha -f values.yaml
+```
 
 ### Configure NetworkPolicy
 
@@ -454,7 +555,7 @@ helm upgrade --install artifactory-ha jfrog/artifactory-ha -f access-creds-value
 * User guide to [bootstrap Artifactory Global Configuration](https://www.jfrog.com/confluence/display/RTF/Configuration+Files#ConfigurationFiles-BootstrappingtheGlobalConfiguration)
 * User guide to [bootstrap Artifactory Security Configuration](https://www.jfrog.com/confluence/display/RTF/Configuration+Files#ConfigurationFiles-BootstrappingtheSecurityConfiguration)
 
-Create `bootstrap-config.yaml` with artifactory.config.import.xml and security.import.xml as shown below:
+1. Create `bootstrap-config.yaml` with artifactory.config.import.xml and security.import.xml as shown below:
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -467,12 +568,11 @@ data:
     <config contents>
 ```
 
-Create configMap in Kubernetes:
+2. Create configMap in Kubernetes:
 ```bash
 kubectl apply -f bootstrap-config.yaml
 ```
-
-#### Pass the configMap to helm
+3. Pass the configMap to helm
 ```bash
 helm install --name artifactory-ha --set artifactory.license.secret=artifactory-cluster-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory-ha
 ```
@@ -537,6 +637,7 @@ This can be done with the following parameters
 ...
 --set postgresql.enabled=false \
 --set database.type=postgresql \
+--set database.driver=org.postgresql.Driver \
 --set database.url='jdbc:postgresql://${DB_HOST}:${DB_PORT}/my-artifactory-db' \
 --set database.user=${DB_USER} \
 --set database.password=${DB_PASSWORD} \
@@ -557,8 +658,8 @@ This can be done with the following parameters
 --set postgresql.enabled=false \
 --set artifactory.preStartCommand="wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
 --set database.type=mysql \
---set database.host=${DB_HOST} \
---set database.port=${DB_PORT} \
+--set database.driver=com.mysql.jdbc.Driver \
+--set database.url=${DB_URL} \
 --set database.user=${DB_USER} \
 --set database.password=${DB_PASSWORD} \
 ...
@@ -695,6 +796,95 @@ artifactory-ha: # Name of the artifactory-ha dependency
 ```
 NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
 
+### Provide custom configMaps to Artifactory
+If you want to mount a custom file to Artifactory, either an init shell script or a custom configuration file (such as `logback.xml`), you can use this option.
+
+Create a `configmaps.yaml` file with the following content:
+```yaml
+artifactory:
+  configMaps: |
+    logback.xml: |
+      <configuration debug="false">
+          <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                  <layout class="org.artifactory.logging.layout.BackTracePatternLayout">
+                      <pattern>%date [%-5level] \(%-20c{3}:%L\) %message%n</pattern>
+                  </layout>
+              </encoder>
+          </appender>
+      
+          <logger name="/artifactory">
+              <level value="INFO"/>
+              <appender-ref ref="CONSOLE"/>
+          </logger>
+          <logger name="org.eclipse.jetty">
+              <level value="WARN"/>
+              <appender-ref ref="CONSOLE"/>
+          </logger>
+      </configuration>
+
+    my-custom-post-start-hook.sh: |
+      echo "This is my custom post start hook"
+
+  customVolumeMounts: |
+    - name: artifactory-configmaps
+      mountPath: /tmp/my-config-map
+
+  postStartCommand: |
+    chmod +x /tmp/my-config-map/my-custom-post-start-hook.sh;
+    /tmp/my-config-map/my-custom-post-start-hook.sh;
+
+  copyOnEveryStartup:
+    - source: /tmp/my-config-map/logback.xml
+      target: etc/
+    
+```
+
+and use it with you helm install/upgrade:
+```bash
+helm install --name artifactory-ha -f configmaps.yaml jfrog/artifactory-ha
+```
+
+This will, in turn:
+* create a configMap with the files you specified above
+* create a volume pointing to the configMap with the name `artifactory-configmaps`
+* Mount said configMap onto `/tmp/my-config-map` using a `customVolumeMounts`
+* Set the shell script we mounted as the `postStartCommand`
+* Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory. 
+ 
+
+### Artifactory filebeat
+If you want to collect logs from your Artifactory installation and send them to a central log collection solution like ELK, you can use this option.
+
+Create a `filebeat.yaml` values file with the following content:
+```yaml
+filebeat:
+  enabled: true
+  logstashUrl: <YOUR_LOGSTASH_URL>
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+```
+
+You can optionally customize the `filebeat.yaml` to send output to a different location like so:
+```yaml
+filebeat:
+  enabled: true
+  filebeatYml: |
+    <YOUR_CUSTOM_FILEBEAT_YML>
+```
+
+and use it with you helm install/upgrade:
+```bash
+helm install --name artifactory -f filebeat.yaml jfrog/artifactory
+```
+
+This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
+
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
 
@@ -731,9 +921,12 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customSidecarContainers`| Custom sidecar containers            |                                            |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.customVolumeMounts`  | Custom Artifactory volumeMounts   |                                                  |
+| `artifactory.customPersistentPodVolumeClaim`  | Custom PVC spec to create and attach a unique PVC for each pod on startup with the volumeClaimTemplates feature in StatefulSet | |
+| `artifactory.customPersistentVolumeClaim`  | Custom PVC spec to be mounted to the all artifactory containers using a volume |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
 | `artifactory.masterKey`           | Artifactory master key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`. NOTE: This key can be generated only once and cannot be updated once created |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |
+| `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 16`  | `EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE`   |
 | `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
 | `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|             |
 | `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                |
@@ -741,6 +934,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts. Supports templating with `tpl`   |                             |
 | `artifactory.license.licenseKey` | Artifactory license key. Providing the license key as a parameter will cause a secret containing the license key to be created as part of the release. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used.  |           |
+| `artifactory.configMaps` | configMaps to be created as volume by the name `artifactory-configmaps`. In order to use these configMaps, you will need to add `customVolumeMounts` to point to the created volume and mount it onto a container |           |
 | `artifactory.license.secret` | Artifactory license secret name              |                                            |
 | `artifactory.license.dataKey`| Artifactory license secret data key          |                                            |
 | `artifactory.service.name`   | Artifactory service name to be set in Nginx configuration | `artifactory`                 |
@@ -749,20 +943,20 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.service.loadBalancerSourceRanges`| Artifactory service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
 | `artifactory.service.annotations` | Artifactory service annotations           | `{}`                            |
 | `artifactory.service.pool`   | Artifactory instances to be in the load balancing pool. `members` or `all` | `members`    |
-| `artifactory.externalPort`   | Artifactory service external port                         | `8081`                        |
-| `artifactory.internalPort`   | Artifactory service internal port (**DO NOT** use port lower than 1024)   | `8081`        |
-| `artifactory.internalPortReplicator` | Replicator service internal port | `6061`   |
-| `artifactory.externalPortReplicator` | Replicator service external port | `6061`   |
+| `artifactory.externalPort`   | Artifactory service external port                         | `8082`                        |
+| `artifactory.internalPort`   | Artifactory service internal port (**DO NOT** use port lower than 1024)                         | `8082`                        |
+| `artifactory.internalArtifactoryPort` | Artifactory service internal port (**DO NOT** use port lower than 1024) | `8081`                                                  |
+| `artifactory.externalArtifactoryPort` | Artifactory service external port | `8081`                                                  |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
 | `artifactory.livenessProbe.enabled`              | Enable liveness probe                     |  `true`                                               |
-| `artifactory.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`                        |
+| `artifactory.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/router/api/v1/system/health`                        |
 | `artifactory.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 180                                                   |
 | `artifactory.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                                                    |
 | `artifactory.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                                                    |
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1  |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.readinessProbe.enabled`              | would you like a readinessProbe to be enabled           |  `true`                                |
-| `artifactory.readinessProbe.path`                      | readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login`           |
+| `artifactory.readinessProbe.path`                      | readiness probe HTTP Get path                           |  `/router/api/v1/system/health`           |
 | `artifactory.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                                                    |
 | `artifactory.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                                                    |
 | `artifactory.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                                                    |
@@ -770,10 +964,15 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.copyOnEveryStartup`     | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
 | `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
+| `artifactory.database.maxOpenConnections`         | Maximum amount of open connections from Artifactory to the DB   | `80` |
+| `artifactory.haDataDir.enabled`         | Enable haDataDir for eventual storage in the HA cluster   | `false` |
+| `artifactory.haDataDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
+| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seounds| `3600`       |
 | `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
 | `artifactory.persistence.size`         | Artifactory persistence or local volume size        | `200Gi`                         |
+| `artifactory.persistence.binarystore.enabled` | whether you want to mount the binarystore.xml file from a secret created by the chart. If `false` you will need need to get the binarystore.xml file into the file-system from either an `initContainer` or using a `preStartCommand`             | `true`                    |
 | `artifactory.persistence.binarystoreXml` | Artifactory binarystore.xml template              | See `values.yaml`               |
 | `artifactory.persistence.customBinarystoreXmlSecret` | A custom Secret for binarystore.xml   | ``                              |
 | `artifactory.persistence.maxCacheSize` | Artifactory cache-fs provider maxCacheSize in bytes | `50000000000`                   |
@@ -832,8 +1031,6 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
 | `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
-| `artifactory.replicator.enabled`                    | Enable Artifactory Replicator          | `false`                   |
-| `artifactory.replicator.publicUrl`              | Artifactory Replicator Public URL |                                    |
 | `artifactory.ssh.enabled`                       | Enable Artifactory SSH access     |                                      |
 | `artifactory.ssh.internalPort`                  | Artifactory SSH internal port     | `1339`                                      |
 | `artifactory.ssh.externalPort`                  | Artifactory SSH external port     | `1339`                                     |
@@ -850,6 +1047,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.primary.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
 | `artifactory.primary.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)   |  `{{ template "artifactory-ha.primary.name" $ }}` |
 | `artifactory.primary.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
+| `artifactory.primary.javaOpts.jmx.authenticate`              | Enable JMX authentication           |  `false` |
+| `artifactory.primary.javaOpts.jmx.accessFile`              | The path to the JMX access file, when JMX authentication is enabled           | |
+| `artifactory.primary.javaOpts.jmx.passwordFile`              | The path to the JMX password file, when JMX authentication is enabled           | |
 | `artifactory.primary.javaOpts.other`            | Artifactory primary node additional java options |                     |
 | `artifactory.primary.persistence.existingClaim` | Whether to use an existing pvc for the primary node | `false`            |
 | `artifactory.node.preStartCommand`              | Artifactory member node preStartCommand to be run after `artifactory.preStartCommand`          |                     |
@@ -867,9 +1067,16 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
 | `artifactory.node.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory-ha.fullname" $ }}` |
 | `artifactory.node.javaOpts.jmx.ssl`              | Enable SSL           |  `false` |
+| `artifactory.node.javaOpts.jmx.authenticate`              | Enable JMX authentication           |  `false` |
+| `artifactory.node.javaOpts.jmx.accessFile`              | The path to the JMX access file, when JMX authentication is enabled           | |
+| `artifactory.node.javaOpts.jmx.passwordFile`              | The path to the JMX password file, when JMX authentication is enabled           | |
 | `artifactory.node.javaOpts.other`               | Artifactory member node additional java options  |                     |
 | `artifactory.node.persistence.existingClaim`    | Whether to use existing PVCs for the member nodes | `false`            |
 | `artifactory.terminationGracePeriodSeconds`     | Termination grace period (seconds)               | `30s`               |
+| `artifactory.node.waitForPrimaryStartup.enabled`    | Whether to wait for the primary node to start before starting up the member nodes | `false`            |
+| `artifactory.node.waitForPrimaryStartup.time`    | The amount of time to wait for the primary node to start before starting up the member nodes | `60`            |
+| `artifactory.systemYaml`                      | Artifactory system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML  | `see values.yaml`    |
+| `access.database.maxOpenConnections`                      | Maximum amount of open connections from Access to the DB  | `80`    |
 | `initContainers.resources.requests.memory`    | Init containers initial memory request   |                     |
 | `initContainers.resources.requests.cpu`       | Init containers initial cpu request      |                     |
 | `initContainers.resources.limits.memory`      | Init containers memory limit             |                     |
@@ -878,7 +1085,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |
 | `ingress.hosts`             | Artifactory Ingress hostnames       | `[]`                                                 |
-| `ingress.path`              | Artifactory Ingress path            | `/`                                                  |
+| `ingress.routerPath`              | Router Ingress path            | `/`                                                  |
+| `ingress.artifactoryPath`              | Artifactory Ingress path            | `/artifactory`                                                  |
 | `ingress.tls`               | Artifactory Ingress TLS configuration (YAML) | `[]`                                        |
 | `ingress.defaultBackend.enabled` | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.annotations`       | Ingress annotations, which are written out if annotations section exists in values. Everything inside of the annotations section will appear verbatim inside the resulting manifest. See `Ingress annotations` section below for examples of how to leverage the annotations, specifically for how to enable docker authentication. |  |
@@ -914,25 +1122,21 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.https.enabled` | Nginx http service enabled/disabled            | true                            |
 | `nginx.https.externalPort` | Nginx service external port           | `443`                           |
 | `nginx.https.internalPort` | Nginx service internal port           | `443`                           |
-| `nginx.replicator.internalPort` | Replicator service internal port | `6061`                          |
-| `nginx.replicator.externalPort` | Replicator service external port | `6061`                          |
 | `nginx.ssh.internalPort`        | Nginx SSH internal port          | `22`                            |
 | `nginx.ssh.externalPort`        | Nginx SSH external port          | `22`                            |
 | `nginx.externalPortHttp` | DEPRECATED: Nginx service external port            | `80`                            |
 | `nginx.internalPortHttp` | DEPRECATED: Nginx service internal port            | `80`                            |
 | `nginx.externalPortHttps` | DEPRECATED: Nginx service external port           | `443`                           |
 | `nginx.internalPortHttps` | DEPRECATED: Nginx service internal port           | `443`                           |
-| `nginx.internalPortReplicator` | DEPRECATED: Replicator service internal port | `6061`                          |
-| `nginx.externalPortReplicator` | DEPRECATED: Replicator service external port | `6061`                          |
 | `nginx.livenessProbe.enabled`              | would you like a liveness Probe to be enabled          |  `true`                                  |
-| `nginx.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/artifactory/webapp/#/login`                    |
+| `nginx.livenessProbe.path`                 | liveness probe HTTP Get path              |  `/router/api/v1/system/health`                    |
 | `nginx.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 100                                                   |
 | `nginx.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                                                    |
 | `nginx.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                                                    |
 | `nginx.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1  |
 | `nginx.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `nginx.readinessProbe.enabled`             | would you like a readinessProbe to be enabled           |  `true`                                 |
-| `nginx.readinessProbe.path`                     | Readiness probe HTTP Get path                           |  `/artifactory/webapp/#/login` |
+| `nginx.readinessProbe.path`                     | Readiness probe HTTP Get path                           |  `/router/api/v1/system/health` |
 | `nginx.readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | 60                                                    |
 | `nginx.readinessProbe.periodSeconds`       | How often to perform the probe            | 10                                                    |
 | `nginx.readinessProbe.timeoutSeconds`      | When the probe times out                  | 10                                                    |
@@ -963,8 +1167,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `postgresql.resources.limits.memory`      | PostgreSQL memory limit            |                                         |
 | `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit               |                                         |
 | `database.type`                  | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
-| `database.host`                  | External database hostname                         |                                         |
-| `database.port`                  | External database port                             |                                         |
+| `database.driver`                | External database driver e.g. `org.postgresql.Driver`  |                       |
 | `database.url`                   | External database connection URL                   |                                         |
 | `database.user`                  | External database username                         |                                         |
 | `database.password`              | External database password                         |                                         |
@@ -978,7 +1181,24 @@ The following table lists the configurable parameters of the artifactory chart a
 | `networkpolicy.podselector`      | Contains the YAML that specifies how to match pods. Usually using matchLabels. |                                         |
 | `networkpolicy.ingress`          | YAML snippet containing to & from rules applied to incoming traffic            | `- {}` (open to all inbound traffic)    |
 | `networkpolicy.egress`           | YAML snippet containing to & from rules applied to outgoing traffic            | `- {}` (open to all outbound traffic)   |
-
+| `filebeat.enabled`           | Enable a filebeat container to send your logs to a log management solution like ELK            | `false`   |
+| `filebeat.name`           | filebeat container name            | `artifactory-filebeat`   |
+| `filebeat.image.repository`           | filebeat Docker image repository            | `docker.elastic.co/beats/filebeat`   |
+| `filebeat.image.version`           | filebeat Docker image version            | `7.5.1`   |
+| `filebeat.logstashUrl`           | The URL to the central Logstash service, if you have one            | `logstash:5044`   |
+| `filebeat.livenessProbe.exec.command`           | liveness probe exec command            | see [values.yaml](stable/artifactory-ha/values.yaml)   |
+| `filebeat.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
+| `filebeat.livenessProbe.initialDelaySeconds`  | Delay before liveness probe is initiated  | 180                       |
+| `filebeat.livenessProbe.periodSeconds`        | How often to perform the probe            | 10                        |
+| `filebeat.readinessProbe.exec.command`           | readiness probe exec command            | see [values.yaml](stable/artifactory-ha/values.yaml)   |
+| `filebeat.readinessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
+| `filebeat.readinessProbe.initialDelaySeconds`  | Delay before readiness probe is initiated  | 180                       |
+| `filebeat.readinessProbe.periodSeconds`        | How often to perform the probe            | 10                        |
+| `filebeat.resources.requests.memory` | Filebeat initial memory request                  |                          |
+| `filebeat.resources.requests.cpu`    | Filebeat initial cpu request     |                                          |
+| `filebeat.resources.limits.memory`   | Filebeat memory limit            |                                          |
+| `filebeat.resources.limits.cpu`      | Filebeat cpu limit               |                                          |
+| `filebeat.filebeatYml`      | Filebeat yaml configuration file                | see [values.yaml](stable/artifactory-ha/values.yaml)                                         |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 

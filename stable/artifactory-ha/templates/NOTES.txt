@@ -18,6 +18,25 @@ Congratulations. You have just deployed JFrog Artifactory HA!
 ********************************************************************************************
 {{- end }}
 
+{{- if .Values.artifactory.joinKey }}
+{{- if eq .Values.artifactory.joinKey "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" }}
+
+
+***************************************** WARNING ******************************************
+* Your Artifactory join key is still set to the provided example:                          *
+* artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE                                     *
+*                                                                                          *
+* You should change this to your own generated key:                                        *
+* $ export JOIN_KEY=$(openssl rand -hex 16)                                                *
+* $ echo ${JOIN_KEY}                                                                       *
+*                                                                                          *
+* Pass the created master key to helm with '--set artifactory.joinKey=${JOIN_KEY}'         *
+*                                                                                          *
+********************************************************************************************
+{{- end }}
+{{- end }}
+
+
 {{- if .Values.postgresql.enabled }}
 
 DATABASE:

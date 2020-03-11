@@ -8,6 +8,10 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
+    version: {{ default .Chart.AppVersion .Values.distribution.image.version }}
+{{- if .Release.IsUpgrade }}
+    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Distribution 1.x currently not supported!\nIf this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
+{{- end }}
 spec:
   serviceName: {{ template "distribution.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
@@ -28,6 +32,8 @@ spec:
         release: {{ .Release.Name }}
         role: {{ template "distribution.name" . }}
         component: {{ .Values.distribution.name }}
+      annotations:
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/distribution-system-yaml.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "distribution.serviceAccountName" . }}
     {{- if .Values.imagePullSecrets }}
@@ -38,6 +44,25 @@ spec:
         runAsUser: {{ .Values.common.uid }}
         fsGroup: {{ .Values.common.gid }}
       initContainers:
+      - name: 'copy-system-yaml'
+        image: '{{ .Values.initContainerImage }}'
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          sleep 30;
+          echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc";
+          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc;
+          cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
+          echo "Remove {{ .Values.distribution.persistence.mountPath }}/lost+found folder if exists";
+          rm -rfv {{ .Values.distribution.persistence.mountPath }}/lost+found;
+        volumeMounts:
+        - name: distribution-data
+          mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+        - name: systemyaml
+          mountPath: "/tmp/etc/system.yaml"
+          subPath: system.yaml
+      {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
         command:
@@ -45,9 +70,43 @@ spec:
         - '-c'
         - >
           echo "Waiting for database to be ready...";
-        {{- if .Values.postgresql.enabled }}
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
+      {{- end }}
+      {{- if .Values.distribution.masterKey }}
+      - name: migration-{{ .Values.distribution.name }}
+        image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
+        imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          echo "Copy masterKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
+          rm -rfv /tmp/master.key;
+          echo {{ .Values.distribution.masterKey }} > /tmp/master.key;
+          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
+          cp -fv /tmp/master.key {{ .Values.distribution.persistence.mountPath }}/etc/security;
+          echo "Copy masterKey Done";
+          if [[ ! -f {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties ]]; then
+            echo "Copy versions.properties file to {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties";
+            rm -rfv /tmp/versions.properties;
+            echo "last-database-version=1.8.0" > /tmp/versions.properties;
+            echo "last-configuration-version=1.8.0" >> /tmp/versions.properties;
+            echo "file-timestamp=1578228343759" >> /tmp/versions.properties;
+            mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/distribution;
+            cp -fv /tmp/versions.properties {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties;
+            echo "Copy versions.properties Done";
+          fi
+        env:
+        {{- range .Values.distribution.extraEnvironmentVariables }}
+        - name: {{ .name }}
+          value: '{{ tpl .value $ }}'
         {{- end }}
+        volumeMounts:
+        - name: distribution-data
+          mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+      {{- end }}
     {{- if .Values.distribution.customInitContainers }}
 {{ tpl .Values.distribution.customInitContainers . | indent 6}}
     {{- end }}
@@ -68,98 +127,11 @@ spec:
             echo "Running custom Distribution preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/distribution-{{ .Values.distribution.name }}/wrapper.sh;
+            /opt/jfrog/distribution/app/bin/wrapper.sh;
         env:
-        - name: DEFAULT_JAVA_OPTS
-          value: '-Ddistribution.home={{ .Values.distribution.persistence.mountPath }}
-                  -Djfrog.master.key={{ .Values.distribution.masterKey }}
-                  -Dcom.sun.management.jmxremote.authenticate=false
-                  -Dcom.sun.management.jmxremote.ssl=false -Duser.timezone=UTC
-                  {{- if .Values.distribution.javaOpts.xms }}
-                  -Xms{{ .Values.distribution.javaOpts.xms }}
-                  {{- end}}
-                  {{- if .Values.distribution.javaOpts.xmx }}
-                  -Xmx{{ .Values.distribution.javaOpts.xmx }}
-                  {{- end}}
-                  {{- if .Values.distribution.serviceId }}
-                  -Djfrog.distribution.platform.distributionServiceId={{ .Values.distribution.serviceId }}
-                  {{- end}}
-                  -Dspring.profiles.active=production'
-      {{- if .Values.distribution.masterKey }}
-        - name: MASTER_KEY
-          value: '{{ .Values.distribution.masterKey }}'
-      {{- end }}
-      {{- if .Values.postgresql.enabled }}
-        - name: POSTGRES_HOST
-          value: '{{ .Release.Name }}-postgresql'
-        - name: POSTGRES_PORT
-          value: '{{ .Values.postgresql.service.port }}'
-        - name: POSTGRES_DATABASE
-          value: '{{ .Values.postgresql.postgresDatabase }}'
-        - name: POSTGRES_USERNAME
-          value: '{{ .Values.postgresql.postgresUser }}'
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-postgresql
-              key: postgres-password
-      {{- else }}
-        - name: POSTGRES_HOST
-          value: '{{ .Values.database.host }}'
-        - name: POSTGRES_PORT
-          value: '{{ .Values.database.port }}'
-        - name: POSTGRES_DATABASE
-          value: '{{ .Values.database.database }}'
-        - name: POSTGRES_USERNAME
-      {{- if .Values.database.secrets.user }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
-      {{- else }}
-          value: '{{ .Values.database.user }}'
-      {{- end }}
-        - name: POSTGRES_PASSWORD
-      {{- if .Values.database.secrets.password }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-      {{- else }}
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-database-connection
-              key: db-password
-      {{- end }}
-      {{- end }}
-        - name: REDIS_HOST
-          value: 'localhost'
-        - name: REDIS_PORT
-          value: '{{ .Values.redis.port }}'
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-redis-secret
-              key: password
-        - name: BT_ARTIFACTORY_URL
-          value: {{ .Values.distribution.env.artifactoryUrl | quote }}
-        - name: BT_SERVER_URL
-          value: {{ .Values.distribution.env.btServerUrl | quote }}
-        {{- if .Values.distribution.env.artifactoryEdge1Url }}
-        - name: artifactory_edge_1_url
-          value: {{ .Values.distribution.env.artifactoryEdge1Url }}
-        {{- end }}
-        {{- if .Values.distribution.env.artifactoryEdge2Url }}
-        - name: artifactory_edge_2_url
-          value: {{ .Values.distribution.env.artifactoryEdge2Url }}
-        {{- end }}
-        {{- if .Values.distribution.env.artifactoryEdge3Url }}
-        - name: artifactory_edge_3_url
-          value: {{ .Values.distribution.env.artifactoryEdge3Url }}
-        {{- end }}
-        {{- if .Values.distribution.env.artifactoryCi1Url }}
-        - name: artifactory_ci_1_url
-          value: {{ .Values.distribution.env.artifactoryCi1Url }}
+        {{- range .Values.distribution.extraEnvironmentVariables }}
+        - name: {{ .name }}
+          value: '{{ tpl .value $ }}'
         {{- end }}
         volumeMounts:
         - name: distribution-data
@@ -195,37 +167,45 @@ spec:
             echo "Running Distributor custom preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/distribution-{{ .Values.distributor.name }}/wrapper.sh;
+            /opt/jfrog/distribution/app/bin/wrapper.sh;
         env:
-        - name: DEFAULT_JAVA_OPTS
-          value: '-Ddistribution.home={{ .Values.distributor.persistence.mountPath }}
-                  -Djfrog.distributor.distribution.internal-api-url=http://localhost:{{ .Values.distribution.internalPort }}/api/internal
-                  -Dfile.encoding=UTF8 -Dcom.sun.management.jmxremote.authenticate=false
-                  -Dcom.sun.management.jmxremote.ssl=false -Duser.timezone=UTC
-                  {{- if .Values.distributor.javaOpts.xms }}
-                  -Xms{{ .Values.distributor.javaOpts.xms }}
-                  {{- end}}
-                  {{- if .Values.distributor.javaOpts.xmx }}
-                  -Xmx{{ .Values.distributor.javaOpts.xmx }}
-                  {{- end}}
-                  -Dspring.profiles.active=production'
-        - name: REDIS_HOST
-          value: 'localhost'
-        - name: REDIS_PORT
-          value: '{{ .Values.redis.port }}'
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-redis-secret
-              key: password
+        {{- range .Values.distributor.extraEnvironmentVariables }}
+        - name: {{ .name }}
+          value: '{{ tpl .value $ }}'
+        {{- end }}
         volumeMounts:
-        - name: distributor-data
+        - name: distribution-data
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
         {{- with .Values.distributor.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
         {{- end }}
         resources:
 {{ toYaml .Values.distributor.resources | indent 10 }}
+      - name: {{ .Values.router.name }}
+        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        env:
+          - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+            value: 'jfds'
+        ports:
+          - name: router
+            containerPort: {{ .Values.router.internalPort }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - name: distribution-data
+          mountPath: {{ .Values.router.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+{{- end }}
+
       - name: {{ template "redis.name" . }}
         image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
@@ -290,10 +270,36 @@ spec:
           - '-F'
           - '{{ $mountPath }}/logs/{{ . }}'
         volumeMounts:
-          - name: distributor-data
+          - name: distribution-data
             mountPath: {{ $mountPath }}
         resources:
 {{ toYaml $.Values.distributor.loggersResources | indent 10 }}
+
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: {{ .Values.filebeat.name }}
+        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        args:
+        - "-e"
+        - "-E"
+        - "http.enabled=true"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: distribution-data
+          mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+        livenessProbe:
+{{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.filebeat.readinessProbe | indent 10 }}
+        resources:
+{{ toYaml .Values.filebeat.resources | indent 10 }}
+        terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
@@ -311,65 +317,20 @@ spec:
       {{- with .Values.common.customVolumes }}
 {{ tpl . $ | indent 6 }}
       {{- end }}
-  {{- if not .Values.distribution.persistence.enabled }}
       - name: distribution-data
-        emptyDir: {}
-      - name: distributor-data
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: {{ .Values.distribution.persistence.size }}
       - name: redis-data
         emptyDir: {}
-  {{- else }}
+      - name: systemyaml
+        secret:
+          secretName: {{ template "distribution.fullname" . }}-systemyaml
+      {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ template "distribution.fullname" . }}-filebeat-config
+      {{- end }}
   volumeClaimTemplates:
-    - metadata:
-        name: distribution-data
-        labels:
-          app: {{ template "distribution.name" . }}
-          chart: {{ template "distribution.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
-      spec:
-      {{- if .Values.distribution.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "distribution.name" . }}
-      {{- else }}
-        {{- if .Values.distribution.persistence.storageClass }}
-        {{- if (eq "-" .Values.distribution.persistence.storageClass) }}
-        storageClassName: ''
-        {{- else }}
-        storageClassName: '{{ .Values.distribution.persistence.storageClass }}'
-        {{- end }}
-        {{- end }}
-        accessModes: [ '{{ .Values.distribution.persistence.accessMode }}' ]
-        resources:
-          requests:
-            storage: {{ .Values.distribution.persistence.size }}
-      {{- end }}
-    - metadata:
-        name: distributor-data
-        labels:
-          app: {{ template "distributor.name" . }}
-          chart: {{ template "distribution.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
-      spec:
-      {{- if .Values.distributor.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "distributor.name" . }}
-      {{- else }}
-        {{- if .Values.distributor.persistence.storageClass }}
-        {{- if (eq "-" .Values.distributor.persistence.storageClass) }}
-        storageClassName: ''
-        {{- else }}
-        storageClassName: '{{ .Values.distributor.persistence.storageClass }}'
-        {{- end }}
-        {{- end }}
-        accessModes: [ '{{ .Values.distributor.persistence.accessMode }}' ]
-        resources:
-          requests:
-            storage: {{ .Values.distributor.persistence.size }}
-      {{- end }}
     - metadata:
         name: redis-data
         labels:
@@ -394,5 +355,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.redis.persistence.size }}
-      {{- end }}
   {{- end }}

@@ -1,6 +1,10 @@
+[![Build Status](https://travis-ci.org/jfrog/charts.svg?branch=master)](https://travis-ci.org/jfrog/charts)
+
 # JFrog Helm Charts
 
 This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** for deploying **JFrog** products to [Kubernetes](https://kubernetes.io/)
+
+For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
 ## Install Helm
 

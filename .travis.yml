@@ -33,8 +33,10 @@ jobs:
               travis_terminate 0
           fi
         - echo "Run charts-testing install test!"
-        # https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
-        - travis_wait 90 ./test/e2e-github.sh
+        # ping stdout every 9 minutes or Travis kills the build
+        # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
+        - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+        - ./test/e2e-github.sh
 
 stages:
   - lint-scripts

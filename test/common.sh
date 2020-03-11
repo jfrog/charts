@@ -41,13 +41,13 @@ cleanup() {
 }
 
 install_charts() {
-    git_fetch
+    ## git_fetch
     local ct_args=""
     if [[ ${LOCAL_RUN} = "true" ]]; then
         ct_args=${CHART_TESTING_ARGS}
     fi
     # shellcheck disable=SC2086
-    docker_exec ct install ${ct_args} --config /workdir/test/ct.yaml
+    docker_exec ct install ${ct_args} --config /workdir/test/ct.yaml --debug
     echo
 }
 
@@ -77,4 +77,15 @@ install_kubeval() {
         tar xf tmp/kubeval.tar.gz -C tmp && chmod +x tmp/kubeval
         sudo mv tmp/kubeval /usr/local/bin/kubeval
     fi
+}
+
+installHelmLocal() {
+    # Initialize helm
+    helm init --client-only 2>/dev/null || true
+    # Install Tillerless plugin
+    helm plugin install https://github.com/rimusz/helm-tiller 2>/dev/null || true
+    echo
+    # Add helm repositories
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com
+    helm repo add jfrog https://charts.jfrog.io
 }

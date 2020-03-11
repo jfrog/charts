@@ -1,0 +1,68 @@
+{{- if .Values.buildPlane.k8s.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipelines.fullname" . }}-node-templates
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+    component: k8s-node
+data:
+  agent-node-sa-secrets-scripts.yaml: |
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: {{ include "pipelines.fullname" . }}-node-sa
+      namespace: {{ .Release.Namespace }}
+      labels:
+        {{- include "pipelines.labels" . | nindent 8 }}
+        component: k8s-node
+    ---
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ include "pipelines.fullname" . }}-node-secrets
+      namespace: {{ .Release.Namespace }}
+      labels:
+        {{- include "pipelines.labels" . | nindent 8 }}
+        component: k8s-node
+    type: Opaque
+    data:
+      amqp-url: _PIPELINES_AMQP_URL_
+    ---
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: {{ include "pipelines.fullname" . }}-node-scripts
+      namespace: {{ .Release.Namespace }}
+      labels:
+        {{- include "pipelines.labels" . | nindent 8 }}
+        component: k8s-node
+    data:
+      register-node.sh: |
+        #!/bin/bash
+        set -e
+        set -o pipefail
+
+        # Get token from system.yaml
+        export API_TOKEN=$(cat /tmp/etc/system.yaml | grep installerAuthToken | cut -d':' -f2- | cut -d'"' -f 2)
+        echo "Check if node exists with the same name, get it's ID and deregister it";
+        export OLD_NODE_ID="$(curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X GET http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/nodes | jq -c --arg hostname "${HOSTNAME}" '.[] | select(.friendlyName == $hostname) | .id')";
+        curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X DELETE http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/nodes/$OLD_NODE_ID || true;
+        export NODE_POOL_ID="$(curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X GET http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/nodePools | jq -c --arg poolname "{{ .Values.buildPlane.k8s.pool.name }}" '.[] | select(.name == $poolname) | .id')";
+        echo $NODE_POOL_ID > /jfrog/node_pool_id;
+        echo "Registering Node with API...";
+        curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X POST http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/nodes -d '{"nodePoolId":"'"$NODE_POOL_ID"'","projectId":1,"friendlyName":"'"$HOSTNAME"'","IPAddress":"'"$HOSTNAME"'","isAutoInitialized":false,"isOnDemand":false}' | jq '. | .id' > /jfrog/node_id;
+        echo "Node ID: \c";
+        cat /jfrog/node_id;
+        echo "Node Pool ID: \c";
+        cat /jfrog/node_pool_id;
+      deregister-node.sh: |
+        #!/bin/bash
+        set -e
+        set -o pipefail
+
+        # Get token from system.yaml
+        export API_TOKEN=$(cat /tmp/etc/system.yaml | grep installerAuthToken | cut -d':' -f2- | cut -d'"' -f 2)
+        export NODE_ID="$(cat /jfrog/node_id)";
+        curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X DELETE http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/nodes/$NODE_ID;
+{{- end }}

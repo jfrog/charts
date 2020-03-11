@@ -13,10 +13,9 @@ artifactory:
   ## Artifactory
   ## See full list of supported Artifactory options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
   artifactory:
+    ## Default version is from the artifactory sub-chart in the requirements.yaml
     image:
       repository: docker.bintray.io/jfrog/artifactory-jcr
-
-      ## Default version is from the artifactory sub-chart in the requirements.yaml
       # version:
 
     ## Uncomment the following resources definitions or pass them from command line
@@ -66,7 +65,7 @@ artifactory:
   ## If NOT using the PostgreSQL in this chart (artifactory.postgresql.enabled=false),
   ## specify custom database details here or leave empty and Artifactory will use embedded derby.
   ## See full list of database options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
-  database:
+  # database:
 
 
 ## Enable the PostgreSQL sub chart

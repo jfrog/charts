@@ -36,19 +36,6 @@ spec:
   ports:
   # DEPRECATION NOTE: The following is to maintain support for values pre 1.3.0 and
   # will be cleaned up in a later verion
-  {{- if .Values.artifactory.replicator.enabled }}
-  {{- if .Values.nginx.replicator }}
-  - port: {{ .Values.nginx.replicator.externalPort }}
-    targetPort: {{ .Values.nginx.replicator.internalPort }}
-    protocol: TCP
-    name: replicator
-  {{- else }} # DEPRECATED
-  - port: {{ .Values.nginx.externalPortReplicator }}
-    targetPort: {{ .Values.nginx.internalPortReplicator }}
-    protocol: TCP
-    name: replicator
-  {{- end }}
-  {{- end }}
   {{- if .Values.nginx.http }}
   {{- if .Values.nginx.http.enabled }}
   - port: {{ .Values.nginx.http.externalPort }}

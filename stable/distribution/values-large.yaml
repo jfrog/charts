@@ -1,4 +1,5 @@
 replicaCount: 4
+
 redis:
   resources:
     requests:
@@ -7,20 +8,7 @@ redis:
     limits:
       memory: "2Gi"
       cpu: "2"
-mongodb:
-  resources:
-    requests:
-      memory: "3Gi"
-      cpu: "1"
-    limits:
-      memory: "3Gi"
-      cpu: "3"
-  ## Make sure the --wiredTigerCacheSizeGB is
-  ## no more than half the memory limit!
-  ## This is critical to protect against
-  ## OOMKill by Kubernetes!
-  mongodbExtraFlags:
-    - "--wiredTigerCacheSizeGB=1.5"
+
 distribution:
   resources:
     requests:
@@ -32,6 +20,7 @@ distribution:
   javaOpts:
     xms: "2g"
     xmx: "6g"
+
 distributor:
   resources:
     requests:

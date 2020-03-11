@@ -1,11 +1,33 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [8.5.1] - Mar 2, 2020
-* Fix broken readme on Helm Hub (and Kubeapps Hub)
+## [9.0.21] - Mar 11, 2020
+* Unified charts public release
 
-## [8.5.0] - Mar 1, 2020
-* Updated Artifactory version to 6.18.0
+## [9.0.20] - Mar 6, 2020
+* Fix path to `/artifactory_bootstrap`
+* Add support for controlling the name of the ingress and allow to set more than one cname
+
+## [9.0.19] - Mar 4, 2020
+* Add support for disabling `consoleLog` in `system.yaml` file
+
+## [9.0.18] - Feb 28, 2020
+* Add support to process `valueFrom` for extraEnvironmentVariables
+
+## [9.0.17] - Feb 26, 2020
+* Fix join key secret naming
+
+## [9.0.16] - Feb 26, 2020
+* Store join key to secret
+
+## [9.0.15] - Feb 26, 2020
+* Updated Artifactory version to 7.2.1 
+
+## [9.0.10] - Feb 07, 2020
+* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade 
+
+## [9.0.0] - Feb 07, 2020
+* Updated Artifactory version to 7.0.0
 
 ## [8.4.8] - Feb 13, 2020
 * Add support for SSH authentication to Artifactory
