@@ -25,7 +25,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm install --name jfrog-container-registry jfrog/artifactory-jcr
+helm install --name jfrog-container-registry --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-jcr
 ```
 
 ### Accessing JFrog Container Registry

@@ -8,28 +8,16 @@ rabbitmq-ha:
     limits:
       memory: "2Gi"
       cpu: "2"
-mongodb:
-  resources:
-    requests:
-      memory: "12Gi"
-      cpu: "1"
-    limits:
-      memory: "12Gi"
-      cpu: "3"
-  ## Make sure the --wiredTigerCacheSizeGB is
-  ## no more than half the memory limit!
-  ## This is critical to protect against
-  ## OOMKill by Kubernetes!
-  mongodbExtraFlags:
-    - "--wiredTigerCacheSizeGB=6"
 postgresql:
+  postgresqlConfiguration:
+    maxConnections: "800"
   resources:
     requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "3Gi"
+      memory: "4Gi"
       cpu: "2"
+    limits:
+      memory: "8Gi"
+      cpu: "6"
 server:
   replicaCount: 4
   resources:
@@ -40,7 +28,6 @@ server:
       memory: "2Gi"
       cpu: "2"
 analysis:
-  replicaCount: 4
   resources:
     requests:
       memory: "1Gi"
@@ -49,7 +36,6 @@ analysis:
       memory: "2Gi"
       cpu: "2"
 persist:
-  replicaCount: 4
   resources:
     requests:
       memory: "1Gi"
@@ -58,7 +44,6 @@ persist:
       memory: "2Gi"
       cpu: "2"
 indexer:
-  replicaCount: 4
   resources:
     requests:
       memory: "1Gi"

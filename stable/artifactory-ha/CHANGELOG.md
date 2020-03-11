@@ -1,8 +1,33 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.5.0] - Mar 1, 2020
-* Updated Artifactory version to 6.18.0
+## [2.0.28] - Mar 11, 2020
+* Unified charts public release
+
+## [2.0.27] - Mar 8, 2020
+* Add an optional wait for primary node to be ready with a proper test for http status
+
+## [2.0.23] - Mar 6, 2020
+* Fix path to `/artifactory_bootstrap`
+* Add support for controlling the name of the ingress and allow to set more than one cname
+
+## [2.0.22] - Mar 4, 2020
+* Add support for disabling `consoleLog` in `system.yaml` file
+
+## [2.0.21] - Feb 28, 2020
+* Add support to process `valueFrom` for extraEnvironmentVariables
+
+## [2.0.20] - Feb 26, 2020
+* Store join key to secret
+
+## [2.0.19] - Feb 26, 2020
+* Updated Artifactory version to 7.2.1 
+
+## [2.0.12] - Feb 07, 2020
+* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade 
+
+## [2.0.0] - Feb 07, 2020
+* Updated Artifactory version to 7.0.0
 
 ## [1.4.10] - Feb 13, 2020
 * Add support for SSH authentication to Artifactory

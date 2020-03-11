@@ -25,7 +25,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm install --name artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm install --name artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-cpp-ce
 ```
 
 ### Accessing Artifactory CE for C++

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "mission-control.fullname" . }}-applicationyaml
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    component: {{ .Values.missionControl.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  application.yaml: |
+{{ toYaml .Values.applicationConfigs | indent 4 }}

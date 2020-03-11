@@ -1,6 +1,24 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.0.16] - Mar 11, 2020
+* Unified charts public release
+
+## [5.0.15] - Mar 9, 2020
+* Removed unused `ingress` code + fixes
+
+## [5.0.14] - Mar 4, 2020
+* Add support for  disabling `consoleLog`  in `system.yaml` file
+
+## [5.0.13] - Feb 27, 2020
+* Add an annotation with the checksum of the `system.yaml` file to make sure the pods restart after a configuration change
+
+## [5.0.12] - Feb 26, 2020
+* Update Distribution to version `2.2.0` 
+
+## [5.0.11] - Feb 24, 2020
+* Update Distribution to version `2.0.3` 
+
 ## [3.6.0] - Feb 16, 2020
 * Add support for distributor `customVolumeMounts` and move `customVolumes` to `common`
 

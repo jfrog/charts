@@ -1,0 +1,1048 @@
+## Default values for pipelines
+
+## Common
+initContainer:
+  image: "alpine:3.10"
+  pullPolicy: IfNotPresent
+
+## Available modes: devmode (enable it for debuging) and production
+runMode: production
+
+## Image Registry to pull images for Pipelines components from
+## You can override it with your private Artifactory registry
+# imageRegistry: docker.bintray.io
+imageRegistry: docker.bintray.io
+
+## For supporting pulling from private registries
+## Secret type: kubernetes.io/dockerconfigjson
+imagePullSecrets:
+
+## Build Image Registry to pull images for Pipelines language images
+## You can override it with your private Artifactory registry
+buildImage:
+  registry: docker.bintray.io
+  ## For supporting pulling from private registries
+  ## Secret type: kubernetes.io/dockerconfigjson
+  pullSecret:
+
+## Existing secret with Pipelines system.yaml
+existingSecret:
+
+## String to partially override pipelines.fullname template (will maintain the release name)
+# nameOverride:
+
+## String to fully override pipelines.fullname template
+# fullnameOverride:
+
+## Set user/group to run Pipelines components with
+securityContext:
+  enabled: true
+  uid: 1030
+  gid: 1030
+
+## Pipelines components
+pipelines:
+
+  ## Artifactory URL - Mandatory
+  jfrogUrl: "update_with_artifactory_url"
+  ## Artifactory UI URL - Mandatory
+  jfrogUrlUI: "update_with_artifactory_ui_url"
+
+  ## Join Key to connect to Artifactory
+  ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+  ## Pipelines requires a unique master key
+  ## You can generate one with the command: 'openssl rand -hex 32'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+  ## Installer Authentication Token
+  ## The unique token can be generated with: uuidgen | tr '[:upper:]' '[:lower:]'
+  authToken: "c7595edd-b63d-4fd6-9e1e-13924d6637f0"
+
+  ## Pipelines ID in Artifactory
+  ## For production, the unique ID should be generated instead of using 12345: openssl rand | tr -dc 1-9 | head -c 10
+  serviceId: jfpip@12345
+
+  ## Artifactory Service ID
+  ## This should be set to the Artifactory Service ID
+  artifactoryServiceId: "FFFFFFFFFFFF"
+
+  ## Artifactory License ID
+  ##
+  licenseId: "FFFFFFFFF"
+
+  ## A name must be unique if the same Artifactory is shared between different Pipelines
+  ## Repository type `Generic` with layout `maven-2-default` must be precreated in advance
+  rootBucket: jfrogpipelines
+
+  mountPath: /opt/jfrog/pipelines/var/etc
+
+  logPath: /opt/jfrog/pipelines/var/log
+
+  replicaCount: 1
+
+  updateStrategy: RollingUpdate
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  api:
+    image:
+      repository: jfrog/pipelines-api
+      # tag:
+      pullPolicy: IfNotPresent
+
+    service:
+      ## Supported service types: ClusterIP, NodePort and LoadBalancer
+      type: ClusterIP
+      port: 30000
+
+      annotations:
+      # external-dns.alpha.kubernetes.io/hostname:  example.org
+      # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+      # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
+
+      ## Set LB static IP
+      loadBalancerIP:
+
+      ## Whitelist IPs allowed to LoadBalancer type services
+      ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
+      loadBalancerSourceRanges: []
+
+    ## External URL, it is ignored if ingress is enabled
+    externalUrl:
+
+    ingress:
+      enabled: false
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      path: /
+      hosts:
+        - chart-example.local
+
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  router:
+    image:
+      repository: jfrog/pipelines-router
+      # tag:
+      pullPolicy: IfNotPresent
+
+    internalPort: 8046
+    externalPort: 8082
+
+    mountPath: "/opt/jfrog/router/var/etc"
+
+    resources: {}
+    #  requests:
+    #    memory: "2Gi"
+    #    cpu: "500m"
+    #  limits:
+    #    memory: "4Gi"
+    #    cpu: "2"
+
+  www:
+    image:
+      repository: jfrog/pipelines-www
+      # tag:
+      pullPolicy: IfNotPresent
+
+    service:
+      ## Supported service types: ClusterIP, NodePort and LoadBalancer
+      type: ClusterIP
+      port: 30001
+
+      annotations:
+      # external-dns.alpha.kubernetes.io/hostname:  example.org
+      # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+      # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
+
+      ## Set LB static IP
+      loadBalancerIP:
+
+      ## Whitelist IPs allowed to LoadBalancer type services
+      ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
+      loadBalancerSourceRanges: []
+
+    ## External URL, it is ignored if ingress is enabled
+    externalUrl:
+
+    ingress:
+      enabled: false
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      path: /
+      hosts:
+        - chart-example.local
+
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  msg:
+    uiUser: monitor
+    uiUserPassword: ""
+
+  pipelineSync:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  runTrigger:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  stepTrigger:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  cron:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  nexec:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  hookHandler:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  marshaller:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  logup:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  ## Pipelines installer
+  pipelinesInit:
+    image:
+      repository: jfrog/pipelines-installer
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+  systemYaml: |
+    shared:
+      ## Artifactory configuration
+      ##
+      artifactory:
+        ## Artifactory URL
+        ##
+        baseUrl: "{{ required "\n\npipelines.jfrogUrl is required!\n" .Values.pipelines.jfrogUrl }}"
+        ## Unified UI URL
+        ##
+        baseUrlUI: "{{ required "\n\npipelines.jfrogUrlUI is required!\n" .Values.pipelines.jfrogUrlUI }}"
+        ## Pipelines Service ID
+        ##
+        serviceId: "{{ .Values.pipelines.serviceId }}"
+        ## Artifactory Service ID
+        ##
+        artifactoryServiceId: "{{ .Values.pipelines.artifactoryServiceId }}"
+        ## Artifactory License ID
+        ##
+        licenseId: "{{ .Values.pipelines.licenseId }}"
+        ## Proxy to connect to Artifactory
+        ##
+        proxy:
+          url: ""
+          username: ""
+          password: ""
+
+      ## Router configuration
+      ##
+      router:
+        image: "jfrog/pipelines-router"
+        ip: ""
+        accessPort: {{ .Values.pipelines.router.internalPort }}
+        dataPort: {{ .Values.pipelines.router.externalPort }}
+        joinKey: "{{ .Values.pipelines.joinKey }}"
+
+      security:
+        masterKey: "{{ .Values.pipelines.masterKey }}"
+
+      ## Database configuration
+      ##
+      db:
+        type: "postgres"
+        {{- if .Values.postgresql.enabled }}
+        ip: {{ .Release.Name }}-postgresql
+        port: "{{ .Values.postgresql.service.port }}"
+        name: {{ .Values.postgresql.postgresqlDatabase }}
+        username: {{ .Values.postgresql.postgresqlUsername }}
+        password: {{ .Values.postgresql.postgresqlPassword }}
+        {{- else }}
+        ip: {{ .Values.global.postgresql.host }}
+        port: "{{ .Values.global.postgresql.port }}"
+        name: {{ .Values.global.postgresql.database }}
+        username: {{ .Values.global.postgresql.user }}
+        password: {{ .Values.global.postgresql.password }}
+        {{- end }}
+        image: "jfrog/pipelines-postgres"
+        version: 9.5
+        externalUrl: ""
+        {{- if .Values.postgresql.enabled }}
+        connectionString: "{{ (printf "postgres://%s:%s@%s-postgresql:%v/%s" .Values.postgresql.postgresqlUsername .Values.postgresql.postgresqlPassword .Release.Name .Values.postgresql.service.port .Values.postgresql.postgresqlDatabase) }}"
+        {{- else }}
+        connectionString: "{{ (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) }}"
+        {{- end }}
+
+      ## RabbitMQ configuration
+      ##
+      msg:
+        image: "jfrog/pipelines-msg"
+        version: 3.5.7
+        {{- if .Values.rabbitmq.enabled }}
+        ip: {{ .Release.Name }}-rabbitmq
+        port: {{ .Values.rabbitmq.service.port }}
+        adminPort: {{ .Values.rabbitmq.service.managerPort }}
+        erlangCookie: {{ .Values.rabbitmq.rabbitmq.erlangCookie }}
+        username: {{ .Values.rabbitmq.rabbitmq.username }}
+        password: {{ .Values.rabbitmq.rabbitmq.password }}
+        defaultExchange: pipelinesEx
+        amqpVhost: pipelines
+        amqpRootVhost: pipelinesRoot
+        {{- else }}
+        ip: {{ .Values.rabbitmq.internal_ip }}
+        port: {{ .Values.rabbitmq.port}}
+        adminPort: {{ .Values.rabbitmq.manager_port }}
+        erlangCookie: {{ .Values.rabbitmq.erlang_cookie }}
+        username: {{ .Values.rabbitmq.ms_username }}
+        password: {{ .Values.rabbitmq.ms_password }}
+        defaultExchange: {{ .Values.rabbitmq.root_vhost_exchange_name }}
+        amqpVhost: {{ .Values.rabbitmq.build_vhost_name}}
+        amqpRootVhost: {{ .Values.rabbitmq.root_vhost_name }}
+        protocol: amqps
+        {{- end }}
+        queues:
+          - "core.pipelineSync"
+          - "core.runTrigger"
+          - "core.stepTrigger"
+          - "core.marshaller"
+          - "cluster.init"
+          - "core.logup"
+          - "www.signals"
+          - "core.nexec"
+          - "core.hookHandler"
+        ui:
+          {{- if .Values.rabbitmq.enabled }}
+          username: {{ .Values.pipelines.msg.uiUser }}
+          password: {{ .Values.pipelines.msg.uiUserPassword }}
+          {{- else }}
+          protocol: http
+          username: {{ .Values.rabbitmq.cp_username }}
+          password: {{ .Values.rabbitmq.cp_password }}
+          {{- end }}
+        external:
+          ## URL for build plane VMs to access RabbitMQ
+          {{- if .Values.rabbitmq.externalUrl }}
+          url: {{ .Values.rabbitmq.externalUrl }}
+          {{- else if (and .Values.rabbitmq.serviceVmLb.enabled .Values.rabbitmq.serviceVmLb.loadBalancerIP) }}
+          url: amqp://{{ .Values.rabbitmq.serviceVmLb.loadBalancerIP }}
+          {{- else if .Values.rabbitmq.enabled }}
+          url: amqp://{{ .Release.Name }}-rabbitmq
+          {{- else }}
+          url: amqps://{{ .Values.rabbitmq.msg_hostname }}:{{ .Values.rabbitmq.port }}
+          {{- end }}
+          rootUrl: ""
+          adminUrl: ""
+        {{- if not .Values.rabbitmq.enabled }}
+        build:
+          username: {{ .Values.rabbitmq.build_username }}
+          password: {{ .Values.rabbitmq.build_password }}
+        {{- end }}
+
+      ## Vault configuration
+      ##
+      vault:
+        image: "jfrog/pipelines-vault"
+        version: 1.0.2
+        ip: {{ include "pipelines.vault.name" . }}
+        port: {{ .Values.vault.service.port }}
+        clusterPort: 30101
+        ## DO NOT CHANGE THE TOKEN VALUE!!!
+        token: "_VAULT_TOKEN_"
+        unsealKeys:
+          - ""
+          - ""
+          - ""
+          - ""
+          - ""
+
+      ## Redis configuration
+      ##
+      redis:
+        ip: {{ .Release.Name }}-redis-master
+        port: 6379
+        image: "jfrog/pipelines-redis"
+        version: 3.0.6
+        clusterEnabled: false
+
+    ## This section is used for bringing up the core services and setting up
+    ## configurations required by the installer & the services
+    ##
+    core:
+      ## id is automatically determined based on the current hostname
+      ## or set using the SHARED_NODE_ID environment variable.
+      ##
+      id: "afd8df9d08bf257ae9b7d7dbbf348b7a3a574ebdd3a61d350d4b64e3129dee85"
+      installerIP: "1.2.3.4"
+      installerAuthToken: "{{ .Values.pipelines.authToken }}"
+      installerImage: "jfrog/pipelines-installer"
+      registryUrl: "{{ .Values.imageRegistry }}"
+      os: "Ubuntu_16.04"
+      osDistribution: "xenial"
+      architecture: "x86_64"
+      dockerVersion: ""
+      runMode: "{{ .Values.runMode }}"
+      user: ""
+      group: ""
+      noVerifySsl: false
+      ignoreTLSErrors: false
+      controlplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+      buildplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+
+      ## Global proxy settings, to be applied to all services
+      ##
+      proxy:
+        httpProxy: ""
+        httpsProxy: ""
+        noProxy: ""
+        username: ""
+        password: ""
+
+      ## Mailserver settings
+      ##
+      mailserver:
+        host: ""
+        port: ""
+        username: ""
+        password: ""
+        tls: ""
+        ssl: ""
+      apiRetryIntervalMs: 3000
+      accountSyncFrequencyHr: 1
+      kubernetesNamespace: "pipelines"
+      imageRegistrySecret: "{{ .Values.imagePullSecrets }}"
+      hardDeleteIntervalInMins: 60
+      configBackupCount: 5
+      lastUpdateTime: ""
+      callHomeUrl:  "https://api.bintray.net/products/jfrog/pipelines/stats/usage"
+      allowCallHome: true
+      serviceInstanceHealthCheckIntervalInMins: 1
+      serviceInstanceStatsCutOffIntervalInHours: 24
+
+      ## Service configuration
+      ##
+      services:
+        api:
+          name: {{ include "pipelines.api.name" . }}
+          port: {{ .Values.pipelines.api.service.port }}
+          {{- if (and .Values.pipelines.api.ingress.enabled .Values.pipelines.api.ingress.tls) }}
+          {{- range .Values.pipelines.api.ingress.hosts }}
+          externalUrl: https://{{ . }}
+          {{- end }}
+          {{- else if .Values.pipelines.api.ingress.enabled }}
+          {{- range .Values.pipelines.api.ingress.hosts }}
+          externalUrl: http://{{ . }}
+          {{- end }}
+          {{- else }}
+          externalUrl: {{ .Values.pipelines.api.externalUrl }}
+          {{- end }}
+          image: "jfrog/pipelines-api"
+        www:
+          name: {{ include "pipelines.www.name" . }}
+          port: {{ .Values.pipelines.www.service.port }}
+          {{- if (and .Values.pipelines.www.ingress.enabled .Values.pipelines.www.ingress.tls) }}
+          {{- range .Values.pipelines.www.ingress.hosts }}
+          externalUrl: https://{{ . }}
+          {{- end }}
+          {{- else if .Values.pipelines.www.ingress.enabled }}
+          {{- range .Values.pipelines.www.ingress.hosts }}
+          externalUrl: http://{{ . }}
+          {{- end }}
+          {{- else }}
+          externalUrl: {{ .Values.pipelines.www.externalUrl }}
+          {{- end }}
+          sessionSecret: "{{ .Values.pipelines.authToken }}"
+          image: "jfrog/pipelines-www"
+        pipelineSync:
+          name: pipelineSync
+          image: "jfrog/pipelines-micro"
+        runTrigger:
+          name: runTrigger
+          image: "jfrog/pipelines-micro"
+        stepTrigger:
+          name: stepTrigger
+          image: "jfrog/pipelines-micro"
+        cron:
+          name: cron
+          image: "jfrog/pipelines-micro"
+        nexec:
+          name: nexec
+          image: "jfrog/pipelines-micro"
+        hookHandler:
+          name: hookHandler
+          image: "jfrog/pipelines-micro"
+        marshaller:
+          name: marshaller
+          image: "jfrog/pipelines-micro"
+
+    ## Runtime configuration
+    ##
+    runtime:
+      rootBucket: "{{ .Values.pipelines.rootBucket }}"
+      defaultMinionCount: 1
+      nodeCacheIntervalMS: 600000
+      jobConsoleBatchSize: 10
+      jobConsoleBufferIntervalMs: 3
+      maxDiskUsagePercentage: 90
+      stepTimeoutMS: 3600000
+      nodeStopDayOfWeek: 0
+      nodeStopIntervalDays: 30
+      maxNodeCheckInDelayMin: 15
+      defaultMinionInstanceSize: "c4.large"
+      allowDynamicNodes: true
+      allowCustomNodes: true
+      languageImages:
+        - architecture: x86_64
+          os: Ubuntu_16.04
+          language: node
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u16node
+          isDefault: true
+          defaultVersion: 10.18.0
+        - architecture: x86_64
+          os: Ubuntu_16.04
+          language: java
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u16java
+          defaultVersion: 13
+        - architecture: x86_64
+          os: Ubuntu_16.04
+          language: cpp
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u16cpp
+          defaultVersion: 9.0.0
+        - architecture: x86_64
+          os: Ubuntu_16.04
+          language: go
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u16go
+          defaultVersion: 1.12.14
+        - architecture: x86_64
+          os: Ubuntu_18.04
+          language: node
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u18node
+          isDefault: true
+          defaultVersion: 10.18.0
+        - architecture: x86_64
+          os: Ubuntu_18.04
+          language: java
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u18java
+          defaultVersion: 13
+        - architecture: x86_64
+          os: Ubuntu_18.04
+          language: cpp
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u18cpp
+          defaultVersion: 9.0.0
+        - architecture: x86_64
+          os: Ubuntu_18.04
+          language: go
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-u18go
+          defaultVersion: 1.12.14
+        - architecture: x86_64
+          os: CentOS_7
+          language: node
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-c7node
+          isDefault: true
+          defaultVersion: 10.18.0
+        - architecture: x86_64
+          os: CentOS_7
+          language: java
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-c7java
+          defaultVersion: 11
+        - architecture: x86_64
+          os: CentOS_7
+          language: cpp
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-c7cpp
+          defaultVersion: 8.3.1
+        - architecture: x86_64
+          os: CentOS_7
+          language: go
+          registryUrl: {{ .Values.buildImage.registry }}
+          image: jfrog/pipelines-c7go
+          defaultVersion: 1.12.14
+
+## For setting up external services
+global:
+  ## Internal Postgres must be set to false
+  postgresql:
+    host:
+    port: 5432
+    database: "pipelinesdb"
+    user: "apiuser"
+    password: ""
+    ## PostgreSQL password using existing secret
+    # existingSecret: secret
+
+# PostgreSQL
+## https://hub.helm.sh/charts/bitnami/postgresql
+## Configuration values for the postgresql dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+##
+postgresql:
+  enabled: true
+
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.17-debian-10-r21
+
+  postgresqlDatabase: "pipelinesdb"
+  postgresqlUsername: "apiuser"
+  postgresqlPassword: ""
+
+  ## PostgreSQL password using existing secret
+  # existingSecret: secret
+  ## Mount PostgreSQL secret as a file instead of passing environment variable
+  # usePasswordFile: false
+
+  service:
+    port: 5432
+
+  persistence:
+    enabled: true
+    size: 50Gi
+    existingClaim:
+
+  master:
+    resources: {}
+    #  requests:
+    #    memory: "1Gi"
+    #    cpu: "250m"
+    #  limits:
+    #    memory: "2Gi"
+    #    cpu: "1"
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+
+## RabbitMQ HA
+## https://hub.helm.sh/charts/bitnami/rabbitmq
+## Configuration values for the rabbitmq dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
+##
+rabbitmq:
+  enabled: true
+  replicas: 1
+
+  rabbitmq:
+    username: admin
+
+    ## RabbitMQ application password
+    ## ref: https://github.com/bitnami/bitnami-docker-rabbitmq#environment-variables
+    password: ""
+    # existingPasswordSecret: name-of-existing-secret
+
+    ## Erlang cookie to determine whether different nodes are allowed to communicate with each other
+    erlangCookie: PIPELINESRABBITMQCLUSTER
+    # existingErlangSecret: name-of-existing-secret
+
+    extraPlugins: ""
+
+  service:
+
+    type: ClusterIP
+
+    ## Service annotations
+    annotations: {}
+
+    ## Load Balancer sources
+    # loadBalancerSourceRanges:
+    # - 10.10.10.0/24
+
+  persistence:
+    enabled: true
+    size: 20Gi
+
+  resources: {}
+
+  affinity: {}
+
+  ingress:
+    ## Set to true to enable ingress record generation
+    enabled: false
+
+    ## The list of hostnames to be covered with this ingress record.
+    ## Most likely this will be just one host, but in the event more hosts are needed, this is an array
+    # hostName: foo.bar.com
+    path: /
+
+    ## Set this to true in order to enable TLS on the ingress record
+    ## A side effect of this will be that the backend wordpress service will be connected at port 443
+    tls: true
+
+    ## If TLS is set to true, you must declare what secret will store the key/certificate for TLS
+    tlsSecret: myTlsSecret
+
+    ## Ingress annotations done as key:value pairs
+    annotations:
+    #  kubernetes.io/ingress.class: nginx
+    #  kubernetes.io/tls-acme: true
+
+  ## External URL for Build Plane VMs to access RabbitMQ
+  ## e.g. amqps://pipelines-msg.doamin.com
+  ## It should be set for the LoadBalancer below IP with proper domain name and TLS if external IP is used.
+  externalUrl:
+
+  ## Service with external/internal LoadBalancer to access RabbitMQ by Node-pool VMs
+  serviceVmLb:
+    enabled: false
+
+    annotations:
+    ## Set internal LB for Azure
+    #  service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    ## Set internal LB for AWS
+    #  service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    ## Set internal LB for GCP
+    #  cloud.google.com/load-balancer-type: "Internal"
+
+    ## You must to provide internal LB static IP
+    loadBalancerIP:
+
+    ## Whitelist IPs allowed to LoadBalancer type services
+    ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
+    loadBalancerSourceRanges: []
+
+## Redis
+## Configuration values for the redis dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/redis/README.md
+##
+redis:
+  enabled: true
+
+  redisPort: 6379
+
+  cluster:
+    enabled: false
+    slaveCount: 2
+
+  usePassword: false
+
+  master:
+    configmap: |-
+      appendonly yes
+      loglevel notice
+
+    resources: {}
+    #  requests:
+    #    memory: 200Mi
+    #    cpu: 100m
+    #  limits:
+    #    memory: 700Mi
+
+    affinity: {}
+
+  slave:
+    resources: {}
+    #  requests:
+    #    memory: 200Mi
+    #    cpu: 100m
+    #  limits:
+    #    memory: 200Mi
+
+    affinity: {}
+
+## Vault
+vault:
+  replicaCount: 1
+
+  updateStrategy: RollingUpdate
+
+  image:
+    repository: vault
+    tag: 1.3.1
+    pullPolicy: IfNotPresent
+
+  init:
+    image:
+      repository: jfrog/pipelines-vault-init
+      # tag:
+      pullPolicy: IfNotPresent
+
+  service:
+    # Supported service types: ClusterIP and NodePort
+    type: ClusterIP
+    port: 30100
+
+  resources: {}
+  #  requests:
+  #    memory: 256Mi
+  #    cpu: 200m
+  #  limits:
+  #    memory: 1Gi
+  #    cpu: 600m
+
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+
+  ## Role Based Access
+  ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+  rbac:
+    role:
+      ## Rules to create. It follows the role specification
+      rules:
+      - apiGroups:
+        - ''
+        resources:
+        - secrets
+        verbs:
+        - "*"
+
+# Filebeat Sidecar container
+## The provided filebeat configuration is for Pipeline logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: false
+  name: pipelines-filebeat
+  image:
+    repository: "docker.elastic.co/beats/filebeat"
+    version: 7.5.1
+  logstashUrl: "logstash:5044"
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources: {}
+#    requests:
+#      memory: "100Mi"
+#      cpu: "100m"
+#    limits:
+#      memory: "100Mi"
+#      cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.pipelines.logPath }}/filebeat
+    name: pipelines-filebeat
+    queue.spool: ~
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.pipelines.logPath }}/*.log
+      fields:
+        service: "jfpip"
+        log_type: "pipelines"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## The Build Plane is where the actual builds will run
+buildPlane:
+  ## Dynamic Build Plane VMs
+  dynamic:
+    provider:
+      aws:
+        enabled: false
+        ## Replace the dummy values with the real ones
+        accountId: testaccountid
+        nodePoolName: customer-dynamic-nodepool
+        nodelimit: "5"
+        instanceType: c4.xlarge
+        securityGroupId: testsecuritygroupId
+        privateSubnetId: private-subnet-foobargoo
+        keyPairName: testaccountSSHKeyPair
+        vpcId: testVPCId
+        publicNatIp: testprivateNATIp
+        publicSubnetId: testpublicsubnetid
+        region: us-east-1
+        ##
+        accessKey: ""
+        secretKey: ""
+
+  ## Build Nodes as Kubernetes StatefulSet
+  ## Experimental feature for static nodes
+  ## NOTE: It uses privileged DinD container
+  k8s:
+    enabled: false
+
+    ## Pipelines Kubernetes Node Pool name and size
+    pool:
+      name: k8s_pool
+      size: 50
+
+    ## Node Count
+    replicaCount: 5
+
+    updateStrategy: RollingUpdate
+
+    image:
+      repository: jfrog/pipelines-k8s-node
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+    dind:
+      image:
+        repository: docker
+        tag: 18.09.9-dind
+        pullPolicy: IfNotPresent
+
+      resources: {}
+
+#
+rbac:
+  create: true

@@ -6,13 +6,17 @@ metadata:
     app: {{ template "mission-control.name" . }}
     chart: {{ template "mission-control.chart" . }}
     component: {{ .Values.missionControl.name }}
+    version: {{ default .Chart.AppVersion .Values.missionControl.version }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+  {{- if .Release.IsUpgrade }}
+    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Mission Control 3.x currently not supported!\nIf this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
+  {{- end }}
 spec:
   serviceName: {{ template "mission-control.fullname" . }}
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
-      type: RollingUpdate
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ template "mission-control.name" . }}
@@ -24,6 +28,8 @@ spec:
         app: {{ template "mission-control.name" . }}
         component: {{ .Values.missionControl.name }}
         release: {{ .Release.Name }}
+      annotations:
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/mission-control-system-yaml.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "mission-control.serviceAccountName" . }}
     {{- if .Values.imagePullSecrets }}
@@ -34,7 +40,7 @@ spec:
         fsGroup: {{ .Values.uid }}
       initContainers:
     {{- if .Values.elasticsearch.enabled }}
-      - name: es-init
+      - name: elasticsearch-init
         image: "{{ .Values.elasticsearch.initContainerImage }}"
         securityContext:
           privileged: true
@@ -50,19 +56,50 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
-      - name: "wait-for-db"
+      - name: copy-system-yaml
+        image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsUser: {{ .Values.uid }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          echo "Copy system.yaml to {{ .Values.missionControl.persistence.mountPath }}/etc";
+          mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc;
+          cp -fv /tmp/etc/system.yaml {{ .Values.missionControl.persistence.mountPath }}/etc/system.yaml;
+          echo "Copy application.yaml to {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc";
+          mkdir -p {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc;
+          cp -fv /tmp/etc/application.yaml {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc/application.yaml;
+          echo "Remove {{ .Values.missionControl.persistence.mountPath }}/lost+found folder if exists";
+          rm -rfv {{ .Values.missionControl.persistence.mountPath }}/lost+found;
+        volumeMounts:
+        - name: mission-control-data
+          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+        - name: systemyaml
+          mountPath: "/tmp/etc/system.yaml"
+          subPath: system.yaml
+        - name: applicationyaml
+          mountPath: "/tmp/etc/application.yaml"
+          subPath: application.yaml
+      {{- if or .Values.postgresql.enabled ( and .Values.database.host .Values.database.port ) }}
+      - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
         command:
         - 'sh'
         - '-c'
         - >
       {{- if .Values.postgresql.enabled }}
-          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; \
+          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
       {{- else }}
-          until true; \
+        {{- if and .Values.database.host .Values.database.port }}
+          until nc -z -w 2 {{ .Values.database.host }} {{ .Values.database.port }} && echo database ok; do
+        {{- else }}
+          until true; do
+        {{- end }}
       {{- end }}
-            do sleep 2;
+            sleep 2;
           done;
+    {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- if .Values.postgresql.enabled }}
@@ -82,17 +119,17 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-            {{- if .Values.postgresql.postgresPassword }}
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: postgresPassword
+              {{- if .Values.postgresql.postgresqlPassword }}
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: postgres-password
             {{- else }}
               name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
             {{- end }}
-              key: postgres-password
         - name: JFMC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              name: {{ template "mission-control.fullname" . }}-db-cred
               key: jfmcPassword
         - name: JFMC_DB_USERNAME
           value: '{{ .Values.postgresql.db.jfmcUsername }}'
@@ -101,7 +138,7 @@ spec:
         - name: JFEX_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              name: {{ template "mission-control.fullname" . }}-db-cred
               key: jfexPassword
         - name: JFEX_DB_USERNAME
           value: '{{ .Values.postgresql.db.jfexUsername }}'
@@ -114,7 +151,7 @@ spec:
         - name: JFSC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              name: {{ template "mission-control.fullname" . }}-db-cred
               key: jfscPassword
         - name: JFIS_DB_USERNAME
           value: '{{ .Values.postgresql.db.jfisUsername }}'
@@ -123,7 +160,7 @@ spec:
         - name: JFIS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
+              name: {{ template "mission-control.fullname" . }}-db-cred
               key: jfisPassword
         command:
         - 'bash'
@@ -135,169 +172,13 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
-      - name: "set-properties"
-        image: "{{ .Values.initContainerImage }}"
-        env:
-        - name: ELASTIC_SEARCH_USERNAME
-          value: '{{ .Values.elasticsearch.username }}'
-        - name: ELASTIC_SEARCH_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
-              key: password
-      {{- if .Values.postgresql.enabled }}
-        - name: JFMC_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfmcUsername }}'
-        - name: JFMC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: jfmcPassword
-        - name: JFEX_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfexUsername }}'
-        - name: JFEX_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: jfexPassword
-        - name: JFSC_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfscUsername }}'
-        - name: JFSC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: jfscPassword
-        - name: JFIS_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfisUsername }}'
-        - name: JFIS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: jfisPassword
-      {{- else }}
-        {{- if .Values.database.secrets.user }}
-        - name: JFMC_DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
-        - name: JFEX_DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
-        - name: JFSC_DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
-        - name: JFIS_DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
-        {{- end }}
-        {{- if .Values.database.secrets.password }}
-        - name: JFMC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-        - name: JFEX_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-        - name: JFSC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-        - name: JFIS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
-        {{- else }}
-          {{- if and .Values.database.user .Values.database.password }}
-        - name: JFMC_DB_USERNAME
-          value: '{{ .Values.database.user }}'
-        - name: JFMC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: dbPassword
-        - name: JFEX_DB_USERNAME
-          value: '{{ .Values.database.user }}'
-        - name: JFEX_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: dbPassword
-        - name: JFSC_DB_USERNAME
-          value: '{{ .Values.database.user }}'
-        - name: JFSC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: dbPassword
-        - name: JFIS_DB_USERNAME
-          value: '{{ .Values.database.user }}'
-        - name: JFIS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: dbPassword
-          {{- else }}
-        - name: JFMC_DB_USERNAME
-          value: '{{ .Values.database.jfmcUsername }}'
-        - name: JFMC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfmcPassword
-        - name: JFEX_DB_USERNAME
-          value: '{{ .Values.database.jfexUsername }}'
-        - name: JFEX_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfexPassword
-        - name: JFSC_DB_USERNAME
-          value: '{{ .Values.database.jfscUsername }}'
-        - name: JFSC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfscPassword
-        - name: JFIS_DB_USERNAME
-          value: '{{ .Values.database.jfisUsername }}'
-        - name: JFIS_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfisPassword
-          {{- end }}
-        {{- end }}
-      {{- end }}
-        command:
-        - 'sh'
-        - '-c'
-        - 'sh /scripts/setProperties.sh'
-        volumeMounts:
-        - name: jfmc-setup-scripts
-          mountPath: "/scripts"
-        - name: mission-control-data
-          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
-      - name: "prepare-storage"
+      - name: prepare-storage
         image: "{{ .Values.initContainerImage }}"
         command:
         - 'sh'
         - '-c'
         - >
-          mkdir -p {{ .Values.missionControl.persistence.mountPath }}; 
+          mkdir -p {{ .Values.missionControl.persistence.mountPath }};
           chown -R {{ .Values.uid }}:{{ .Values.uid }} {{ .Values.missionControl.persistence.mountPath }}
         volumeMounts:
         - name: mission-control-data
@@ -321,10 +202,10 @@ spec:
           value: '{{ .Values.elasticsearch.httpPort }}'
         - name: 'transport.port'
           value: '{{ .Values.elasticsearch.transportPort }}'
-        - name: 'discovery.zen.minimum_master_nodes'
-          value: '{{ .Values.elasticsearch.env.minimumMasterNodes }}'
-        - name: 'discovery.zen.ping.unicast.hosts'
-          value: '{{ .Release.Name }}-mission-control'
+        # - name: 'discovery.zen.minimum_master_nodes'
+        #   value: '{{ .Values.elasticsearch.env.minimumMasterNodes }}'
+        # - name: 'discovery.zen.ping.unicast.hosts'
+        #   value: '{{ .Release.Name }}-mission-control'
         - name: ELASTIC_SEARCH_USERNAME
           value: '{{ .Values.elasticsearch.username }}'
         - name: ELASTIC_SEARCH_PASSWORD
@@ -343,13 +224,13 @@ spec:
           "
         - name: ELASTIC_SEARCH_URL
           value: '{{ .Values.elasticsearch.url }}'
-        lifecycle:
-          postStart:
-            exec:
-              command:
-              - '/bin/bash'
-              - '-c'
-              - 'sh /scripts/initSG.sh'
+        # lifecycle:
+        #   postStart:
+        #     exec:
+        #       command:
+        #       - '/bin/bash'
+        #       - '-c'
+        #       - 'sh /scripts/initSG.sh'
         ports:
         - name: eshttp
           containerPort: {{ .Values.elasticsearch.httpPort }}
@@ -362,24 +243,42 @@ spec:
           mountPath: "/scripts"
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
-        livenessProbe:
-          exec:
-            command:
-            - '/bin/bash'
-            - '-c'
-            - 'curl -s --fail -u${ELASTIC_SEARCH_USERNAME}:${ELASTIC_SEARCH_PASSWORD} "{{ .Values.elasticsearch.url }}/_cluster/health?local=true" --output /dev/null'
-          initialDelaySeconds: 90
-          periodSeconds: 10
-        readinessProbe:
-          exec:
-            command:
-            - '/bin/bash'
-            - '-c'
-            - 'curl -s --fail -u${ELASTIC_SEARCH_USERNAME}:${ELASTIC_SEARCH_PASSWORD} "{{ .Values.elasticsearch.url }}/_cluster/health?local=true" --output /dev/null'
-          initialDelaySeconds: 40
+        # livenessProbe:
+        #   httpGet:
+        #     path: /_cluster/health?local=true
+        #     port: 9200
+        #   initialDelaySeconds: 90
+        #   periodSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /_cluster/health?local=true
+        #     port: 9200
+        #   initialDelaySeconds: 60
     {{- end }}
+      - name: {{ .Values.router.name }}
+        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        ports:
+        - name: router
+          containerPort: {{ .Values.router.internalPort }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: {{ .Values.uid }}
+        volumeMounts:
+        - name: mission-control-data
+          mountPath: {{ .Values.router.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+{{- end }}
       - name: {{ .Values.missionControl.name }}
-        image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
+        image: {{ .Values.missionControl.image.repository }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
         - '/bin/sh'
@@ -389,77 +288,15 @@ spec:
           echo "Running custom preStartCommand command";
           {{ tpl . $ }};
         {{- end }}
-          /opt/entrypoint-mc.sh;
+          /opt/jfrog/mc/app/bin/entrypoint-mc.sh;
+        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfmcPassword }}
         env:
-      {{- if .Values.postgresql.enabled }}
-        - name: DB_TYPE
-          value: 'postgresql'
-        - name: DB_SSLMODE
-          value: '{{ .Values.postgresql.db.sslmode }}'
-        - name: DB_NAME
-          value: '{{ .Values.postgresql.db.name }}'
-        - name: DB_TABLESPACE
-          value: '{{ .Values.postgresql.db.tablespace }}'
-        - name: JFMC_DB_URL
-          value: 'jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.db.name }}?currentSchema={{ .Values.postgresql.db.jfmcSchema }}'
-      {{- else }}
-        - name: DB_TYPE
-          value: '{{ .Values.database.type }}'
-        - name: DB_NAME
-          value: '{{ .Values.database.name }}'
-        - name: DB_HOST
-          value: '{{ .Values.database.host }}'
-        - name: DB_PORT
-          value: '{{ .Values.database.port }}'
-        - name: JFMC_DB_URL
-          value: 'jdbc:postgresql://{{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}?currentSchema={{ .Values.database.jfmcSchema }}'
-      {{- end }}
-        - name: INSIGHT_URL
-          value: "http://localhost:{{ .Values.insightServer.internalHttpPort }}"
-        - name: POD_RESTART_TIME
-          value: "{{ .Values.podRestartTime }}"
-        - name: ARTIFACTORY_CLIENT_CONNECTIONTIMEOUT
-          value: '20'
-        - name: XRAY_CLIENT_CONNECTIONTIMEOUT
-          value: '20'
-        - name: JENKINS_CLIENT_CONNECTIONTIMEOUT
-          value: '20'
-        - name: GIT_CLIENT_CONNECTIONTIMEOUT
-          value: '20'
-        - name: INSIGHT_CLIENT_CONNECTIONTIMEOUT
-          value: '20'
-        - name: MC_URL
-          value: "{{ .Values.missionControl.missionControlUrl }}"
-        - name: JFMC_EXTRA_JAVA_OPTS
-          value: "
-          {{- if .Values.missionControl.javaOpts.other }}
-              {{ .Values.missionControl.javaOpts.other }}
-          {{- end}}
-          {{- if .Values.missionControl.javaOpts.xms }}
-              -Xms{{ .Values.missionControl.javaOpts.xms }}
-          {{- end }}
-          {{- if .Values.missionControl.javaOpts.xmx }}
-              -Xmx{{ .Values.missionControl.javaOpts.xmx }}
-          {{- end }}
-          "
-        - name: JFMC_SERVER_HOME
-          value: "{{ .Values.missionControl.home }}"
-        - name: JFMC_KEY
-          value: "{{ .Values.missionControl.mcKey }}"
-        - name: JFMC_REPOSITORY
-          value: "{{ .Values.missionControl.repository }}"
-        - name: JFMC_PACKAGE
-          value: "{{ .Values.missionControl.package }}"
-        - name: JFMC_DIST
-          value: "{{ .Values.missionControl.dist }}"
-        - name: JFMC_OS_VERSION
-          value: "{{ .Values.missionControl.osVersion }}"
-        - name: JFMC_OS_TYPE
-          value: "{{ .Values.missionControl.osType }}"
-        - name: JFMC_OS_DIST
-          value: "{{ .Values.missionControl.osDist }}"
-        - name: JFMC_CREATE_DATE
-          value: "{{ .Values.podRestartTime }}"
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfmcPassword
+        {{- end }}
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
@@ -471,109 +308,80 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
+      {{- if .Values.filebeat.enabled }}
+      - name: {{ .Values.filebeat.name }}
+        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        args:
+        - "-e"
+        - "-E"
+        - "http.enabled=true"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: mission-control-data
+          mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
         livenessProbe:
-          httpGet:
-            path: /api/v3/ping
-            port: {{ .Values.missionControl.internalPort }}
-          periodSeconds: 10
-          initialDelaySeconds: 600
+{{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
         readinessProbe:
-          httpGet:
-            path: /api/v3/ping
-            port: {{ .Values.missionControl.internalPort }}
-          periodSeconds: 20
-          initialDelaySeconds: 60
-      - name: {{ .Values.insightServer.name }}
-        image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        env:
-        - name: JFIS_URL
-          value: 'http://localhost:{{ .Values.insightServer.internalHttpPort }}'
-        - name: JFMC_ES_CLUSTER_SETUP
-          value: 'NO'
-        - name: JFEX_URL
-          value: 'http://localhost:{{ .Values.insightExecutor.internalPort }}'
-        - name: JFSC_URL
-          value: 'http://localhost:{{ .Values.insightScheduler.internalPort }}'
-        - name: GOMAXPROCS
-          value: "1"
-      {{- if .Values.postgresql.enabled }}
-        - name: DB_TYPE
-          value: 'postgresql'
-        - name: DB_URL
-          value: '{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}'
-        - name: DB_NAME
-          value: '{{ .Values.postgresql.db.name }}'
-        - name: DB_SSLMODE
-          value: '{{ .Values.postgresql.db.sslmode }}'
-        - name: DB_TABLESPACE
-          value: '{{ .Values.postgresql.db.tablespace }}'
-        - name: JFIS_DB_SCHEMA
-          value: '{{ .Values.postgresql.db.jfisSchema }}'
-        - name: JFSC_DB_SCHEMA
-          value: '{{ .Values.postgresql.db.jfscSchema }}'
-        - name: JFEX_DB_SCHEMA
-          value: '{{ .Values.postgresql.db.jfexSchema }}'
-      {{- else }}
-        - name: DB_TYPE
-          value: '{{ .Values.database.type }}'
-        - name: DB_NAME
-          value: '{{ .Values.database.name }}'
-        - name: DB_HOST
-          value: '{{ .Values.database.host }}'
-        - name: DB_PORT
-          value: '{{ .Values.database.port }}'
-        - name: DB_URL
-          value: '{{ .Values.database.host }}:{{ .Values.database.port }}'
-        - name: JFIS_DB_SCHEMA
-          value: '{{ .Values.database.jfisSchema }}'
-        - name: JFSC_DB_SCHEMA
-          value: '{{ .Values.database.jfscSchema }}'
-        - name: JFEX_DB_SCHEMA
-          value: '{{ .Values.database.jfexSchema }}'
+{{ toYaml .Values.filebeat.readinessProbe | indent 10 }}
+        resources:
+{{ toYaml .Values.filebeat.resources | indent 10 }}
+        terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-        - name: ELASTIC_SEARCH_URL
-          value: '{{ .Values.elasticsearch.url }}'
-        - name: ELASTIC_SEARCH_WRITE_URL
-          value: '{{ .Values.elasticsearch.url }}'
-        - name: ELASTIC_SEARCH_READ_URL
-          value: '{{ .Values.elasticsearch.url }}'
-        - name: ELASTIC_LB_WRITE_URL
-          value: ''
-        - name: ELASTIC_LB_READ_URL
-          value: ''
-        - name: ELASTIC_CLUSTER_NAME
-          value: '{{ .Values.elasticsearch.env.clusterName }}'
-        - name: JFIS_ALLOW_IP
-          value: "{{ .Values.insightServer.allowIP }}"
-        - name: JFMC_INSIGHT_SERVER_PORT
-          value: "{{ .Values.insightServer.internalHttpPort }}"
+        resources:
+{{ toYaml .Values.missionControl.resources | indent 10 }}
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/v3/ping
+        #     port: {{ .Values.missionControl.internalPort }}
+        #   periodSeconds: 10
+        #   initialDelaySeconds: 600
+        # readinessProbe:
+        #   httpGet:
+        #     path: /api/v3/ping
+        #     port: {{ .Values.missionControl.internalPort }}
+        #   periodSeconds: 20
+        #   initialDelaySeconds: 60
+      - name: {{ .Values.insightServer.name }}
+        image: {{ .Values.insightServer.image.repository }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfisPassword }}
+        env:
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfisPassword
+        {{- end }}
         ports:
         - containerPort: {{ .Values.insightServer.internalHttpPort }}
           protocol: TCP
         volumeMounts:
-        - name: insight-server-logs
-          mountPath: {{ .Values.insightServer.persistence.mountPath }}
+        - name: mission-control-data
+          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.insightServer.resources | indent 10 }}
-        livenessProbe:
-          httpGet:
-            path: /api/status
-            port: {{ .Values.insightServer.internalHttpPort }}
-          initialDelaySeconds: 600
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/status
-            port: {{ .Values.insightServer.internalHttpPort }}
-          initialDelaySeconds: 30
-          periodSeconds: 20
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/status
+        #     port: {{ .Values.insightServer.internalHttpPort }}
+        #   initialDelaySeconds: 600
+        #   periodSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /api/status
+        #     port: {{ .Values.insightServer.internalHttpPort }}
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 20
       - name: {{ .Values.insightScheduler.name }}
-        image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
+        image: {{ .Values.insightScheduler.image.repository }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
-        - name: JFIS_URL
-          value: 'http://localhost:{{ .Values.insightServer.internalHttpPort }}'
         - name: JFMC_EXTRA_JAVA_OPTS
           value: "
           {{- if .Values.insightScheduler.javaOpts.other }}
@@ -586,69 +394,69 @@ spec:
               -Xmx{{ .Values.insightScheduler.javaOpts.xmx }}
           {{- end}}
           -Dserver.port={{ .Values.insightScheduler.internalPort }}
-          "        
+          "
+        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfscPassword }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfscPassword
+        {{- end }}
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
         volumeMounts:
-        - name: insight-scheduler-logs
-          mountPath: {{ .Values.insightScheduler.persistence.mountPath }}
+        - name: mission-control-data
+          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.insightScheduler.resources | indent 10 }}
-        livenessProbe:
-          httpGet:
-            path: /api/status
-            port: {{ .Values.insightScheduler.internalPort }}
-          initialDelaySeconds: 600
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/status
-            port: {{ .Values.insightScheduler.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 20
+        # livenessProbe:
+        #   httpGet:
+        #     path: /api/status
+        #     port: {{ .Values.insightScheduler.internalPort }}
+        #   initialDelaySeconds: 600
+        #   periodSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /api/status
+        #     port: {{ .Values.insightScheduler.internalPort }}
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 20
       - name: {{ .Values.insightExecutor.name }}
-        image: {{ .Values.insightExecutor.image }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
+        image: {{ .Values.insightExecutor.image.repository }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfexPassword }}
         env:
-        - name: JFIS_URL
-          value: 'http://localhost:{{ .Values.insightServer.internalHttpPort }}'
-        - name: JFMC_EXTRA_JAVA_OPTS
-          value: "
-          {{- if .Values.insightExecutor.javaOpts.other }}
-              {{ .Values.insightExecutor.javaOpts.other }}
-          {{- end}}
-          {{- if .Values.insightExecutor.javaOpts.xms }}
-              -Xms{{ .Values.insightExecutor.javaOpts.xms }}
-          {{- end}}
-          {{- if .Values.insightExecutor.javaOpts.xmx }}
-              -Xmx{{ .Values.insightExecutor.javaOpts.xmx }}
-          {{- end}}
-          -Dserver.port={{ .Values.insightExecutor.internalPort }}
-          "
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfexPassword
+        {{- end }}
         ports:
         - containerPort: {{ .Values.insightExecutor.internalPort }}
           protocol: TCP
         volumeMounts:
-        - name: insight-executor-logs
-          mountPath: {{ .Values.insightExecutor.persistence.mountPath }}
+        - name: mission-control-data
+          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.insightExecutor.resources | indent 10 }}
-        livenessProbe:
-          httpGet:
-            path: /executorservice/api
-            port: {{ .Values.insightExecutor.internalPort }}
-          initialDelaySeconds: 600
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /executorservice/api
-            port: {{ .Values.insightExecutor.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 20
+        # livenessProbe:
+        #   httpGet:
+        #     path: /executorservice/api
+        #     port: {{ .Values.insightExecutor.internalPort }}
+        #   initialDelaySeconds: 600
+        #   periodSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /executorservice/api
+        #     port: {{ .Values.insightExecutor.internalPort }}
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 20
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $uid := .Values.uid }}
+      {{- $context := .Values.missionControl.appContext }}
       {{- $name := .Values.missionControl.name }}
       {{- $mountPath := .Values.missionControl.persistence.mountPath }}
       {{- range .Values.missionControl.loggers }}
@@ -661,7 +469,7 @@ spec:
           - tail
         args:
           - '-F'
-          - '{{ $mountPath }}/logs/jfmc-server/{{ . }}'
+          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
         volumeMounts:
           - name: mission-control-data
             mountPath: {{ $mountPath }}
@@ -669,6 +477,7 @@ spec:
 {{ toYaml $.Values.missionControl.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.insightServer.name }}
+      {{- $context := .Values.insightServer.appContext }}
       {{- $mountPath := .Values.insightServer.persistence.mountPath }}
       {{- range .Values.insightServer.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
@@ -680,14 +489,15 @@ spec:
           - tail
         args:
           - '-F'
-          - '{{ $mountPath }}/{{ . }}'
+          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
         volumeMounts:
-          - name: insight-server-logs
+          - name: mission-control-data
             mountPath: {{ $mountPath }}
         resources:
  {{ toYaml $.Values.insightServer.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.insightScheduler.name }}
+      {{- $context := .Values.insightScheduler.appContext }}
       {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
       {{- range .Values.insightScheduler.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
@@ -699,14 +509,15 @@ spec:
           - tail
         args:
           - '-F'
-          - '{{ $mountPath }}/{{ . }}'
+          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
         volumeMounts:
-          - name: insight-scheduler-logs
+          - name: mission-control-data
             mountPath: {{ $mountPath }}
         resources:
 {{ toYaml $.Values.insightScheduler.loggersResources | indent 10 }}
       {{- end }}
       {{- $name := .Values.insightExecutor.name }}
+      {{- $context := .Values.insightExecutor.appContext }}
       {{- $mountPath := .Values.insightExecutor.persistence.mountPath }}
       {{- range .Values.insightExecutor.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
@@ -718,9 +529,9 @@ spec:
           - tail
         args:
           - '-F'
-          - '{{ $mountPath }}/{{ . }}'
+          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
         volumeMounts:
-          - name: insight-executor-logs
+          - name: mission-control-data
             mountPath: {{ $mountPath }}
         resources:
 {{ toYaml $.Values.insightExecutor.loggersResources | indent 10 }}
@@ -738,6 +549,12 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      - name: applicationyaml
+        secret:
+          secretName: {{ template "mission-control.fullname" . }}-applicationyaml
+      - name: systemyaml
+        secret:
+          secretName: {{ template "mission-control.fullname" . }}-systemyaml
       {{- if .Values.postgresql.enabled }}
       - name: postgresql-setup
         configMap:
@@ -754,19 +571,24 @@ spec:
     {{- with .Values.missionControl.customVolumes }}
 {{ tpl . $ | indent 6 }}
     {{- end }}
-  {{- if not .Values.missionControl.persistence.enabled }}
+    {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ template "mission-control.fullname" . }}-filebeat-config
+    {{- end }}
+    {{- if .Values.missionControl.customVolumes }}
+{{ tpl .Values.missionControl.customVolumes . | indent 6 }}
+    {{- end }}
+    {{- if not .Values.missionControl.persistence.enabled }}
       - name: mission-control-data
         emptyDir: {}
-      - name: insight-server-logs
-        emptyDir: {}
-      - name: insight-scheduler-logs
-        emptyDir: {}
-      - name: insight-executor-logs
-        emptyDir: {}
+    {{- end }}
+    {{- if not .Values.elasticsearch.persistence.enabled }}
       - name: elasticsearch-data
         emptyDir: {}
-  {{- else }}
+    {{- end }}
   volumeClaimTemplates:
+    {{- if .Values.missionControl.persistence.enabled }}
     - metadata:
         name: mission-control-data
         labels:
@@ -792,82 +614,8 @@ spec:
           requests:
             storage: {{ .Values.missionControl.persistence.size }}
       {{- end }}
-    - metadata:
-        name: insight-server-logs
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
-      spec:
-      {{- if .Values.insightServer.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
-        {{- if .Values.insightServer.persistence.storageClass }}
-        {{- if (eq "-" .Values.insightServer.persistence.storageClass) }}
-        storageClassName: ''
-        {{- else }}
-        storageClassName: '{{ .Values.insightServer.persistence.storageClass }}'
-        {{- end }}
-        {{- end }}
-        accessModes: [ '{{ .Values.insightServer.persistence.accessMode }}' ]
-        resources:
-          requests:
-            storage: {{ .Values.insightServer.persistence.size }}
-      {{- end }}
-    - metadata:
-        name: insight-scheduler-logs
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
-      spec:
-      {{- if .Values.insightScheduler.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
-        {{- if .Values.insightScheduler.persistence.storageClass }}
-        {{- if (eq "-" .Values.insightScheduler.persistence.storageClass) }}
-        storageClassName: ''
-        {{- else }}
-        storageClassName: '{{ .Values.insightScheduler.persistence.storageClass }}'
-        {{- end }}
-        {{- end }}
-        accessModes: [ '{{ .Values.insightScheduler.persistence.accessMode }}' ]
-        resources:
-          requests:
-            storage: {{ .Values.insightScheduler.persistence.size }}
-      {{- end }}
-    - metadata:
-        name: insight-executor-logs
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
-      spec:
-      {{- if .Values.insightExecutor.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
-        {{- if .Values.insightExecutor.persistence.storageClass }}
-        {{- if (eq "-" .Values.insightExecutor.persistence.storageClass) }}
-        storageClassName: ''
-        {{- else }}
-        storageClassName: '{{ .Values.insightExecutor.persistence.storageClass }}'
-        {{- end }}
-        {{- end }}
-        accessModes: [ '{{ .Values.insightExecutor.persistence.accessMode }}' ]
-        resources:
-          requests:
-            storage: {{ .Values.insightExecutor.persistence.size }}
-      {{- end }}
-    {{- if .Values.elasticsearch.enabled }}
+    {{- end }}
+    {{- if .Values.elasticsearch.persistence.enabled }}
     - metadata:
         name: elasticsearch-data
         labels:
@@ -894,4 +642,3 @@ spec:
             storage: {{ .Values.elasticsearch.persistence.size }}
       {{- end }}
     {{- end }}
-  {{- end }}

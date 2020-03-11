@@ -1,0 +1,367 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "pipelines.services.name" . }}
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "pipelines.services.name" . }}-headless
+  replicas: {{ .Values.pipelines.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.pipelines.updateStrategy }}
+  selector:
+    matchLabels:
+      {{- include "pipelines.selectorLabels" . | nindent 6 }}
+      component: {{ include "pipelines.services.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "pipelines.selectorLabels" . | nindent 8 }}
+        component: {{ include "pipelines.services.name" . }}
+      annotations:
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "pipelines.fullname" . }}
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecrets }}
+    {{- end }}
+      initContainers:
+        - name: copy-system-yaml
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            echo "Copy system.yaml to {{ .Values.pipelines.mountPath }}";
+            cp -fv /tmp/etc/system.yaml {{ .Values.pipelines.mountPath }}/system.yaml;
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: systemyaml
+            mountPath: "/tmp/etc/system.yaml"
+            subPath: system.yaml
+        - name: wait-for-vault
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Waiting for Vault to come up...";
+            until nc -z -w 2 {{ include "pipelines.vault.name" . }} {{ .Values.vault.service.port }} && echo vault ok; do
+              sleep 2;
+            done;
+        - name: pipelines-installer
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          env:
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: root-vault-secret
+                  key: token
+            - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
+                  key: postgresql-url
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+          command:
+          - 'sh'
+          - '-c'
+          - >
+          {{- if .Values.rabbitmq.enabled }}
+            echo "Waiting for RabbitMQ to come up...";
+            until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.service.port }} && echo rabbitmq ok; do
+              sleep 2;
+            done;
+          {{- end }}
+            echo "Waiting for Redis to come up...";
+            until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
+              sleep 2;
+            done;
+            sleep 20;
+            ./pipelines-k8s;
+            echo "Setting router as user for system.yaml";
+            chown 1117:1117 /opt/jfrog/pipelines/var/etc/system.yaml;
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+          - name: buildplane-creds-aws
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
+            readOnly: true
+          - name: buildplane-config-aws
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
+            readOnly: true
+          {{- end }}
+      containers:
+        {{- if .Values.filebeat.enabled }}
+        - name: {{ .Values.filebeat.name }}
+          image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+          imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+          args:
+          - "-e"
+          - "-E"
+          - "http.enabled=true"
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+          - name: filebeat-config
+            mountPath: /usr/share/filebeat/filebeat.yml
+            readOnly: true
+            subPath: filebeat.yml
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        {{- end }}
+        - name: router
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.router.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.router.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
+          env:
+            - name: JF_ROUTER_SERVICEREGISTRY_URL
+              value: "{{ .Values.pipelines.jfrogUrl }}/access"
+            - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
+              value: "{{ include "pipelines.grpc.url" . }}"
+            - name: JF_ROUTER_ENTRYPOINTS_INTERNALPORT
+              value: "{{ .Values.pipelines.router.internalPort }}"
+            - name: JF_ROUTER_ENTRYPOINTS_EXTERNALPORT
+              value: "{{ .Values.pipelines.router.externalPort }}"
+            - name: JF_ROUTER_LOGGING_ROUTER_LOGLEVEL
+              value: "DEBUG"
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            - name: JF_SHARED_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: "status.podIP"
+            - name: JF_SHARED_SECURITY_JOINKEY
+              value: "{{ .Values.pipelines.joinKey }}"
+            - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
+              value: "true"
+          ports:
+            - name: router
+              containerPort: {{ .Values.pipelines.router.internalPort }}
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            {{ toYaml .Values.pipelines.router.resources | indent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.router.mountPath }}
+        - name: api
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.api.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.api.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
+          env:
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+          ports:
+            - name: api
+              containerPort: 30000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: api
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /
+              port: api
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: www
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.www.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.www.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
+          ports:
+            - name: www
+              containerPort: 30001
+          livenessProbe:
+            httpGet:
+              path: /
+              port: www
+            initialDelaySeconds: 10
+            failureThreshold: 6
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: www
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.pipelines.www.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: pipelinesync
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelineSync.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.pipelineSync.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/pipelineSync
+          env:
+            - name: COMPONENT
+              value: pipelinesync
+          resources:
+            {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: runtrigger
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.runTrigger.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.runTrigger.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.runTrigger.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/runTrigger
+          env:
+            - name: COMPONENT
+              value: runtrigger
+          resources:
+            {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: steptrigger
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.stepTrigger.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.stepTrigger.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.stepTrigger.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/stepTrigger
+          env:
+            - name: COMPONENT
+              value: steptrigger
+          resources:
+            {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: cron
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.cron.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.cron.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.cron.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/cron
+          env:
+            - name: COMPONENT
+              value: cron
+          resources:
+            {{- toYaml .Values.pipelines.cron.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: nexec
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.nexec.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.nexec.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.nexec.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/nexec
+          env:
+            - name: COMPONENT
+              value: nexec
+          resources:
+            {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: hookhandler
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.hookHandler.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.hookHandler.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.hookHandler.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/hookHandler
+          env:
+            - name: COMPONENT
+              value: hookhandler
+          resources:
+            {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: marshaller
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.marshaller.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.marshaller.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.marshaller.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/marshaller
+          env:
+            - name: COMPONENT
+              value: marshaller
+          resources:
+            {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        - name: logup
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.logup.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.logup.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.logup.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/logup
+          env:
+            - name: COMPONENT
+              value: logup
+          resources:
+            {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+    {{- with .Values.pipelines.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.pipelines.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.pipelines.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+      - name: jfrog-pipelines-folder
+        emptyDir: {}
+      - name: jfrog-pipelines-logs
+        emptyDir: {}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
+      {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+      - name: buildplane-creds-aws
+        secret:
+          secretName: {{ include "pipelines.fullname" . }}-dynamic-buildplane-creds-aws
+      - name: buildplane-config-aws
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-filebeat-config
+      {{- end }}
