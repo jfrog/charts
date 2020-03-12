@@ -1,9 +1,6 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [9.0.24] - Mar 12, 2020
-* Fix README.md rendering issue 
-
 ## [9.0.23] - Mar 12, 2020
 * Fix README.md rendering issue 
 
