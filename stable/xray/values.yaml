@@ -583,6 +583,24 @@ server:
     ##
     # storageClass: "-"
 
+  # Add custom persistent volume mounts - Available for the pod
+  customPersistentPodVolumeClaim: {}
+  #  name:
+  #  mountPath:
+  #  accessModes:
+  #   - "-"
+  #  size:
+  #  storageClassName:
+
+  # Add custom persistent volume mounts - Available to the entire namespace
+  customPersistentVolumeClaim: {}
+  #  name:
+  #  mountPath:
+  #  accessModes:
+  #   - "-"
+  #  size:
+  #  storageClassName:
+
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 

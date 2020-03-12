@@ -366,14 +366,57 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.server.persistence.existingClaim }}
       {{- end }}
-{{- if .Values.indexer.customVolumes }}
-{{ tpl .Values.indexer.customVolumes . | indent 6 }}
-{{- end }}
-{{- if .Values.server.customVolumes }}
-{{ tpl .Values.server.customVolumes . | indent 6 }}
-{{- end }}
+      {{- if .Values.server.customPersistentVolumeClaim }}
+      - name: {{ .Values.server.customPersistentVolumeClaim.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.server.customPersistentVolumeClaim.name }}
+      {{- end }}
+      {{- if .Values.indexer.customVolumes }}
+      {{ tpl .Values.indexer.customVolumes . | indent 6 }}
+      {{- end }}
+      {{- if .Values.server.customVolumes }}
+      {{ tpl .Values.server.customVolumes . | indent 6 }}
+      {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
           name: {{ template "xray.fullname" . }}-filebeat-config
       {{- end }}
+  {{- if .Values.server.persistence.enabled }}
+  volumeClaimTemplates:
+  {{- if not .Values.server.persistence.existingClaim }}
+  - metadata:
+      name: data-volume
+    spec:
+      {{- if .Values.server.persistence.storageClassName }}
+      {{- if (eq "-" .Values.server.persistence.storageClassName) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.server.persistence.storageClassName }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .Values.server.persistence.accessMode }}" ]
+      resources:
+        requests:
+          storage: {{ .Values.server.persistence.size }}
+  {{- end }}
+  {{- if .Values.server.customPersistentPodVolumeClaim }}
+  - metadata:
+      name: {{ .Values.server.customPersistentPodVolumeClaim.name }}
+    spec:
+      {{- if .Values.server.customPersistentPodVolumeClaim.storageClassName }}
+      {{- if (eq "-" .Values.server.customPersistentPodVolumeClaim.storageClassName) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.server.customPersistentPodVolumeClaim.storageClassName }}"
+      {{- end }}
+    {{- end }}
+      accessModes:
+     {{- range .Values.server.customPersistentPodVolumeClaim.accessModes }}
+        - {{ . | quote }}
+     {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.server.customPersistentPodVolumeClaim.size }}
+  {{- end }}
+  {{- end }}

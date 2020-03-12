@@ -371,6 +371,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.annotations`                           | Xray server annotations                      | `{}`                               |
 | `server.customVolumes`                         | Custom volumes                               |                                                  |
 | `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
+| `server.customPersistentPodVolumeClaim`  | Custom PVC spec to create and attach a unique PVC for each pod on startup with the volumeClaimTemplates feature in StatefulSet | |
+| `server.customPersistentVolumeClaim`  | Custom PVC spec to be mounted to the all xray containers using a volume | |    
 | `server.replicaCount`                          | Xray services replica count                  | `1`                  |
 | `server.updateStrategy`                        | Xray server update strategy                  | `RollingUpdate`      |
 | `server.podManagementPolicy`                   | Xray server pod management policy            | `Parallel`           |
