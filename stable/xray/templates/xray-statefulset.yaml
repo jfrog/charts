@@ -356,9 +356,16 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ template "xray.fullname" . }}-system-yaml
+      {{- if not .Values.server.persistence.enabled }}
       - name: data-volume
         emptyDir:
           sizeLimit: {{ .Values.server.persistence.size }}
+      {{- end }}
+      {{- if and .Values.server.persistence.enabled .Values.server.persistence.existingClaim }}
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.server.persistence.existingClaim }}
+      {{- end }}
 {{- if .Values.indexer.customVolumes }}
 {{ tpl .Values.indexer.customVolumes . | indent 6 }}
 {{- end }}
