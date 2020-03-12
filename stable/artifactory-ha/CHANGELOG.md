@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.0.29] - Mar 11, 2020
+* Upgrade Docs update
+
 ## [2.0.28] - Mar 11, 2020
 * Unified charts public release
 
