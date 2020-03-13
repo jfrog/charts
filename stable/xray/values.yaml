@@ -313,6 +313,26 @@ common:
   #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
   #        name: data-volume
 
+  persistence:
+    enabled: true
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
+    size: 50Gi
+    ## server data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
 global:
   # Kubernetes secret with Postgres TLS certificates
   postgresqlTlsSecret:
@@ -415,26 +435,6 @@ indexer:
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
-
-  persistence:
-    enabled: true
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    accessMode: ReadWriteOnce
-    ## Container storage limit if persistence.enabled: false
-    ## Otherwise PVC size
-    size: 50Gi
-    ## indexer data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
 
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -551,44 +551,6 @@ server:
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
-
-  persistence:
-    enabled: true
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    accessMode: ReadWriteOnce
-    ## Container storage limit if persistence.enabled: false
-    ## Otherwise PVC size
-    size: 50Gi
-    ## server data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-
-  # Add custom persistent volume mounts - Available for the pod
-  customPersistentPodVolumeClaim: {}
-  #  name:
-  #  mountPath:
-  #  accessModes:
-  #   - "-"
-  #  size:
-  #  storageClassName:
-
-  # Add custom persistent volume mounts - Available to the entire namespace
-  customPersistentVolumeClaim: {}
-  #  name:
-  #  mountPath:
-  #  accessModes:
-  #   - "-"
-  #  size:
-  #  storageClassName:
 
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:

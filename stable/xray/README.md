@@ -309,6 +309,11 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
+| `common.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                |
+| `common.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
+| `common.persistence.enabled`                   | Xray common persistence volume enabled       | `false`              |
+| `common.persistence.accessMode`                | Xray common persistence volume access mode   | `ReadWriteOnce`      |
+| `common.persistence.size`                      | Xray common persistence volume size          | `50Gi`               |
 | `xray.systemYaml`                              | Xray system configuration (`system.yaml`)    | `see values.yaml`    |
 | `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
 | `common.customInitContainers`                  | Custom init containers to run after existing init containers                       | ` `                  |
@@ -371,8 +376,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.annotations`                           | Xray server annotations                      | `{}`                               |
 | `server.customVolumes`                         | Custom volumes                               |                                                  |
 | `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
-| `server.customPersistentPodVolumeClaim`  | Custom PVC spec to create and attach a unique PVC for each pod on startup with the volumeClaimTemplates feature in StatefulSet | |
-| `server.customPersistentVolumeClaim`  | Custom PVC spec to be mounted to the all xray containers using a volume | |    
 | `server.replicaCount`                          | Xray services replica count                  | `1`                  |
 | `server.updateStrategy`                        | Xray server update strategy                  | `RollingUpdate`      |
 | `server.podManagementPolicy`                   | Xray server pod management policy            | `Parallel`           |
@@ -383,11 +386,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.service.annotations`                   | Xray server service annotations              | `{}`                 |
 | `server.livenessProbe`                         | Xray server livenessProbe                    | See `values.yaml`    |
 | `server.readinessProbe`                        | Xray server readinessProbe                   | See `values.yaml`    |
-| `server.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                |
-| `server.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
-| `server.persistence.enabled`                   | Xray server persistence volume enabled       | `false`              |
-| `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`      |
-| `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`               |
 | `server.preStartCommand`                       | Xray server Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |
