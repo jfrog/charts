@@ -309,9 +309,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
+| `common.persistence.enabled`                   | Xray common persistence volume enabled       | `false`              |
 | `common.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                |
 | `common.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
-| `common.persistence.enabled`                   | Xray common persistence volume enabled       | `false`              |
 | `common.persistence.accessMode`                | Xray common persistence volume access mode   | `ReadWriteOnce`      |
 | `common.persistence.size`                      | Xray common persistence volume size          | `50Gi`               |
 | `xray.systemYaml`                              | Xray system configuration (`system.yaml`)    | `see values.yaml`    |
