@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.21] - Mar 12, 2020
+* Fix for xray pvc
+
 ## [3.0.20] - Mar 11, 2020
 * Unified charts public release
 
