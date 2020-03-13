@@ -100,7 +100,6 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
-          chown -R 1035:1035 {{ .Values.xray.persistence.mountPath }}
           echo "Copy masterKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
           rm -rfv /tmp/master.key;
           echo {{ .Values.xray.masterKey }} > /tmp/master.key;
