@@ -2026,12 +2026,19 @@ data:
         local productVersion="$1"
         local minProductVersion="$2"
         local maxProductVersion="$3"
+        local productVersion618="6.18.0"
+        local unSupportedProductVersions7=("7.2.0 7.2.1")
     
         if [[ "$(io_compareVersions "${productVersion}" "${maxProductVersion}")" -eq 0 || "$(io_compareVersions "${productVersion}" "${maxProductVersion}")" -eq 1 ]]; then
             logger "Migration not necessary. ${PRODUCT} is already ${productVersion}"
             exit 11
         elif [[ "$(io_compareVersions "${productVersion}" "${minProductVersion}")" -eq 0 || "$(io_compareVersions "${productVersion}" "${minProductVersion}")" -eq 1 ]]; then
-            bannerStart "Detected ${PRODUCT} ${productVersion}, initiating migration"
+            if [[ ("$(io_compareVersions "${productVersion}" "${productVersion618}")" -eq 0 || "$(io_compareVersions "${productVersion}" "${productVersion618}")" -eq 1) && " ${unSupportedProductVersions7[@]} " =~ " ${CURRENT_VERSION} " ]]; then
+                touch /tmp/error;
+                errorExit "Current ${PRODUCT} version (${productVersion}) does not support migration to ${CURRENT_VERSION}"
+            else
+                bannerStart "Detected ${PRODUCT} ${productVersion}, initiating migration"
+            fi
         else
             logger "Current ${PRODUCT} ${productVersion} version is not supported for migration"
             exit 1
@@ -4391,6 +4398,10 @@ data:
 
     bash ${scriptsPath}/migrate.sh $1
     status=$?
+    if [[ $status -eq 1 && -f /tmp/error ]]; then
+        echo "Migration is not supported ...Exiting Init Container"
+        exit 1
+    fi
     if [[ $status -eq 0 ]]; then
         echo "Waiting for Artifactory to start in Init Container"
         /entrypoint-artifactory.sh &
