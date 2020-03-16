@@ -4401,8 +4401,7 @@ data:
     if [[ $status -eq 1 && -f /tmp/error ]]; then
         echo "Migration is not supported ...Exiting Init Container"
         exit 1
-    fi
-    if [[ $status -eq 0 ]]; then
+    elif [[ $status -eq 0 ]]; then
         echo "Waiting for Artifactory to start in Init Container"
         /entrypoint-artifactory.sh &
         statusCheck
