@@ -1166,6 +1166,16 @@ ingress:
       - "myhost.example.com"
 ```
 
+If you're using Artifactory as SSO provider (e.g. with xray), you will need to have the following annotations, and change <artifactory-domain> with your domain:
+```yaml
+..
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        proxy_pass_header   Server;
+        proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
+```
+
 ### Ingress additional rules
 
 You have the option to add additional ingress rules to the Artifactory ingress. An example for this use case can be routing the /xray path to Xray.
