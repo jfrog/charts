@@ -1173,7 +1173,7 @@ If you're using Artifactory as SSO provider (e.g. with xray), you will need to h
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/configuration-snippet: |
         proxy_pass_header   Server;
-        proxy_set_header    X-Artifactory-Override-Base-Url https://<artifactory-domain>/artifactory;
+        proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
 ```
 
 ### Ingress additional rules
