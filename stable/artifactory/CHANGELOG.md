@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.0.26] - Mar 16, 2020
+* Changed '-hex 16' -> '-hex 32' to agree with rest of doc
+
 ## [9.0.24] - Mar 16, 2020
 * Add Unsupported message from 6.18 to 7.2.x (migration)
 
