@@ -562,7 +562,11 @@ artifactory:
             {{- with .kmsCryptoMode }}
               <kmsCryptoMode>{{ . }}</kmsCryptoMode>
             {{- end }}
+            {{- if .useInstanceCredentials }}
+              <useInstanceCredentials>{{ .useInstanceCredentials }}</useInstanceCredentials>
+            {{- else }}
               <useInstanceCredentials>true</useInstanceCredentials>
+            {{- end }}
               <usePresigning>{{ .usePresigning }}</usePresigning>
               <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
             {{- with .cloudFrontDomainName }}
