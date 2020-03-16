@@ -146,8 +146,8 @@ database:
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: "busybox"
+    tag: "1.30"
 
 # Artifactory
 artifactory:
@@ -321,7 +321,7 @@ artifactory:
   #  storageClassName:
 
   ## Artifactory HA requires a unique master key. Each Artifactory node must have the same master key!
-  ## You can generate one with the command: 'openssl rand -hex 16'
+  ## You can generate one with the command: "openssl rand -hex 16"
   ## Pass it to helm with '--set artifactory.masterKey=${MASTER_KEY}'
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
@@ -443,18 +443,18 @@ artifactory:
       database:
       {{- if .Values.postgresql.enabled }}
         type: postgresql
-        url: 'jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}'
-        host: ''
+        url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+        host: ""
         driver: org.postgresql.Driver
-        username: '{{ .Values.postgresql.postgresqlUsername }}'
+        username: "{{ .Values.postgresql.postgresqlUsername }}"
       {{ else }}
-        type: '{{ .Values.database.type }}'
-        url: '{{ .Values.database.url }}'
-        driver: '{{ .Values.database.driver }}'
-        username: '{{ .Values.database.user }}'
+        type: "{{ .Values.database.type }}"
+        url: "{{ .Values.database.url }}"
+        driver: "{{ .Values.database.driver }}"
+        username: "{{ .Values.database.user }}"
       {{- end }}
       security:
-        masterKey: '{{ .Values.artifactory.masterKey }}'
+        masterKey: "{{ .Values.artifactory.masterKey }}"
     artifactory:
     {{- if .Values.artifactory.haDataDir.enabled }}
       node:
@@ -464,13 +464,13 @@ artifactory:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
     access:
       database:
-        maxOpenConnections: '{{ .Values.access.database.maxOpenConnections }}'
+        maxOpenConnections: "{{ .Values.access.database.maxOpenConnections }}"
       {{- if .Values.access.database.enabled }}
-        type: '{{ .Values.access.database.type }}'
-        url: '{{ .Values.access.database.url }}'
-        driver: '{{ .Values.access.database.driver }}'
-        username: '{{ .Values.access.database.user }}'
-        password: '{{ .Values.access.database.password }}'
+        type: "{{ .Values.access.database.type }}"
+        url: "{{ .Values.access.database.url }}"
+        driver: "{{ .Values.access.database.driver }}"
+        username: "{{ .Values.access.database.user }}"
+        password: "{{ .Values.access.database.password }}"
       {{- end }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:

@@ -50,7 +50,7 @@ xray:
         password: "{{ .Values.postgresql.postgresqlPassword }}"
         url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
       {{ else }}
-        url: '{{ .Values.database.url }}'
+        url: "{{ .Values.database.url }}"
         username: "{{ .Values.database.user }}"
         password: "{{ .Values.database.password }}"
       {{- end }}

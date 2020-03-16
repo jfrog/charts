@@ -170,8 +170,8 @@ common:
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: "busybox"
+    tag: "1.30"
 
 distribution:
   name: distribution
@@ -226,7 +226,7 @@ distribution:
         password: "{{ .Values.postgresql.postgresqlPassword }}"
         url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
       {{ else }}
-        url: '{{ .Values.database.url }}'
+        url: "{{ .Values.database.url }}"
         username: "{{ .Values.database.user }}"
         password: "{{ .Values.database.password }}"
       {{- end }}
