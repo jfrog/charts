@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.0.17] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
 ## [5.0.16] - Mar 11, 2020
 * Unified charts public release
 

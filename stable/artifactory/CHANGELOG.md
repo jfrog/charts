@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [9.0.24] - Mar 16, 2020
+## [9.0.27] - Mar 17, 2020
 * Changed all single quotes to double quotes in values files
 * useInstanceCredentials variable was declared in S3 settings but not used in chart. Now it is being used.
 
