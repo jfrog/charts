@@ -4,8 +4,6 @@ CHARTS_REPO ?= https://github.com/jfrog/charts
 CHART_TESTING_IMAGE ?= quay.io/helmpack/chart-testing
 CHART_TESTING_TAG ?= v2.4.0
 TEST_IMAGE_TAG ?= v3.4.0
-K8S_VERSION ?= v1.15.3
-KIND_VERSION ?= v0.6.0
 
 # If the first argument is "lint" or "mac" or "gke" or "kind"
 ifneq ( $(filter wordlist 1,lint mac gke kind), $(firstword $(MAKECMDGOALS)))
@@ -43,12 +41,6 @@ ifndef KUBEVAL_CMD
 	$(error "$n$nNo kubeval command found! $n$nPlease install: brew tap instrumenta/instrumenta && brew install kubeval $n$n")
 endif
 
-.PHONY: check-kind
-check-kind:
-ifndef KIND_CMD
-	$(error "$n$nNo kind command found! $n$nPlease download required kind binary.$n$n")
-endif
-
 .PHONY: check-gcloud
 check-gcloud:
 ifndef GCLOUD_CMD
@@ -79,17 +71,6 @@ gke: check-gcloud
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
 	$(eval export LOCAL_RUN=true)
 	test/e2e-local-gke.sh
-
-.PHONY: kind
-kind: check-kind
-	$(eval export CHART_TESTING_IMAGE)
-	$(eval export CHART_TESTING_TAG)
-	$(eval export CHARTS_REPO)
-	$(eval export K8S_VERSION)
-	$(eval export KIND_VERSION)
-	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
-	$(eval export LOCAL_RUN=true)
-	test/e2e-kind.sh
 
 .PHONY: rt
 rt: check-helm check-kubectl

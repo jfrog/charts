@@ -5,6 +5,12 @@ All changes to this chart will be documented in this file.
 * Changed all single quotes to double quotes in values files
 * useInstanceCredentials variable was declared in S3 settings but not used in chart. Now it is being used.
 
+## [2.0.31] - Mar 17, 2020
+* Fix rendering of Service Account annotations
+
+## [2.0.30] - Mar 16, 2020
+* Add Unsupported message from 6.18 to 7.2.x (migration)
+
 ## [2.0.29] - Mar 11, 2020
 * Upgrade Docs update
 

@@ -5,6 +5,15 @@ All changes to this chart will be documented in this file.
 * Changed all single quotes to double quotes in values files
 * useInstanceCredentials variable was declared in S3 settings but not used in chart. Now it is being used.
 
+## [9.0.26] - Mar 17, 2020
+* Fix rendering of Service Account annotations
+
+## [9.0.25] - Mar 16, 2020
+* Update Artifactory readme with extra ingress annotations needed for Artifactory to be set as SSO provider
+
+## [9.0.24] - Mar 16, 2020
+* Add Unsupported message from 6.18 to 7.2.x (migration)
+
 ## [9.0.23] - Mar 12, 2020
 * Fix README.md rendering issue 
 

@@ -415,7 +415,7 @@ Install the helm chart with the values file you created:
 helm upgrade --install artifactory jfrog/artifactory -f values.yaml
 ```
 
-2. Any custom configuration file you have to configure artifactory, such as `logabck.xml`:
+2. Any custom configuration file you have to configure artifactory, such as `logback.xml`:
 Create a config map with your `logback.xml` configuration.
 
 Create a values file with the following values:
@@ -1164,6 +1164,16 @@ ingress:
   tls:
     - hosts:
       - "myhost.example.com"
+```
+
+If you're using Artifactory as SSO provider (e.g. with xray), you will need to have the following annotations, and change <artifactory-domain> with your domain:
+```yaml
+..
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        proxy_pass_header   Server;
+        proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
 ```
 
 ### Ingress additional rules

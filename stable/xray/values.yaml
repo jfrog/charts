@@ -113,16 +113,6 @@ networkpolicy:
   #     - podSelector:
   #         matchLabels:
   #           app: xray
-  # Uncomment to allow only xray pods to communicate with mongo (if mongodb.enabled is true)
-  # - name: mongo
-  #   podSelector:
-  #     matchLabels:
-  #       app: mongodb
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: xray
   # Uncomment to allow only xray pods to communicate with rabbitmq (if rabbitmq.enabled is true)
   # - name: rabbitmq
   #   podSelector:
@@ -323,6 +313,26 @@ common:
   #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
   #        name: data-volume
 
+  persistence:
+    enabled: true
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
+    size: 50Gi
+    ## server data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+
 global:
   # Kubernetes secret with Postgres TLS certificates
   postgresqlTlsSecret:
@@ -366,7 +376,6 @@ analysis:
   ## Container storage limit
   persistence:
     size: 10Gi
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
 
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -426,26 +435,6 @@ indexer:
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
-
-  persistence:
-    enabled: true
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    accessMode: ReadWriteOnce
-    ## Container storage limit if persistence.enabled: false
-    ## Otherwise PVC size
-    size: 50Gi
-    ## indexer data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
 
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -563,26 +552,6 @@ server:
       failureThreshold: 10
       successThreshold: 1
 
-  persistence:
-    enabled: true
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    accessMode: ReadWriteOnce
-    ## Container storage limit if persistence.enabled: false
-    ## Otherwise PVC size
-    size: 50Gi
-    ## server data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -685,12 +654,12 @@ filebeat:
     timeoutSeconds: 5
 
   resources: {}
-#    requests:
-#      memory: "100Mi"
-#      cpu: "100m"
-#    limits:
-#      memory: "100Mi"
-#      cpu: "100m"
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "100Mi"
+  #    cpu: "100m"
 
   filebeatYml: |
     logging.level: info

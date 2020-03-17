@@ -95,38 +95,6 @@ make mac -- --all
 
 **Note:** It might take a while to run install test for all charts in `Docker for Mac`.
 
-## Manually testing charts with Docker and KinD
-
-**Note:** [kind cli](https://github.com/kubernetes-sigs/kind/) must be installed.
-
-You can install and test all changed charts in Docker with Kind:
-
-```console
-make kind
-```
-
-### Forcing to install unchanged charts
-
-You can force to install one chart with `--charts` flag:
-
-```console
-make kind -- --charts stable/artifactory
-```
-
-You can force to install a list of charts (separated by comma) with `--charts` flag:
-
-```console
-make kind -- --charts stable/artifactory,stable/xray
-```
-
-You can force to install all charts with `--all` flag:
-
-```console
-make kind -- --all
-```
-
-**Note:** It might take a while to run install test for all charts in Docker with Kind.
-
 ## Manually testing charts with remote GKE cluster
 
 You can install and test changed charts with `GKE` cluster set in kubeconfig `context`:
