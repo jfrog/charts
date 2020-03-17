@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.0.26] - Mar 17, 2020
+* Fix rendering of Service Account annotations
+
 ## [9.0.25] - Mar 16, 2020
 * Update Artifactory readme with extra ingress annotations needed for Artifactory to be set as SSO provider
 

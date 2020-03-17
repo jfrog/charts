@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.0.31] - Mar 17, 2020
+* Fix rendering of Service Account annotations
+
 ## [2.0.30] - Mar 16, 2020
 * Add Unsupported message from 6.18 to 7.2.x (migration)
 

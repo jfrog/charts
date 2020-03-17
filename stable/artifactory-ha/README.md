@@ -439,7 +439,7 @@ Install the helm chart with the values file you created:
 helm upgrade --install artifactory-ha jfrog/artifactory-ha -f values.yaml
 ```
 
-2. Any custom configuration file you have to configure artifactory, such as `logabck.xml`:
+2. Any custom configuration file you have to configure artifactory, such as `logback.xml`:
 Create a config map with your `logback.xml` configuration.
 
 Create a values file with the following values:
