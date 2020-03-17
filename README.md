@@ -4,7 +4,7 @@
 
 This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** for deploying **JFrog** products to [Kubernetes](https://kubernetes.io/)
 
-For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform - Hope this works for you  guys!
+For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
 ## Install Helm
 
@@ -25,7 +25,7 @@ helm repo update
 
 Fork the `repo`, make changes and then please run `make lint` to lint charts locally, and at last install the chart to see it is working. :)
 
-On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR).
+On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR) on to  the branch called  [inbound-from-forks](https://github.com/jfrog/charts/tree/inbound-from-forks) 
 
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
 Two __LGTM__ are needed to get the PR approved and merged.
