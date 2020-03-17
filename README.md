@@ -4,7 +4,7 @@
 
 This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** for deploying **JFrog** products to [Kubernetes](https://kubernetes.io/)
 
-For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
+For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform - Hope this works for you  guys!
 
 ## Install Helm
 
