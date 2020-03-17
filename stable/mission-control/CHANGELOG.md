@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.20] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
 ## [3.0.19] - Mar 11, 2020
 * Unified charts public release
 
