@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.0.28] - Mar 18, 2020
+* Increased Nginx proxy_buffers size
+
 ## [9.0.27] - Mar 17, 2020
 * Changed all single quotes to double quotes in values files
 * useInstanceCredentials variable was declared in S3 settings but not used in chart. Now it is being used.
