@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.0.27] - Mar 18, 2020
+* Increased Nginx proxy_buffers size 
+
 ## [9.0.26] - Mar 17, 2020
 * Fix rendering of Service Account annotations
 
