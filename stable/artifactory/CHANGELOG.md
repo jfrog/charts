@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.0.29] - Mar 19, 2020
+* Moved installer info to values.yaml so it is fully customizable
+
 ## [9.0.28] - Mar 18, 2020
 * Increased Nginx proxy_buffers size
 
