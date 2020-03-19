@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.1.1] - Mar 23, 2020
+* Moved installer info to values.yaml so it is fully customizable
+
 ## [2.1.0] - Mar 23, 2020
 * Updated Artifactory version to 7.3.2
 
