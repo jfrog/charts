@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.0.34] - Mar 19, 2020
+* Support GCP credentials.json authentication
+
 ## [2.0.33] - Mar 18, 2020
 * Increased Nginx proxy_buffers size
 
