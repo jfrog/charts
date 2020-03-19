@@ -1,6 +1,9 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.1] - Mar 19, 2020
+* Fix Lint Issue
+
 ## [1.2.0] - Mar 1, 2020
 * Update dependency Artifactory chart version to 8.5.0 (Artifactory 6.18.0)
 
