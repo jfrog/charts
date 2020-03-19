@@ -241,8 +241,8 @@ applicationConfigs: {}
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: "busybox"
+    tag: "1.30"
 
 missionControl:
   name: mission-control
@@ -345,9 +345,9 @@ missionControl:
         driver: org.postgresql.Driver
         url: jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.db.name }}?sslmode=disable
       {{ else }}
-        type: '{{ .Values.database.type }}'
-        driver: '{{ .Values.database.driver }}'
-        url: '{{ .Values.database.url }}'
+        type: "{{ .Values.database.type }}"
+        driver: "{{ .Values.database.driver }}"
+        url: "{{ .Values.database.url }}"
         username: "{{ .Values.database.user }}"
       {{- end }}
 

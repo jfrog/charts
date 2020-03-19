@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.22] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
 ## [3.0.21] - Mar 12, 2020
 * Fix for xray pvc
 
