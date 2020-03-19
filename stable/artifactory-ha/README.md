@@ -967,7 +967,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.database.maxOpenConnections`         | Maximum amount of open connections from Artifactory to the DB   | `80` |
 | `artifactory.haDataDir.enabled`         | Enable haDataDir for eventual storage in the HA cluster   | `false` |
 | `artifactory.haDataDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
-| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seounds| `3600`       |
+| `artifactory.haBackupDir.enabled`         | Enable haBackupDir for eventual storage in the HA cluster   | `false` |
+| `artifactory.haBackupDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
+| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seconds| `3600`       |
 | `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
