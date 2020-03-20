@@ -344,7 +344,7 @@ helm install --name artifactory-ha --set artifactory.masterKeySecretName=my-secr
 ### Special Upgrade Notes
 ### MasterKey during 6.x to 7.x Migration (App version)
 
-**NOTE:** 6.x only supports masterKey with 16 hex (32 characters) and if you have set masterKey using `openssl rand -hex 32` (64 characters) in 6.x, Only first 32 characters are used and rest are ignored.Hence, During 6.x to 7.x migration , we trim first 32 characters and set masterkey,which implies 7.x still uses the trimmed masterkey of 6.x.
+**NOTE:** 6.x only supports masterKey with 16 hex (32 characters) and if you have set masterKey using `openssl rand -hex 32` (64 characters) in 6.x, only the first 32 characters are used and rest are ignored. Hence, during 6.x to 7.x migration, we trim first 32 characters and set masterkey, which implies 7.x still uses the trimmed masterkey of 6.x.
 
 ### Create a unique Join Key
 Artifactory requires a unique join key. By default the chart has one set in values.yaml (`artifactory.joinKey`).
