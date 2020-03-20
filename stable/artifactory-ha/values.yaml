@@ -327,7 +327,7 @@ artifactory:
   ## Pass it to helm with '--set artifactory.masterKey=${MASTER_KEY}'
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
-  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  # masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   # masterKeySecretName:
 
   ## Join Key to connect to other services to Artifactory.
@@ -456,7 +456,9 @@ artifactory:
         username: "{{ .Values.database.user }}"
       {{- end }}
       security:
+      {{- if .Values.artifactory.masterKey }}
         masterKey: "{{ .Values.artifactory.masterKey }}"
+      {{- end }}
     artifactory:
     {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
       node:

@@ -2747,6 +2747,23 @@ data:
         echo "";
         done
     }
+
+    # Trim masterKey if its generated using hex 32 
+    trimMasterKey () {
+        local masterKeyDir=/opt/jfrog/artifactory/var/etc/security
+        local oldMasterKey=$(<${masterKeyDir}/master.key)
+        local oldMasterKey_Length=$(echo ${#oldMasterKey})
+        local newMasterKey=
+        if [[ ${oldMasterKey_Length} == "64" ]]; then
+            bannerSection "TRIM MASTERKEY"
+            newMasterKey=$(echo ${oldMasterKey:0:32})
+            cp ${masterKeyDir}/master.key ${masterKeyDir}/backup_master.key
+            logger "Original masterKey is backed up : ${masterKeyDir}/backup_master.key"
+            rm -rf ${masterKeyDir}/master.key
+            echo ${newMasterKey} > ${masterKeyDir}/master.key
+            logger "masterKey is trimmed : ${masterKeyDir}/master.key"
+        fi
+    }
     
     copyDirectories () {
     
@@ -4306,6 +4323,8 @@ data:
         _pauseExecution "copyDirectories"
         moveDirectories
         _pauseExecution "moveDirectories"
+        trimMasterKey
+        _pauseExecution "trimMasterKey"
         migratePropertiesFiles
         _pauseExecution "migratePropertiesFiles"
         migrateXmlFile
