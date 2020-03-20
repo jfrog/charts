@@ -2754,7 +2754,7 @@ data:
         local oldMasterKey=$(<${masterKeyDir}/master.key)
         local oldMasterKey_Length=$(echo ${#oldMasterKey})
         local newMasterKey=
-        if [[ ${oldMasterKey_Length} == "64" ]]; then
+        if [[ ${oldMasterKey_Length} -gt 32 ]]; then
             bannerSection "TRIM MASTERKEY"
             newMasterKey=$(echo ${oldMasterKey:0:32})
             cp ${masterKeyDir}/master.key ${masterKeyDir}/backup_master.key
