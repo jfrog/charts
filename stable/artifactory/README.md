@@ -1102,7 +1102,7 @@ The following table lists the configurable parameters of the artifactory chart a
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
-### Install Artifactory HA with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+### Install Artifactory with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
 To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx.
 For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
 
