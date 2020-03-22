@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [2.0.35] - Mar 21, 2020
+## [2.0.36] - Mar 21, 2020
 * Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
+## [2.0.35] - Mar 20, 2020
+* Add support for masterKey trim during 6.x to 7.x migration if 6.x masterKey is 32 hex (64 characters)
 
 ## [2.0.34] - Mar 19, 2020
 * Add support for NFS directories `haBackupDir` and `haDataDir`

@@ -1,8 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [9.0.29] - Mar 22, 2020
+
+## [9.0.30] - Mar 22, 2020
 * Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
+## [9.0.29] - Mar 20, 2020
+* Add support for masterKey trim during 6.x to 7.x migration if 6.x masterKey is 32 hex (64 characters)
 
 ## [9.0.28] - Mar 18, 2020
 * Increased Nginx proxy_buffers size
