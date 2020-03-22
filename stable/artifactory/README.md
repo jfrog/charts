@@ -24,7 +24,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `artifactory`:
 ```bash
-helm install --name artifactory --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory
+helm install --name artifactory jfrog/artifactory
 ```
  
 ### System Configuration

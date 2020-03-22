@@ -29,12 +29,27 @@ Before installing JFrog helm charts, you need to add the [JFrog helm repository]
 helm repo add jfrog https://charts.jfrog.io
 ```
 
+
+**NOTE:** Passing masterKey is mandatory for fresh install of chart (7.x Appversion)
+
+### Create a unique Master Key
+Artifactory HA cluster requires a unique master key.
+
+**For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage**
+**This key is for demo purpose and should not be used in a production environment!**
+
+You should generate a unique one and pass it to the template at install/upgrade time.
+```bash
+# Create a key
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
+```
+
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
 
-**NOTE:** Passing masterKey is mandatory for fresh install of chart (7.x Appversion)
 ```bash
-helm install --name artifactory-ha --set postgresql.postgresqlPassword=<postgres_password> --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
+helm install --name artifactory-ha --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
 ```
 
 ### System Configuration
@@ -314,20 +329,6 @@ helm install --name artifactory-ha --set artifactory.persistence.customBinarysto
 ```
 
 ### Create a unique Master Key
-Artifactory HA cluster requires a unique master key. By default the chart has one set in values.yaml (`artifactory.masterKey`).
-
-**For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage**
-**This key is for demo purpose and should not be used in a production environment!**
-
-You should generate a unique one and pass it to the template at install/upgrade time.
-```bash
-# Create a key
-export MASTER_KEY=$(openssl rand -hex 32)
-echo ${MASTER_KEY}
-
-# Pass the created master key to helm
-helm install --name artifactory-ha --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
-```
 
 Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
 ```bash
