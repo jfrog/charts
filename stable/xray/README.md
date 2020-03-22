@@ -262,8 +262,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.postgresqlUsername`         | PostgreSQL database user                    | `xray`                             |
 | `postgresql.postgresqlPassword`     | PostgreSQL database password                | ` `                                |
 | `postgresql.postgresqlDatabase`     | PostgreSQL database name                    | `xraydb`                           |
-| `postgresql.postgresqlConfiguration.listenAddresses`  | PostgreSQL listen address | `"'*'"`                           |
-| `postgresql.postgresqlConfiguration.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
+| `postgresql.postgresqlExtendedConf.listenAddresses`  | PostgreSQL listen address | `"'*'"`                           |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
 | `postgresql.service.port`         | PostgreSQL database port                    | `5432`                             |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage           | `true`                             |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size          | `50Gi`                             |
