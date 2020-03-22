@@ -252,6 +252,11 @@ spec:
           subPath: binarystore.xml
   {{- end }}
   {{- end }}
+  {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        - name: gcpcreds-json
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+  {{- end }}
   {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
         - name: artifactory-license
           mountPath: "/artifactory_bootstrap/artifactory.cluster.license"
@@ -383,6 +388,24 @@ spec:
         - name: binarystore-xml
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
+      {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        - name: gcpcreds-json
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
+      {{- if .Values.artifactory.configMapName }}
+        - name: bootstrap-config
+          mountPath: "/bootstrap/"
+      {{- end }}
+      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
+        - name: artifactory-license
+          mountPath: "/artifactory_bootstrap/artifactory.cluster.license"
+          {{- if .Values.artifactory.license.secret }}
+          subPath: {{ .Values.artifactory.license.dataKey }}
+          {{- else if .Values.artifactory.license.licenseKey }}
+          subPath: artifactory.lic
+          {{- end }}
       {{- end }}
       {{- end }}
         - name: installer-info
@@ -526,6 +549,15 @@ spec:
           secretName: {{ .Values.artifactory.persistence.customBinarystoreXmlSecret }}
           {{- else }}
           secretName: {{ template "artifactory-ha.fullname" . }}-binarystore
+          {{- end }}
+      {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+      - name: gcpcreds-json
+        secret:
+          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+          secretName: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+          {{- else }}
+          secretName: {{ template "artifactory-ha.fullname" . }}-gcpcreds
           {{- end }}
       {{- end }}
       {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}

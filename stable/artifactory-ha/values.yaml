@@ -904,6 +904,12 @@ artifactory:
       mountOptions: []
     ## For artifactory.persistence.type google-storage
     googleStorage:
+      ## When using GCP buckets as your binary store (Available with enterprise license only)
+      gcpServiceAccount:
+        enabled: false
+          ## Use either an existing secret prepared in advance or put the config in the values
+        customSecretName:
+        config:
       endpoint: storage.googleapis.com
       httpsOnly: false
       # Set a unique bucket name
