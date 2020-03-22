@@ -36,7 +36,6 @@ helm repo add jfrog https://charts.jfrog.io
 Artifactory HA cluster requires a unique master key.
 
 **For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage**
-**This key is for demo purpose and should not be used in a production environment!**
 
 You should generate a unique one and pass it to the template at install/upgrade time.
 ```bash
