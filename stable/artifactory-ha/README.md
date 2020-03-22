@@ -29,10 +29,26 @@ Before installing JFrog helm charts, you need to add the [JFrog helm repository]
 helm repo add jfrog https://charts.jfrog.io
 ```
 
+
+**NOTE:** Passing masterKey is mandatory for fresh install of chart (7.x Appversion)
+
+### Create a unique Master Key
+Artifactory HA cluster requires a unique master key.
+
+**For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage**
+
+You should generate a unique one and pass it to the template at install/upgrade time.
+```bash
+# Create a key
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
+```
+
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
+
 ```bash
-helm install --name artifactory-ha --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-ha
+helm install --name artifactory-ha --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
 ```
 
 ### System Configuration
@@ -312,20 +328,6 @@ helm install --name artifactory-ha --set artifactory.persistence.customBinarysto
 ```
 
 ### Create a unique Master Key
-Artifactory HA cluster requires a unique master key. By default the chart has one set in values.yaml (`artifactory.masterKey`).
-
-**For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage**
-**This key is for demo purpose and should not be used in a production environment!**
-
-You should generate a unique one and pass it to the template at install/upgrade time.
-```bash
-# Create a key
-export MASTER_KEY=$(openssl rand -hex 32)
-echo ${MASTER_KEY}
-
-# Pass the created master key to helm
-helm install --name artifactory-ha --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
-```
 
 Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
 ```bash
@@ -340,6 +342,11 @@ kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 helm install --name artifactory-ha --set artifactory.masterKeySecretName=my-secret jfrog/artifactory-ha
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set artifactory.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set artifactory.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
+### Special Upgrade Notes
+### MasterKey during 6.x to 7.x Migration (App version)
+
+**NOTE:** 6.x only supports masterKey with 16 hex (32 characters) and if you have set masterKey using `openssl rand -hex 32` (64 characters) in 6.x, only the first 32 characters are used and rest are ignored. Hence, during 6.x to 7.x migration, we trim first 32 characters and set masterkey, which implies 7.x still uses the trimmed masterkey of 6.x.
 
 ### Create a unique Join Key
 Artifactory requires a unique join key. By default the chart has one set in values.yaml (`artifactory.joinKey`).
@@ -967,7 +974,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.database.maxOpenConnections`         | Maximum amount of open connections from Artifactory to the DB   | `80` |
 | `artifactory.haDataDir.enabled`         | Enable haDataDir for eventual storage in the HA cluster   | `false` |
 | `artifactory.haDataDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
-| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seounds| `3600`       |
+| `artifactory.haBackupDir.enabled`         | Enable haBackupDir for eventual storage in the HA cluster   | `false` |
+| `artifactory.haBackupDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
+| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seconds| `3600`       |
 | `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |

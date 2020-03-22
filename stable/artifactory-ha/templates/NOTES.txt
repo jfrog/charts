@@ -1,5 +1,6 @@
 Congratulations. You have just deployed JFrog Artifactory HA!
 
+{{- if .Values.artifactory.masterKey }}
 {{- if and (not .Values.artifactory.masterKeySecretName) (eq .Values.artifactory.masterKey "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") }}
 
 
@@ -16,6 +17,7 @@ Congratulations. You have just deployed JFrog Artifactory HA!
 * Alternatively, you can use a pre-existing secret with a key called master-key with       *
 * '--set artifactory.masterKeySecretName=${SECRET_NAME}'                                   *
 ********************************************************************************************
+{{- end }}
 {{- end }}
 
 {{- if .Values.artifactory.joinKey }}

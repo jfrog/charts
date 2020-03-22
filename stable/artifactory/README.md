@@ -24,7 +24,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `artifactory`:
 ```bash
-helm install --name artifactory --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory
+helm install --name artifactory jfrog/artifactory
 ```
  
 ### System Configuration
@@ -318,6 +318,10 @@ helm install --name artifactory --set artifactory.masterKeySecretName=my-secret 
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set artifactory.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set artifactory.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
+### Special Upgrade Notes
+### MasterKey during 6.x to 7.x Migration (App version)
+
+**NOTE:** 6.x only supports masterKey with 16 hex (32 characters) and if you have set masterKey using `openssl rand -hex 32` (64 characters) in 6.x, only the first 32 characters are used and rest are ignored. Hence, during 6.x to 7.x migration, we trim first 32 characters and set masterkey, which implies 7.x still uses the trimmed masterkey of 6.x.
 
 ### Create a unique Join Key
 Artifactory requires a unique join key. By default the chart has one set in values.yaml (`artifactory.joinKey`).
