@@ -31,8 +31,10 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
+
+**NOTE:** Passing masterKey is mandatory for fresh install of chart (7.x Appversion)
 ```bash
-helm install --name artifactory-ha --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-ha
+helm install --name artifactory-ha --set postgresql.postgresqlPassword=<postgres_password> --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
 ```
 
 ### System Configuration
