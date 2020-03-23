@@ -231,7 +231,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `postgresql.postgresqlDatabase`                 | PostgreSQL database name                                               | `distribution`                                                     |
 | `postgresql.postgresqlUsername`                 | PostgreSQL database username                                           | `distribution`                                                     |
 | `postgresql.postgresqlPassword`                 | PostgreSQL database password                                           | ` `                                                                |
-| `postgresql.postgresConfig.maxConnections`      | PostgreSQL max_connections                                             | `1500`                                                             |
+| `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address                                          | `"'*'"`                                                            |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter                               | `1500`                                                             |
 | `postgresql.service.port`                       | PostgreSQL service port                                                | `5432`                                                             |
 | `postgresql.persistence.enabled`                | PostgreSQL persistence enabled                                         | `true`                                                             |
 | `postgresql.persistence.size`                   | PostgreSQL persistent disk size                                        | `50Gi`                                                             |
