@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.1.0] - Mar 23, 2020
+* Updated Artifactory version to 7.3.2
+
 ## [2.0.36] - Mar 20, 2020
 * Add support GCP credentials.json authentication
 

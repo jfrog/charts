@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.1.0] - Mar 23, 2020
+* Updated Artifactory version to 7.3.2
+
 ## [9.0.29] - Mar 20, 2020
 * Add support for masterKey trim during 6.x to 7.x migration if 6.x masterKey is 32 hex (64 characters)
 
