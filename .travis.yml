@@ -4,6 +4,9 @@ dist: trusty
 services:
   - docker
 
+git:
+  depth: false
+
 jobs:
   include:
     - stage: lint-scripts
