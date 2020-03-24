@@ -1,7 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
-## [1.0.31] - March 17, 2020
-* Pipelines v1.3.3
+
+## [1.0.33] - March 24, 2020
+* Add HPA for Pipelines services statefulset
+* Add Runtime Override
 
 ## [1.0.32] - March 19, 2020
 * Pipelines v1.3.3

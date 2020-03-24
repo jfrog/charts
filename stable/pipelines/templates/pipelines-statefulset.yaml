@@ -157,7 +157,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
           resources:
-            {{ toYaml .Values.pipelines.router.resources | indent 12 }}
+            {{ toYaml .Values.pipelines.router.resources | nindent 12 }}
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.router.mountPath }}
