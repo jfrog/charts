@@ -270,6 +270,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.persistence.size`                | PostgreSQL persistence volume size              | `50Gi`                                |
 | `postgresql.postgresqlUsernamename`          | PostgreSQL admin username                       | `postgres`                            |
 | `postgresql.postgresqlPassword`              | PostgreSQL admin password                       | ` `                                   |
+| `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address                | `"'*'"`                               |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter     | `1500`                                |
 | `postgresql.db.name`                         | PostgreSQL Database name                        | `mission_control`                     |
 | `postgresql.db.sslmode`                      | PostgreSQL Database SSL Mode                    | `false`                               |
 | `postgresql.db.tablespace`                   | PostgreSQL Database Tablespace                  | `pg_default`                          |

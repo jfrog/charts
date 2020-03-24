@@ -1231,6 +1231,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
+| `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address            | `"'*'"`                     |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter | `1500`                       |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage          | `true`                                  |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size         | `50Gi`                                  |
 | `postgresql.service.port`         | PostgreSQL database port                   | `5432`                                  |
