@@ -624,7 +624,8 @@ artifactory:
       <!-- Google storage -->
       <config version="2">
           <chain>
-              <provider id="sharding-cluster" type="sharding-cluster">
+              <provider id="cache-fs" type="cache-fs">
+		<provider id="sharding-cluster" type="sharding-cluster">
                   <readBehavior>crossNetworkStrategy</readBehavior>
                   <writeBehavior>crossNetworkStrategy</writeBehavior>
                   <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
@@ -636,7 +637,8 @@ artifactory:
                   </sub-provider>
                   <dynamic-provider id="remote" type="remote"/>
                   <property name="zones" value="local,remote"/>
-              </provider>
+                </provider>
+	      </provider>
           </chain>
 
           <!-- Set max cache-fs size -->
