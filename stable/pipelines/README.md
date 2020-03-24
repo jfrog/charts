@@ -132,9 +132,11 @@ helm status pipelines
 
 ### Build Plane
 
-#### Build Plane with static node-pool VMs
+#### Build Plane with static and dynamic node-pool VMs
 
-Be default Pipelines comes with a Build Plane with a static node-pool VMs setup, please read [Managing Node Pools](https://www.jfrog.com/confluence/display/CICD/Managing+Node+Pools) how to set it up.
+Be default Pipelines comes with a Build Plane with a static node-pool VMs setup, please read [Managing Node Pools](https://www.jfrog.com/confluence/display/JFROG/Choosing+Node+Pools) how to set it up.
+
+For the Dynamic Nodes only on AWs for now, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Configuring+Pipelines#ConfiguringPipelines-dynamic-nodesDynamicNodeIntegrations).
 
 #### Kubernetes native Build Plane
 
@@ -156,6 +158,6 @@ buildPlane:
 
 ## Useful links
 
-- https://www.jfrog.com/confluence/display/CICD/Getting+Started
-- https://www.jfrog.com/confluence/display/CICD/Using+Pipelines
-- https://www.jfrog.com/confluence/display/CICD/Managing+Runtimes
+- https://www.jfrog.com/confluence/display/JFROG/Pipelines+Quickstart
+- https://www.jfrog.com/confluence/display/JFROG/Using+Pipelines
+- https://www.jfrog.com/confluence/display/JFROG/Managing+Runtimes
