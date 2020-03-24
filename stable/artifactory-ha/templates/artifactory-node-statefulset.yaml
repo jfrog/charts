@@ -229,7 +229,7 @@ spec:
         {{- end }}
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
-          value: >
+          value: >-
         {{- with .Values.artifactory.node.javaOpts }}
             -Dartifactory.async.corePoolSize={{ .corePoolSize }}
           {{- if .xms }}
