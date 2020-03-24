@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.5.2] - Mar 24, 2020
+* Fix javaOpts (newline) issue
+
 ## [1.5.1] - Mar 23, 2020
 * Updated Artifactory version to 6.18.1
 

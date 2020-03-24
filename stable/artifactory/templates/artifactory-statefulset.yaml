@@ -235,7 +235,7 @@ spec:
               key: master-key
       {{- end }}
         - name: EXTRA_JAVA_OPTIONS
-          value: >
+          value: >-
         {{- with .Values.artifactory.javaOpts }}
             -Dartifactory.async.corePoolSize={{ .corePoolSize }}
           {{- if .xms }}
