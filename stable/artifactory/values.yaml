@@ -892,11 +892,13 @@ nginx:
 
 
   artifactoryConf: |
+    {{- if .Values.nginx.https.enabled }}
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
     ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
     ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
     ssl_session_cache shared:SSL:1m;
     ssl_prefer_server_ciphers   on;
+    {{- end }}
     ## server configuration
     server {
     {{- if .Values.nginx.internalPortHttps }}
@@ -938,8 +940,12 @@ nginx:
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
         proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        {{- if .Values.nginx.service.ssloffload}}
+        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+        {{- else }}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$server_port;
         proxy_set_header    X-Forwarded-Port  $server_port;
+        {{- end }}
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
@@ -956,6 +962,7 @@ nginx:
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
+    ssloffload: false
     ## For supporting whitelist on the Nginx LoadBalancer service
     ## Set this to a list of IP CIDR ranges
     ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']

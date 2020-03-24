@@ -50,9 +50,13 @@ spec:
     name: http
   {{- end }}
   {{- if .Values.nginx.https }}
-  {{- if .Values.nginx.https.enabled }}
+  {{- if or .Values.nginx.https.enabled .Values.nginx.service.ssloffload }}
   - port: {{ .Values.nginx.https.externalPort }}
-    targetPort: {{ .Values.nginx.https.internalPort }}
+    {{- if .Values.nginx.service.ssloffload }}
+    targetPort: {{ .Values.nginx.http.internalPort }}
+    {{- else }}
+    targetPort: {{ .Values.nginx.https.internalPort}}
+    {{- end }}
     protocol: TCP
     name: https
   {{- end }}

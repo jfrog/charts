@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+
+## [9.1.2] - Mar 22, 2020
+* Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
 ## [9.1.1] - Mar 23, 2020
 * Moved installer info to values.yaml so it is fully customizable
 
@@ -27,10 +31,10 @@ All changes to this chart will be documented in this file.
 * Add Unsupported message from 6.18 to 7.2.x (migration)
 
 ## [9.0.23] - Mar 12, 2020
-* Fix README.md rendering issue 
+* Fix README.md rendering issue
 
 ## [9.0.22] - Mar 11, 2020
-* Upgrade Docs update 
+* Upgrade Docs update
 
 ## [9.0.21] - Mar 11, 2020
 * Unified charts public release
@@ -52,10 +56,10 @@ All changes to this chart will be documented in this file.
 * Store join key to secret
 
 ## [9.0.15] - Feb 26, 2020
-* Updated Artifactory version to 7.2.1 
+* Updated Artifactory version to 7.2.1
 
 ## [9.0.10] - Feb 07, 2020
-* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade 
+* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade
 
 ## [9.0.0] - Feb 07, 2020
 * Updated Artifactory version to 7.0.0
@@ -64,13 +68,13 @@ All changes to this chart will be documented in this file.
 * Add support for SSH authentication to Artifactory
 
 ## [8.4.7] - Feb 11, 2020
-* Change Artifactory service port name to be hard-coded to `http` instead of using `{{ .Release.Name }}` 
+* Change Artifactory service port name to be hard-coded to `http` instead of using `{{ .Release.Name }}`
 
 ## [8.4.6] - Feb 9, 2020
 * Add support for `tpl` in the `postStartCommand`
 
 ## [8.4.5] - Feb 4, 2020
-* Support customisable Nginx kind 
+* Support customisable Nginx kind
 
 ## [8.4.4] - Feb 2, 2020
 * Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
@@ -115,7 +119,7 @@ All changes to this chart will be documented in this file.
 * Add support for PriorityClass
 
 ## [8.2.4] - Nov 21, 2019
-* Add an option to use a file system cache-fs with the file-system binarystore template 
+* Add an option to use a file system cache-fs with the file-system binarystore template
 
 ## [8.2.3] - Nov 20, 2019
 * Update Artifactory Readme
@@ -225,22 +229,22 @@ All changes to this chart will be documented in this file.
 * Improve binarystore config
     1. Convert to a secret
     2. Move config to values.yaml
-    3. Support an external secret 
+    3. Support an external secret
 
 ## [7.16.7] - Jul 29, 2019
-* Don't create the nginx configmaps when nginx.enabled is false 
+* Don't create the nginx configmaps when nginx.enabled is false
 
 ## [7.16.6] - Jul 24, 2019
-* Simplify nginx setup and shorten initial wait for probes 
+* Simplify nginx setup and shorten initial wait for probes
 
 ## [7.16.5] - Jul 22, 2019
-* Change Ingress API to be compatible with recent kubernetes versions 
+* Change Ingress API to be compatible with recent kubernetes versions
 
 ## [7.16.4] - Jul 22, 2019
 * Updated Artifactory version to 6.11.3
 
 ## [7.16.3] - Jul 11, 2019
-* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration 
+* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration
 
 ## [7.16.2] - Jul 3, 2019
 * Fix values key in reverse proxy example

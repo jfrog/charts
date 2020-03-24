@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.1.2] - Mar 21, 2020
+* Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
 ## [2.1.1] - Mar 23, 2020
 * Moved installer info to values.yaml so it is fully customizable
 
