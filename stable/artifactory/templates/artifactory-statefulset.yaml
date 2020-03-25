@@ -449,7 +449,7 @@ spec:
           mountPath: /usr/share/filebeat/filebeat.yml
           readOnly: true
           subPath: filebeat.yml
-        - name: volume
+        - name: artifactory-volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
         livenessProbe:
 {{ toYaml .Values.filebeat.livenessProbe | indent 10 }}

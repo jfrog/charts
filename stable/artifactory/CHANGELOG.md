@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.1.4] - Mar 25, 2020
+* Fix volume name used by filebeat container
+
 ## [9.1.3] - Mar 24, 2020
 * Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
 
