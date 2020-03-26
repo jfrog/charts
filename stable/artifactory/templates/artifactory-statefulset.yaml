@@ -569,25 +569,25 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+{{- with .Values.artifactory.persistence }}
+  {{- if and .enabled (not .existingClaim) }}
   volumeClaimTemplates:
-  {{- if .Values.artifactory.persistence.enabled }}
   - metadata:
       name: artifactory-volume
-    {{- if not .Values.artifactory.persistence.existingClaim }}
     spec:
-      {{- if .Values.artifactory.persistence.storageClassName }}
-      {{- if (eq "-" .Values.artifactory.persistence.storageClassName) }}
+      {{- if .storageClass }}
+      {{- if (eq "-" .storageClass) }}
       storageClassName: ""
       {{- else }}
-      storageClassName: "{{ .Values.artifactory.persistence.storageClassName }}"
+      storageClassName: "{{ .storageClass }}"
       {{- end }}
       {{- end }}
-      accessModes: [ "{{ .Values.artifactory.persistence.accessMode }}" ]
+      accessModes: [ "{{ .accessMode }}" ]
       resources:
         requests:
-          storage: {{ .Values.artifactory.persistence.size }}
-    {{- end }}
+          storage: {{ .size }}
   {{- end }}
+{{- end }}
   {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
   - metadata:
       name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
