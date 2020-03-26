@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.1.5] - Mar 26, 2020
+* Fix volumeClaimTemplate issue
+
 ## [9.1.4] - Mar 25, 2020
 * Fix volume name used by filebeat container
 
