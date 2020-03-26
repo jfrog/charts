@@ -575,11 +575,11 @@ spec:
   - metadata:
       name: artifactory-volume
     spec:
-      {{- if .storageClass }}
-      {{- if (eq "-" .storageClass) }}
+      {{- if .storageClassName }}
+      {{- if (eq "-" .storageClassName) }}
       storageClassName: ""
       {{- else }}
-      storageClassName: "{{ .storageClass }}"
+      storageClassName: "{{ .storageClassName }}"
       {{- end }}
       {{- end }}
       accessModes: [ "{{ .accessMode }}" ]
