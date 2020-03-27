@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.24] - Mar 27, 2020
+* Add support for masterKey as secret
+
 ## [3.0.23] - Mar 23, 2020
 * Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
 
