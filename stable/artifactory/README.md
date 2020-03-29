@@ -511,7 +511,7 @@ You can bootstrap the `admin` user password as described in the [bootstrap Artif
 1. Create `admin-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
 ```yaml
 artifactory:
-  accessAdmin:
+  admin:
     ip: "<IP_RANGE>" # Example: "*" to allow access from anywhere
     username: "admin"
     password: "<PASSWD>"
@@ -883,11 +883,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.masterKey`                          | Artifactory Master Key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`. NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 16`  | `EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE`   |
-| `artifactory.accessAdmin.ip`                     | Artifactory admin ip to be set upon startup, can use (*) for 0.0.0.0| `127.0.0.1`                                   |
-| `artifactory.accessAdmin.username`               | Artifactory admin username to be set upon startup| `admin`                                       |
-| `artifactory.accessAdmin.password`               | Artifactory admin password to be set upon startup|                                               |
-| `artifactory.accessAdmin.secret`                 | Artifactory admin secret name |                                                                    |
-| `artifactory.accessAdmin.dataKey`                | Artifactory admin secret data key |                                                                    |
+| `artifactory.admin.ip`                     | Artifactory admin ip to be set upon startup, can use (*) for 0.0.0.0| `127.0.0.1`                                   |
+| `artifactory.admin.username`               | Artifactory admin username to be set upon startup| `admin`                                       |
+| `artifactory.admin.password`               | Artifactory admin password to be set upon startup|                                               |
+| `artifactory.admin.secret`                 | Artifactory admin secret name |                                                                    |
+| `artifactory.admin.dataKey`                | Artifactory admin secret data key |                                                                    |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts. Supports templating with `tpl`   |                             |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
