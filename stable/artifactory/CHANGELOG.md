@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.1.6] - Mar 29, 2020
+* Fix Access admin bootstrap
+
 ## [9.1.5] - Mar 26, 2020
 * Fix volumeClaimTemplate issue
 

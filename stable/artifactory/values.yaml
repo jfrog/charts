@@ -297,9 +297,11 @@ artifactory:
   binarystore:
     enabled: true
 
-  # accessAdmin is the password used for the access-admin user: https://jfrog.com/knowledge-base/how-to-change-the-default-password-for-access-admin-user/
+  ## accessAdmin allows to set the password for the default admin user.
+  ## See: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups#UsersandGroups-RecreatingtheDefaultAdminUserrecreate
   accessAdmin:
     ip: "127.0.0.1"
+    username: "admin"
     password:
     secret:
     dataKey:

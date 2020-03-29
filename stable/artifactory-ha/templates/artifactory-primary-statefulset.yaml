@@ -131,10 +131,10 @@ spec:
           - 'sh'
           - '-c'
           - >
-            echo "Preparing custom Access bootstrap.creds";
-            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
-            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
-            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+            echo "Preparing {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds";
+            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
+            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
+            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
         volumeMounts:
           - name: volume
             mountPath: "{{ .Values.artifactory.persistence.mountPath }}"

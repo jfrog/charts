@@ -597,25 +597,24 @@ jconsole artifactory-ha-<release-name>-primary:<primary-jmx-port>
 jconsole <release-name>:<node-jmx-port>
 ```
 
-### Access creds. bootstraping
-**IMPORTANT:** Bootsrapping access creds. will allow access for the user access-admin from certain IP's.
+### Bootstrapping Artifactory admin password
+You can bootstrap the `admin` user password as described in the [bootstrap Artifactory admin credentials](https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups#UsersandGroups-RecreatingtheDefaultAdminUserrecreate) guide.
 
-* User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
-
-1. Create `access-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
+1. Create `admin-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
 ```yaml
 artifactory:
   accessAdmin:
-    ip: "<IP_RANGE>" #Example: "*"
+    ip: "<IP_RANGE>" # Example: "*" to allow access from anywhere
+    username: "admin"
     password: "<PASSWD>"
 ```
 
-2. Apply the `access-creds-values.yaml` file:
+2. Apply the `admin-creds-values.yaml` file:
 ```bash
-helm upgrade --install artifactory-ha jfrog/artifactory-ha -f access-creds-values.yaml
+helm upgrade --install artifactory jfrog/artifactory-ha -f admin-creds-values.yaml
 ```
 
-### Bootstrapping Artifactory
+### Bootstrapping Artifactory configuration
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
 * User guide to [bootstrap Artifactory Global Configuration](https://www.jfrog.com/confluence/display/RTF/Configuration+Files#ConfigurationFiles-BootstrappingtheGlobalConfiguration)
@@ -993,10 +992,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.masterKey`           | Artifactory master key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`. NOTE: This key can be generated only once and cannot be updated once created |`FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF`|
 | `artifactory.masterKeySecretName` | Artifactory Master Key secret name                     |                             |
 | `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 16`  | `EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE`   |
-| `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
-| `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|             |
-| `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                |
-| `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                            |
+| `artifactory.accessAdmin.ip`                     | Artifactory admin ip to be set upon startup, can use (*) for 0.0.0.0| `127.0.0.1`                                  |
+| `artifactory.accessAdmin.username`               | Artifactory admin username to be set upon startup| `admin`                                       |
+| `artifactory.accessAdmin.password`               | Artifactory admin password to be set upon startup|                                               |
+| `artifactory.accessAdmin.secret`                 | Artifactory admin secret name |                                                                    |
+| `artifactory.accessAdmin.dataKey`                | Artifactory admin secret data key |                                                                    |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts. Supports templating with `tpl`   |                             |
 | `artifactory.license.licenseKey` | Artifactory license key. Providing the license key as a parameter will cause a secret containing the license key to be created as part of the release. Use either this setting or the license.secret and license.dataKey. If you use both, the latter will be used.  |           |

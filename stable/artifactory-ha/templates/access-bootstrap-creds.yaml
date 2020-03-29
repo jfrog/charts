@@ -10,6 +10,6 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 data:
-  bootstrap.creds: {{ (printf "access-admin@%s=%s" .Values.artifactory.accessAdmin.ip .Values.artifactory.accessAdmin.password) | b64enc }}
+  bootstrap.creds: {{ (printf "%s@%s=%s" .Values.artifactory.accessAdmin.username .Values.artifactory.accessAdmin.ip .Values.artifactory.accessAdmin.password) | b64enc }}
 {{- end }}
 {{- end }}
