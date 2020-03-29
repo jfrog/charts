@@ -406,13 +406,15 @@ spec:
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: '{{ $image }}:{{ $tag }}'
         command:
-        - tail
-        args:
-        - '-F'
-        - '{{ $mountPath }}/logs/{{ . }}'
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
       {{- end }}
@@ -423,11 +425,11 @@ spec:
         command:
         - 'sh'
         - '-c'
-        - 'sh /scripts/tail-log.sh {{ $mountPath }}/logs/catalina {{ . }}'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ $mountPath }}
-        - name: catalina-logger
+        - name: tail-logger-script
           mountPath: /scripts/tail-log.sh
           subPath: tail-log.sh
         resources:
@@ -507,10 +509,10 @@ spec:
         configMap:
           name: {{ .Values.artifactory.configMapName }}
       {{- end}}
-      {{- if .Values.artifactory.catalinaLoggers }}
-      - name: catalina-logger
+      {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
+      - name: tail-logger-script
         configMap:
-          name: {{ template "artifactory.fullname" . }}-catalina-logger
+          name: {{ template "artifactory.fullname" . }}-logger
       {{- end }}
       {{- if .Values.artifactory.configMaps }}
       - name: artifactory-configmaps
