@@ -37,8 +37,8 @@ spec:
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
         checksum/gcpcredentials: {{ include (print $.Template.BasePath "/artifactory-gcp-credentials.yaml") . | sha256sum }}
       {{- end }}
-      {{- if not (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
-        checksum/access-creds: {{ include (print $.Template.BasePath "/access-bootstrap-creds.yaml") . | sha256sum }}
+      {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
+        checksum/admin-creds: {{ include (print $.Template.BasePath "/admin-bootstrap-creds.yaml") . | sha256sum }}
       {{- end }}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
@@ -121,7 +121,7 @@ spec:
             mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
         {{- end }}
       {{- end }}
-    {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
+    {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -131,17 +131,17 @@ spec:
           - 'sh'
           - '-c'
           - >
-            echo "Preparing custom Access bootstrap.creds";
-            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
-            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
-            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+            echo "Preparing {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds";
+            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
+            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
+            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
         volumeMounts:
           - name: volume
             mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
           - name: access-bootstrap-creds
             mountPath: "/tmp/access/bootstrap.creds"
-            {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
-            subPath: {{ .Values.artifactory.accessAdmin.dataKey }}
+            {{- if and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey }}
+            subPath: {{ .Values.artifactory.admin.dataKey }}
             {{- else }}
             subPath: bootstrap.creds
             {{- end }}
@@ -660,11 +660,11 @@ spec:
           secretName: {{ template "artifactory-ha.fullname" . }}-license
           {{- end }}
       {{- end }}
-      {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
+      {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: access-bootstrap-creds
         secret:
-          {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
-          secretName: {{ .Values.artifactory.accessAdmin.secret }}
+          {{- if and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey }}
+          secretName: {{ .Values.artifactory.admin.secret }}
           {{- else }}
           secretName: {{ template "artifactory-ha.fullname" . }}-bootstrap-creds
           {{- end }}
