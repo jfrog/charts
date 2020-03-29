@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.1] - Mar 29, 2020
+* Fix loggers sidecars configurations to support new file system layout and new log names
+
 ## [9.2.0] - Mar 29, 2020
 * Fix broken admin user bootstrap configuration
 * **Breaking change:** renamed `artifactory.accessAdmin` to `artifactory.admin`
