@@ -1009,6 +1009,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.loggersResources.requests.cpu`    | Nginx logger initial cpu request     |                                          |
 | `nginx.loggersResources.limits.memory`   | Nginx logger memory limit            |                                          |
 | `nginx.loggersResources.limits.cpu`      | Nginx logger cpu limit               |                                          |
+| `nginx.logs.stderr`      | Send nginx logs to stderr               |        false                                  |
+| `nginx.logs.level`      | Nginx log level               |        warn                                  |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
