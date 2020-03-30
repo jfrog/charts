@@ -824,17 +824,15 @@ nginx:
   #    cpu: "50m"
 
   # Logs options
-  logs: {}
-    # Send error logs to stderr insead of a file
-    # stderr: true
-    # Set log level - debug, info, notice, warn, error, crit, alert, or emerg
-    # level: warn
+  logs:
+    stderr: false
+    level: warn
 
   mainConf: |
     # Main Nginx configuration file
     worker_processes  4;
 
-    {{- if .Values.nginx.logs.stderr }}
+    {{ if .Values.nginx.logs.stderr }}
     error_log  stderr {{ default "warn" .Values.nginx.logs.level }};
     {{- else -}}
     error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ default "warn" .Values.nginx.logs.level }};
