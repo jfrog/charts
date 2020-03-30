@@ -188,6 +188,8 @@ spec:
             chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
           runAsUser: 0
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         volumeMounts:
           - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
@@ -196,8 +198,6 @@ spec:
       {{- if or .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -205,6 +205,8 @@ spec:
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
             sleep 2;
           done;
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- end }}
     {{- end }}
       - name: 'migration-artifactory-ha'
@@ -503,13 +505,15 @@ spec:
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: '{{ $image }}:{{ $tag }}'
         command:
-        - tail
-        args:
-        - '-F'
-        - '{{ $mountPath }}/logs/{{ . }}'
+          - 'sh'
+          - '-c'
+          - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
       {{- end }}
@@ -520,11 +524,11 @@ spec:
         command:
         - 'sh'
         - '-c'
-        - 'sh /scripts/tail-log.sh {{ $mountPath }}/logs/catalina {{ . }}'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
-        - name: catalina-logger
+        - name: tail-logger-script
           mountPath: /scripts/tail-log.sh
           subPath: tail-log.sh
         resources:
@@ -641,10 +645,10 @@ spec:
         configMap:
           name: {{ .Values.artifactory.configMapName }}
       {{- end}}
-      {{- if .Values.artifactory.catalinaLoggers }}
-      - name: catalina-logger
+      {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
+      - name: tail-logger-script
         configMap:
-          name: {{ template "artifactory-ha.fullname" . }}-catalina-logger
+          name: {{ template "artifactory-ha.fullname" . }}-logger
       {{- end }}
       {{- if .Values.artifactory.configMaps }}
       - name: artifactory-configmaps

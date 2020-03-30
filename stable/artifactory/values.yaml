@@ -136,38 +136,45 @@ artifactory:
 
   # Sidecar containers for tailing Artifactory logs
   loggers: []
-  # - request.log
-  # - event.log
-  # - binarystore.log
-  # - request_trace.log
-  # - access.log
-  # - artifactory.log
-  # - build_info_migration.log
+  # - access-audit.log
+  # - access-request.log
+  # - access-security-audit.log
+  # - access-service.log
+  # - artifactory-access.log
+  # - artifactory-event.log
+  # - artifactory-import-export.log
+  # - artifactory-request.log
+  # - artifactory-service.log
+  # - frontend-request.log
+  # - frontend-service.log
+  # - metadata-request.log
+  # - metadata-service.log
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - derby.log
 
   # Loggers containers resources
   loggersResources: {}
   #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
+  #    memory: "10Mi"
+  #    cpu: "10m"
   #  limits:
-  #    memory: "128Mi"
+  #    memory: "100Mi"
   #    cpu: "50m"
-
 
   # Sidecar containers for tailing Tomcat (catalina) logs
   catalinaLoggers: []
-  # - catalina.log
-  # - host-manager.log
-  # - localhost.log
-  # - manager.log
+  # - tomcat-catalina.log
+  # - tomcat-localhost.log
 
   # Tomcat (catalina) loggers resources
   catalinaLoggersResources: {}
   #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
+  #    memory: "10Mi"
+  #    cpu: "10m"
   #  limits:
-  #    memory: "128Mi"
+  #    memory: "100Mi"
   #    cpu: "50m"
 
   # Migration support from 6.x to 7.x
