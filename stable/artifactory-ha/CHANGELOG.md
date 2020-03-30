@@ -4,6 +4,7 @@ All changes to this chart will be documented in this file.
 ## [2.2.2] - Mar 30, 2020
 * Apply initContainers.resources to `copy-system-yaml`, `prepare-custom-persistent-volume`, and `migration-artifactory-ha` containers
 * Use the same defaulting mechanism used for the artifactory version used elsewhere in the chart
+* Removed duplicate `artifactory-license` volume that prevented using an external secret
 
 ## [2.2.1] - Mar 29, 2020
 * Fix loggers sidecars configurations to support new file system layout and new log names
