@@ -267,6 +267,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `database.type`                                 | External database type (`postgresql`)                                  | `postgresql`                                      |
 | `database.driver`                               | External database driver                                               | 
 `org.postgresql.Driver`                           |
+| `database.url`                                  | External database url                                                  |
+` `                                               |
 | `database.user`                                 | External database user                                                 |
 ` `                                               |
 | `database.password`                             | External database password                                             |
