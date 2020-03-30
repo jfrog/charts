@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.1] - Mar 30, 2020
+* Fix duplicate `artifactory-license` secret in primary statefulset
+
 ## [2.2.0] - Mar 29, 2020
 * Fix broken admin user bootstrap configuration
 * **Breaking change:** renamed `artifactory.accessAdmin` to `artifactory.admin`
