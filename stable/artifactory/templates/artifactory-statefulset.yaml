@@ -180,7 +180,7 @@ spec:
           cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
           cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
-          bash $scriptsPath/migrationStatus.sh {{ .Chart.AppVersion }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.version }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
         {{- if .Values.database.secrets.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -235,15 +235,6 @@ spec:
         - name: binarystore-xml
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
-      {{- end }}
-      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
-        - name: artifactory-license
-          mountPath: "/artifactory_bootstrap/artifactory.lic"
-          {{- if .Values.artifactory.license.secret }}
-          subPath: {{ .Values.artifactory.license.dataKey }}
-          {{- else if .Values.artifactory.license.licenseKey }}
-          subPath: artifactory.lic
-          {{- end }}
       {{- end }}
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
