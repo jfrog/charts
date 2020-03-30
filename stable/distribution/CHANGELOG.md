@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.0.19] - Mar 30, 2020
+* Readme fixes
+
 ## [5.0.18] - Mar 23, 2020
 * Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
 
