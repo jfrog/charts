@@ -833,9 +833,9 @@ nginx:
     worker_processes  4;
 
     {{ if .Values.nginx.logs.stderr }}
-    error_log  stderr {{ default "warn" .Values.nginx.logs.level }};
+    error_log  stderr {{ .Values.nginx.logs.level }};
     {{- else -}}
-    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ default "warn" .Values.nginx.logs.level }};
+    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ .Values.nginx.logs.level }};
     {{- end }}
     pid        /tmp/nginx.pid;
 
