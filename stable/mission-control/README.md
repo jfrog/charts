@@ -37,8 +37,7 @@ Provide join key and jfrog url as a parameter to the Mission Control chart insta
 
 ```bash
 helm install --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
-             --set postgresql.postgresqlPassword=<postgres_password> jfrog/mission-control
+             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> jfrog/mission-control
 ```
 
 ### System Configuration
@@ -289,9 +288,9 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.db.jfexSchema`                   | PostgreSQL Database mission executor Schema     | `insight_executor`                    |
 | `postgresql.service.port`                    | PostgreSQL Database Port                        | `5432`                                |
 | `database.type`                              | External database type (`postgresql`)           | `postgresql`                          |
-| `database.host`                              | External database Connection Host               | ` `                                   |
-| `database.port`                              | External database Connection Port               | ` `                                   |
+| `database.driver`                            | External database driver                        | `org.postgresql.Driver`              |
 | `database.name`                              | External database name                          | `mission_control`                     |
+| `database.url`                               | External database url                           | ``                     |
 | `database.user`                              | External database user                          | ` `                                   |
 | `database.password`                          | External database password                      | ` `                                   |
 | `database.jfmcUsername`                      | External database mission control User          | `jfmc`                                |
