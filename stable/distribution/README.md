@@ -40,8 +40,7 @@ Provide join key and jfrog url as a parameter to the Distribution chart installa
 
 ```bash
 helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
-             --set postgresql.postgresqlPassword=<postgres_password> jfrog/distribution
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  jfrog/distribution
 ```
 
 ### System Configuration
@@ -113,16 +112,12 @@ There is an option to use an external PostgreSQL database for your Distribution.
 
 To use an external **PostgreSQL**, You need to set the Distribution **PostgreSQL** connection details
 ```bash
-export POSTGRES_HOST=
-export POSTGRES_PORT=
-export POSTGRES_DATABASE=
+export POSTGRES_URL=
 export POSTGRES_USERNAME=
 export POSTGRES_PASSWORD=
 
 helm install --name distribution \
-    --set database.host=${POSTGRES_HOST} \
-    --set database.port=${POSTGRES_PORT} \
-    --set database.database=${POSTGRES_DATABASE} \
+    --set database.url=${POSTGRES_URL} \
     --set database.user=${POSTGRES_USERNAME} \
     --set database.password=${POSTGRES_PASSWORD} \
     jfrog/distribution
@@ -269,6 +264,15 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
 | `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
 | `distribution.jfrogUrl`                         | Main Artifactory URL, without the `/artifactory` prefix . Mandatory    | ` `                                                                |
+| `database.type`                                 | External database type (`postgresql`)                                  | `postgresql`                                      |
+| `database.driver`                               | External database driver                                               | 
+`org.postgresql.Driver`                           |
+| `database.url`                                  | External database url                                                  |
+` `                                               |
+| `database.user`                                 | External database user                                                 |
+` `                                               |
+| `database.password`                             | External database password                                             |
+` `                                               |
 | `distribution.joinKey`                          | Distribution Join Key . Mandatory                                      | ` `                                                                |
 | `distribution.serviceId`                        | Distribution service ID                                                | ` `                                                                |
 | `distribution.env.artifactoryUrl`               | Distribution Environment Artifactory URL                               | ` `                                                                |

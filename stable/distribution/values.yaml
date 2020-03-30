@@ -104,9 +104,8 @@ postgresql:
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:
-  host:
-  port:
-  database:
+  type: postgresql
+  driver: org.postgresql.Driver
   url:
   ## If you would like this chart to create the secret containing the db
   ## password, use these values
@@ -219,13 +218,15 @@ distribution:
         masterKey: "{{ .Values.distribution.masterKey }}"
         joinKey: "{{ .Values.distribution.joinKey }}"
       database:
+      {{- if .Values.postgresql.enabled }}
         type: "postgresql"
         driver: "org.postgresql.Driver"
-      {{- if .Values.postgresql.enabled }}
         username: "{{ .Values.postgresql.postgresqlUsername }}"
         password: "{{ .Values.postgresql.postgresqlPassword }}"
         url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
       {{ else }}
+        type: "{{ .Values.database.type }}"
+        driver: "{{ .Values.database.driver }}"
         url: "{{ .Values.database.url }}"
         username: "{{ .Values.database.user }}"
         password: "{{ .Values.database.password }}"
