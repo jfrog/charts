@@ -612,15 +612,6 @@ spec:
           secretName: {{ template "artifactory-ha.fullname" . }}-gcpcreds
           {{- end }}
       {{- end }}
-      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
-      - name: artifactory-license
-        secret:
-          {{- if .Values.artifactory.license.secret }}
-          secretName: {{ .Values.artifactory.license.secret }}
-          {{- else if .Values.artifactory.license.licenseKey }}
-          secretName: {{ template "artifactory-ha.fullname" . }}-license
-          {{- end }}
-      {{- end }}
       - name: migration-scripts
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-migration-scripts
