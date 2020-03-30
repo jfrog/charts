@@ -308,15 +308,6 @@ spec:
           subPath: gcp.credentials.json
       {{- end }}
       {{- end }}
-      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
-        - name: artifactory-license
-          mountPath: "/artifactory_bootstrap/artifactory.cluster.license"
-          {{- if .Values.artifactory.license.secret }}
-          subPath: {{ .Values.artifactory.license.dataKey }}
-          {{- else if .Values.artifactory.license.licenseKey }}
-          subPath: artifactory.lic
-          {{- end }}
-      {{- end }}
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
