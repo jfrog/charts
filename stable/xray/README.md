@@ -187,10 +187,12 @@ export POSTGRESQL_USER=xray
 export POSTGRESQL_PASSWORD=password2_X
 export POSTGRESQL_DATABASE=xraydb
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set database.user="${POSTGRESQL_USER}" \
+    --set database.password="${POSTGRESQL_PASSWORD}" \
     jfrog/xray
 ```
 
@@ -221,10 +223,12 @@ export POSTGRESQL_CLIENT_CERT=client-key.pem
 export POSTGRESQL_CLIENT_KEY=client-cert.pem
 export POSTGRESQL_TLS_SECRET=postgres-tls
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set database.user="${POSTGRESQL_USER}" \
+    --set database.password="${POSTGRESQL_PASSWORD}" \
     jfrog/xray
 ```
 

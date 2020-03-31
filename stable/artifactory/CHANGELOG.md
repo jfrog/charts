@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.3] - Mar 29, 2020
+* Add Nginx log options: stderr as logfile and log level
+
 ## [9.2.2] - Mar 30, 2020
 * Use the same defaulting mechanism used for the artifactory version used elsewhere in the chart
 

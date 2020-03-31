@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.25] - Mar 31, 2020
+* README fixes
+
 ## [3.0.24] - Mar 27, 2020
 * Add support for masterKey as secret
 
