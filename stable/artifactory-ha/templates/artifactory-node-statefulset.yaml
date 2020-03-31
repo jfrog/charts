@@ -270,9 +270,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
+          set -e;
           {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
@@ -285,7 +286,7 @@ spec:
           echo "Running member node specific custom preStartCommand command";
           {{ tpl . $ }};
         {{- end }}
-          /entrypoint-artifactory.sh
+          exec /entrypoint-artifactory.sh
         lifecycle:
           postStart:
             exec:
