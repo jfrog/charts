@@ -823,11 +823,20 @@ nginx:
   #    memory: "128Mi"
   #    cpu: "50m"
 
+  # Logs options
+  logs:
+    stderr: false
+    level: warn
+
   mainConf: |
     # Main Nginx configuration file
     worker_processes  4;
 
-    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log warn;
+    {{ if .Values.nginx.logs.stderr }}
+    error_log  stderr {{ .Values.nginx.logs.level }};
+    {{- else -}}
+    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ .Values.nginx.logs.level }};
+    {{- end }}
     pid        /tmp/nginx.pid;
 
     {{- if .Values.artifactory.ssh.enabled }}
