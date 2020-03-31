@@ -318,7 +318,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
           set -e;
@@ -348,7 +348,7 @@ spec:
           echo "Running primary specific custom preStartCommand command";
           {{ tpl . $ }};
         {{- end }}
-          /entrypoint-artifactory.sh
+          exec /entrypoint-artifactory.sh
         lifecycle:
           postStart:
             exec:
