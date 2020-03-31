@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.5] - Mar 31, 2020
+* Removed duplicate `artifactory-license` volume from primary node
+
 ## [2.2.4] - Mar 31, 2020
 * Restore `artifactory-license` volume for the primary node
 
