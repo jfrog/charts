@@ -187,10 +187,12 @@ export POSTGRESQL_USER=xray
 export POSTGRESQL_PASSWORD=password2_X
 export POSTGRESQL_DATABASE=xraydb
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set database.username="${POSTGRESQL_USER}" \
+    --set database.password="${POSTGRESQL_PASSWORD}" \
     jfrog/xray
 ```
 
