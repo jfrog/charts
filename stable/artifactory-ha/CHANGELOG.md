@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.4] - Mar 31, 2020
+* Restore `artifactory-license` volume for the primary node
+
 ## [2.2.3] - Mar 29, 2020
 * Add Nginx log options: stderr as logfile and log level
 
