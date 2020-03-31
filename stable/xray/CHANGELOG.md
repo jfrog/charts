@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.26] - Mar 31, 2020
+* Update Xray to version `3.2.3`
+* Bump router to version `1.2.1`
+
 ## [3.0.25] - Mar 31, 2020
 * README fixes
 
