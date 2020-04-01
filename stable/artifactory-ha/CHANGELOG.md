@@ -3,7 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [2.2.9] - Apr 01, 2020
 * Ensure that the join key is also copied when provided by an external secret
-* Migration container in node statefulset now respects custom versions and init container resources
+* Migration container in primary and node statefulset now respects custom versions and the specified node/primary resources
 
 ## [2.2.8] - Mar 31, 2020
 * Added cache-layer in chain definition of Google Cloud Storage template
