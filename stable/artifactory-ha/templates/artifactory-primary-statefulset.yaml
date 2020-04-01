@@ -161,7 +161,7 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
-      {{- if .Values.artifactory.joinKey }}
+      {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
           rm -rfv /tmp/join.key;
           echo -n ${ARTIFACTORY_JOIN_KEY} > /tmp/join.key;
