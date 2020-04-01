@@ -638,7 +638,7 @@ artifactory:
       <config version="2">
           <chain>
               <provider id="cache-fs" type="cache-fs">
-		<provider id="sharding-cluster" type="sharding-cluster">
+	        <provider id="sharding-cluster" type="sharding-cluster">
                   <readBehavior>crossNetworkStrategy</readBehavior>
                   <writeBehavior>crossNetworkStrategy</writeBehavior>
                   <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
