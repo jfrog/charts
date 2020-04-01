@@ -119,17 +119,13 @@ spec:
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
         {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
-          rm -rfv /tmp/join.key;
-          echo -n ${ARTIFACTORY_JOIN_KEY} > /tmp/join.key;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
-          cp -fv /tmp/join.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
+          echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security/join.key;
         {{- end }}
         {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
-          rm -rfv /tmp/master.key;
-          echo -n ${ARTIFACTORY_MASTER_KEY} > /tmp/master.key;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
-          cp -fv /tmp/master.key {{ .Values.artifactory.persistence.mountPath }}/etc/security;
+          echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
         {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName}}
