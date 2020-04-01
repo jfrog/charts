@@ -345,6 +345,8 @@ artifactory:
   ## IMPORTANT: Setting this value overrides the existing joinKey
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
   # joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
 
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
@@ -468,10 +470,6 @@ artifactory:
         url: "{{ .Values.database.url }}"
         driver: "{{ .Values.database.driver }}"
         username: "{{ .Values.database.user }}"
-      {{- end }}
-      security:
-      {{- if .Values.artifactory.masterKey }}
-        masterKey: "{{ .Values.artifactory.masterKey }}"
       {{- end }}
     artifactory:
     {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}

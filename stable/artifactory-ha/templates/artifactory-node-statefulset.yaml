@@ -128,6 +128,19 @@ spec:
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Removing join.key file";
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
+        {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
+          rm -rfv /tmp/master.key;
+          echo -n ${ARTIFACTORY_MASTER_KEY} > /tmp/master.key;
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
+          cp -fv /tmp/master.key {{ .Values.artifactory.persistence.mountPath }}/etc/security;
+        env:
+        - name: ARTIFACTORY_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory-ha.fullname" .) }}"
+              key: master-key
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         volumeMounts:
