@@ -217,7 +217,7 @@ spec:
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
+{{ toYaml .Values.artifactory.primary.resources | indent 10 }}
         securityContext:
           allowPrivilegeEscalation: false
         command:
