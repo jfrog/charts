@@ -1,6 +1,13 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.9] - Apr 01, 2020
+* Ensure that the join key is also copied when provided by an external secret
+* Migration container in primary and node statefulset now respects custom versions and the specified node/primary resources
+
+## [2.2.8] - Mar 31, 2020
+* Added cache-layer in chain definition of Google Cloud Storage template
+
 ## [2.2.6] - Mar 31, 2020
 * Change the way the artifactory `command:` is set so it will properly pass a SIGTERM to java
 
