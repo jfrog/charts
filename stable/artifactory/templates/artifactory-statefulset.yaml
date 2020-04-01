@@ -128,10 +128,8 @@ spec:
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           rm -rfv /tmp/master.key;
           echo -n ${ARTIFACTORY_MASTER_KEY} > /tmp/master.key;
-          cat /tmp/master.key;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
           cp -fv /tmp/master.key {{ .Values.artifactory.persistence.mountPath }}/etc/security;
-          cat {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key
         {{- end }}
         env:
         {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName}}
