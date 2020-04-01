@@ -1,6 +1,39 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.6] - Mar 31, 2020
+* Change the way the artifactory `command:` is set so it will properly pass a SIGTERM to java
+
+## [2.2.5] - Mar 31, 2020
+* Removed duplicate `artifactory-license` volume from primary node
+
+## [2.2.4] - Mar 31, 2020
+* Restore `artifactory-license` volume for the primary node
+
+## [2.2.3] - Mar 29, 2020
+* Add Nginx log options: stderr as logfile and log level
+
+## [2.2.2] - Mar 30, 2020
+* Apply initContainers.resources to `copy-system-yaml`, `prepare-custom-persistent-volume`, and `migration-artifactory-ha` containers
+* Use the same defaulting mechanism used for the artifactory version used elsewhere in the chart
+* Removed duplicate `artifactory-license` volume that prevented using an external secret
+
+## [2.2.1] - Mar 29, 2020
+* Fix loggers sidecars configurations to support new file system layout and new log names
+
+## [2.2.0] - Mar 29, 2020
+* Fix broken admin user bootstrap configuration
+* **Breaking change:** renamed `artifactory.accessAdmin` to `artifactory.admin`
+
+## [2.1.3] - Mar 24, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
+## [2.1.2] - Mar 21, 2020
+* Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
+## [2.1.1] - Mar 23, 2020
+* Moved installer info to values.yaml so it is fully customizable
+
 ## [2.1.0] - Mar 23, 2020
 * Updated Artifactory version to 7.3.2
 

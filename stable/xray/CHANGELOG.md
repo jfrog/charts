@@ -1,6 +1,19 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.26] - Mar 31, 2020
+* Update Xray to version `3.2.3`
+* Bump router to version `1.2.1`
+
+## [3.0.25] - Mar 31, 2020
+* README fixes
+
+## [3.0.24] - Mar 27, 2020
+* Add support for masterKey as secret
+
+## [3.0.23] - Mar 23, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
 ## [3.0.22] - Mar 17, 2020
 * Changed all single quotes to double quotes in values files
 

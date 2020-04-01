@@ -26,7 +26,7 @@ To install the chart with the release name `artifactory`:
 ```bash
 helm install --name artifactory jfrog/artifactory
 ```
- 
+
 ### System Configuration
 Artifactory uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 In order to override the default `system.yaml` configuration, do the following:
@@ -128,7 +128,7 @@ To use an NFS server as your cluster's storage, you need to
 In some cases, it is not possible for the helm chart to set up your NFS mounts automatically for Artiactory.
 In such cases, such as using AWS EFS, you will use the `artifactory.persistnece.type=file-system` even though your underlying persistence is actually a network file system.
 The same thing applies when using a slow storage device (such as cheap disks) as your main storage solution for Artifactory.
-This means that serving highly used files from the network file system/slow storage can take time, 
+This means that serving highly used files from the network file system/slow storage can take time,
 and that's why you would want a cache filesystem that's stored locally on disk (fast disks like SSD).
 
 This is how you would configure it:
@@ -153,10 +153,10 @@ artifactory:
         enabled: true
 
 ```
-2. Install Artifactory with the values file you created: 
+2. Install Artifactory with the values file you created:
 ```bash
 helm upgrade --install artifactory jfrog/artifactory -f values.yaml
-``` 
+```
 
 #### Google Storage
 To use a Google Storage bucket as the cluster's filestore. See [Google Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-GoogleStorageBinaryProvider)
@@ -170,7 +170,7 @@ To use a Google Storage bucket as the cluster's filestore. See [Google Storage B
 ```
 
 #### AWS S3
-**NOTE** Keep in mind that when using the `aws-s3` persistence type, you will not be able to provide an IAM on the pod level. 
+**NOTE** Keep in mind that when using the `aws-s3` persistence type, you will not be able to provide an IAM on the pod level.
 In order to grant permissions to Artifactory using an IAM role, you will have to attach the said IAM role to the machine(s) on which Artifactory is running.
 This is due to the fact that the `aws-s3` template uses the `JetS3t` library to interact with AWS. If you want to grant an IAM role at the pod level, see the `AWS S3 Vs` section.
 
@@ -197,12 +197,12 @@ To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](htt
 **NOTE:** Make sure S3 `endpoint` and `region` match. See [AWS documentation on endpoint](https://docs.aws.amazon.com/general/latest/gr/rande.html)
 
 #### AWS S3 V3
-To use an AWS S3 bucket as the cluster's filestore and access it with the official AWS SDK, See [S3 Official SDK Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate). 
+To use an AWS S3 bucket as the cluster's filestore and access it with the official AWS SDK, See [S3 Official SDK Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate).
 This filestore template uses the official AWS SDK, unlike th`aws-s3` implementation that uses the `JetS3t` library.
 Use this template if you want to attach an IAM role to the Artifactory pod directly (as opposed to attaching it to the machine/s that Artifactory will run on).
 
 **NOTE** This will have to be combined with a k8s mechanism for attaching IAM roles to pods, like [kube2iam](https://github.com/helm/charts/tree/master/stable/kube2iam) or anything similar.
- 
+
 - Pass AWS S3 V3 parameters and the annotation pointing to the IAM role (when using an IAM role. this is kube2iam specific and may vary depending on the implementation) to `helm install` and `helm upgrade`
 
 ```bash
@@ -381,7 +381,7 @@ helm install --name artifactory --set artifactory.license.secret=artifactory-lic
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
 If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
- 
+
 ##### Create the secret as part of the helm release
 values.yaml
 ```yaml
@@ -404,7 +404,7 @@ Files stored in the `/artifactory-extra-conf` directory are only copied to the `
 In some cases, you want your configuration files to be copied to the `ARTIFACTORY_HOME/etc` directory on every startup.
 Two examples for that would be:
 
-1. the binarstore.xml file. If you use the default behaviour, your binarystore.xml configuration will only be copied on the first startup, 
+1. the binarstore.xml file. If you use the default behaviour, your binarystore.xml configuration will only be copied on the first startup,
 which means that changes you make over time to the `binaryStoreXml` configuration will not be applied. In order to make sure your changes are applied on every startup, do the following:
 Create a values file with the following values:
 ```yaml
@@ -412,7 +412,7 @@ artifactory:
   copyOnEveryStartup:
     - source: /artifactory_bootstrap/binarystore.xml
       target: etc/artifactory/
-``` 
+```
 
 Install the helm chart with the values file you created:
 ```bash
@@ -492,9 +492,9 @@ In order to connect to Artifactory using JMX with jconsole (or any similar tool)
 helm install --name artifactory \
     --set artifactory.javaOpts.jmx.enabled=true \
     --set artifactory.service.type=LoadBalancer \
-    jfrog/artifactory 
+    jfrog/artifactory
 
-``` 
+```
 2. The default setting for java.rmi.server.hostname is the service name (this is also configurable with ```artifactory.javaOpts.jmx.host```).
 So in order to connect to Artifactory with jconsole you should map the Artifactory kuberentes service IP to the service name using your hosts file as such:
 ```
@@ -505,27 +505,26 @@ So in order to connect to Artifactory with jconsole you should map the Artifacto
 jconsole artifactory-<release-name>:<jmx-port>
 ```
 
-### Access creds. bootstraping
-**IMPORTANT:** Bootsrapping access creds. will automatically trigger a restart to the Artifactory pod and will allow access for the user `access-admin` from certain IP's.
+### Bootstrapping Artifactory admin password
+You can bootstrap the `admin` user password as described in the [bootstrap Artifactory admin credentials](https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups#UsersandGroups-RecreatingtheDefaultAdminUserrecreate) guide.
 
-* User guide to [bootstrap Artifactory Access credentials](https://www.jfrog.com/confluence/display/ACC/Configuring+Access)
-
-1. Create `access-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
+1. Create `admin-creds-values.yaml` and provide the IP (By default 127.0.0.1) and password:
 ```yaml
 artifactory:
-  accessAdmin:
-    ip: "<IP_RANGE>" #Example: "*"
+  admin:
+    ip: "<IP_RANGE>" # Example: "*" to allow access from anywhere
+    username: "admin"
     password: "<PASSWD>"
 ```
 
-2. Apply the `access-creds-values.yaml` file:
+2. Apply the `admin-creds-values.yaml` file:
 ```bash
-helm upgrade --install artifactory jfrog/artifactory -f access-creds-values.yaml
+helm upgrade --install artifactory jfrog/artifactory -f admin-creds-values.yaml
 ```
- 
+
 3. Restart Artifactory Pod (`Kubectl delete pod <pod_name>`)
 
-### Bootstrapping Artifactory
+### Bootstrapping Artifactory configuration
 **IMPORTANT:** Bootstrapping Artifactory needs license. Pass license as shown in above section.
 
 * User guide to [bootstrap Artifactory Global Configuration](https://www.jfrog.com/confluence/display/RTF/Configuration+Files#ConfigurationFiles-BootstrappingtheGlobalConfiguration)
@@ -705,7 +704,7 @@ If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactor
 Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
 ```bash
 # Secret with single user plugin
-kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory 
+kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory
 
 # Secret with single user plugin with configuration file
 kubectl  create secret generic webhook --from-file=webhook.groovy  --from-file=webhook.config.json.sample --namespace=artifactory
@@ -749,7 +748,7 @@ artifactory:
                   </layout>
               </encoder>
           </appender>
-      
+
           <logger name="/artifactory">
               <level value="INFO"/>
               <appender-ref ref="CONSOLE"/>
@@ -774,7 +773,7 @@ artifactory:
   copyOnEveryStartup:
     - source: /tmp/my-config-map/logback.xml
       target: etc/
-    
+
 ```
 
 and use it with you helm install/upgrade:
@@ -787,8 +786,8 @@ This will, in turn:
 * create a volume pointing to the configMap with the name `artifactory-configmaps`
 * Mount said configMap onto `/tmp/my-config-map` using a `customVolumeMounts`
 * Set the shell script we mounted as the `postStartCommand`
-* Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory. 
- 
+* Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory.
+
 
 ### Artifactory filebeat
 If you want to collect logs from your Artifactory installation and send them to a central log collection solution like ELK, you can use this option.
@@ -884,10 +883,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.masterKey`                          | Artifactory Master Key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`. NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 16`  | `EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE`   |
-| `artifactory.accessAdmin.ip`                     | Artifactory access-admin ip to be set upon startup, can use (*) for 0.0.0.0| 127.0.0.1                                    |
-| `artifactory.accessAdmin.password`               | Artifactory access-admin password to be set upon startup|                                               |
-| `artifactory.accessAdmin.secret`                 | Artifactory access-admin secret name |                                                                    |
-| `artifactory.accessAdmin.dataKey`                | Artifactory access-admin secret data key |                                                                    |
+| `artifactory.admin.ip`                     | Artifactory admin ip to be set upon startup, can use (*) for 0.0.0.0| `127.0.0.1`                                   |
+| `artifactory.admin.username`               | Artifactory admin username to be set upon startup| `admin`                                       |
+| `artifactory.admin.password`               | Artifactory admin password to be set upon startup|                                               |
+| `artifactory.admin.secret`                 | Artifactory admin secret name |                                                                    |
+| `artifactory.admin.dataKey`                | Artifactory admin secret data key |                                                                    |
 | `artifactory.preStartCommand`                    | Command to run before entrypoint starts |                             |
 | `artifactory.postStartCommand`                   | Command to run after container starts. Supports templating with `tpl`   |                             |
 | `artifactory.extraEnvironmentVariables`          | Extra environment variables to pass to Artifactory. Supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function. See [documentation](https://www.jfrog.com/confluence/display/RTF/Installing+with+Docker#InstallingwithDocker-SupportedEnvironmentVariables) |   |
@@ -1009,11 +1009,14 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.loggersResources.requests.cpu`    | Nginx logger initial cpu request     |                                          |
 | `nginx.loggersResources.limits.memory`   | Nginx logger memory limit            |                                          |
 | `nginx.loggersResources.limits.cpu`      | Nginx logger cpu limit               |                                          |
+| `nginx.logs.stderr`      | Send nginx logs to stderr               |        false                                  |
+| `nginx.logs.level`      | Nginx log level: debug, info, notice, warn, error, crit, alert, or emerg               |        warn                                  |
 | `nginx.mainConf`        | Content of the Artifactory nginx main nginx.conf config file | `see values.yaml`                           |
 | `nginx.artifactoryConf`        | Content of Artifactory nginx artifactory.conf config file | `see values.yaml`                           |
 | `nginx.service.type`| Nginx service type | `LoadBalancer`                                                                |
 | `nginx.service.loadBalancerSourceRanges`| Nginx service array of IP CIDR ranges to whitelist (only when service type is LoadBalancer) |  |
 | `nginx.service.externalTrafficPolicy`| Nginx service desires to route external traffic to node-local or cluster-wide endpoints. | `Cluster` |
+| `nginx.service.ssloffload`  | Nginx service SSL offload           |  false                          |
 | `nginx.loadBalancerIP`                     | Provide Static IP to configure with Nginx |                                 |
 | `nginx.http.enabled`                       | Nginx http service enabled/disabled       | true                            |
 | `nginx.http.externalPort`                  | Nginx service external port               | `80`                            |
@@ -1058,6 +1061,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
+| `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address            | `"'*'"`                     |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter | `1500`                       |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage          | `true`                                  |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size         | `50Gi`                                  |
 | `postgresql.service.port`         | PostgreSQL database port                   | `5432`                                  |
@@ -1100,6 +1105,20 @@ The following table lists the configurable parameters of the artifactory chart a
 | `filebeat.filebeatYml`      | Filebeat yaml configuration file                | see [values.yaml](stable/artifactory/values.yaml)                                         |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+
+### Install Artifactory with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx.
+For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
+
+```bash
+helm install --name artifactory \
+   --set nginx.service.ssloffload=true \
+   --set nginx.https.enabled=false \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert"="arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx" \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-backend-protocol=http \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-ssl-ports=https \
+   jfrog/artifactory
+```
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
@@ -1212,7 +1231,7 @@ ingress:
             backend:
               serviceName: {{ template "artifactory.nginx.fullname" . }}
               servicePort: {{ .Values.nginx.externalPortHttp }}
-``` 
+```
 
 and running:
 ```bash

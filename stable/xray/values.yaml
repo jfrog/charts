@@ -20,6 +20,8 @@ xray:
   ## Pass it to helm with '--set xray.masterKey=${MASTER_KEY}'
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
 
   ## Join Key to connect to main Artifactory. Mandatory
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
@@ -169,7 +171,7 @@ postgresql:
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
-  postgresqlConfiguration:
+  postgresqlExtendedConf:
     listenAddresses: "'*'"
     maxConnections: "500"
   service:
@@ -567,7 +569,7 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.1.0
+    version: 1.2.1
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

@@ -10,6 +10,8 @@ installer:
   type:
   platform:
 
+installerInfo: "{ 'productId': 'Helm_artifactory/{{ .Chart.Version }}', 'features': [ { 'featureId': 'ArtifactoryVersion/{{ default .Chart.AppVersion .Values.artifactory.image.version }}' }, { 'featureId': '{{ if .Values.postgresql.enabled }}postgresql{{ else }}{{ default \"derby\" .Values.database.type }}{{ end }}/0.0.0' }, { 'featureId': 'Platform/{{ default \"kubernetes\" .Values.installer.platform }}' } ] }"
+
 # For supporting pulling from private registries
 imagePullSecrets:
 
@@ -103,7 +105,7 @@ postgresql:
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
-  postgresqlConfiguration:
+  postgresqlExtendedConf:
     listenAddresses: "'*'"
     maxConnections: "1500"
   persistence:
@@ -194,37 +196,45 @@ artifactory:
 
   # Sidecar containers for tailing Artifactory logs
   loggers: []
-  # - request.log
-  # - event.log
-  # - binarystore.log
-  # - request_trace.log
-  # - access.log
-  # - artifactory.log
-  # - build_info_migration.log
+  # - access-audit.log
+  # - access-request.log
+  # - access-security-audit.log
+  # - access-service.log
+  # - artifactory-access.log
+  # - artifactory-event.log
+  # - artifactory-import-export.log
+  # - artifactory-request.log
+  # - artifactory-service.log
+  # - frontend-request.log
+  # - frontend-service.log
+  # - metadata-request.log
+  # - metadata-service.log
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - derby.log
 
   # Loggers containers resources
   loggersResources: {}
   #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
+  #    memory: "10Mi"
+  #    cpu: "10m"
   #  limits:
-  #    memory: "128Mi"
+  #    memory: "100Mi"
   #    cpu: "50m"
 
   # Sidecar containers for tailing Tomcat (catalina) logs
   catalinaLoggers: []
-  # - catalina.log
-  # - host-manager.log
-  # - localhost.log
-  # - manager.log
+  # - tomcat-catalina.log
+  # - tomcat-localhost.log
 
   # Tomcat (catalina) loggers resources
   catalinaLoggersResources: {}
   #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
+  #    memory: "10Mi"
+  #    cpu: "10m"
   #  limits:
-  #    memory: "128Mi"
+  #    memory: "100Mi"
   #    cpu: "50m"
 
   # Migration support from 6.x to 7.x
@@ -342,8 +352,11 @@ artifactory:
   binarystore:
     enabled: true
 
-  accessAdmin:
+  ## admin allows to set the password for the default admin user.
+  ## See: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups#UsersandGroups-RecreatingtheDefaultAdminUserrecreate
+  admin:
     ip: "127.0.0.1"
+    username: "admin"
     password:
     secret:
     dataKey:
@@ -1146,10 +1159,20 @@ nginx:
   #    memory: "128Mi"
   #    cpu: "50m"
 
+  # Logs options
+  logs:
+    stderr: false
+    level: warn
+
   mainConf: |
     # Main Nginx configuration file
     worker_processes  4;
-    error_log  {{ .Values.nginx.persistence.mountPath }}/logs//error.log warn;
+
+    {{ if .Values.nginx.logs.stderr }}
+    error_log  stderr {{ .Values.nginx.logs.level }};
+    {{- else -}}
+    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ .Values.nginx.logs.level }};
+    {{- end }}
     pid        /tmp/nginx.pid;
 
     {{- if .Values.artifactory.ssh.enabled }}
@@ -1211,11 +1234,13 @@ nginx:
     }
 
   artifactoryConf: |
+    {{- if .Values.nginx.https.enabled }}
     ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
     ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
     ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
     ssl_session_cache shared:SSL:1m;
     ssl_prefer_server_ciphers   on;
+    {{- end }}
     ## server configuration
     server {
       {{- if .Values.nginx.internalPortHttps }}
@@ -1256,8 +1281,12 @@ nginx:
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
         proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        {{- if .Values.nginx.service.ssloffload}}
+        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+        {{- else }}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$server_port;
         proxy_set_header    X-Forwarded-Port  $server_port;
+        {{- end }}
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
@@ -1274,6 +1303,7 @@ nginx:
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
+    ssloffload: false
     ## For supporting whitelist on the Nginx LoadBalancer service
     ## Set this to a list of IP CIDR ranges
     ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']

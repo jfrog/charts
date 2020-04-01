@@ -149,8 +149,8 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         volumeMounts:
-        - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
-          mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
+          - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
+            mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
     {{- end }}
     {{- if .Values.waitForDatabase }}
       {{- if or .Values.postgresql.enabled }}
@@ -260,15 +260,6 @@ spec:
           mountPath: "/artifactory_bootstrap/gcp.credentials.json"
           subPath: gcp.credentials.json
   {{- end }}
-  {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
-        - name: artifactory-license
-          mountPath: "/artifactory_bootstrap/artifactory.cluster.license"
-      {{- if .Values.artifactory.license.secret }}
-          subPath: {{ .Values.artifactory.license.dataKey }}
-      {{- else if .Values.artifactory.license.licenseKey }}
-          subPath: artifactory.lic
-          {{- end }}
-      {{- end }}
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
@@ -279,9 +270,10 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
+          set -e;
           {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
           cp -Lrf /tmp/plugin/*/* /tmp/plugins;
@@ -294,7 +286,7 @@ spec:
           echo "Running member node specific custom preStartCommand command";
           {{ tpl . $ }};
         {{- end }}
-          /entrypoint-artifactory.sh
+          exec /entrypoint-artifactory.sh
         lifecycle:
           postStart:
             exec:
@@ -448,13 +440,15 @@ spec:
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: '{{ $image }}:{{ $tag }}'
         command:
-        - tail
-        args:
-        - '-F'
-        - '{{ $mountPath }}/logs/{{ . }}'
+          - 'sh'
+          - '-c'
+          - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
       {{- end }}
@@ -465,11 +459,11 @@ spec:
         command:
         - 'sh'
         - '-c'
-        - 'sh /scripts/tail-log.sh {{ $mountPath }}/logs/catalina {{ . }}'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
-        - name: catalina-logger
+        - name: tail-logger-script
           mountPath: /scripts/tail-log.sh
           subPath: tail-log.sh
         resources:
@@ -587,10 +581,10 @@ spec:
           secretName: {{ tpl . $ }}
       {{- end }}
       {{- end }}
-      {{- if .Values.artifactory.catalinaLoggers }}
-      - name: catalina-logger
+      {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
+      - name: tail-logger-script
         configMap:
-          name: {{ template "artifactory-ha.fullname" . }}-catalina-logger
+          name: {{ template "artifactory-ha.fullname" . }}-logger
       {{- end }}
       {{- if .Values.artifactory.configMaps }}
       - name: artifactory-configmaps

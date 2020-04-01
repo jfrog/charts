@@ -33,8 +33,8 @@ spec:
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
-      {{- if not (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) }}
-        checksum/access-creds: {{ include (print $.Template.BasePath "/access-bootstrap-creds.yaml") . | sha256sum }}
+      {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
+        checksum/admin-creds: {{ include (print $.Template.BasePath "/admin-bootstrap-creds.yaml") . | sha256sum }}
       {{- end }}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
@@ -81,7 +81,7 @@ spec:
         - name: artifactory-volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
     {{- end }}
-    {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
+    {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -89,17 +89,17 @@ spec:
           - 'sh'
           - '-c'
           - >
-            echo "Preparing custom Access bootstrap.creds";
-            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/access/etc;
-            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
-            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/access/etc/bootstrap.creds;
+            echo "Preparing {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds";
+            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
+            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
+            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
         volumeMounts:
           - name: artifactory-volume
             mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
           - name: access-bootstrap-creds
             mountPath: "/tmp/access/bootstrap.creds"
-            {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
-            subPath: {{ .Values.artifactory.accessAdmin.dataKey }}
+            {{- if and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey }}
+            subPath: {{ .Values.artifactory.admin.dataKey }}
             {{- else }}
             subPath: bootstrap.creds
             {{- end }}
@@ -180,7 +180,7 @@ spec:
           cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
           cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
-          bash $scriptsPath/migrationStatus.sh {{ .Chart.AppVersion }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.version }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
         {{- if .Values.database.secrets.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -236,15 +236,6 @@ spec:
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
       {{- end }}
-      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
-        - name: artifactory-license
-          mountPath: "/artifactory_bootstrap/artifactory.lic"
-          {{- if .Values.artifactory.license.secret }}
-          subPath: {{ .Values.artifactory.license.dataKey }}
-          {{- else if .Values.artifactory.license.licenseKey }}
-          subPath: artifactory.lic
-          {{- end }}
-      {{- end }}
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
@@ -255,7 +246,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
           set -e;
@@ -281,7 +272,7 @@ spec:
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
           {{- end }}
-          /entrypoint-artifactory.sh
+          exec /entrypoint-artifactory.sh
         lifecycle:
           postStart:
             exec:
@@ -406,13 +397,15 @@ spec:
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: '{{ $image }}:{{ $tag }}'
         command:
-        - tail
-        args:
-        - '-F'
-        - '{{ $mountPath }}/logs/{{ . }}'
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
       {{- end }}
@@ -423,11 +416,11 @@ spec:
         command:
         - 'sh'
         - '-c'
-        - 'sh /scripts/tail-log.sh {{ $mountPath }}/logs/catalina {{ . }}'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ $mountPath }}
-        - name: catalina-logger
+        - name: tail-logger-script
           mountPath: /scripts/tail-log.sh
           subPath: tail-log.sh
         resources:
@@ -449,7 +442,7 @@ spec:
           mountPath: /usr/share/filebeat/filebeat.yml
           readOnly: true
           subPath: filebeat.yml
-        - name: volume
+        - name: artifactory-volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
         livenessProbe:
 {{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
@@ -507,10 +500,10 @@ spec:
         configMap:
           name: {{ .Values.artifactory.configMapName }}
       {{- end}}
-      {{- if .Values.artifactory.catalinaLoggers }}
-      - name: catalina-logger
+      {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
+      - name: tail-logger-script
         configMap:
-          name: {{ template "artifactory.fullname" . }}-catalina-logger
+          name: {{ template "artifactory.fullname" . }}-logger
       {{- end }}
       {{- if .Values.artifactory.configMaps }}
       - name: artifactory-configmaps
@@ -526,11 +519,11 @@ spec:
           secretName: {{ template "artifactory.fullname" . }}-license
           {{- end }}
       {{- end }}
-      {{- if or (and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey) .Values.artifactory.accessAdmin.password }}
+      {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: access-bootstrap-creds
         secret:
-          {{- if and .Values.artifactory.accessAdmin.secret .Values.artifactory.accessAdmin.dataKey }}
-          secretName: {{ .Values.artifactory.accessAdmin.secret }}
+          {{- if and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey }}
+          secretName: {{ .Values.artifactory.admin.secret }}
           {{- else }}
           secretName: {{ template "artifactory.fullname" . }}-bootstrap-creds
           {{- end }}
@@ -569,25 +562,25 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+{{- with .Values.artifactory.persistence }}
+  {{- if and .enabled (not .existingClaim) }}
   volumeClaimTemplates:
-  {{- if .Values.artifactory.persistence.enabled }}
   - metadata:
       name: artifactory-volume
-    {{- if not .Values.artifactory.persistence.existingClaim }}
     spec:
-      {{- if .Values.artifactory.persistence.storageClassName }}
-      {{- if (eq "-" .Values.artifactory.persistence.storageClassName) }}
+      {{- if .storageClassName }}
+      {{- if (eq "-" .storageClassName) }}
       storageClassName: ""
       {{- else }}
-      storageClassName: "{{ .Values.artifactory.persistence.storageClassName }}"
+      storageClassName: "{{ .storageClassName }}"
       {{- end }}
       {{- end }}
-      accessModes: [ "{{ .Values.artifactory.persistence.accessMode }}" ]
+      accessModes: [ "{{ .accessMode }}" ]
       resources:
         requests:
-          storage: {{ .Values.artifactory.persistence.size }}
-    {{- end }}
+          storage: {{ .size }}
   {{- end }}
+{{- end }}
   {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
   - metadata:
       name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}

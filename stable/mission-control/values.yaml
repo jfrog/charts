@@ -100,7 +100,7 @@ postgresql:
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
-  postgresqlConfiguration:
+  postgresqlExtendedConf:
     listenAddresses: "'*'"
     maxConnections: "1500"
   global:
@@ -147,8 +147,6 @@ postgresql:
 database:
   type: postgresql
   driver: org.postgresql.Driver
-  host:
-  port:
   url:
   ## Please make sure these are created under the provided database
   name: mission_control

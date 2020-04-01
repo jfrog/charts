@@ -89,6 +89,14 @@ pipelines:
   tolerations: []
   affinity: {}
 
+  ## Apply horizontal pod auto scaling on Pipelines pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+
   api:
     image:
       repository: jfrog/pipelines-api
@@ -617,6 +625,9 @@ pipelines:
       defaultMinionInstanceSize: "c4.large"
       allowDynamicNodes: true
       allowCustomNodes: true
+      {{- range $key, $value := .Values.runtimeOverride }}
+      {{ $key }}: {{ $value | quote }}
+      {{- end }}
       languageImages:
         - architecture: x86_64
           os: Ubuntu_16.04
@@ -693,6 +704,9 @@ pipelines:
           registryUrl: {{ .Values.buildImage.registry }}
           image: jfrog/pipelines-c7go
           defaultVersion: 1.12.14
+
+## Runtime Override Properties Section
+runtimeOverride: {}
 
 ## For setting up external services
 global:
@@ -1043,6 +1057,6 @@ buildPlane:
 
       resources: {}
 
-#
+##
 rbac:
   create: true

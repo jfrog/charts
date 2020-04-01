@@ -136,7 +136,20 @@ echo ${MASTER_KEY}
 helm install --set xray.masterKey=${MASTER_KEY} -n xray jfrog/xray
 
 ```
-**NOTE:** Make sure to pass the same master key with `--set xray.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
+
+Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
+```bash
+# Create a key
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
+
+# Create a secret containing the key. The key in the secret must be named master-key
+kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
+
+# Pass the created secret to helm
+helm install --name xray --set xray.masterKeySecretName=my-secret -n xray jfrog/xray
+```
+**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set xray.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set xray.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
 ## Special deployments
 This is a list of special use cases for non-standard deployments
@@ -174,10 +187,12 @@ export POSTGRESQL_USER=xray
 export POSTGRESQL_PASSWORD=password2_X
 export POSTGRESQL_DATABASE=xraydb
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set database.user="${POSTGRESQL_USER}" \
+    --set database.password="${POSTGRESQL_PASSWORD}" \
     jfrog/xray
 ```
 
@@ -208,10 +223,12 @@ export POSTGRESQL_CLIENT_CERT=client-key.pem
 export POSTGRESQL_CLIENT_KEY=client-cert.pem
 export POSTGRESQL_TLS_SECRET=postgres-tls
 
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
+export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    --set database.user="${POSTGRESQL_USER}" \
+    --set database.password="${POSTGRESQL_PASSWORD}" \
     jfrog/xray
 ```
 
@@ -244,6 +261,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `xray.jfrogUrl`              | Main Artifactory URL, without the `/artifactory` prefix .Mandatory  |                                    |
 | `xray.persistence.mountPath` | Xray persistence mount path                      | `/var/opt/jfrog/xray`              |
 | `xray.masterKey`             | Xray Master Key (Can be generated with `openssl rand -hex 32`) | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `xray.masterKeySecretName`   | Xray Master Key secret name                      |                                                                    |
 | `xray.joinKey`               | Xray Join Key (Can be generated with `openssl rand -hex 16`). Mandatory | `` |
 | `xray.systemYaml`            | Xray system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Xray+System+YAML |       |
 | `xray.autoscaling.enabled`   | Enable Xray Pods autoscaling using `HorizontalPodAutoscaler` | `false`                |
@@ -262,8 +280,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.postgresqlUsername`         | PostgreSQL database user                    | `xray`                             |
 | `postgresql.postgresqlPassword`     | PostgreSQL database password                | ` `                                |
 | `postgresql.postgresqlDatabase`     | PostgreSQL database name                    | `xraydb`                           |
-| `postgresql.postgresqlConfiguration.listenAddresses`  | PostgreSQL listen address | `"'*'"`                           |
-| `postgresql.postgresqlConfiguration.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
+| `postgresql.postgresqlExtendedConf.listenAddresses`  | PostgreSQL listen address | `"'*'"`                           |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
 | `postgresql.service.port`         | PostgreSQL database port                    | `5432`                             |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage           | `true`                             |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size          | `50Gi`                             |
