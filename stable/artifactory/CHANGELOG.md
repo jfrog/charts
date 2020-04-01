@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.5] - Apr 1, 2020
+* Fix readme use to `-hex 32` instead of `-hex 16`
+
 ## [9.2.4] - Mar 31, 2020
 * Change the way the artifactory `command:` is set so it will properly pass a SIGTERM to java
 
