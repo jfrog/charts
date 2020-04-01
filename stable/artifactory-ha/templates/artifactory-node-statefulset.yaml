@@ -130,10 +130,8 @@ spec:
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
         {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
-          rm -rfv /tmp/master.key;
-          echo -n ${ARTIFACTORY_MASTER_KEY} > /tmp/master.key;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
-          cp -fv /tmp/master.key {{ .Values.artifactory.persistence.mountPath }}/etc/security;
+          echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
         env:
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
