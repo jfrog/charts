@@ -331,7 +331,7 @@ Artifactory requires a unique join key. By default the chart has one set in valu
 You should generate a unique key and pass it to the template at install/upgrade time.
 ```bash
 # Create a key
-export JOIN_KEY=$(openssl rand -hex 16)
+export JOIN_KEY=$(openssl rand -hex 32)
 echo ${JOIN_KEY}
 
 # Pass the created join key to helm
@@ -341,7 +341,7 @@ helm install --name artifactory --set artifactory.joinKey=${JOIN_KEY} jfrog/arti
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
 ```bash
 # Create a key
-export JOIN_KEY=$(openssl rand -hex 16)
+export JOIN_KEY=$(openssl rand -hex 32)
 echo ${JOIN_KEY}
 
 # Create a secret containing the key. The key in the secret must be named join-key
@@ -880,9 +880,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.livenessProbe.timeoutSeconds`       | When the probe times out                  | 10                        |
 | `artifactory.livenessProbe.successThreshold`     | Minimum consecutive successes for the probe to be considered successful after having failed. | 1 |
 | `artifactory.livenessProbe.failureThreshold`     | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
-| `artifactory.masterKey`                          | Artifactory Master Key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 16`. NOTE: This key is generated only once and cannot be updated once created | `` |
+| `artifactory.masterKey`                          | Artifactory Master Key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 32`. NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
-| `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 16`  | `EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE`   |
+| `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 32`  | ``   |
 | `artifactory.admin.ip`                     | Artifactory admin ip to be set upon startup, can use (*) for 0.0.0.0| `127.0.0.1`                                   |
 | `artifactory.admin.username`               | Artifactory admin username to be set upon startup| `admin`                                       |
 | `artifactory.admin.password`               | Artifactory admin password to be set upon startup|                                               |
