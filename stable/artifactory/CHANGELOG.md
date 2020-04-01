@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.6] - Apr 1, 2020
+* Support masterKey as secret
+
 ## [9.2.5] - Apr 1, 2020
 * Fix readme use to `-hex 32` instead of `-hex 16`
 

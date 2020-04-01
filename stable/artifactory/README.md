@@ -883,6 +883,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.masterKey`                          | Artifactory Master Key. A 128-Bit key size (hexadecimal encoded) string (32 hex characters). Can be generated with `openssl rand -hex 32`. NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.masterKeySecretName`                | Artifactory Master Key secret name |                                                                    |
 | `artifactory.joinKey`                | Join Key to connect other services to Artifactory. Can be generated with `openssl rand -hex 32`  | ``   |
+| `artifactory.joinKeySecretName`                | Artifactory join Key secret name |                                                                    |
 | `artifactory.admin.ip`                     | Artifactory admin ip to be set upon startup, can use (*) for 0.0.0.0| `127.0.0.1`                                   |
 | `artifactory.admin.username`               | Artifactory admin username to be set upon startup| `admin`                                       |
 | `artifactory.admin.password`               | Artifactory admin password to be set upon startup|                                               |
