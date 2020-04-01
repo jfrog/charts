@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.7] - Apr 1, 2020
+* Added cache-layer in chain definition of Google Cloud Storage template
+* Fix readme use to `-hex 32` instead of `-hex 16`
+
 ## [2.2.6] - Mar 31, 2020
 * Change the way the artifactory `command:` is set so it will properly pass a SIGTERM to java
 
