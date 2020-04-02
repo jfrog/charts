@@ -73,6 +73,31 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.xray.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.xray.persistence.mountPath }}/lost+found;
+        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName }}
+          echo "Copy joinKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
+          echo ${XRAY_JOIN_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/join.key;
+        {{- end }}
+        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
+          echo ${XRAY_MASTER_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/master.key;
+        {{- end }}
+        env:
+        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName }}
+        - name: XRAY_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.xray.joinKeySecretName | default (include "xray.fullname" .) }}"
+              key: join-key
+        {{- end }}
+        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName }}
+        - name: XRAY_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.xray.masterKeySecretName | default (include "xray.fullname" .) }}"
+              key: master-key
+        {{- end }}
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.xray.persistence.mountPath | quote }}
@@ -89,32 +114,6 @@ spec:
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
             sleep 2;
           done;
-      {{- end }}
-      {{- if .Values.xray.masterKey }}  
-      - name: migration-{{ .Values.server.name }}
-        image: {{ .Values.server.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          allowPrivilegeEscalation: false
-        command:
-        - '/bin/sh'
-        - '-c'
-        - >
-          echo "Copy masterKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
-          rm -rfv /tmp/master.key;
-          echo ${XRAY_MASTER_KEY} > /tmp/master.key;
-          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
-          cp -fv /tmp/master.key {{ .Values.xray.persistence.mountPath }}/etc/security;
-          echo "Copy Done";
-        env:
-        - name: XRAY_MASTER_KEY
-          valueFrom:
-            secretKeyRef:
-              name: "{{ .Values.xray.masterKeySecretName | default (include "xray.fullname" .) }}"
-              key: master-key
-        volumeMounts:
-        - name: data-volume
-          mountPath: {{ .Values.xray.persistence.mountPath | quote }}
       {{- end }}
     {{- if .Values.common.customInitContainers }}
       {{ tpl .Values.common.customInitContainers . }}
