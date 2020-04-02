@@ -25,12 +25,14 @@ xray:
 
   ## Join Key to connect to main Artifactory. Mandatory
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
   ## Artifactory URL . Mandatory
   jfrogUrl:
 
-  ## Mongo Url used only for Manual migration of data from mongo to postgres in 2.x
+  ## Mongo Url used only for Manual migration of data from mongo to postgres in Xray 2.x
   mongoUsername: xray
   mongoPassword: password
 
@@ -41,9 +43,6 @@ xray:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
       jfrogUrl: "{{ required "\n\nxray.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.xray.jfrogUrl }}"
-      security:
-        masterKey: "{{ .Values.xray.masterKey }}"
-        joinKey: "{{ required "xray.joinKey is required! This is the join key used to connect to Artifactory" .Values.xray.joinKey }}"
       database:
         type: "postgresql"
         driver: "org.postgresql.Driver"

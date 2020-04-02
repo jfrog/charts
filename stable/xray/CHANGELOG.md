@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.24] - April 2, 2020
+* Support masterKey and joinKey as secrets
+
 ## [3.0.26] - Mar 31, 2020
 * Update Xray to version `3.2.3`
 * Bump router to version `1.2.1`

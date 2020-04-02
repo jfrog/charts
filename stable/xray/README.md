@@ -50,6 +50,18 @@ helm install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set postgresql.postgresqlPassword=<postgres_password> -n xray jfrog/xray
 ```
 
+Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
+```bash
+
+# Create a secret containing the key. The key in the secret must be named join-key
+kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
+
+# Pass the created secret to helm
+helm install  --set xray.joinKeySecretName=my-secret -n xray jfrog/xray
+```
+**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set xray.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
+
 ### System Configuration
 
 Xray uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
@@ -150,6 +162,7 @@ kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 helm install --name xray --set xray.masterKeySecretName=my-secret -n xray jfrog/xray
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set xray.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set xray.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
 
 ## Special deployments
 This is a list of special use cases for non-standard deployments
@@ -260,9 +273,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `initContainerImage`         | Init container image                             | `alpine:3.6`                       |
 | `xray.jfrogUrl`              | Main Artifactory URL, without the `/artifactory` prefix .Mandatory  |                                    |
 | `xray.persistence.mountPath` | Xray persistence mount path                      | `/var/opt/jfrog/xray`              |
-| `xray.masterKey`             | Xray Master Key (Can be generated with `openssl rand -hex 32`) | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
+| `xray.masterKey`             | Xray Master Key (Can be generated with `openssl rand -hex 32`) | `` |
 | `xray.masterKeySecretName`   | Xray Master Key secret name                      |                                                                    |
-| `xray.joinKey`               | Xray Join Key (Can be generated with `openssl rand -hex 16`). Mandatory | `` |
+| `xray.joinKey`               | Xray Join Key to connect to Artifactory . Mandatory | `` |
+| `xray.joinKeySecretName`     | Xray Join Key secret name |                                                  |
 | `xray.systemYaml`            | Xray system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Xray+System+YAML |       |
 | `xray.autoscaling.enabled`   | Enable Xray Pods autoscaling using `HorizontalPodAutoscaler` | `false`                |
 | `xray.autoscaling.minReplicas`   | Minimum number of Xray replicas | `1`                |
