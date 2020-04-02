@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.0.20] - April 2, 2020
+* Support masterKey and joinKey as secrets
+
 ## [5.0.19] - Mar 30, 2020
 * Readme fixes
 

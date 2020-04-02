@@ -187,7 +187,13 @@ distribution:
   ## Pass it to helm with '--set distribution.masterKey=${MASTER_KEY}'
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
+
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
+
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
   ## Artifactory URL . Mandatory
@@ -214,9 +220,6 @@ distribution:
         consoleLog:
           enabled: {{ .Values.distribution.consoleLog }}
       jfrogUrl: "{{ required "\n\ndistribution.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.distribution.jfrogUrl }}"
-      security:
-        masterKey: "{{ .Values.distribution.masterKey }}"
-        joinKey: "{{ .Values.distribution.joinKey }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"

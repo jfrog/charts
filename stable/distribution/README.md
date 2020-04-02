@@ -43,6 +43,15 @@ helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  jfrog/distribution
 ```
 
+Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
+```bash
+# Create a secret containing the key. The key in the secret must be named join-key
+kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
+# Pass the created secret to helm
+helm install  --set distribution.joinKeySecretName=my-secret jfrog/distribution
+```
+**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set distribution.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
 ### System Configuration
 Distribution uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 
@@ -92,8 +101,18 @@ echo ${MASTER_KEY}
 
 # Pass the created master key to helm
 helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/distribution
+
+Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
+```bash
+
+# Create a secret containing the key. The key in the secret must be named master-key
+kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
+
+# Pass the created secret to helm
+helm install --name distribution --set distribution.masterKeySecretName=my-secret -n distribution jfrog/distribution
 ```
-**NOTE:** Make sure to pass the same master key with `--set distribution.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
+**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set -n distribution.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set -n distribution.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+```
 
 ### High Availability
 JFrog Distribution can run in High Availability by having multiple replicas of the Distribution service.
@@ -262,7 +281,10 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
-| `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
+| `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `` |
+| `distribution.masterKeySecretName`              | Distribution Master Key secret name |                                                                    |
+| `distribution.joinKey`                          | Join Key to connect to Artifactory.  | ``   |
+| `distribution.joinKeySecretName`                | Distribution join Key secret name |                                                                    |
 | `distribution.jfrogUrl`                         | Main Artifactory URL, without the `/artifactory` prefix . Mandatory    | ` `                                                                |
 | `database.type`                                 | External database type (`postgresql`)                                  | `postgresql`                                      |
 | `database.driver`                               | External database driver                                               | 

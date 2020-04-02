@@ -56,6 +56,31 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.distribution.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.distribution.persistence.mountPath }}/lost+found;
+        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName }}
+          echo "Copy joinKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
+          echo ${DISTRIBUTION_JOIN_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/join.key;
+        {{- end }}
+        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
+          echo ${DISTRIBUTION_MASTER_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/master.key;
+        {{- end }}
+        env:
+        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName }}
+        - name: DISTRIBUTION_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.distribution.joinKeySecretName | default (include "distribution.fullname" .) }}"
+              key: join-key
+        {{- end }}
+        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName }}
+        - name: DISTRIBUTION_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.distribution.masterKeySecretName | default (include "distribution.fullname" .) }}"
+              key: master-key
+        {{- end }}
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
@@ -72,31 +97,23 @@ spec:
           echo "Waiting for database to be ready...";
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
       {{- end }}
-      {{- if .Values.distribution.masterKey }}
+      {{- if .Release.IsUpgrade }}
       - name: migration-{{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
-          echo "Copy masterKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
-          rm -rfv /tmp/master.key;
-          echo {{ .Values.distribution.masterKey }} > /tmp/master.key;
-          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
-          cp -fv /tmp/master.key {{ .Values.distribution.persistence.mountPath }}/etc/security;
-          echo "Copy masterKey Done";
           if [[ ! -f {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties ]]; then
-            echo "Copy versions.properties file to {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties";
-            rm -rfv /tmp/versions.properties;
-            echo "last-database-version=1.8.0" > /tmp/versions.properties;
-            echo "last-configuration-version=1.8.0" >> /tmp/versions.properties;
-            echo "file-timestamp=1578228343759" >> /tmp/versions.properties;
+            echo "Create versions.properties file - {{ .Values.distribution.persistence.mountPath }}/etc/distribution";
             mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/distribution;
-            cp -fv /tmp/versions.properties {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties;
-            echo "Copy versions.properties Done";
+            echo "last-database-version=1.8.0" > {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties;
+            echo "last-configuration-version=1.8.0" >> {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties;
+            echo "file-timestamp=1578228343759" >> {{ .Values.distribution.persistence.mountPath }}/etc/distribution/versions.properties;
+            echo "Creation of versions.properties Done";
           fi
         env:
         {{- range .Values.distribution.extraEnvironmentVariables }}
