@@ -35,10 +35,18 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 #### Initiate Installation
 Provide join key and jfrog url as a parameter to the Mission Control chart installation:
 
+On helm v2:
 ```bash
 helm install --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
-             --set postgresql.postgresqlPassword=<postgres_password> jfrog/mission-control
+             --set postgresql.postgresqlPassword=<postgres_password> -n mission-control jfrog/mission-control
+```
+
+On helm v3:
+```bash
+helm install --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
+             --set postgresql.postgresqlPassword=<postgres_password> mission-control jfrog/mission-control
 ```
 
 ### System Configuration
@@ -84,15 +92,31 @@ export MC_KEY=$(openssl rand -hex 16)
 echo ${MC_KEY}
 
 # Pass the created master key to helm
+
+# On helm v2:
 helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
+
+# On helm v3:
+helm install mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
 ```
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
+On helm v2:
 ```bash
 helm install --name mission-control \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="mission-control.company.com" \
+  --set server.service.type=NodePort \
+  jfrog/mission-control
+```
+
+On helm v3:
+```bash
+helm install mission-control \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="mission-control.company.com" \
   --set server.service.type=NodePort \

@@ -44,10 +44,18 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 
 Provide join key and jfrog url as a parameter to the Xray chart installation:
 
+On helm v2:
 ```bash
 helm install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
              --set postgresql.postgresqlPassword=<postgres_password> -n xray jfrog/xray
+```
+
+On helm v3:
+```bash
+helm install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
+             --set postgresql.postgresqlPassword=<postgres_password> xray jfrog/xray
 ```
 
 ### System Configuration
@@ -101,7 +109,7 @@ If Xray was installed with all of the default values (e.g. with no user-provided
 2. Upgrade the release by passing the previously auto-generated secrets:
 
 ```bash
-helm upgrade --name xray jfrog/xray --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresqlPassword=<postgresql-password>
+helm upgrade xray jfrog/xray --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresqlPassword=<postgresql-password>
 ```
 
 ## Remove
@@ -110,7 +118,12 @@ Removing a **helm** release is done with
 
 ```bash
 # Remove the Xray services and data tools
+
+# On helm v2:
 helm delete --purge xray
+
+# On helm v3:
+helm delete xray
 
 # Remove the data disks
 kubectl delete pvc -l release=xray
@@ -133,7 +146,12 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
+
+# On helm v2:
 helm install --set xray.masterKey=${MASTER_KEY} -n xray jfrog/xray
+
+# On helm v3:
+helm install --set xray.masterKey=${MASTER_KEY} xray jfrog/xray
 
 ```
 **NOTE:** Make sure to pass the same master key with `--set xray.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
@@ -148,7 +166,12 @@ For **high availability** of Xray, set the replica count to be equal or higher t
 
 ```bash
 # Start Xray with 3 replicas per service and 3 replicas for RabbitMQ
+
+# On helm v2:
 helm install -n xray --set server.replicaCount=3 jfrog/xray
+
+# On helm v3:
+helm install xray --set server.replicaCount=3 jfrog/xray
 ```
 
 ### External Databases
@@ -175,10 +198,18 @@ export POSTGRESQL_PASSWORD=password2_X
 export POSTGRESQL_DATABASE=xraydb
 
 export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
+
+# On helm v2:
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
     jfrog/xray
+    
+# On helm v3:
+helm install xray \
+    --set postgresql.enabled=false \
+    --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    jfrog/xray   
 ```
 
 ##### PostgreSQL with TLS
@@ -209,10 +240,18 @@ export POSTGRESQL_CLIENT_KEY=client-cert.pem
 export POSTGRESQL_TLS_SECRET=postgres-tls
 
 export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
+
+# On helm v2:
 helm install -n xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
     jfrog/xray
+    
+# On helm v3:
+helm install xray \
+    --set postgresql.enabled=false \
+    --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
+    jfrog/xray   
 ```
 
 ### Custom init containers

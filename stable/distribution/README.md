@@ -38,12 +38,19 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 #### Initiate Installation
 Provide join key and jfrog url as a parameter to the Distribution chart installation:
 
+On helm v2:
 ```bash
 helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
-             --set postgresql.postgresqlPassword=<postgres_password> jfrog/distribution
+             --set postgresql.postgresqlPassword=<postgres_password> -n distribution jfrog/distribution
 ```
 
+On helm v3:
+```bash
+helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
+             --set postgresql.postgresqlPassword=<postgres_password> distribution jfrog/distribution
+```
 ### System Configuration
 Distribution uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 
@@ -92,7 +99,12 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
+
+# On helm v2:
 helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/distribution
+
+# On helm v3:
+helm install --set distribution.masterKey=${MASTER_KEY} distribution jfrog/distribution
 ```
 **NOTE:** Make sure to pass the same master key with `--set distribution.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
 
@@ -102,7 +114,12 @@ JFrog Distribution can run in High Availability by having multiple replicas of t
 To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
 ```bash
 # Run 3 replicas of the Distribution service
+
+# On helm v2:
 helm install --name distribution --set replicaCount=3 jfrog/distribution
+
+# On helm v3:
+helm install distribution --set replicaCount=3 jfrog/distribution
 ```
 
 ### External Database
@@ -119,6 +136,7 @@ export POSTGRES_DATABASE=
 export POSTGRES_USERNAME=
 export POSTGRES_PASSWORD=
 
+# On helm v2:
 helm install --name distribution \
     --set database.host=${POSTGRES_HOST} \
     --set database.port=${POSTGRES_PORT} \
@@ -126,6 +144,15 @@ helm install --name distribution \
     --set database.user=${POSTGRES_USERNAME} \
     --set database.password=${POSTGRES_PASSWORD} \
     jfrog/distribution
+    
+# On helm v3:
+helm install distribution \
+    --set database.host=${POSTGRES_HOST} \
+    --set database.port=${POSTGRES_PORT} \
+    --set database.database=${POSTGRES_DATABASE} \
+    --set database.user=${POSTGRES_USERNAME} \
+    --set database.password=${POSTGRES_PASSWORD} \
+    jfrog/distribution   
 ```
 **NOTE:** The Database password is saved as a Kubernetes secret
 
@@ -140,12 +167,21 @@ export POSTGRES_USERNAME_SECRET_KEY=
 export POSTGRES_PASSWORD_SECRET_NAME=
 export POSTGRES_PASSWORD_SECRET_KEY=
 
+# On helm v2:
 helm install --name distribution \
     --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
     --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
     --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
     --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
     jfrog/distribution
+    
+# On helm v3:
+helm install distribution \
+    --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
+    --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
+    --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
+    --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
+    jfrog/distribution   
 ```
 
 ## Upgrade
@@ -323,8 +359,19 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
+On helm v2:
 ```bash
 helm install --name distribution \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="distribution.company.com" \
+  --set distribution.service.type=NodePort \
+  jfrog/distribution
+```
+
+On helm v3:
+```bash
+helm install distribution \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="distribution.company.com" \
   --set distribution.service.type=NodePort \
