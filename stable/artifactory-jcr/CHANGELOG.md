@@ -1,6 +1,9 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.1.5] - Apr 5, 2020
+* Added Helm V3 commands
+
 ## [2.1.4] - Mar 30, 2020
 * Update dependency Artifactory chart version to 9.2.3 (Artifactory 7.3.2)
 
