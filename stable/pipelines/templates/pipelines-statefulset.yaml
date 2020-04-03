@@ -6,7 +6,9 @@ metadata:
     {{- include "pipelines.labels" . | nindent 4 }}
 spec:
   serviceName: {{ include "pipelines.services.name" . }}-headless
+{{- if not .Values.pipelines.autoscaling.enabled }}
   replicas: {{ .Values.pipelines.replicaCount }}
+{{- end }}
   updateStrategy:
     type: {{ .Values.pipelines.updateStrategy }}
   selector:
