@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.10] - Apr 05, 2020
+* Added helm v3 commands
+
 ## [2.2.9] - Apr 01, 2020
 * Support masterKey and joinKey as secrets
 
