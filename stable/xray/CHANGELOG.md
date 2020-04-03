@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.28] - April 5, 2020
+* Added helm V3 commands
+
 ## [3.0.27] - April 2, 2020
 * Support masterKey and joinKey as secrets
 
