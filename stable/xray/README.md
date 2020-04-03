@@ -136,20 +136,7 @@ echo ${MASTER_KEY}
 helm install --set xray.masterKey=${MASTER_KEY} -n xray jfrog/xray
 
 ```
-
-Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
-```bash
-# Create a key
-export MASTER_KEY=$(openssl rand -hex 32)
-echo ${MASTER_KEY}
-
-# Create a secret containing the key. The key in the secret must be named master-key
-kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
-
-# Pass the created secret to helm
-helm install --name xray --set xray.masterKeySecretName=my-secret -n xray jfrog/xray
-```
-**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set xray.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set xray.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+**NOTE:** Make sure to pass the same master key with `--set xray.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
 
 ## Special deployments
 This is a list of special use cases for non-standard deployments
@@ -257,7 +244,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `xray.jfrogUrl`              | Main Artifactory URL, without the `/artifactory` prefix .Mandatory  |                                    |
 | `xray.persistence.mountPath` | Xray persistence mount path                      | `/var/opt/jfrog/xray`              |
 | `xray.masterKey`             | Xray Master Key (Can be generated with `openssl rand -hex 32`) | `FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF` |
-| `xray.masterKeySecretName`   | Xray Master Key secret name                      |                                                                    |
 | `xray.joinKey`               | Xray Join Key (Can be generated with `openssl rand -hex 16`). Mandatory | `` |
 | `xray.systemYaml`            | Xray system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Xray+System+YAML |       |
 | `xray.autoscaling.enabled`   | Enable Xray Pods autoscaling using `HorizontalPodAutoscaler` | `false`                |
@@ -276,8 +262,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.postgresqlUsername`         | PostgreSQL database user                    | `xray`                             |
 | `postgresql.postgresqlPassword`     | PostgreSQL database password                | ` `                                |
 | `postgresql.postgresqlDatabase`     | PostgreSQL database name                    | `xraydb`                           |
-| `postgresql.postgresqlExtendedConf.listenAddresses`  | PostgreSQL listen address | `"'*'"`                           |
-| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
+| `postgresql.postgresqlConfiguration.listenAddresses`  | PostgreSQL listen address | `"'*'"`                           |
+| `postgresql.postgresqlConfiguration.maxConnections`  | PostgreSQL max_connections parameter | `500`                           |
 | `postgresql.service.port`         | PostgreSQL database port                    | `5432`                             |
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage           | `true`                             |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size          | `50Gi`                             |
@@ -323,11 +309,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
-| `common.persistence.enabled`                   | Xray common persistence volume enabled       | `false`              |
-| `common.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                |
-| `common.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
-| `common.persistence.accessMode`                | Xray common persistence volume access mode   | `ReadWriteOnce`      |
-| `common.persistence.size`                      | Xray common persistence volume size          | `50Gi`               |
 | `xray.systemYaml`                              | Xray system configuration (`system.yaml`)    | `see values.yaml`    |
 | `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
 | `common.customInitContainers`                  | Custom init containers to run after existing init containers                       | ` `                  |
@@ -340,6 +321,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.podManagementPolicy`                 | Xray Analysis pod management policy          | `Parallel`           |
 | `analysis.internalPort`                        | Xray Analysis internal port                  | `7000`               |
 | `analysis.externalPort`                        | Xray Analysis external port                  | `7000`               |
+| `analysis.service.type`                        | Xray Analysis service type                   | `ClusterIP`          |
 | `analysis.livenessProbe`                       | Xray Analysis livenessProbe                  | See `values.yaml`    |
 | `analysis.readinessProbe`                      | Xray Analysis readinessProbe                 | See `values.yaml`    |
 | `analysis.persistence.size`                    | Xray Analysis storage size limit             | `10Gi`               |
@@ -356,6 +338,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.podManagementPolicy`                  | Xray Indexer pod management policy           | `Parallel`           |
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
+| `indexer.service.type`                         | Xray Indexer service type                    | `ClusterIP`          |
 | `indexer.livenessProbe`                        | Xray Indexer livenessProbe                   | See `values.yaml`    |
 | `indexer.readinessProbe`                       | Xray Indexer readinessProbe                  | See `values.yaml`    |
 | `indexer.customVolumes`                         | Custom volumes                               |                                                  |
@@ -377,6 +360,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.podManagementPolicy`                  | Xray Persist pod management policy           | `Parallel`           |
 | `persist.internalPort`                         | Xray Persist internal port                   | `7003`               |
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
+| `persist.service.type`                         | Xray Persist service type                    | `ClusterIP`          |
 | `persist.livenessProbe`                        | Xray Persist livenessProbe                   | See `values.yaml`    |
 | `persist.readinessProbe`                       | Xray Persist readinessProbe                  | See `values.yaml`    |
 | `persist.persistence.size`                     | Xray Persist storage size limit              | `10Gi`               |
@@ -396,10 +380,15 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.internalPort`                          | Xray server internal port                    | `8000`               |
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |
-| `server.service.type`                          | Xray server service type                     | `ClusterIP`       |
+| `server.service.type`                          | Xray server service type                     | `LoadBalancer`       |
 | `server.service.annotations`                   | Xray server service annotations              | `{}`                 |
 | `server.livenessProbe`                         | Xray server livenessProbe                    | See `values.yaml`    |
 | `server.readinessProbe`                        | Xray server readinessProbe                   | See `values.yaml`    |
+| `server.persistence.existingClaim`             | Provide an existing PersistentVolumeClaim    | `nil`                |
+| `server.persistence.storageClass`              | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
+| `server.persistence.enabled`                   | Xray server persistence volume enabled       | `false`              |
+| `server.persistence.accessMode`                | Xray server persistence volume access mode   | `ReadWriteOnce`      |
+| `server.persistence.size`                      | Xray server persistence volume size          | `50Gi`               |
 | `server.preStartCommand`                       | Xray server Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `server.resources`                             | Xray server resources                        | `{}`                 |
 | `server.nodeSelector`                          | Xray server node selector                    | `{}`                 |

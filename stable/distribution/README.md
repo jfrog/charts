@@ -226,13 +226,18 @@ The following table lists the configurable parameters of the distribution chart 
 | `serviceAccount.name`                           | The name of the ServiceAccount to create                               | Generated using fullname template                                  |
 | `rbac.create`                                   | Specifies whether RBAC resources should be created                     | `true`                                                             |
 | `rbac.role.rules`                               | Rules to create                                                        | `[]`                                                               |
+| `ingress.enabled`                               | If true, distribution Ingress will be created                          | `false`                                                            |
+| `ingress.annotations`                           | distribution Ingress annotations                                       | `{}`                                                               |
+| `ingress.hosts`                                 | distribution Ingress hostnames                                         | `[]`                                                               |
+| `ingress.tls`                                   | distribution Ingress TLS configuration (YAML)                          | `[]`                                                               |
+| `ingress.defaultBackend.enabled`                | If true, the default `backend` will be added using serviceName and servicePort | `true`                                                             |
+| `ingress.additionalRules`                       | distribution Ingress additional rules                                          | `{}`                                                               |
 | `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
 | `postgresql.imageTag`                           | PostgreSQL image tag                                                   | `9.6.11`                                                           |
 | `postgresql.postgresqlDatabase`                 | PostgreSQL database name                                               | `distribution`                                                     |
 | `postgresql.postgresqlUsername`                 | PostgreSQL database username                                           | `distribution`                                                     |
 | `postgresql.postgresqlPassword`                 | PostgreSQL database password                                           | ` `                                                                |
-| `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address                                          | `"'*'"`                                                            |
-| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter                               | `1500`                                                             |
+| `postgresql.postgresConfig.maxConnections`      | PostgreSQL max_connections                                             | `1500`                                                             |
 | `postgresql.service.port`                       | PostgreSQL service port                                                | `5432`                                                             |
 | `postgresql.persistence.enabled`                | PostgreSQL persistence enabled                                         | `true`                                                             |
 | `postgresql.persistence.size`                   | PostgreSQL persistent disk size                                        | `50Gi`                                                             |
@@ -262,7 +267,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
 | `distribution.image.repository`                 | Container image                                                        | `docker.bintray.io/jf-distribution`                                  |
 | `distribution.image.version`                    | Container image tag                                                    | `.Chart.AppVersion`                                                |
-| `distribution.service.type`                     | Distribution service type                                              | `ClusterIP`                                                     |
+| `distribution.service.type`                     | Distribution service type                                              | `LoadBalancer`                                                     |
+| `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                         | `[]`                                                               |
 | `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
 | `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
@@ -314,6 +320,76 @@ The following table lists the configurable parameters of the distribution chart 
 | `router.image.version`                          | Container image tag                                                    | `.Chart.AppVersion`                                                |
       
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+
+### Ingress and TLS
+To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+```bash
+helm install --name distribution \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="distribution.company.com" \
+  --set distribution.service.type=NodePort \
+  jfrog/distribution
+```
+
+If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
+
+To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
+
+```bash
+kubectl create secret tls distribution-tls --cert=path/to/tls.cert --key=path/to/tls.key
+```
+
+Include the secret's name, along with the desired hostnames, in the Distribution Ingress TLS section of your custom `values.yaml` file:
+
+```
+  ingress:
+    ## If true, Distribution Ingress will be created
+    ##
+    enabled: true
+
+    ## Distribution Ingress hostnames
+    ## Must be provided if Ingress is enabled
+    ##
+    hosts:
+      - distribution.domain.com
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    ## Distribution Ingress TLS configuration
+    ## Secrets must be manually created in the namespace
+    ##
+    tls:
+      - secretName: distribution-tls
+        hosts:
+          - distribution.domain.com
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Distribution ingress. An example for this use case can be routing the /artifactory path to Artifactory.
+In order to do that, simply add the following to a `distribution-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "distribution.fullname" . }}
+              servicePort: {{ .Values.distribution.externalPort }}
+          - path: /artifactory
+            backend:
+              serviceName: <ARTIFACTORY_SERVICE_NAME>
+              servicePort: <ARTIFACTORY_SERVICE_PORT>
+```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
