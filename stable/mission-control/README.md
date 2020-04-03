@@ -81,8 +81,8 @@ Following parameter can be set during upgrade,
 ### Deploying JFMC for small/medium/large instllations
 In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
 
-### Create a unique MC Key
-Mission Control HA cluster uses a unique mc key. By default the chart has one set in values.yaml (`missionControl.masterKey`).
+### Create a unique Master Key
+Mission Control HA cluster uses a unique master key. By default the chart has one set in values.yaml (`missionControl.masterKey`).
 
 **This key is for demo purpose and should not be used in a production environment!**
 
@@ -343,7 +343,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image`                       | Container image                                 | `docker.bintray.io/jfrog/mission-control`     |
 | `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
-| `missionControl.masterkey`                   | Mission Control masterkey . Can be generated with `openssl rand -hex 32` |``|
+| `missionControl.masterkey`                   | Mission Control Master Key . Can be generated with `openssl rand -hex 32` |``|
 | `missionControl.jfrogUrl`                    | Main Artifactory URL, without the `/artifactory` prefix . Mandatory| ` `                                   |
 | `missionControl.joinKey`                     | MissionControl join Key . Mandatory              | ` `                                   |
 | `missionControl.masterKeySecretName`         | MissionControl Master Key secret name            |                                       |
