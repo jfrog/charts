@@ -40,7 +40,7 @@ helm repo update
 
 ### Artifactory Connection Details
 
-In order to connect Mission Control to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Mission Control installation. Here's how you do that:
+In order to connect Pipelines to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Pipelines installation. Here's how you do that:
 
 Retrieve the connection details of your Artifactory installation, from the UI - https://www.jfrog.com/confluence/display/JFROG/General+Security+Settings#GeneralSecuritySettings-ViewingtheJoinKey.
 

@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.0.35] - April 3, 2020
+* Update readme
+* Disable Pipelines StatefulSet replicas if HPA is enabled
+
 ## [1.0.34] - March 24, 2020
 * Update docs urls
 * Fix filebeat compute resources
