@@ -72,6 +72,31 @@ spec:
           cp -fv /tmp/etc/application.yaml {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc/application.yaml;
           echo "Remove {{ .Values.missionControl.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.missionControl.persistence.mountPath }}/lost+found;
+        {{- if or .Values.missionControl.joinKey .Values.missionControl.joinKeySecretName }}
+          echo "Copy joinKey to {{ .Values.missionControl.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security;
+          echo ${MC_JOIN_KEY} > {{ .Values.missionControl.persistence.mountPath }}/etc/security/join.key;
+        {{- end }}
+        {{- if or .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.missionControl.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security;
+          echo ${MC_MASTER_KEY} > {{ .Values.missionControl.persistence.mountPath }}/etc/security/master.key;
+        {{- end }}
+        env:
+        {{- if or .Values.missionControl.joinKey .Values.missionControl.joinKeySecretName }}
+        - name: MC_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.missionControl.joinKeySecretName | default (include "mission-control.fullname" .) }}"
+              key: join-key
+        {{- end }}
+        {{- if or .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName }}
+        - name: MC_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.missionControl.masterKeySecretName | default (include "mission-control.fullname" .) }}"
+              key: master-key
+        {{- end }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
