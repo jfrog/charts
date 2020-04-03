@@ -38,20 +38,19 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 #### Initiate Installation
 Provide join key and jfrog url as a parameter to the Distribution chart installation:
 
+On helm v2:
 ```bash
 helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  jfrog/distribution
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
+             --set postgresql.postgresqlPassword=<postgres_password> -n distribution jfrog/distribution
 ```
 
-Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
+On helm v3:
 ```bash
-# Create a secret containing the key. The key in the secret must be named join-key
-kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
-# Pass the created secret to helm
-helm install  --set distribution.joinKeySecretName=my-secret jfrog/distribution
+helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
+             --set postgresql.postgresqlPassword=<postgres_password> distribution jfrog/distribution
 ```
-**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set distribution.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
-
 ### System Configuration
 Distribution uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 
@@ -100,19 +99,14 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
+
+# On helm v2:
 helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/distribution
 
-Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
-```bash
-
-# Create a secret containing the key. The key in the secret must be named master-key
-kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
-
-# Pass the created secret to helm
-helm install --name distribution --set distribution.masterKeySecretName=my-secret -n distribution jfrog/distribution
+# On helm v3:
+helm install --set distribution.masterKey=${MASTER_KEY} distribution jfrog/distribution
 ```
-**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set -n distribution.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set -n distribution.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
-```
+**NOTE:** Make sure to pass the same master key with `--set distribution.masterKey=${MASTER_KEY}` on all future calls to `helm install` and `helm upgrade`!
 
 ### High Availability
 JFrog Distribution can run in High Availability by having multiple replicas of the Distribution service.
@@ -120,7 +114,12 @@ JFrog Distribution can run in High Availability by having multiple replicas of t
 To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
 ```bash
 # Run 3 replicas of the Distribution service
+
+# On helm v2:
 helm install --name distribution --set replicaCount=3 jfrog/distribution
+
+# On helm v3:
+helm install distribution --set replicaCount=3 jfrog/distribution
 ```
 
 ### External Database
@@ -131,15 +130,29 @@ There is an option to use an external PostgreSQL database for your Distribution.
 
 To use an external **PostgreSQL**, You need to set the Distribution **PostgreSQL** connection details
 ```bash
-export POSTGRES_URL=
+export POSTGRES_HOST=
+export POSTGRES_PORT=
+export POSTGRES_DATABASE=
 export POSTGRES_USERNAME=
 export POSTGRES_PASSWORD=
 
+# On helm v2:
 helm install --name distribution \
-    --set database.url=${POSTGRES_URL} \
+    --set database.host=${POSTGRES_HOST} \
+    --set database.port=${POSTGRES_PORT} \
+    --set database.database=${POSTGRES_DATABASE} \
     --set database.user=${POSTGRES_USERNAME} \
     --set database.password=${POSTGRES_PASSWORD} \
     jfrog/distribution
+    
+# On helm v3:
+helm install distribution \
+    --set database.host=${POSTGRES_HOST} \
+    --set database.port=${POSTGRES_PORT} \
+    --set database.database=${POSTGRES_DATABASE} \
+    --set database.user=${POSTGRES_USERNAME} \
+    --set database.password=${POSTGRES_PASSWORD} \
+    jfrog/distribution   
 ```
 **NOTE:** The Database password is saved as a Kubernetes secret
 
@@ -154,12 +167,21 @@ export POSTGRES_USERNAME_SECRET_KEY=
 export POSTGRES_PASSWORD_SECRET_NAME=
 export POSTGRES_PASSWORD_SECRET_KEY=
 
+# On helm v2:
 helm install --name distribution \
     --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
     --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
     --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
     --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
     jfrog/distribution
+    
+# On helm v3:
+helm install distribution \
+    --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
+    --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
+    --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
+    --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
+    jfrog/distribution   
 ```
 
 ## Upgrade
@@ -240,13 +262,18 @@ The following table lists the configurable parameters of the distribution chart 
 | `serviceAccount.name`                           | The name of the ServiceAccount to create                               | Generated using fullname template                                  |
 | `rbac.create`                                   | Specifies whether RBAC resources should be created                     | `true`                                                             |
 | `rbac.role.rules`                               | Rules to create                                                        | `[]`                                                               |
+| `ingress.enabled`                               | If true, distribution Ingress will be created                          | `false`                                                            |
+| `ingress.annotations`                           | distribution Ingress annotations                                       | `{}`                                                               |
+| `ingress.hosts`                                 | distribution Ingress hostnames                                         | `[]`                                                               |
+| `ingress.tls`                                   | distribution Ingress TLS configuration (YAML)                          | `[]`                                                               |
+| `ingress.defaultBackend.enabled`                | If true, the default `backend` will be added using serviceName and servicePort | `true`                                                             |
+| `ingress.additionalRules`                       | distribution Ingress additional rules                                          | `{}`                                                               |
 | `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
 | `postgresql.imageTag`                           | PostgreSQL image tag                                                   | `9.6.11`                                                           |
 | `postgresql.postgresqlDatabase`                 | PostgreSQL database name                                               | `distribution`                                                     |
 | `postgresql.postgresqlUsername`                 | PostgreSQL database username                                           | `distribution`                                                     |
 | `postgresql.postgresqlPassword`                 | PostgreSQL database password                                           | ` `                                                                |
-| `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address                                          | `"'*'"`                                                            |
-| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter                               | `1500`                                                             |
+| `postgresql.postgresConfig.maxConnections`      | PostgreSQL max_connections                                             | `1500`                                                             |
 | `postgresql.service.port`                       | PostgreSQL service port                                                | `5432`                                                             |
 | `postgresql.persistence.enabled`                | PostgreSQL persistence enabled                                         | `true`                                                             |
 | `postgresql.persistence.size`                   | PostgreSQL persistent disk size                                        | `50Gi`                                                             |
@@ -276,25 +303,14 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
 | `distribution.image.repository`                 | Container image                                                        | `docker.bintray.io/jf-distribution`                                  |
 | `distribution.image.version`                    | Container image tag                                                    | `.Chart.AppVersion`                                                |
-| `distribution.service.type`                     | Distribution service type                                              | `ClusterIP`                                                     |
+| `distribution.service.type`                     | Distribution service type                                              | `LoadBalancer`                                                     |
+| `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                         | `[]`                                                               |
 | `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
 | `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
-| `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `` |
-| `distribution.masterKeySecretName`              | Distribution Master Key secret name |                                                                    |
-| `distribution.joinKey`                          | Join Key to connect to Artifactory.  | ``   |
-| `distribution.joinKeySecretName`                | Distribution join Key secret name |                                                                    |
+| `distribution.masterKey`                        | Distribution Master Key (can be generated with `openssl rand -hex 32`) | `BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB` |
 | `distribution.jfrogUrl`                         | Main Artifactory URL, without the `/artifactory` prefix . Mandatory    | ` `                                                                |
-| `database.type`                                 | External database type (`postgresql`)                                  | `postgresql`                                      |
-| `database.driver`                               | External database driver                                               | 
-`org.postgresql.Driver`                           |
-| `database.url`                                  | External database url                                                  |
-` `                                               |
-| `database.user`                                 | External database user                                                 |
-` `                                               |
-| `database.password`                             | External database password                                             |
-` `                                               |
 | `distribution.joinKey`                          | Distribution Join Key . Mandatory                                      | ` `                                                                |
 | `distribution.serviceId`                        | Distribution service ID                                                | ` `                                                                |
 | `distribution.env.artifactoryUrl`               | Distribution Environment Artifactory URL                               | ` `                                                                |
@@ -340,6 +356,87 @@ The following table lists the configurable parameters of the distribution chart 
 | `router.image.version`                          | Container image tag                                                    | `.Chart.AppVersion`                                                |
       
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+
+### Ingress and TLS
+To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
+On helm v2:
+```bash
+helm install --name distribution \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="distribution.company.com" \
+  --set distribution.service.type=NodePort \
+  jfrog/distribution
+```
+
+On helm v3:
+```bash
+helm install distribution \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="distribution.company.com" \
+  --set distribution.service.type=NodePort \
+  jfrog/distribution
+```
+
+If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
+
+To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
+
+```bash
+kubectl create secret tls distribution-tls --cert=path/to/tls.cert --key=path/to/tls.key
+```
+
+Include the secret's name, along with the desired hostnames, in the Distribution Ingress TLS section of your custom `values.yaml` file:
+
+```
+  ingress:
+    ## If true, Distribution Ingress will be created
+    ##
+    enabled: true
+
+    ## Distribution Ingress hostnames
+    ## Must be provided if Ingress is enabled
+    ##
+    hosts:
+      - distribution.domain.com
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    ## Distribution Ingress TLS configuration
+    ## Secrets must be manually created in the namespace
+    ##
+    tls:
+      - secretName: distribution-tls
+        hosts:
+          - distribution.domain.com
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Distribution ingress. An example for this use case can be routing the /artifactory path to Artifactory.
+In order to do that, simply add the following to a `distribution-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ template "distribution.fullname" . }}
+              servicePort: {{ .Values.distribution.externalPort }}
+          - path: /artifactory
+            backend:
+              serviceName: <ARTIFACTORY_SERVICE_NAME>
+              servicePort: <ARTIFACTORY_SERVICE_PORT>
+```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started

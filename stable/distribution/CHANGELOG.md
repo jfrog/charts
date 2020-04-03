@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.0.21] - April 5, 2020
+* Added helm V3 commands
+
 ## [5.0.20] - April 2, 2020
 * Support masterKey and joinKey as secrets
 
