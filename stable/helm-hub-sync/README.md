@@ -87,10 +87,15 @@ helm upgrade --install helm-hub-sync --namespace helm-hub-sync jfrog/helm-hub-sy
 
 Removing a **helm** release is done with
 
+On helm v2:
 ```console
 helm delete --purge helm-hub-sync
 ```
 
+On helm v3:
+```console
+helm delete helm-hub-sync
+```
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Configuration
