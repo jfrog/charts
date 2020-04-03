@@ -90,7 +90,7 @@ spec:
               name: "{{ .Values.missionControl.joinKeySecretName | default (include "mission-control.fullname" .) }}"
               key: join-key
         {{- end }}
-        {{- if or .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName }}
+        {{- if or .Values.missionControl.mcKey .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName }}
         - name: MC_MASTER_KEY
           valueFrom:
             secretKeyRef:
