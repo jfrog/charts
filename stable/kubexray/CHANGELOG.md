@@ -1,6 +1,9 @@
 # JFrog KubeXray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.4.2]  - Apr 5, 2020
+* Added helm V3 commands
+
 ## [0.4.1]  - feb 20, 2020
 * Add Deprecation Notice
 
