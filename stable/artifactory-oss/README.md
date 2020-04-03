@@ -24,10 +24,16 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Install Chart
 To install the chart with the release name `artifactory-oss`:
+
+On helm v2:
 ```bash
 helm install --name artifactory-oss --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-oss
 ```
 
+On helm v3:
+```bash
+helm install artifactory-oss --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-oss
+```
 ### Accessing Artifactory OSS
 **NOTE:** If using artifactory or nginx service type `LoadBalancer`, it might take a few minutes for Artifactory OSS's public IP to become available.
 
@@ -38,9 +44,17 @@ helm upgrade artifactory-oss jfrog/artifactory-oss
 ```
 
 ### Deleting Artifactory OSS
+
+On helm v2:
 ```bash
 helm delete --purge artifactory-oss
 ```
+
+On helm v3:
+```bash
+helm delete artifactory-oss
+```
+
 This will delete your Artifactory OSS deployment.<br>
 **NOTE:** You might have left behind persistent volumes. You should explicitly delete them with
 ```bash
@@ -76,6 +90,8 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
+On helm v2:
 ```bash
 helm install --name artifactory \
   --set artifactory.nginx.enabled=false \
@@ -85,6 +101,15 @@ helm install --name artifactory \
   jfrog/artifactory-oss
 ```
 
+On helm v3:
+```bash
+helm install artifactory \
+  --set artifactory.nginx.enabled=false \
+  --set artifactory.ingress.enabled=true \
+  --set artifactory.ingress.hosts[0]="artifactory.company.com" \
+  --set artifactory.artifactory.service.type=NodePort \
+  jfrog/artifactory-oss
+```
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
 ```bash
