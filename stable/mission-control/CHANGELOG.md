@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.23] - Apr 5, 2020
+* Added helm V3 commands
+
 ## [3.0.22] - Mar 30, 2020
 * Readme fixes
 
