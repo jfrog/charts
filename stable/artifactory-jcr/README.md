@@ -24,8 +24,15 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
+
+On helm V2:
 ```bash
 helm install --name jfrog-container-registry --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-jcr
+```
+
+On helm V3:
+```bash
+helm install jfrog-container-registry --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-jcr
 ```
 
 ### Accessing JFrog Container Registry
@@ -38,8 +45,15 @@ helm upgrade jfrog-container-registry jfrog/artifactory-jcr
 ```
 
 ### Deleting JFrog Container Registry
+
+On helm v2:
 ```bash
 helm delete --purge jfrog-container-registry
+```
+
+On helm v3:
+```bash
+helm delete jfrog-container-registry
 ```
 This will delete your JFrog Container Registry deployment.<br>
 **NOTE:** You might have left behind persistent volumes. You should explicitly delete them with
@@ -76,6 +90,8 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
+On helm v2:
 ```bash
 helm install --name artifactory \
   --set artifactory.nginx.enabled=false \
@@ -85,6 +101,15 @@ helm install --name artifactory \
   jfrog/artifactory-jcr
 ```
 
+On helm v3:
+```bash
+helm install artifactory \
+  --set artifactory.nginx.enabled=false \
+  --set artifactory.ingress.enabled=true \
+  --set artifactory.ingress.hosts[0]="artifactory.company.com" \
+  --set artifactory.artifactory.service.type=NodePort \
+  jfrog/artifactory-jcr
+```
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
 ```bash
