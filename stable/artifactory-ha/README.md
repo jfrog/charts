@@ -418,7 +418,12 @@ stringData:
 kubectl apply -n artifactory -f ./custom-binarystore.yaml
 
 # Pass it to your helm install command:
+
+# On helm v2:
 helm install --name artifactory-ha --set artifactory.persistence.customBinarystoreXmlSecret=custom-binarystore jfrog/artifactory-ha
+
+# On helm v3:
+helm install artifactory-ha --set artifactory.persistence.customBinarystoreXmlSecret=custom-binarystore jfrog/artifactory-ha
 ```
 
 ### Create a unique Master Key
