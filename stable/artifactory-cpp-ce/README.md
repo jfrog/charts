@@ -24,6 +24,11 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
+On helm v2:
+```bash
+helm install --name artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-cpp-ce
+```
+On helm v3:
 ```bash
 helm install --name artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-cpp-ce
 ```
@@ -38,8 +43,13 @@ helm upgrade artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ```
 
 ### Deleting Artifactory CE for C++
+On helm v2:
 ```bash
 helm delete --purge artifactory-cpp-ce
+```
+On helm v3:
+```bash
+helm delete artifactory-cpp-ce
 ```
 This will delete your Artifactory CE for C++ deployment.<br>
 **NOTE:** You might have left behind persistent volumes. You should explicitly delete them with
@@ -76,6 +86,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+On helm v2:
 ```bash
 helm install --name artifactory \
   --set artifactory.nginx.enabled=false \
@@ -84,7 +95,15 @@ helm install --name artifactory \
   --set artifactory.artifactory.service.type=NodePort \
   jfrog/artifactory-cpp-ce
 ```
-
+On helm v3:
+```bash
+helm install artifactory \
+  --set artifactory.nginx.enabled=false \
+  --set artifactory.ingress.enabled=true \
+  --set artifactory.ingress.hosts[0]="artifactory.company.com" \
+  --set artifactory.artifactory.service.type=NodePort \
+  jfrog/artifactory-cpp-ce
+```
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
 
 ```bash
