@@ -24,6 +24,7 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
+
 On helm v2:
 ```bash
 helm install --name artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-cpp-ce
@@ -43,6 +44,7 @@ helm upgrade artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ```
 
 ### Deleting Artifactory CE for C++
+
 On helm v2:
 ```bash
 helm delete --purge artifactory-cpp-ce
@@ -86,6 +88,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
 On helm v2:
 ```bash
 helm install --name artifactory \
