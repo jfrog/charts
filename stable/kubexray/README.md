@@ -130,11 +130,17 @@ helm upgrade --install kubexray --namespace kubexray jfrog/kubexray \
 
 Removing a **helm** release is done with
 
+On helm v2:
 ```
 # Remove the Xray services and data tools
 helm delete --purge kubexray
 ```
 
+On helm V3:
+```
+# Remove the Xray services and data tools
+helm delete kubexray
+```
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
 ## Configuration
@@ -260,8 +266,14 @@ And then add `kubexray.mydomain.com` to your Xray server under `Admin/Webhooks` 
 
 To retrieve TLS cert from the Let's Encrypt we are going to use [JetStack's cert-manager](https://github.com/helm/charts/tree/master/stable/cert-manager):
 
+On helm v2:
 ```
 helm install --name cert-manager --namespace cert-manager stable/cert-manager
+```
+
+On helm v3:
+```
+helm install cert-manager --namespace cert-manager stable/cert-manager
 ```
 
 Then deploy the cert-manager [cluster issuer](http://docs.cert-manager.io/en/latest/reference/clusterissuers.html):
