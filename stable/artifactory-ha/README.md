@@ -47,10 +47,14 @@ echo ${MASTER_KEY}
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
 
+On helm v2:
 ```bash
 helm install --name artifactory-ha --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
 ```
-
+On helm v3:
+```bash
+helm install artifactory-ha --set artifactory.masterKey=${MASTER_KEY} jfrog/artifactory-ha
+```
 ### System Configuration
 Artifactory uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 In order to override the default `system.yaml` configuration, do the following:
@@ -102,9 +106,40 @@ It is **highly** recommended to set these so you have full control of the alloca
 
 See more information on [setting resources for your Artifactory based on planned usage](https://www.jfrog.com/confluence/display/RTF/System+Requirements#SystemRequirements-RecommendedHardware).
 
+On helm v2:
 ```bash
 # Example of setting resource requests and limits to all pods (including passing java memory settings to Artifactory)
 helm install --name artifactory-ha \
+               --set artifactory.primary.resources.requests.cpu="500m" \
+               --set artifactory.primary.resources.limits.cpu="2" \
+               --set artifactory.primary.resources.requests.memory="1Gi" \
+               --set artifactory.primary.resources.limits.memory="4Gi" \
+               --set artifactory.primary.javaOpts.xms="1g" \
+               --set artifactory.primary.javaOpts.xmx="4g" \
+               --set artifactory.node.resources.requests.cpu="500m" \
+               --set artifactory.node.resources.limits.cpu="2" \
+               --set artifactory.node.resources.requests.memory="1Gi" \
+               --set artifactory.node.resources.limits.memory="4Gi" \
+               --set artifactory.node.javaOpts.xms="1g" \
+               --set artifactory.node.javaOpts.xmx="4g" \
+               --set initContainers.resources.requests.cpu="10m" \
+               --set initContainers.resources.limits.cpu="250m" \
+               --set initContainers.resources.requests.memory="64Mi" \
+               --set initContainers.resources.limits.memory="128Mi" \
+               --set postgresql.resources.requests.cpu="200m" \
+               --set postgresql.resources.limits.cpu="1" \
+               --set postgresql.resources.requests.memory="500Mi" \
+               --set postgresql.resources.limits.memory="1Gi" \
+               --set nginx.resources.requests.cpu="100m" \
+               --set nginx.resources.limits.cpu="250m" \
+               --set nginx.resources.requests.memory="250Mi" \
+               --set nginx.resources.limits.memory="500Mi" \
+               jfrog/artifactory-ha
+```
+On helm v3:
+```bash
+# Example of setting resource requests and limits to all pods (including passing java memory settings to Artifactory)
+helm install artifactory-ha \
                --set artifactory.primary.resources.requests.cpu="500m" \
                --set artifactory.primary.resources.limits.cpu="2" \
                --set artifactory.primary.resources.requests.memory="1Gi" \
@@ -398,7 +433,12 @@ echo ${MASTER_KEY}
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
 # Pass the created secret to helm
+
+# On helm v2:
 helm install --name artifactory-ha --set artifactory.masterKeySecretName=my-secret jfrog/artifactory-ha
+
+# On helm v3:
+helm install artifactory-ha --set artifactory.masterKeySecretName=my-secret jfrog/artifactory-ha
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set artifactory.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set artifactory.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -419,7 +459,12 @@ export JOIN_KEY=$(openssl rand -hex 16)
 echo ${JOIN_KEY}
 
 # Pass the created join key to helm
+
+# On helm v2:
 helm install --name artifactory --set artifactory.joinKey=${JOIN_KEY} jfrog/artifactory-ha
+
+# On helm v3:
+helm install artifactory --set artifactory.joinKey=${JOIN_KEY} jfrog/artifactory-ha
 ```
 
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
@@ -432,7 +477,12 @@ echo ${JOIN_KEY}
 kubectl create secret generic my-secret --from-literal=join-key=${JOIN_KEY}
 
 # Pass the created secret to helm
+
+# On helm v2:
 helm install --name artifactory --set artifactory.joinKeySecretName=my-secret jfrog/artifactory-ha
+
+# On helm v3:
+helm install artifactory --set artifactory.joinKeySecretName=my-secret jfrog/artifactory-ha
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set artifactory.joinKey=${JOIN_KEY}`. In the second, this means always passing `--set artifactory.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged..
 
@@ -457,7 +507,12 @@ Prepare a text file with the license(s) written in it. If writing multiple licen
 kubectl create secret generic artifactory-cluster-license --from-file=./art.lic
 
 # Pass the license to helm
+
+# On helm v2:
 helm install --name artifactory-ha --set artifactory.license.secret=artifactory-cluster-license,artifactory.license.dataKey=art.lic jfrog/artifactory-ha
+
+# On helm v3:
+helm install artifactory-ha --set artifactory.license.secret=artifactory-cluster-license,artifactory.license.dataKey=art.lic jfrog/artifactory-ha
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
@@ -477,8 +532,14 @@ artifactory:
       <LICENSE_KEY3>
 ```
 
+On helm v2:
 ```bash
 helm install --name artifactory-ha -f values.yaml jfrog/artifactory-ha
+```
+
+On helm v3:
+```bash
+helm install artifactory-ha -f values.yaml jfrog/artifactory-ha
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
@@ -501,6 +562,7 @@ artifactory:
 ```
 
 Install the helm chart with the values file you created:
+
 ```bash
 helm upgrade --install artifactory-ha jfrog/artifactory-ha -f values.yaml
 ```
@@ -565,8 +627,18 @@ networkpolicy:
 ** You can see some information about the exposed MBeans here - https://www.jfrog.com/confluence/display/RTF/Artifactory+JMX+MBeans
 
 Enable JMX in your deployment:
+
+On helm v2:
 ```bash
 helm install --name artifactory \
+    --set artifactory.primary.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    jfrog/artifactory-ha
+```
+
+On helm v3:
+```bash
+helm install artifactory \
     --set artifactory.primary.javaOpts.jmx.enabled=true \
     --set artifactory.node.javaOpts.jmx.enabled=true \
     jfrog/artifactory-ha
@@ -577,8 +649,19 @@ to your choice of port
 
 In order to connect to Artifactory using JMX with jconsole (or any similar tool) installed on your computer, follow the following steps:
 1. Enable JMX as described above and Change the Artifactory service to be of type LoadBalancer:
+
+On helm v2:
 ```bash
 helm install --name artifactory \
+    --set artifactory.primary.javaOpts.jmx.enabled=true \
+    --set artifactory.node.javaOpts.jmx.enabled=true \
+    --set artifactory.service.type=LoadBalancer \
+    jfrog/artifactory-ha
+```
+
+On helm v3:
+```bash
+helm install artifactory \
     --set artifactory.primary.javaOpts.jmx.enabled=true \
     --set artifactory.node.javaOpts.jmx.enabled=true \
     --set artifactory.service.type=LoadBalancer \
@@ -638,8 +721,15 @@ data:
 kubectl apply -f bootstrap-config.yaml
 ```
 3. Pass the configMap to helm
+
+On helm v2:
 ```bash
 helm install --name artifactory-ha --set artifactory.license.secret=artifactory-cluster-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory-ha
+```
+
+On helm v3:
+```bash
+helm install artifactory-ha --set artifactory.license.secret=artifactory-cluster-license,artifactory.license.dataKey=art.lic,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory-ha
 ```
 
 ### Use custom nginx.conf with Nginx
@@ -650,10 +740,16 @@ Steps to create configMap with nginx.conf
 kubectl create configmap nginx-config --from-file=nginx.conf
 ```
 * Pass configMap to helm install
+
+On helm v2:
 ```bash
 helm install --name artifactory-ha --set nginx.customConfigMap=nginx-config jfrog/artifactory-ha
 ```
 
+On helm v3:
+```bash
+helm install artifactory-ha --set nginx.customConfigMap=nginx-config jfrog/artifactory-ha
+```
 ### Scaling your Artifactory cluster
 A key feature in Artifactory HA is the ability to set an initial cluster size with `--set artifactory.node.replicaCount=${CLUSTER_SIZE}` and if needed, resize it.
 
@@ -670,7 +766,12 @@ Use `--set postgresql.postgresqlPassword=${DB_PASSWORD}` with every scale action
 Let's assume you have a cluster with **2** member nodes, and you want to scale up to **3** member nodes (a total of 4 nodes).
 ```bash
 # Scale to 4 nodes (1 primary and 3 member nodes)
+
+# On helm v2:
 helm upgrade --install artifactory-ha --set artifactory.node.replicaCount=3 --set postgresql.postgresqlPassword=${DB_PASSWORD} jfrog/artifactory-ha
+
+# On helm v3:
+helm upgrade artifactory-ha --set artifactory.node.replicaCount=3 --set postgresql.postgresqlPassword=${DB_PASSWORD} jfrog/artifactory-ha
 ```
 
 ##### Scale down
@@ -747,8 +848,15 @@ kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-li
 
 ### Deleting Artifactory
 To delete the Artifactory HA cluster
+
+On helm v2:
 ```bash
 helm delete --purge artifactory-ha
+```
+
+On helm v3:
+```bash
+helm delete artifactory-ha
 ```
 This will completely delete your Artifactory HA cluster.
 **NOTE:** Since Artifactory is running as Kubernetes Stateful Sets, the removal of the helm release will **not** remove the persistent volumes. You need to explicitly remove them
@@ -765,10 +873,16 @@ If you need to pull your Docker images from a private registry (for example, whe
 kubectl create secret docker-registry regsecret --docker-server=${DOCKER_REGISTRY} --docker-username=${DOCKER_USER} --docker-password=${DOCKER_PASS} --docker-email=${DOCKER_EMAIL}
 ```
 Once created, you pass it to `helm`
+
+On helm v2:
 ```bash
 helm install --name artifactory-ha --set imagePullSecrets=regsecret jfrog/artifactory-ha
 ```
 
+On helm v3:
+```bash
+helm install artifactory-ha --set imagePullSecrets=regsecret jfrog/artifactory-ha
+```
 ### Logger sidecars
 This chart provides the option to add sidecars to tail various logs from Artifactory. See the available values in [values.yaml](values.yaml)
 
@@ -848,8 +962,15 @@ artifactory:
 ```
 
 You can now pass the created `plugins.yaml` file to helm install command to deploy Artifactory with user plugins as follows:
+
+On helm v2:
 ```bash
 helm install --name artifactory-ha -f plugins.yaml jfrog/artifactory-ha
+```
+
+On helm v3:
+```bash
+helm install artifactory-ha -f plugins.yaml jfrog/artifactory-ha
 ```
 
 Alternatively, you may be in a situation in which you would like to create a secret in a Helm chart that depends on this chart. In this scenario, the name of the secret is likely dynamically generated via template functions, so passing a statically named secret isn't possible. In this case, the chart supports evaluating strings as templates via the [`tpl`](https://helm.sh/docs/charts_tips_and_tricks/#using-the-tpl-function) function - simply pass the raw string containing the templating language used to name your secret as a value instead by adding the following to your chart's `values.yaml` file:
@@ -906,10 +1027,16 @@ artifactory:
 ```
 
 and use it with you helm install/upgrade:
+
+On helm v2:
 ```bash
 helm install --name artifactory-ha -f configmaps.yaml jfrog/artifactory-ha
 ```
 
+On helm V3:
+```bash
+helm install artifactory-ha -f configmaps.yaml jfrog/artifactory-ha
+```
 This will, in turn:
 * create a configMap with the files you specified above
 * create a volume pointing to the configMap with the name `artifactory-configmaps`
@@ -944,10 +1071,16 @@ filebeat:
 ```
 
 and use it with you helm install/upgrade:
+
+On helm v2:
 ```bash
 helm install --name artifactory -f filebeat.yaml jfrog/artifactory
 ```
 
+On helm v3:
+```bash
+helm install artifactory -f filebeat.yaml jfrog/artifactory
+```
 This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
 
 ## Configuration
@@ -1280,6 +1413,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx.
 For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
 
+On helm v2:
 ```bash
 helm install --name artifactory-ha \
    --set nginx.service.ssloffload=true \
@@ -1290,8 +1424,21 @@ helm install --name artifactory-ha \
    jfrog/artifactory-ha
 ```
 
+On helm v3:
+```bash
+helm install artifactory-ha \
+   --set nginx.service.ssloffload=true \
+   --set nginx.https.enabled=false \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert"="arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx" \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-backend-protocol=http \
+   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-ssl-ports=https \
+   jfrog/artifactory-ha
+```
+
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+
+On helm v2:
 ```bash
 helm install --name artifactory-ha \
   --set ingress.enabled=true \
@@ -1301,6 +1448,15 @@ helm install --name artifactory-ha \
   jfrog/artifactory-ha
 ```
 
+On helm v3:
+```bash
+helm install artifactory-ha \
+  --set ingress.enabled=true \
+  --set ingress.hosts[0]="artifactory.company.com" \
+  --set artifactory.service.type=NodePort \
+  --set nginx.enabled=false \
+  jfrog/artifactory-ha
+```
 If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
@@ -1402,8 +1558,15 @@ helm upgrade --install artifactory-ha jfrog/artifactory-ha -f artifactory-ha-val
 If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
 
 To enable it with `helm install`
+
+On helm v2:
 ```bash
 helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
+```
+
+On helm v3:
+```bash
+helm install nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
 ```
 or `helm upgrade`
 ```bash
@@ -1416,8 +1579,15 @@ controller:
     use-forwarded-headers: "true"
 ```
 Then install nginx-ingress with the values file you created:
+
+On helm v2:
 ```bash
 helm install --name nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
+```
+
+On helm v3:
+```bash
+helm install nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
 ```
 
 ## Useful links
