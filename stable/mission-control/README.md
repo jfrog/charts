@@ -89,7 +89,7 @@ echo ${MC_KEY}
 helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
 
 # On helm v3:
-helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
+helm install mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
 ```
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
