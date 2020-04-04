@@ -84,6 +84,11 @@ export MC_KEY=$(openssl rand -hex 16)
 echo ${MC_KEY}
 
 # Pass the created master key to helm
+
+# On helm v2:
+helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
+
+# On helm v3:
 helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
 ```
 
