@@ -1,0 +1,27 @@
+resources:
+  - name: charts_repo
+    type: GitRepo
+    configuration:
+      path: kammathavaran/charts
+      gitProvider: Github_public
+
+
+pipelines:
+  - name: charts_build
+    steps:
+      - name: lint_scripts
+        type: Bash
+        configuration:
+          runtime:
+            type: image
+            image:
+              auto:
+                language: node
+                versions:
+                  - 10.18.0
+          inputResources:
+            - name: charts_repo
+        execution:
+          onExecute:
+            - echo "Run shell scripts linting!"
+            - ./test/lint-scripts.sh
