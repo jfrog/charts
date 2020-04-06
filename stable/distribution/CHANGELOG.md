@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [3.6.1] - Apr 6, 2020
+* Update Distribution version 1.8.1
+
 ## [3.6.0] - Feb 16, 2020
 * Add support for distributor `customVolumeMounts` and move `customVolumes` to `common`
 
