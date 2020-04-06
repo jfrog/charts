@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.23] - April 3, 2020
+* Support masterKey and joinKey as secrets
+* Support `masterKey` (previously `mcKey`) in values.yaml
+
 ## [3.0.22] - Mar 30, 2020
 * Readme fixes
 

@@ -303,14 +303,19 @@ missionControl:
   #    memory: "128Mi"
   #    cpu: "50m"
 
-  ## Mission Control requires a unique mc.key
+  ## Mission Control requires a unique master.key
   # This will be used to encript sensitive data to be stored in database
   ## You can generate one with the command:
-  ## 'openssl rand -hex 16'
-  ## Pass it to helm with '--set missionControl.mcKey=${MC_KEY}'
-  ## IMPORTANT: You should NOT use the example mcKey for a production deployment!
-  mcKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## 'openssl rand -hex 32'
+  ## Pass it to helm with '--set missionControl.masterKey=${MASTER_KEY}'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
+
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
   ## Artifactory URL . Mandatory
@@ -330,9 +335,6 @@ missionControl:
         consoleLog:
           enabled: {{ .Values.missionControl.consoleLog }}
       jfrogUrl: "{{ required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl }}"
-      security:
-        masterKey: {{ .Values.missionControl.mcKey }}
-        joinKey: {{ .Values.missionControl.joinKey }}
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
