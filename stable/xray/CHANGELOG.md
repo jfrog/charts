@@ -1,10 +1,71 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.3.5] - Feb 2, 2019
+## [3.0.27] - April 2, 2020
+* Support masterKey and joinKey as secrets
+
+## [3.0.26] - Mar 31, 2020
+* Update Xray to version `3.2.3`
+* Bump router to version `1.2.1`
+
+## [3.0.25] - Mar 31, 2020
+* README fixes
+
+## [3.0.24] - Mar 27, 2020
+* Add support for masterKey as secret
+
+## [3.0.23] - Mar 23, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
+## [3.0.22] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
+## [3.0.21] - Mar 12, 2020
+* Fix for xray pvc
+
+## [3.0.20] - Mar 11, 2020
+* Unified charts public release
+
+## [3.0.19] - Mar 9, 2020
+* Cleanup `ingress` code + fixes
+
+## [3.0.18] - Mar 9, 2020
+* Add default `joinKey` value
+
+## [3.0.17] - Mar 6, 2020
+* Cleanup of not needed values
+* Bump PostgreSQL chart to v8.4.1
+* Bump RabbitMQ chart to v6.18.1
+* Bump RabbitMQ-HA chart to v1.41.0
+
+## [3.0.16] - Mar 4, 2020
+* Add support for  disabling `consoleLog`  in `system.yaml` file
+
+## [3.0.15] - Feb 28, 2020
+* Fix reference of incorrect key to set external database url from documentation
+
+## [3.0.14] - Feb 27, 2020
+* Add an annotation with the checksum of the `system.yaml` file to make sure the pods restart after a configuration change
+
+## [3.0.13] - Feb 26, 2020
+* Update Xray to version `3.2.0` 
+
+## [3.0.12] - Feb 24, 2020
+* Update Xray to version `3.0.1`
+
+## [1.3.8] - Feb 18, 2020
+* Update Xray version to 2.11.4
+
+## [1.3.7] - Feb 13, 2020
+* Fix Xray README `ingerss.additionalRules` description
+
+## [1.3.6] - Feb 11, 2020
+* Add support for `preStartCommand`
+
+## [1.3.5] - Feb 2, 2020
 * Add a comment stating that it is recommended to use external databases with a static password for production installations
 
-## [1.3.4] - Jan 30, 2019
+## [1.3.4] - Jan 30, 2020
 * Add the option to configure resources for the logger containers
 
 ## [1.3.3] - Dec 31, 2019

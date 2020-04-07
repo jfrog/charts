@@ -28,7 +28,6 @@ spec:
       annotations:
         checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
         checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
-        checksum/replicator-conf: {{ include (print $.Template.BasePath "/replicator-configmap.yaml") . | sha256sum }}
       labels:
         app: {{ template "artifactory-ha.name" . }}
         chart: {{ template "artifactory-ha.chart" . }}
@@ -82,12 +81,8 @@ spec:
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttps }}
         {{- end }}
-        {{- if .Values.nginx.replicator }}
-        {{- if .Values.artifactory.replicator.enabled }}
-        - containerPort: {{ .Values.nginx.replicator.internalPort }}
-        {{- end }}
-        {{- else }} # DEPRECATED
-        - containerPort: {{ .Values.nginx.internalPortReplicator }}
+        {{- if .Values.artifactory.ssh.enabled }}
+        - containerPort: {{ .Values.nginx.ssh.internalPort }}
         {{- end }}
         volumeMounts:
         - name: nginx-conf
@@ -95,10 +90,6 @@ spec:
           subPath: nginx.conf
         - name: nginx-artifactory-conf
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
-        {{- if .Values.artifactory.replicator.enabled }}
-        - name: nginx-replicator-conf
-          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/replicator/"
-        {{- end }}
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
         - name: ssl-certificates
@@ -183,11 +174,7 @@ spec:
       {{- else }}
           name: {{ template "artifactory-ha.fullname" . }}-nginx-artifactory-conf
       {{- end }}
-      {{- if .Values.artifactory.replicator.enabled }}
-      - name: nginx-replicator-conf
-        configMap:
-          name: {{ template "artifactory-ha.fullname" . }}-replicator-config
-      {{- end }}
+
       - name: nginx-volume
       {{- if .Values.nginx.persistence.enabled }}
         persistentVolumeClaim:

@@ -1,0 +1,46 @@
+{{- if .Values.buildPlane.k8s.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipelines.fullname" . }}-node-setup-scripts
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+    component: k8s-node
+data:
+  wait-for-api.sh: |
+    #!/bin/bash
+    echo "Waiting for Pipelines API to come up..."
+    until nc -z -w 2 {{ include "pipelines.api.name" . }} {{ .Values.pipelines.api.service.port }} && echo API ok; do
+      sleep 2;
+    done;
+  createK8sNodePool.sh: |
+    #!/bin/bash
+    # Get token from system.yaml
+    export API_TOKEN=$(cat {{ .Values.pipelines.mountPath }}/system.yaml | grep installerAuthToken | cut -d':' -f2- | cut -d'"' -f 2)
+    echo
+    curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X POST http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/nodePools -d '{"name":"{{ .Values.buildPlane.k8s.pool.name }}","isOnDemand":false,"projectId":1,"architecture":"x86_64","operatingSystem":"Ubuntu_18.04","maxDiskUsagePercentage":90,"numberOfNodes":{{ .Values.buildPlane.k8s.pool.size }}}' || true
+    echo -n
+    echo  "K8s Node Pool initialized"
+  createK8sNodesConfigs.sh: |
+    #!/bin/bash
+    # Get token from system.yaml
+    export API_TOKEN=$(cat {{ .Values.pipelines.mountPath }}/system.yaml | grep installerAuthToken | cut -d':' -f2- | cut -d'"' -f 2)
+    echo
+    echo "Prepare Nodes config"
+    mkdir -p /tmp/nodes
+    cp -fv /node-templates/agent-node-sa-secrets-scripts.yaml /tmp/nodes
+    # Get node creds
+    puser="$(curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X GET http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/projects | jq '.[] | .systemPropertyBag.nodeUserName' | tr -d '"')"
+    ppass="$(curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 -s -H "Authorization: apiToken $API_TOKEN" -H "Content-Type: application/json" -X GET http://$PIPELINES_API_IP:$PIPELINES_API_PORT/v1/projects | jq '.[] | .systemPropertyBag.nodePassword' | tr -d '"')"
+    # make url
+    AMQP_URL={{ (printf "amqp://$puser:$ppass@%s-rabbitmq:%v/pipelines" .Release.Name .Values.rabbitmq.service.port) }}
+    # url base64 encode
+    PIPELINES_AMQP_URL="$(echo $AMQP_URL | base64 | tr -d \\n)"
+    sed -i 's#_PIPELINES_AMQP_URL_#'$PIPELINES_AMQP_URL'#g' /tmp/nodes/agent-node-sa-secrets-scripts.yaml
+    #
+    API_TOKEN_ENCODED="$(echo $API_TOKEN | base64 | tr -d \\n)"
+    sed -i 's#_API_TOKEN_#'$API_TOKEN_ENCODED'#g' /tmp/nodes/agent-node-sa-secrets-scripts.yaml
+    #
+    kubectl apply -f /tmp/nodes/agent-node-sa-secrets-scripts.yaml
+    echo
+{{- end }}

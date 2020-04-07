@@ -42,13 +42,13 @@ data:
         local rc=$?
         # If the user already exists, change the password
         if [[ ${rc} -eq 0 ]]; then
-          echo "Changing password for user ${user}..."
-          ${PSQL} $POSTGRES_OPTIONS -c "ALTER USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || errorExit "Failed updating user ${user} password on PostgreSQL"
-          echo "Done"
+            echo "Changing password for user ${user}..."
+            ${PSQL} $POSTGRES_OPTIONS -c "ALTER USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || errorExit "Failed updating user ${user} password on PostgreSQL"
+            echo "Done"
         else
-          echo "Creating user ${user}..."
-          ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || errorExit "Failed creating user ${user} on PostgreSQL"
-          echo "Done"
+            echo "Creating user ${user}..."
+            ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || errorExit "Failed creating user ${user} on PostgreSQL"
+            echo "Done"
         fi
     }
 
@@ -106,8 +106,8 @@ data:
         attempt_number=0
         while ! postgresIsNotReady
         do
-                sleep 5
-                echo -n '.'
+            sleep 5
+            echo -n '.'
         done
         log "$POSTGRES_LABEL is ready. Executing commands"
     }
@@ -166,7 +166,7 @@ data:
 
     DB_HOST={{ .Release.Name }}-postgresql
     [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
-    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresUsername }} -w"
+    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresqlUsername }} -w"
 
     init
     [[ $SERVICE =~ all|jfis ]] && setupDB "${JFIS_DB_USERNAME}" "${JFIS_DB_PASSWORD}" "${DB_NAME}" "${JFIS_DB_SCHEMA}" || true

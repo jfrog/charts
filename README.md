@@ -1,6 +1,10 @@
+[![Build Status](https://travis-ci.org/jfrog/charts.svg?branch=master)](https://travis-ci.org/jfrog/charts)
+
 # JFrog Helm Charts
 
 This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** for deploying **JFrog** products to [Kubernetes](https://kubernetes.io/)
+
+For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
 ## Install Helm
 
@@ -19,9 +23,9 @@ helm repo update
 
 ## Contributing to JFrog Charts
 
-Fork the `repo`, make changes and then please run `make lint` to lint charts locally, and at last install the chart to see it is working. :)
+Fork the `repo`, make changes and then please run `make lint` to lint charts locally, and at least install the chart to see it is working. :)
 
-On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR).
+On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR) on to the branch called [inbound-from-forks](https://github.com/jfrog/charts/tree/inbound-from-forks) 
 
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
 Two __LGTM__ are needed to get the PR approved and merged.
@@ -90,38 +94,6 @@ make mac -- --all
 ```
 
 **Note:** It might take a while to run install test for all charts in `Docker for Mac`.
-
-## Manually testing charts with Docker and KinD
-
-**Note:** [kind cli](https://github.com/kubernetes-sigs/kind/) must be installed.
-
-You can install and test all changed charts in Docker with Kind:
-
-```console
-make kind
-```
-
-### Forcing to install unchanged charts
-
-You can force to install one chart with `--charts` flag:
-
-```console
-make kind -- --charts stable/artifactory
-```
-
-You can force to install a list of charts (separated by comma) with `--charts` flag:
-
-```console
-make kind -- --charts stable/artifactory,stable/xray
-```
-
-You can force to install all charts with `--all` flag:
-
-```console
-make kind -- --all
-```
-
-**Note:** It might take a while to run install test for all charts in Docker with Kind.
 
 ## Manually testing charts with remote GKE cluster
 

@@ -6,34 +6,15 @@
 # serviceAccount:
 #   create: false
 
-analysis:
-  loggers:
-    - xray_analysis.log
-
-indexer:
-  loggers:
-    - xray_indexer.log
-
-persist:
-  loggers:
-    - xray_persist.log
-
-server:
-  loggers:
-    - xray_server.log
+# If this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.
+unifiedUpgradeAllowed: true
+xray:
+  jfrogUrl: http://artifactory-artifactory.rt:8082
 
 postgresql:
   postgresDatabase: xraydb
   postgresUser: xray
-  postgresPassword: xray
-  persistence:
-    enabled: false
-
-mongodb:
-  mongodbRootPassword: password
-  mongodbUsername: xray
-  mongodbPassword: password
-  mongodbDatabase: xray
+  postgresqlPassword: xray
   persistence:
     enabled: false
 

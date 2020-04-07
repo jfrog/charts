@@ -116,3 +116,14 @@ Create chart name and version as used by the chart label.
 {{- define "mission-control.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Set masterKey based on mcKey/masterKey values.
+*/}}
+{{- define "masterKey" -}}
+{{- if .Values.missionControl.mcKey -}}
+{{ .Values.missionControl.mcKey }}
+{{- else -}}
+{{ .Values.missionControl.masterKey }}
+{{- end -}}
+{{- end -}}

@@ -6,25 +6,13 @@
 # serviceAccount:
 #   create: false
 
+# If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
+unifiedUpgradeAllowed: true
 missionControl:
-  loggers:
-    - jfmc-server.log
-    - http.log
-
-insightServer:
-  loggers:
-    - insight-server.log
-
-insightScheduler:
-  loggers:
-    - insight-scheduler.log
-
-insightExecutor:
-  loggers:
-    - insight-executor.log
+  jfrogUrl: http://artifactory-artifactory.rt:8082
 
 postgresql:
-  postgresPassword: postgres
+  postgresqlPassword: password
   db:
     jfisPassword: password
     jfscPassword: password

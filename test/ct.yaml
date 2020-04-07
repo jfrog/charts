@@ -1,4 +1,4 @@
-remote: k8s
+remote: origin
 target-branch: master
 chart-dirs:
   - stable
@@ -6,4 +6,5 @@ excluded-charts:
   - common
 chart-repos:
   - jfrog=https://charts.jfrog.io
-helm-extra-args: --timeout 18000
+  - stable=https://kubernetes-charts.storage.googleapis.com
+helm-extra-args: --timeout 4000

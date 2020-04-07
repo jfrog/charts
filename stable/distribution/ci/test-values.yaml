@@ -7,8 +7,10 @@
 # serviceAccount:
 #   create: false
 
+# If this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
+unifiedUpgradeAllowed: true
 postgresql:
-  postgresPassword: password
+  postgresqlPassword: password
   persistence:
     enabled: false
 
@@ -20,12 +22,13 @@ redis:
 distributor:
   persistence:
     enabled: false
-  loggers:
-    - foreman.log
+  # loggers:
+  #   - foreman.log
 
 distribution:
+  jfrogUrl: http://artifactory-artifactory.rt:8082
   persistence:
     enabled: false
-  loggers:
-    - access.log
-    - request.log
+  # loggers:
+  #   - access.log
+  #   - request.log

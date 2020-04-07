@@ -1,0 +1,22 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "pipelines.fullname" . }}-node-setup
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+    component: k8s-node
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - secrets
+  - configmaps
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - patch
+{{- end }}

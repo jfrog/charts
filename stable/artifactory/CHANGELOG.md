@@ -1,8 +1,107 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [8.4.7] - Apr 6, 2020
+## [9.2.7] - Apr 6, 2020
 * Fix cache size (should be 5gb instead of 50gb since volume claim is only 20gb).
+
+## [9.2.6] - Apr 1, 2020
+* Support masterKey and joinKey as secrets
+
+## [9.2.5] - Apr 1, 2020
+* Fix readme use to `-hex 32` instead of `-hex 16`
+
+## [9.2.4] - Mar 31, 2020
+* Change the way the artifactory `command:` is set so it will properly pass a SIGTERM to java
+
+## [9.2.3] - Mar 29, 2020
+* Add Nginx log options: stderr as logfile and log level
+
+## [9.2.2] - Mar 30, 2020
+* Use the same defaulting mechanism used for the artifactory version used elsewhere in the chart
+
+## [9.2.1] - Mar 29, 2020
+* Fix loggers sidecars configurations to support new file system layout and new log names
+
+## [9.2.0] - Mar 29, 2020
+* Fix broken admin user bootstrap configuration
+* **Breaking change:** renamed `artifactory.accessAdmin` to `artifactory.admin`
+
+## [9.1.5] - Mar 26, 2020
+* Fix volumeClaimTemplate issue
+
+## [9.1.4] - Mar 25, 2020
+* Fix volume name used by filebeat container
+
+## [9.1.3] - Mar 24, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
+## [9.1.2] - Mar 22, 2020
+* Support for SSL offload in Nginx service(LoadBalancer) layer. Introduced `nginx.service.ssloffload` field with boolean type.
+
+## [9.1.1] - Mar 23, 2020
+* Moved installer info to values.yaml so it is fully customizable
+
+## [9.1.0] - Mar 23, 2020
+* Updated Artifactory version to 7.3.2
+
+## [9.0.29] - Mar 20, 2020
+* Add support for masterKey trim during 6.x to 7.x migration if 6.x masterKey is 32 hex (64 characters)
+
+## [9.0.28] - Mar 18, 2020
+* Increased Nginx proxy_buffers size
+
+## [9.0.27] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+* useInstanceCredentials variable was declared in S3 settings but not used in chart. Now it is being used.
+
+## [9.0.26] - Mar 17, 2020
+* Fix rendering of Service Account annotations
+
+## [9.0.25] - Mar 16, 2020
+* Update Artifactory readme with extra ingress annotations needed for Artifactory to be set as SSO provider
+
+## [9.0.24] - Mar 16, 2020
+* Add Unsupported message from 6.18 to 7.2.x (migration)
+
+## [9.0.23] - Mar 12, 2020
+* Fix README.md rendering issue
+
+## [9.0.22] - Mar 11, 2020
+* Upgrade Docs update
+
+## [9.0.21] - Mar 11, 2020
+* Unified charts public release
+
+## [9.0.20] - Mar 6, 2020
+* Fix path to `/artifactory_bootstrap`
+* Add support for controlling the name of the ingress and allow to set more than one cname
+
+## [9.0.19] - Mar 4, 2020
+* Add support for disabling `consoleLog` in `system.yaml` file
+
+## [9.0.18] - Feb 28, 2020
+* Add support to process `valueFrom` for extraEnvironmentVariables
+
+## [9.0.17] - Feb 26, 2020
+* Fix join key secret naming
+
+## [9.0.16] - Feb 26, 2020
+* Store join key to secret
+
+## [9.0.15] - Feb 26, 2020
+* Updated Artifactory version to 7.2.1
+
+## [9.0.10] - Feb 07, 2020
+* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade
+
+## [9.0.0] - Feb 07, 2020
+* Updated Artifactory version to 7.0.0
+
+## [8.4.8] - Feb 13, 2020
+* Add support for SSH authentication to Artifactory
+
+## [8.4.7] - Feb 11, 2020
+* Change Artifactory service port name to be hard-coded to `http` instead of using `{{ .Release.Name }}`
 
 ## [8.4.6] - Feb 9, 2020
 * Add support for `tpl` in the `postStartCommand`

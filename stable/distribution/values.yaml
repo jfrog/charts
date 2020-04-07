@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.8"
+initContainerImage: "alpine:3.10"
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -70,45 +70,33 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
 
-ingress:
-  enabled: false
-  # Used to create an Ingress record.
-  hosts:
-    - distribution.domain.example
-  annotations:
-  # kubernetes.io/ingress.class: nginx
-  # kubernetes.io/tls-acme: "true"
-  tls:
-  # Secrets must be manually created in the namespace.
-  # - secretName: chart-example-tls
-  #   hosts:
-  #     - distribution.domain.example
-
 # PostgreSQL
-## Configuration values for the postgresql dependency
+## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
-##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "distribution"
-  postgresUser: "distribution"
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.15-debian-9-r91
+  postgresqlUsername: distribution
+  postgresqlPassword: ""
+  postgresqlDatabase: distribution
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "1500"
-  service:
-    port: 5432
   persistence:
     enabled: true
     size: 50Gi
-    existingClaim:
+  service:
+    port: 5432
   resources: {}
-#    requests:
-#      memory: "1Gi"
-#      cpu: "250m"
-#    limits:
-#      memory: "2Gi"
-#      cpu: "1"
+  #  requests:
+  #    memory: "512Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -116,9 +104,9 @@ postgresql:
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:
-  host:
-  port:
-  database:
+  type: postgresql
+  driver: org.postgresql.Driver
+  url:
   ## If you would like this chart to create the secret containing the db
   ## password, use these values
   user:
@@ -139,8 +127,8 @@ database:
 redis:
   name: redis
   image:
-    repository: docker.io/bitnami/redis
-    tag: 4.0.11-debian-9
+    repository: docker.bintray.io/bitnami/redis
+    tag: 5.0.5-debian-9-r182
     pullPolicy: IfNotPresent
   port: 6379
   password:
@@ -173,16 +161,22 @@ common:
   uid: 1020
   gid: 1020
 
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: "busybox"
+    tag: "1.30"
 
 distribution:
   name: distribution
+  ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distribution"
-    ## Note that by default we use appVersion to get image tag
+    repository: docker.bintray.io/jfrog/distribution-distribution
     # version:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
@@ -193,6 +187,18 @@ distribution:
   ## Pass it to helm with '--set distribution.masterKey=${MASTER_KEY}'
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
+
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
+
+  ## If false, all service console logs will not redirect to a common console.log
+  consoleLog: false
+  ## Artifactory URL . Mandatory
+  jfrogUrl:
+
   serviceId:
   env:
     artifactoryUrl:
@@ -201,11 +207,38 @@ distribution:
     artifactoryEdge1Url:
     artifactoryEdge2Url:
     artifactoryEdge3Url:
+
+  ## Extra environment variables that can be used to tune Distribution to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: JF_DISTRIBUTION_DATABASE_URL
+  #   value: "jdbc:postgresql://localhost:5432/distribution"
+
+  systemYaml: |
+    shared:
+      logging:
+        consoleLog:
+          enabled: {{ .Values.distribution.consoleLog }}
+      jfrogUrl: "{{ required "\n\ndistribution.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.distribution.jfrogUrl }}"
+      database:
+      {{- if .Values.postgresql.enabled }}
+        type: "postgresql"
+        driver: "org.postgresql.Driver"
+        username: "{{ .Values.postgresql.postgresqlUsername }}"
+        password: "{{ .Values.postgresql.postgresqlPassword }}"
+        url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+      {{ else }}
+        type: "{{ .Values.database.type }}"
+        driver: "{{ .Values.database.driver }}"
+        url: "{{ .Values.database.url }}"
+        username: "{{ .Values.database.user }}"
+        password: "{{ .Values.database.password }}"
+      {{- end }}
+      redis:
+        connectionString: "redis://:{{ .Values.redis.password }}@localhost:6379"
+
   service:
-    type: LoadBalancer
-    # Whitelist IPs allowed to LoadBalancer type services
-    # Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
-    loadBalancerSourceRanges: []
+    type: ClusterIP
 
   ## Add custom init containers
   customInitContainers: |
@@ -219,6 +252,12 @@ distribution:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
   #        name: distribution-data
+
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
 
   resources: {}
   #  requests:
@@ -251,6 +290,11 @@ distribution:
     ##
     # storageClass: "-"
 
+  ## Custom command to run before Distribution startup.
+  preStartCommand:
+  ## For example, to import trusted keystore ( Need to mount the certificates first )
+  # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
+
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - access.log
@@ -272,11 +316,18 @@ distribution:
 
 distributor:
   name: distributor
+  ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distributor"
-    ## Note that by default we use appVersion to get image tag
+    repository: docker.bintray.io/jfrog/distribution-distributor
     # version:
     imagePullPolicy: IfNotPresent
+
+  ## Extra environment variables that can be used to tune Distributor to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: JF_DISTRIBUTION_FOREMAN_INACTIVITYTHRESHOLDSECS
+  #   value: "300"
+
   resources: {}
   #  requests:
   #    memory: "2Gi"
@@ -297,7 +348,7 @@ distributor:
     # existingClaim:
 
     accessMode: ReadWriteOnce
-    mountPath: "/var/opt/jfrog/distributor"
+    mountPath: "/var/opt/jfrog/distribution"
     size: 50Gi
     ## distribution data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -307,6 +358,17 @@ distributor:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
+
+  ## Add custom volumeMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
+  ## Custom command to run before Distribution startup.
+  preStartCommand:
+  ## For example, to import trusted keystore ( Need to mount the certificates first )
+  # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
 
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
@@ -325,3 +387,125 @@ distributor:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  foreman:
+    inactivityThresholdSecs:
+
+router:
+  name: router
+  image:
+    repository: docker.bintray.io/jfrog/router
+    version: 1.1.0
+    imagePullPolicy: IfNotPresent
+  internalPort: 8082
+  externalPort: 8082
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  persistence:
+    accessMode: ReadWriteOnce
+    mountPath: "/var/opt/jfrog/router"
+    size: 5Gi
+
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+shared:
+  node:
+    id:
+
+# Filebeat Sidecar container
+## The provided filebeat configuration is for Distribution logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: false
+  name: distribution-filebeat
+  image:
+    repository: docker.elastic.co/beats/filebeat
+    version: 7.5.1
+  logstashUrl: "logstash:5044"
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources: {}
+#    requests:
+#      memory: "100Mi"
+#      cpu: "100m"
+#    limits:
+#      memory: "100Mi"
+#      cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.distribution.persistence.mountPath }}/log/filebeat
+    name: artifactory-filebeat
+    queue.spool: ~
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.distribution.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfds"
+        log_type: "distribution"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]

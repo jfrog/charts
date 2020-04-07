@@ -1,6 +1,45 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.0.20] - April 2, 2020
+* Support masterKey and joinKey as secrets
+
+## [5.0.19] - Mar 30, 2020
+* Readme fixes
+
+## [5.0.18] - Mar 23, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
+## [5.0.17] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
+## [5.0.16] - Mar 11, 2020
+* Unified charts public release
+
+## [5.0.15] - Mar 9, 2020
+* Removed unused `ingress` code + fixes
+
+## [5.0.14] - Mar 4, 2020
+* Add support for  disabling `consoleLog`  in `system.yaml` file
+
+## [5.0.13] - Feb 27, 2020
+* Add an annotation with the checksum of the `system.yaml` file to make sure the pods restart after a configuration change
+
+## [5.0.12] - Feb 26, 2020
+* Update Distribution to version `2.2.0` 
+
+## [5.0.11] - Feb 24, 2020
+* Update Distribution to version `2.0.3` 
+
+## [3.6.0] - Feb 16, 2020
+* Add support for distributor `customVolumeMounts` and move `customVolumes` to `common`
+
+## [3.5.4] - Feb 13, 2020
+* Add support for `ingress.additionalRules` and `ingress.defaultBackend`
+
+## [3.5.3] - Feb 11, 2020
+* Add support for `preStartCommand`, `customVolumes` and `customVolumeMounts`
+
 ## [3.5.2] - Feb 2, 2020
 * Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
 

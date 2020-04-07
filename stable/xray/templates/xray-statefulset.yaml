@@ -1,0 +1,403 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "xray-server.fullname" . }}
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.server.name }}
+    version: {{ default .Chart.AppVersion .Values.common.xrayVersion }}
+{{- if .Release.IsUpgrade }}
+    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
+{{- end }}
+spec:
+  serviceName: "{{ template "xray-server.fullname" . }}"
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.server.updateStrategy }}
+  podManagementPolicy: {{ .Values.server.podManagementPolicy }}
+  selector:
+    matchLabels:
+      app: {{ template "xray.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.server.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "xray.name" . }}
+        release: {{ .Release.Name }}
+        component: {{ .Values.server.name }}
+      annotations:
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
+        {{- with .Values.analysis.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+        {{- with .Values.indexer.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+        {{- with .Values.persist.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+        {{- with .Values.server.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+        {{- with .Values.router.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+        {{- with .Values.filebeat.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecrets }}
+    {{- end }}
+      serviceAccountName: {{ template "xray.serviceAccountName" . }}
+      securityContext:
+        runAsUser: {{ .Values.common.xrayUserId }}
+        fsGroup: {{ .Values.common.xrayGroupId }}
+      initContainers:
+    {{- if .Values.common.customInitContainersBegin }}
+      {{ tpl .Values.common.customInitContainersBegin . | indent 6 }}
+    {{- end }}
+      - name: 'copy-system-yaml'
+        image: '{{ .Values.initContainerImage }}'
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          echo "Copy system.yaml to {{ .Values.xray.persistence.mountPath }}/etc";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc;
+          cp -fv /tmp/etc/system.yaml {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
+          echo "Remove {{ .Values.xray.persistence.mountPath }}/lost+found folder if exists";
+          rm -rfv {{ .Values.xray.persistence.mountPath }}/lost+found;
+        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName }}
+          echo "Copy joinKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
+          echo ${XRAY_JOIN_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/join.key;
+        {{- end }}
+        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
+          echo ${XRAY_MASTER_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/master.key;
+        {{- end }}
+        env:
+        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName }}
+        - name: XRAY_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.xray.joinKeySecretName | default (include "xray.fullname" .) }}"
+              key: join-key
+        {{- end }}
+        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName }}
+        - name: XRAY_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: "{{ .Values.xray.masterKeySecretName | default (include "xray.fullname" .) }}"
+              key: master-key
+        {{- end }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: {{ .Values.xray.persistence.mountPath | quote }}
+        - name: systemyaml
+          mountPath: "/tmp/etc/system.yaml"
+          subPath: system.yaml
+      {{- if .Values.postgresql.enabled }}
+      - name: "wait-for-db"
+        image: "{{ .Values.initContainerImage }}"
+        command:
+        - 'sh'
+        - '-c'
+        - >
+          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
+            sleep 2;
+          done;
+      {{- end }}
+    {{- if .Values.common.customInitContainers }}
+      {{ tpl .Values.common.customInitContainers . }}
+    {{- end }}
+      containers:
+      - name: {{ .Values.router.name }}
+        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        ports:
+          - name: router
+            containerPort: {{ .Values.router.internalPort }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - name: data-volume
+          mountPath: {{ .Values.router.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+{{- end }}
+      - name: {{ .Values.server.name }}
+        image: {{ .Values.server.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.server.preStartCommand }}
+            echo "Running custom Server preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            /opt/jfrog/xray/app/bin/wrapper.sh;
+        ports:
+        - containerPort: {{ .Values.server.internalPort }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- if .Values.server.customVolumeMounts }}
+{{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+{{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+{{ toYaml .Values.server.resources | indent 10 }}
+{{- if .Values.server.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.server.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.server.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.server.readinessProbe.config . | indent 10 }}
+{{- end }}
+      - name: {{ .Values.analysis.name }}
+        image: {{ .Values.analysis.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.analysis.preStartCommand }}
+            echo "Running custom Analysis preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            /opt/jfrog/xray/app/bin/wrapper.sh;
+        env:
+        {{- if .Values.database.secrets.user }}
+        - name: JF_SHARED_DATABSE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        {{- end }}
+        {{- if .Values.database.secrets.password }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        {{- end }}
+        {{- if .Values.database.secrets.url }}
+        - name: JF_SHARED_DATABSE_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- end }}
+        - name: XRAY_HA_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: XRAY_K8S_ENV
+          value: "true"
+        ports:
+        - containerPort: {{ .Values.analysis.internalPort }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+{{ toYaml .Values.analysis.resources | indent 10 }}
+{{- if .Values.analysis.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.analysis.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.analysis.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.analysis.readinessProbe.config . | indent 10 }}
+{{- end }}
+
+      - name: {{ .Values.indexer.name }}
+        image: {{ .Values.indexer.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.indexer.preStartCommand }}
+            echo "Running custom Indexer preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            /opt/jfrog/xray/app/bin/wrapper.sh;
+        env:
+        - name: XRAY_HA_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: XRAY_K8S_ENV
+          value: "true"
+        ports:
+        - containerPort: {{ .Values.indexer.internalPort }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+{{ toYaml .Values.indexer.resources | indent 10 }}
+{{- if .Values.indexer.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.indexer.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.indexer.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
+{{- end }}
+
+      - name: {{ .Values.persist.name }}
+        image: {{ .Values.persist.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.persist.preStartCommand }}
+            echo "Running custom Persist preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            /opt/jfrog/xray/app/bin/wrapper.sh;
+        env:
+        - name: XRAY_K8S_ENV
+          value: "true"
+        ports:
+        - containerPort: {{ .Values.persist.internalPort }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- if .Values.indexer.customVolumeMounts }}
+{{ tpl .Values.indexer.customVolumeMounts . | indent 8 }}
+{{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+{{ toYaml .Values.persist.resources | indent 10 }}
+{{- if .Values.persist.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.persist.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.persist.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.persist.readinessProbe.config . | indent 10 }}
+{{- end }}
+
+      {{- if .Values.filebeat.enabled }}
+      - name: {{ .Values.filebeat.name }}
+        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        args:
+        - "-e"
+        - "-E"
+        - "http.enabled=true"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+        livenessProbe:
+{{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.filebeat.readinessProbe | indent 10 }}
+        resources:
+{{ toYaml .Values.filebeat.resources | indent 10 }}
+        terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
+      {{- end }}
+
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      - name: systemyaml
+        secret:
+          secretName: {{ template "xray.fullname" . }}-system-yaml
+      {{- if not .Values.common.persistence.enabled }}
+      - name: data-volume
+        emptyDir:
+          sizeLimit: {{ .Values.common.persistence.size }}
+      {{- end }}
+      {{- if and .Values.common.persistence.enabled .Values.common.persistence.existingClaim }}
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.common.persistence.existingClaim }}
+      {{- end }}
+      {{- if .Values.indexer.customVolumes }}
+      {{ tpl .Values.indexer.customVolumes . | indent 6 }}
+      {{- end }}
+      {{- if .Values.server.customVolumes }}
+      {{ tpl .Values.server.customVolumes . | indent 6 }}
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ template "xray.fullname" . }}-filebeat-config
+      {{- end }}
+{{- with .Values.common.persistence }}
+  {{- if and .enabled (not .existingClaim) }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data-volume
+    spec:
+      {{- if .storageClass }}
+      {{- if (eq "-" .storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .storageClass }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .accessMode }}" ]
+      resources:
+        requests:
+          storage: {{ .size }}
+  {{- end }}
+{{- end }}

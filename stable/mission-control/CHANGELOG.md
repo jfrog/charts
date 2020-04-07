@@ -1,6 +1,47 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.23] - April 3, 2020
+* Support masterKey and joinKey as secrets
+* Support `masterKey` (previously `mcKey`) in values.yaml
+
+## [3.0.22] - Mar 30, 2020
+* Readme fixes
+
+## [3.0.21] - Mar 23, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
+## [3.0.20] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
+## [3.0.19] - Mar 11, 2020
+* Unified charts public release
+
+## [3.0.18] - Mar 9, 2020
+* Removed unused `ingress` code + fixes
+
+## [3.0.17] - Mar 9, 2020
+* Fix `elasticsearch` indentation  in `system.yaml` file
+
+## [3.0.16] - Mar 4, 2020
+* Add support for  disabling `consoleLog`  in `system.yaml` file
+* Add support for  database secrets
+
+## [3.0.15] - Feb 27, 2020
+* Add an annotation with the checksum of the `system.yaml` file to make sure the pods restart after a configuration change
+
+## [3.0.14] - Feb 26, 2020
+* Fix path of mission-control entrypoint
+
+## [3.0.12] - Feb 24, 2020
+* Update Mission Control to version `4.2.0`
+
+## [1.1.17] - Feb 13, 2020
+* Add support for `ingress.additionalRules` and `ingress.defaultBackend`
+
+## [1.1.16] - Feb 11, 2020
+* Use a with clause for `preStartCommand`, `customVolumes` and `customVolumeMounts`
+
 ## [1.1.15] - Feb 6, 2020
 * Fix init containers resources
 
