@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.24] - April 7, 2020
+* Added `elasticsearch.configureDockerHost` parameter to enable control over running of privileged containers (init-elasticsearch)
+
 ## [3.0.23] - April 3, 2020
 * Support masterKey and joinKey as secrets
 * Support `masterKey` (previously `mcKey`) in values.yaml
