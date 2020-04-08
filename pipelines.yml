@@ -30,39 +30,39 @@ pipelines:
           onComplete:
             - popd
       - name: charts_testing
-          type: Bash
-          configuration:
-            runtime:
-              type: image
-              image:
-                auto:
-                  language: node
-                  versions:
-                    - 10.18.0
-            inputResources:
-              - name: charts_repo
-          execution:
-            onStart:
-              - pushd ${res_charts_repo_resourcePath}
-            onExecute:
-              - CHART_TESTING_IMAGE=quay.io/helmpack/chart-testing
-              - CHART_TESTING_TAG=v2.4.0
-              - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
-              - TEST_IMAGE_TAG=v3.4.0
-              - CHARTS_REPO=https://github.com/jfrog/charts
-              - KUBEVAL_VERSION=0.14.0
-              - HELM_VERSION=v2.15.2
-              - CHART_TESTING_ARGS=""
-              - echo "Run chart-testing linting!"
-              - ${res_charts_repo_resourcePath}/test/lint-charts.sh || echo "Failed!"
-              - >
-                if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
-                    echo "No chart changes detected, stopping TravisCI pipeline!"
-                fi
-              - echo "Run charts-testing install test!"
-              # ping stdout every 9 minutes or Travis kills the build
-              # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
-              - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
-              - ${res_charts_repo_resourcePath}/test/e2e-github.sh
-            onComplete:
-              - popd
+        type: Bash
+        configuration:
+          runtime:
+            type: image
+            image:
+              auto:
+                language: node
+                versions:
+                  - 10.18.0
+          inputResources:
+            - name: charts_repo
+        execution:
+          onStart:
+            - pushd ${res_charts_repo_resourcePath}
+          onExecute:
+            - CHART_TESTING_IMAGE=quay.io/helmpack/chart-testing
+            - CHART_TESTING_TAG=v2.4.0
+            - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
+            - TEST_IMAGE_TAG=v3.4.0
+            - CHARTS_REPO=https://github.com/jfrog/charts
+            - KUBEVAL_VERSION=0.14.0
+            - HELM_VERSION=v2.15.2
+            - CHART_TESTING_ARGS=""
+            - echo "Run chart-testing linting!"
+            - ${res_charts_repo_resourcePath}/test/lint-charts.sh || echo "Failed!"
+            - >
+              if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
+                  echo "No chart changes detected, stopping TravisCI pipeline!"
+              fi
+            - echo "Run charts-testing install test!"
+            # ping stdout every 9 minutes or Travis kills the build
+            # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
+            - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+            - ${res_charts_repo_resourcePath}/test/e2e-github.sh
+          onComplete:
+            - popd
