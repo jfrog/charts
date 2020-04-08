@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.8] - Apr 8, 2020
+* Moved migration scripts under `files` directory
+* Support preStartCommand in migration Init container as `artifactory.migration.preStartCommand`
+
 ## [9.2.7] - Apr 6, 2020
 * Fix cache size (should be 5gb instead of 50gb since volume claim is only 20gb).
 
