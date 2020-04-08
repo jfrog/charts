@@ -187,10 +187,10 @@ spec:
         - '/bin/bash'
         - '-c'
         - >
-        {{- if .Values.artifactory.migration.preStartCommand }}
+          {{- if .Values.artifactory.migration.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.migration.preStartCommand . }};
-        {{- end }}
+          {{- end }}
           scriptsPath="/opt/jfrog/artifactory/app/bin";
           mkdir -p $scriptsPath;
           echo "Copy migration scripts and Run migration";
