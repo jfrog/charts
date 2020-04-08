@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.7] - Apr 8, 2020
+* Moved migration scripts under `files` directory
+
 ## [9.2.6] - Apr 1, 2020
 * Support masterKey and joinKey as secrets
 
