@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [2.2.10] - Apr 8, 2020
 * Moved migration scripts under `files` directory
+* Support preStartCommand in migration Init container as `artifactory.migration.preStartCommand`
 
 ## [2.2.9] - Apr 01, 2020
 * Support masterKey and joinKey as secrets
