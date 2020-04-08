@@ -220,7 +220,7 @@ spec:
               key: postgresql-password
         {{- end }}
       {{- end }}
-      {{- if .Values.database.secrets.url .Values.database.url }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
             secretKeyRef:
