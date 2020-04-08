@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.9] - Apr 8, 2020
+* Added recommended ingress annotation to avoid 413 errors
+
 ## [9.2.8] - Apr 8, 2020
 * Moved migration scripts under `files` directory
 * Support preStartCommand in migration Init container as `artifactory.migration.preStartCommand`
