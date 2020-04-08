@@ -26,7 +26,7 @@ pipelines:
             - pushd ${res_charts_repo_resourcePath}
           onExecute:
             - echo "Run shell scripts linting!"
-            - ./${res_charts_repo_resourcePath}/test/lint-scripts.sh
+            - ${res_charts_repo_resourcePath}/test/lint-scripts.sh
           onComplete:
             - popd
 
