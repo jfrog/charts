@@ -187,6 +187,10 @@ spec:
         - '/bin/bash'
         - '-c'
         - >
+        {{- if .Values.artifactory.migration.preStartCommand }}
+          echo "Running custom preStartCommand command";
+          {{ tpl .Values.artifactory.migration.preStartCommand . }};
+        {{- end }}
           scriptsPath="/opt/jfrog/artifactory/app/bin";
           mkdir -p $scriptsPath;
           echo "Copy migration scripts and Run migration";
@@ -194,7 +198,7 @@ spec:
           cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
           cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
-          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.version }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.version }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
         env:
