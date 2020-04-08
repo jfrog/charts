@@ -22,6 +22,11 @@ pipelines:
           inputResources:
             - name: charts_repo
         execution:
+          onStart:
+            - pushd ${res_charts_repo_resourcePath}
           onExecute:
             - echo "Run shell scripts linting!"
-            - ./test/lint-scripts.sh
+            - ./${res_charts_repo_resourcePath}/lint-scripts.sh
+          onComplete:
+            - popd
+
