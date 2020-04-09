@@ -41,6 +41,8 @@ pipelines:
                   - 10.18.0
           inputResources:
             - name: charts_repo
+          inputSteps:
+            - name: lint_scripts
         execution:
           onStart:
             - pushd ${res_charts_repo_resourcePath}
@@ -57,11 +59,9 @@ pipelines:
             - ${res_charts_repo_resourcePath}/test/lint-charts.sh || echo "Failed!"
             - >
               if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
-                  echo "No chart changes detected, stopping TravisCI pipeline!"
+                  echo "No chart changes detected, stopping pipeline!"
               fi
             - echo "Run charts-testing install test!"
-            # ping stdout every 9 minutes or Travis kills the build
-            # https://docs.travis-ci.com/user/common-build-problems/#Build-times-out-because-no-output-was-received
             - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
             - ${res_charts_repo_resourcePath}/test/e2e-github.sh
           onComplete:
