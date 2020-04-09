@@ -186,7 +186,7 @@ elasticsearch:
   initContainerImage: "alpine:3.6"
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss
-    tag: 6.6.0
+    tag: 7.6.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   url: http://localhost:9200
@@ -199,7 +199,6 @@ elasticsearch:
     networkHost: "0.0.0.0"
     transportHost: "0.0.0.0"
     maxMapCount: 262144
-    minimumMasterNodes: 1
 
   persistence:
     enabled: true

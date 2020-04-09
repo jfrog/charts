@@ -227,10 +227,10 @@ spec:
           value: '{{ .Values.elasticsearch.httpPort }}'
         - name: 'transport.port'
           value: '{{ .Values.elasticsearch.transportPort }}'
-        # - name: 'discovery.zen.minimum_master_nodes'
-        #   value: '{{ .Values.elasticsearch.env.minimumMasterNodes }}'
-        # - name: 'discovery.zen.ping.unicast.hosts'
-        #   value: '{{ .Release.Name }}-mission-control'
+        - name: 'discovery.seed_hosts'
+          value: '{{ template "mission-control.fullname" . }}'
+        - name: 'cluster.initial_master_nodes'
+          value: '{{ template "elasticsearch.endpoints" . }}'
         - name: ELASTIC_SEARCH_USERNAME
           value: '{{ .Values.elasticsearch.username }}'
         - name: ELASTIC_SEARCH_PASSWORD
@@ -249,13 +249,6 @@ spec:
           "
         - name: ELASTIC_SEARCH_URL
           value: '{{ .Values.elasticsearch.url }}'
-        # lifecycle:
-        #   postStart:
-        #     exec:
-        #       command:
-        #       - '/bin/bash'
-        #       - '-c'
-        #       - 'sh /scripts/initSG.sh'
         ports:
         - name: eshttp
           containerPort: {{ .Values.elasticsearch.httpPort }}
