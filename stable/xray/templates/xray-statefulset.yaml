@@ -156,6 +156,46 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
+        env:
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        {{- else if .Values.database.user }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        {{- else if .Values.database.password }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- else if .Values.database.url }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
         volumeMounts:
@@ -273,6 +313,45 @@ spec:
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        {{- else if .Values.database.user }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        {{- else if .Values.database.password }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- else if .Values.database.url }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         - name: XRAY_HA_NODE_ID
           valueFrom:
             fieldRef:
@@ -314,6 +393,45 @@ spec:
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ .Values.database.secrets.user.name }}
+              key: {{ .Values.database.secrets.user.key }}
+        {{- else if .Values.database.user }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ .Values.database.secrets.password.name }}
+              key: {{ .Values.database.secrets.password.key }}
+        {{- else if .Values.database.password }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ .Values.database.secrets.url.name }}
+              key: {{ .Values.database.secrets.url.key }}
+        {{- else if .Values.database.url }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         - name: XRAY_K8S_ENV
           value: "true"
         ports:
