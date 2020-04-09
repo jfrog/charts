@@ -29,6 +29,12 @@ pipelines:
             - ${res_charts_repo_resourcePath}/test/lint-scripts.sh
           onComplete:
             - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo --context "step_status_${step_name}" --message "Basic linting failed"
+
       - name: charts_testing
         type: Bash
         configuration:
@@ -66,3 +72,26 @@ pipelines:
             - ${res_charts_repo_resourcePath}/test/e2e-github.sh
           onComplete:
             - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo --context "step_status_${step_name}" --message "Execution failed"
+
+      - name: status_update
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: charts_testing
+          inputResources:
+            - name: charts_repo
+        execution:
+          onExecute:
+            - |
+              for var in "${!step_status_@}"; do
+                  stepStatusVarName="${var}"
+                  statusValue="${!var}"
+
+                  echo "Updating status: $stepStatusVarName - $statusValue to bitbucket"
+                  update_commit_status charts_repo --status "$statusValue"  --context "$stepStatusVarName" --message "$stepStatusVarName"
+              done
