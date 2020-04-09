@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.29] - Apr 9, 2020
+* Added default-values.yaml for CI to run builds against the default configuration in values.yaml
+
 ## [3.0.28] - April 8, 2020
 * Support database credentials as secrets
 
