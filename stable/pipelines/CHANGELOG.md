@@ -1,6 +1,12 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.0.36] - April 9, 2020
+* Bump Redis chart to 10.6.3
+* Bump RabbitMQ chart to 6.25.0
+* Bump PostgreSQL chart to 8.7.3
+* Fix resources for k8s node
+
 ## [1.0.35] - April 3, 2020
 * Update readme
 * Disable Pipelines StatefulSet replicas if HPA is enabled
