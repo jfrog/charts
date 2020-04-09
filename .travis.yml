@@ -15,12 +15,12 @@ jobs:
       name: "Lint and install charts"
       env:
         - CHART_TESTING_IMAGE=quay.io/helmpack/chart-testing
-        - CHART_TESTING_TAG=v2.4.0
+        - CHART_TESTING_TAG=v2.4.1
         - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
-        - TEST_IMAGE_TAG=v3.4.0
+        - TEST_IMAGE_TAG=v3.4.1
         - CHARTS_REPO=https://github.com/jfrog/charts
         - KUBEVAL_VERSION=0.14.0
-        - HELM_VERSION=v2.15.2
+        - HELM_VERSION=v2.16.1
         - CHART_TESTING_ARGS=""
       script:
         - echo "Run chart-testing linting!"
