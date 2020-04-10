@@ -1,0 +1,14 @@
+resources:
+  - name: charts_repo_pr
+    type: GitRepo
+    configuration:
+      gitProvider: github_private
+      path: rimusz/jfrog-charts
+      files:
+        exclude: pipelines/.*.yml$
+      branches:
+        exclude: master
+      buildOn:
+        commit: false
+        pullRequestCreate: true
+        tagCreate: false
