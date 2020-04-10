@@ -92,6 +92,6 @@ pipelines:
                   stepStatusVarName="${var}"
                   statusValue="${!var}"
 
-                  echo "Updating status: $stepStatusVarName - $statusValue to bitbucket"
+                  echo "Updating status: $stepStatusVarName - $statusValue to repository"
                   update_commit_status charts_repo --status "$statusValue"  --context "$stepStatusVarName" --message "$stepStatusVarName"
               done
