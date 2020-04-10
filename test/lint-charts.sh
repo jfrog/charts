@@ -90,6 +90,7 @@ main() {
     install_helm
     ## git_fetch
     # Lint helm charts
+    docker rm -f ct || true
     # shellcheck disable=SC2086
     docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml | tee tmp/lint.log
     echo "Done Charts Linting!"

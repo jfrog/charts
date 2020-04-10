@@ -20,6 +20,7 @@ get_creds() {
 
 run_ct_container() {
     echo 'Running ct container...'
+    docker rm -f ct || true
     docker run --rm --interactive --detach --name ct \
         --volume "$REPO_ROOT/gcloud-service-key.json:/gcloud-service-key.json" \
         --volume "$REPO_ROOT:/workdir" \
