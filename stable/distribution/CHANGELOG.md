@@ -1,9 +1,6 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [5.0.21] - Apr 9, 2020
-* Added default-values.yaml for CI to run builds against the default configuration in values.yaml
-
 ## [5.0.20] - April 2, 2020
 * Support masterKey and joinKey as secrets
 

@@ -1,9 +1,6 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [2.2.12] - Apr 9, 2020
-* Added default-values.yaml for CI to run builds against the default configuration in values.yaml
-
 ## [2.2.11] - Apr 8, 2020
 * Added recommended ingress annotation to avoid 413 errors
 
