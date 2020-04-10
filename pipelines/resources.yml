@@ -1,0 +1,12 @@
+resources:
+  - name: charts_repo_pr
+    type: GitRepo
+    configuration:
+      gitProvider: github_public
+      path: jfrog/charts
+      files:
+        exclude: pipelines/.*.yml$
+      buildOn:
+        commit: false
+        pullRequestCreate: true
+        tagCreate: false
