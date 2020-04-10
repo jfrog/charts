@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.2.10] - April 10, 2020
+* Use dependency charts from `https://charts.bitnami.com/bitnami`
+
 ## [9.2.9] - Apr 8, 2020
 * Added recommended ingress annotation to avoid 413 errors
 
