@@ -1,5 +1,5 @@
 pipelines:
-  - name: charts_build_pr
+  - name: charts_fork_pr
     steps:
       - name: is_pr_from_fork
         type: Bash
@@ -9,9 +9,9 @@ pipelines:
         execution:
           onExecute:
             - |
-              if $res_charts_repo_pr_isPullRequest; then
-                head=$(echo "$res_charts_repo_pr_shaData" | jq -r .pullRequestRepoFullName)
-                base="$res_charts_repo_pr_gitRepoFullName"
+              if $res_charts_repo_fork_pr_isPullRequest; then
+                head=$(echo "$res_charts_repo_fork_pr_shaData" | jq -r .pullRequestRepoFullName)
+                base="$res_charts_repo_fork_pr_gitRepoFullName"
                 if [ "$head" == "$base" ]; then
                   echo "PR is not from the fork, skipping the pipeline!"
                   exit 1
@@ -27,10 +27,10 @@ pipelines:
             - name: is_pr_from_fork
         execution:
           onStart:
-            - pushd ${res_charts_repo_pr_resourcePath}
+            - pushd ${res_charts_repo_fork_pr_resourcePath}
           onExecute:
             - echo "Run shell scripts linting!"
-            - ${res_charts_repo_pr_resourcePath}/test/lint-scripts.sh
+            - ${res_charts_repo_fork_pr_resourcePath}/test/lint-scripts.sh
           onComplete:
             - popd
           onSuccess:
@@ -61,10 +61,10 @@ pipelines:
             GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
         execution:
           onStart:
-            - pushd ${res_charts_repo_pr_resourcePath}
+            - pushd ${res_charts_repo_fork_pr_resourcePath}
           onExecute:
             - echo "Run chart-testing linting!"
-            - ${res_charts_repo_pr_resourcePath}/test/lint-charts.sh || echo "Failed!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/lint-charts.sh || echo "Failed!"
             - |
               if cat tmp/lint.log | grep "Error linting charts" > /dev/null; then
                   echo "Charts linting failed!"
@@ -76,7 +76,7 @@ pipelines:
                   exit 0
               fi
             - echo "Run charts-testing install test!"
-            - ${res_charts_repo_pr_resourcePath}/test/e2e-gke.sh
+            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh
           onComplete:
             - popd
           onSuccess:
