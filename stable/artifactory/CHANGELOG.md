@@ -1,8 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [9.2.10] - April 10, 2020
+## [9.3.0] - April 10, 2020
 * Use dependency charts from `https://charts.bitnami.com/bitnami`
+* Bump postgresql chart version to `8.7.3` in requirements.yaml
+* Bump postgresql tag version to `9.6.17-debian-10-r61` in values.yaml
 
 ## [9.2.9] - Apr 8, 2020
 * Added recommended ingress annotation to avoid 413 errors
