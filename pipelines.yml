@@ -1,0 +1,97 @@
+resources:
+  - name: charts_repo
+    type: GitRepo
+    configuration:
+      path: kammathavaran/charts
+      gitProvider: Github_public
+
+
+pipelines:
+  - name: charts_build
+    steps:
+      - name: lint_scripts
+        type: Bash
+        configuration:
+          runtime:
+            type: image
+            image:
+              auto:
+                language: node
+                versions:
+                  - 10.18.0
+          inputResources:
+            - name: charts_repo
+        execution:
+          onStart:
+            - pushd ${res_charts_repo_resourcePath}
+          onExecute:
+            - echo "Run shell scripts linting!"
+            - ${res_charts_repo_resourcePath}/test/lint-scripts.sh
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo --context "step_status_${step_name}" --message "Basic linting failed"
+
+      - name: charts_testing
+        type: Bash
+        configuration:
+          runtime:
+            type: image
+            image:
+              auto:
+                language: node
+                versions:
+                  - 10.18.0
+          inputResources:
+            - name: charts_repo
+          inputSteps:
+            - name: lint_scripts
+        execution:
+          onStart:
+            - pushd ${res_charts_repo_resourcePath}
+          onExecute:
+            - CHART_TESTING_IMAGE=quay.io/helmpack/chart-testing
+            - CHART_TESTING_TAG=v2.4.0
+            - TEST_IMAGE=gcr.io/kubernetes-charts-ci/test-image
+            - TEST_IMAGE_TAG=v3.4.0
+            - CHARTS_REPO=https://github.com/jfrog/charts
+            - KUBEVAL_VERSION=0.14.0
+            - HELM_VERSION=v2.15.2
+            - CHART_TESTING_ARGS=""
+            - echo "Run chart-testing linting!"
+            - ${res_charts_repo_resourcePath}/test/lint-charts.sh || echo "Failed!"
+            - >
+              if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
+                  echo "No chart changes detected, stopping pipeline!"
+              fi
+            - echo "Run charts-testing install test!"
+            - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+            - ${res_charts_repo_resourcePath}/test/e2e-github.sh
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo --context "step_status_${step_name}" --message "Execution failed"
+
+      - name: status_update
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: charts_testing
+          inputResources:
+            - name: charts_repo
+        execution:
+          onExecute:
+            - |
+              for var in "${!step_status_@}"; do
+                  stepStatusVarName="${var}"
+                  statusValue="${!var}"
+
+                  echo "Updating status: $stepStatusVarName - $statusValue to bitbucket"
+                  update_commit_status charts_repo --status "$statusValue"  --context "$stepStatusVarName" --message "$stepStatusVarName"
+              done
