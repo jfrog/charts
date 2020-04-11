@@ -1,4 +1,4 @@
-# Lint charts locally
+# Lint charts locally   
 MAC_ARGS ?=
 CHARTS_REPO ?= https://github.com/jfrog/charts
 CHART_TESTING_IMAGE ?= quay.io/helmpack/chart-testing
