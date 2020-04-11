@@ -4,7 +4,7 @@ JFrog Container Registry is a free Artifactory edition with Docker and Helm repo
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:

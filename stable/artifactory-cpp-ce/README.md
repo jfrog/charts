@@ -4,7 +4,7 @@ JFrog Artifactory CE for C++ is a free Artifactory edition to host C/C++ package
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:

@@ -4,7 +4,7 @@ JFrog Artifactory OSS is a free Artifactory edition to host Generic repositories
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:
