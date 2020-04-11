@@ -5,7 +5,7 @@ pipelines:
         type: Bash
         configuration:
           inputResources:
-            - name: charts_repo_pr
+            - name: charts_repo_fork_pr
         execution:
           onExecute:
             - |
@@ -22,7 +22,7 @@ pipelines:
         type: Bash
         configuration:
           inputResources:
-            - name: charts_repo_pr
+            - name: charts_repo_fork_pr
           inputSteps:
             - name: is_pr_from_fork
         execution:
@@ -37,13 +37,13 @@ pipelines:
             - add_pipeline_variables step_status_${step_name}="success"
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
-            - update_commit_status charts_repo_pr --context "step_status_${step_name}" --message "Scripts linting failed!"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting failed!"
 
       - name: charts_testing
         type: Bash
         configuration:
           inputResources:
-            - name: charts_repo_pr
+            - name: charts_repo_fork_pr
           integrations:
             - name: charts_testing_cluster
           inputSteps:
