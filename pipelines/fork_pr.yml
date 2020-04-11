@@ -83,7 +83,7 @@ pipelines:
             - add_pipeline_variables step_status_${step_name}="success"
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
-            - update_commit_status charts_repo_pr --context "step_status_${step_name}" --message "Execution failed"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Execution failed"
 
       - name: status_update
         type: Bash
@@ -91,7 +91,7 @@ pipelines:
           inputSteps:
             - name: charts_testing
           inputResources:
-            - name: charts_repo_pr
+            - name: charts_repo_fork_pr
         execution:
           onExecute:
             - |
@@ -100,5 +100,5 @@ pipelines:
                   statusValue="${!var}"
 
                   echo "Updating status: $stepStatusVarName - $statusValue to github"
-                  update_commit_status charts_repo_pr --status "$statusValue"  --context "$stepStatusVarName" --message "$stepStatusVarName"
+                  update_commit_status charts_repo_fork_pr --status "$statusValue"  --context "$stepStatusVarName" --message "$stepStatusVarName"
               done
