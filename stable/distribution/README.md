@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.8+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart does the following:
@@ -39,8 +39,8 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 Provide join key and jfrog url as a parameter to the Distribution chart installation:
 
 ```bash
-helm install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  jfrog/distribution
+helm upgrade --install distribution --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace distribution jfrog/distribution
 ```
 
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
@@ -48,7 +48,7 @@ Alternatively, you can create a secret containing the join key manually and pass
 # Create a secret containing the key. The key in the secret must be named join-key
 kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
 # Pass the created secret to helm
-helm install  --set distribution.joinKeySecretName=my-secret jfrog/distribution
+helm upgrade --install distribution --set distribution.joinKeySecretName=my-secret --namespace distribution jfrog/distribution
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set distribution.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -100,7 +100,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm install --set distribution.masterKey=${MASTER_KEY} -n distribution jfrog/distribution
+helm upgrade --install distribution --set distribution.masterKey=${MASTER_KEY} --namespace distribution jfrog/distribution
 
 Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
 ```bash
@@ -109,7 +109,7 @@ Alternatively, you can create a secret containing the master key manually and pa
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
 # Pass the created secret to helm
-helm install --name distribution --set distribution.masterKeySecretName=my-secret -n distribution jfrog/distribution
+helm upgrade --install distribution --set distribution.masterKeySecretName=my-secret --namespace distribution jfrog/distribution
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set -n distribution.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set -n distribution.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 ```
@@ -120,7 +120,7 @@ JFrog Distribution can run in High Availability by having multiple replicas of t
 To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
 ```bash
 # Run 3 replicas of the Distribution service
-helm install --name distribution --set replicaCount=3 jfrog/distribution
+helm upgrade --install distribution --set replicaCount=3 --namespace distribution jfrog/distribution
 ```
 
 ### External Database
@@ -135,11 +135,11 @@ export POSTGRES_URL=
 export POSTGRES_USERNAME=
 export POSTGRES_PASSWORD=
 
-helm install --name distribution \
+helm upgrade --install distribution \
     --set database.url=${POSTGRES_URL} \
     --set database.user=${POSTGRES_USERNAME} \
     --set database.password=${POSTGRES_PASSWORD} \
-    jfrog/distribution
+    --namespace distribution jfrog/distribution
 ```
 **NOTE:** The Database password is saved as a Kubernetes secret
 
@@ -154,12 +154,12 @@ export POSTGRES_USERNAME_SECRET_KEY=
 export POSTGRES_PASSWORD_SECRET_NAME=
 export POSTGRES_PASSWORD_SECRET_KEY=
 
-helm install --name distribution \
+helm upgrade --install distribution \
     --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
     --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
     --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
     --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
-    jfrog/distribution
+    --namespace distribution jfrog/distribution
 ```
 
 ## Upgrade
