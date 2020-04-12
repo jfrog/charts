@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.8+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:
@@ -36,8 +36,8 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 Provide join key and jfrog url as a parameter to the Mission Control chart installation:
 
 ```bash
-helm install --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace mission-control jfrog/mission-control
 ```
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
 ```bash
@@ -46,7 +46,7 @@ Alternatively, you can create a secret containing the join key manually and pass
 kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
 
 # Pass the created secret to helm
-helm install  --set missionControl.joinKeySecretName=my-secret jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.joinKeySecretName=my-secret --namespace mission-control jfrog/mission-control
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set missionControl.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -93,7 +93,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm install --name mission-control --set missionControl.masterKey=${MASTER_KEY} jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.masterKey=${MASTER_KEY} --namespace mission-control jfrog/mission-control
 ```
 
 Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
@@ -103,7 +103,7 @@ Alternatively, you can create a secret containing the master key manually and pa
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
 # Pass the created secret to helm
-helm install --name mission-control --set missionControl.masterKeySecretName=my-secret jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.masterKeySecretName=my-secret jfrog/mission-control
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set missionControl.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
