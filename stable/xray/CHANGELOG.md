@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.1.2] - Apr 13, 2020
+* Bump RabbitMQ chart to v6.25.2
+* Bump RabbitMQ-HA chart to v1.44.2
+
 ## [3.1.1] - April 13, 2020
 * Updated helm v3 commands  
 
