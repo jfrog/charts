@@ -245,10 +245,14 @@ rabbitmq-ha:
     create: true
   nodeSelector: {}
   tolerations: []
+  ## Configuration values for the prometheus
+  prometheus:
+    operator:
+      enabled: false
 
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/README.md
 ##
 rabbitmq:
   enabled: false
