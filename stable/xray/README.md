@@ -45,8 +45,8 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 Provide join key and jfrog url as a parameter to the Xray chart installation:
 
 ```bash
-helm install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  -n xray jfrog/xray
+helm upgrade --install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  --namespace xray jfrog/xray
 ```
 
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
@@ -56,7 +56,7 @@ Alternatively, you can create a secret containing the join key manually and pass
 kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
 
 # Pass the created secret to helm
-helm install  --set xray.joinKeySecretName=my-secret -n xray jfrog/xray
+helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray jfrog/xray
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set xray.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -112,7 +112,7 @@ If Xray was installed with all of the default values (e.g. with no user-provided
 2. Upgrade the release by passing the previously auto-generated secrets:
 
 ```bash
-helm upgrade --name xray jfrog/xray --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresqlPassword=<postgresql-password>
+helm upgrade --install xray --namespace xray jfrog/xray --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresqlPassword=<postgresql-password>
 ```
 
 ## Remove
@@ -121,7 +121,12 @@ Removing a **helm** release is done with
 
 ```bash
 # Remove the Xray services and data tools
+
+#On helm v2:
 helm delete --purge xray
+
+#On helm v3:
+helm delete xray --namespace xray
 
 # Remove the data disks
 kubectl delete pvc -l release=xray
@@ -144,7 +149,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm install --set xray.masterKey=${MASTER_KEY} -n xray jfrog/xray
+helm upgrade --install --set xray.masterKey=${MASTER_KEY} --namespace xray jfrog/xray
 
 ```
 
@@ -158,7 +163,7 @@ echo ${MASTER_KEY}
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
 # Pass the created secret to helm
-helm install --name xray --set xray.masterKeySecretName=my-secret -n xray jfrog/xray
+helm upgrade --install xray --set xray.masterKeySecretName=my-secret --namespace xray jfrog/xray
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set xray.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set xray.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -173,7 +178,7 @@ For **high availability** of Xray, set the replica count to be equal or higher t
 
 ```bash
 # Start Xray with 3 replicas per service and 3 replicas for RabbitMQ
-helm install -n xray --set server.replicaCount=3 jfrog/xray
+helm upgarde --install xray --namespace xray --set server.replicaCount=3 jfrog/xray
 ```
 
 ### External Databases
@@ -200,7 +205,7 @@ export POSTGRESQL_PASSWORD=password2_X
 export POSTGRESQL_DATABASE=xraydb
 
 export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
-helm install -n xray \
+helm upgrade --install xray --namespace xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
     --set database.user="${POSTGRESQL_USER}" \
@@ -236,7 +241,7 @@ export POSTGRESQL_CLIENT_KEY=client-cert.pem
 export POSTGRESQL_TLS_SECRET=postgres-tls
 
 export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
-helm install -n xray \
+helm upgrade --install xray --namespace xray \
     --set postgresql.enabled=false \
     --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
     --set database.user="${POSTGRESQL_USER}" \
