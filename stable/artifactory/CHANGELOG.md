@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.3.2] - April 13, 2020
+* Test CI
+
 ## [9.3.1] - April 13, 2020
 * Update README with helm v3 commands
 
