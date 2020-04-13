@@ -361,8 +361,15 @@ helm upgrade --install artifactory --namespace artifactory --set postgresql.post
 You can customise other parameters in the same way, by passing them on `helm install` command line.
 
 ### Deleting Artifactory
+
+On helm v2:
 ```bash
 helm delete --purge artifactory
+```
+
+On helm v3:
+```bash
+helm delete artifactory --namespace artifactory
 ```
 This will completely delete your Artifactory Pro deployment.
 **IMPORTANT:** This will also delete your data volumes. You will lose all data!
@@ -553,7 +560,7 @@ helm upgrade --install artifactory --set artifactory.license.secret=artifactory-
 ```
 OR
 ```bash
-helm install --name artifactory --set artifactory.license.licenseKey=<LICENSE_KEY>,artifactory.configMapName=my-release-bootstrap-config jfrog/artifactory
+helm upgrade --install artifactory --set artifactory.license.licenseKey=<LICENSE_KEY>,artifactory.configMapName=my-release-bootstrap-config --namespace artifactory jfrog/artifactory
 ```
 
 ### Use custom nginx.conf with Nginx
@@ -627,8 +634,15 @@ kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-li
 
 ### Deleting Artifactory
 To delete the Artifactory.
+
+On helm v2:
 ```bash
 helm delete --purge artifactory
+```
+
+On helm v3:
+```bash
+helm delete artifactory --namespace artifactory
 ```
 This will completely delete your Artifactory HA cluster.
 
