@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.1.1] - April 13, 2020
+* Update README with helm v3 commands
+
 ## [3.1.0] - April 10, 2020
 * Use dependency charts from `https://charts.bitnami.com/bitnami`
 * Bump postgresql chart version to `8.7.3` in requirements.yaml
