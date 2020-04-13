@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [9.3.1] - April 13, 2020
-* Fix README with helm v3 commands
+* Update README with helm v3 commands
 
 ## [9.3.0] - April 10, 2020
 * Use dependency charts from `https://charts.bitnami.com/bitnami`
