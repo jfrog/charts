@@ -3,7 +3,6 @@ All changes to this chart will be documented in this file.
 
 ## [3.1.1] - Apr 13, 2020
 * Bump RabbitMQ chart to v6.25.2
-* Bump RabbitMQ-HA chart to v1.44.2
 
 ## [3.1.0] - April 10, 2020
 * Use dependency charts from `https://charts.bitnami.com/bitnami`
