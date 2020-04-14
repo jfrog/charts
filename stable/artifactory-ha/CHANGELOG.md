@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.6.0] - Apr 14, 2020
+* Updated Artifactory version to 6.19.0
+
 ## [1.5.3] - Mar 25, 2020
 * Don't deploy nginx PodDisruptionBudget if `nginx.enabled=false`
 
