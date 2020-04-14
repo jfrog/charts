@@ -59,6 +59,7 @@ ingress:
   #   proxy_pass_header   Server;
   #   proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
   # kubernetes.io/tls-acme: "true"
+  # nginx.ingress.kubernetes.io/proxy-body-size: "0"
   labels: {}
   # traffic-type: external
   # traffic-type: internal
@@ -180,6 +181,8 @@ artifactory:
   # Migration support from 6.x to 7.x
   migration:
     timeoutSeconds: 3600
+    ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
+    # preStartCommand: "wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
 
   ## Add custom init containers
   customInitContainers: |
@@ -453,13 +456,14 @@ artifactory:
     # existingClaim:
 
     accessMode: ReadWriteOnce
+    ## Storage default size. Should be increased for production deployments.
     size: 20Gi
 
     ## Use a custom Secret to be mounted as your binarystore.xml
     ## NOTE: This will ignore all settings below that make up binarystore.xml
     customBinarystoreXmlSecret:
-
-    maxCacheSize: 50000000000
+    ## Cache default size. Should be increased for production deployments.
+    maxCacheSize: 5000000000
     cacheProviderDir: cache
 
     ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
@@ -1077,7 +1081,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.15-debian-9-r91
+    tag: 9.6.17-debian-10-r21
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory

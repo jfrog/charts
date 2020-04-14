@@ -46,8 +46,7 @@ Provide join key and jfrog url as a parameter to the Xray chart installation:
 
 ```bash
 helm install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> \
-             --set postgresql.postgresqlPassword=<postgres_password> -n xray jfrog/xray
+             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  -n xray jfrog/xray
 ```
 
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.

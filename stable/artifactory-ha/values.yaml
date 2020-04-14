@@ -54,6 +54,7 @@ ingress:
   annotations: {}
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
+  # nginx.ingress.kubernetes.io/proxy-body-size: "0"
   labels: {}
   # traffic-type: external
   # traffic-type: internal
@@ -101,7 +102,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.15-debian-9-r91
+    tag: 9.6.17-debian-10-r21
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
@@ -240,6 +241,9 @@ artifactory:
   # Migration support from 6.x to 7.x
   migration:
     timeoutSeconds: 3600
+    ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
+    # preStartCommand: "wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+
 
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
@@ -333,7 +337,7 @@ artifactory:
   #  storageClassName:
 
   ## Artifactory HA requires a unique master key. Each Artifactory node must have the same master key!
-  ## You can generate one with the command: "openssl rand -hex 16"
+  ## You can generate one with the command: "openssl rand -hex 32"
   ## Pass it to helm with '--set artifactory.masterKey=${MASTER_KEY}'
   ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!

@@ -78,7 +78,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.15-debian-9-r91
+    tag: 9.6.17-debian-10-r21
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -131,7 +131,7 @@ redis:
     tag: 5.0.5-debian-9-r182
     pullPolicy: IfNotPresent
   port: 6379
-  password:
+  password: ""
   uid: 1001
   serviceAccount:
     create: true

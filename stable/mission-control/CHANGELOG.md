@@ -1,8 +1,13 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [3.0.24] - April 7, 2020
+## [3.1.1] - April 7, 2020
 * Added `elasticsearch.configureDockerHost` parameter to enable control over running of privileged containers (init-elasticsearch)
+
+## [3.1.0] - April 10, 2020
+* Use dependency charts from `https://charts.bitnami.com/bitnami`
+* Bump postgresql chart version to `8.7.3` in requirements.yaml
+* Bump postgresql tag version to `9.6.17-debian-10-r21` in values.yaml
 
 ## [3.0.23] - April 3, 2020
 * Support masterKey and joinKey as secrets

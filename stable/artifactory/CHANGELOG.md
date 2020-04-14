@@ -1,6 +1,21 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.3.0] - April 10, 2020
+* Use dependency charts from `https://charts.bitnami.com/bitnami`
+* Bump postgresql chart version to `8.7.3` in requirements.yaml
+* Bump postgresql tag version to `9.6.17-debian-10-r21` in values.yaml
+
+## [9.2.9] - Apr 8, 2020
+* Added recommended ingress annotation to avoid 413 errors
+
+## [9.2.8] - Apr 8, 2020
+* Moved migration scripts under `files` directory
+* Support preStartCommand in migration Init container as `artifactory.migration.preStartCommand`
+
+## [9.2.7] - Apr 6, 2020
+* Fix cache size (should be 5gb instead of 50gb since volume claim is only 20gb).
+
 ## [9.2.6] - Apr 1, 2020
 * Support masterKey and joinKey as secrets
 
@@ -286,7 +301,7 @@ All changes to this chart will be documented in this file.
 * Update Artifactory version to 6.11 and add restart to Artifactory when bootstrap.creds file has been modified
 
 ## [7.15.8] - Jun 27, 2019
-* Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation  
+* Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation
 
 ## [7.15.6] - Jun 24, 2019
 * Update chart maintainers

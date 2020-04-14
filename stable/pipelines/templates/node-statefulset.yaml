@@ -74,7 +74,7 @@ spec:
         securityContext:
           privileged: true
         resources:
-{{ toYaml .Values.buildPlane.k8s.resources | indent 10 }}
+{{ toYaml .Values.buildPlane.k8s.dind.resources | indent 10 }}
         volumeMounts:
         - name: docker-graph-storage
           mountPath: /var/lib/docker

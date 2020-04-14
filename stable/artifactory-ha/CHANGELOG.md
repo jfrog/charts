@@ -1,6 +1,18 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.3.0] - April 10, 2020
+* Use dependency charts from `https://charts.bitnami.com/bitnami`
+* Bump postgresql chart version to `8.7.3` in requirements.yaml
+* Bump postgresql tag version to `9.6.17-debian-10-r21` in values.yaml
+
+## [2.2.11] - Apr 8, 2020
+* Added recommended ingress annotation to avoid 413 errors
+
+## [2.2.10] - Apr 8, 2020
+* Moved migration scripts under `files` directory
+* Support preStartCommand in migration Init container as `artifactory.migration.preStartCommand`
+
 ## [2.2.9] - Apr 01, 2020
 * Support masterKey and joinKey as secrets
 
@@ -93,10 +105,10 @@ All changes to this chart will be documented in this file.
 * Store join key to secret
 
 ## [2.0.19] - Feb 26, 2020
-* Updated Artifactory version to 7.2.1 
+* Updated Artifactory version to 7.2.1
 
 ## [2.0.12] - Feb 07, 2020
-* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade 
+* Remove protection flag `databaseUpgradeReady` which was added to check internal postgres upgrade
 
 ## [2.0.0] - Feb 07, 2020
 * Updated Artifactory version to 7.0.0
@@ -111,7 +123,7 @@ All changes to this chart will be documented in this file.
 * Add support for `tpl` in the `postStartCommand`
 
 ## [1.4.7] - Feb 4, 2020
-* Support customisable Nginx kind 
+* Support customisable Nginx kind
 
 ## [1.4.6] - Feb 2, 2020
 * Add a comment stating that it is recommended to use an external PostgreSQL with a static password for production installations
@@ -269,7 +281,7 @@ All changes to this chart will be documented in this file.
 * Updated Artifactory version to 6.12.0
 
 ## [0.15.15] - Aug 18, 2019
-* Fix existingSharedClaim permissions issue and example 
+* Fix existingSharedClaim permissions issue and example
 
 ## [0.15.14] - Aug 14, 2019
 * Updated Artifactory version to 6.11.6
@@ -285,7 +297,7 @@ All changes to this chart will be documented in this file.
 * Improve binarystore config
     1. Convert to a secret
     2. Move config to values.yaml
-    3. Support an external secret 
+    3. Support an external secret
 
 ## [0.15.10] - Aug 5, 2019
 * Don't create the nginx configmaps when nginx.enabled is false
@@ -294,7 +306,7 @@ All changes to this chart will be documented in this file.
 * Fix masterkey/masterKeySecretName not specified warning render logic in NOTES.txt
 
 ## [0.15.8] - Jul 28, 2019
-* Simplify nginx setup and shorten initial wait for probes 
+* Simplify nginx setup and shorten initial wait for probes
 
 ## [0.15.7] - Jul 25, 2019
 * Updated README about how to apply Artifactory licenses
@@ -309,7 +321,7 @@ All changes to this chart will be documented in this file.
 * Add `artifactory.customVolumeMounts` support to member node statefulset template
 
 ## [0.15.3] - Jul 11, 2019
-* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration 
+* Add ingress.hosts to the Nginx server_name directive when ingress is enabled to help with Docker repository sub domain configuration
 
 ## [0.15.2] - Jul 3, 2019
 * Add the option for changing nginx config using values.yaml and remove outdated reverse proxy documentation
@@ -364,7 +376,7 @@ All changes to this chart will be documented in this file.
 * Fix missing logger image tag
 
 ## [0.13.1] - May 15, 2019
-* Support `artifactory.persistence.cacheProviderDir` for on-premise cluster 
+* Support `artifactory.persistence.cacheProviderDir` for on-premise cluster
 
 ## [0.13.0] - May 7, 2019
 * Updated Artifactory version to 6.10.0

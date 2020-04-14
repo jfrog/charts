@@ -1,6 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.1.0] - April 10, 2020
+* Use dependency charts from `https://charts.bitnami.com/bitnami`
+* Bump postgresql chart version to `8.7.3` in requirements.yaml
+
+## [3.0.28] - April 8, 2020
+* Support database credentials as secrets
+
 ## [3.0.27] - April 2, 2020
 * Support masterKey and joinKey as secrets
 

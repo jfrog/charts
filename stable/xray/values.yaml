@@ -32,9 +32,10 @@ xray:
   ## Artifactory URL . Mandatory
   jfrogUrl:
 
-  ## Mongo Url used only for Manual migration of data from mongo to postgres in Xray 2.x
-  mongoUsername: xray
-  mongoPassword: password
+  ## Mongo details are used only for Manual migration of data from Mongo to Postgres in Xray 2.x to 3.x
+  # mongoUrl:
+  # mongoUsername:
+  # mongoPassword:
 
   systemYaml: |
     configVersion: 1
@@ -48,12 +49,7 @@ xray:
         driver: "org.postgresql.Driver"
       {{- if .Values.postgresql.enabled }}
         username: "{{ .Values.postgresql.postgresqlUsername }}"
-        password: "{{ .Values.postgresql.postgresqlPassword }}"
         url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
-      {{ else }}
-        url: "{{ .Values.database.url }}"
-        username: "{{ .Values.database.user }}"
-        password: "{{ .Values.database.password }}"
       {{- end }}
       rabbitMq:
       {{ if index .Values "rabbitmq" "enabled" }}
@@ -192,9 +188,8 @@ postgresql:
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 database:
+  ## If you would like this chart to create the secret containing the database url, user, password - use these below values
   url:
-  ## If you would like this chart to create the secret containing the db
-  ## password, use these values
   user:
   password:
   ## If you have existing Kubernetes secrets containing db credentials, use
@@ -206,6 +201,9 @@ database:
   #  password:
   #    name: "database-creds"
   #    key: "db-password"
+  #  url:
+  #    name: "database-creds"
+  #    key: "db-url"
 
 # RabbitMQ HA
 ## Configuration values for the rabbitmq-ha dependency
