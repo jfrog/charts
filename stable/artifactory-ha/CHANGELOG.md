@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.0] - Apr 14, 2020
+* Updated Artifactory version to 7.4.1
+
 ## [2.3.1] - April 13, 2020
 * Update README with helm v3 commands
 
