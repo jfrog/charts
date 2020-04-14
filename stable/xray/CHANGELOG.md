@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.1] - Apr 14, 2020
+* customInitContainer identation template fix
+
 ## [3.2.0] - Apr 13, 2020
 * Bump RabbitMQ chart to v6.25.2
 * Bump RabbitMQ-HA chart to v1.44.2
