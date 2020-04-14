@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [3.1.1] - Apr 14, 2020
+## [3.2.1] - Apr 14, 2020
 * customInitContainer identation template fix
 
 ## [3.1.0] - April 10, 2020
