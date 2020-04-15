@@ -5,8 +5,8 @@ readonly HELM="helm3"
 
 install_helm3() {
     echo "Install Helm v${HELM_VERSION} cli"
-    curl -s -O https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
-    tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
+    curl -s -O https://get.helm.sh/helm-v"${HELM_VERSION}"-linux-amd64.tar.gz
+    tar -zxvf helm-v"${HELM_VERSION}"-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
     cp /usr/local/bin/helm /usr/local/bin/helm3
     echo
 }
