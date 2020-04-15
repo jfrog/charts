@@ -12,7 +12,7 @@ source "${REPO_ROOT}/test/common.sh"
 
 deploy() {
 
-    ${HELM} upgrade --install artifactory --namespace ${namespace} "${REPO_ROOT}"/stable/artifactory/ --set nginx.enabled=false,postgresql.postgresqlPassword=password
+    ${HELM} upgrade --install artifactory --namespace ${namespace} "${REPO_ROOT}"/stable/artifactory/ --set nginx.enabled=false,postgresql.postgresqlPassword=password,artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE,artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
     echo
     echo "Waiting for Artifactory to be ready!"
     kubectl rollout status statefulset/artifactory-postgresql -w -n ${namespace} --request-timeout="10m"
