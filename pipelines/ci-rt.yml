@@ -19,7 +19,7 @@ pipelines:
             RT_LICENSE: ${int_rt_license_key}
         execution:
           onStart:
-            - git checkout master
+            - cd ${res_charts_repo_public_resourcePath} && git checkout master
             - pushd ${res_charts_repo_public_resourcePath}
           onExecute:
             - echo "Run CI Artfactory install!"
