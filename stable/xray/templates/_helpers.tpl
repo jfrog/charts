@@ -141,3 +141,40 @@ Create chart name and version as used by the chart label.
 {{- define "xray.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Create rabbitmq URL 
+*/}}
+{{- define "rabbitmq.url" -}}
+{{- if index .Values "rabbitmq" "enabled" -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.nodePort -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name "rabbitmq" $rabbitmqPort -}}
+{{- else if index .Values "rabbitmq-ha" "enabled" -}}
+{{- $rabbitmqHaPort := index .Values "rabbitmq-ha" "rabbitmqNodePort" -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name "rabbitmq-ha" $rabbitmqHaPort -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Create rabbitmq username 
+*/}}
+{{- define "rabbitmq.user" -}}
+{{- if index .Values "rabbitmq" "enabled" -}}
+{{- .Values.rabbitmq.rabbitmq.username -}}
+{{- else if index .Values "rabbitmq-ha" "enabled" -}}
+{{- index .Values "rabbitmq-ha" "rabbitmqUsername" -}}
+{{- end -}} 
+{{- end -}}
+
+
+{{/*
+Create rabbitmq release name
+*/}}
+{{- define "rabbitmq.release" -}}
+{{- if index .Values "rabbitmq" "enabled" -}}
+{{- printf "%s-%s" .Release.Name "rabbitmq" -}}
+{{- else if index .Values "rabbitmq-ha" "enabled" -}}
+{{- printf "%s-%s" .Release.Name "rabbitmq-ha" -}}
+{{- end -}} 
+{{- end -}}

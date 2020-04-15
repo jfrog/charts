@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.2] - Apr 15, 2020
+* Fix broken rabbitmq support when `rabbitmq.enabled=true`
+
 ## [3.2.1] - Apr 14, 2020
 * customInitContainer identation template fix
 
