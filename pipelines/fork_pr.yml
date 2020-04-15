@@ -47,7 +47,7 @@ pipelines:
             - popd
           onSuccess:
             - add_pipeline_variables step_status_${step_name}="success"
-            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting successful!"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting successful."
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting failed!"
@@ -78,7 +78,7 @@ pipelines:
             - popd
           onSuccess:
             - add_pipeline_variables step_status_${step_name}="success"
-            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting successful!"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting successful."
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting failed!"
@@ -96,16 +96,21 @@ pipelines:
             - if [[ "${do_not_install}" == "true" ]]; then echo "No chart changes detected!" && exit 0; fi;
             - pushd ${res_charts_repo_fork_pr_resourcePath}
           onExecute:
-            - echo "Run chart install!"
-            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh
+            - echo "Run charts install!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh || echo "Failed!"
+            - |
+              if cat tmp/install.log | grep "Error installing charts" > /dev/null; then
+                  echo "Charts install failed!"
+                  exit 1
+              fi
           onComplete:
             - popd
           onSuccess:
             - add_pipeline_variables step_status_${step_name}="success"
-            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install successful!"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install successful."
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
-            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install failed"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install failed!"
       - name: status_update
         type: Bash
         configuration:
