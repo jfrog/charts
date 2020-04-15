@@ -8,6 +8,8 @@ pipelines:
       - name: install_rt
         type: Bash
         configuration:
+          inputResources:
+            - name: charts_repo_fork_pr
           integrations:
             - name: charts_testing_cluster
             - name: rt_license
