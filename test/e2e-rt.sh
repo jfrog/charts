@@ -7,8 +7,12 @@ readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 readonly namespace=rt
 readonly HELM="helm3"
 
-# shellcheck source=test/common.sh
-source "${REPO_ROOT}/test/common.sh"
+install_helm() {
+    echo "Install Helm v${HELM_VERSION} cli"
+    curl -s -O https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+    tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
+    cp /usr/local/bin/helm /usr/local/bin/helm3
+}
 
 connect_to_cluster() {
     # shellcheck disable=SC2086
@@ -49,7 +53,7 @@ clean() {
 }
 
 main() {
-    install_helm3_ci
+    install_helm
     connect_to_cluster
     if [[ "$(helm list -n rt -f artifactory | grep -c artifactory)" -eq 1 ]]; then
     echo "Run clean up"
