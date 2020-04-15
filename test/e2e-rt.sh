@@ -21,7 +21,7 @@ connect_to_cluster() {
 
 deploy() {
     kubectl create ns ${namespace} || true
-    echo $RT_LICENSE | base64 --decode -i > $REPO_ROOT/artifactory.lic
+    echo $RT_LICENSE | base64 --decode -i > "$REPO_ROOT"/artifactory.lic
     kubectl create secret generic artifactory-license -n ${namespace} --from-file=$REPO_ROOT/artifactory.lic
     echo
     ${HELM} upgrade --install artifactory --namespace ${namespace} "${REPO_ROOT}"/stable/artifactory/ \
