@@ -17,7 +17,6 @@ pipelines:
       - name: is_pr_from_fork
         type: Bash
         configuration:
-          affinityGroup: ciGroup
           inputResources:
             - name: charts_repo_fork_pr
         execution:
@@ -34,7 +33,6 @@ pipelines:
       - name: lint_scripts
         type: Bash
         configuration:
-          affinityGroup: ciGroup
           inputResources:
             - name: charts_repo_fork_pr
           inputSteps:
@@ -55,7 +53,6 @@ pipelines:
       - name: lint_charts
         type: Bash
         configuration:
-          affinityGroup: ciGroup
           inputResources:
             - name: charts_repo_fork_pr
           inputSteps:
@@ -86,7 +83,6 @@ pipelines:
       - name: install_charts
         type: Bash
         configuration:
-          affinityGroup: ciGroup
           inputResources:
             - name: charts_repo_fork_pr
           integrations:
@@ -115,7 +111,6 @@ pipelines:
       - name: status_update
         type: Bash
         configuration:
-          affinityGroup: ciGroup
           inputSteps:
             - name: lint_charts
             - name: install_charts
