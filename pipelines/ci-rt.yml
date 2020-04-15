@@ -1,0 +1,34 @@
+pipelines:
+  - name: ci_rt
+    configuration:
+      environmentVariables:
+        readOnly:
+          HELM_VERSION: 3.1.2
+    steps:
+      - name: install_rt
+        type: Bash
+        configuration:
+          integrations:
+            - name: charts_testing_cluster
+            - name: rt_license
+          environmentVariables:
+            GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
+            GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
+            RT_LICENSE: ${int_rt_license_key}
+        execution:
+          onStart:
+            - pushd ${res_charts_repo_fork_pr_resourcePath}
+          onExecute:
+            - |
+              echo "Install Helm v${HELM_VERSION} cli"
+              curl -s -O https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+              tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
+              cp /usr/local/bin/helm /usr/local/bin/helm3
+            - echo "Run CI Artfactory install!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-rt.sh
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"

@@ -72,12 +72,3 @@ gke: check-gcloud
 	$(eval export LOCAL_RUN=true)
 	test/e2e-local-gke.sh
 
-.PHONY: rt
-rt: check-helm check-kubectl
-	$(eval export RUN_CLEAN=false)
-	test/e2e-rt.sh
-
-.PHONY: rt-clean
-rt-clean: check-helm check-kubectl
-	$(eval export RUN_CLEAN=true)
-	test/e2e-rt.sh
