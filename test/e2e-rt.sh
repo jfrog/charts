@@ -7,7 +7,7 @@ readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 readonly namespace=rt
 readonly HELM="helm3"
 
-install_helm() {
+install_helm3() {
     echo "Install Helm v${HELM_VERSION} cli"
     curl -s -O https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
     tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
@@ -53,7 +53,9 @@ clean() {
 }
 
 main() {
-    install_helm
+    set -x
+    install_helm3
+    set +x
     connect_to_cluster
     if [[ "$(helm list -n rt -f artifactory | grep -c artifactory)" -eq 1 ]]; then
     echo "Run clean up"
