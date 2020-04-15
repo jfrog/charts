@@ -136,7 +136,7 @@ helm status pipelines
 
 Be default Pipelines comes with a Build Plane with a static node-pool VMs setup, please read [Managing Node Pools](https://www.jfrog.com/confluence/display/JFROG/Choosing+Node+Pools) how to set it up.
 
-For the Dynamic Nodes only on AWs for now, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Configuring+Pipelines#ConfiguringPipelines-dynamic-nodesDynamicNodeIntegrations).
+For the Dynamic Nodes please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Configuring+Pipelines#ConfiguringPipelines-dynamic-nodesDynamicNodeIntegrations).
 
 ## Useful links
 
