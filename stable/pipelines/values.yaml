@@ -16,14 +16,6 @@ imageRegistry: docker.bintray.io
 ## Secret type: kubernetes.io/dockerconfigjson
 imagePullSecrets:
 
-## Build Image Registry to pull images for Pipelines language images
-## You can override it with your private Artifactory registry
-buildImage:
-  registry: docker.bintray.io
-  ## For supporting pulling from private registries
-  ## Secret type: kubernetes.io/dockerconfigjson
-  pullSecret:
-
 ## Existing secret with Pipelines system.yaml
 existingSecret:
 
