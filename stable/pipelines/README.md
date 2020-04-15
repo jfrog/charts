@@ -138,24 +138,6 @@ Be default Pipelines comes with a Build Plane with a static node-pool VMs setup,
 
 For the Dynamic Nodes only on AWs for now, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Configuring+Pipelines#ConfiguringPipelines-dynamic-nodesDynamicNodeIntegrations).
 
-#### Kubernetes native Build Plane
-
-Pipelines also supports an experimental Build Plane with Kubernetes StatefulSet as a static node-pool.
-
-**NOTE:** It uses privileged DinD container.
-
-To enable it create `node-pool.yaml` file and pass it with `-f` when doing `helm install/upgrade`:
-
-```
-buildPlane:
-  ## Build Nodes as Kubernetes StatefulSet
-  ## Experimental feature for static nodes
-  k8s:
-    enabled: true
-    ## Node Count
-    replicaCount: 5  
-```
-
 ## Useful links
 
 - https://www.jfrog.com/confluence/display/JFROG/Pipelines+Quickstart
