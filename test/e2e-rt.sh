@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+readonly REPO_ROOT=${res_charts_repo_public_resourcePath}
 readonly namespace=rt
 readonly HELM="helm3"
 
