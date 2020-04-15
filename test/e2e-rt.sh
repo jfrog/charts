@@ -39,9 +39,9 @@ deploy() {
 }
 
 clean() {
-    ${HELM} delete --namespace ${namespace} artifactory
+    ${HELM} delete --namespace ${namespace} artifactory || true
     sleep 20
-    kubectl delete ns ${namespace} --force --grace-period=0
+    kubectl delete ns ${namespace} --force --grace-period=0 || true
     sleep 10
 }
 
