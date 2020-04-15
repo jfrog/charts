@@ -47,6 +47,7 @@ pipelines:
             - popd
           onSuccess:
             - add_pipeline_variables step_status_${step_name}="success"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting successful!"
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting failed!"
@@ -77,6 +78,7 @@ pipelines:
             - popd
           onSuccess:
             - add_pipeline_variables step_status_${step_name}="success"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting successful!"
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting failed!"
@@ -100,6 +102,7 @@ pipelines:
             - popd
           onSuccess:
             - add_pipeline_variables step_status_${step_name}="success"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install successful!"
           onFailure:
             - add_pipeline_variables step_status_${step_name}="failure"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install failed"
