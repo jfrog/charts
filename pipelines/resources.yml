@@ -1,4 +1,15 @@
 resources:
+  - name: charts_repo_public
+    type: GitRepo
+    configuration:
+      gitProvider: github_public
+      path: jfrog/charts
+      branches:
+        include: master
+      buildOn:
+        commit: false
+        pullRequestCreate: false
+        tagCreate: false
   - name: charts_repo_fork_pr
     type: GitRepo
     configuration:
