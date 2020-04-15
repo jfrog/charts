@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-readonly REPO_ROOT=${res_charts_repo_public_resourcePath}
 readonly namespace=rt
 readonly HELM="helm3"
 
@@ -30,9 +29,8 @@ deploy() {
     echo $RT_LICENSE | base64 --decode -i > "$REPO_ROOT"/artifactory.lic
     kubectl create secret generic artifactory-license -n ${namespace} --from-file="$REPO_ROOT"/artifactory.lic
     echo
-    pwd 
-    ls -alh
-    ${HELM} upgrade --install artifactory --namespace ${namespace} "$REPO_ROOT"/stable/artifactory/ \
+    ${HELM} dep up stable/artifactory/
+    ${HELM} upgrade --install artifactory --namespace ${namespace} stable/artifactory/ \
         --set nginx.enabled=false,postgresql.postgresqlPassword=password \
         --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=artifactory.lic \
         --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE,artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF

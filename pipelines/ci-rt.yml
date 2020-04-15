@@ -17,6 +17,7 @@ pipelines:
             GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
             GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
             RT_LICENSE: ${int_rt_license_key}
+            REPO_ROOT: ${res_charts_repo_public_resourcePath}
         execution:
           onStart:
             - cd ${res_charts_repo_public_resourcePath} && git checkout master
