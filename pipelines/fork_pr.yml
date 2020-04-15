@@ -91,16 +91,11 @@ pipelines:
             - name: lint_charts
         execution:
           onStart:
+            - if [[ "${do_not_install}" == "true" ]]; then echo "No chart changes detected!" && exit 0; fi;
             - pushd ${res_charts_repo_fork_pr_resourcePath}
           onExecute:
-            - |
-              if [[ "${do_not_install}" == "true"]]; then
-                  echo "No chart changes detected!"
-                  exit 0
-              else
-                  echo "Run chart install!"
-                  ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh
-              fi
+            - echo "Run chart install!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh
           onComplete:
             - popd
           onSuccess:
