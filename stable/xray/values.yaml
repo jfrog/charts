@@ -51,17 +51,6 @@ xray:
         username: "{{ .Values.postgresql.postgresqlUsername }}"
         url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
       {{- end }}
-      rabbitMq:
-      {{ if index .Values "rabbitmq" "enabled" }}
-        username: "{{ .Values.rabbitmq.rabbitmq.username }}"
-        password: "{{ .Values.rabbitmq.rabbitmq.password }}"
-        url: "amqp://{{ .Release.Name }}-rabbitmq:{{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }}/"
-      {{- end }}
-      {{ if index .Values "rabbitmq-ha" "enabled" }}
-        username: "{{ index .Values "rabbitmq-ha" "rabbitmqUsername" }}"
-        password: "{{ index .Values "rabbitmq-ha" "rabbitmqPassword" }}"
-        url: "amqp://{{ .Release.Name }}-rabbitmq-ha:{{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }}/"
-      {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
         url: "{{ .Values.xray.mongoUrl }}"
