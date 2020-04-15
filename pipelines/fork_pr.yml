@@ -8,7 +8,7 @@ pipelines:
           TEST_IMAGE: gcr.io/kubernetes-charts-ci/test-image
           TEST_IMAGE_TAG: v3.4.1
           CHARTS_REPO: https://github.com/rimusz/jfrog-charts
-          KUBEVAL_VERSION: 0.14.0
+          KUBEVAL_VERSION: 0.15.0
           HELM_VERSION: v2.16.5
           CHART_TESTING_ARGS: ""
           GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
@@ -97,7 +97,7 @@ pipelines:
             - pushd ${res_charts_repo_fork_pr_resourcePath}
           onExecute:
             - echo "Run charts install!"
-            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh || echo "Failed!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh
             - |
               if cat tmp/install.log | grep "Error installing charts" > /dev/null; then
                   echo "Charts install failed!"
