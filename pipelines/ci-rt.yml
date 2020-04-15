@@ -19,7 +19,7 @@ pipelines:
             RT_LICENSE: ${int_rt_license_key}
         execution:
           onStart:
-            - pushd ${res_charts_repo_fork_pr_resourcePath}
+            - pushd ${res_charts_repo_public_resourcePath}
           onExecute:
             - |
               echo "Install Helm v${HELM_VERSION} cli"
@@ -27,7 +27,7 @@ pipelines:
               tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
               cp /usr/local/bin/helm /usr/local/bin/helm3
             - echo "Run CI Artfactory install!"
-            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-rt.sh
+            - ${res_charts_repo_public_resourcePath}/test/e2e-rt.sh
           onComplete:
             - popd
           onSuccess:
