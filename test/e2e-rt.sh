@@ -32,7 +32,7 @@ deploy() {
     echo
     pwd 
     ls -alh
-    ${HELM} upgrade --install artifactory --namespace ${namespace} stable/artifactory/ \
+    ${HELM} upgrade --install artifactory --namespace ${namespace} "$REPO_ROOT"/stable/artifactory/ \
         --set nginx.enabled=false,postgresql.postgresqlPassword=password \
         --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=artifactory.lic \
         --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE,artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
