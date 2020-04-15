@@ -7,6 +7,9 @@ readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 readonly namespace=rt
 readonly HELM="helm3"
 
+# shellcheck source=test/common.sh
+source "${REPO_ROOT}/test/common.sh"
+
 connect_to_cluster() {
     # shellcheck disable=SC2086
     echo $GCLOUD_SERVICE_KEY_CHARTS_CI | base64 --decode -i > $REPO_ROOT/gcloud-service-key.json
@@ -46,8 +49,12 @@ clean() {
 }
 
 main() {
+    install_helm3_ci
     connect_to_cluster
+    if [[ "$(helm list -n rt -f artifactory | grep -c artifactory)" -eq 1 ]]; then
+    echo "Run clean up"
     clean
+    fi
     deploy
 }
 

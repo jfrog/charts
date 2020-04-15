@@ -65,6 +65,13 @@ install_helm() {
     fi
 }
 
+install_helm3_ci() {
+    echo "Install Helm v${HELM_VERSION} cli"
+    curl -s -O https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
+    tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
+    cp /usr/local/bin/helm /usr/local/bin/helm3
+}
+
 install_kubeval() {
     echo 'Installing kubeval...'
 
