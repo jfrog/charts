@@ -19,7 +19,7 @@ connect_to_cluster() {
     # shellcheck disable=SC1090,SC2086
     source $REPO_ROOT/gke_cluster
 
-    gcloud auth activate-service-account --key-file "$REPO_ROOT"/gcloud-service-key.json
+    gcloud auth activate-service-account --key-file "$REPO_ROOT"/gcloud-service-key.json >/dev/null 2>&1
     gcloud container clusters get-credentials "$CLUSTER_NAME" --project "$PROJECT_NAME" --zone "$CLOUDSDK_COMPUTE_ZONE"
 }
 
