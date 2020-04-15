@@ -33,7 +33,7 @@ deploy() {
     echo $RT_LICENSE | base64 --decode -i > "$REPO_ROOT"/artifactory.lic
     kubectl create secret generic artifactory-license -n ${namespace} --from-file="$REPO_ROOT"/artifactory.lic
     echo
-    ${HELM} upgrade --install artifactory --namespace ${namespace} "${REPO_ROOT}"/stable/artifactory/ \
+    ${HELM} upgrade --install artifactory --namespace ${namespace} stable/artifactory/ \
         --set nginx.enabled=false,postgresql.postgresqlPassword=password \
         --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=artifactory.lic \
         --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE,artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
