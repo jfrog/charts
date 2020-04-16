@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.2] - Apr 16, 2020
+* Custom volume mounts in migration init container.
+
 ## [2.4.1] - Apr 16, 2020
 * Fix broken support for gcpServiceAccount for googleStorage
 
