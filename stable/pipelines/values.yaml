@@ -998,6 +998,10 @@ filebeat:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
 
+##
+rbac:
+  create: true
+
 ## The Build Plane is where the actual builds will run
 buildPlane:
   ## Dynamic Build Plane VMs
@@ -1020,42 +1024,3 @@ buildPlane:
         ##
         accessKey: ""
         secretKey: ""
-
-  ## Build Nodes as Kubernetes StatefulSet
-  ## Experimental feature for static nodes
-  ## NOTE: It uses privileged DinD container
-  k8s:
-    enabled: false
-
-    ## Pipelines Kubernetes Node Pool name and size
-    pool:
-      name: k8s_pool
-      size: 50
-
-    ## Node Count
-    replicaCount: 5
-
-    updateStrategy: RollingUpdate
-
-    image:
-      repository: jfrog/pipelines-k8s-node
-      # tag:
-      pullPolicy: IfNotPresent
-
-    resources: {}
-
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
-
-    dind:
-      image:
-        repository: docker
-        tag: 18.09.9-dind
-        pullPolicy: IfNotPresent
-
-      resources: {}
-
-##
-rbac:
-  create: true
