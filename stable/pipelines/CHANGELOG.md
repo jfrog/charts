@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.1.1] - April 16, 2020
+* Hardcode docker.bintray.io for build images
+
 ## [1.1.0] - April 15, 2020
 * Pipelines v1.4.2
 * Remove experimental k8s build plane support
