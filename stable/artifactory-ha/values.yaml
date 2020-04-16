@@ -924,9 +924,22 @@ artifactory:
       ## When using GCP buckets as your binary store (Available with enterprise license only)
       gcpServiceAccount:
         enabled: false
-        ## Use either an existing secret prepared in advance or put the config in the values
-        customSecretName:
-        config:
+        ## Use either an existing secret prepared in advance or put the config (replace the content) in the values
+        ## ref: https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/README.md#google-storage
+        # customSecretName:
+        # config: |
+        #   {
+        #      "type": "service_account",
+        #      "project_id": "<project_id>",
+        #      "private_key_id": "?????",
+        #      "private_key": "-----BEGIN PRIVATE KEY-----\n????????==\n-----END PRIVATE KEY-----\n",
+        #      "client_email": "???@j<project_id>.iam.gserviceaccount.com",
+        #      "client_id": "???????",
+        #      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        #      "token_uri": "https://oauth2.googleapis.com/token",
+        #      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        #      "client_x509_cert_url": "https://www.googleapis.com/robot/v1....."
+        #   }
       endpoint: storage.googleapis.com
       httpsOnly: false
       # Set a unique bucket name
