@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [2.4.1] - Apr 16, 2020
-* Updated Artifactory version to 7.4.1
+* Fix broken support for gcpServiceAccount for googleStorage
 
 ## [2.4.0] - Apr 14, 2020
 * Updated Artifactory version to 7.4.1
