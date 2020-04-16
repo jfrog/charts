@@ -260,6 +260,9 @@ spec:
           mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
     {{- end }}
   {{- end }}
+  {{- if .Values.artifactory.customVolumeMounts }}
+{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
+  {{- end }}
   {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
