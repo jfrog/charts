@@ -1,6 +1,12 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.1.2] - April 20, 2020
+* Bump router version to `1.3.0`
+* Fix broken support if `redis.password` not explicitly set
+* Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
+
+
 ## [5.1.1] - April 10, 2020
 * Update README with helm v3 commands 
 

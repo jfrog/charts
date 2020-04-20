@@ -146,6 +146,13 @@ spec:
           {{- end }}
             /opt/jfrog/distribution/app/bin/wrapper.sh;
         env:
+        - name: JF_SHARED_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "distribution.fullname" . }}-redis-secret
+              key: password
+        - name: JF_SHARED_REDIS_CONNECTIONSTRING
+          value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
         {{- range .Values.distribution.extraEnvironmentVariables }}
         - name: {{ .name }}
           value: '{{ tpl .value $ }}'
@@ -186,6 +193,13 @@ spec:
           {{- end }}
             /opt/jfrog/distribution/app/bin/wrapper.sh;
         env:
+        - name: JF_SHARED_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "distribution.fullname" . }}-redis-secret
+              key: password
+        - name: JF_SHARED_REDIS_CONNECTIONSTRING
+          value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
         {{- range .Values.distributor.extraEnvironmentVariables }}
         - name: {{ .name }}
           value: '{{ tpl .value $ }}'

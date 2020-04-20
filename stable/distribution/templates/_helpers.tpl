@@ -52,19 +52,6 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
-Set the final Redis connection URL
-*/}}
-{{- define "redis.url" -}}
-{{- if .Values.global.redisUrl -}}
-{{- .Values.global.redisUrl -}}
-{{- else -}}
-{{- $redisPassword := required "A valid .Values.redis.password entry required!" .Values.redis.password -}}
-{{- $redisPort := .Values.redis.master.port -}}
-{{- printf "%s://:%s@%s-%s:%g" "redis" $redisPassword .Release.Name "redis-master" $redisPort | b64enc | quote -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Create the name of the service account to use
 */}}
 {{- define "distribution.serviceAccountName" -}}
@@ -86,23 +73,7 @@ Create chart name and version as used by the chart label.
 Expand the name of the chart.
 */}}
 {{- define "redis.name" -}}
-{{- default .Chart.Name .Values.redis.name .Values.redisNameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.redis.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+    
 
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "redis.fullname" -}}
-{{- if .Values.redis.fullnameOverride -}}
-{{- .Values.redis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.redis.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s-%s" .Release.Name $name "redis" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
