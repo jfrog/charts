@@ -259,6 +259,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `postgresql.affinity`                           | PostgreSQL node affinity                                               | `{}`                                                               |
 | `postgresql.tolerations`                        | PostgreSQL node tolerations                                            | `[]`                                                               |
 | `redis.password`                                | Redis password                                                         | ` `                                                                |
+| `redis.existingSecret`                          | Redis existingSecret for password                                      | ` `                                                                |
 | `redis.port`                                    | Redis Port                                                             | `6379`                                                             |
 | `redis.persistence.enabled`                     | Redis use a PVC to persist data                                        | `true`                                                             |
 | `redis.persistence.existingClaim`               | Redis use an existing PVC to persist data                              | `nil`                                                              |
