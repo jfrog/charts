@@ -132,6 +132,7 @@ redis:
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
+  ## Alternatively, you can use a pre-existing secret with a key called redis-password by specifying existingSecret
   # existingSecret: <name-of-existing-secret>
   uid: 1001
   serviceAccount:
