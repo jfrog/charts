@@ -78,7 +78,7 @@ REDIS_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-redis-secret -o j
 helm upgrade <myrelease> jfrog/distribution --set redis.password=${REDIS_PASSWORD}
 ```
 
-Alternatively, you can create a secret containing the redis password manually and pass it to the template at install/upgrade time.
+Alternatively, you can create a secret  which is required to have a key with the name `redis-password` and pass it to the template at install/upgrade time.
 ```bash
 # Create a secret containing the redis password. The key in the secret must be named redis-password
 kubectl create secret generic my-secret --from-literal=redis-password=${REDIS_PASSWORD}
