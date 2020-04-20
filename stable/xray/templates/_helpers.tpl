@@ -169,12 +169,12 @@ Create rabbitmq username
 
 
 {{/*
-Create rabbitmq release name
+Create rabbitmq password secret name
 */}}
-{{- define "rabbitmq.release" -}}
+{{- define "rabbitmq.passwordSecretName" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- printf "%s-%s" .Release.Name "rabbitmq" -}}
+{{- .Values.rabbitmq.rabbitmq.existingPasswordSecret | default (printf "%s-%s" .Release.Name "rabbitmq") -}}
 {{- else if index .Values "rabbitmq-ha" "enabled" -}}
-{{- printf "%s-%s" .Release.Name "rabbitmq-ha" -}}
+{{- index .Values "rabbitmq-ha" "existingSecret" | default (printf "%s-%s" .Release.Name "rabbitmq-ha") -}}
 {{- end -}} 
 {{- end -}}

@@ -325,6 +325,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq.rbacEnabled`                         | If true, create & use RBAC resources         | `true`               |
 | `rabbitmq.rabbitmq.username`                    | RabbitMQ application username                | `guest`               |
 | `rabbitmq.rabbitmq.password`                    | RabbitMQ application password                |                |
+| `rabbitmq.rabbitmq.existingPasswordSecret`      | RabbitMQ existingPasswordSecret               |                |
 | `rabbitmq.rabbitmq.erlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
 | `rabbitmq.service.nodePort`                    | RabbitMQ node port                           | `5672`               |
 | `rabbitmq.persistence.enabled`            | If `true`, persistent volume claims are created | `true`            |
@@ -334,6 +335,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |
 | `rabbitmq-ha.rabbitmqPassword`                 | RabbitMQ application password                | ` `                  |
+| `rabbitmq-ha.existingSecret`                   | RabbitMQ existingSecret                      | ` `                  |
 | `rabbitmq-ha.rabbitmqErlangCookie`             | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
 | `rabbitmq-ha.rabbitmqMemoryHighWatermark`      | RabbitMQ Memory high watermark               | `500MB`              |
 | `rabbitmq-ha.persistentVolume.enabled`         | If `true`, persistent volume claims are created | `true`            |

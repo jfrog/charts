@@ -203,7 +203,7 @@ spec:
         - name: JF_SHARED_RABBITMQ_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "rabbitmq.release" .}}
+              name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
         ports:
         - containerPort: {{ .Values.server.internalPort }}
