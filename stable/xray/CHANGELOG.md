@@ -1,6 +1,11 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.3] - Apr 15, 2020
+* Support existingsecrets for rabbitmq/rabbitmq-ha passwords
+* Bump router version to `1.3.0`
+* Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
+
 ## [3.2.2] - Apr 15, 2020
 * Fix broken rabbitmq support when `rabbitmq.enabled=true`
 
