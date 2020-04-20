@@ -149,8 +149,8 @@ spec:
         - name: JF_SHARED_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-redis-secret
-              key: password
+              name: "{{ .Values.redis.existingSecret | default (include "distribution.fullname" .) }}"
+              key: redis-password
         - name: JF_SHARED_REDIS_CONNECTIONSTRING
           value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
         {{- range .Values.distribution.extraEnvironmentVariables }}
@@ -196,8 +196,8 @@ spec:
         - name: JF_SHARED_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-redis-secret
-              key: password
+              name: "{{ .Values.redis.existingSecret | default (include "distribution.fullname" .) }}"
+              key: redis-password
         - name: JF_SHARED_REDIS_CONNECTIONSTRING
           value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
         {{- range .Values.distributor.extraEnvironmentVariables }}
@@ -246,8 +246,8 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "distribution.fullname" . }}-redis-secret
-              key: password
+              name: "{{ .Values.redis.existingSecret | default (include "distribution.fullname" .) }}"
+              key: redis-password
         - name: REDIS_PORT
           value: {{ .Values.redis.port | quote }}
         - name: REDIS_DISABLE_COMMANDS
