@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.4] - Apr 20, 2020
+* Adding tpl to xray-statefulset for JF_SHARED_PASSWORD
+
 ## [3.2.3] - Apr 15, 2020
 * Support existingsecrets for rabbitmq/rabbitmq-ha passwords
 * Bump router version to `1.3.0`
