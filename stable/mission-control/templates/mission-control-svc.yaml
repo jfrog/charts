@@ -24,6 +24,7 @@ spec:
     port: {{ .Values.elasticsearch.transportPort }}
     targetPort: estransport
 {{- end }}
+  publishNotReadyAddresses: true
   selector:
     app: {{ template "mission-control.name" . }}
     component: {{ .Values.missionControl.name }}

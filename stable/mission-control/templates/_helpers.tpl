@@ -46,6 +46,18 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a list of elasticsearch master eligible nodes.
+This will create one entry per replica.
+*/}}
+{{- define "elasticsearch.endpoints" -}}
+{{- $replicas := int (toString (.Values.replicaCount)) }}
+{{- $releaseName := printf "%s" (include "mission-control.fullname" .) }}
+  {{- range $i, $e := untilStep 0 $replicas 1 -}}
+{{ $releaseName }}-{{ $i }},
+  {{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.

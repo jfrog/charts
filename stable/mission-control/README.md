@@ -27,6 +27,12 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Install Chart
 
+**NOTE:** Check [CHANGELOG.md] for version specific install notes.
+
+#### Special Notes
+
+Mission Control version 4.3.2 is compatible with Artifactory 7.4.1 and above. Refer Mission Control release notes for more details - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.3.2.
+
 #### Artifactory Connection Details
 In order to connect Mission Control to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Mission Control installation. Here's how you do that:
 
@@ -114,7 +120,7 @@ Once you have a new chart version, you can update your deployment with
 helm upgrade mission-control jfrog/mission-control
 ```
 
-**NOTE:** Check for any version specific upgrade nodes in [CHANGELOG.md]
+**NOTE:** Check for any version specific upgrade notes in [CHANGELOG.md]
 
 ### Non compatible upgrades
 In cases where a new version is not compatible with existing deployed version (look in CHANGELOG.md) you should
@@ -337,7 +343,6 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.resources.limits.memory`      | Elasticsearch memory limit                      |                                       |
 | `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
-| `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1 | `1` |
 | `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
 | `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
