@@ -174,8 +174,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -259,8 +259,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -348,8 +348,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -437,8 +437,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
