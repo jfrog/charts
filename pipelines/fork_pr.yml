@@ -65,7 +65,7 @@ pipelines:
             - echo "Run charts linting!"
             - ${res_charts_repo_fork_pr_resourcePath}/test/lint-charts.sh || echo "Failed!"
             - |
-              if cat tmp/lint.log | grep "Error linting charts" > /dev/null; then
+              if cat tmp/lint.log | grep -e "Error linting charts" -e "No CHANGELOG entry for chart" > /dev/null; then
                   echo "Charts linting failed!"
                   exit 1
               fi
