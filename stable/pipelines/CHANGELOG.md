@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.1.2] - April 23, 2020
+* Pipelines v1.4.6
+* Removes subnetId and nat fields from buildplane config which are not supported from 1.4.x
+
 ## [1.1.1] - April 16, 2020
 * Hardcode docker.bintray.io for build images
 

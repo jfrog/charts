@@ -13,10 +13,8 @@ data:
   setAsDefault: '"true"'
   instanceType: {{ .Values.buildPlane.dynamic.provider.aws.instanceType | quote }}
   securityGroupId: {{ .Values.buildPlane.dynamic.provider.aws.securityGroupId | quote }}
-  privateSubnetId: {{ .Values.buildPlane.dynamic.provider.aws.privateSubnetId | quote }}
+  subnetId: {{ .Values.buildPlane.dynamic.provider.aws.subnetId | quote }}
   keyPairName: {{ .Values.buildPlane.dynamic.provider.aws.keyPairName | quote }}
   vpcId: {{ .Values.buildPlane.dynamic.provider.aws.vpcId | quote }}
-  publicNatIp: {{ .Values.buildPlane.dynamic.provider.aws.publicNatIp | quote }}
-  publicSubnetId: {{ .Values.buildPlane.dynamic.provider.aws.publicSubnetId | quote }}
   region: {{ .Values.buildPlane.dynamic.provider.aws.region | quote }}
 {{- end }}
