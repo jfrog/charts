@@ -120,7 +120,7 @@ spec:
           securityContext:
             runAsUser: 0
           resources:
-            {{ toYaml .Values.pipelines.filebeat.resources | nindent 12 }}
+            {{ toYaml .Values.filebeat.resources | nindent 12 }}
           volumeMounts:
           - name: filebeat-config
             mountPath: /usr/share/filebeat/filebeat.yml

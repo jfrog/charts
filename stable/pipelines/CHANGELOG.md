@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.1.3] - April 23, 2020
+* Fix filebeat resources
+
 ## [1.1.2] - April 23, 2020
 * Pipelines v1.4.6
 * Removes subnetId and nat fields from buildplane config which are not supported from 1.4.x
