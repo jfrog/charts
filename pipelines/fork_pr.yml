@@ -20,7 +20,7 @@ pipelines:
           inputResources:
             - name: charts_repo_fork_pr
           integrations:
-            - name: chartsRT
+            - name: charts_rt
         execution:
           onExecute:
             - |
@@ -46,14 +46,16 @@ pipelines:
             - echo "Run shell scripts linting!"
             - mkdir -p tmp
             - ${res_charts_repo_fork_pr_resourcePath}/test/lint-scripts.sh 2>&1 | tee tmp/lint-scripts.log
-            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/lint-scripts.log chartlogs/${run_number}/lint-scripts.log --server-id chartstesting --url ${int_chartsRT_url} --user ${int_chartsRT_user} --password ${int_chartsRT_apikey}
+            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/lint-scripts.log chartlogs/${run_number}/lint-scripts.log --server-id chartstesting --url ${int_charts_rt_url} --user ${int_charts_rt_user} --password ${int_charts_rt_apikey}
           onComplete:
             - popd
           onSuccess:
-            - add_pipeline_variables step_status_${step_name}="success"
+            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting successful. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           onFailure:
-            - add_pipeline_variables step_status_${step_name}="failure"
+            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting failed!. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
       - name: lint_charts
         type: Bash
@@ -63,7 +65,7 @@ pipelines:
           inputSteps:
             - name: lint_scripts
           integrations:
-            - name: chartsRT
+            - name: charts_rt
         execution:
           onStart:
             - pushd ${res_charts_repo_fork_pr_resourcePath}
@@ -77,17 +79,19 @@ pipelines:
               fi
             - |
               if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
-                  echo "No chart changes detected!"
-                  add_run_variables do_not_install=true
+                echo "No chart changes detected!"
+                add_run_variables do_not_install=true
               fi
-            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/lint.log chartlogs/${run_number}/lint.log --server-id chartstesting --url ${int_chartsRT_url} --user ${int_chartsRT_user} --password ${int_chartsRT_apikey}
+            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/lint.log chartlogs/${run_number}/lint.log --server-id chartstesting --url ${int_charts_rt_url} --user ${int_charts_rt_user} --password ${int_charts_rt_apikey}
           onComplete:
             - popd
           onSuccess:
-            - add_pipeline_variables step_status_${step_name}="success"
+            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting successful. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           onFailure:
-            - add_pipeline_variables step_status_${step_name}="failure"
+            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting failed!. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
       - name: install_charts
         type: Bash
@@ -96,7 +100,7 @@ pipelines:
             - name: charts_repo_fork_pr
           integrations:
             - name: charts_testing_cluster
-            - name: chartsRT
+            - name: charts_rt
           inputSteps:
             - name: lint_charts
         execution:
@@ -111,12 +115,14 @@ pipelines:
                   echo "Charts install failed!"
                   exit 1
               fi
-            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/install.log chartlogs/${run_number}/install.log --server-id chartstesting --url ${int_chartsRT_url} --user ${int_chartsRT_user} --password ${int_chartsRT_apikey}
+            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/install.log chartlogs/${run_number}/install.log --server-id chartstesting --url ${int_charts_rt_url} --user ${int_charts_rt_user} --password ${int_charts_rt_apikey}
           onComplete:
             - popd
           onSuccess:
-            - add_pipeline_variables step_status_${step_name}="success"
+            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install successful. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           onFailure:
-            - add_pipeline_variables step_status_${step_name}="failure"
+            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install failed!. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
