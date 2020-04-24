@@ -1,6 +1,10 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.1.3] - April 24, 2020
+* Add support to db existing secrets
+* Fix broken support if `postgresql.postgresqlPassword` not explicitly set
+
 ## [5.1.2] - April 20, 2020
 * Bump router version to `1.3.0`
 * Fix broken support if `redis.password` not explicitly set

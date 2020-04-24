@@ -18,7 +18,7 @@ This chart does the following:
 - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory Enterprise Plus
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
+- [Helm](https://helm.sh/) v2 or v3 installed
 
 ## Installing the Chart
 
@@ -298,12 +298,15 @@ The following table lists the configurable parameters of the distribution chart 
 | `database.type`                                 | External database type (`postgresql`)                                  | `postgresql`                                      |
 | `database.driver`                               | External database driver                                               | 
 `org.postgresql.Driver`                           |
-| `database.url`                                  | External database url                                                  |
-` `                                               |
-| `database.user`                                 | External database user                                                 |
-` `                                               |
-| `database.password`                             | External database password                                             |
-` `                                               |
+| `database.url`                                  | External database connection URL                  |                                         |
+| `database.user`                                 | External database username                         |                                         |
+| `database.password`                             | External database password                         |                                         |
+| `database.secrets.user.name`                    | External database username `Secret` name           |                                         |
+| `database.secrets.user.key`                     | External database username `Secret` key            |                                         |
+| `database.secrets.password.name`                | External database password `Secret` name           |                                         |
+| `database.secrets.password.key`                 | External database password `Secret` key            |                                         |
+| `database.secrets.url.name`                     | External database url `Secret` name                |                                         |
+| `database.secrets.url.key`                      | External database url `Secret` key                 |                                         |
 | `distribution.joinKey`                          | Distribution Join Key . Mandatory                                      | ` `                                                                |
 | `distribution.serviceId`                        | Distribution service ID                                                | ` `                                                                |
 | `distribution.env.artifactoryUrl`               | Distribution Environment Artifactory URL                               | ` `                                                                |
