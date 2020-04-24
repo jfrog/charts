@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.2] - Apr 24, 2020
+* Bumping the version for a test
+
 ## [9.4.1] - Apr 16, 2020
 * Custom volumes in migration init container.
 
