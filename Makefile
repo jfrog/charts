@@ -22,7 +22,7 @@ GCLOUD_CMD := $(shell command -v gcloud 2> /dev/null)
 
 .PHONY: check-cli
 check-cli: check-helm check-kubectl check-kubeval
-
+ 
 .PHONY: check-helm
 check-helm:
 ifndef HELM_CMD
