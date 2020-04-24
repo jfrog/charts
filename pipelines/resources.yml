@@ -5,7 +5,7 @@ resources:
       gitProvider: github_public
       path: jfrog/charts
       branches:
-        include: master
+        include: ^{{gitBranch}}$
       buildOn:
         commit: false
         pullRequestCreate: false

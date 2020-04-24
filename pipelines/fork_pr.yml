@@ -17,6 +17,8 @@ pipelines:
       - name: is_pr_from_fork
         type: Bash
         configuration:
+          environmentVariables:
+            step_url: "https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           inputResources:
             - name: charts_repo_fork_pr
           integrations:
@@ -55,11 +57,14 @@ pipelines:
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting successful. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           onFailure:
             - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - add_pipeline_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting failed!. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
       - name: lint_charts
         type: Bash
         configuration:
+          environmentVariables:
+            step_url: "https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           inputResources:
             - name: charts_repo_fork_pr
           inputSteps:
@@ -87,6 +92,7 @@ pipelines:
             - popd
           onSuccess:
             - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - add_pipeline_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting successful. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           onFailure:
@@ -96,6 +102,8 @@ pipelines:
       - name: install_charts
         type: Bash
         configuration:
+          environmentVariables:
+            step_url: "https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           inputResources:
             - name: charts_repo_fork_pr
           integrations:
@@ -119,7 +127,8 @@ pipelines:
           onComplete:
             - popd
           onSuccess:
-            - add_run_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - add_run_variables step_url="https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
+            - add_pipeline_variables step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - export step_url=" https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
             - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install successful. Download logs at https://chartstesting.jfrog.io/artifactory/chartlogs/${run_number}"
           onFailure:
