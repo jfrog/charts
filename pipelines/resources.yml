@@ -8,7 +8,7 @@ resources:
         include: ^{{gitBranch}}$
       buildOn:
         commit: false
-        pullRequestCreate: false
+        pullRequestCreate: true
         tagCreate: false
   - name: charts_repo_fork_pr
     type: GitRepo
