@@ -1,0 +1,131 @@
+pipelines:
+  - name: charts_fork_pr
+    configuration:
+      environmentVariables:
+        readOnly:
+          CHART_TESTING_IMAGE: quay.io/helmpack/chart-testing
+          CHART_TESTING_TAG: v2.4.1
+          TEST_IMAGE: gcr.io/kubernetes-charts-ci/test-image
+          TEST_IMAGE_TAG: v3.4.1
+          CHARTS_REPO: https://github.com/jfrog/charts
+          KUBEVAL_VERSION: 0.15.0
+          HELM_VERSION: v2.16.5
+          CHART_TESTING_ARGS: ""
+          GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
+          GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
+    steps:
+      - name: is_pr_from_fork
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_fork_pr
+        execution:
+          onExecute:
+            - |
+              if $res_charts_repo_fork_pr_isPullRequest; then
+                head=$(echo "$res_charts_repo_fork_pr_shaData" | jq -r .pullRequestRepoFullName)
+                base="$res_charts_repo_fork_pr_gitRepoFullName"
+                if [ "$head" == "$base" ]; then
+                  echo "PR is not from the fork, skipping the pipeline!"
+                  exit 1
+                fi
+              fi
+      - name: lint_scripts
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_fork_pr
+          inputSteps:
+            - name: is_pr_from_fork
+        execution:
+          onStart:
+            - pushd ${res_charts_repo_fork_pr_resourcePath}
+          onExecute:
+            - echo "Run shell scripts linting!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/lint-scripts.sh
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting successful."
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Scripts linting failed!"
+      - name: lint_charts
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_fork_pr
+          inputSteps:
+            - name: lint_scripts
+        execution:
+          onStart:
+            - pushd ${res_charts_repo_fork_pr_resourcePath}
+          onExecute:
+            - echo "Run charts linting!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/lint-charts.sh || echo "Failed!"
+            - |
+              if cat tmp/lint.log | grep -e "Error linting charts" -e "No CHANGELOG entry for chart" > /dev/null; then
+                  echo "Charts linting failed!"
+                  exit 1
+              fi
+            - |
+              if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
+                  echo "No chart changes detected!"
+                  add_run_variables do_not_install=true
+              fi
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting successful."
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts linting failed!"
+      - name: install_charts
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_fork_pr
+          integrations:
+            - name: charts_testing_cluster
+          inputSteps:
+            - name: lint_charts
+        execution:
+          onStart:
+            - if [[ "${do_not_install}" == "true" ]]; then echo "No chart changes detected!" && exit 0; fi;
+            - pushd ${res_charts_repo_fork_pr_resourcePath}
+          onExecute:
+            - echo "Run charts install!"
+            - ${res_charts_repo_fork_pr_resourcePath}/test/e2e-gke.sh
+            - |
+              if cat tmp/install.log | grep "Error installing charts" > /dev/null; then
+                  echo "Charts install failed!"
+                  exit 1
+              fi
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install successful."
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"
+            - update_commit_status charts_repo_fork_pr --context "step_status_${step_name}" --message "Charts install failed!"
+      - name: status_update
+        type: Bash
+        configuration:
+          inputSteps:
+            - name: lint_charts
+            - name: install_charts
+          inputResources:
+            - name: charts_repo_fork_pr
+        execution:
+          onExecute:
+            - |
+              for var in "${!step_status_@}"; do
+                  stepStatusVarName="${var}"
+                  statusValue="${!var}"
+
+                  echo "Updating status: $stepStatusVarName - $statusValue to github"
+                  update_commit_status charts_repo_fork_pr --status "$statusValue"  --context "$stepStatusVarName" --message "$stepStatusVarName"
+              done

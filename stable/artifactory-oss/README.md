@@ -4,7 +4,7 @@ JFrog Artifactory OSS is a free Artifactory edition to host Generic repositories
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:
@@ -25,7 +25,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `artifactory-oss`:
 ```bash
-helm install --name artifactory-oss --set postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-oss
+helm upgrade --install artifactory-oss --set postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-oss jfrog/artifactory-oss
 ```
 
 ### Accessing Artifactory OSS
@@ -38,9 +38,16 @@ helm upgrade artifactory-oss jfrog/artifactory-oss
 ```
 
 ### Deleting Artifactory OSS
+
+On helm v2:
 ```bash
 helm delete --purge artifactory-oss
 ```
+
+On helm v3:
+```bash                                                                                                                                                                 
+helm delete artifactory-oss --namespace artifactory-oss                                                                                                                                     
+``` 
 This will delete your Artifactory OSS deployment.<br>
 **NOTE:** You might have left behind persistent volumes. You should explicitly delete them with
 ```bash
@@ -77,12 +84,12 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
 ```bash
-helm install --name artifactory \
+helm upgrade --install artifactory-oss \
   --set artifactory.nginx.enabled=false \
   --set artifactory.ingress.enabled=true \
   --set artifactory.ingress.hosts[0]="artifactory.company.com" \
   --set artifactory.artifactory.service.type=NodePort \
-  jfrog/artifactory-oss
+  --namespace artifactory-oss jfrog/artifactory-oss
 ```
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:

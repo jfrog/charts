@@ -1,6 +1,20 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.1.3] - April 23, 2020
+* Fix filebeat resources
+
+## [1.1.2] - April 23, 2020
+* Pipelines v1.4.6
+* Removes subnetId and nat fields from buildplane config which are not supported from 1.4.x
+
+## [1.1.1] - April 16, 2020
+* Hardcode docker.bintray.io for build images
+
+## [1.1.0] - April 15, 2020
+* Pipelines v1.4.2
+* Remove experimental k8s build plane support
+
 ## [1.0.36] - April 9, 2020
 * Bump Redis chart to 10.6.3
 * Bump RabbitMQ chart to 6.25.0

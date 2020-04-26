@@ -16,14 +16,6 @@ imageRegistry: docker.bintray.io
 ## Secret type: kubernetes.io/dockerconfigjson
 imagePullSecrets:
 
-## Build Image Registry to pull images for Pipelines language images
-## You can override it with your private Artifactory registry
-buildImage:
-  registry: docker.bintray.io
-  ## For supporting pulling from private registries
-  ## Secret type: kubernetes.io/dockerconfigjson
-  pullSecret:
-
 ## Existing secret with Pipelines system.yaml
 existingSecret:
 
@@ -631,76 +623,132 @@ pipelines:
         - architecture: x86_64
           os: Ubuntu_16.04
           language: node
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u16node
           isDefault: true
           defaultVersion: 10.18.0
         - architecture: x86_64
           os: Ubuntu_16.04
           language: java
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u16java
           defaultVersion: 13
         - architecture: x86_64
           os: Ubuntu_16.04
           language: cpp
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u16cpp
           defaultVersion: 9.0.0
         - architecture: x86_64
           os: Ubuntu_16.04
           language: go
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u16go
           defaultVersion: 1.12.14
         - architecture: x86_64
           os: Ubuntu_18.04
           language: node
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u18node
           isDefault: true
           defaultVersion: 10.18.0
         - architecture: x86_64
           os: Ubuntu_18.04
           language: java
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u18java
           defaultVersion: 13
         - architecture: x86_64
           os: Ubuntu_18.04
           language: cpp
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u18cpp
           defaultVersion: 9.0.0
         - architecture: x86_64
           os: Ubuntu_18.04
           language: go
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-u18go
           defaultVersion: 1.12.14
         - architecture: x86_64
           os: CentOS_7
           language: node
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-c7node
           isDefault: true
           defaultVersion: 10.18.0
         - architecture: x86_64
           os: CentOS_7
           language: java
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-c7java
           defaultVersion: 11
         - architecture: x86_64
           os: CentOS_7
           language: cpp
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-c7cpp
-          defaultVersion: 8.3.1
+          defaultVersion: 3.4.2
         - architecture: x86_64
           os: CentOS_7
           language: go
-          registryUrl: {{ .Values.buildImage.registry }}
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-c7go
+          defaultVersion: 1.12.14
+        - architecture: x86_64
+          os: WindowsServer_2019
+          language: node
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-w19node
+          defaultVersion: 10.18.0
+        - architecture: x86_64
+          os: WindowsServer_2019
+          language: java
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-w19java
+          defaultVersion: 11
+        - architecture: x86_64
+          os: WindowsServer_2019
+          language: cpp
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-w19cpp
+          defaultVersion: 9.0.0
+        - architecture: x86_64
+          os: WindowsServer_2019
+          language: go
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-w19go
+          defaultVersion: 1.12.14
+        - architecture: x86_64
+          os: WindowsServer_2019
+          language: dotnetcore
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-w19dotnetcore
+          isDefault: true
+          defaultVersion: 3.1
+        - architecture: x86_64
+          os: RHEL_7
+          language: node
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-c7node
+          isDefault: true
+          defaultVersion: 10.18.0
+        - architecture: x86_64
+          os: RHEL_7
+          language: java
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-c7java
+          defaultVersion: 11
+        - architecture: x86_64
+          os: RHEL_7
+          language: cpp
+          registryUrl: docker.bintray.io
+          image: jfrog/pipelines-c7cpp
+          defaultVersion: 3.4.2
+        - architecture: x86_64
+          os: RHEL_7
+          language: go
+          registryUrl: docker.bintray.io
           image: jfrog/pipelines-c7go
           defaultVersion: 1.12.14
 
@@ -998,6 +1046,10 @@ filebeat:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
 
+##
+rbac:
+  create: true
+
 ## The Build Plane is where the actual builds will run
 buildPlane:
   ## Dynamic Build Plane VMs
@@ -1011,51 +1063,10 @@ buildPlane:
         nodelimit: "5"
         instanceType: c4.xlarge
         securityGroupId: testsecuritygroupId
-        privateSubnetId: private-subnet-foobargoo
+        subnetId: test-subnetId
         keyPairName: testaccountSSHKeyPair
         vpcId: testVPCId
-        publicNatIp: testprivateNATIp
-        publicSubnetId: testpublicsubnetid
         region: us-east-1
         ##
         accessKey: ""
         secretKey: ""
-
-  ## Build Nodes as Kubernetes StatefulSet
-  ## Experimental feature for static nodes
-  ## NOTE: It uses privileged DinD container
-  k8s:
-    enabled: false
-
-    ## Pipelines Kubernetes Node Pool name and size
-    pool:
-      name: k8s_pool
-      size: 50
-
-    ## Node Count
-    replicaCount: 5
-
-    updateStrategy: RollingUpdate
-
-    image:
-      repository: jfrog/pipelines-k8s-node
-      # tag:
-      pullPolicy: IfNotPresent
-
-    resources: {}
-
-    nodeSelector: {}
-    tolerations: []
-    affinity: {}
-
-    dind:
-      image:
-        repository: docker
-        tag: 18.09.9-dind
-        pullPolicy: IfNotPresent
-
-      resources: {}
-
-##
-rbac:
-  create: true

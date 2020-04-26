@@ -34,7 +34,7 @@ spec:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
-        checksum/gcpcredentials: {{ include (print $.Template.BasePath "/artifactory-gcp-credentials.yaml") . | sha256sum }}
+        checksum/gcpcredentials: {{ include (print $.Template.BasePath "/artifactory-gcp-credentials-secret.yaml") . | sha256sum }}
       {{- end }}
       {{- range $key, $value := .Values.artifactory.annotations }}
         {{ $key }}: {{ $value | quote }}
@@ -259,6 +259,9 @@ spec:
         - name: artifactory-ha-backup
           mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
     {{- end }}
+  {{- end }}
+  {{- if .Values.artifactory.customVolumeMounts }}
+{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
   {{- end }}
   {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data

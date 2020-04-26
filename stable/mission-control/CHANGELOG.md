@@ -1,8 +1,19 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [3.1.1] - April 7, 2020
+## [3.2.1] - April 26, 2020
 * Added `elasticsearch.configureDockerHost` parameter to enable control over running of privileged containers (init-elasticsearch)
+
+## [3.2.0] - Apr 21, 2020
+* Upgrade Elasticsearch version to 7.6.1
+* Upgrade Mission Control version to 4.3.2
+* Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
+* Bump router  version to `1.3.0`
+* **NOTE:** If you have externalized elasticsearch, please upgrade your elasticsearch to 7.6.1 to work with Mission Control 4.3.x. Mission Control version 4.3.x and above is not compatible with Elasticsearch version 6.x.
+* **NOTE:** Mission Control version 4.3.2 is compatible with Artifactory 7.4.1 and above. Refer Mission Control release notes for more details - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.3.2.
+
+## [3.1.1] - April 13, 2020
+* Update README with helm v3 commands
 
 ## [3.1.0] - April 10, 2020
 * Use dependency charts from `https://charts.bitnami.com/bitnami`

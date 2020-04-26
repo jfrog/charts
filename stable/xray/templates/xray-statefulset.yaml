@@ -116,7 +116,7 @@ spec:
           done;
       {{- end }}
     {{- if .Values.common.customInitContainers }}
-      {{ tpl .Values.common.customInitContainers . }}
+      {{ tpl .Values.common.customInitContainers . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
@@ -174,8 +174,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -196,6 +196,15 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
         ports:
         - containerPort: {{ .Values.server.internalPort }}
         volumeMounts:
@@ -250,8 +259,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -272,6 +281,15 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
         - name: XRAY_HA_NODE_ID
           valueFrom:
             fieldRef:
@@ -330,8 +348,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -352,6 +370,15 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
         - name: XRAY_HA_NODE_ID
           valueFrom:
             fieldRef:
@@ -410,8 +437,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-password
@@ -432,6 +459,15 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
         - name: XRAY_K8S_ENV
           value: "true"
         ports:

@@ -1,6 +1,27 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.4] - Apr 20, 2020
+* Adding tpl to xray-statefulset for JF_SHARED_PASSWORD
+
+## [3.2.3] - Apr 15, 2020
+* Support existingsecrets for rabbitmq/rabbitmq-ha passwords
+* Bump router version to `1.3.0`
+* Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
+
+## [3.2.2] - Apr 15, 2020
+* Fix broken rabbitmq support when `rabbitmq.enabled=true`
+
+## [3.2.1] - Apr 14, 2020
+* customInitContainer identation template fix
+
+## [3.2.0] - Apr 13, 2020
+* Bump RabbitMQ chart to v6.25.2
+* Bump RabbitMQ-HA chart to v1.44.2
+
+## [3.1.1] - April 13, 2020
+* Updated helm v3 commands  
+
 ## [3.1.0] - April 10, 2020
 * Use dependency charts from `https://charts.bitnami.com/bitnami`
 * Bump postgresql chart version to `8.7.3` in requirements.yaml

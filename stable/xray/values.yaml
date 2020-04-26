@@ -51,17 +51,6 @@ xray:
         username: "{{ .Values.postgresql.postgresqlUsername }}"
         url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
       {{- end }}
-      rabbitMq:
-      {{ if index .Values "rabbitmq" "enabled" }}
-        username: "{{ .Values.rabbitmq.rabbitmq.username }}"
-        password: "{{ .Values.rabbitmq.rabbitmq.password }}"
-        url: "amqp://{{ .Release.Name }}-rabbitmq:{{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }}/"
-      {{- end }}
-      {{ if index .Values "rabbitmq-ha" "enabled" }}
-        username: "{{ index .Values "rabbitmq-ha" "rabbitmqUsername" }}"
-        password: "{{ index .Values "rabbitmq-ha" "rabbitmqPassword" }}"
-        url: "amqp://{{ .Release.Name }}-rabbitmq-ha:{{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }}/"
-      {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
         url: "{{ .Values.xray.mongoUrl }}"
@@ -162,7 +151,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.17-debian-10-r21
+    tag: 9.6.17-debian-10-r72
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -216,6 +205,8 @@ rabbitmq-ha:
     tag: 3.7.21-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
+  ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
+  # existingSecret: <name-of-existing-secret>
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
   rabbitmqMemoryHighWatermark: 500MB
   rabbitmqNodePort: 5672
@@ -245,10 +236,14 @@ rabbitmq-ha:
     create: true
   nodeSelector: {}
   tolerations: []
+  ## Configuration values for the prometheus
+  prometheus:
+    operator:
+      enabled: false
 
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/README.md
 ##
 rabbitmq:
   enabled: false
@@ -259,6 +254,8 @@ rabbitmq:
   rabbitmq:
     username: guest
     password: ""
+    ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
+    # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
   service:
     nodePort: 5672
@@ -566,7 +563,7 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.2.1
+    version: 1.3.0
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
