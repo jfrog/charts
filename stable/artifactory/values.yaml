@@ -578,9 +578,9 @@ artifactory:
               <kmsCryptoMode>{{ . }}</kmsCryptoMode>
             {{- end }}
             {{- if .useInstanceCredentials }}
-              <useInstanceCredentials>{{ .useInstanceCredentials }}</useInstanceCredentials>
-            {{- else }}
               <useInstanceCredentials>true</useInstanceCredentials>
+            {{- else }}
+              <useInstanceCredentials>false</useInstanceCredentials>
             {{- end }}
               <usePresigning>{{ .usePresigning }}</usePresigning>
               <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
