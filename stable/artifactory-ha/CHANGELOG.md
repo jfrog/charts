@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.3] - Apr 24, 2020
+* Fix `artifactory.persistence.awsS3V3.useInstanceCredentials` incorrect conditional logic
+* Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
+
 ## [2.4.2] - Apr 16, 2020
 * Custom volume mounts in migration init container.
 
