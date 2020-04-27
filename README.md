@@ -141,3 +141,4 @@ In such setup your local default cluster can be different from the charts testin
 For more information on using Helm, refer to the Helm's [documentation](https://docs.helm.sh/using_helm/#quickstart-guide).
 
 To get a quick introduction to Charts see this Chart's [documentation](https://docs.helm.sh/developing_charts/#charts).  
+
