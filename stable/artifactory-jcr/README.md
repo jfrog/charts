@@ -22,6 +22,7 @@ Before installing JFrog helm charts, you need to add the [JFrog helm repository]
 helm repo add jfrog https://charts.jfrog.io
 ```
 
+
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
