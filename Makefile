@@ -71,3 +71,5 @@ gke: check-gcloud
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
 	$(eval export LOCAL_RUN=true)
 	test/e2e-local-gke.sh
+
+
