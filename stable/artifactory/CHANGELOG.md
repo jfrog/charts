@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.3] - Apr 26, 2020
+* Change order of the customInitContainers to run before the "migration-artifactory" initContainer.
+
 ## [9.4.2] - Apr 24, 2020
 * Fix `artifactory.persistence.awsS3V3.useInstanceCredentials` incorrect conditional logic
 * Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
