@@ -19,7 +19,6 @@ endif
 HELM_CMD := $(shell command -v helm 2> /dev/null)
 KUBECTL_CMD := $(shell command -v kubectl 2> /dev/null)
 KUBEVAL_CMD := $(shell command -v kubeval 2> /dev/null)
-KIND_CMD := $(shell command -v kind 2> /dev/null)
 GCLOUD_CMD := $(shell command -v gcloud 2> /dev/null)
 
 .PHONY: check-cli
@@ -41,12 +40,6 @@ endif
 check-kubeval:
 ifndef KUBEVAL_CMD
 	$(error "$n$nNo kubeval command found! $n$nPlease install: brew tap instrumenta/instrumenta && brew install kubeval $n$n")
-endif
-
-.PHONY: check-kind
-check-kind:
-ifndef KIND_CMD
-	$(error "$n$nNo kind command found! $n$nPlease download required kind binary.$n$n")
 endif
 
 .PHONY: check-gcloud
@@ -80,13 +73,3 @@ gke: check-gcloud
 	$(eval export LOCAL_RUN=true)
 	test/e2e-local-gke.sh
 
-.PHONY: kind
-kind: check-kind
-	$(eval export CHART_TESTING_IMAGE)
-	$(eval export CHART_TESTING_TAG)
-	$(eval export CHARTS_REPO)
-	$(eval export K8S_VERSION)
-	$(eval export KIND_VERSION)
-	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
-	$(eval export LOCAL_RUN=true)
-	test/e2e-kind.sh

@@ -51,7 +51,8 @@ validate_manifests() {
         echo "Validating chart ${chart_name}"
         rm -rf stable
         mkdir stable
-        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable > /dev/null 2>&1
+        pwd
+        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable --set distribution.jfrogUrl=http://artifactory-artifactory.rt:8082,missionControl.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrlUi=http://artifactory-artifactory.rt:8082,xray.jfrogUrl=http://artifactory-artifactory.rt:8082,postgresql.postgresqlPassword=password > /dev/null 2>&1
         TEMPLATE_FILES="${chart_name}/templates"
         if [ -d "${TEMPLATE_FILES}" ] 
         then
@@ -87,8 +88,9 @@ main() {
     mkdir -p tmp
     install_kubeval
     install_helm
-    # git_fetch
+    ## git_fetch
     # Lint helm charts
+    docker rm -f ct || true
     # shellcheck disable=SC2086
     docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml | tee tmp/lint.log
     echo "Done Charts Linting!"
@@ -96,9 +98,9 @@ main() {
     if [[ -z "${CHART_TESTING_ARGS}" ]]
     then
         # Check for changelog version
-        check_changelog_version
+        check_changelog_version | tee -a tmp/lint.log
         # Validate Kubernetes manifests
-        validate_manifests
+        validate_manifests | tee -a tmp/lint.log
     fi
 }
 
