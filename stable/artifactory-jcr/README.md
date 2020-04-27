@@ -28,7 +28,6 @@ To install the chart with the release name `jfrog-container-registry`:
 helm upgrade --install jfrog-container-registry --set postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-jcr jfrog/artifactory-jcr
 ```
 
-
 ### Accessing JFrog Container Registry
 **NOTE:** If using artifactory or nginx service type `LoadBalancer`, it might take a few minutes for JFrog Container Registry's public IP to become available.
 
