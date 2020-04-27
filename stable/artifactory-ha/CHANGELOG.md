@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.5] - Apr 27, 2020
+* Updated Artifactory version to 7.4.3
+
 ## [2.4.4] - Apr 27, 2020
 * Change customInitContainers order to run before the "migration-ha-artifactory" initContainer
 
