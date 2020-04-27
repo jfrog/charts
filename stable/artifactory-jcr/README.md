@@ -40,6 +40,7 @@ helm upgrade jfrog-container-registry jfrog/artifactory-jcr
 
 ### Deleting JFrog Container Registry
 
+
 On helm v2:
 ```bash
 helm delete --purge jfrog-container-registry
