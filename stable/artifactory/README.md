@@ -15,6 +15,8 @@ This chart will do the following:
 
 ## Installing the Chart
 
+
+
 ### Add JFrog Helm repository
 Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
 ```bash
