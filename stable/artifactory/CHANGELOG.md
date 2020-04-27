@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.5] - Apr 27, 2020
+* Change order of the customInitContainers to run before the "migration-artifactory" initContainer.
+
 ## [9.4.3] - Apr 26, 2020
 * Change order of the customInitContainers to run before the "migration-artifactory" initContainer.
 
