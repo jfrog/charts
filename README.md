@@ -26,7 +26,7 @@ Fork the `repo`, make changes and then please run `make lint` to lint charts loc
 On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR) on to the `master` branch.
 
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
-Two __LGTM__ are needed to get the PR approved and merged.
+Three __LGTM__ are needed to get the PR approved and merged.
 
 ## Linting charts locally
 
