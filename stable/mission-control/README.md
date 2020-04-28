@@ -211,6 +211,14 @@ export POSTGRES_PASSWORD_SECRET_KEY=
 
 #### Elasticsearch
 
+By default, this HELM chart deploys elasticsearch pod. It also configures docker host kernel parameters
+using a privileged initContainer. In some installations, you would not be allowed to run privileged 
+containers, in which case you can disable docker host configuration by configuring following parameter:
+
+```
+--set elasticsearch.configureDockerHost=false
+```
+
 There are cases where you will want to use an external **Elasticsearch** and not the enclosed **Elasticsearch**.
 
 This can be done with the following parameters
@@ -332,6 +340,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `database.secrets.password.name`             | External database password `Secret` name        |                                       |
 | `database.secrets.password.key`              | External database password `Secret` key         |                                       |
 | `elasticsearch.enabled`                      | Enable Elasticsearch                            | `true`                                |
+| `elasticsearch.configureDockerHost`          | Use privileged init container to configure Docker Host | `true`                         |
 | `elasticsearch.persistence.enabled`          | Elasticsearch persistence volume enabled        | `true`                                |
 | `elasticsearch.persistence.existingClaim`    | Use an existing PVC to persist data             | `nil`                                 |
 | `elasticsearch.persistence.storageClass`     | Storage class of backing PVC                    | `generic`                             |

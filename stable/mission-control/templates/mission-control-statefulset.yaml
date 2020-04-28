@@ -42,14 +42,18 @@ spec:
     {{- if .Values.elasticsearch.enabled }}
       - name: elasticsearch-init
         image: "{{ .Values.elasticsearch.initContainerImage }}"
+        {{- if .Values.elasticsearch.configureDockerHost }}
         securityContext:
           privileged: true
+        {{- end }}
         command:
         - '/bin/sh'
         - '-c'
         - >
           chmod -R 777 {{ .Values.elasticsearch.persistence.mountPath }};
+        {{- if .Values.elasticsearch.configureDockerHost }}
           sysctl -w vm.max_map_count={{ .Values.elasticsearch.env.maxMapCount }}
+        {{- end }}
         volumeMounts:
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
