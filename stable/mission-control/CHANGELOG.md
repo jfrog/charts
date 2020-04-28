@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.1] - April 26, 2020
+* Added `elasticsearch.configureDockerHost` parameter to enable control over running of privileged containers (init-elasticsearch)
+
 ## [3.2.0] - Apr 21, 2020
 * Upgrade Elasticsearch version to 7.6.1
 * Upgrade Mission Control version to 4.3.2
