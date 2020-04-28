@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/jfrog/charts.svg?branch=master)](https://travis-ci.org/jfrog/charts)
-
 # JFrog Helm Charts
 
 This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** for deploying **JFrog** products to [Kubernetes](https://kubernetes.io/)
@@ -25,10 +23,10 @@ helm repo update
 
 Fork the `repo`, make changes and then please run `make lint` to lint charts locally, and at least install the chart to see it is working. :)
 
-On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR) on to the `master` branch. 
+On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR) on to the `master` branch.
 
 Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
-Two __LGTM__ are needed to get the PR approved and merged.
+Three __LGTM__ are needed to get the PR approved and merged.
 
 ## Linting charts locally
 
