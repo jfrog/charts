@@ -17,7 +17,6 @@ endif
 HELM_CMD := $(shell command -v helm 2> /dev/null)
 KUBECTL_CMD := $(shell command -v kubectl 2> /dev/null)
 KUBEVAL_CMD := $(shell command -v kubeval 2> /dev/null)
-KIND_CMD := $(shell command -v kind 2> /dev/null)
 GCLOUD_CMD := $(shell command -v gcloud 2> /dev/null)
 
 .PHONY: check-cli

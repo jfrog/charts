@@ -98,9 +98,9 @@ main() {
     if [[ -z "${CHART_TESTING_ARGS}" ]]
     then
         # Check for changelog version
-        check_changelog_version
+        check_changelog_version | tee -a tmp/lint.log
         # Validate Kubernetes manifests
-        validate_manifests
+        validate_manifests | tee -a tmp/lint.log
     fi
 }
 
