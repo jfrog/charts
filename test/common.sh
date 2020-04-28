@@ -29,7 +29,7 @@ git_fetch() {
 
 get_changed_charts() {
     local changed_charts=("")
-    while IFS='' read -r line; do changed_charts+=("$line"); done < <(docker run --rm -v "$(pwd):/workdir" --workdir /workdir "${IMAGE_REPOSITORY}:${IMAGE_TAG}" ct list-changed --chart-dirs stable )
+    while IFS='' read -r line; do changed_charts+=("$line"); done < <(docker run --rm -v "$(pwd):/workdir" --workdir /workdir "${IMAGE_REPOSITORY}:${IMAGE_TAG}" ct list-changed --config /workdir/test/ct.yaml --chart-dirs stable )
     echo "${changed_charts[*]}"
 }
 
