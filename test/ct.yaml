@@ -2,8 +2,8 @@ remote: origin
 target-branch: pre-unified-platform
 chart-dirs:
   - stable
-excluded-charts:
-  - common
 chart-repos:
   - jfrog=https://charts.jfrog.io
-helm-extra-args: --timeout 18000
+  - bitnami=https://charts.bitnami.com/bitnami
+  - stable=https://kubernetes-charts.storage.googleapis.com
+helm-extra-args: --timeout 9000
