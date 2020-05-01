@@ -77,6 +77,7 @@ Edit local copies of `values-ingress.yaml`, `values-ingress-passwords.yaml` and 
 Install JFrog Pipelines
 
 ```bash
+kubectl create ns pipelines
 helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
 ```
 
@@ -93,27 +94,33 @@ Fill in all required passwords, `masterKey` and `joinKey` in `values-ingress-pas
 With Helm v2:
 
 ```bash
+## Generate pipelines-system-yaml secret
 helm template --name-template pipelines pipelines/ -x templates/pipelines-system-yaml.yaml \
     -f pipelines/values-ingress-external-secret.yaml -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
 
+## Generate pipelines-database secret
 helm template --name-template pipelines pipelines/ -x templates/database-secret.yaml \
-    -f pipelines/values-ingress-external-secret.yaml -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
+    -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
 
+## Generate pipelines-rabbitmq-secret secret
 helm template --name-template pipelines pipelines/ -x templates/rabbitmq-secret.yaml \
-    -f pipelines/values-ingress-external-secret.yaml -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
+    -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
 ```
 
 With Helm v3:
 
 ```bash
-helm3 template --name-template pipelines pipelines/ -s templates/pipelines-system-yaml.yaml \
+## Generate pipelines-system-yaml secret
+helm template --name-template pipelines pipelines/ -s templates/pipelines-system-yaml.yaml \
     -f pipelines/values-ingress-external-secret.yaml -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
 
-helm3 template --name-template pipelines pipelines/ -s templates/database-secret.yaml \
-    -f pipelines/values-ingress-external-secret.yaml -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
+## Generate pipelines-database secret
+helm template --name-template pipelines pipelines/ -s templates/database-secret.yaml \
+    -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
 
-helm3 template --name-template pipelines pipelines/ -s templates/rabbitmq-secret.yaml \
-    -f pipelines/values-ingress-external-secret.yaml -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
+## Generate pipelines-rabbitmq-secret secret
+helm template --name-template pipelines pipelines/ -s templates/rabbitmq-secret.yaml \
+    -f pipelines/values-ingress-passwords.yaml | kubectl apply --namespace pipelines -f -
 ```
 
 Install JFrog Pipelines:
@@ -126,17 +133,26 @@ helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values
 
 See the status of deployed **helm** release:
 
+With Helm v2:
+
 ```bash
 helm status pipelines
+```
+
+With Helm v3:
+
+```bash
+helm status pipelines --namespace pipelines
 ```
 
 ### Build Plane
 
 #### Build Plane with static and dynamic node-pool VMs
 
-Be default Pipelines comes with a Build Plane with a static node-pool VMs setup, please read [Managing Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-static-node-poolsAdministeringStaticNodePools) how to set it up.
+To start using Pipelines you need to setup a Build Plane:
+- For Static VMs Node-pool setup, please read [Managing Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-static-node-poolsAdministeringStaticNodePools).
 
-For the Dynamic Nodes please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
+- For Dynamic VMs Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
 
 ## Useful links
 

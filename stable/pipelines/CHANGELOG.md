@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.1.4] - April 30, 2020
+* In readme fix helm template examples
+
 ## [1.1.3] - April 23, 2020
 * Fix filebeat resources
 
