@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.2.2] - May 6, 2020
+* Support external database secrets
+
 ## [3.2.1] - April 26, 2020
 * Added `elasticsearch.configureDockerHost` parameter to enable control over running of privileged containers (init-elasticsearch)
 

@@ -147,7 +147,6 @@ postgresql:
 database:
   type: postgresql
   driver: org.postgresql.Driver
-  url:
   ## Please make sure these are created under the provided database
   name: mission_control
   jfisSchema: insight_server
@@ -155,30 +154,22 @@ database:
   jfscSchema: insight_scheduler
   jfexSchema: insight_executor
   ## If you would like to use single user and password for all the services
-  user: postgres
-  password: password
+  user: 
+  password:
+  url:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
   #  user:
-  #    name: "database-creds"
+  #    name: "mc-database-creds"
   #    key: "db-user"
   #  password:
-  #    name: "database-creds"
+  #    name: "mc-database-creds"
   #    key: "db-password"
-  ## If you want to use different credentials for each service
-  ## Mission-Control
-  jfmcUsername: jfmc
-  jfmcPassword:
-  ## Insight-Server
-  jfisUsername: jfis
-  jfisPassword:
-  ## Insight-Scheduler
-  jfscUsername: jfsc
-  jfscPassword:
-  ## Insight-Executor
-  jfexUsername: jfex
-  jfexPassword:
+  #  url:
+  #    name: "mc-database-creds"
+  #    key: "db-url"
+
 
 elasticsearch:
   enabled: true
@@ -347,8 +338,6 @@ missionControl:
       {{ else }}
         type: "{{ .Values.database.type }}"
         driver: "{{ .Values.database.driver }}"
-        url: "{{ .Values.database.url }}"
-        username: "{{ .Values.database.user }}"
       {{- end }}
 
     {{- if .Values.postgresql.enabled }}
