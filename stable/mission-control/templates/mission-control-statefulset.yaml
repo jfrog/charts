@@ -148,13 +148,8 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              {{- if .Values.postgresql.postgresqlPassword }}
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: postgres-password
-            {{- else }}
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
-            {{- end }}
         - name: JFMC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
