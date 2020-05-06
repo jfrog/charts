@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.5] - May 5, 2020
+* Fix usage string format
+
 ## [9.4.4] - Apr 27, 2020
 * Updated Artifactory version to 7.4.3
 
