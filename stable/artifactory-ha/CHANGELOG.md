@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.6] - May 07, 2020
+* Fix `installerInfo` string format
+
 ## [2.4.5] - Apr 27, 2020
 * Updated Artifactory version to 7.4.3
 
