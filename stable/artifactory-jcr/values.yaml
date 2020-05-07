@@ -37,7 +37,7 @@ artifactory:
 
   installer:
     platform: jcr-helm
-  
+
   installerInfo: '{"productId": "Helm_artifactory-jcr/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
   ## Nginx
   ## See full list of supported Nginx options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
