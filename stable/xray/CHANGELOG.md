@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.4.0] - May 11, 2020
+* Update Xray version to 2.12.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.12.0
+
 ## [1.3.8] - Feb 18, 2020
 * Update Xray version to 2.11.4
 
