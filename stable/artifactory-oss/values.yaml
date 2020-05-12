@@ -17,7 +17,6 @@ artifactory:
     image:
       repository: docker.bintray.io/jfrog/artifactory-oss
       # version:
-
     ## Uncomment the following resources definitions or pass them from command line
     ## to control the cpu and memory resources allocated by the Kubernetes cluster
     resources: {}
@@ -37,6 +36,8 @@ artifactory:
 
   installer:
     platform: art-oss-helm
+
+  installerInfo: '{"productId": "Helm_artifactory-oss/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
 
   ## Nginx
   ## See full list of supported Nginx options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
