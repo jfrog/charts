@@ -108,14 +108,9 @@ postgresql:
     name: mission_control
     sslmode: "false"
     tablespace: "pg_default"
-    jfmcUsername: jfmc
-    jfisUsername: jfisv
-    jfscUsername: jfisc
-    jfexUsername: jfiex
-    jfmcPassword:
-    jfisPassword:
-    jfscPassword:
-    jfexPassword:
+    ## Use single user and password for all the services
+    user: mc 
+    password: ""
     jfmcSchema: jfmc_server
     jfisSchema: insight_server
     jfscSchema: insight_scheduler
@@ -148,7 +143,7 @@ database:
   jfmcSchema: jfmc_server
   jfscSchema: insight_scheduler
   jfexSchema: insight_executor
-  ## If you would like to use single user and password for all the services
+  ## Use single user and password for all the services
   user:
   password:
   url:
@@ -338,22 +333,22 @@ missionControl:
     {{- if .Values.postgresql.enabled }}
     mc:
       database:
-        username: {{ .Values.postgresql.db.jfmcUsername }}
+        username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfmcSchema }}
 
     insight-scheduler:
       database:
-        username: {{ .Values.postgresql.db.jfscUsername }}
+        username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfscSchema }}
 
     insight-executor:
       database:
-        username: {{ .Values.postgresql.db.jfexUsername }}
+        username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfexSchema }}
 
     insight:
       database:
-        username: {{ .Values.postgresql.db.jfisUsername }}
+        username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfisSchema }}
     {{- end }}
 

@@ -154,38 +154,38 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfmcPassword
+              key: password
         - name: JFMC_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfmcUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFMC_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfmcSchema }}'
         - name: JFEX_DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfexPassword
+              key: password
         - name: JFEX_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfexUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFEX_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfexSchema }}'
         - name: JFSC_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfscUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFSC_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfscSchema }}'
         - name: JFSC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfscPassword
+              key: password
         - name: JFIS_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfisUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFIS_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfisSchema }}'
         - name: JFIS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfisPassword
+              key: password
         command:
         - 'bash'
         - '-c'
@@ -331,7 +331,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfmcPassword
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -424,7 +424,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfisPassword
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -500,7 +500,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfscPassword
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -563,7 +563,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfexPassword
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
