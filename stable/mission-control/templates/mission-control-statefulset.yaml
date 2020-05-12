@@ -153,8 +153,8 @@ spec:
         - name: JFMC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         - name: JFMC_DB_USERNAME
           value: '{{ .Values.postgresql.db.user }}'
         - name: JFMC_DB_SCHEMA
@@ -162,8 +162,8 @@ spec:
         - name: JFEX_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         - name: JFEX_DB_USERNAME
           value: '{{ .Values.postgresql.db.user }}'
         - name: JFEX_DB_SCHEMA
@@ -175,8 +175,8 @@ spec:
         - name: JFSC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         - name: JFIS_DB_USERNAME
           value: '{{ .Values.postgresql.db.user }}'
         - name: JFIS_DB_SCHEMA
@@ -184,8 +184,8 @@ spec:
         - name: JFIS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         command:
         - 'bash'
         - '-c'
@@ -326,12 +326,9 @@ spec:
         {{- if .Values.database.secrets.password }}
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -419,12 +416,9 @@ spec:
         {{- if .Values.database.secrets.password }}
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -495,12 +489,9 @@ spec:
         {{- if .Values.database.secrets.password }}
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -558,12 +549,9 @@ spec:
         {{- if .Values.database.secrets.password }}
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
