@@ -46,6 +46,7 @@ spec:
 
               storage "postgresql" {
                 connection_url = "${PIPELINES_SHARED_DB_CONNECTIONSTRING}"
+                ha_enabled = "true"
               }
 
               max_lease_ttl = "768h"

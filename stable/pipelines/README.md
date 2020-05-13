@@ -58,7 +58,7 @@ Before deploying Pipelines you need to have the following
 
 #### Prepare configurations
 
-Fetch the JFrog Pipelines helm chart to ge the needed configuration files
+Fetch the JFrog Pipelines helm chart to get the needed configuration files
 
 ```bash
 helm fetch jfrog/pipelines --untar
