@@ -2,8 +2,8 @@
 All changes to this chart to be documented in this file.
 
 ## [1.1.5] - May 13, 2020
-* Pipelines v1.4.7
-
+* Pipelines v1.4.7 
+ 
 ## [1.1.4] - April 30, 2020
 * In readme fix helm template examples
 
