@@ -304,14 +304,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.db.name`                         | PostgreSQL Database name                        | `mission_control`                     |
 | `postgresql.db.sslmode`                      | PostgreSQL Database SSL Mode                    | `false`                               |
 | `postgresql.db.tablespace`                   | PostgreSQL Database Tablespace                  | `pg_default`                          |
-| `postgresql.db.jfmcUsername`                 | PostgreSQL Database mission control User        | `jfmc`                                |
-| `postgresql.db.jfisUsername`                 | PostgreSQL Database insight server User         | `jfis`                                |
-| `postgresql.db.jfscUsername`                 | PostgreSQL Database insight scheduler User      | `jfsc`                                |
-| `postgresql.db.jfexUsername`                 | PostgreSQL Database mission executor User       | `jfex`                                |
-| `postgresql.db.jfmcPassword`                 | PostgreSQL Database mission control Password    | `random 10 character alphanumeric string` |
-| `postgresql.db.jfisPassword`                 | PostgreSQL Database insight server Password     | `random 10 character alphanumeric string` |
-| `postgresql.db.jfscPassword`                 | PostgreSQL Database insight scheduler Password  | `random 10 character alphanumeric string` |
-| `postgresql.db.jfexPassword`                 | PostgreSQL Database mission executor Password   | `random 10 character alphanumeric string` |
+| `postgresql.db.user`                         | PostgreSQL Database User                        | `mc`                                |
+| `postgresql.db.password`                     | PostgreSQL Database Password                    | `random 10 character alphanumeric string` |
 | `postgresql.db.jfmcSchema`                   | PostgreSQL Database mission control Schema      | `jfmc_server`                         |
 | `postgresql.db.jfisSchema`                   | PostgreSQL Database insight server Schema       | `insight_server`                      |
 | `postgresql.db.jfscSchema`                   | PostgreSQL Database insight scheduler Schema    | `insight_scheduler`                   |
@@ -323,14 +317,6 @@ The following table lists the configurable parameters of the mission-control cha
 | `database.url`                               | External database url                           | ``                     |
 | `database.user`                              | External database user                          | ` `                                   |
 | `database.password`                          | External database password                      | ` `                                   |
-| `database.jfmcUsername`                      | External database mission control User          | `jfmc`                                |
-| `database.jfisUsername`                      | External database insight server User           | `jfis`                                |
-| `database.jfscUsername`                      | External database insight scheduler User        | `jfsc`                                |
-| `database.jfexUsername`                      | External database mission executor User         | `jfex`                                |
-| `database.jfmcPassword`                      | External database mission control Password      | ` `                                   |
-| `database.jfisPassword`                      | External database insight server Password       | ` `                                   |
-| `database.jfscPassword`                      | External database insight scheduler Password    | ` `                                   |
-| `database.jfexPassword`                      | External database mission executor Password     | ` `                                   |
 | `database.jfmcSchema`                        | External database mission control Schema        | `jfmc_server`                         |
 | `database.jfisSchema`                        | External database insight server Schema         | `insight_server`                      |
 | `database.jfscSchema`                        | External database insight scheduler Schema      | `insight_scheduler`                   |
@@ -339,6 +325,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `database.secrets.user.key`                  | External database username `Secret` key         |                                       |
 | `database.secrets.password.name`             | External database password `Secret` name        |                                       |
 | `database.secrets.password.key`              | External database password `Secret` key         |                                       |
+| `database.secrets.url.name`                  | External database url `Secret` name             |                                       |
+| `database.secrets.url.key`                   | External database url `Secret` key              |                                       |
 | `elasticsearch.enabled`                      | Enable Elasticsearch                            | `true`                                |
 | `elasticsearch.configureDockerHost`          | Use privileged init container to configure Docker Host | `true`                         |
 | `elasticsearch.persistence.enabled`          | Elasticsearch persistence volume enabled        | `true`                                |

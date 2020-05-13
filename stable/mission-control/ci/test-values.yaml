@@ -1,11 +1,5 @@
 # CI values for Mission-control.
 
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
-
 # If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
 unifiedUpgradeAllowed: true
 missionControl:
@@ -14,7 +8,4 @@ missionControl:
 postgresql:
   postgresqlPassword: password
   db:
-    jfisPassword: password
-    jfscPassword: password
-    jfexPassword: password
-    jfmcPassword: password
+    password: password

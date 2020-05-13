@@ -148,49 +148,44 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-              {{- if .Values.postgresql.postgresqlPassword }}
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: postgres-password
-            {{- else }}
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
-            {{- end }}
         - name: JFMC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfmcPassword
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         - name: JFMC_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfmcUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFMC_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfmcSchema }}'
         - name: JFEX_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfexPassword
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         - name: JFEX_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfexUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFEX_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfexSchema }}'
         - name: JFSC_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfscUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFSC_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfscSchema }}'
         - name: JFSC_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfscPassword
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         - name: JFIS_DB_USERNAME
-          value: '{{ .Values.postgresql.db.jfisUsername }}'
+          value: '{{ .Values.postgresql.db.user }}'
         - name: JFIS_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfisSchema }}'
         - name: JFIS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfisPassword
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         command:
         - 'bash'
         - '-c'
@@ -311,14 +306,43 @@ spec:
           {{ tpl . $ }};
         {{- end }}
           /opt/jfrog/mc/app/bin/entrypoint-mc.sh;
-        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfmcPassword }}
         env:
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfmcPassword
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
@@ -372,14 +396,43 @@ spec:
       - name: {{ .Values.insightServer.name }}
         image: {{ .Values.insightServer.image.repository }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfisPassword }}
         env:
+        {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfisPassword
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         ports:
         - containerPort: {{ .Values.insightServer.internalHttpPort }}
           protocol: TCP
@@ -417,13 +470,42 @@ spec:
           {{- end}}
           -Dserver.port={{ .Values.insightScheduler.internalPort }}
           "
-        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfscPassword }}
+        {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfscPassword
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
@@ -447,14 +529,43 @@ spec:
       - name: {{ .Values.insightExecutor.name }}
         image: {{ .Values.insightExecutor.image.repository }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        {{- if or .Values.postgresql.enabled .Values.database.password .Values.database.jfexPassword }}
         env:
+        {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ template "mission-control.fullname" . }}-db-cred
-              key: jfexPassword
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if or .Values.database.password .Values.postgresql.enabled }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
         {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
         ports:
         - containerPort: {{ .Values.insightExecutor.internalPort }}
           protocol: TCP
