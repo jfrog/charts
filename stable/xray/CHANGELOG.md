@@ -1,8 +1,14 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [1.4.0] - May 11, 2020
+## [2.0.0] - May 14, 2020
 * Update Xray version to 2.12.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.12.0
+* **Breaking change:** Added Upgrade Notes from 1.x to 2.x chart version - Refer https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/UPGRADE_NOTES.md
+* **Breaking change:** Added Support for Xray 2.x on k8s versions >= 1.16
+* Use dependency charts from https://charts.bitnami.com/bitnami
+* Bump postgresql chart to 8.7.3
+* Bump RabbitMQ chart to v6.25.2
+* Bump RabbitMQ-HA chart to v1.44.2
 
 ## [1.3.8] - Feb 18, 2020
 * Update Xray version to 2.11.4

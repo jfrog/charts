@@ -65,14 +65,14 @@ spec:
         {{- end }}
         {{- if .Values.postgresql.enabled }}
         - name: POSTGRES_USER
-          value: {{ .Values.postgresql.postgresUser }}
+          value: {{ .Values.postgresql.postgresqlUsername }}
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
         - name: POSTGRES_DB
-          value: {{ .Values.postgresql.postgresDatabase }}
+          value: {{ .Values.postgresql.postgresqlDatabase }}
         {{- else }}
         - name: POSTGRES_URL
           valueFrom:
@@ -96,7 +96,7 @@ spec:
         {{- end }}
         {{ if index .Values "rabbitmq" "enabled" }}
         - name: RABBITMQ_USER
-          value: {{ index .Values "rabbitmq" "rabbitmqUsername" }}
+          value: {{ .Values.rabbitmq.rabbitmq.username }}
         - name: RABBITMQ_ERLANG_COOKIE
           valueFrom:
             secretKeyRef:
