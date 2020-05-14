@@ -78,7 +78,7 @@ data:
     RABBITMQ_URL="amqp://${RABBITMQ_USER}:${RABBITMQ_DEFAULT_PASS}@{{ .Release.Name }}-rabbitmq-ha:{{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }}/"
     {{- end }}
     {{ if index .Values "rabbitmq" "enabled" }}
-    RABBITMQ_URL="amqp://${RABBITMQ_USER}:${RABBITMQ_DEFAULT_PASS}@{{ .Release.Name }}-rabbitmq:{{ index .Values "rabbitmq" "rabbitmqNodePort" }}/"
+    RABBITMQ_URL="amqp://${RABBITMQ_USER}:${RABBITMQ_DEFAULT_PASS}@{{ .Release.Name }}-rabbitmq:{{ .Values.rabbitmq.service.nodePort }}/"
     {{- end }}
     cp -vf ${SCRIPTS_DIR}/xray_config.yaml ${XRAY_CONFIG_FILE}
 

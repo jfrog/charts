@@ -13,7 +13,7 @@ This file describes special upgrade notes needed at specific versions
   * See [PostgreSQL helm chart](https://hub.helm.sh/charts/stable/postgresql) for all available configurations
 * Upgrade
   * Due to breaking changes in the **PostgreSQL** Helm chart, a migration of the database is needed from the old to the new database
-  * The recommended migration process has 2 Main steps 1.Existing MongoDB data to Existing Postgresql 2.Full DB export and import of Postgresql
+  * The recommended migration process has 2 Main steps 1.Full DB export and import of MongoDB 2.Full DB export and import of Postgresql
     * Upgrade steps:
       1. Prerequisite step to get details of existing chart\
        a. Block user access to Xray (do not shutdown).\
