@@ -70,7 +70,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
-              key: postgres-password
+              key: postgresql-password
         - name: POSTGRES_DB
           value: {{ .Values.postgresql.postgresDatabase }}
         {{- else }}

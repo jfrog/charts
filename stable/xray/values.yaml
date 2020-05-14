@@ -115,7 +115,7 @@ postgresql:
   imageTag: "9.6.11"
   postgresDatabase: "xraydb"
   postgresUser: "xray"
-  postgresPassword:
+  postgresPassword: ""
   postgresConfig:
     maxConnections: "500"
   service:
@@ -141,7 +141,7 @@ postgresql:
 mongodb:
   enabled: true
   image:
-    tag: 3.6.3
+    tag: 3.6.6
     pullPolicy: IfNotPresent
   persistence:
     size: 50Gi
@@ -159,9 +159,9 @@ mongodb:
   mongodbExtraFlags:
   # The wiredTiger is suggested to be set to 3GB.
   - "--wiredTigerCacheSizeGB=1"
-  mongodbRootPassword:
+  mongodbRootPassword: ""
   mongodbUsername: xray
-  mongodbPassword:
+  mongodbPassword: ""
   mongodbDatabase: xray
 #  livenessProbe:
 #    initialDelaySeconds: 60
@@ -211,6 +211,9 @@ rabbitmq-ha:
     create: true
   nodeSelector: {}
   tolerations: []
+  prometheus:
+    operator:
+      enabled: false
 
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
