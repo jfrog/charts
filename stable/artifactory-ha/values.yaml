@@ -474,6 +474,7 @@ artifactory:
         url: "{{ .Values.database.url }}"
         driver: "{{ .Values.database.driver }}"
         username: "{{ .Values.database.user }}"
+        password: "{{ .Values.database.password }}"
       {{- end }}
     artifactory:
     {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
