@@ -1,5 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
+## [3.3.1] - May 01, 2020
+* Adding tpl to values to support jfrogUrl
 
 ## [3.3.0] - Apr 28, 2020
 * Update Xray to version `3.3.0` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.3
