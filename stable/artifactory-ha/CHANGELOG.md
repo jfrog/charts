@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.7] - May 15, 2020
+* Add database.password to systemYaml
+
 ## [2.4.6] - May 07, 2020
 * Fix `installerInfo` string format
 
