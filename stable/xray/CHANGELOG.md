@@ -7,8 +7,9 @@ All changes to this chart will be documented in this file.
 * **Breaking change:** Added Support for Xray 2.x on k8s versions >= 1.16
 * Use dependency charts from https://charts.bitnami.com/bitnami
 * Bump postgresql chart to 8.7.3
-* Bump RabbitMQ chart to v6.25.2
-* Bump RabbitMQ-HA chart to v1.44.2
+* Bump RabbitMQ chart to 6.25.2
+* Bump RabbitMQ-HA chart to 1.44.2
+* Bump MongoDB chart to 7.14.1
 
 ## [1.3.8] - Feb 18, 2020
 * Update Xray version to 2.11.4
