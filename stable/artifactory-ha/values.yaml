@@ -497,6 +497,9 @@ artifactory:
         username: "{{ .Values.access.database.user }}"
         password: "{{ .Values.access.database.password }}"
       {{- end }}
+    metadata:
+      database:
+        maxOpenConnections: "{{ .Values.metadata.database.maxOpenConnections }}"
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -1129,6 +1132,10 @@ artifactory:
       topologyKey: "kubernetes.io/hostname"
 
 access:
+  database:
+    maxOpenConnections: 80
+
+metadata:
   database:
     maxOpenConnections: 80
 
