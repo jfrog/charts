@@ -8,6 +8,9 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.analysis.name }}
+{{- if and .Release.IsUpgrade (or .Values.postgresql.enabled .Values.mongodb.enabled) }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE FAILED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/CHANGELOG.md) and prepare PostgreSQL/Mongo DB migration before upgrading.\nOnce ready, explicitly pass 'databaseUpgradeReady=yes' to upgrade and complete migration after server starts!\n" .Values.databaseUpgradeReady | quote }}
+{{- end }}
 spec:
   serviceName: {{ template "xray-analysis.fullname" . }}
   replicas: {{ .Values.analysis.replicaCount }}

@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file.
 * Update Xray version to 2.12.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.12.0
 * **Breaking change:** Added Upgrade Notes from 1.x to 2.x chart version - Refer https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/UPGRADE_NOTES.md
 * **Breaking change:** Added Support for Xray 2.x on k8s versions >= 1.16
+* Added `databaseUpgradeReady` flag to upgrade from 1.x to 2.x chart versions
 * Use dependency charts from https://charts.bitnami.com/bitnami
 * Bump postgresql chart to 8.7.3
 * Bump RabbitMQ chart to 6.25.2
