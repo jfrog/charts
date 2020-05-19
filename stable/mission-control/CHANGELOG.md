@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [3.4.0] - May 19, 2020
-* Update Mission Control to version `4.4.0`
+* Update Mission Control to version `4.4.0` - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.4
 * Bump router version to `1.4.0`
 
 ## [3.3.0] - May 12, 2020
