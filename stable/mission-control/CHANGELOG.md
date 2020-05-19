@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.0] - May 19, 2020
+* Update Mission Control to version `4.4.0`
+
 ## [3.3.0] - May 12, 2020
 * Support external database secrets
 * **Breaking change:** Use single user/password for all services for both internal/external databases.
