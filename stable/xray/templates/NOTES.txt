@@ -1,6 +1,6 @@
 Congratulations! JFrog Xray services are deployed!
 
-{{- if and (eq .Values.xray.masterKey "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") .Values.xray.masterKeySecretName }}
+{{- if and (eq .Values.xray.masterKey "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") (not .Values.xray.masterKeySecretName) }}
 
 
 ************************************* WARNING *****************************************
