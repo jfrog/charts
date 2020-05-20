@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.6] - May 19, 2020
+* Added metadata maxOpenConnections
+
 ## [9.4.5] - May 07, 2020
 * Fix `installerInfo` string format
 

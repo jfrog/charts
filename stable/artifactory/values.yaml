@@ -405,6 +405,9 @@ artifactory:
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
+    metadata:
+      database:
+        maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
 
   annotations: {}
 
@@ -793,6 +796,10 @@ artifactory:
     externalPort: 1339
 
 access:
+  database:
+    maxOpenConnections: 80
+
+metadata:
   database:
     maxOpenConnections: 80
 
