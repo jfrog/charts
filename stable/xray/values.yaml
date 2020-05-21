@@ -113,8 +113,8 @@ serviceAccount:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
-    repository: bitnami/postgresql
+    registry: docker.io
+    repository: postgres
     tag: 9.6.18-alpine
   postgresqlUsername: xray
   postgresqlPassword: ""
@@ -145,7 +145,7 @@ postgresql:
 mongodb:
   enabled: true
   image:
-    tag: 3.6.18
+    tag: 3.6.6
     pullPolicy: IfNotPresent
   persistence:
     size: 50Gi
