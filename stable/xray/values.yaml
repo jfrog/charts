@@ -5,7 +5,7 @@
 
 # General
 imagePullPolicy: IfNotPresent
-initContainerImage: "alpine:3.10"
+initContainerImage: "alpine:3.11"
 imagePullSecrets:
 
 ## Role Based Access
@@ -115,7 +115,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.17-debian-10-r72
+    tag: 9.6.18-alpine
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -145,7 +145,7 @@ postgresql:
 mongodb:
   enabled: true
   image:
-    tag: 3.6.6
+    tag: 3.6.18
     pullPolicy: IfNotPresent
   persistence:
     size: 50Gi
@@ -186,7 +186,7 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    tag: 3.7.21-alpine
+    tag: 3.8.3-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
@@ -232,7 +232,7 @@ rabbitmq:
   replicas: 1
   rbacEnabled: true
   image:
-    tag: 3.7.19
+    tag: 3.8.3-alpine
   rabbitmq:
     username: guest
     password: ""
