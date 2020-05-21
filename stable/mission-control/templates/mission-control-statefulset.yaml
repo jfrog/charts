@@ -295,7 +295,7 @@ spec:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.missionControl.name }}
-        image: {{ .Values.missionControl.image.repository }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
+        image: {{ .Values.missionControl.image.repository }}:{{ default .Chart.AppVersion .Values.missionControl.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
         - '/bin/sh'
@@ -394,7 +394,7 @@ spec:
         #   periodSeconds: 20
         #   initialDelaySeconds: 60
       - name: {{ .Values.insightServer.name }}
-        image: {{ .Values.insightServer.image.repository }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
+        image: {{ .Values.insightServer.image.repository }}:{{ default .Chart.AppVersion .Values.insightServer.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
@@ -454,7 +454,7 @@ spec:
         #   initialDelaySeconds: 30
         #   periodSeconds: 20
       - name: {{ .Values.insightScheduler.name }}
-        image: {{ .Values.insightScheduler.image.repository }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
+        image: {{ .Values.insightScheduler.image.repository }}:{{ default .Chart.AppVersion .Values.insightScheduler.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFMC_EXTRA_JAVA_OPTS
@@ -527,7 +527,7 @@ spec:
         #   initialDelaySeconds: 60
         #   periodSeconds: 20
       - name: {{ .Values.insightExecutor.name }}
-        image: {{ .Values.insightExecutor.image.repository }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
+        image: {{ .Values.insightExecutor.image.repository }}:{{ default .Chart.AppVersion .Values.insightExecutor.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}

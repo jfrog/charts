@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.1] - May 21, 2020
+* Fix image version in statefulset
+
 ## [3.4.0] - May 19, 2020
 * Update Mission Control to version `4.4.0` - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.4
 * Bump router version to `1.4.0`
