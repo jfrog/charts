@@ -343,8 +343,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
 | `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
-| `missionControl.image`                       | Container image                                 | `docker.bintray.io/jfrog/mission-control`     |
-| `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
+| `missionControl.image.repository`                       | Container image                                 | `docker.bintray.io/jfrog/mission-control`     |
+| `missionControl.image.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
 | `missionControl.masterkey`                   | Mission Control Master Key . Can be generated with `openssl rand -hex 32` |``|
 | `missionControl.jfrogUrl`                    | Main Artifactory URL, without the `/artifactory` prefix . Mandatory| ` `                                   |
 | `missionControl.joinKey`                     | MissionControl join Key . Mandatory              | ` `                                   |
@@ -376,8 +376,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.loggersResources.limits.cpu`       | Mission Control loggers cpu limit                                          |                                                                    |
 | `missionControl.systemYaml`                  | Mission Control system configuration (`system.yaml`)  | `see values.yaml`               |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
-| `insightServer.image`                        | Container image                                 | `docker.bintray.io/jfrog/insight-server`|
-| `insightServer.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightServer.image.repository`                        | Container image                                 | `docker.bintray.io/jfrog/insight-server`|
+| `insightServer.image.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
 | `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
 | `insightServer.allowIP`                      | Range of IPs allowed to be served by Insight Server service  | `"0.0.0.0/0"`            |
@@ -391,8 +391,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.loggersResources.limits.memory`    | Insight Server loggers memory limit                                       |                                                                    |
 | `insightServer.loggersResources.limits.cpu`       | Insight Server loggers cpu limit                                          |                                                                    |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
-| `insightScheduler.image`                     | Container image                                 | `docker.bintray.io/jfrog/insight-scheduler`  |
-| `insightScheduler.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightScheduler.image.repository`                     | Container image                                 | `docker.bintray.io/jfrog/insight-scheduler`  |
+| `insightScheduler.image.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightScheduler.externalPort`              | Insight Scheduler service external port         | `8080`                                |
 | `insightScheduler.internalPort`              | Insight Scheduler service internal port         | `8080`                                |
 | `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
@@ -408,8 +408,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.loggersResources.limits.memory`    | Insight Scheduler loggers memory limit           |                              |
 | `insightScheduler.loggersResources.limits.cpu`       | Insight Scheduler loggers cpu limit              |                              |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
-| `insightExecutor.image`                      | Container image                                 | `docker.bintray.io/jfrog/insight-executor`   |
-| `insightExecutor.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightExecutor.image.repository`                      | Container image                                 | `docker.bintray.io/jfrog/insight-executor`   |
+| `insightExecutor.image.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightExecutor.externalPort`               | Insight Executor service external port          | `8080`                                |
 | `insightExecutor.internalPort`               | Insight Executor service internal port          | `8080`                                |
 | `insightExecutor.javaOpts.other`             | Insight Executor JFMC_EXTRA_JAVA_OPTS           | ``                                    |
