@@ -1,5 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
+
+## [3.3.2] - May 20, 2020
+* Skip warning in NOTES if `xray.masterKeySecretName` is set
+
 ## [3.3.1] - May 01, 2020
 * Adding tpl to values to support jfrogUrl
 
