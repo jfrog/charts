@@ -492,14 +492,14 @@ artifactory:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
       tomcat:
         connector:
-          maxThreads: 200
+          maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
           extraConfig: "acceptCount=\"100\""
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
       tomcat:
         connector:
-          maxThreads: 200
+          maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
           extraConfig: "acceptCount=\"100\""
       {{- if .Values.access.database.enabled }}
         type: "{{ .Values.access.database.type }}"
@@ -1147,7 +1147,7 @@ access:
     maxOpenConnections: 80
   tomcat:
     connector:
-      maxThreads: 200
+      maxThreads: 50
 
 metadata:
   database:
