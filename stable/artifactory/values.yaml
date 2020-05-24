@@ -123,6 +123,9 @@ artifactory:
 
   database:
     maxOpenConnections: 80
+  tomcat:
+    connector:
+      maxThreads: 200
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
@@ -806,6 +809,9 @@ artifactory:
 access:
   database:
     maxOpenConnections: 80
+  tomcat:
+    connector:
+      maxThreads: 200
 
 metadata:
   database:
