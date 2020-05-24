@@ -487,9 +487,17 @@ artifactory:
     {{- end }}
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: 200
+          extraConfig: "acceptCount=\"100\""
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: 200
+          extraConfig: "acceptCount=\"100\""
       {{- if .Values.access.database.enabled }}
         type: "{{ .Values.access.database.type }}"
         url: "{{ .Values.access.database.url }}"

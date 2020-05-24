@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.8] - May 25, 2020
+* Added Tomcat maxThreads & acceptCount
+
 ## [2.4.7] - May 19, 2020
 * Added metadata maxOpenConnections
 

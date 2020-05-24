@@ -402,9 +402,17 @@ artifactory:
     artifactory:
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: 200
+          extraConfig: "acceptCount=\"100\""
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: 200
+          extraConfig: "acceptCount=\"100\""
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
