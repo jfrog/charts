@@ -1238,7 +1238,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
-| `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
+| `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
+| `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
+| `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.17-debian-10-r72`                  |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
