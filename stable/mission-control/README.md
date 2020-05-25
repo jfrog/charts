@@ -292,12 +292,14 @@ The following table lists the configurable parameters of the mission-control cha
 | `rbac.create`                                | Specifies whether RBAC resources should be created   | `true`                           |
 | `rbac.role.rules`                            | Rules to create                                 | `[]`                                  |
 | `postgresql.enabled`                         | Enable PostgreSQL                               | `true`                                |
-| `postgresql.imageTag`                        | PostgreSQL docker image tag                     | `9.6.11`                              |
+| `postgresql.image.registry`                  | PostgreSQL Docker registry                      | `docker.bintray.io`                   |
+| `postgresql.image.repository`                | PostgreSQL Repository name                      | `bitnami/postgresql`                  |
+| `postgresql.image.tag`                        | PostgreSQL docker image tag                     | `9.6.11`                              |
 | `postgresql.image.pullPolicy`                | PostgreSQL Container pull policy                | `IfNotPresent`                        |
 | `postgresql.persistence.enabled`             | PostgreSQL persistence volume enabled           | `true`                                |
 | `postgresql.persistence.existingClaim`       | Use an existing PVC to persist data             | `nil`                                 |
 | `postgresql.persistence.size`                | PostgreSQL persistence volume size              | `50Gi`                                |
-| `postgresql.postgresqlUsernamename`          | PostgreSQL admin username                       | `postgres`                            |
+| `postgresql.postgresqlUsername`          | PostgreSQL admin username                       | `postgres`                            |
 | `postgresql.postgresqlPassword`              | PostgreSQL admin password                       | ` `                                   |
 | `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address                | `"'*'"`                               |
 | `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter     | `1500`                                |

@@ -1,6 +1,11 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.2] - May 25, 2020
+* Added ci test for image version change
+* Added ci test for postgresql image tag
+* Readme fixes
+
 ## [3.4.1] - May 21, 2020
 * Fix image version in statefulset
 
