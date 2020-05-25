@@ -916,7 +916,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
 | `artifactory.database.maxOpenConnections`         | Maximum amount of open connections from Artifactory to the DB   | `80` |
 | `artifactory.copyOnEveryStartup`         | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
-| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seounds| `3600`       |
+| `artifactory.migration.timeoutSeconds`          | Artifactory migration Maximum Timeout in seconds| `3600`       |
 | `artifactory.persistence.mountPath`      | Artifactory persistence volume mount path        | `"/var/opt/jfrog/artifactory"`       |
 | `artifactory.persistence.enabled`        | Artifactory persistence volume enabled           | `true`                               |
 | `artifactory.persistence.existingClaim`  | Artifactory persistence volume claim name        |                                      |

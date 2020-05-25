@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.7] - May 24, 2020
+* Fixed typo in README regarding migration timeout
+
 ## [9.4.6] - May 19, 2020
 * Added metadata maxOpenConnections
 
