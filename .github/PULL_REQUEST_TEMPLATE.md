@@ -3,6 +3,7 @@
 - [ ] Chart Version bumped
 - [ ] CHANGELOG.md updated
 - [ ] Variables and other changes are documented in the README.md
+- [ ] Title of the PR starts with chart name (e.g. `[artifactory]`)
 
 <!--
 Thank you for contributing to jfrog/charts. Before you submit this PR we'd like to
