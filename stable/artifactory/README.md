@@ -997,9 +997,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.ssh.externalPort`            | Artifactory SSH external port | `1339`                                     |
 | `artifactory.terminationGracePeriodSeconds`   | Termination grace period (seconds)  | `30s`                                |
 | `artifactory.tomcat.connector.maxThreads`         | The max number of connections to Artifactory connector   | `200` |
+| `artifactory.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Artifactory connector  | `100` |
 | `artifactory.systemYaml`                      | Artifactory system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML  | `see values.yaml`    |
 | `access.database.maxOpenConnections`                      | Maximum amount of open connections from Access to the DB  | `80`    |
 | `access.tomcat.connector.maxThreads`         | The max number of connections to Aceess connector   | `50` |
+| `access.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Access connector  | `100` |
 | `ingress.enabled`           | If true, Artifactory Ingress will be created | `false`                                     |
 | `ingress.annotations`       | Artifactory Ingress annotations     | `{}`                                                 |
 | `ingress.labels`       | Artifactory Ingress labels     | `{}`                                                           |

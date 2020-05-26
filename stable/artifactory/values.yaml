@@ -126,6 +126,7 @@ artifactory:
   tomcat:
     connector:
       maxThreads: 200
+      extraConfig: 'acceptCount="100"'
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
@@ -408,14 +409,14 @@ artifactory:
       tomcat:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
-          extraConfig: "acceptCount=\"100\""
+          extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
       tomcat:
         connector:
           maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
-          extraConfig: "acceptCount=\"100\""
+          extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
@@ -812,6 +813,7 @@ access:
   tomcat:
     connector:
       maxThreads: 50
+      extraConfig: 'acceptCount="100"'
 
 metadata:
   database:
