@@ -1156,9 +1156,11 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.node.waitForPrimaryStartup.enabled`    | Whether to wait for the primary node to start before starting up the member nodes | `false`            |
 | `artifactory.node.waitForPrimaryStartup.time`    | The amount of time to wait for the primary node to start before starting up the member nodes | `60`            |
 | `artifactory.tomcat.connector.maxThreads`         | The max number of connections to Artifactory connector   | `200` |
+| `artifactory.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Artifactory connector  | `100` |
 | `artifactory.systemYaml`                      | Artifactory system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML  | `see values.yaml`    |
 | `access.database.maxOpenConnections`                      | Maximum amount of open connections from Access to the DB  | `80`    |
 | `access.tomcat.connector.maxThreads`         | The max number of connections to Aceess connector   | `50` |
+| `access.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Access connector  | `100` |
 | `initContainers.resources.requests.memory`    | Init containers initial memory request   |                     |
 | `initContainers.resources.requests.cpu`       | Init containers initial cpu request      |                     |
 | `initContainers.resources.limits.memory`      | Init containers memory limit             |                     |
