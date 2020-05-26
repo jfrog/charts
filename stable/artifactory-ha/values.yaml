@@ -178,6 +178,7 @@ artifactory:
   tomcat:
     connector:
       maxThreads: 200
+      extraConfig: 'acceptCount="100"'
 
   # This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
@@ -493,14 +494,14 @@ artifactory:
       tomcat:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
-          extraConfig: "acceptCount=\"100\""
+          extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
       tomcat:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
-          extraConfig: "acceptCount=\"100\""
+          extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
       {{- if .Values.access.database.enabled }}
         type: "{{ .Values.access.database.type }}"
         url: "{{ .Values.access.database.url }}"
@@ -1148,13 +1149,14 @@ access:
   tomcat:
     connector:
       maxThreads: 50
+      extraConfig: 'acceptCount="100"'
 
 metadata:
   database:
     maxOpenConnections: 80
 
 # Init containers
-initContainers:
+initContainers:git 
   resources: {}
 #    requests:
 #      memory: "64Mi"
