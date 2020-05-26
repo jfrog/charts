@@ -1,8 +1,14 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [2.4.8] - May 25, 2020
+## [2.4.10] - May 27, 2020
 * Added Tomcat maxThreads & acceptCount
+
+## [2.4.9] - May 25, 2020
+* Fixed postgresql README `image` Parameters
+
+## [2.4.8] - May 24, 2020
+* Fixed typo in README regarding migration timeout
 
 ## [2.4.7] - May 19, 2020
 * Added metadata maxOpenConnections

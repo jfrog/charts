@@ -916,7 +916,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
 | `artifactory.database.maxOpenConnections`         | Maximum amount of open connections from Artifactory to the DB   | `80` |
 | `artifactory.copyOnEveryStartup`         | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
-| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seounds| `3600`       |
+| `artifactory.migration.timeoutSeconds`          | Artifactory migration Maximum Timeout in seconds| `3600`       |
 | `artifactory.persistence.mountPath`      | Artifactory persistence volume mount path        | `"/var/opt/jfrog/artifactory"`       |
 | `artifactory.persistence.enabled`        | Artifactory persistence volume enabled           | `true`                               |
 | `artifactory.persistence.existingClaim`  | Artifactory persistence volume claim name        |                                      |
@@ -1077,7 +1077,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.limits.cpu`      | Nginx cpu limit               |                                                      |
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
-| `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
+| `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
+| `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
+| `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.17-debian-10-r72`                                |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |

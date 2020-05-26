@@ -1046,8 +1046,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.haBackupDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
 | `artifactory.haBackupDir.enabled`         | Enable haBackupDir for eventual storage in the HA cluster   | `false` |
 | `artifactory.haBackupDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
-| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seconds| `3600`       |
-| `artifactory.migration.timeout`          | Artifactory migration Maximum Time out in seconds| `3600`       |
+| `artifactory.migration.timeoutSeconds`          | Artifactory migration Maximum Time out in seconds| `3600`       |
 | `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
@@ -1243,7 +1242,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
-| `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
+| `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
+| `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
+| `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.17-debian-10-r72`                  |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
