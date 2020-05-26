@@ -500,7 +500,7 @@ artifactory:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
       tomcat:
         connector:
-          maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
+          maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
           extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
       {{- if .Values.access.database.enabled }}
         type: "{{ .Values.access.database.type }}"
@@ -1156,7 +1156,7 @@ metadata:
     maxOpenConnections: 80
 
 # Init containers
-initContainers:git 
+initContainers: 
   resources: {}
 #    requests:
 #      memory: "64Mi"
