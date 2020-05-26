@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.4.8] - May 25, 2020
+* Fixed postgresql README `image` Parameters
+
 ## [9.4.7] - May 24, 2020
 * Fixed typo in README regarding migration timeout
 
