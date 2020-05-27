@@ -4,8 +4,24 @@
 unifiedUpgradeAllowed: true
 missionControl:
   jfrogUrl: http://artifactory-artifactory.rt:8082
+  image:
+    version: 4.3.2
+
+insightServer:
+  image:
+    version: 4.3.2
+
+insightScheduler:
+  image:
+    version: 4.3.2
+
+insightExecutor:
+  image:
+    version: 4.3.2
 
 postgresql:
+  image:
+    tag: 9.6.15-debian-9-r91
   postgresqlPassword: password
   db:
     password: password

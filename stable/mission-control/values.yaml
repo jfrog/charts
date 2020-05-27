@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.10"
+initContainerImage: "alpine:3.11"
 # Init containers
 initContainers:
   resources: {}
@@ -164,7 +164,7 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: "alpine:3.6"
+  initContainerImage: "alpine:3.11"
   configureDockerHost: true
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss
