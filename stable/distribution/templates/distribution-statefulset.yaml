@@ -98,9 +98,9 @@ spec:
         - name: POSTGRES_PORT
           value: '{{ .Values.postgresql.service.port }}'
         - name: POSTGRES_DATABASE
-          value: '{{ .Values.postgresql.postgresDatabase }}'
+          value: '{{ .Values.postgresql.postgresqlDatabase }}'
         - name: POSTGRES_USERNAME
-          value: '{{ .Values.postgresql.postgresUser }}'
+          value: '{{ .Values.postgresql.postgresqlUsername }}'
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:

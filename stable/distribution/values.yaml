@@ -193,9 +193,9 @@ logger:
 
 distribution:
   name: distribution
+  ## Note that by default we use appVersion to get image version/tag
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distribution"
-    ## Note that by default we use appVersion to get image tag
+    repository: docker.bintray.io/jfrog/distribution-distribution
     # version:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
@@ -296,9 +296,9 @@ distribution:
 
 distributor:
   name: distributor
+  ## Note that by default we use appVersion to get image version/tag
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distributor"
-    ## Note that by default we use appVersion to get image tag
+    repository: docker.bintray.io/jfrog/distribution-distributor
     # version:
     imagePullPolicy: IfNotPresent
   resources: {}

@@ -220,11 +220,13 @@ The following table lists the configurable parameters of the distribution chart 
 | `ingress.defaultBackend.enabled`                | If true, the default `backend` will be added using serviceName and servicePort | `true`                                                             |
 | `ingress.additionalRules`                       | distribution Ingress additional rules                                          | `{}`                                                               |
 | `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
-| `postgresql.imageTag`                           | PostgreSQL image tag                                                   | `9.6.11`                                                           |
-| `postgresql.postgresDatabase`                   | PostgreSQL database name                                               | `distribution`                                                     |
-| `postgresql.postgresUser`                       | PostgreSQL database username                                           | `distribution`                                                     |
-| `postgresql.postgresPassword`                   | PostgreSQL database password                                           | ` `                                                                |
-| `postgresql.postgresConfig.maxConnections`      | PostgreSQL max_connections                                             | `1500`                                                             |
+| `postgresql.image.registry`                     | PostgreSQL Docker registry                                             | `docker.bintray.io`                   |
+| `postgresql.image.repository`                   | PostgreSQL Repository name                                             | `bitnami/postgresql`                  |
+| `postgresql.image.tag`                          | PostgreSQL docker image tag                                            | `9.6.18-debian-10-r7`                              |                                                          |
+| `postgresql.postgresqlDatabase`                 | PostgreSQL database name                                               | `distribution`                           |
+| `postgresql.postgresqlUser`                     | PostgreSQL database user                                               | `distribution`                             |
+| `postgresql.postgresqlPassword`                 | PostgreSQL database password                                           | ` `                                |
+| `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter                               | `500`                           |
 | `postgresql.service.port`                       | PostgreSQL service port                                                | `5432`                                                             |
 | `postgresql.persistence.enabled`                | PostgreSQL persistence enabled                                         | `true`                                                             |
 | `postgresql.persistence.size`                   | PostgreSQL persistent disk size                                        | `50Gi`                                                             |
