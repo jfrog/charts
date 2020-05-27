@@ -162,8 +162,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -189,8 +189,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
@@ -247,8 +247,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -274,8 +274,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
@@ -336,8 +336,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -363,8 +363,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
@@ -425,8 +425,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -452,8 +452,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
