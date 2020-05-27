@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.7.0] - May 27, 2020
+* Updated Artifactory version to 6.20.0 - https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.20
+* Bump postgresql tag version to `9.6.18-debian-10-r7` in values.yaml
+
 ## [1.6.1] - May 9, 2020
 * Updated Artifactory version to 6.19.1 - https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.19.1
 
