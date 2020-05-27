@@ -2,7 +2,7 @@
 All changes to this project chart be documented in this file.
 
 ## [5.1.4] -  May 27, 2020
-* Bump router version to `1.4.0`
+* Bump router version to `1.4.0` in values.yaml
 * Bump redis tag version to `5.0.9-debian-10-r31` in values.yaml
 * Bump postgresql tag version to `9.6.18-debian-10-r7` in values.yaml
 * Bump alpine version to `3.11` in values.yaml
