@@ -105,7 +105,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
-              key: postgres-password
+              key: postgresql-password
       {{- else }}
         - name: POSTGRES_HOST
           value: '{{ .Values.database.host }}'
