@@ -5,7 +5,7 @@
 
 # General
 imagePullPolicy: IfNotPresent
-initContainerImage: "alpine:3.10"
+initContainerImage: "alpine:3.11"
 imagePullSecrets:
 
 ## Role Based Access
@@ -108,15 +108,19 @@ serviceAccount:
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
 ##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "xraydb"
-  postgresUser: "xray"
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.18-debian-10-r7
+  postgresqlUsername: xray
+  postgresqlPassword: ""
+  postgresqlDatabase: xraydb
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "500"
   service:
     port: 5432
@@ -136,12 +140,12 @@ postgresql:
   tolerations: []
 
 ## Configuration values for the mongodb dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/mongodb/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/mongodb/README.md
 ##
 mongodb:
   enabled: true
   image:
-    tag: 3.6.3
+    tag: 3.6.6
     pullPolicy: IfNotPresent
   persistence:
     size: 50Gi
@@ -159,9 +163,9 @@ mongodb:
   mongodbExtraFlags:
   # The wiredTiger is suggested to be set to 3GB.
   - "--wiredTigerCacheSizeGB=1"
-  mongodbRootPassword:
+  mongodbRootPassword: ""
   mongodbUsername: xray
-  mongodbPassword:
+  mongodbPassword: ""
   mongodbDatabase: xray
 #  livenessProbe:
 #    initialDelaySeconds: 60
@@ -173,6 +177,7 @@ mongodb:
   affinity: {}
   tolerations: []
 
+
 # RabbitMQ HA
 ## Configuration values for the rabbitmq-ha dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq-ha/README.md
@@ -180,8 +185,10 @@ mongodb:
 rabbitmq-ha:
   enabled: true
   replicaCount: 1
+  image:
+    tag: 3.8.3-alpine
   rabbitmqUsername: guest
-  rabbitmqPassword:
+  rabbitmqPassword: ""
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
   rabbitmqMemoryHighWatermark: 500MB
   rabbitmqNodePort: 5672
@@ -211,23 +218,36 @@ rabbitmq-ha:
     create: true
   nodeSelector: {}
   tolerations: []
+  ## Configuration values for the prometheus
+  prometheus:
+    operator:
+      enabled: false
 
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/README.md
 ##
 rabbitmq:
   enabled: false
-  rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
-  rabbitmqMemoryHighWatermark: 500MB
-  rabbitmqNodePort: 5672
-  rabbitmqUsername: user
-  rabbitmqPassword:
-  persistentVolume:
+  replicas: 1
+  rbacEnabled: true
+  image:
+    tag: 3.8.3-alpine
+  rabbitmq:
+    username: guest
+    password: ""
+    ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
+    # existingPasswordSecret: <name-of-existing-secret>
+    erlangCookie: XRAYRABBITMQCLUSTER
+  service:
+    nodePort: 5672
+  persistence:
     enabled: true
+    accessMode: ReadWriteOnce
     size: 20Gi
-  rbac:
-    create: true
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 # Logger containers
 logger:

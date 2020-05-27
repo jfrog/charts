@@ -1,11 +1,12 @@
 # CI values for Xray
 
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
+rbac:
+  create: false
 
+serviceAccount:
+  create: false
+
+databaseUpgradeReady: yes
 analysis:
   loggers:
     - xray_analysis.log
@@ -23,9 +24,9 @@ server:
     - xray_server.log
 
 postgresql:
-  postgresDatabase: xraydb
-  postgresUser: xray
-  postgresPassword: xray
+  postgresqlDatabase: xraydb
+  postgresqlUser: xray
+  postgresqlPassword: xray
   persistence:
     enabled: false
 

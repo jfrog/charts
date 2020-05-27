@@ -1,5 +1,6 @@
 # CI values for Xray
 
+databaseUpgradeReady: yes
 analysis:
   loggers:
     - xray_analysis.log
@@ -21,9 +22,9 @@ server:
     enabled: true
 
 postgresql:
-  postgresDatabase: xraydb
-  postgresUser: xray
-  postgresPassword: xray
+  postgresqlDatabase: xraydb
+  postgresqlUser: xray
+  postgresqlPassword: xray
   persistence:
     enabled: true
 
