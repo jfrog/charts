@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.2.0] - May 27, 2020
+* Update Mission-Control version to 3.5.8
+
 ## [1.1.17] - Feb 13, 2020
 * Add support for `ingress.additionalRules` and `ingress.defaultBackend`
 
