@@ -988,7 +988,9 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit               |                                                      |
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
-| `postgresql.imageTag`             | PostgreSQL version                         | `9.6.11`                                |
+| `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
+| `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
+| `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.18-debian-10-r7`                   |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
