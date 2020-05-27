@@ -175,6 +175,10 @@ artifactory:
   deleteDBPropertiesOnStartup: true
   database:
     maxOpenConnections: 80
+  tomcat:
+    connector:
+      maxThreads: 200
+      extraConfig: 'acceptCount="100"'
 
   # This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
@@ -487,9 +491,17 @@ artifactory:
     {{- end }}
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
+          extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
+          extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
       {{- if .Values.access.database.enabled }}
         type: "{{ .Values.access.database.type }}"
         url: "{{ .Values.access.database.url }}"
@@ -1134,6 +1146,10 @@ artifactory:
 access:
   database:
     maxOpenConnections: 80
+  tomcat:
+    connector:
+      maxThreads: 50
+      extraConfig: 'acceptCount="100"'
 
 metadata:
   database:
