@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.2.1] -  May 29, 2020
+* Readme fixes
+
 ## [5.2.0] -  May 27, 2020
 * Update Distribution version 2.3.0
 * Update router version to `1.4.0`
