@@ -7,9 +7,9 @@ All changes to this project chart be documented in this file.
 * **Breaking change:** Added Support for Distribution 4.x on k8s versions >= 1.16
 * Added `databaseUpgradeReady` flag to upgrade from 3.x to 4.x chart versions
 * Use postgresql dependency chart from https://charts.bitnami.com/bitnami
-* Bump postgresql chart to 8.7.3
-* Bump Redis tag version to `5.0.9-debian-10-r31` in values.yaml
-* Bump Postgresql tag version to `9.6.18-debian-10-r7` in values.yaml
+* Update postgresql chart to 8.7.3
+* Update Redis tag version to `5.0.9-debian-10-r31` in values.yaml
+* Update Postgresql tag version to `9.6.18-debian-10-r7` in values.yaml
 
 ## [3.6.1] - Apr 6, 2020
 * Update Distribution version 1.8.1
