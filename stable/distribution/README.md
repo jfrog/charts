@@ -18,7 +18,7 @@ This chart does the following:
 - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory Enterprise Plus
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
+- [Helm](https://helm.sh/) v2 or v3 installed
 
 ## Installing the Chart
 
@@ -31,7 +31,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `distribution`:
 ```bash
-helm install --name distribution jfrog/distribution
+helm upgrade --install distribution --namespace distribution jfrog/distribution --version 4.0.0
 ```
 
 ### Deploying Distribution for small/medium/large instllations
