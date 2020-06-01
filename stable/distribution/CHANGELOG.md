@@ -2,7 +2,7 @@
 All changes to this project chart be documented in this file.
 
 ## [5.2.1] -  Jun 1, 2020
-* Fixes broken upgrade of charts
+* Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_distribution_name>` and run helm upgrade
 * Readme fixes
 
 ## [5.2.0] -  May 27, 2020
