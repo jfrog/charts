@@ -4,6 +4,7 @@ All changes to this chart will be documented in this file.
 ## [2.5.0] - Jun 1, 2020
 * Updated Artifactory version to 7.5.5 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.5
 * Fixes bootstrap configMap permission issue
+* Update postgresql tag version to `9.6.18-debian-10-r7`
 
 ## [2.4.10] - May 27, 2020
 * Added Tomcat maxThreads & acceptCount
