@@ -36,7 +36,7 @@ This file describes special upgrade notes needed at specific versions
           Example: 
           ```bash
           OLD_PG_PASSWORD=$(kubectl get secret -n <namespace> <OLD_RELEASE_NAME>-postgresql -o jsonpath="{.data.postgres-password}" | base64 --decode)
-          OLD_MONGODB_ROOT_PASSWORD=$(kubectl get secret -n <namespace> <OLD_RELEASE_NAME>-mongodb -o jsonpath="{.data.data.mongodb-root-password}" | base64 --decode)
+          OLD_MONGODB_ROOT_PASSWORD=$(kubectl get secret -n <namespace> <OLD_RELEASE_NAME>-mongodb -o jsonpath="{.data.mongodb-root-password}" | base64 --decode)
           ```
          d. Stop old Xray pods (scale down replicas to 0). Postgresql and MongoDB pods still exists
           ```bash
