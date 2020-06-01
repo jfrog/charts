@@ -13,7 +13,7 @@ This file describes special upgrade notes needed at specific versions
   * See [PostgreSQL helm chart](https://hub.helm.sh/charts/stable/postgresql) for all available configurations
 * Upgrade
   * Due to breaking changes in the **PostgreSQL** Helm chart, a migration of the database is needed from the old to the new database
-  * The recommended migration process Full DB export and import of Postgresql
+  * The recommended migration process is Full DB export and import of Postgresql
     * Upgrade steps:
       1. Prerequisite step to get details of existing chart\
        a. Block user access to Distribution (do not shutdown).\
@@ -25,7 +25,7 @@ This file describes special upgrade notes needed at specific versions
           <OLD_RELEASE_NAME>-postgresql              ClusterIP      10.101.250.74    <none>        5432/TCP                      114m
           <OLD_RELEASE_NAME>-distribution            ClusterIP      10.101.250.89    <none>        80:30291/TCP                  113m
          ```
-         c. Keep the previous password (OLD_PG_PASSWORD) or Extract them from the secret of the existing postgresql pod
+         c. Keep the previous password (OLD_PG_PASSWORD) or Extract it from the secret of the existing postgresql pod
           Example: 
           ```bash
           OLD_PG_PASSWORD=$(kubectl get secret -n <namespace> <OLD_RELEASE_NAME>-postgresql -o jsonpath="{.data.postgres-password}" | base64 --decode)
@@ -34,7 +34,7 @@ This file describes special upgrade notes needed at specific versions
           ```bash
           $ kubectl scale statefulsets <REPLACE_OLD_RELEASE_NAME>-distribution --replicas=0
           ```
-      2. Run the `helm install` with the `new version` say `distribution-new` with distribution scale down replicas to 0, Both new Postgresql and MongoDB pods starts
+      2. Run the `helm install` with the `new version` say `distribution-new` with distribution scale down replicas to 0.
           Example:
           ```bash
           helm install distribution-new --set replicaCount=0 jfrog/distribution
@@ -53,7 +53,7 @@ This file describes special upgrade notes needed at specific versions
             ```bash
             $ psql -U distribution DATABASE_NAME < /tmp/backup.sql
             ```
-          e. After run above command you should be prompted for a password, this is current chart password.This operation could  take some time depending on the database size.
+          e. After run above command you should be prompted for a password, this is the current chart password.This operation could  take some time depending on the database size.
       5. Run the Upgrade final time which would start distribution with `databaseUpgradeReady=yes` \
          Example :
          ```bash
