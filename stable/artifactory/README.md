@@ -1079,7 +1079,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
 | `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
 | `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
-| `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.17-debian-10-r72`                                |
+| `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.18-debian-10-r7`                                |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
 | `postgresql.postgresqlUsername`   | PostgreSQL database user                   | `artifactory`                           |
 | `postgresql.postgresqlPassword`   | PostgreSQL database password               |                                         |
