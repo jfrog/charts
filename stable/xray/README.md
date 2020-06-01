@@ -294,7 +294,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.image.registry`              | PostgreSQL Docker image registry         | `docker.bintray.io`                             |
 | `postgresql.image.repository`              | PostgreSQL Docker image repository         | `bitnami/postgresql`                             |
-| `postgresql.image.tag`              | PostgreSQL Docker image tag         | `9.6.15-debian-9-r91`                             |
+| `postgresql.image.tag`              | PostgreSQL Docker image tag         | `9.6.18-debian-10-r7`                             |
 | `postgresql.postgresqlUsername`         | PostgreSQL database user                    | `xray`                             |
 | `postgresql.postgresqlPassword`     | PostgreSQL database password                | ` `                                |
 | `postgresql.postgresqlDatabase`     | PostgreSQL database name                    | `xraydb`                           |
@@ -344,6 +344,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
 | `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
+| `common.rabbitmq.connectionConfigFromEnvironment`| Use rabbitmq connection config from environment variables | `true`  |
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
