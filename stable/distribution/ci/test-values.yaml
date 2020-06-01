@@ -1,31 +1,20 @@
 # CI values for Distribution
 
-# replicaCount: 2
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
-
+databaseUpgradeReady: true
 postgresql:
   postgresPassword: password
   persistence:
     enabled: false
 
 redis:
-  password: "password"
+  password: password
   persistence:
     enabled: false
 
 distributor:
   persistence:
     enabled: false
-  loggers:
-    - foreman.log
 
 distribution:
   persistence:
     enabled: false
-  loggers:
-    - access.log
-    - request.log

@@ -8,6 +8,9 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE FAILED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/pre-unified-platform/stable/distribution/CHANGELOG.md) and prepare PostgreSQL DB migration before upgrading.\nOnce ready, explicitly pass 'databaseUpgradeReady=yes' to upgrade and complete migration after server starts!\n" .Values.databaseUpgradeReady | quote }}
+{{- end }}
 spec:
   serviceName: {{ template "distribution.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
@@ -16,10 +19,8 @@ spec:
   selector:
     matchLabels:
       app: {{ template "distribution.name" . }}
-      chart: {{ template "distribution.chart" . }}
       release: {{ .Release.Name }}
       role: {{ template "distribution.name" . }}
-      component: {{ .Values.distribution.name }}
   template:
     metadata:
       labels:
@@ -95,14 +96,14 @@ spec:
         - name: POSTGRES_PORT
           value: '{{ .Values.postgresql.service.port }}'
         - name: POSTGRES_DATABASE
-          value: '{{ .Values.postgresql.postgresDatabase }}'
+          value: '{{ .Values.postgresql.postgresqlDatabase }}'
         - name: POSTGRES_USERNAME
-          value: '{{ .Values.postgresql.postgresUser }}'
+          value: '{{ .Values.postgresql.postgresqlUsername }}'
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
-              key: postgres-password
+              key: postgresql-password
       {{- else }}
         - name: POSTGRES_HOST
           value: '{{ .Values.database.host }}'
@@ -372,11 +373,6 @@ spec:
       {{- end }}
     - metadata:
         name: redis-data
-        labels:
-          app: {{ template "redis.name" . }}
-          chart: {{ template "distribution.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.redis.persistence.existingClaim }}
         selector:

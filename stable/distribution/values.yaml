@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.8"
+initContainerImage: "alpine:3.11"
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -89,15 +89,19 @@ ingress:
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
 ##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "distribution"
-  postgresUser: "distribution"
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.18-debian-10-r7
+  postgresqlUsername: distribution
+  postgresqlPassword: ""
+  postgresqlDatabase: distribution
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "1500"
   service:
     port: 5432
@@ -142,11 +146,11 @@ database:
 redis:
   name: redis
   image:
-    repository: docker.io/bitnami/redis
-    tag: 4.0.11-debian-9
+    repository: docker.bintray.io/bitnami/redis
+    tag: 5.0.9-debian-10-r31
     pullPolicy: IfNotPresent
   port: 6379
-  password:
+  password: ""
   uid: 1001
   serviceAccount:
     create: true
@@ -189,9 +193,9 @@ logger:
 
 distribution:
   name: distribution
+  ## Note that by default we use appVersion to get image version/tag
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distribution"
-    ## Note that by default we use appVersion to get image tag
+    repository: docker.bintray.io/jfrog/distribution-distribution
     # version:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
@@ -292,9 +296,9 @@ distribution:
 
 distributor:
   name: distributor
+  ## Note that by default we use appVersion to get image version/tag
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distributor"
-    ## Note that by default we use appVersion to get image tag
+    repository: docker.bintray.io/jfrog/distribution-distributor
     # version:
     imagePullPolicy: IfNotPresent
   resources: {}
