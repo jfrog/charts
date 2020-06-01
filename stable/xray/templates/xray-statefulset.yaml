@@ -7,7 +7,7 @@ metadata:
     chart: {{ template "xray.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    component: {{ .Values.server.name }}
+    component: {{ .Values.xray.name }}
     version: {{ default .Chart.AppVersion .Values.common.xrayVersion }}
 {{- if .Release.IsUpgrade }}
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
@@ -16,19 +16,18 @@ spec:
   serviceName: "{{ template "xray-server.fullname" . }}"
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
-    type: {{ .Values.server.updateStrategy }}
-  podManagementPolicy: {{ .Values.server.podManagementPolicy }}
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
-      component: {{ .Values.server.name }}
+      component: {{ .Values.xray.name }}
   template:
     metadata:
       labels:
         app: {{ template "xray.name" . }}
         release: {{ .Release.Name }}
-        component: {{ .Values.server.name }}
+        component: {{ .Values.xray.name }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
         {{- with .Values.analysis.annotations }}
@@ -459,6 +458,7 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
@@ -468,6 +468,7 @@ spec:
             secretKeyRef:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
+      {{- end }}
         - name: XRAY_K8S_ENV
           value: "true"
         ports:
