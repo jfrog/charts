@@ -280,6 +280,11 @@ common:
     indexAllBuilds: false
     support-router: true
 
+  # Use rabbitmq connection config from environment variables.
+  # If false, than connection details should be set directly in system.yaml (systemYaml section).
+  rabbitmq:
+    connectionConfigFromEnvironment: true
+
   ## Custom command to run before Xray startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
 
@@ -339,8 +344,6 @@ analysis:
   image:
     repository: docker.bintray.io/jfrog/xray-analysis
     # version:
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
   internalPort: 7000
   externalPort: 7000
   annotations: {}
@@ -390,8 +393,6 @@ indexer:
   image:
     repository: docker.bintray.io/jfrog/xray-indexer
     # version:
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
   internalPort: 7002
   externalPort: 7002
   annotations: {}
@@ -449,8 +450,6 @@ persist:
   image:
     repository: docker.bintray.io/jfrog/xray-persist
     # version:
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
   internalPort: 7003
   externalPort: 7003
   annotations: {}
@@ -500,9 +499,6 @@ server:
   image:
     repository: docker.bintray.io/jfrog/xray-server
     # version:
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
-  replicaCount: 1
   internalPort: 8000
   externalPort: 80
   annotations: {}
