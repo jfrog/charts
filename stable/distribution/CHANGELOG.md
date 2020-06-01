@@ -1,7 +1,8 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [5.2.1] -  May 29, 2020
+## [5.2.1] -  Jun 1, 2020
+* Fixes broken upgrade of charts
 * Readme fixes
 
 ## [5.2.0] -  May 27, 2020
