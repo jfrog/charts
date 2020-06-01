@@ -249,7 +249,9 @@ The following table lists the configurable parameters of the distribution chart 
 | `rbac.create`                                   | Specifies whether RBAC resources should be created                     | `true`                                                             |
 | `rbac.role.rules`                               | Rules to create                                                        | `[]`                                                               |
 | `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
-| `postgresql.imageTag`                           | PostgreSQL image tag                                                   | `9.6.11`                                                           |
+| `postgresql.image.tag`                          | PostgreSQL image tag                                                   | `9.6.18-debian-10-r7`                                              |
+| `postgresql.image.repository`                   | PostgreSQL Repository name                                             | `bitnami/postgresql`                                               |
+| `postgresql.image.registry`                     | PostgreSQL Docker registry                                             | `docker.bintray.io`                                                |
 | `postgresql.postgresqlDatabase`                 | PostgreSQL database name                                               | `distribution`                                                     |
 | `postgresql.postgresqlUsername`                 | PostgreSQL database username                                           | `distribution`                                                     |
 | `postgresql.postgresqlPassword`                 | PostgreSQL database password                                           | ` `                                                                |
