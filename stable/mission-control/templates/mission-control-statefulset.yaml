@@ -6,7 +6,6 @@ metadata:
     app: {{ template "mission-control.name" . }}
     chart: {{ template "mission-control.chart" . }}
     component: {{ .Values.missionControl.name }}
-    version: {{ default .Chart.AppVersion .Values.missionControl.version }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   {{- if .Release.IsUpgrade }}
@@ -724,11 +723,6 @@ spec:
     {{- if .Values.missionControl.persistence.enabled }}
     - metadata:
         name: mission-control-data
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.missionControl.persistence.existingClaim }}
         selector:
@@ -751,11 +745,6 @@ spec:
     {{- if .Values.elasticsearch.persistence.enabled }}
     - metadata:
         name: elasticsearch-data
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.elasticsearch.persistence.existingClaim }}
         selector:
