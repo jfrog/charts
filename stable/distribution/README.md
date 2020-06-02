@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.8+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart does the following:
@@ -31,7 +31,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 To install the chart with the release name `distribution`:
 ```bash
-helm upgrade --install distribution --namespace distribution jfrog/distribution --version 4.0.0
+helm upgrade --install distribution --namespace distribution jfrog/distribution --version 4.0.1
 ```
 
 ### Deploying Distribution for small/medium/large instllations
