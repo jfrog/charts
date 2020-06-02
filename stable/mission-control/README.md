@@ -17,7 +17,7 @@ This chart will do the following:
 - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory Enterprise
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
+- [Helm](https://helm.sh/) v2 or v3 installed
 
 ## Add JFrog Helm repository
 Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
@@ -27,7 +27,7 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Installing the Chart
 ```bash
-helm install --name mission-control jfrog/mission-control
+helm upgrade --install --namespace mission-control jfrog/mission-control --version 1.2.0
 ```
 ### Auto generated passwords
 
