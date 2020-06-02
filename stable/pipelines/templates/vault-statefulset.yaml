@@ -7,7 +7,7 @@ metadata:
     component: {{ include "pipelines.vault.name" . }}
 spec:
   serviceName: {{ include "pipelines.vault.name" . }}-headless
-  replicas: {{ .Values.vault.replicaCount }}
+  replicas: 1
   updateStrategy:
     type: {{ .Values.vault.updateStrategy }}
   selector:
@@ -46,7 +46,6 @@ spec:
 
               storage "postgresql" {
                 connection_url = "${PIPELINES_SHARED_DB_CONNECTIONSTRING}"
-                ha_enabled = "true"
               }
 
               max_lease_ttl = "768h"
