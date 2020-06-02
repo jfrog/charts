@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.8"
+initContainerImage: alpine:3.11
 # Init containers
 initContainers:
   resources: {}
@@ -77,8 +77,8 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: postgres
-      tag: 9.6.11-alpine
+      repository: docker.bintray.io/postgres
+      tag: 9.6.18-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -87,7 +87,8 @@ dbSetup:
 ##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
+  image: docker.bintray.io/postgres
+  imageTag: 9.6.18-alpine
   postgresUsername: postgres
   postgresPassword:
   postgresConfig:
@@ -166,10 +167,10 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: "alpine:3.6"
+  initContainerImage: alpine:3.11
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss-sg
-    tag: 6.6.0
+    tag: 6.8.9
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   url: http://localhost:9200
