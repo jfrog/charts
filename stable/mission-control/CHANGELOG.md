@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.3] - June 1, 2020
+* Update Mission Control version to 4.4.1
+* Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_mission-control>` and run helm upgrade
+
 ## [3.4.2] - May 25, 2020
 * Added ci test for image version change
 * Added ci test for postgresql image tag
