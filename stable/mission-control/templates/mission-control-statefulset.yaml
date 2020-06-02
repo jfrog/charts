@@ -4,7 +4,6 @@ metadata:
   name: {{ template "mission-control.fullname" . }}
   labels:
     app: {{ template "mission-control.name" . }}
-    chart: {{ template "mission-control.chart" . }}
     component: {{ .Values.missionControl.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
@@ -769,11 +768,6 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: mission-control-data
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.missionControl.persistence.existingClaim }}
         selector:
@@ -794,11 +788,6 @@ spec:
       {{- end }}
     - metadata:
         name: insight-server-logs
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.insightServer.persistence.existingClaim }}
         selector:
@@ -819,11 +808,6 @@ spec:
       {{- end }}
     - metadata:
         name: insight-scheduler-logs
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.insightScheduler.persistence.existingClaim }}
         selector:
@@ -844,11 +828,6 @@ spec:
       {{- end }}
     - metadata:
         name: insight-executor-logs
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.insightExecutor.persistence.existingClaim }}
         selector:
@@ -870,11 +849,6 @@ spec:
     {{- if .Values.elasticsearch.enabled }}
     - metadata:
         name: elasticsearch-data
-        labels:
-          app: {{ template "mission-control.name" . }}
-          chart: {{ template "mission-control.chart" . }}
-          release: {{ .Release.Name  }}
-          heritage: {{ .Release.Service }}
       spec:
       {{- if .Values.elasticsearch.persistence.existingClaim }}
         selector:
