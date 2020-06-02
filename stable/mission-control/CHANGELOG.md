@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [1.2.0] - Jun 2, 2020
-* Update Mission-Control version to 3.5.8
+* Update Mission-Control version to 3.5.8 - https://www.jfrog.com/confluence/display/MC3X/Release+Notes#ReleaseNotes-MissionControl3.5.8
 
 ## [1.1.17] - Feb 13, 2020
 * Add support for `ingress.additionalRules` and `ingress.defaultBackend`
