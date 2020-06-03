@@ -7,7 +7,7 @@ All changes to this chart will be documented in this file.
 * Bump postgresql tag version to `9.6.18-debian-10-r7`
 * **Breaking change:** Bump rabbitmq/rabbitmq-ha tag versions to `3.8.3-alpine`
 * Added tpl to support external database secrets values
-* Added custom volumes/volumesMounts under common
+* Added custom volumes/volumesMounts under `common`
 * Removed custom volumes from each specific service
 
 ## [3.3.2] - May 20, 2020
