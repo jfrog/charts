@@ -289,6 +289,18 @@ common:
   ## Custom command to run before Xray startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
 
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"
@@ -349,6 +361,12 @@ analysis:
   externalPort: 7000
   annotations: {}
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
   livenessProbe:
     enabled: true
     config: |
@@ -397,12 +415,6 @@ indexer:
   internalPort: 7002
   externalPort: 7002
   annotations: {}
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -455,6 +467,12 @@ persist:
   externalPort: 7003
   annotations: {}
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+
   livenessProbe:
     enabled: true
     config: |
@@ -503,12 +521,6 @@ server:
   internalPort: 8000
   externalPort: 80
   annotations: {}
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
 
   ## Add custom volumesMounts
   customVolumeMounts: |
