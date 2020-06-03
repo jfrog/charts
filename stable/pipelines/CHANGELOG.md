@@ -1,8 +1,13 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
+## [1.2.0] - June 2, 2020
+* Pipelines v1.5.1
+* Update Postgres image to 9.6.18-debian-10-r7
+* Disable Vault HA
+* Bump alpine to v3.11
 
 ## [1.1.5] - May 13, 2020
-* Pipelines v1.4.7 
+* Pipelines v1.4.7
  
 ## [1.1.4] - April 30, 2020
 * In readme fix helm template examples
