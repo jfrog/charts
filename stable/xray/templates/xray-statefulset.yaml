@@ -9,7 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     component: {{ .Values.xray.name }}
 {{- if .Release.IsUpgrade }}
-    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
+    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 spec:
   serviceName: "{{ template "xray.fullname" . }}"

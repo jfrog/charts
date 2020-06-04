@@ -60,6 +60,9 @@ helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray j
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set xray.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
+### Special Upgrade Notes
+Xray 2.x to 3.x (App Version) is not directly supported.For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/UPGRADE_NOTES.md). If this is an upgrade over an existing Xray 3.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
+
 
 ### System Configuration
 
@@ -272,6 +275,7 @@ The following table lists the configurable parameters of the xray chart and thei
 
 |         Parameter            |                    Description                   |           Default                  |
 |------------------------------|--------------------------------------------------|------------------------------------|
+| `unifiedUpgradeAllowed`      | Set this flag to `true` for unifiedupgrades      |                                    |
 | `imagePullSecrets`           | Docker registry pull secret                      |                                    |
 | `imagePullPolicy`            | Container pull policy                            | `IfNotPresent`                     |
 | `initContainerImage`         | Init container image                             | `alpine:3.6`                       |

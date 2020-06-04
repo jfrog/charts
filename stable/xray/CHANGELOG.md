@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [3.4.0] - Jun 1, 2020
 * Update Xray to version `3.4.0` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.4
+* Added Upgrade Notes in README for 3.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes
 * Update router version to `1.4.0`
 * Update postgresql tag version to `9.6.18-debian-10-r7`
 * **Breaking change:** Update rabbitmq/rabbitmq-ha tag versions to `3.8.3-alpine`
