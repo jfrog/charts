@@ -7,6 +7,9 @@ metadata:
     component: {{ .Values.missionControl.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE FAILED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/pre-unified-platform/stable/mission-control/CHANGELOG.md) and prepare PostgreSQL DB migration before upgrading.\nOnce ready, explicitly pass 'databaseUpgradeReady=yes' to upgrade and complete migration after server starts!\n" .Values.databaseUpgradeReady | quote }}
+{{- end }}
 spec:
   serviceName: {{ template "mission-control.fullname" . }}
   replicas: {{ .Values.replicaCount }}
@@ -81,9 +84,9 @@ spec:
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
-            {{- if .Values.postgresql.postgresPassword }}
+            {{- if .Values.postgresql.postgresqlPassword }}
               name: {{ template "mission-control.fullname" . }}-postgresql-cred
-              key: postgresPassword
+              key: postgresql-password
             {{- else }}
               name: {{ .Release.Name }}-postgresql
             {{- end }}

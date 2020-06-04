@@ -166,7 +166,7 @@ data:
 
     DB_HOST={{ .Release.Name }}-postgresql
     [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
-    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresUsername }} -w"
+    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresqlUsername }} -w"
 
     init
     [[ $SERVICE =~ all|jfis ]] && setupDB "${JFIS_DB_USERNAME}" "${JFIS_DB_PASSWORD}" "${DB_NAME}" "${JFIS_DB_SCHEMA}" || true

@@ -77,8 +77,9 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: docker.bintray.io/postgres
-      tag: 9.6.18-alpine
+      registry: docker.bintray.io
+      repository: bitnami/postgresql
+      tag: 9.6.18-debian-10-r7
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -87,11 +88,14 @@ dbSetup:
 ##
 postgresql:
   enabled: true
-  image: docker.bintray.io/postgres
-  imageTag: 9.6.18-alpine
-  postgresUsername: postgres
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/postgresql
+    tag: 9.6.18-debian-10-r7
+  postgresqlUsername: postgres
+  postgresqlPassword: ""
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "1500"
   db:
     name: mission_control

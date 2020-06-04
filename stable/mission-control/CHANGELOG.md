@@ -1,6 +1,14 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.0.0] - Jun 4, 2020
+* **Breaking change:** Added Upgrade Notes from 1.x to 2.x chart version - Refer https://github.com/jfrog/charts/blob/pre-unified-platform/stable/mission-control/UPGRADE_NOTES.md
+* **Breaking change:** Added Support for Mission-Control 2.x on k8s versions >= 1.16
+* Added `databaseUpgradeReady` flag to upgrade from 1.x to 2.x chart versions
+* Use postgresql dependency chart from https://charts.bitnami.com/bitnami
+* Update postgresql chart to 8.7.3
+* Update Postgresql tag version to `9.6.18-debian-10-r7`
+
 ## [1.2.0] - Jun 2, 2020
 * Update Mission-Control version to 3.5.8 - https://www.jfrog.com/confluence/display/MC3X/Release+Notes#ReleaseNotes-MissionControl3.5.8
 * Fixes Broken upgrades of charts - use kubectl delete statefulsets <old_statefulset_mission-control> and run helm upgrade
