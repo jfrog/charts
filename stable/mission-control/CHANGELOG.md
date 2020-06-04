@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.4] - June 4, 2020
+* Update postgresql tag version to `9.6.18-debian-10-r7`
+
 ## [3.4.3] - June 1, 2020
 * Update Mission Control version to 4.4.1
 * Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_mission-control>` and run helm upgrade
