@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.4] - June 4, 2020
+* Update postgresql image tag to `9.6.18-debian-10-r7`
+* Added Upgrade Notes in README for 4.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes
+
 ## [3.4.3] - June 1, 2020
 * Update Mission Control version to 4.4.1
 * Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_mission-control>` and run helm upgrade
