@@ -3,9 +3,9 @@ All changes to this chart will be documented in this file.
 
 ## [3.4.0] - Jun 1, 2020
 * Update Xray to version `3.4.0` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.4
-* Bump router version to `1.4.0`
-* Bump postgresql tag version to `9.6.18-debian-10-r7`
-* **Breaking change:** Bump rabbitmq/rabbitmq-ha tag versions to `3.8.3-alpine`
+* Update router version to `1.4.0`
+* Update postgresql tag version to `9.6.18-debian-10-r7`
+* **Breaking change:** Update rabbitmq/rabbitmq-ha tag versions to `3.8.3-alpine`
 * Added tpl to support external database secrets values
 * Added custom volumes/volumesMounts under `common`
 * Removed custom volumes from each specific service
