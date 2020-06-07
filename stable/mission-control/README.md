@@ -56,6 +56,9 @@ helm upgrade --install mission-control --set missionControl.joinKeySecretName=my
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set missionControl.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
+### Special Upgrade Notes
+Mission-control 3.x to 4.x (App Version) is not currently supported.If this is an upgrade over an existing Mission Control 4.x, explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
+
 ### System Configuration
 Mission Control uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 
@@ -279,7 +282,8 @@ The following table lists the configurable parameters of the mission-control cha
 
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
-| `initContainerImage`                         | Init Container Image                            | `alpine:3.6`                          |
+| `unifiedUpgradeAllowed`                      | Set this flag to `true` for unifiedupgrades     |                                       |
+| `initContainerImage`                         | Init Container Image                            | `alpine:3.11`                         |
 | `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
 | `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
 | `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
@@ -294,7 +298,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.enabled`                         | Enable PostgreSQL                               | `true`                                |
 | `postgresql.image.registry`                  | PostgreSQL Docker registry                      | `docker.bintray.io`                   |
 | `postgresql.image.repository`                | PostgreSQL Repository name                      | `bitnami/postgresql`                  |
-| `postgresql.image.tag`                        | PostgreSQL docker image tag                     | `9.6.11`                              |
+| `postgresql.image.tag`                        | PostgreSQL docker image tag                    | `9.6.18-debian-10-r7`                 |
 | `postgresql.image.pullPolicy`                | PostgreSQL Container pull policy                | `IfNotPresent`                        |
 | `postgresql.persistence.enabled`             | PostgreSQL persistence volume enabled           | `true`                                |
 | `postgresql.persistence.existingClaim`       | Use an existing PVC to persist data             | `nil`                                 |
