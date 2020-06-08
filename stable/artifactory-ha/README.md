@@ -730,6 +730,29 @@ This can be done with the following parameters
 ...
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
+##### Configuring Artifactory with external Oracle database
+To use artifactory with oracledb the required instant client library files, libaio has to be copied to tomcat lib. Also set LD_LIBRARY_PATH env variable.
+1. Create a value file with the configuration
+```yaml
+postgresql:
+  enabled: false
+database:
+  type: oracle
+  driver: oracle.jdbc.OracleDriver
+  url: <DB_URL>
+  user: <DB_USER>
+  password: <DB_PASSWORD>
+artifactory:
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."  
+  extraEnvironmentVariables:
+  - name: LD_LIBRARY_PATH
+    value: /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
+```
+2. Install Artifactory with the values file you created:
+```bash
+helm upgrade --install artifactory jfrog/artifactory-ha --namespace artifactory -f values-oracle.yaml
+```
+**NOTE:** If its an upgrade from 6.x to 7.x, add same `preStartCommand` under `artifactory.migration.preStartCommand`
 
 #### Using pre-existing Kubernetes Secret
 If you store your database credentials in a pre-existing Kubernetes `Secret`, you can specify them via `database.secrets` instead of `database.user` and `database.password`:

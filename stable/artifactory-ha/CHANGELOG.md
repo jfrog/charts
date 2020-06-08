@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.2] - Jun 8, 2020
+* Readme update - configuring Artifactory with oracledb
+
 ## [2.5.1] - Jun 5, 2020
 * Fixes broken PDB issue upgrading from 6.x to 7.x
 
