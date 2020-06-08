@@ -63,6 +63,8 @@ helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray j
 ### Special Upgrade Notes
 Xray 2.x to 3.x (App Version) is not directly supported.For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/UPGRADE_NOTES.md). If this is an upgrade over an existing Xray 3.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
 
+Also, While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+
 
 ### System Configuration
 
