@@ -10,7 +10,7 @@ All changes to this chart will be documented in this file.
 * Added tpl to support external database secrets values
 * Added custom volumes/volumesMounts under `common`
 * Removed custom volumes from each specific service
-* Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_distribution_name>` and run helm upgrade
+* Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
 
 ## [3.3.2] - May 20, 2020
 * Skip warning in NOTES if `xray.masterKeySecretName` is set
