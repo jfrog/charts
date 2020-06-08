@@ -6,7 +6,6 @@ All changes to this chart will be documented in this file.
 * Added Upgrade Notes in README for 3.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes
 * Update router version to `1.4.0`
 * Update postgresql tag version to `9.6.18-debian-10-r7`
-* **Breaking change:** Update rabbitmq/rabbitmq-ha tag versions to `3.8.3-alpine`
 * Added tpl to support external database secrets values
 * Added custom volumes/volumesMounts under `common`
 * Removed custom volumes from each specific service
