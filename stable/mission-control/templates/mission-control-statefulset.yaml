@@ -229,9 +229,12 @@ spec:
           value: '{{ template "mission-control.fullname" . }}'
         - name: 'cluster.initial_master_nodes'
           value: '{{ template "elasticsearch.endpoints" . }}'
-        - name: ELASTIC_SEARCH_USERNAME
-          value: '{{ .Values.elasticsearch.username }}'
-        - name: ELASTIC_SEARCH_PASSWORD
+        - name: JF_SHARED_ELASTICSEARCH_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
+              key: username
+        - name: JF_SHARED_ELASTICSEARCH_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
@@ -245,8 +248,11 @@ spec:
               -Xmx{{ .Values.elasticsearch.javaOpts.xmx }}
           {{- end }}
           "
-        - name: ELASTIC_SEARCH_URL
-          value: '{{ .Values.elasticsearch.url }}'
+        - name: JF_SHARED_ELASTICSEARCH_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
+              key: url
         ports:
         - name: eshttp
           containerPort: {{ .Values.elasticsearch.httpPort }}

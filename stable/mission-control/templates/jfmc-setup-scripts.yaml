@@ -45,8 +45,8 @@ data:
         touch  ${JFMC_PROPERTIES} || (  echo "unable to create ${JFMC_PROPERTIES} file" && exit 1 )
     fi
 
-    addProperty "elastic.username" "${ELASTIC_SEARCH_USERNAME}" ${JFMC_PROPERTIES} && \
-    addProperty "elastic.password" "${ELASTIC_SEARCH_PASSWORD}" ${JFMC_PROPERTIES} && \
+    addProperty "elastic.username" "${JF_SHARED_ELASTICSEARCH_USERNAME}" ${JFMC_PROPERTIES} && \
+    addProperty "elastic.password" "${JF_SHARED_ELASTICSEARCH_PASSWORD}" ${JFMC_PROPERTIES} && \
     addProperty "jfmc.db.username" "${JFMC_DB_USERNAME}" ${JFMC_PROPERTIES} && \
     addProperty "jfmc.db.password" "${JFMC_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
     addProperty "jfex.db.username" "${JFEX_DB_USERNAME}" ${JFMC_PROPERTIES} && \
