@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.3] - Jun 8, 2020
+* Statically setting primary service type to ClusterIP.
+* Prevents primary service from being exposed publicly when using LoadBalancer type on cloud providers.
+
 ## [2.5.2] - Jun 8, 2020
 * Readme update - configuring Artifactory with oracledb
 
