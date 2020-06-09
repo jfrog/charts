@@ -1,34 +1,32 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ template "xray-server.fullname" . }}
+  name: {{ template "xray.fullname" . }}
   labels:
     app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    component: {{ .Values.server.name }}
-    version: {{ default .Chart.AppVersion .Values.common.xrayVersion }}
+    component: {{ .Values.xray.name }}
 {{- if .Release.IsUpgrade }}
-    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
+    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 spec:
-  serviceName: "{{ template "xray-server.fullname" . }}"
+  serviceName: "{{ template "xray.fullname" . }}"
   replicas: {{ .Values.replicaCount }}
   updateStrategy:
-    type: {{ .Values.server.updateStrategy }}
-  podManagementPolicy: {{ .Values.server.podManagementPolicy }}
+    type: RollingUpdate
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
-      component: {{ .Values.server.name }}
+      component: {{ .Values.xray.name }}
   template:
     metadata:
       labels:
         app: {{ template "xray.name" . }}
         release: {{ .Release.Name }}
-        component: {{ .Values.server.name }}
+        component: {{ .Values.xray.name }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
         {{- with .Values.analysis.annotations }}
@@ -162,8 +160,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -189,13 +187,14 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
         {{- end }}
       {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
@@ -205,6 +204,7 @@ spec:
             secretKeyRef:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
+      {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
         volumeMounts:
@@ -247,8 +247,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -274,13 +274,14 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
         {{- end }}
       {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
@@ -290,6 +291,7 @@ spec:
             secretKeyRef:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
+      {{- end }}
         - name: XRAY_HA_NODE_ID
           valueFrom:
             fieldRef:
@@ -336,8 +338,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -363,13 +365,14 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
         {{- end }}
       {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
@@ -379,6 +382,7 @@ spec:
             secretKeyRef:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
+      {{- end }}
         - name: XRAY_HA_NODE_ID
           valueFrom:
             fieldRef:
@@ -425,8 +429,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
@@ -452,13 +456,14 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-url
         {{- end }}
       {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
@@ -468,6 +473,7 @@ spec:
             secretKeyRef:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
+      {{- end }}
         - name: XRAY_K8S_ENV
           value: "true"
         ports:

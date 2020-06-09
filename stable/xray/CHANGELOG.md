@@ -1,6 +1,16 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.0] - Jun 1, 2020
+* Update Xray to version `3.4.0` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.4
+* Added Upgrade Notes in README for 3.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes
+* Update router version to `1.4.0`
+* Update postgresql tag version to `9.6.18-debian-10-r7`
+* Added tpl to support external database secrets values
+* Added custom volumes/volumesMounts under `common`
+* Removed custom volumes from each specific service
+* Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+
 ## [3.3.2] - May 20, 2020
 * Skip warning in NOTES if `xray.masterKeySecretName` is set
 

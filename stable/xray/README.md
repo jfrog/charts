@@ -60,6 +60,11 @@ helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray j
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set xray.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
+### Special Upgrade Notes
+Xray 2.x to 3.x (App Version) is not directly supported.For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/UPGRADE_NOTES.md). If this is an upgrade over an existing Xray 3.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
+
+Also, While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+
 
 ### System Configuration
 
@@ -272,6 +277,7 @@ The following table lists the configurable parameters of the xray chart and thei
 
 |         Parameter            |                    Description                   |           Default                  |
 |------------------------------|--------------------------------------------------|------------------------------------|
+| `unifiedUpgradeAllowed`      | Set this flag to `true` for unifiedupgrades      |                                    |
 | `imagePullSecrets`           | Docker registry pull secret                      |                                    |
 | `imagePullPolicy`            | Container pull policy                            | `IfNotPresent`                     |
 | `initContainerImage`         | Init container image                             | `alpine:3.6`                       |
@@ -294,7 +300,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database         | `true`                             |
 | `postgresql.image.registry`              | PostgreSQL Docker image registry         | `docker.bintray.io`                             |
 | `postgresql.image.repository`              | PostgreSQL Docker image repository         | `bitnami/postgresql`                             |
-| `postgresql.image.tag`              | PostgreSQL Docker image tag         | `9.6.15-debian-9-r91`                             |
+| `postgresql.image.tag`              | PostgreSQL Docker image tag         | `9.6.18-debian-10-r7`                             |
 | `postgresql.postgresqlUsername`         | PostgreSQL database user                    | `xray`                             |
 | `postgresql.postgresqlPassword`     | PostgreSQL database password                | ` `                                |
 | `postgresql.postgresqlDatabase`     | PostgreSQL database name                    | `xraydb`                           |
@@ -344,6 +350,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
 | `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
+| `common.rabbitmq.connectionConfigFromEnvironment`| Use rabbitmq connection config from environment variables | `true`  |
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
 | `common.xrayUserId`                            | Xray User Id                                 | `1035`               |
 | `common.xrayGroupId`                           | Xray Group Id                                | `1035`               |
@@ -360,13 +367,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `global.postgresqlTlsSecret`                   | Xray external PostgreSQL TLS files secret    | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |
 | `analysis.image`                               | Xray Analysis container image                | `docker.bintray.io/jfrog/xray-analysis` |
-| `analysis.updateStrategy`                      | Xray Analysis update strategy                | `RollingUpdate`      |
-| `analysis.podManagementPolicy`                 | Xray Analysis pod management policy          | `Parallel`           |
 | `analysis.internalPort`                        | Xray Analysis internal port                  | `7000`               |
 | `analysis.externalPort`                        | Xray Analysis external port                  | `7000`               |
 | `analysis.livenessProbe`                       | Xray Analysis livenessProbe                  | See `values.yaml`    |
 | `analysis.readinessProbe`                      | Xray Analysis readinessProbe                 | See `values.yaml`    |
-| `analysis.persistence.size`                    | Xray Analysis storage size limit             | `10Gi`               |
 | `analysis.resources`                           | Xray Analysis resources                      | `{}`                 |
 | `analysis.preStartCommand`                     | Xray Analysis Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `analysis.nodeSelector`                        | Xray Analysis node selector                  | `{}`                 |
@@ -376,19 +380,15 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
 | `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
 | `indexer.annotations`                          | Xray Indexer annotations                     | `{}`                               |
-| `indexer.updateStrategy`                       | Xray Indexer update strategy                 | `RollingUpdate`      |
-| `indexer.podManagementPolicy`                  | Xray Indexer pod management policy           | `Parallel`           |
 | `indexer.internalPort`                         | Xray Indexer internal port                   | `7002`               |
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.livenessProbe`                        | Xray Indexer livenessProbe                   | See `values.yaml`    |
 | `indexer.readinessProbe`                       | Xray Indexer readinessProbe                  | See `values.yaml`    |
-| `indexer.customVolumes`                         | Custom volumes                               |                                                  |
 | `indexer.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
 | `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
 | `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `false`                             |
 | `indexer.persistence.accessMode`               | Xray Indexer persistence volume access mode  | `ReadWriteOnce`                    |
-| `indexer.persistence.size`                     | Xray Indexer persistence volume size         | `50Gi`                             |
 | `indexer.resources`                            | Xray Indexer resources                       | `{}`                 |
 | `indexer.preStartCommand`                      | Xray Indexer Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `indexer.nodeSelector`                         | Xray Indexer node selector                   | `{}`                 |
@@ -397,13 +397,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.name`                                 | Xray Persist name                            | `xray-persist`       |
 | `persist.image`                                | Xray Persist container image                 | `docker.bintray.io/jfrog/xray-persist`  |
 | `persist.annotations`                          | Xray Persist annotations                     | `{}`                               |
-| `persist.updateStrategy`                       | Xray Persist update strategy                 | `RollingUpdate`      |
-| `persist.podManagementPolicy`                  | Xray Persist pod management policy           | `Parallel`           |
 | `persist.internalPort`                         | Xray Persist internal port                   | `7003`               |
 | `persist.externalPort`                         | Xray Persist external port                   | `7003`               |
 | `persist.livenessProbe`                        | Xray Persist livenessProbe                   | See `values.yaml`    |
 | `persist.readinessProbe`                       | Xray Persist readinessProbe                  | See `values.yaml`    |
-| `persist.persistence.size`                     | Xray Persist storage size limit              | `10Gi`               |
 | `persist.preStartCommand`                      | Xray Persist Custom command to run before startup. Runs AFTER the `common.preStartCommand` |     |
 | `persist.resources`                            | Xray Persist resources                       | `{}`                 |
 | `persist.nodeSelector`                         | Xray Persist node selector                   | `{}`                 |
@@ -412,11 +409,8 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.name`                                  | Xray server name                             | `xray-server`        |
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
 | `server.annotations`                           | Xray server annotations                      | `{}`                               |
-| `server.customVolumes`                         | Custom volumes                               |                                                  |
 | `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
 | `server.replicaCount`                          | Xray services replica count                  | `1`                  |
-| `server.updateStrategy`                        | Xray server update strategy                  | `RollingUpdate`      |
-| `server.podManagementPolicy`                   | Xray server pod management policy            | `Parallel`           |
 | `server.internalPort`                          | Xray server internal port                    | `8000`               |
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |
