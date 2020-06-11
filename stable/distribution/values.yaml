@@ -236,6 +236,26 @@ distribution:
         type: "{{ .Values.database.type }}"
         driver: "{{ .Values.database.driver }}"
       {{- end }}
+    distribution:
+      extraJavaOpts: >
+      {{- with .Values.distribution.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- end }}
+    distributor:
+      extraJavaOpts: >
+      {{- with .Values.distributor.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- end }}
 
   service:
     type: ClusterIP
