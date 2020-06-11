@@ -255,6 +255,11 @@ spec:
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
       {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        - name: gcpcreds-json
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
       {{- if .Values.artifactory.customVolumeMounts }}
 {{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
       {{- end }}
@@ -382,6 +387,11 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        - name: gcpcreds-json
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
       {{- if .Values.artifactory.customVolumeMounts }}
 {{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
       {{- end }}
@@ -536,6 +546,15 @@ spec:
           secretName: {{ .Values.artifactory.license.secret }}
           {{- else if .Values.artifactory.license.licenseKey }}
           secretName: {{ template "artifactory.fullname" . }}-license
+          {{- end }}
+      {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+      - name: gcpcreds-json
+        secret:
+          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+          secretName: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+          {{- else }}
+          secretName: {{ template "artifactory-ha.fullname" . }}-gcpcreds
           {{- end }}
       {{- end }}
       {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
