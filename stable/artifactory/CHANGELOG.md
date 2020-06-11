@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.6.0] - Jun 11, 2020
+* Support GCP credentials.json authentication
+
 ## [9.5.1] - Jun 8, 2020
 * Readme update - configuring Artifactory with oracledb
 
