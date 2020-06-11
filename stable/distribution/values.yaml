@@ -245,6 +245,9 @@ distribution:
       {{- if .xmx }}
         -Xmx{{ .xmx }}
       {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
       {{- end }}
     distributor:
       extraJavaOpts: >
@@ -254,6 +257,9 @@ distribution:
       {{- end }}
       {{- if .xmx }}
         -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
       {{- end }}
       {{- end }}
 
@@ -286,11 +292,14 @@ distribution:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
   javaOpts:
-    xms:
-    xmx:
+    # xms: "1g"
+    # xmx: "2g"
+    # other: ""
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -355,11 +364,14 @@ distributor:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
   javaOpts:
-    xms:
-    xmx:
+    # xms: "1g"
+    # xmx: "2g"
+    # other: ""
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
