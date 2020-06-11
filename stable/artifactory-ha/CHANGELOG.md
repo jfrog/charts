@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [2.5.4] - Jun 8, 2020
+## [2.5.4] - Jun 11, 2020
 * NOTES.txt fixed incorrect information
 
 ## [2.5.3] - Jun 8, 2020
