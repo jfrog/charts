@@ -76,8 +76,8 @@ SETUP:
 
    {{- if .Values.artifactory.license.secret }}
 
-3. Manage Artifactory license through the {{ .Values.artifactory.license.secret }} secret ONLY!
-   Since the artifactory license(s) is managed with a secret ({{ .Values.artifactory.license.secret }}), any change through the Artifactory UI might not be saved!
+3. Artifactory license(s) is deployed as a Kubernetes secret. This method is relevant for initial deployment only!
+   Updating the license should be done via Artifactory UI or REST API. If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup feature.
 
    {{- else }}
 
