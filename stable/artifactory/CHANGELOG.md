@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.5.2] - Jun 12, 2020
+* Updated Artifactory version to 7.5.7 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.5.7
+
 ## [9.5.1] - Jun 8, 2020
 * Readme update - configuring Artifactory with oracledb
 
