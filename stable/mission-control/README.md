@@ -27,7 +27,7 @@ helm repo add jfrog https://charts.jfrog.io
 
 ### Installing the Chart
 ```bash
-helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.0.0
+helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.0.1
 ```
 ### Auto generated passwords
 
