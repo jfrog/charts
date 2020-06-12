@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.2] - Jun 12, 2020
+* Move some postgresql values to where they should be according to the subchart.
+
 ## [4.0.1] - Jul 3, 2020
 * Added compatability to support latest 7.x rabbitmq subchart when `rabbitmq.enabled=true`
 * Update RabbitMQ chart to v7.4.3
