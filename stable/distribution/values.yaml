@@ -236,6 +236,32 @@ distribution:
         type: "{{ .Values.database.type }}"
         driver: "{{ .Values.database.driver }}"
       {{- end }}
+    distribution:
+      extraJavaOpts: >
+      {{- with .Values.distribution.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+    distributor:
+      extraJavaOpts: >
+      {{- with .Values.distributor.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
 
   service:
     type: ClusterIP
@@ -268,9 +294,10 @@ distribution:
   #    cpu: "2"
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
-    xms:
-    xmx:
+  # javaOpts:
+  #   xms:
+  #   xmx:
+  #   other:
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -337,9 +364,10 @@ distributor:
   #    cpu: "2"
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
-    xms:
-    xmx:
+  # javaOpts:
+  #   xms:
+  #   xmx:
+  #   other:
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
