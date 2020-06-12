@@ -323,9 +323,12 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.resources.requests.cpu`       | PostgreSQL initial cpu request      |                                    |
 | `postgresql.resources.limits.memory`      | PostgreSQL memory limit             |                                    |
 | `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit                |                                    |
-| `postgresql.nodeSelector`                 | PostgreSQL node selector            | `{}`                               |
-| `postgresql.affinity`                     | PostgreSQL node affinity            | `{}`                               |
-| `postgresql.tolerations`                  | PostgreSQL node tolerations         | `[]`                               |
+| `postgresql.master.nodeSelector`                 | PostgreSQL master node selector            | `{}`                               |
+| `postgresql.master.affinity`                     | PostgreSQL master node affinity            | `{}`                               |
+| `postgresql.master.tolerations`                  | PostgreSQL master node tolerations         | `[]`                               |
+| `postgresql.slave.nodeSelector`                 | PostgreSQL slave node selector            | `{}`                               |
+| `postgresql.slave.affinity`                     | PostgreSQL slave node affinity            | `{}`                               |
+| `postgresql.slave.tolerations`                  | PostgreSQL slave node tolerations         | `[]`                               |
 | `database.url`                            | External database connection URL                   |                                         |
 | `database.user`                           | External database username                         |                                         |
 | `database.password`                       | External database password                         |                                         |
