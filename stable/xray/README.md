@@ -315,13 +315,20 @@ The following table lists the configurable parameters of the xray chart and thei
 | `postgresql.persistence.enabled`  | PostgreSQL use persistent storage           | `true`                             |
 | `postgresql.persistence.size`     | PostgreSQL persistent storage size          | `50Gi`                             |
 | `postgresql.persistence.existingClaim`  | PostgreSQL name of existing Persistent Volume Claim to use          | ` `                  |
-| `postgresql.resources.requests.memory`    | PostgreSQL initial memory request   |                                    |
-| `postgresql.resources.requests.cpu`       | PostgreSQL initial cpu request      |                                    |
-| `postgresql.resources.limits.memory`      | PostgreSQL memory limit             |                                    |
-| `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit                |                                    |
-| `postgresql.nodeSelector`                 | PostgreSQL node selector            | `{}`                               |
-| `postgresql.affinity`                     | PostgreSQL node affinity            | `{}`                               |
-| `postgresql.tolerations`                  | PostgreSQL node tolerations         | `[]`                               |
+| `postgresql.master.resources.requests.memory`    | PostgreSQL master initial memory request   |                                    |
+| `postgresql.master.resources.requests.cpu`       | PostgreSQL master initial cpu request      |                                    |
+| `postgresql.master.resources.limits.memory`      | PostgreSQL master memory limit             |                                    |
+| `postgresql.master.resources.limits.cpu`         | PostgreSQL master cpu limit                |                                    |
+| `postgresql.master.nodeSelector`                 | PostgreSQL master node selector            | `{}`                               |
+| `postgresql.master.affinity`                     | PostgreSQL master node affinity            | `{}`                               |
+| `postgresql.master.tolerations`                  | PostgreSQL master node tolerations         | `[]`                               |
+| `postgresql.slave.resources.requests.memory`    | PostgreSQL slave initial memory request   |                                    |
+| `postgresql.slave.resources.requests.cpu`       | PostgreSQL slave initial cpu request      |                                    |
+| `postgresql.slave.resources.limits.memory`      | PostgreSQL slave memory limit             |                                    |
+| `postgresql.slave.resources.limits.cpu`         | PostgreSQL slave cpu limit                |                                    |
+| `postgresql.slave.nodeSelector`                 | PostgreSQL slave node selector            | `{}`                               |
+| `postgresql.slave.affinity`                     | PostgreSQL slave node affinity            | `{}`                               |
+| `postgresql.slave.tolerations`                  | PostgreSQL slave node tolerations         | `[]`                               |
 | `database.url`                            | External database connection URL                   |                                         |
 | `database.user`                           | External database username                         |                                         |
 | `database.password`                       | External database password                         |                                         |
