@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.1] - Jun 12, 2020
+* Fix broken customVolumeMounts
+
 ## [3.4.0] - Jun 1, 2020
 * Update Xray to version `3.4.0` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.4
 * Added Upgrade Notes in README for 3.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes
