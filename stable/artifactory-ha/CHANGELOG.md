@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.4] - Jun 12, 2020
+* Updated Artifactory version to 7.5.7 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.5.7
+
 ## [2.5.3] - Jun 8, 2020
 * Statically setting primary service type to ClusterIP.
 * Prevents primary service from being exposed publicly when using LoadBalancer type on cloud providers.
