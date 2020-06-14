@@ -361,7 +361,9 @@ The following table lists the configurable parameters of the xray chart and thei
 | `common.persistence.size`                      | Xray common persistence volume size          | `50Gi`               |
 | `xray.systemYaml`                              | Xray system configuration (`system.yaml`)    | `see values.yaml`    |
 | `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
-| `common.customInitContainers`                  | Custom init containers to run after existing init containers                       | ` `                  |
+| `common.customInitContainersBegin`             | Custom init containers to run before existing init containers                       | ` `                  |
+| `common.customVolumes`                         | Xray common customVolumes                      | ` `                  |
+| `common.customVolumeMounts`                    | Custom common volumeMounts                   |                                                  |
 | `common.xrayConfig`                            | Additional xray yaml configuration to be written to xray_config.yaml file | See [values.yaml](stable/xray/values.yaml) |
 | `database.url`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `global.postgresqlTlsSecret`                   | Xray external PostgreSQL TLS files secret    | ` `                  |
@@ -384,7 +386,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.externalPort`                         | Xray Indexer external port                   | `7002`               |
 | `indexer.livenessProbe`                        | Xray Indexer livenessProbe                   | See `values.yaml`    |
 | `indexer.readinessProbe`                       | Xray Indexer readinessProbe                  | See `values.yaml`    |
-| `indexer.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
+| `indexer.customVolumeMounts`                   | Custom Server volumeMounts                   |                                                  |
 | `indexer.persistence.existingClaim`            | Provide an existing PersistentVolumeClaim    | `nil`                              |
 | `indexer.persistence.storageClass`             | Storage class of backing PVC                 | `nil (uses default storage class annotation)`      |
 | `indexer.persistence.enabled`                  | Xray Indexer persistence volume enabled      | `false`                             |
@@ -433,6 +435,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `router.resources.requests.cpu`                | Router initial cpu request      |                                    |
 | `router.resources.limits.memory`               | Router memory limit             |                                    |
 | `router.resources.limits.cpu`                  | Router cpu limit                |                                    |
+| `router.customVolumeMounts`                    | Custom Router volumeMounts      |                                    |
 | `router.livenessProbe.enabled`                 | Enable Router livenessProbe                         | `true`    |
 | `router.livenessProbe.config`                  | Router livenessProbe configuration           | See `values.yaml`    |
 | `router.readinessProbe.enabled`                | Enable Router readinessProbe                         | `true`    |
