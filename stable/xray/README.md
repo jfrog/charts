@@ -412,7 +412,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
 | `server.annotations`                           | Xray server annotations                      | `{}`                               |
 | `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
-| `server.replicaCount`                          | Xray services replica count                  | `1`                  |
+| `replicaCount`                                 | Xray services replica count                  | `1`                  |
 | `server.internalPort`                          | Xray server internal port                    | `8000`               |
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |
