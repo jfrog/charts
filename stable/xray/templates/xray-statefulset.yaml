@@ -128,11 +128,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-{{- if .Values.common.customVolumeMounts }}
-{{ tpl .Values.common.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
-{{- if .Values.router.customVolumeMounts }}
-{{ tpl .Values.router.customVolumeMounts . | indent 8 }}
+{{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
@@ -216,11 +216,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if .Values.common.customVolumeMounts }}
-{{ tpl .Values.common.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
-{{- if .Values.server.customVolumeMounts }}
-{{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+{{- with .Values.server.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -312,11 +312,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if .Values.common.customVolumeMounts }}
-{{ tpl .Values.common.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
-{{- if .Values.analysis.customVolumeMounts }}
-{{ tpl .Values.analysis.customVolumeMounts . | indent 8 }}
+{{- with .Values.analysis.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -408,11 +408,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if .Values.common.customVolumeMounts }}
-{{ tpl .Values.common.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
-{{- if .Values.indexer.customVolumeMounts }}
-{{ tpl .Values.indexer.customVolumeMounts . | indent 8 }}
+{{- with .Values.indexer.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -500,11 +500,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if .Values.common.customVolumeMounts }}
-{{ tpl .Values.common.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
-{{- if .Values.persist.customVolumeMounts }}
-{{ tpl .Values.persist.customVolumeMounts . | indent 8 }}
+{{- with .Values.persist.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
