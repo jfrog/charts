@@ -570,9 +570,9 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.common.persistence.existingClaim }}
       {{- end }}
-      {{- if .Values.common.customVolumes }}
-      {{ tpl .Values.common.customVolumes . | indent 6 }}
-      {{- end }}
+{{- with .Values.common.customVolumes }}
+{{ tpl . $ | indent 6 }}
+{{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
