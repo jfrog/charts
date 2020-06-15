@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.6] - June 15, 2020
+* Update Mission Control version to 4.4.2 - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.4.2
+
 ## [3.4.5] - June 9, 2020
 * Added support for Elasticsearch secrets 
 
