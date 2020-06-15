@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [3.4.2] - Jun 13, 2020
 * Adding tpl to customVolumeMounts
+* Fix `replicaCount` in README.md
 
 ## [3.4.1] - Jun 12, 2020
 * Fix broken customVolumeMounts
