@@ -44,16 +44,18 @@ This file describes special upgrade notes needed at specific versions
            ```bash
            $ kubectl exec -it <NAME> bash
            ```
-          b. Once logged in, create a dump file from the previous database using pg_dump, connect to previous postgresql chart:\
+          b. Once logged in, create the dump files from the previous database using pg_dump, connect to previous postgresql chart:\
            ```bash
-           $ pg_dump -h <OLD_PG_SERVICE_NAME> -U mission-control DATABASE_NAME > /tmp/backup.sql
+           $ pg_dumpall --roles-only -U postgres -h <OLD_PG_SERVICE_NAME> --clean --file=/tmp/roles.sql
+           $ pg_dump -h <OLD_PG_SERVICE_NAME> -U postgres DATABASE_NAME > /tmp/backup.sql
            ```
-          c. After you ran above command you should be prompted for a password, this password is the previous chart password (OLD_PG_PASSWORD). This operation could take some time depending on the database size.\
-          d. Once you have the backup file, you can restore it with a command like the one below:\
+          c. When you run the above commands you should be prompted for a password, this password is the previous chart password (OLD_PG_PASSWORD). These operations could take some time depending on the database size.\
+          d. Once you have the backup files, you can restore it with commands like the ones below:\
             ```bash
-            $ psql -U mission-control DATABASE_NAME < /tmp/backup.sql
+            $ psql -U postgres -f /tmp/roles.sql
+            $ psql -U postgres DATABASE_NAME < /tmp/backup.sql
             ```
-          e. After run above command you should be prompted for a password, this is the current chart password.This operation could  take some time depending on the database size.
+          e. When you run the above commands you should be prompted for a password, this is the current chart password. These operations could  take some time depending on the database size.
       5. Run the Upgrade final time which would start mission-control with `databaseUpgradeReady=yes` \
          Example :
          ```bash

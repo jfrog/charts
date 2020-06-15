@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.0.2] - Jun 15, 2020
+* Added missing steps in Upgrade Notes for 1.x to 2.x chart versions
+
 ## [2.0.1] - Jun 12, 2020
 * Update Mission-Control version to 3.5.9 - https://www.jfrog.com/confluence/display/MC3X/Release+Notes#ReleaseNotes-MissionControl3.5.9.
 
