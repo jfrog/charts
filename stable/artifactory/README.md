@@ -727,6 +727,42 @@ artifactory:
     ## Custom volume comes here ##
 ```
 
+### Custom secrets
+If you need to add a custom secret in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom secrets in the [values.yaml](values.yaml). By default it's commented out
+```yaml
+artifactory:
+  # Add custom secrets - secret per file
+    customSecrets:
+      - name: custom-secret
+        key: custom-secret.yaml
+        data: >
+          secret data
+```
+
+To use a custom secret, need to define a custom volume.
+```yaml
+artifactory:
+  ## Add custom volumes
+  customVolumes: |
+    - name: custom-secret
+      secret:
+        secretName: custom-secret
+```
+
+To use a volume, need to define a volume mount as part of a custom init or sidecar container.
+```yaml
+artifactory:
+  customSidecarContainers:
+    - name: side-car-container
+      volumeMounts:
+      - name: custom-secret
+        mountPath: /opt/custom-secret.yaml
+        subPath: custom-secret.yaml
+        readOnly: true
+```
+
 You can configure the sidecar to run as a custom user if needed by setting the following in the container template
 ```yaml
   # Example of running container as root (id 0)
@@ -895,6 +931,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.customSidecarContainers`| Custom sidecar containers      |                                                  |
 | `artifactory.customVolumes`       | Custom volumes                    |                                                  |
 | `artifactory.customVolumeMounts`  | Custom Artifactory volumeMounts   |                                                  |
+| `artifactory.customSecrets`       | Custom secrets                    |                                                  |
 | `artifactory.customPersistentPodVolumeClaim`  | Custom PVC spec to create and attach a unique PVC for each pod on startup with the volumeClaimTemplates feature in StatefulSet | |
 | `artifactory.customPersistentVolumeClaim`  | Custom PVC spec to be mounted to the all artifactory containers using a volume |                                                  |
 | `artifactory.userPluginSecrets`   | Array of secret names for Artifactory user plugins |                                 |
