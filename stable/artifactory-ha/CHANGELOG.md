@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.6] - Jun 11, 2020
+* Support list of custom secrets
+
 ## [2.5.5] - Jun 11, 2020
 * NOTES.txt fixed incorrect information
 
