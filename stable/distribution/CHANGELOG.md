@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.2.3] -  Jun 12, 2020
+* Added support for javaopts for distrubutor and distribution via systemyaml
+
 ## [5.2.2] -  Jun 11, 2020
 * Added Upgrade Notes in README for 2.x upgrades - https://github.com/jfrog/charts/blob/master/stable/distribution/README.md#special-upgrade-notes
 
