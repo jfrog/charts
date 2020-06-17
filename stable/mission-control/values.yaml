@@ -350,10 +350,36 @@ missionControl:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfscSchema }}
 
+      extraJavaOpts: >
+      {{- with .Values.insightScheduler.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+
     insight-executor:
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfexSchema }}
+
+      extraJavaOpts: >
+      {{- with .Values.insightExecutor.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
 
     insight:
       database:
@@ -383,7 +409,7 @@ missionControl:
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts:
+  javaOpts: {}
   #  other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
   #  xms: "2g"
   #  xmx: "3g"
