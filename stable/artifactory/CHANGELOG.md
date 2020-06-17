@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [9.5.4] - Jun 16, 2020
-* Test PR
+* Test PR1
 
 ## [9.5.3] - Jun 11, 2020
 * Support list of custom secrets
