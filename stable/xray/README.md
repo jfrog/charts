@@ -349,6 +349,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.rbac.create`                      | If true, create & use RBAC resources         | `true`               |
 | `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
 | `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
+| `replicaCount`                                 | Xray services replica count                  | `1`                  |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
 | `common.rabbitmq.connectionConfigFromEnvironment`| Use rabbitmq connection config from environment variables | `true`  |
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
@@ -412,7 +413,6 @@ The following table lists the configurable parameters of the xray chart and thei
 | `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
 | `server.annotations`                           | Xray server annotations                      | `{}`                               |
 | `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |
-| `server.replicaCount`                          | Xray services replica count                  | `1`                  |
 | `server.internalPort`                          | Xray server internal port                    | `8000`               |
 | `server.externalPort`                          | Xray server external port                    | `80`                 |
 | `server.service.name`                          | Xray server service name                     | `xray`               |
