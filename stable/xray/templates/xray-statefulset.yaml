@@ -128,12 +128,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-        {{- with .Values.common.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.router.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
 {{- if .Values.router.livenessProbe.enabled }}
@@ -216,12 +216,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-        {{- with .Values.common.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.server.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.server.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -312,12 +312,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-        {{- with .Values.common.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.analysis.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.analysis.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -408,12 +408,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-        {{- with .Values.common.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.indexer.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.indexer.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -500,12 +500,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-        {{- with .Values.common.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.persist.customVolumeMounts }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.persist.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -518,7 +518,6 @@ spec:
         readinessProbe:
 {{ tpl .Values.persist.readinessProbe.config . | indent 10 }}
 {{- end }}
-
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
@@ -571,9 +570,9 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.common.persistence.existingClaim }}
       {{- end }}
-      {{- if .Values.common.customVolumes }}
-      {{ tpl .Values.common.customVolumes . | indent 6 }}
-      {{- end }}
+{{- with .Values.common.customVolumes }}
+{{ tpl . $ | indent 6 }}
+{{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
