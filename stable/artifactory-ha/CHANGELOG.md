@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.7] - Jun 18, 2020
+* Fixes bootstrap configMap issue on member node
+
 ## [2.5.6] - Jun 11, 2020
 * Support list of custom secrets
 

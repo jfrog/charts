@@ -601,6 +601,11 @@ spec:
           secretName: {{ tpl . $ }}
       {{- end }}
       {{- end }}
+      {{- if .Values.artifactory.configMapName }}
+      - name: bootstrap-config
+        configMap:
+          name: {{ .Values.artifactory.configMapName }}
+      {{- end}}      
       {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
       - name: tail-logger-script
         configMap:
