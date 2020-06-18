@@ -5,19 +5,29 @@ unifiedUpgradeAllowed: true
 missionControl:
   jfrogUrl: http://artifactory-artifactory.rt:8082
   image:
-    version: 4.3.2
+    version: 4.4.1
+  javaOpts:
+    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
+    xms: "500m"
+    xmx: "1000m"
 
 insightServer:
   image:
-    version: 4.3.2
+    version: 4.4.1
 
 insightScheduler:
   image:
-    version: 4.3.2
+    version: 4.4.1
+  javaOpts:
+    xms: "500m"
+    xmx: "1000m"
 
 insightExecutor:
   image:
-    version: 4.3.2
+    version: 4.4.1
+  javaOpts:
+    xms: "500m"
+    xmx: "1000m"
 
 postgresql:
   image:
