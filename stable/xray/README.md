@@ -2,7 +2,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.8+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:
@@ -30,7 +30,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 Install JFrog Xray
 ```bash
-helm upgrade --install xray --namespace xray jfrog/xray --version 2.1.0
+helm upgrade --install xray --namespace xray jfrog/xray --version 2.1.1
 ```
 
 ## Status
