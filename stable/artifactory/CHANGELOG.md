@@ -8,6 +8,7 @@ All changes to this chart will be documented in this file.
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), must use the postgresql upgrade (9.x to 10.x) instructions in [UPGRADE_NOTES.md](UPGRADE_NOTES.md)!
 * PostgreSQL sub chart was upgraded to version `8.10.x`
 * Update postgresql tag version to `10.13.0-debian-10-r31`
+* Update alpine tag version to `3.12`
 
 ## [9.5.3] - Jun 11, 2020
 * Support list of custom secrets
