@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [5.2.4] -  Jun 21, 2020
+* Make the readiness and liveness probes configurable
+
 ## [5.2.3] -  Jun 12, 2020
 * Added support for javaopts for distrubutor and distribution via systemyaml
 

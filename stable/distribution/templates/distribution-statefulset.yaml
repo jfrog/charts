@@ -201,19 +201,14 @@ spec:
         {{- end }}
         resources:
 {{ toYaml .Values.distribution.resources | indent 10 }}
+      {{- if .Values.distribution.readinessProbe.enabled }}
         readinessProbe:
-          httpGet:
-            path: /api/v1/system/ping
-            port: {{ .Values.distribution.internalPort }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 10
+{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.distribution.livenessProbe.enabled }}
         livenessProbe:
-          httpGet:
-            path: /api/v1/system/ping
-            port: {{ .Values.distribution.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 10
+{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: {{ .Values.distributor.name }}
         image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
