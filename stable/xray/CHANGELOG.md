@@ -3,7 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [3.5.0] - Jun 22, 2020
 * Update Xray to version `3.5.2`
-* Bump alpine to version `1.12`
+* Update alpine to version `3.12`
 
 ## [3.4.2] - Jun 13, 2020
 * Adding tpl to customVolumeMounts
