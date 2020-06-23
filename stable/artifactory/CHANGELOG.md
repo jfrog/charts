@@ -1,13 +1,13 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [10.0.0] - Jun 19, 2020
+## [10.0.0] - Jun 23, 2020
 **IMPORTANT - BREAKING CHANGES!**<br>
 **DOWNTIME MIGHT BE REQUIRED FOR AN UPGRADE!**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), must use the postgresql upgrade (9.x to 10.x) instructions in [UPGRADE_NOTES.md](UPGRADE_NOTES.md)!
 * PostgreSQL sub chart was upgraded to version `8.10.x`
-* Update postgresql tag version to `10.13.0-debian-10-r31`
+* Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`
 
 ## [9.5.3] - Jun 11, 2020
