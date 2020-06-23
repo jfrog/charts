@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.5.0] - Jun 22, 2020
+* Update Xray to version `3.5.2` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.5.2
+* Update alpine to version `3.12`
+
 ## [3.4.2] - Jun 13, 2020
 * Adding tpl to customVolumeMounts
 * Fix `replicaCount` in README.md

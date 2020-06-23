@@ -206,13 +206,6 @@ distribution:
   jfrogUrl:
 
   serviceId:
-  env:
-    artifactoryUrl:
-    btServerUrl:
-    artifactoryCi1Url:
-    artifactoryEdge1Url:
-    artifactoryEdge2Url:
-    artifactoryEdge3Url:
 
   ## Extra environment variables that can be used to tune Distribution to your needs.
   ## Uncomment and set value as needed
@@ -292,6 +285,30 @@ distribution:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
