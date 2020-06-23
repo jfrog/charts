@@ -1,6 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.1.2] - Jun 23, 2020
+* Fix broken rabbitmq support when rabbitmq.enabled=true
+* Update rabbitmq-ha tag version to `3.8.5-alpine`
+* Update rabbitmq tag version to `3.8.5-debian-10-r14`
+* Update alpine version to `3.12`
+* Update busybox version to `1.31.1`
+
 ## [2.1.1] - Jun 18, 2020
 * Ingress version fix
 
