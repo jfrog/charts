@@ -47,7 +47,7 @@ data:
     until nc -z -w 2 {{ .Release.Name }}-rabbitmq-ha {{ index .Values "rabbitmq-ha" "rabbitmqNodePort" }} && echo rabbitmq ok; do
     {{- end }}
     {{ if index .Values "rabbitmq" "enabled" }}
-    until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ index .Values "rabbitmq" "rabbitmqNodePort" }} && echo rabbitmq ok; do
+    until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.service.nodePort }} && echo rabbitmq ok; do
     {{- end }}
       sleep 2;
     done;

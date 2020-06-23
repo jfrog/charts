@@ -5,7 +5,7 @@
 
 # General
 imagePullPolicy: IfNotPresent
-initContainerImage: "alpine:3.11"
+initContainerImage: "alpine:3.12"
 imagePullSecrets:
 
 ## Role Based Access
@@ -186,7 +186,8 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    tag: 3.8.3-alpine
+    repository: rabbitmq
+    tag: 3.8.5-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
@@ -232,7 +233,9 @@ rabbitmq:
   replicas: 1
   rbacEnabled: true
   image:
-    tag: 3.8.3-alpine
+    registry: docker.io
+    repository: bitnami/rabbitmq
+    tag: 3.8.5-debian-10-r14
   rabbitmq:
     username: guest
     password: ""
