@@ -513,6 +513,9 @@ pipelines:
       ignoreTLSErrors: false
       controlplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
       buildplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+      accessControlAllowOrigins:
+        - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
+        - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
 
       ## Global proxy settings, to be applied to all services
       ##

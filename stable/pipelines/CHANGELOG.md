@@ -1,5 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
+
+## [1.3.0] - June 2, 2020
+* Pipelines v1.6.0
+* Adds a new configuration accessControlAllowOrigins
+
 ## [1.2.0] - June 2, 2020
 * Pipelines v1.5.1
 * Update Postgres image to 9.6.18-debian-10-r7
