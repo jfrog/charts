@@ -5,7 +5,7 @@
 
 # General
 imagePullPolicy: IfNotPresent
-initContainerImage: "alpine:3.12"
+initContainerImage: "docker.bintray.io/alpine:3.12"
 imagePullSecrets:
 
 ## Role Based Access
@@ -186,7 +186,7 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    repository: rabbitmq
+    repository: docker.bintray.io/rabbitmq
     tag: 3.8.5-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
@@ -233,7 +233,7 @@ rabbitmq:
   replicas: 1
   rbacEnabled: true
   image:
-    registry: docker.io
+    registry: docker.bintray.io
     repository: bitnami/rabbitmq
     tag: 3.8.5-debian-10-r14
   rabbitmq:
