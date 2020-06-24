@@ -4,6 +4,7 @@ All changes to this chart to be documented in this file.
 ## [1.3.0] - June 2, 2020
 * Pipelines v1.6.0
 * Adds a new configuration accessControlAllowOrigins
+* Use ChartCenter as helm repo
 
 ## [1.2.0] - June 2, 2020
 * Pipelines v1.5.1
