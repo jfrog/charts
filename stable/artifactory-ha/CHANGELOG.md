@@ -1,6 +1,12 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.6.0] - Jun 24, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+**IMPORTANT**<br>
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=yes
+
 ## [2.5.7] - Jun 18, 2020
 * Fixes bootstrap configMap issue on member node
 
