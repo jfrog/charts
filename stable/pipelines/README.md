@@ -29,12 +29,12 @@ This chart will do the following:
 
 ## Install JFrog Pipelines
 
-### Add JFrog Helm repository
+### Add ChartCenter Helm repository
 
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://repo.chartcenter.io) to your helm client
 
 ```bash
-helm repo add jfrog https://charts.jfrog.io
+helm repo add center https://repo.chartcenter.io
 helm repo update
 ```
 
@@ -61,7 +61,7 @@ Before deploying Pipelines you need to have the following
 Fetch the JFrog Pipelines helm chart to get the needed configuration files
 
 ```bash
-helm fetch jfrog/pipelines --untar
+helm fetch center/jfrog/pipelines --untar
 ```
 
 Edit local copies of `values-ingress.yaml`, `values-ingress-passwords.yaml` and `values-ingress-external-secret.yaml` with the needed configuration values 
@@ -78,7 +78,7 @@ Install JFrog Pipelines
 
 ```bash
 kubectl create ns pipelines
-helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
 ```
 
 ### Use external secret
@@ -126,7 +126,7 @@ helm template --name-template pipelines pipelines/ -s templates/rabbitmq-secret.
 Install JFrog Pipelines:
 
 ```bash
-helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values-ingress-external-secret.yaml
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-ingress-external-secret.yaml
 ```
 
 ### Status
