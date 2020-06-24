@@ -74,6 +74,10 @@ pipelines:
 
   replicaCount: 1
 
+  # CORS configuration. Default values are artifactory url and www external url
+  accessControlAllowOrigins_0: "update_with_artifactory_url"
+  accessControlAllowOrigins_1: "update_with_www_external_url"
+
   updateStrategy: RollingUpdate
 
   nodeSelector: {}
