@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [2.5.8] - Jun 25, 2020
-* Use a separate service for SSH
+* Stop loading the Nginx stream module because it is now a core module
 
 ## [2.5.7] - Jun 18, 2020
 * Fixes bootstrap configMap issue on member node
