@@ -1171,6 +1171,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.ssh.enabled`                       | Enable Artifactory SSH access     |                                      |
+| `artifactory.ssh.service.type`            | Artifactory SSH service type | `ClusterIP`                                     |
+| `artifactory.ssh.service.loadBalancerSourceRanges`            | Artifactory SSH service loadBalancerSourceRanges | `[]`                       |
+| `artifactory.ssh.service.annotations`            | Artifactory SSH service annotations | `{}`                                      |
 | `artifactory.ssh.internalPort`                  | Artifactory SSH internal port     | `1339`                                      |
 | `artifactory.ssh.externalPort`                  | Artifactory SSH external port     | `1339`                                     |
 | `artifactory.primary.preStartCommand`           | Artifactory primary node preStartCommand to be run after `artifactory.preStartCommand`         |                     |
