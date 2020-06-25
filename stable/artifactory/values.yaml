@@ -878,8 +878,6 @@ nginx:
     pid        /tmp/nginx.pid;
 
     {{- if .Values.artifactory.ssh.enabled }}
-    # Load the stream module to support TCP streaming
-    load_module /usr/lib/nginx/modules/ngx_stream_module.so;
     ## SSH Server Configuration
     stream {
       server {
