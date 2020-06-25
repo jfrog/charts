@@ -80,6 +80,12 @@ spec:
     targetPort: {{ .Values.artifactory.internalArtifactoryPort }}
     protocol: TCP
     name: artifactory
+  {{- if .Values.artifactory.ssh.enabled }}
+  - port: {{ .Values.artifactory.ssh.externalPort }}
+    targetPort: {{ .Values.artifactory.ssh.internalPort }}
+    protocol: TCP
+    name: ssh
+  {{- end }}
   {{- with .Values.artifactory.primary.javaOpts.jmx }}
   {{- if .enabled }}
   - port: {{ .port }}

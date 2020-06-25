@@ -1053,9 +1053,6 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.jmx.passwordFile`              | The path to the JMX password file, when JMX authentication is enabled           | |
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
 | `artifactory.ssh.enabled`            | Enable Artifactory SSH access |                                      |
-| `artifactory.ssh.service.type`            | Artifactory SSH service type | `ClusterIP`                                     |
-| `artifactory.ssh.service.loadBalancerSourceRanges`            | Artifactory SSH service loadBalancerSourceRanges | `[]`                       |
-| `artifactory.ssh.service.annotations`            | Artifactory SSH service annotations | `{}`                                      |
 | `artifactory.ssh.internalPort`            | Artifactory SSH internal port | `1339`                                      |
 | `artifactory.ssh.externalPort`            | Artifactory SSH external port | `1339`                                     |
 | `artifactory.terminationGracePeriodSeconds`   | Termination grace period (seconds)  | `30s`                                |
