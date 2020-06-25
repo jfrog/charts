@@ -1,7 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+<<<<<<< HEAD
 ## [2.6.0] - Jun 24, 2020
+=======
+## [3.0.0] - Jun 24, 2020
+>>>>>>> 637c5f60f6e9225beeaf8bc9b870cacc5ae80851
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 **IMPORTANT**<br>
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
