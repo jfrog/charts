@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.5.4] - Jun 25, 2020
+* Notes.txt update - add --namespace parameter
+
 ## [9.5.3] - Jun 11, 2020
 * Support list of custom secrets
 
