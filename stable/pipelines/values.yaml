@@ -74,6 +74,10 @@ pipelines:
 
   replicaCount: 1
 
+  # CORS configuration. Default values are artifactory url and www external url
+  accessControlAllowOrigins_0: "update_with_artifactory_url"
+  accessControlAllowOrigins_1: "update_with_www_external_url"
+
   updateStrategy: RollingUpdate
 
   nodeSelector: {}
@@ -513,6 +517,9 @@ pipelines:
       ignoreTLSErrors: false
       controlplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
       buildplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+      accessControlAllowOrigins:
+        - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
+        - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
 
       ## Global proxy settings, to be applied to all services
       ##
