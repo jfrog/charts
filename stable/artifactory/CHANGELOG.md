@@ -1,6 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+
 ## [10.0.0] - Jun 24, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`
@@ -9,7 +10,12 @@ All changes to this chart will be documented in this file.
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=yes
 
-  
+## [9.5.5] - Jun 25, 2020
+* Stop loading the Nginx stream module because it is now a core module
+
+## [9.5.4] - Jun 25, 2020
+* Notes.txt update - add --namespace parameter
+
 ## [9.5.3] - Jun 11, 2020
 * Support list of custom secrets
 
