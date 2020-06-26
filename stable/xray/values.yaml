@@ -203,7 +203,8 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    tag: 3.7.21-alpine
+    repository: docker.bintray.io/rabbitmq
+    tag: 3.8.5-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
@@ -251,7 +252,9 @@ rabbitmq:
   replicas: 1
   rbacEnabled: true
   image:
-    tag: 3.7.19
+    registry: docker.bintray.io
+    repository: bitnami/rabbitmq
+    tag: 3.8.5-debian-10-r14
   rabbitmq:
     username: guest
     password: ""
