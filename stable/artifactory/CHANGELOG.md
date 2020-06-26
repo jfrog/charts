@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [9.5.6] - Jun 26, 2020
+* Add tpl for external database secrets
+
 ## [9.5.5] - Jun 25, 2020
 * Stop loading the Nginx stream module because it is now a core module
 
