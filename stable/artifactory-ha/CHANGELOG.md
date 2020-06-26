@@ -7,7 +7,7 @@ All changes to this chart will be documented in this file.
 * Update busybox tag version to `1.31.1`
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
-* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=yes
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
 
 ## [2.5.8] - Jun 25, 2020
 * Stop loading the Nginx stream module because it is now a core module
