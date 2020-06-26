@@ -9,7 +9,7 @@
 This chart will do the following:
 
 * Deploy Artifactory-Pro/Artifactory-Edge (or OSS/CE if custom image is set)
-* Deploy a PostgreSQL database using the stable/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL
+* Deploy a PostgreSQL database using the stable/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy an optional Nginx server
 * Optionally expose Artifactory with Ingress [Ingress documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 
