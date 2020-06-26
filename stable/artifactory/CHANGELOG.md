@@ -1,7 +1,6 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-
 ## [10.0.0] - Jun 24, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`
