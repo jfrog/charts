@@ -9,7 +9,7 @@
 This chart will do the following:
 
 * Deploy Artifactory highly available cluster. 1 primary node and 2 member nodes.
-* Deploy a PostgreSQL database
+* Deploy a PostgreSQL database  **NOTE:** For production grade installations it is recommended to use an external PostgreSQL
 * Deploy an Nginx server
 
 ## Artifactory HA architecture
