@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.8] -  Jun 29, 2020
+* Added UPGRADES_NOTES.md for upgrading to 3x chart versions
+
 ## [3.4.7] -  Jun 17, 2020
 * Added support for javaopts via systemyaml
 
