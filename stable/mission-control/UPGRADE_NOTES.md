@@ -1,9 +1,9 @@
 # JFrog Mission-Control Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 1.x,2x to 3.X (Chart Versions)
+## Upgrade from 1.x,2x to 4.X (Chart Versions)
 
-* To upgrade chart version to 3x, you must be on chart version 1.0.5 or above as described in https://github.com/jfrog/charts/blob/master/stable/mission-control/CHANGELOG.md.
+* To upgrade chart version to 4x, you must be on chart version 1.0.5 or above as described in https://github.com/jfrog/charts/blob/master/stable/mission-control/CHANGELOG.md.
 * Data other than your licenses, such as your service information and insight, will not be available after the upgrade.
 * JFrog Mission Control v4.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x.
 * To know more about upgrading mission control, please refer -> https://www.jfrog.com/confluence/display/JFROG/Upgrading+Mission+Control#UpgradingMissionControl-UpgradingfromVersion3.5.1to4.x
@@ -33,7 +33,7 @@ This file describes special upgrade notes needed at specific versions
         ```bash
         $ kubectl cp <old_postgres_pod>:/tmp/jfmcDataExport.tar.gz ./jfmcDataExport.tar.gz
         ```
-3. Install new mission-control(3x) and copy the exported file
+3. Install new mission-control(4x) and copy the exported file
     1. Run the `helm install` with the `new version` say `mission-control-new`
     2. Copy the exported tar file to the new mission-control pod
         ```bash
