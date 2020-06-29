@@ -3,6 +3,9 @@ All changes to this chart will be documented in this file.
 
 ## [2.2.0] - Jun 29, 2020
 * Update Xray version to 2.14.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.14.0
+* Update RabbitMQ chart to v7.3.3
+* Update RabbitMQ-HA chart to v1.46.4
+* Update MongoDB chart to v7.14.8
 
 ## [2.1.2] - Jun 23, 2020
 * Fix broken rabbitmq support when rabbitmq.enabled=true
