@@ -53,4 +53,51 @@ spec:
   tls:
 {{ toYaml .Values.ingress.tls | indent 4 }}
   {{- end -}}
+{{- if .Values.artifactory.replicator.enabled }}
+---
+{{- $replicatorIngressName := default ( include "artifactory.replicator.fullname" . ) .Values.artifactory.replicator.ingress.name -}}
+  {{- if semverCompare ">=v1.14.0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: networking.k8s.io/v1beta1
+  {{- else }}
+apiVersion: extensions/v1beta1
+  {{- end }}
+kind: Ingress
+metadata:
+  name: {{ $replicatorIngressName }}
+  labels:
+    app: "{{ template "artifactory.name" $ }}"
+    chart: "{{ template "artifactory.chart" $ }}"
+    release: {{ $.Release.Name | quote }}
+    heritage: {{ $.Release.Service | quote }}
+  {{- if .Values.artifactory.replicator.ingress.annotations }}
+  annotations:
+{{ .Values.artifactory.replicator.ingress.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.defaultBackend.enabled }}
+  backend:
+    serviceName: {{ $serviceName }}
+    servicePort: {{ $servicePort }}
+  {{- end }}
+  rules:
+{{- if .Values.artifactory.replicator.ingress.hosts }}
+  {{- range $host := .Values.artifactory.replicator.ingress.hosts }}
+  - host: {{ $host | quote }}
+    http:
+      paths:
+        - path: /replicator/
+          backend:
+            serviceName: {{ $serviceName }}
+            servicePort: {{ $servicePort }}
+        - path: /artifactory/api/replication/replicate/file/streaming
+          backend:
+            serviceName: {{ $serviceName }}
+            servicePort: {{ $servicePort }}
+  {{- end -}}
+{{- end -}}
+  {{- if .Values.artifactory.replicator.ingress.tls }}
+  tls:
+{{ toYaml .Values.artifactory.replicator.ingress.tls | indent 4 }}
+  {{- end -}}
+{{- end -}}
 {{- end -}}
