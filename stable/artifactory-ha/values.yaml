@@ -488,9 +488,7 @@ artifactory:
         username: "{{ .Values.postgresql.postgresqlUsername }}"
       {{ else }}
         type: "{{ .Values.database.type }}"
-        url: "{{ .Values.database.url }}"
         driver: "{{ .Values.database.driver }}"
-        username: "{{ .Values.database.user }}"
       {{- end }}
     artifactory:
     {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
