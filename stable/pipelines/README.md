@@ -31,7 +31,7 @@ This chart will do the following:
 
 ### Add ChartCenter Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://repo.chartcenter.io) to your helm client
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
 
 ```bash
 helm repo add center https://repo.chartcenter.io

@@ -1,7 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [1.3.0] - June 2, 2020
+## [1.3.1] - June 29, 2020
+* Pipelines v1.6.1
+
+## [1.3.0] - June 25, 2020
 * Pipelines v1.6.0
 * Adds a new configuration accessControlAllowOrigins
 * Use ChartCenter as helm repo
