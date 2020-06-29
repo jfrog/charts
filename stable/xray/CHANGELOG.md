@@ -10,6 +10,9 @@ All changes to this chart will be documented in this file.
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
 
+## [3.5.1] - Jun 25, 2020
+* Added prestartcommand to router container to match same mechanism in all other xray containers 
+
 ## [3.5.0] - Jun 22, 2020
 * Update Xray to version `3.5.2` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.5.2
 * Update alpine to version `3.12`
