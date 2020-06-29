@@ -10,7 +10,7 @@ This file describes special upgrade notes needed at specific versions
 
 **DOWNTIME IS REQUIRED FOR AN UPGRADE!**
 
-* Data export is done with a migration script jfmcDataExport.sh (available in the other installers. Please get the file from https://jfrog.com/download-jfrog-platform). You can obtain the file from the docker compose installer.
+* Data export is done with a migration script jfmcDataExport.sh (available under files directory in mission-control chart).
 
 * Upgrade steps:
 1. Stop old mission-control pod (scale down replicas to 0). Postgresql still exists
