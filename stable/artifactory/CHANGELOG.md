@@ -1,7 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [9.5.6] - Jun 26, 2020
+## [9.6.0] - Jun 29, 2020
+* Updated Artifactory version to 7.6.1 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.1
 * Add tpl for external database secrets
 
 ## [9.5.5] - Jun 25, 2020
