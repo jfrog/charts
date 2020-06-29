@@ -1,6 +1,14 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.0] - Jun 26, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update busybox tag version to `1.31.1`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
 ## [3.4.7] -  Jun 17, 2020
 * Added support for javaopts via systemyaml
 
