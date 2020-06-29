@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.11"
+initContainerImage: docker.bintray.io/alpine:3.12
 # Init containers
 initContainers:
   resources: {}
@@ -83,8 +83,8 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: postgres
-      tag: 9.6.18-alpine
+      repository: docker.bintray.io/postgres
+      tag: 10.13-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -96,7 +96,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 10.13.0-debian-10-r38
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
@@ -164,7 +164,7 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: "alpine:3.11"
+  initContainerImage: docker.bintray.io/alpine:3.12
   configureDockerHost: true
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss
@@ -220,8 +220,8 @@ applicationConfigs: {}
 
 logger:
   image:
-    repository: "busybox"
-    tag: "1.30"
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 missionControl:
   name: mission-control
