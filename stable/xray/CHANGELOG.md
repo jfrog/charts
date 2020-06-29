@@ -4,7 +4,6 @@ All changes to this chart will be documented in this file.
 ## [4.0.0] - Jun 26, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`
-* Update rabbitmq-ha tag version to 3.8.5-alpine
 * Update rabbitmq tag version to 3.8.5-debian-10-r14
 * Update RabbitMQ chart to v7.3.3
 * Update RabbitMQ-HA chart to v1.46.4
