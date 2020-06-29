@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.9] - Jun 29, 2020
+* Add dedicated ingress object for replicator service when enabled
+
 ## [2.5.8] - Jun 25, 2020
 * Stop loading the Nginx stream module because it is now a core module
 
