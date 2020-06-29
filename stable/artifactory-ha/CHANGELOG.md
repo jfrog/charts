@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.6.0] - Jun 29, 2020
+* Updated Artifactory version to 7.6.1 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.1
+* Add tpl for external database secrets
+
 ## [2.5.8] - Jun 25, 2020
 * Stop loading the Nginx stream module because it is now a core module
 
