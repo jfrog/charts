@@ -5,7 +5,7 @@
 
 # General
 imagePullPolicy: IfNotPresent
-initContainerImage: "docker.bintray.io/alpine:3.12"
+initContainerImage: docker.bintray.io/alpine:3.12
 imagePullSecrets:
 
 ## Role Based Access
@@ -255,8 +255,8 @@ rabbitmq:
 # Logger containers
 logger:
   image:
-    repository: 'docker.bintray.io/busybox'
-    tag: '1.31.1'
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 # Common Xray settings
 common:
