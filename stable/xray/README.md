@@ -8,7 +8,7 @@
 
 This chart will do the following:
 
-* Optionally deploy PostgreSQL
+* Optionally deploy PostgreSQL **NOTE:** For production grade installations it is recommended to use an external PostgreSQL
 * Deploy RabbitMQ (optionally as an HA cluster)
 * Deploy JFrog Xray micro-services
 

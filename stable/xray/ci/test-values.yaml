@@ -1,19 +1,13 @@
 # CI values for Xray
-
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
-
 # If this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.
 unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
 xray:
   jfrogUrl: http://artifactory-artifactory.rt:8082
 
 postgresql:
-  postgresDatabase: xraydb
-  postgresUser: xray
+  postgressqlDatabase: xraydb
+  postgresqlUser: xray
   postgresqlPassword: xray
   persistence:
     enabled: false
