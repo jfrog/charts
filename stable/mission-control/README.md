@@ -7,7 +7,7 @@
 ## Chart Details
 This chart will do the following:
 
-* Deploy PostgreSQL database.
+* Deploy PostgreSQL database **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy Elasticsearch.
 * Deploy Mission Control.
 
