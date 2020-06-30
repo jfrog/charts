@@ -1,7 +1,7 @@
 # JFrog Mission-Control Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 1.x,2.x to 3.x/4.x (Chart Versions)
+## Upgrade from 1.x/2.x to 3.x/4.x (Chart Versions)
 
 * To upgrade chart version to 3.x/4.x, you must be on chart version 1.0.5 or above as described in https://github.com/jfrog/charts/blob/master/stable/mission-control/CHANGELOG.md.
 * Data other than your licenses, such as your service information and insight, will not be available after the upgrade.
