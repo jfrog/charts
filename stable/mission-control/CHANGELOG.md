@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.1] -  Jun 29, 2020
+* Added UPGRADES_NOTES.md for upgrading to 3.x/4.x chart versions
+
 ## [4.0.0] - Jun 26, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`
