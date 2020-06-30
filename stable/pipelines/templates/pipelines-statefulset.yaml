@@ -336,6 +336,20 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+        - name: extensionsync
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.extensionSync.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.extensionSync.image.tag }}"
+          imagePullPolicy: {{ .Values.pipelines.extensionSync.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/extensionSync
+          env:
+            - name: COMPONENT
+              value: extensionsync
+          resources:
+            {{- toYaml .Values.pipelines.extensionSync.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
     {{- with .Values.pipelines.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

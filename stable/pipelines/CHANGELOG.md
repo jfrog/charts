@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.3.2] - June 30, 2020
+* Enable extensionSync microservice
+
 ## [1.3.1] - June 29, 2020
 * Pipelines v1.6.1
 
