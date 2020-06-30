@@ -1,5 +1,5 @@
 #! /bin/bash
-# This can be used to export JFrog Mission Control data for migration from Mission Control 3.5.1+ to 4.0.x.
+# This can be used to export JFrog Mission Control data for migration from Mission Control 3.5.1+ to 4.x
 
 set -e
 
@@ -289,7 +289,7 @@ logInfo() {
 usage() {
     cat << END_USAGE
 
-jfmcDataExport.sh - Export JFrog Mission Control data for migration from Mission Control 3.5.1+ to 4.0.x.
+jfmcDataExport.sh - Export JFrog Mission Control data for migration from Mission Control 3.5.1+ to 4.x.
 
 Usage:   jfmcDataExport.sh [OPTION]...
 
@@ -442,7 +442,7 @@ cleanUp
 
 cat << END_REPORT
 
-To import the data in Mission Control 4.0.x:"
+To import the data in Mission Control 4.x:"
   1. Copy ${OUTPUT_FILE} into JF_PRODUCT_HOME/var/bootstrap/mc without changing the file name on one Mission Control node."
   2. Restart Mission Control node."
 
