@@ -1,6 +1,19 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.0] - Jun 26, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update rabbitmq tag version to 3.8.5-debian-10-r14
+* Update RabbitMQ chart to v7.3.3
+* Update RabbitMQ-HA chart to v1.46.4
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
+## [3.5.1] - Jun 25, 2020
+* Added prestartcommand to router container to match same mechanism in all other xray containers 
+
 ## [3.5.0] - Jun 22, 2020
 * Update Xray to version `3.5.2` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.5.2
 * Update alpine to version `3.12`
