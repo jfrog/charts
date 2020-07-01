@@ -147,7 +147,7 @@ Create rabbitmq URL
 */}}
 {{- define "rabbitmq.url" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- $rabbitmqPort := .Values.rabbitmq.service.nodePort -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.port -}}
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name "rabbitmq" $rabbitmqPort -}}
 {{- else if index .Values "rabbitmq-ha" "enabled" -}}
 {{- $rabbitmqHaPort := index .Values "rabbitmq-ha" "rabbitmqNodePort" -}}
