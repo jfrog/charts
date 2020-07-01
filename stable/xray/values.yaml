@@ -230,8 +230,9 @@ rabbitmq-ha:
 ##
 rabbitmq:
   enabled: false
-  replicas: 1
-  rbacEnabled: true
+  replicaCount: 1
+  rbac:
+    create: true
   image:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
@@ -244,7 +245,7 @@ rabbitmq:
     erlangCookie: XRAYRABBITMQCLUSTER
     # existingErlangSecret: <name-of-existing-secret>
   service:
-    nodePort: 5672
+    port: 5672
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
