@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [6.0.0] - Jul 27, 2020
+* Update redis tag version to `6.0.5-debian-10-r22`
+
 ## [6.0.0] - Jun 26, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`
