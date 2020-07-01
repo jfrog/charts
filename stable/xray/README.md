@@ -329,10 +329,10 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq.enabled`                             | RabbitMQ enabled uses rabbitmq               | `false`              |
 | `rabbitmq.replicas`                            | RabbitMQ replica count               | `1`              |
 | `rabbitmq.rbacEnabled`                         | If true, create & use RBAC resources         | `true`               |
-| `rabbitmq.rabbitmq.username`                    | RabbitMQ application username                | `guest`               |
-| `rabbitmq.rabbitmq.password`                    | RabbitMQ application password                |                |
-| `rabbitmq.rabbitmq.existingPasswordSecret`      | RabbitMQ existingPasswordSecret               |                |
-| `rabbitmq.rabbitmq.erlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
+| `rabbitmq.auth.username`                    | RabbitMQ application username                | `guest`               |
+| `rabbitmq.auth.password`                    | RabbitMQ application password                |                |
+| `rabbitmq.auth.existingPasswordSecret`      | RabbitMQ existingPasswordSecret               |                |
+| `rabbitmq.auth.erlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
 | `rabbitmq.service.nodePort`                    | RabbitMQ node port                           | `5672`               |
 | `rabbitmq.persistence.enabled`            | If `true`, persistent volume claims are created | `true`            |
 | `rabbitmq.persistence.accessMode`            | RabbitMQ persistent volume claims access mode | `ReadWriteOnce`            |

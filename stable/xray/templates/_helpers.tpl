@@ -161,7 +161,7 @@ Create rabbitmq username
 */}}
 {{- define "rabbitmq.user" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- .Values.rabbitmq.rabbitmq.username -}}
+{{- .Values.rabbitmq.auth.username -}}
 {{- else if index .Values "rabbitmq-ha" "enabled" -}}
 {{- index .Values "rabbitmq-ha" "rabbitmqUsername" -}}
 {{- end -}} 
@@ -173,7 +173,7 @@ Create rabbitmq password secret name
 */}}
 {{- define "rabbitmq.passwordSecretName" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- .Values.rabbitmq.rabbitmq.existingPasswordSecret | default (printf "%s-%s" .Release.Name "rabbitmq") -}}
+{{- .Values.rabbitmq.auth.existingPasswordSecret | default (printf "%s-%s" .Release.Name "rabbitmq") -}}
 {{- else if index .Values "rabbitmq-ha" "enabled" -}}
 {{- index .Values "rabbitmq-ha" "existingSecret" | default (printf "%s-%s" .Release.Name "rabbitmq-ha") -}}
 {{- end -}} 
