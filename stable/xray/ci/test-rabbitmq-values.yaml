@@ -1,12 +1,11 @@
 # CI values for Xray
-
+databaseUpgradeReady: true
 rbac:
   create: false
 
 serviceAccount:
   create: false
 
-databaseUpgradeReady: yes
 analysis:
   loggers:
     - xray_analysis.log
@@ -39,11 +38,10 @@ mongodb:
     enabled: false
 
 rabbitmq-ha:
-    enabled: false
+  enabled: false
 
 rabbitmq:
   enabled: true
   auth:
     username: guest
     password: password
-    
