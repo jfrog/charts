@@ -39,7 +39,11 @@ mongodb:
     enabled: false
 
 rabbitmq-ha:
-  rabbitmqUsername: guest
-  rabbitmqPassword: guest
-  persistentVolume:
-    enabled: true
+    enabled: false
+
+rabbitmq:
+  enabled: true
+  auth:
+    username: guest
+    password: password
+    

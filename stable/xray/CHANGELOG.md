@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.1] - Jul 1, 2020
+* Ingress version fix for k8s >= 1.14
+* Replaced `rabbbitmq.rabbitmq` tag with `rabbbitmq.auth` in values.yaml to support latest rabbitmq subchart.
+
 ## [2.2.0] - Jun 29, 2020
 * Update Xray version to 2.14.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.14.0
 * Update RabbitMQ chart to v7.3.3

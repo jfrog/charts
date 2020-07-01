@@ -236,12 +236,13 @@ rabbitmq:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
     tag: 3.8.5-debian-10-r14
-  rabbitmq:
+  auth:
     username: guest
     password: ""
     ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
     # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
+    # existingErlangSecret: <name-of-existing-secret>
   service:
     nodePort: 5672
   persistence:
