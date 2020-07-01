@@ -323,6 +323,20 @@ pipelines:
       #   cpu: 100m
       #   memory: 128Mi
 
+  extensionSync:
+    image:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
   ## Pipelines installer
   pipelinesInit:
     image:
@@ -440,6 +454,7 @@ pipelines:
           - "www.signals"
           - "core.nexec"
           - "core.hookHandler"
+          - "core.extensionSync"
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
@@ -605,6 +620,9 @@ pipelines:
           image: "jfrog/pipelines-micro"
         marshaller:
           name: marshaller
+          image: "jfrog/pipelines-micro"
+        extensionSync:
+          name: extensionSync
           image: "jfrog/pipelines-micro"
 
     ## Runtime configuration

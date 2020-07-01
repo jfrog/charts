@@ -1,6 +1,14 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.0] - Jun 30, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update busybox tag version to `1.31.1`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
 ## [2.6.0] - Jun 29, 2020
 * Updated Artifactory version to 7.6.1 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.1
 * Add tpl for external database secrets

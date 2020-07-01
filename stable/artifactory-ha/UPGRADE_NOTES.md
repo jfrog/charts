@@ -1,5 +1,6 @@
 # JFrog Artifactory Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
+
 ## Upgrade from 1.X to 2.X (Chart Versions)
 
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you!**
