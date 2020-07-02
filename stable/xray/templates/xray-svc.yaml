@@ -21,10 +21,10 @@ spec:
     protocol: TCP
     name: http
     targetPort: {{ .Values.server.internalPort }}
-  - port: 8081
+  - port: 8082
     protocol: TCP
     name: router
-    targetPort: 8081
+    targetPort: 8082
   selector:
     app: {{ template "xray.name" . }}
     component: {{ .Values.server.name }}
