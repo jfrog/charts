@@ -1,9 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [2.2.1] - Jul 1, 2020
+## [2.2.1] - Jul 2, 2020
 * Add support for Ingress version - `networking.k8s.io/v1beta1` for k8s >= 1.14 using helm v3
 * Fixed `rabbitmq.rabbitmq` tag with `rabbitmq.auth` in values.yaml to support latest rabbitmq subchart when `rabbitmq.enabled=true`
+* Update RabbitMQ chart to v7.4.3
 
 ## [2.2.0] - Jun 29, 2020
 * Update Xray version to 2.14.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.14.0
