@@ -5,7 +5,7 @@ metadata:
   labels:
     app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
-    component: {{ .Values.server.name }}
+    component: {{ .Values.xray.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 {{- if .Values.server.service.annotations }}
