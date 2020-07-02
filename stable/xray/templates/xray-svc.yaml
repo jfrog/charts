@@ -27,5 +27,5 @@ spec:
     targetPort: {{ .Values.router.internalPort }}
   selector:
     app: {{ template "xray.name" . }}
-    component: {{ .Values.server.name }}
+    component: {{ .Values.xray.name }}
     release: {{ .Release.Name }}
