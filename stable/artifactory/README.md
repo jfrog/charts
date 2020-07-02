@@ -1052,6 +1052,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.jmx.accessFile`              | The path to the JMX access file, when JMX authentication is enabled           | |
 | `artifactory.javaOpts.jmx.passwordFile`              | The path to the JMX password file, when JMX authentication is enabled           | |
 | `artifactory.javaOpts.other`            | Artifactory additional java options |                                          |
+| `artifactory.replicator.enabled`        | Enable the Replicator service (relevant for Enterprise+ only)     | `false`  |
 | `artifactory.ssh.enabled`            | Enable Artifactory SSH access |                                      |
 | `artifactory.ssh.internalPort`            | Artifactory SSH internal port | `1339`                                      |
 | `artifactory.ssh.externalPort`            | Artifactory SSH external port | `1339`                                     |
@@ -1319,6 +1320,31 @@ and running:
 ```bash
 helm upgrade --install xray jfrog/artifactory -f artifactory-values.yaml
 ```
+
+### Dedicated Ingress object for replicator service
+
+You have the option to add additional ingress object to the Replicator service. An example for this use case can be routing the /replicator/ path to Artifactory.
+In order to do that, simply add the following to a `artifactory-values.yaml` file:
+
+```yaml
+artifactory:
+  replicator:
+    enabled: true
+    ingress:
+      name: <MY_INGRESS_NAME>
+      hosts:
+        - myhost.example.com
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-buffering: "off"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          chunked_transfer_encoding on;
+      tls:
+        - hosts:
+          - "myhost.example.com"
+          secretName: <CUSTOM_SECRET>
+```
+
 
 ### Ingress behind another load balancer
 If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
