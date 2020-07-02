@@ -6,7 +6,7 @@ metadata:
   labels:
     app: {{ template "xray.name" $ }}
     release: {{ $.Release.Name }}
-    component: {{ .Values.xray.name }}
+    component: {{ $.Values.xray.name }}
 spec:
 {{- if .podSelector }}
   podSelector:
