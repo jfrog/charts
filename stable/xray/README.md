@@ -30,7 +30,7 @@ helm repo add jfrog https://charts.jfrog.io
 ### Install Chart
 Install JFrog Xray
 ```bash
-helm upgrade --install xray --namespace xray jfrog/xray --version 2.2.0
+helm upgrade --install xray --namespace xray jfrog/xray --version 2.2.1
 ```
 
 ## Status
@@ -87,6 +87,15 @@ helm upgrade --name xray jfrog/xray \
     --set rabbitmq-ha.rabbitmqPassword=${RABBITMQ_PASSWORD} \
     --set postgresql.postgresqlPassword=${POSTGRES_PASSWORD}
 ```
+
+## Special Upgrade Notes:
+
+While upgrading from Xray 2.x to 2.x charts due to breaking changes, use kubectl delete statefulsets <old_statefulset_xray_name> and run helm upgrade
+
+Also, While upgrading from Xray 2.x to 2.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
+
+1. Use kubectl delete statefulsets <old_statefulset_rabbitmq_name> <old_statefulset_xray_name>
+2. Use kubectl delete pvc <old_PVC_rabbitmq_name> and run helm upgrade
 
 ## Remove
 Removing a **helm** release is done with
@@ -295,16 +304,17 @@ The following table lists the configurable parameters of the xray chart and thei
 | `mongodb.affinity`                             | Mongodb node affinity                        | `{}`                 |
 | `mongodb.tolerations`                          | Mongodb node tolerations                     | `[]`                 |
 | `rabbitmq.enabled`                             | RabbitMQ enabled uses rabbitmq               | `false`              |
-| `rabbitmq.replicas`                            | RabbitMQ replica count               | `1`              |
-| `rabbitmq.rbacEnabled`                         | If true, create & use RBAC resources         | `true`               |
-| `rabbitmq.rabbitmq.username`                    | RabbitMQ application username                | `guest`               |
-| `rabbitmq.rabbitmq.password`                    | RabbitMQ application password                |                |
-| `rabbitmq.rabbitmq.existingPasswordSecret`      | RabbitMQ existingPasswordSecret               |                |
-| `rabbitmq.rabbitmq.erlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
-| `rabbitmq.service.nodePort`                    | RabbitMQ node port                           | `5672`               |
-| `rabbitmq.persistence.enabled`            | If `true`, persistent volume claims are created | `true`            |
-| `rabbitmq.persistence.accessMode`            | RabbitMQ persistent volume claims access mode | `ReadWriteOnce`            |
-| `rabbitmq.persistence.size`               | RabbitMQ Persistent volume size              | `20Gi`               |
+| `rabbitmq.replicaCount`                        | RabbitMQ replica count                       | `1`              |
+| `rabbitmq.rbac.create`                         | If true, create & use RBAC resources         | `true`               |
+| `rabbitmq.auth.username`                       | RabbitMQ application username                | `guest`               |
+| `rabbitmq.auth.password`                       | RabbitMQ application password                |                |
+| `rabbitmq.auth.existingPasswordSecret`         | RabbitMQ existingPasswordSecret              |                |
+| `rabbitmq.auth.erlangCookie`                   | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
+| `rabbitmq.auth.existingErlangSecret`           | RabbitMQ existingErlangSecret                |                |
+| `rabbitmq.service.port`                        | RabbitMQ node port                           | `5672`               |
+| `rabbitmq.persistence.enabled`                 | If `true`, persistent volume claims are created | `true`            |
+| `rabbitmq.persistence.accessMode`              | RabbitMQ persistent volume claims access mode | `ReadWriteOnce`            |
+| `rabbitmq.persistence.size`                    | RabbitMQ Persistent volume size              | `20Gi`               |
 | `rabbitmq-ha.enabled`                          | RabbitMQ enabled uses rabbitmq-ha            | `true`               |
 | `rabbitmq-ha.replicaCount`                     | RabbitMQ Number of replica                   | `1`                  |
 | `rabbitmq-ha.rabbitmqUsername`                 | RabbitMQ application username                | `guest`              |

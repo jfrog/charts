@@ -99,7 +99,7 @@ spec:
         {{- end }}
         {{ if index .Values "rabbitmq" "enabled" }}
         - name: RABBITMQ_USER
-          value: {{ .Values.rabbitmq.rabbitmq.username }}
+          value: {{ .Values.rabbitmq.auth.username }}
         - name: RABBITMQ_ERLANG_COOKIE
           valueFrom:
             secretKeyRef:
