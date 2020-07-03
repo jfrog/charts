@@ -68,7 +68,7 @@ While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubect
 Also, While upgrading from Xray 3.x to 4.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
 
 1. use `kubectl delete statefulsets <old_statefulset_rabbitmq_name> <old_statefulset_xray_name>`
-2. use `kubectl delete pvc <old_statefulset_rabbitmq_name>` and run helm upgrade
+2. use `kubectl delete pvc <old_PVC_rabbitmq_name>` and run helm upgrade
 
 
 ### System Configuration
