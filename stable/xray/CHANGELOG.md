@@ -5,7 +5,7 @@ All changes to this chart will be documented in this file.
 * Added compatability to support latest 7.x rabbitmq subchart when `rabbitmq.enabled=true`
 * Update RabbitMQ chart to v7.4.3
 * **IMPORTANT**
-* New RabbitMQ 7.x chart is [not compatible](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700) with previous rabbitmq 6.x chart in Xray 3.x chart
+* RabbitMQ 7.x chart is [not compatible](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700) with previous rabbitmq 6.x chart in Xray 3.x chart
 * Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/README.md#special-upgrade-notes) for upgrade notes
 
 ## [4.0.0] - Jun 26, 2020
