@@ -8,7 +8,7 @@
 
 This chart will do the following:
 
-* Optionally deploy PostgreSQL **NOTE:** For production grade installations it is recommended to use an external PostgreSQL
+* Optionally deploy PostgreSQL (**NOTE:** For production grade installations it is recommended to use an external PostgreSQL)
 * Deploy RabbitMQ (optionally as an HA cluster)
 * Deploy JFrog Xray micro-services
 
@@ -63,7 +63,12 @@ helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray j
 ### Special Upgrade Notes
 Xray 2.x to 3.x (App Version) is not directly supported.For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/UPGRADE_NOTES.md). If this is an upgrade over an existing Xray 3.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
 
-Also, While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+
+Also, While upgrading from Xray 3.x to 4.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
+
+1. use `kubectl delete statefulsets <old_statefulset_rabbitmq_name> <old_statefulset_xray_name>`
+2. use `kubectl delete pvc <old_statefulset_rabbitmq_name>` and run helm upgrade
 
 
 ### System Configuration
