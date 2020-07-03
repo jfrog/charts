@@ -95,7 +95,7 @@ While upgrading from Xray 2.x to 2.x charts due to breaking changes, use kubectl
 Also, While upgrading from Xray 2.x to 2.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
 
 1. Use kubectl delete statefulsets <old_statefulset_rabbitmq_name> <old_statefulset_xray_name>
-2. Use kubectl delete pvc <old_statefulset_rabbitmq_name> and run helm upgrade
+2. Use kubectl delete pvc <old_PVC_rabbitmq_name> and run helm upgrade
 
 ## Remove
 Removing a **helm** release is done with
