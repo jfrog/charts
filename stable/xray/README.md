@@ -8,7 +8,7 @@
 
 This chart will do the following:
 
-* Optionally deploy PostgreSQL **NOTE:** For production grade installations it is recommended to use an external PostgreSQL
+* Optionally deploy PostgreSQL (**NOTE:** For production grade installations it is recommended to use an external PostgreSQL)
 * Deploy RabbitMQ (optionally as an HA cluster)
 * Deploy JFrog Xray micro-services
 
@@ -63,7 +63,12 @@ helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray j
 ### Special Upgrade Notes
 Xray 2.x to 3.x (App Version) is not directly supported.For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/UPGRADE_NOTES.md). If this is an upgrade over an existing Xray 3.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
 
-Also, While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
+
+Also, While upgrading from Xray 3.x to 4.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
+
+1. use `kubectl delete statefulsets <old_statefulset_rabbitmq_name> <old_statefulset_xray_name>`
+2. use `kubectl delete pvc <old_PVC_rabbitmq_name>` and run helm upgrade
 
 
 ### System Configuration
@@ -326,14 +331,14 @@ The following table lists the configurable parameters of the xray chart and thei
 | `database.secrets.password.key`           | External database password `Secret` key            |                                         |
 | `database.secrets.url.name`               | External database url `Secret` name                |                                         |
 | `database.secrets.url.key`                | External database url `Secret` key                 |                                         |
-| `rabbitmq.enabled`                             | RabbitMQ enabled uses rabbitmq               | `false`              |
-| `rabbitmq.replicas`                            | RabbitMQ replica count               | `1`              |
-| `rabbitmq.rbacEnabled`                         | If true, create & use RBAC resources         | `true`               |
-| `rabbitmq.rabbitmq.username`                    | RabbitMQ application username                | `guest`               |
-| `rabbitmq.rabbitmq.password`                    | RabbitMQ application password                |                |
-| `rabbitmq.rabbitmq.existingPasswordSecret`      | RabbitMQ existingPasswordSecret               |                |
-| `rabbitmq.rabbitmq.erlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
-| `rabbitmq.service.nodePort`                    | RabbitMQ node port                           | `5672`               |
+| `rabbitmq.enabled`                          | RabbitMQ enabled uses rabbitmq               | `false`              |
+| `rabbitmq.replicaCount`                     | RabbitMQ replica count               | `1`              |
+| `rabbitmq.rbac.create`                      | If true, create & use RBAC resources         | `true`               |
+| `rabbitmq.auth.username`                    | RabbitMQ application username                | `guest`               |
+| `rabbitmq.auth.password`                    | RabbitMQ application password                |                |
+| `rabbitmq.auth.existingPasswordSecret`      | RabbitMQ existingPasswordSecret              |                |
+| `rabbitmq.auth.erlangCookie`                | RabbitMQ Erlang cookie                       | `XRAYRABBITMQCLUSTER`|
+| `rabbitmq.service.port`                     | RabbitMQ service port                        | `5672`               |
 | `rabbitmq.persistence.enabled`            | If `true`, persistent volume claims are created | `true`            |
 | `rabbitmq.persistence.accessMode`            | RabbitMQ persistent volume claims access mode | `ReadWriteOnce`            |
 | `rabbitmq.persistence.size`               | RabbitMQ Persistent volume size              | `20Gi`               |
