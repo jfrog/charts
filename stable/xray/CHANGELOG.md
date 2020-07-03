@@ -6,7 +6,7 @@ All changes to this chart will be documented in this file.
 * Update RabbitMQ chart to v7.4.3
 * **IMPORTANT**
 * New RabbitMQ 7.x chart is [not compatible](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700) with previous rabbitmq 6.x chart in Xray 3.x chart
-* To fix Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_rabbitmq_name>` and run helm upgrade
+* Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/README.md#special-upgrade-notes) for upgrade notes
 
 ## [4.0.0] - Jun 26, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
