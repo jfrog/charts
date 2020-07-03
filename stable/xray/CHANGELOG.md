@@ -3,8 +3,11 @@ All changes to this chart will be documented in this file.
 
 ## [2.2.1] - Jul 2, 2020
 * Add support for Ingress version - `networking.k8s.io/v1beta1` for k8s >= 1.14 using helm v3
-* Fixed `rabbitmq.rabbitmq` tag with `rabbitmq.auth` in values.yaml to support latest rabbitmq subchart when `rabbitmq.enabled=true`
+* Added compatability to support latest 7.x rabbitmq subchart when `rabbitmq.enabled=true`
 * Update RabbitMQ chart to v7.4.3
+* **IMPORTANT**
+* RabbitMQ 7.x chart is [not compatible](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700) with previous rabbitmq 6.x chart in previous Xray 2.x charts
+* Please refer [here](https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/README.md#special-upgrade-notes) for upgrade notes
 
 ## [2.2.0] - Jun 29, 2020
 * Update Xray version to 2.14.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.14.0
