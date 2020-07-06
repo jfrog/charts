@@ -723,7 +723,7 @@ This can be done with the following parameters
 # Make sure your Artifactory Docker image has the MySQL database driver in it
 ...
 --set postgresql.enabled=false \
---set artifactory.preStartCommand="wget -O /opt/center/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
+--set artifactory.preStartCommand="wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
 --set database.type=mysql \
 --set database.driver=com.mysql.jdbc.Driver \
 --set database.url=${DB_URL} \
@@ -745,10 +745,10 @@ database:
   user: <DB_USER>
   password: <DB_PASSWORD>
 artifactory:
-  preStartCommand: "mkdir -p /opt/center/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/center/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."  
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."  
   extraEnvironmentVariables:
   - name: LD_LIBRARY_PATH
-    value: /opt/center/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
+    value: /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
 ```
 2. Install Artifactory with the values file you created:
 ```bash
@@ -897,9 +897,9 @@ artifactory:
 ```
 
 ### Add Artifactory User Plugin during installation
-If you need to add [Artifactory User Plugin](https://github.com/center/jfrog/artifactory-user-plugins), you can use this option.
+If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
 
-Create a secret with [Artifactory User Plugin](https://github.com/center/jfrog/artifactory-user-plugins) by following command:
+Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
 ```bash
 # Secret with single user plugin
 kubectl  create secret generic archive-old-artifacts --from-file=archiveOldArtifacts.groovy --namespace=artifactory-ha
@@ -928,7 +928,7 @@ artifactory-ha: # Name of the artifactory-ha dependency
     userPluginSecrets:
       - '{{ template "my-chart.fullname" . }}'
 ```
-NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/center/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
+NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
 
 ### Provide custom configMaps to Artifactory
 If you want to mount a custom file to Artifactory, either an init shell script or a custom configuration file (such as `logback.xml`), you can use this option.
@@ -1034,7 +1034,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `logger.image.tag`        | tag for logger image              | `1.30`                                                   |
 | `artifactory.name`                   | Artifactory name                     | `artifactory`                              |
 | `artifactory.image.pullPolicy`       | Container pull policy                | `IfNotPresent`                             |
-| `artifactory.image.repository`       | Container image                      | `docker.bintray.io/center/jfrog/artifactory-pro`  |
+| `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
 | `artifactory.priorityClass.create`   | Create a PriorityClass object        | `false`                                    |
 | `artifactory.priorityClass.value`    | Priority Class value                 | `1000000000`                               |
@@ -1109,7 +1109,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.haBackupDir.enabled`         | Enable haBackupDir for eventual storage in the HA cluster   | `false` |
 | `artifactory.haBackupDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
 | `artifactory.migration.timeoutSeconds`          | Artifactory migration Maximum Time out in seconds| `3600`       |
-| `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/center/jfrog/artifactory"`  |
+| `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
 | `artifactory.persistence.size`         | Artifactory persistence or local volume size        | `200Gi`                         |
@@ -1123,8 +1123,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
 | `artifactory.persistence.nfs.haDataMount`   | NFS data directory                   | `/data`                             |
 | `artifactory.persistence.nfs.haBackupMount` | NFS backup directory                 | `/backup`                           |
-| `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/center/jfrog/artifactory-ha`     |
-| `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/center/jfrog/artifactory-backup` |
+| `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory-ha`     |
+| `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
 | `artifactory.persistence.nfs.mountOptions`            | NFS mount options | `[]`                                    |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
@@ -1169,8 +1169,8 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.azureBlob.containerName`   | Azure Blob Storage container name      | ``                        |
 | `artifactory.persistence.azureBlob.testConnection`  | Azure Blob Storage test connection     | `false`                   |
 | `artifactory.persistence.fileSystem.existingSharedClaim`  | Enable using an existing shared pvc | `false`                             |
-| `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/center/jfrog/artifactory/artifactory-data`     |
-| `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/center/jfrog/artifactory-backup` |
+| `artifactory.persistence.fileStorage.dataDir`             | HA data directory                   | `/var/opt/jfrog/artifactory/artifactory-data`     |
+| `artifactory.persistence.fileStorage.backupDir`           | HA backup directory                 | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.javaOpts.other`                        | Artifactory additional java options (for all nodes) |              |
 | `artifactory.replicator.enabled`                | Enable the Replicator service (relevant for Enterprise+ only)            | `false`  |
 | `artifactory.ssh.enabled`                       | Enable Artifactory SSH access     |                                      |
@@ -1244,7 +1244,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.replicaCount`        | Nginx replica count               | `1`                                                    |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.gid`                 | Nginx Group Id                    | `107`                                                  |
-| `nginx.image.repository`    | Container image                   | `docker.bintray.io/center/jfrog/nginx-artifactory-pro`        |
+| `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
@@ -1299,7 +1299,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.resources.requests.cpu`    | Nginx initial cpu request                  | `100m`                                  |
 | `nginx.resources.limits.memory`   | Nginx memory limit                         | `250Mi`                                 |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit                            | `500m`                                  |
-| `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/center/jfrog/nginx"`                           |
+| `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/jfrog/nginx"`                           |
 | `nginx.persistence.enabled` | Nginx persistence volume enabled. This is only available when the nginx.replicaCount is set to 1 | `false`                                                  |
 | `nginx.persistence.accessMode` | Nginx persistence volume access mode | `ReadWriteOnce`                                  |
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
