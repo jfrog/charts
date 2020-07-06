@@ -604,7 +604,7 @@ This can be done with the following parameters
 # Make sure your Artifactory Docker image has the MySQL database driver in it
 ...
 --set postgresql.enabled=false \
---set artifactory.preStartCommand="wget -O /opt/center/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
+--set artifactory.preStartCommand="wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar" \
 --set database.type=mysql \
 --set database.host=${DB_HOST} \
 --set database.port=${DB_PORT} \
@@ -725,9 +725,9 @@ You can configure the sidecar to run as a custom user if needed by setting the f
 
 ### Add Artifactory User Plugin during installation
 
-If you need to add [Artifactory User Plugin](https://github.com/center/jfrog/artifactory-user-plugins), you can use this option.
+If you need to add [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins), you can use this option.
 
-Create a secret with [Artifactory User Plugin](https://github.com/center/jfrog/artifactory-user-plugins) by following command:
+Create a secret with [Artifactory User Plugin](https://github.com/jfrog/artifactory-user-plugins) by following command:
 
 ```bash
 # Secret with single user plugin
@@ -761,7 +761,7 @@ artifactory: # Name of the artifactory dependency
       - '{{ template "my-chart.fullname" . }}'
 ```
 
-NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/center/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
+NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
 
 ## Configuration
 
@@ -780,7 +780,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.name`        | Artifactory name                  | `artifactory`                                            |
 | `artifactory.replicaCount`            | Replica count for Artifactory deployment| `1`                                    |
 | `artifactory.image.pullPolicy`        | Container pull policy             | `IfNotPresent`                               |
-| `artifactory.image.repository`        | Container image                   | `docker.bintray.io/center/jfrog/artifactory-pro`    |
+| `artifactory.image.repository`        | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`    |
 | `artifactory.image.version`           | Container tag                     |  `.Chart.AppVersion`                         |
 | `artifactory.labels`                  | Artifactory labels                | `{}`                                         |
 | `artifactory.priorityClass.create`    | Create a PriorityClass object     | `false`                                      |
@@ -839,7 +839,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.readinessProbe.failureThreshold`    | Minimum consecutive failures for the probe to be considered failed after having succeeded.   | 10 |
 | `artifactory.deleteDBPropertiesOnStartup`    | Whether to delete the ARTIFACTORY_HOME/etc/db.properties file on startup. Disabling this will remove the ability for the db.properties to be updated with any DB-related environment variables change (e.g. DB_HOST, DB_URL)  | `true` |
 | `artifactory.copyOnEveryStartup`         | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
-| `artifactory.persistence.mountPath`      | Artifactory persistence volume mount path        | `"/var/opt/center/jfrog/artifactory"`       |
+| `artifactory.persistence.mountPath`      | Artifactory persistence volume mount path        | `"/var/opt/jfrog/artifactory"`       |
 | `artifactory.persistence.enabled`        | Artifactory persistence volume enabled           | `true`                               |
 | `artifactory.persistence.existingClaim`  | Artifactory persistence volume claim name        |                                      |
 | `artifactory.persistence.accessMode`     | Artifactory persistence volume access mode       | `ReadWriteOnce`                      |
@@ -853,8 +853,8 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `artifactory.persistence.nfs.ip`            | NFS server IP                        |                                     |
 | `artifactory.persistence.nfs.haDataMount`   | NFS data directory                   | `/data`                             |
 | `artifactory.persistence.nfs.haBackupMount` | NFS backup directory                 | `/backup`                           |
-| `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/center/jfrog/artifactory`     |
-| `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/center/jfrog/artifactory-backup` |
+| `artifactory.persistence.nfs.dataDir`       | HA data directory                    | `/var/opt/jfrog/artifactory`     |
+| `artifactory.persistence.nfs.backupDir`     | HA backup directory                  | `/var/opt/jfrog/artifactory-backup` |
 | `artifactory.persistence.nfs.capacity`      | NFS PVC size                         | `200Gi`                             |
 | `artifactory.persistence.fileSystem.cache.enabled`        | Enable Artifactory cache when using the file-system persistence type    | `false`                             |
 | `artifactory.persistence.eventual.numberOfThreads`  | Eventual number of threads   | `10`                                |
@@ -931,7 +931,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.gid`                 | Nginx Group Id                    | `107`                                                  |
-| `nginx.image.repository`    | Container image                   | `docker.bintray.io/center/jfrog/nginx-artifactory-pro`        |
+| `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container tag                     | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
@@ -979,7 +979,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.tlsSecretName` |  SSL secret that will be used by the Nginx pod |                                                 |
 | `nginx.customConfigMap`           | Nginx CustomeConfigMap name for `nginx.conf` | ` `                                   |
 | `nginx.customArtifactoryConfigMap`| Nginx CustomeConfigMap name for `artifactory.conf` | ` `                             |
-| `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/center/jfrog/nginx"`                           |
+| `nginx.persistence.mountPath` | Nginx persistence volume mount path | `"/var/opt/jfrog/nginx"`                           |
 | `nginx.persistence.enabled` | Nginx persistence volume enabled | `false`                                                  |
 | `nginx.persistence.accessMode` | Nginx persistence volume access mode | `ReadWriteOnce`                                  |
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
