@@ -5,6 +5,8 @@ All changes to this chart will be documented in this file.
 * Updated Artifactory version to 6.20.1 - https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.20.1
 * Update alpine version to `3.12`
 * Update busybox version to `1.31.1`
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
 
 ## [1.7.1] - June 24, 2020
 * Fix service account annotations
