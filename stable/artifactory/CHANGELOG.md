@@ -3,8 +3,8 @@ All changes to this chart will be documented in this file.
 
 ## [8.7.2] - Jul 6, 2020
 * Updated Artifactory version to 6.20.1 - https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.20.1
-* Update alpine version to `3.12`
-* Update busybox version to `1.31.1`
+* Updated alpine version to `3.12`
+* Updated busybox version to `1.31.1`
 
 ## [8.7.1] - June 24, 2020
 * Fix service account annotations
