@@ -3,6 +3,8 @@ All changes to this chart will be documented in this file.
 
 ## [10.0.2] - Jul 6, 2020
 * Updated Artifactory version to 7.6.2
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
 
 ## [10.0.1] - Jul 01, 2020
 * Add dedicated ingress object for Replicator service when enabled
