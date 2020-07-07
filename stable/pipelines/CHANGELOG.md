@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.3.4] - July 6th, 2020
+* Fixes callHomeUrl
+
 ## [1.3.3] - June 30th, 2020
 * Pipelines v1.6.2
 
