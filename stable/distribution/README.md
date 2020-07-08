@@ -250,8 +250,8 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.nodeSelector`                            | Redis node selector                                                    | `{}`                                                               |
 | `redis.affinity`                                | Redis node affinity                                                    | `{}`                                                               |
 | `redis.tolerations`                             | Redis node tolerations                                                 | `[]`                                                               |
-| `logger.image.repository`                       | Repository for logger image                                            | `busybox`                                                          |
-| `logger.image.tag`                              | Tag for logger image                                                   | `1.30`                                                             |
+| `logger.image.repository`                       | Repository for logger image                                            | `docker.bintray.io/busybox`                                                          |
+| `logger.image.tag`                              | Tag for logger image                                                   | `1.31.1`                                                             |
 | `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
 | `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
 | `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
