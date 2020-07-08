@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [10.0.2] - Jul 8, 2020
+## [10.0.3] - Jul 8, 2020
 * Add artifactory.javaOpts.accessClientMaxConnections to allow tuning access connection settings
 
 ## [10.0.2] - Jul 6, 2020

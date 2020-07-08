@@ -373,8 +373,8 @@ artifactory:
       extraJavaOpts: >
       {{- with .Values.artifactory.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
-      {{- if .accessClientMaxConnections }}
-        -Dartifactory.access.client.max.connections={{ .accessClientMaxConnections }}
+      {{- with .accessClientMaxConnections }}
+        -Dartifactory.access.client.max.connections={{ . }}
       {{- end }}
       {{- if .xms }}
         -Xms{{ .xms }}
