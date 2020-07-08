@@ -37,7 +37,7 @@ This file describes special upgrade notes needed at specific versions
       2. Run the `helm install` with the `new version` say `distribution-new` with distribution scale down replicas to 0.
           Example:
           ```bash
-          helm install distribution-new --set replicaCount=0 jfrog/distribution
+          helm install distribution-new --set replicaCount=0 center/jfrog/distribution
           ```
       3. To Migrate Postgresql data between old and new pods\
           a. Connect to the new PostgreSQL pod (you can obtain the name by running kubectl get pods)
@@ -54,10 +54,10 @@ This file describes special upgrade notes needed at specific versions
             $ psql -U distribution DATABASE_NAME < /tmp/backup.sql
             ```
           e. After run above command you should be prompted for a password, this is the current chart password.This operation could  take some time depending on the database size.
-      5. Run the Upgrade final time which would start distribution with `databaseUpgradeReady=yes` \
+      5. Run the Upgrade final time which would start distribution with `databaseUpgradeReady=true` \
          Example :
          ```bash
-         helm upgrade --install distribution-new --set replicaCount=1,databaseUpgradeReady=yes jfrog/distribution
+         helm upgrade --install distribution-new --set replicaCount=1,databaseUpgradeReady=yes center/jfrog/distribution
          ```
       6. Restore access to new Distribution
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Distribution deployment and Helm release.

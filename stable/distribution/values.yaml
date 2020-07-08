@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.11"
+initContainerImage: docker.bintray.io/alpine:3.12
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -188,8 +188,8 @@ common:
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 distribution:
   name: distribution
