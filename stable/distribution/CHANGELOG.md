@@ -1,11 +1,18 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [4.0.2] - Jul 8, 2020
+* Update Distribution version 1.8.3 - https://www.jfrog.com/confluence/display/DIST1X/Release+Notes#ReleaseNotes-Distribution1.8.3
+* Updated alpine version to `3.12`
+* Updated busybox version to `1.31.1`
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
 ## [4.0.1] - Jun 2, 2020
 * Fixes Broken upgrades of charts - use kubectl delete statefulsets <old_statefulset_distribution_name> and run helm upgrade
 
 ## [4.0.0] - May 27, 2020
-* Update Distribution version 1.8.2 -https://www.jfrog.com/confluence/display/DIST1X/Release+Notes#ReleaseNotes-Distribution1.8.2
+* Update Distribution version 1.8.2 - https://www.jfrog.com/confluence/display/DIST1X/Release+Notes#ReleaseNotes-Distribution1.8.2
 * **Breaking change:** Added Upgrade Notes from 3.x to 4.x chart version - Refer https://github.com/jfrog/charts/blob/pre-unified-platform/stable/distribution/UPGRADE_NOTES.md
 * **Breaking change:** Added Support for Distribution 4.x on k8s versions >= 1.16
 * Added `databaseUpgradeReady` flag to upgrade from 3.x to 4.x chart versions
