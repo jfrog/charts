@@ -371,11 +371,9 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
-      {{- with .accessClientMaxConnections }}
-        -Dartifactory.access.client.max.connections={{ . }}
-      {{- end }}
       {{- if .xms }}
         -Xms{{ .xms }}
       {{- end }}
@@ -829,7 +827,6 @@ artifactory:
       accessFile:
       passwordFile:
     corePoolSize: 8
-    # accessClientMaxConnections: 50
    # other: ""
 
   nodeSelector: {}

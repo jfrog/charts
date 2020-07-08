@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [3.0.3] - Jul 8, 2020
-* Add artifactory.primary.javaOpts.accessClientMaxConnections to allow tuning access connection settings
+* Set Artifactory access client connections to the same value as the access threads
 
 ## [3.0.2] - Jul 6, 2020
 * Updated Artifactory version to 7.6.2

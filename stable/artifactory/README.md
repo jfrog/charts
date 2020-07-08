@@ -1047,7 +1047,6 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.javaOpts.xms`              | Artifactory java Xms size           |                                          |
 | `artifactory.javaOpts.xmx`              | Artifactory java Xms size           |                                          |
 | `artifactory.javaOpts.corePoolSize` | The number of async processes that can run in parallel - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `8` |
-| `artifactory.javaOpts.artifactory.javaOpts.accessClientMaxConnections` | The maximum connections for internal HTTP connection pool that Artifactory uses to internally interact with Access.  - https://jfrog.com/knowledge-base/how-do-i-tune-artifactory-for-heavy-loads/  |   `50` |
 | `artifactory.javaOpts.jmx.enabled`              | Enable JMX monitoring           |  `false`                                        |
 | `artifactory.javaOpts.jmx.port`              | JMX Port number            |  `9010`                                        |
 | `artifactory.javaOpts.jmx.host`              | JMX hostname (parsed as a helm template)           |  `{{ template "artifactory.fullname" $ }}` |
