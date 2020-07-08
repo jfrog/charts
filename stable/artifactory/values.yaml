@@ -373,6 +373,9 @@ artifactory:
       extraJavaOpts: >
       {{- with .Values.artifactory.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
+      {{- if .accessClientMaxConnections }}
+        -Dartifactory.access.client.max.connections={{ .accessClientMaxConnections }}
+      {{- end }}
       {{- if .xms }}
         -Xms{{ .xms }}
       {{- end }}
@@ -826,6 +829,7 @@ artifactory:
       accessFile:
       passwordFile:
     corePoolSize: 8
+    # accessClientMaxConnections: 50
    # other: ""
 
   nodeSelector: {}
