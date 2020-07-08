@@ -1,3 +1,8 @@
+# Deprecation Notice
+**Note:** helm-hub-sync is no longer maintained or supported by JFrog.  Feel free to review this code for your own POC concepts, but we are not continuing to update it or add features. 
+
+For helm-hub-sync replacement we do suggest to use JFrog [ChartCenter](https://chartcenter.io) which is a free Helm chart central repository that was built to help the Helm community find immutable, secure, and reliable charts and have a single source of truth to proxy all the charts from one location.
+
 # JFrog Helm-hub-sync Helm Chart
 
 A tool to synchronize [Helm Hub](https://github.com/helm/hub) repositories with [JFrog Artifactory](https://jfrog.com/artifactory/)

@@ -1,6 +1,9 @@
 # JFrog Helm-hub-sync Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.1.3] - Jul 8, 2020
+* Add Deprecation Notice
+
 ## [0.1.2] - Sep 10, 2019
 * Some fixes to parameter names and descriptions
 
