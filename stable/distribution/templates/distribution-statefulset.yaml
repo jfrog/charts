@@ -309,8 +309,7 @@ spec:
         readinessProbe:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
-
-      - name: {{ template "redis.name" . }}
+      - name: redis
         image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
         env:
@@ -441,7 +440,7 @@ spec:
       {{- if .Values.redis.persistence.existingClaim }}
         selector:
             matchLabels:
-              app: {{ template "redis.name" . }}
+              app: redis
       {{- else }}
         {{- if .Values.redis.persistence.storageClass }}
         {{- if (eq "-" .Values.redis.persistence.storageClass) }}
