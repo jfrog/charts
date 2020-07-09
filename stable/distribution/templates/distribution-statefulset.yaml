@@ -97,7 +97,7 @@ spec:
           echo "Waiting for database to be ready...";
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
       {{- end }}
-      {{- if .Release.IsUpgrade }}
+      {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}

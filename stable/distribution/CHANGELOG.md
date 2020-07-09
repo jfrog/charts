@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [6.1.1] -  Jul 9, 2020
+* Fix an issue found in upgrade, when using helm upgrade --resue-values
+
 ## [6.1.0] -  Jul 7, 2020
 * Update Distribution version 2.4.0
 * **IMPORTANT**
