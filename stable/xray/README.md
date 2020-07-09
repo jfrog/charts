@@ -192,7 +192,7 @@ For **high availability** of Xray, set the replica count to be equal or higher t
 
 ```bash
 # Start Xray with 3 replicas per service and 3 replicas for RabbitMQ
-helm upgarde --install xray --namespace xray --set server.replicaCount=3 center/jfrog/xray
+helm upgrade --install xray --namespace xray --set replicaCount=3  --set rabbitmq-ha.replicaCount=3 center/jfrog/xray
 ```
 
 ### External Databases
