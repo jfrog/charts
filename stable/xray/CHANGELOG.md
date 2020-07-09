@@ -1,6 +1,11 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.1.0] - Jul 9, 2020
+* Update Xray to version `3.6.2`
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
 ## [4.0.1] - Jul 3, 2020
 * Added compatability to support latest 7.x rabbitmq subchart when `rabbitmq.enabled=true`
 * Update RabbitMQ chart to v7.4.3
