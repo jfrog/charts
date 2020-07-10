@@ -1,6 +1,11 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.5.0] - Jul 10, 2020
+* Update dependency Artifactory chart version to 10.0.3 (Artifactory 7.6.2)
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
 ## [2.4.0] - Jun 30, 2020
 * Update dependency Artifactory chart version to 9.6.0 (Artifactory 7.6.1)
 

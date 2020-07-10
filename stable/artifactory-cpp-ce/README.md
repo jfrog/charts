@@ -16,16 +16,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add JFrog Helm repository
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+### Add ChartCenter Helm repository
+
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
+
 ```bash
-helm repo add jfrog https://charts.jfrog.io
+helm repo add center https://repo.chartcenter.io
+helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm upgrade --install artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
 ```
 
 ### Accessing Artifactory CE for C++
@@ -34,7 +37,7 @@ helm upgrade --install artifactory-cpp-ce --set postgresql.postgresqlPassword=<p
 ### Updating Artifactory CE for C++
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm upgrade artifactory-cpp-ce --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
 ```
 
 ### Deleting Artifactory CE for C++
@@ -58,7 +61,7 @@ kubectl delete pv ...
 
 ## Database
 The Artifactory CE for C++ chart comes with PostgreSQL deployed by default.<br>
-For details on the PostgreSQL configuration or customising the database, Look at the options described in the [Artifactory helm chart](https://github.com/jfrog/charts/tree/master/stable/artifactory). 
+For details on the PostgreSQL configuration or customising the database, Look at the options described in the [Artifactory helm chart](https://github.com/center/jfrog/charts/tree/master/stable/artifactory). 
 
 ## Configuration
 The following table lists the **basic** configurable parameters of the Artifactory CE for C++ chart and their default values.
@@ -90,7 +93,7 @@ helm upgrade --install artifactory-cpp-ce \
   --set artifactory.ingress.enabled=true \
   --set artifactory.ingress.hosts[0]="artifactory.company.com" \
   --set artifactory.artifactory.service.type=NodePort \
-  --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
+  --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
 ```
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
