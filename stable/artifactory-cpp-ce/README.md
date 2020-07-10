@@ -61,7 +61,7 @@ kubectl delete pv ...
 
 ## Database
 The Artifactory CE for C++ chart comes with PostgreSQL deployed by default.<br>
-For details on the PostgreSQL configuration or customising the database, Look at the options described in the [Artifactory helm chart](https://github.com/center/jfrog/charts/tree/master/stable/artifactory). 
+For details on the PostgreSQL configuration or customising the database, Look at the options described in the [Artifactory helm chart](https://github.com/jfrog/charts/tree/master/stable/artifactory). 
 
 ## Configuration
 The following table lists the **basic** configurable parameters of the Artifactory CE for C++ chart and their default values.
