@@ -317,6 +317,16 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.db.jfscSchema`                   | PostgreSQL Database insight scheduler Schema    | `insight_scheduler`                   |
 | `postgresql.db.jfexSchema`                   | PostgreSQL Database mission executor Schema     | `insight_executor`                    |
 | `postgresql.service.port`                    | PostgreSQL Database Port                        | `5432`                                |
+| `postgresql.resources.requests.memory`       | PostgreSQL initial memory request               |                                       |
+| `postgresql.resources.requests.cpu`          | PostgreSQL initial cpu request                  |                                       |
+| `postgresql.resources.limits.memory`         | PostgreSQL memory limit                         |                                       |
+| `postgresql.resources.limits.cpu`            | PostgreSQL cpu limit                            |                                       |
+| `postgresql.master.nodeSelector`             | PostgreSQL master node selector                 | `{}`                                  |
+| `postgresql.master.affinity`                 | PostgreSQL master node affinity                 | `{}`                                  |
+| `postgresql.master.tolerations`              | PostgreSQL master node tolerations              | `[]`                                  |
+| `postgresql.slave.nodeSelector`              | PostgreSQL slave node selector                  | `{}`                                  |
+| `postgresql.slave.affinity`                  | PostgreSQL slave node affinity                  | `{}`                                  |
+| `postgresql.slave.tolerations`               | PostgreSQL slave node tolerations               | `[]`                                  |
 | `database.type`                              | External database type (`postgresql`)           | `postgresql`                          |
 | `database.driver`                            | External database driver                        | `org.postgresql.Driver`              |
 | `database.name`                              | External database name                          | `mission_control`                     |

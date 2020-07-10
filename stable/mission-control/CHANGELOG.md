@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.2] - Jul 10, 2020
+* Move some postgresql values to where they should be according to the subchart.
+
 ## [4.0.1] -  Jun 29, 2020
 * Added UPGRADES_NOTES.md for upgrading to 3.x/4.x chart versions
 
