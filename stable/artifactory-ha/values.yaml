@@ -449,6 +449,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
       {{- if .xms }}

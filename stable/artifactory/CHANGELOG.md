@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.3] - Jul 8, 2020
+* Set Artifactory access client connections to the same value as the access threads
+
 ## [10.0.2] - Jul 6, 2020
 * Updated Artifactory version to 7.6.2
 * **IMPORTANT**
