@@ -286,7 +286,7 @@ The following table lists the configurable parameters of the mission-control cha
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
 | `unifiedUpgradeAllowed`                      | Set this flag to `true` for unifiedupgrades     |                                       |
-| `initContainerImage`                         | Init Container Image                            | `docker.bintray.io/alpine:3.12`                         |
+| `initContainerImage`                         | Init Container Image                            | `docker.bintray.io/alpine:3.12`       |
 | `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
 | `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
 | `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
@@ -359,8 +359,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.resources.limits.memory`      | Elasticsearch memory limit                      |                                       |
 | `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
-| `logger.image.repository`                    | repository for logger image                     | `docker.bintray.io/busybox`                             |
-| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                                |
+| `logger.image.repository`                    | repository for logger image                     | `docker.bintray.io/busybox`           |
+| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                              |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image.repository`            | Container image                                 | `docker.bintray.io/jfrog/mission-control`     |
 | `missionControl.image.version`               | Container image tag                             | `.Chart.AppVersion`                   |
