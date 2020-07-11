@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.4] - Jul 10, 2020
+* Move some postgresql values to where they should be according to the subchart
+
 ## [10.0.3] - Jul 8, 2020
 * Set Artifactory access client connections to the same value as the access threads
 
