@@ -19,13 +19,16 @@ This chart will do the following:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
 
-## Add JFrog Helm repository
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
-```bash
-helm repo add jfrog https://charts.jfrog.io
-```
-
 ### Install Chart
+
+### Add ChartCenter Helm repository
+
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
+
+```bash
+helm repo add center https://repo.chartcenter.io
+helm repo update
+```
 
 **NOTE:** Check [CHANGELOG.md] for version specific install notes.
 
@@ -43,7 +46,7 @@ Provide join key and jfrog url as a parameter to the Mission Control chart insta
 
 ```bash
 helm upgrade --install mission-control --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace mission-control jfrog/mission-control
+             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace mission-control center/jfrog/mission-control
 ```
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
 ```bash
@@ -52,7 +55,7 @@ Alternatively, you can create a secret containing the join key manually and pass
 kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
 
 # Pass the created secret to helm
-helm upgrade --install mission-control --set missionControl.joinKeySecretName=my-secret --namespace mission-control jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.joinKeySecretName=my-secret --namespace mission-control center/jfrog/mission-control
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set missionControl.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -102,7 +105,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm upgrade --install mission-control --set missionControl.masterKey=${MASTER_KEY} --namespace mission-control jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.masterKey=${MASTER_KEY} --namespace mission-control center/jfrog/mission-control
 ```
 
 Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
@@ -112,7 +115,7 @@ Alternatively, you can create a secret containing the master key manually and pa
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
 # Pass the created secret to helm
-helm upgrade --install mission-control --namespace mission-control --set missionControl.masterKeySecretName=my-secret jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.masterKeySecretName=my-secret center/jfrog/mission-control
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set missionControl.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -120,7 +123,7 @@ helm upgrade --install mission-control --namespace mission-control --set mission
 ## Upgrade
 Once you have a new chart version, you can update your deployment with
 ```
-helm upgrade mission-control jfrog/mission-control
+helm upgrade mission-control center/jfrog/mission-control
 ```
 
 **NOTE:** Check for any version specific upgrade notes in [CHANGELOG.md]
@@ -283,7 +286,7 @@ The following table lists the configurable parameters of the mission-control cha
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
 | `unifiedUpgradeAllowed`                      | Set this flag to `true` for unifiedupgrades     |                                       |
-| `initContainerImage`                         | Init Container Image                            | `alpine:3.11`                         |
+| `initContainerImage`                         | Init Container Image                            | `docker.bintray.io/alpine:3.12`       |
 | `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
 | `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
 | `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
@@ -298,29 +301,39 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.enabled`                         | Enable PostgreSQL                               | `true`                                |
 | `postgresql.image.registry`                  | PostgreSQL Docker registry                      | `docker.bintray.io`                   |
 | `postgresql.image.repository`                | PostgreSQL Repository name                      | `bitnami/postgresql`                  |
-| `postgresql.image.tag`                        | PostgreSQL docker image tag                    | `9.6.18-debian-10-r7`                 |
+| `postgresql.image.tag`                       | PostgreSQL docker image tag                     | `10.13.0-debian-10-r38`               |
 | `postgresql.image.pullPolicy`                | PostgreSQL Container pull policy                | `IfNotPresent`                        |
 | `postgresql.persistence.enabled`             | PostgreSQL persistence volume enabled           | `true`                                |
 | `postgresql.persistence.existingClaim`       | Use an existing PVC to persist data             | `nil`                                 |
 | `postgresql.persistence.size`                | PostgreSQL persistence volume size              | `50Gi`                                |
-| `postgresql.postgresqlUsername`          | PostgreSQL admin username                       | `postgres`                            |
+| `postgresql.postgresqlUsername`              | PostgreSQL admin username                       | `postgres`                            |
 | `postgresql.postgresqlPassword`              | PostgreSQL admin password                       | ` `                                   |
 | `postgresql.postgresqlExtendedConf.listenAddresses` | PostgreSQL listen address                | `"'*'"`                               |
 | `postgresql.postgresqlExtendedConf.maxConnections`  | PostgreSQL max_connections parameter     | `1500`                                |
 | `postgresql.db.name`                         | PostgreSQL Database name                        | `mission_control`                     |
 | `postgresql.db.sslmode`                      | PostgreSQL Database SSL Mode                    | `false`                               |
 | `postgresql.db.tablespace`                   | PostgreSQL Database Tablespace                  | `pg_default`                          |
-| `postgresql.db.user`                         | PostgreSQL Database User                        | `mc`                                |
-| `postgresql.db.password`                     | PostgreSQL Database Password                    | `random 10 character alphanumeric string` |
+| `postgresql.db.user`                         | PostgreSQL Database User                        | `mc`                                  |
+| `postgresql.db.password`                     | PostgreSQL Database Password                    | `random 10 char alphanumeric string`  |
 | `postgresql.db.jfmcSchema`                   | PostgreSQL Database mission control Schema      | `jfmc_server`                         |
 | `postgresql.db.jfisSchema`                   | PostgreSQL Database insight server Schema       | `insight_server`                      |
 | `postgresql.db.jfscSchema`                   | PostgreSQL Database insight scheduler Schema    | `insight_scheduler`                   |
 | `postgresql.db.jfexSchema`                   | PostgreSQL Database mission executor Schema     | `insight_executor`                    |
 | `postgresql.service.port`                    | PostgreSQL Database Port                        | `5432`                                |
+| `postgresql.resources.requests.memory`       | PostgreSQL initial memory request               |                                       |
+| `postgresql.resources.requests.cpu`          | PostgreSQL initial cpu request                  |                                       |
+| `postgresql.resources.limits.memory`         | PostgreSQL memory limit                         |                                       |
+| `postgresql.resources.limits.cpu`            | PostgreSQL cpu limit                            |                                       |
+| `postgresql.master.nodeSelector`             | PostgreSQL master node selector                 | `{}`                                  |
+| `postgresql.master.affinity`                 | PostgreSQL master node affinity                 | `{}`                                  |
+| `postgresql.master.tolerations`              | PostgreSQL master node tolerations              | `[]`                                  |
+| `postgresql.slave.nodeSelector`              | PostgreSQL slave node selector                  | `{}`                                  |
+| `postgresql.slave.affinity`                  | PostgreSQL slave node affinity                  | `{}`                                  |
+| `postgresql.slave.tolerations`               | PostgreSQL slave node tolerations               | `[]`                                  |
 | `database.type`                              | External database type (`postgresql`)           | `postgresql`                          |
-| `database.driver`                            | External database driver                        | `org.postgresql.Driver`              |
+| `database.driver`                            | External database driver                        | `org.postgresql.Driver`               |
 | `database.name`                              | External database name                          | `mission_control`                     |
-| `database.url`                               | External database url                           | ``                     |
+| `database.url`                               | External database url                           | ``                                    |
 | `database.user`                              | External database user                          | ` `                                   |
 | `database.password`                          | External database password                      | ` `                                   |
 | `database.jfmcSchema`                        | External database mission control Schema        | `jfmc_server`                         |
@@ -346,19 +359,19 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.resources.limits.memory`      | Elasticsearch memory limit                      |                                       |
 | `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
-| `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
-| `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
+| `logger.image.repository`                    | repository for logger image                     | `docker.bintray.io/busybox`           |
+| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                              |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
-| `missionControl.image.repository`                       | Container image                                 | `docker.bintray.io/jfrog/mission-control`     |
-| `missionControl.image.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
+| `missionControl.image.repository`            | Container image                                 | `docker.bintray.io/jfrog/mission-control`     |
+| `missionControl.image.version`               | Container image tag                             | `.Chart.AppVersion`                   |
 | `missionControl.masterkey`                   | Mission Control Master Key . Can be generated with `openssl rand -hex 32` |``|
 | `missionControl.jfrogUrl`                    | Main Artifactory URL, without the `/artifactory` prefix . Mandatory| ` `                                   |
-| `missionControl.joinKey`                     | MissionControl join Key . Mandatory              | ` `                                   |
-| `missionControl.masterKeySecretName`         | MissionControl Master Key secret name            |                                       |
-| `missionControl.joinKeySecretName`           | MissionControl Join Key secret name             |                                        |
+| `missionControl.joinKey`                     | MissionControl join Key . Mandatory             | ` `                                   |
+| `missionControl.masterKeySecretName`         | MissionControl Master Key secret name           |                                       |
+| `missionControl.joinKeySecretName`           | MissionControl Join Key secret name             |                                       |
 | `missionControl.customInitContainers`        | Custom init containers                          | ` `                                   |
-| `missionControl.service.annotations`                | Mission Control service annotations                    | `{}`                        |
-| `missionControl.service.type`                | Mission Control service type                    | `ClusterIP`                        |
+| `missionControl.service.annotations`         | Mission Control service annotations             | `{}`                                  |
+| `missionControl.service.type`                | Mission Control service type                    | `ClusterIP`                           |
 | `missionControl.externalPort`                | Mission Control service external port           | `80`                                  |
 | `missionControl.internalPort`                | Mission Control service internal port           | `8080`                                |
 | `missionControl.persistence.mountPath`       | Mission Control persistence volume mount path   | `"/var/opt/jfrog/mission-control"`    |
@@ -367,7 +380,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.persistence.enabled`         | Mission Control persistence volume enabled      | `true`                                |
 | `missionControl.persistence.accessMode`      | Mission Control persistence volume access mode  | `ReadWriteOnce`                       |
 | `missionControl.persistence.size`            | Mission Control persistence volume size         | `100Gi`                               |
-| `missionControl.preStartCommand`             | Command to run before mission control app starts         | ``                               |
+| `missionControl.preStartCommand`             | Command to run before mission control app starts| ``                                    |
 | `missionControl.javaOpts.other`              | Mission Control JAVA_OPTIONS                    | `-server -XX:+UseG1GC -Dfile.encoding=UTF8` |
 | `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | ` `                                   |
 | `missionControl.resources.requests.memory`   | Mission Control initial memory request          |                                       |
@@ -382,8 +395,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.loggersResources.limits.cpu`       | Mission Control loggers cpu limit                                          |                                                                    |
 | `missionControl.systemYaml`                  | Mission Control system configuration (`system.yaml`)  | `see values.yaml`               |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
-| `insightServer.image.repository`                        | Container image                                 | `docker.bintray.io/jfrog/insight-server`|
-| `insightServer.image.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightServer.image.repository`             | Container image                                 | `docker.bintray.io/jfrog/insight-server`|
+| `insightServer.image.version`                | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
 | `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
 | `insightServer.allowIP`                      | Range of IPs allowed to be served by Insight Server service  | `"0.0.0.0/0"`            |
@@ -397,8 +410,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.loggersResources.limits.memory`    | Insight Server loggers memory limit                                       |                                                                    |
 | `insightServer.loggersResources.limits.cpu`       | Insight Server loggers cpu limit                                          |                                                                    |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
-| `insightScheduler.image.repository`                     | Container image                                 | `docker.bintray.io/jfrog/insight-scheduler`  |
-| `insightScheduler.image.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightScheduler.image.repository`          | Container image                                 | `docker.bintray.io/jfrog/insight-scheduler`  |
+| `insightScheduler.image.version`             | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightScheduler.externalPort`              | Insight Scheduler service external port         | `8080`                                |
 | `insightScheduler.internalPort`              | Insight Scheduler service internal port         | `8080`                                |
 | `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
@@ -414,8 +427,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.loggersResources.limits.memory`    | Insight Scheduler loggers memory limit           |                              |
 | `insightScheduler.loggersResources.limits.cpu`       | Insight Scheduler loggers cpu limit              |                              |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
-| `insightExecutor.image.repository`                      | Container image                                 | `docker.bintray.io/jfrog/insight-executor`   |
-| `insightExecutor.image.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightExecutor.image.repository`           | Container image                                 | `docker.bintray.io/jfrog/insight-executor`   |
+| `insightExecutor.image.version`              | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightExecutor.externalPort`               | Insight Executor service external port          | `8080`                                |
 | `insightExecutor.internalPort`               | Insight Executor service internal port          | `8080`                                |
 | `insightExecutor.javaOpts.other`             | Insight Executor JFMC_EXTRA_JAVA_OPTS           | ``                                    |

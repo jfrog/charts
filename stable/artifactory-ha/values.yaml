@@ -114,6 +114,14 @@ postgresql:
     size: 50Gi
   service:
     port: 5432
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "512Mi"
@@ -121,7 +129,6 @@ postgresql:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "500m"
-  nodeSelector: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## you MUST specify custom database details here or Artifactory will NOT start
@@ -449,6 +456,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
       {{- if .xms }}

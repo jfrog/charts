@@ -1156,6 +1156,12 @@ The following table lists the configurable parameters of the artifactory chart a
 | `postgresql.resources.requests.cpu`       | PostgreSQL initial cpu request     |                                         |
 | `postgresql.resources.limits.memory`      | PostgreSQL memory limit            |                                         |
 | `postgresql.resources.limits.cpu`         | PostgreSQL cpu limit               |                                         |
+| `postgresql.master.nodeSelector`                 | PostgreSQL master node selector            | `{}`                               |
+| `postgresql.master.affinity`                     | PostgreSQL master node affinity            | `{}`                               |
+| `postgresql.master.tolerations`                  | PostgreSQL master node tolerations         | `[]`                               |
+| `postgresql.slave.nodeSelector`                 | PostgreSQL slave node selector            | `{}`                               |
+| `postgresql.slave.affinity`                     | PostgreSQL slave node affinity            | `{}`                               |
+| `postgresql.slave.tolerations`                  | PostgreSQL slave node tolerations         | `[]`                               |
 | `database.type`                  | External database type (`postgresql`, `mysql`, `oracle` or `mssql`)  |                       |
 | `database.driver`                  | External database driver e.g. `org.postgresql.Driver`  |                       |
 | `database.url`                   | External database connection URL                   |                                         |
