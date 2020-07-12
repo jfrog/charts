@@ -1,6 +1,20 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.4] - Jul 10, 2020
+* Move some postgresql values to where they should be according to the subchart
+
+## [10.0.3] - Jul 8, 2020
+* Set Artifactory access client connections to the same value as the access threads
+
+## [10.0.2] - Jul 6, 2020
+* Updated Artifactory version to 7.6.2
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
+## [10.0.1] - Jul 01, 2020
+* Add dedicated ingress object for Replicator service when enabled
+
 ## [10.0.0] - Jun 30, 2020
 * Update postgresql tag version to `10.13.0-debian-10-r38`
 * Update alpine tag version to `3.12`

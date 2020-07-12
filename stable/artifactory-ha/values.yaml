@@ -114,6 +114,14 @@ postgresql:
     size: 50Gi
   service:
     port: 5432
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "512Mi"
@@ -121,7 +129,6 @@ postgresql:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "500m"
-  nodeSelector: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## you MUST specify custom database details here or Artifactory will NOT start
@@ -449,6 +456,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
       {{- if .xms }}
@@ -523,6 +531,10 @@ artifactory:
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
+    {{- if .Values.artifactory.replicator.enabled }}
+    replicator:
+      enabled: true
+    {{- end }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -1040,6 +1052,23 @@ artifactory:
   ## This will be passed to all cluster members. Primary and member nodes.
   javaOpts: {}
     # other: ""
+
+  ## The following setting are to configure a dedicated Ingress object for Replicator service
+  replicator:
+    enabled: false
+    ingress:
+      name:
+      hosts: []
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # nginx.ingress.kubernetes.io/proxy-buffering: "off"
+        # nginx.ingress.kubernetes.io/configuration-snippet: |
+        #   chunked_transfer_encoding on;
+      tls: []
+        #  Secrets must be manually created in the namespace.
+        # - hosts:
+        #   - artifactory.domain.example
+        #   secretName: chart-example-tls-secret
 
   ssh:
     enabled: false
