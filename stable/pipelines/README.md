@@ -21,11 +21,15 @@ This chart will do the following:
 - A running Kubernetes cluster
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
-- A running Artifactory 7 with Enterprise+ License
+- A running Artifactory 7.6.x with Enterprise+ License
   - Precreated repository `jfrogpipelines` in Artifactory type `Generic` with layout `maven-2-default`
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
+### Use an external Database
+
+**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+**Upgrades between PostgreSQL subchart versions is not supported**
 
 ## Install JFrog Pipelines
 
@@ -43,6 +47,21 @@ helm repo update
 In order to connect Pipelines to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Pipelines installation. Here's how you do that:
 
 Retrieve the connection details of your Artifactory installation, from the UI - https://www.jfrog.com/confluence/display/JFROG/General+Security+Settings#GeneralSecuritySettings-ViewingtheJoinKey.
+
+
+### Special Upgrade Notes
+
+While upgrading from Pipelines 1.3.x to 1.4.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes please run,
+
+```bash
+$ kubectl delete statefulsets <old_statefulset_pipelines_name>
+$ kubectl delete statefulsets <old_statefulset_rabbitmq_name>
+$ kubectl delete pvc <old_PVC_rabbitmq_name>
+$ helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines
+```
+
+**Pipelines 1.4.x charts use Bitnami PostgreSQL chart v8.7.3 with PostgreSQL v10.13.0 and upgrade is not supported from PostgreSQL v9.6.18**
+**For production grade installations it is recommended to use an external PostgreSQL**
 
 ### Install Pipelines Chart with Ingress
 

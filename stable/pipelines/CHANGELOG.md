@@ -1,6 +1,13 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.4.0] - July 13th, 2020
+* Update PostgreSQL image to 10.13.0-debian-10-r38
+* Bump Alpine image to v3.12
+* Bump Vault image to v1.4.3
+* Bump Redis chart to v10.7.11
+* Bump RabbitMQ chart to v7.5.1
+
 ## [1.3.4] - July 6th, 2020
 * Fixes callHomeUrl
 

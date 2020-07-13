@@ -2,7 +2,7 @@
 
 ## Common
 initContainer:
-  image: "alpine:3.11"
+  image: "alpine:3.12"
   pullPolicy: IfNotPresent
 
 ## Available modes: devmode (enable it for debuging) and production
@@ -426,9 +426,9 @@ pipelines:
         ip: {{ .Release.Name }}-rabbitmq
         port: {{ .Values.rabbitmq.service.port }}
         adminPort: {{ .Values.rabbitmq.service.managerPort }}
-        erlangCookie: {{ .Values.rabbitmq.rabbitmq.erlangCookie }}
-        username: {{ .Values.rabbitmq.rabbitmq.username }}
-        password: {{ .Values.rabbitmq.rabbitmq.password }}
+        erlangCookie: {{ .Values.rabbitmq.auth.erlangCookie }}
+        username: {{ .Values.rabbitmq.auth.username }}
+        password: {{ .Values.rabbitmq.auth.password }}
         defaultExchange: pipelinesEx
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
@@ -803,7 +803,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 10.13.0-debian-10-r38
 
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
@@ -841,9 +841,9 @@ postgresql:
 ##
 rabbitmq:
   enabled: true
-  replicas: 1
+  replicaCount: 1
 
-  rabbitmq:
+  auth:
     username: admin
 
     ## RabbitMQ application password
@@ -967,7 +967,7 @@ vault:
 
   image:
     repository: vault
-    tag: 1.3.4
+    tag: 1.4.3
     pullPolicy: IfNotPresent
 
   init:
