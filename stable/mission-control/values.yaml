@@ -249,11 +249,11 @@ missionControl:
   appName: jfmc-server
   home: /var/opt/jfrog/mission-control
   image: docker.bintray.io/jfrog/mission-control
+  ## Note that by default we use appVersion to get image tag/version
+    # version:
   # Set this to true if you want to override credentials in mission-control.properties on startup
   propertyOverride: true
-  ## Note that by default we use appVersion to get image tag
-  # version:
-
+ 
   ## Add custom init containers
   customInitContainers: |
   #  - name: "custom-setup"
@@ -370,8 +370,8 @@ insightServer:
   name: insight-server
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-server
-  ## Note that by default we use appVersion to get image tag
-  # version:
+  ## Note that by default we use appVersion to get image tag/version
+    # version:
   internalHttpPort: 8082
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
@@ -421,8 +421,8 @@ insightScheduler:
   name: insight-scheduler
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-scheduler
-  ## Note that by default we use appVersion to get image tag
-  # version:
+  ## Note that by default we use appVersion to get image tag/version
+    # version:
   internalPort: 8085
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
@@ -477,8 +477,8 @@ insightExecutor:
   name: insight-executor
   home: /opt/jfrog
   image: docker.bintray.io/jfrog/insight-executor
-  ## Note that by default we use appVersion to get image tag
-  # version:
+  ## Note that by default we use appVersion to get image tag/version
+    # version:
   internalPort: 8087
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
