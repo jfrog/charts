@@ -35,7 +35,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
 ```bash
-helm upgrade --install artifactory-ha center/jfrog/artifactory-ha --version 1.7.3
+helm upgrade --install artifactory-ha --namespace artifactory-ha center/jfrog/artifactory-ha --version 1.7.3
 ```
 
 ### Deploying Artifactory with replicator
