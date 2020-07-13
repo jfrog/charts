@@ -73,7 +73,7 @@ export MC_KEY=$(openssl rand -hex 16)
 echo ${MC_KEY}
 
 # Pass the created master key to helm
-helm install --name mission-control --set missionControl.mcKey=${MC_KEY} center/jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.mcKey=${MC_KEY} center/jfrog/mission-control
 ```
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
@@ -81,7 +81,7 @@ helm install --name mission-control --set missionControl.mcKey=${MC_KEY} center/
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
 ```bash
-helm install --name mission-control \
+helm upgrade --install mission-control --namespace mission-control \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="mission-control.company.com" \
   --set server.service.type=NodePort \
@@ -156,7 +156,7 @@ ingress:
 
 * Set mission-control by running helm upgrade command:
 ```
-helm upgrade --name mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL center/jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL center/jfrog/mission-control
 ```
 
 ### Accessing Mission Control

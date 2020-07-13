@@ -92,7 +92,7 @@ JFrog Distribution can run in High Availability by having multiple replicas of t
 To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
 ```bash
 # Run 3 replicas of the Distribution service
-helm install --name distribution --set replicaCount=3 center/jfrog/distribution
+helm upgrade --install distribution --namespace distribution --set replicaCount=3 center/jfrog/distribution
 ```
 
 ### External Database
@@ -109,7 +109,7 @@ export POSTGRES_DATABASE=
 export POSTGRES_USERNAME=
 export POSTGRES_PASSWORD=
 
-helm install --name distribution \
+helm upgrade --install distribution --namespace distribution \
     --set database.host=${POSTGRES_HOST} \
     --set database.port=${POSTGRES_PORT} \
     --set database.database=${POSTGRES_DATABASE} \
@@ -130,7 +130,7 @@ export POSTGRES_USERNAME_SECRET_KEY=
 export POSTGRES_PASSWORD_SECRET_NAME=
 export POSTGRES_PASSWORD_SECRET_KEY=
 
-helm install --name distribution \
+helm upgrade --install distribution --namespace distribution \
     --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
     --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
     --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
@@ -309,7 +309,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
 ```bash
-helm install --name distribution \
+helm upgrade --install distribution --namespace distribution \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="distribution.company.com" \
   --set distribution.service.type=NodePort \
