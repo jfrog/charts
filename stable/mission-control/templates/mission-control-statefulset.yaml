@@ -376,7 +376,7 @@ spec:
           initialDelaySeconds: 40
     {{- end }}
       - name: {{ .Values.missionControl.name }}
-        image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.image.version }}
+        image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
         - '/bin/sh'
@@ -481,7 +481,7 @@ spec:
           periodSeconds: 20
           initialDelaySeconds: 60
       - name: {{ .Values.insightServer.name }}
-        image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.image.version }}
+        image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFIS_URL
@@ -566,7 +566,7 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 20
       - name: {{ .Values.insightScheduler.name }}
-        image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.image.version }}
+        image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFIS_URL
@@ -605,7 +605,7 @@ spec:
           initialDelaySeconds: 60
           periodSeconds: 20
       - name: {{ .Values.insightExecutor.name }}
-        image: {{ .Values.insightExecutor.image }}:{{ default .Chart.AppVersion .Values.insightExecutor.image.version }}
+        image: {{ .Values.insightExecutor.image }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFIS_URL
