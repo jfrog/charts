@@ -1,0 +1,19 @@
+{{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-k8s
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+data:
+  provider: k8s
+  accountId: {{ .Values.buildPlane.dynamic.customer.accountId | quote }}
+  nodePoolName: {{ .Values.buildPlane.dynamic.customer.nodePoolName | quote }}
+  nodelimit: {{ .Values.buildPlane.dynamic.customer.nodelimit | quote }}
+  setAsDefault: '"true"'
+  cpu: {{ .Values.buildPlane.dynamic.provider.k8s.cpu | quote }}
+  memory: {{ .Values.buildPlane.dynamic.provider.k8s.memory | quote }}
+  namespace: {{ .Values.buildPlane.dynamic.provider.k8s.namespace | quote }}
+  labels: {{ .Values.buildPlane.dynamic.provider.k8s.labels | quote }}
+  storageClass: {{ .Values.buildPlane.dynamic.provider.k8s.storageClass | quote }}
+{{- end }}
