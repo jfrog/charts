@@ -45,7 +45,7 @@ This file describes special upgrade notes needed at specific versions
       2. Run the `helm install`  with the `new version` say `xray-new` with Xray scale down replicas to 0, Both new Postgresql and MongoDB pods starts
           Example:
           ```bash
-          helm install xray-new --set server.replicaCount=0,indexer.replicaCount=0,persist.replicaCount=0,analysis.replicaCount=0,rabbitmq-ha.enabled=false jfrog/xray
+          helm install xray-new --set server.replicaCount=0,indexer.replicaCount=0,persist.replicaCount=0,analysis.replicaCount=0,rabbitmq-ha.enabled=false center/jfrog/xray
           ```
       3. To Migrate MongoDB data between old and new pods\
           a. Connect to the new MongoDB pod (you can obtain the name by running kubectl get pods)
