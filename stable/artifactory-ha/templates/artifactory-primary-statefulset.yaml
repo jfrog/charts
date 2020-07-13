@@ -364,7 +364,7 @@ spec:
         {{- end }}
         {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
-          cp -Lrf /tmp/plugin/*/* /tmp/plugins;
+          cp -Lrf /tmp/plugin/*/* /artifactory_bootstrap/plugins;
         {{- end }}
         {{- range .Values.artifactory.copyOnEveryStartup }}
           {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
@@ -458,8 +458,8 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         {{- end }}
         {{- if .Values.artifactory.userPluginSecrets }}
-        - name: tmp-plugins
-          mountPath: "/tmp/plugins/"
+        - name: bootstrap-plugins
+          mountPath: "/artifactory_bootstrap/plugins/"
         {{- range .Values.artifactory.userPluginSecrets }}
         - name: {{ tpl . $ }}
           mountPath: "/tmp/plugin/{{ tpl . $ }}"
@@ -671,7 +671,7 @@ spec:
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info
       {{- if .Values.artifactory.userPluginSecrets }}
-      - name: tmp-plugins
+      - name: bootstrap-plugins
         emptyDir: {}
       {{- range .Values.artifactory.userPluginSecrets }}
       - name: {{ tpl . $ }}
