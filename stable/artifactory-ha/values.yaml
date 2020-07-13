@@ -253,7 +253,7 @@ artifactory:
   migration:
     timeoutSeconds: 3600
     ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
-    # preStartCommand: "wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+    # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
 
 
   ## Add custom init containers execution before predefined init containers
@@ -420,7 +420,7 @@ artifactory:
   #  - '{{ template "my-chart.fullname" . }}'
 
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
-  # preStartCommand: "wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+  # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
   ## Extra post-start command to run extra commands after container starts
   # postStartCommand:
 
