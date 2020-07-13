@@ -77,10 +77,10 @@ This file describes special upgrade notes needed at specific versions
             $ psql -U xray DATABASE_NAME < /tmp/backup.sql
             ```
           e. After run above command you should be prompted for a password, this is current chart password.This operation could  take some time depending on the database size.
-      5. Run the Upgrade final time which would start xray with `databaseUpgradeReady=yes` \
+      5. Run the Upgrade final time which would start xray with `databaseUpgradeReady=true` \
          Example :
          ```bash
-         helm upgrade --install xray-new --set server.replicaCount=1,indexer.replicaCount=1,persist.replicaCount=1,analysis.replicaCount=1,rabbitmq-ha.enabled=true,databaseUpgradeReady=yes jfrog/xray
+         helm upgrade --install xray-new --set server.replicaCount=1,indexer.replicaCount=1,persist.replicaCount=1,analysis.replicaCount=1,rabbitmq-ha.enabled=true,databaseUpgradeReady=true center/jfrog/xray
          ```
       6. Restore access to new Xray
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Xray deployment and Helm release.

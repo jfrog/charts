@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [4.0.3] - Jul 13, 2020
+* README fixes
+
 ## [4.0.2] - Jul 8, 2020
 * Update Distribution version 1.8.3 - https://www.jfrog.com/confluence/display/DIST1X/Release+Notes#ReleaseNotes-Distribution1.8.3
 * Updated alpine version to `3.12`

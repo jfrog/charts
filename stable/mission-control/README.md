@@ -19,15 +19,19 @@ This chart will do the following:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
-## Add JFrog Helm repository
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+
+### Add ChartCenter Helm repository
+
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+
 ```bash
-helm repo add jfrog https://charts.jfrog.io
+helm repo add center https://repo.chartcenter.io
+helm repo update
 ```
 
 ### Installing the Chart
 ```bash
-helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.0.2
+helm upgrade --install mission-control --namespace mission-control center/jfrog/mission-control --version 2.1.0
 ```
 ### Auto generated passwords
 
@@ -69,7 +73,7 @@ export MC_KEY=$(openssl rand -hex 16)
 echo ${MC_KEY}
 
 # Pass the created master key to helm
-helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
+helm install --name mission-control --set missionControl.mcKey=${MC_KEY} center/jfrog/mission-control
 ```
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
@@ -81,7 +85,7 @@ helm install --name mission-control \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="mission-control.company.com" \
   --set server.service.type=NodePort \
-  jfrog/mission-control
+  center/jfrog/mission-control
 ```
 
 If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
@@ -152,7 +156,7 @@ ingress:
 
 * Set mission-control by running helm upgrade command:
 ```
-helm upgrade --name mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL jfrog/mission-control
+helm upgrade --name mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL center/jfrog/mission-control
 ```
 
 ### Accessing Mission Control
@@ -162,7 +166,7 @@ Follow the instructions outputted by the install command to get the Mission Cont
 ## Upgrade
 Once you have a new chart version, you can update your deployment with
 ```
-helm upgrade mission-control jfrog/mission-control
+helm upgrade mission-control center/jfrog/mission-control
 ```
 
 **NOTE:** Check for any version specific upgrade nodes in [CHANGELOG.md]
@@ -323,7 +327,7 @@ The following table lists the configurable parameters of the mission-control cha
 
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
-| `initContainerImage`                         | Init Container Image                            | `alpine:3.6`                          |
+| `initContainerImage`                         | Init Container Image                            | `docker.bintray.io/alpine:3.12`                          |
 | `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
 | `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
 | `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
@@ -406,15 +410,15 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
 | `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1 | `1` |
-| `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
-| `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
+| `logger.image.repository`                    | repository for logger image                     | `docker.bintray.io/busybox`                             |
+| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image`                       | Container image                                 | `docker.jfrog.io/jfrog/mission-control`     |
-| `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
+| `missionControl.image.version`               | Container image tag                             | `.Chart.AppVersion`                   |
 | `missionControl.mcKey`           | Mission Control mc Key. Can be generated with `openssl rand -hex 16` |`bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`|
 | `missionControl.customInitContainers`        | Custom init containers                          | ` `                                   |
 | `missionControl.service.type`                | Mission Control service type                    | `LoadBalancer`                        |
-| `missionControl.service.annotations`                | Mission Control service annotations                    | `{}`                        |
+| `missionControl.service.annotations`         | Mission Control service annotations                    | `{}`                        |
 | `missionControl.externalPort`                | Mission Control service external port           | `80`                                  |
 | `missionControl.internalPort`                | Mission Control service internal port           | `8080`                                |
 | `missionControl.missionControlUrl`           | Mission Control URL                             | ` `                                   |
@@ -439,7 +443,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.loggersResources.limits.cpu`       | Mission Control loggers cpu limit                                          |                                                                    |
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
 | `insightServer.image`                        | Container image                                 | `docker.jfrog.io/jfrog/insight-server`|
-| `insightServer.version`                      | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightServer.image.version`                | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightServer.service.type`                 | Insight Server service type                     | `ClusterIP`                           |
 | `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
 | `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
@@ -455,7 +459,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.loggersResources.limits.cpu`       | Insight Server loggers cpu limit                                          |                                                                    |
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
 | `insightScheduler.image`                     | Container image                                 | `docker.jfrog.io/jfrog/insight-scheduler`  |
-| `insightScheduler.version`                   | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightScheduler.image.version`             | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightScheduler.service.type`              | Insight Scheduler service type                  | `ClusterIP`                           |
 | `insightScheduler.externalPort`              | Insight Scheduler service external port         | `8080`                                |
 | `insightScheduler.internalPort`              | Insight Scheduler service internal port         | `8080`                                |
@@ -473,7 +477,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.loggersResources.limits.cpu`       | Insight Scheduler loggers cpu limit              |                              |
 | `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
 | `insightExecutor.image`                      | Container image                                 | `docker.jfrog.io/jfrog/insight-executor`   |
-| `insightExecutor.version`                    | Container image tag                             | `.Chart.AppVersion`                   |
+| `insightExecutor.image.ersion`               | Container image tag                             | `.Chart.AppVersion`                   |
 | `insightExecutor.service.type`               | Insight Executor service type                   | `ClusterIP`                           |
 | `insightExecutor.externalPort`               | Insight Executor service external port          | `8080`                                |
 | `insightExecutor.internalPort`               | Insight Executor service internal port          | `8080`                                |

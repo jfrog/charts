@@ -34,7 +34,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `distribution`:
 ```bash
-helm upgrade --install distribution --namespace distribution center/jfrog/distribution --version 4.0.2
+helm upgrade --install distribution --namespace distribution center/jfrog/distribution --version 4.0.3
 ```
 
 ### Deploying Distribution for small/medium/large instllations

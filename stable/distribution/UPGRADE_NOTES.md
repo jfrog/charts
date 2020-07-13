@@ -57,7 +57,7 @@ This file describes special upgrade notes needed at specific versions
       5. Run the Upgrade final time which would start distribution with `databaseUpgradeReady=true` \
          Example :
          ```bash
-         helm upgrade --install distribution-new --set replicaCount=1,databaseUpgradeReady=yes center/jfrog/distribution
+         helm upgrade --install distribution-new --set replicaCount=1,databaseUpgradeReady=true center/jfrog/distribution
          ```
       6. Restore access to new Distribution
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Distribution deployment and Helm release.

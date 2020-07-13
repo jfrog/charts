@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: alpine:3.11
+initContainerImage: docker.bintray.io/alpine:3.12
 # Init containers
 initContainers:
   resources: {}
@@ -171,7 +171,7 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: alpine:3.11
+  initContainerImage: docker.bintray.io/alpine:3.12
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss-sg
     tag: 6.8.9
@@ -241,8 +241,8 @@ ingress:
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 missionControl:
   name: mission-control

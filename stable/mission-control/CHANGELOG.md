@@ -1,6 +1,11 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.1.0] - Jul 13, 2020
+* Fix image version in statefulsets
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
 ## [2.0.2] - Jun 15, 2020
 * Added missing steps in Upgrade Notes for 1.x to 2.x chart versions
 

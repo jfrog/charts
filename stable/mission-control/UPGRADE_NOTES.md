@@ -37,7 +37,7 @@ This file describes special upgrade notes needed at specific versions
       2. Run the `helm install` with the `new version` say `mission-control-new` with mission-control scale down replicas to 0.
           Example:
           ```bash
-          helm install mission-control-new --set replicaCount=0 jfrog/mission-control
+          helm install mission-control-new --set replicaCount=0 center/jfrog/mission-control
           ```
       3. To Migrate Postgresql data between old and new pods\
           a. Connect to the new PostgreSQL pod (you can obtain the name by running kubectl get pods)
@@ -56,10 +56,10 @@ This file describes special upgrade notes needed at specific versions
             $ psql -U postgres DATABASE_NAME < /tmp/backup.sql
             ```
           e. When you run the above commands you should be prompted for a password, this is the current chart password. These operations could  take some time depending on the database size.
-      5. Run the Upgrade final time which would start mission-control with `databaseUpgradeReady=yes` \
+      5. Run the Upgrade final time which would start mission-control with `databaseUpgradeReady=true` \
          Example :
          ```bash
-         helm upgrade --install mission-control-new --set replicaCount=1,databaseUpgradeReady=yes jfrog/mission-control
+         helm upgrade --install mission-control-new --set replicaCount=1,databaseUpgradeReady=true center/jfrog/mission-control
          ```
       6. Restore access to new Mission-control
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Mission-control deployment and Helm release.

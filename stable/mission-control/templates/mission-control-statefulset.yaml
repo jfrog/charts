@@ -8,7 +8,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE FAILED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/pre-unified-platform/stable/mission-control/CHANGELOG.md) and prepare PostgreSQL DB migration before upgrading.\nOnce ready, explicitly pass 'databaseUpgradeReady=yes' to upgrade and complete migration after server starts!\n" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE FAILED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/pre-unified-platform/stable/mission-control/CHANGELOG.md) and prepare PostgreSQL DB migration before upgrading.\nOnce ready, explicitly pass 'databaseUpgradeReady=true' to upgrade and complete migration after server starts!\n" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 spec:
   serviceName: {{ template "mission-control.fullname" . }}
@@ -376,7 +376,7 @@ spec:
           initialDelaySeconds: 40
     {{- end }}
       - name: {{ .Values.missionControl.name }}
-        image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.version }}
+        image: {{ .Values.missionControl.image }}:{{ default .Chart.AppVersion .Values.missionControl.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
         - '/bin/sh'
@@ -481,7 +481,7 @@ spec:
           periodSeconds: 20
           initialDelaySeconds: 60
       - name: {{ .Values.insightServer.name }}
-        image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.version }}
+        image: {{ .Values.insightServer.image }}:{{ default .Chart.AppVersion .Values.insightServer.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFIS_URL
@@ -566,7 +566,7 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 20
       - name: {{ .Values.insightScheduler.name }}
-        image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.version }}
+        image: {{ .Values.insightScheduler.image }}:{{ default .Chart.AppVersion .Values.insightScheduler.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFIS_URL
@@ -605,7 +605,7 @@ spec:
           initialDelaySeconds: 60
           periodSeconds: 20
       - name: {{ .Values.insightExecutor.name }}
-        image: {{ .Values.insightExecutor.image }}:{{ default .Chart.AppVersion .Values.insightExecutor.version }}
+        image: {{ .Values.insightExecutor.image }}:{{ default .Chart.AppVersion .Values.insightExecutor.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFIS_URL
