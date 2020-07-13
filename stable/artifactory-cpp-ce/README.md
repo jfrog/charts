@@ -4,7 +4,7 @@ JFrog Artifactory CE for C++ is a free Artifactory edition to host C/C++ package
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:
@@ -16,16 +16,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add JFrog Helm repository
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+### Add ChartCenter Helm repository
+
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+
 ```bash
-helm repo add jfrog https://charts.jfrog.io
+helm repo add center https://repo.chartcenter.io
+helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm install --name artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce --version 1.4.1
 ```
 
 ### Accessing Artifactory CE for C++
@@ -34,7 +37,7 @@ helm install --name artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ### Updating Artifactory CE for C++
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
 ```
 
 ### Deleting Artifactory CE for C++

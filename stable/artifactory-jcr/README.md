@@ -4,7 +4,7 @@ JFrog Container Registry is a free Artifactory edition with Docker and Helm repo
 
 ## Prerequisites Details
 
-* Kubernetes 1.10+
+* Kubernetes 1.12+
 
 ## Chart Details
 This chart will do the following:
@@ -16,16 +16,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add JFrog Helm repository
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+### Add ChartCenter Helm repository
+
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+
 ```bash
-helm repo add jfrog https://charts.jfrog.io
+helm repo add center https://repo.chartcenter.io
+helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm install --name jfrog-container-registry jfrog/artifactory-jcr
+helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry center/jfrog/artifactory-jcr  --version 1.4.1
 ```
 
 ### Accessing JFrog Container Registry
@@ -34,7 +37,7 @@ helm install --name jfrog-container-registry jfrog/artifactory-jcr
 ### Updating JFrog Container Registry
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade jfrog-container-registry jfrog/artifactory-jcr
+helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry center/jfrog/artifactory-jcr
 ```
 
 ### Deleting JFrog Container Registry
