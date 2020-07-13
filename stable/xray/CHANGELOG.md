@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [2.3.0] - Jul 13, 2020
+## [2.2.2] - Jul 13, 2020
 * **IMPORTANT**
 * Added ChartCenter Helm repository in README
 
