@@ -19,15 +19,19 @@ This chart will do the following:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
-## Add JFrog Helm repository
-Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io/) to your helm client
+
+### Add ChartCenter Helm repository
+
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+
 ```bash
-helm repo add jfrog https://charts.jfrog.io
+helm repo add center https://repo.chartcenter.io
+helm repo update
 ```
 
 ### Installing the Chart
 ```bash
-helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.0.2
+helm upgrade --install mission-control --namespace mission-control center/jfrog/mission-control --version 2.0.3
 ```
 ### Auto generated passwords
 
@@ -69,7 +73,7 @@ export MC_KEY=$(openssl rand -hex 16)
 echo ${MC_KEY}
 
 # Pass the created master key to helm
-helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.mcKey=${MC_KEY} center/jfrog/mission-control
 ```
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
@@ -77,11 +81,11 @@ helm install --name mission-control --set missionControl.mcKey=${MC_KEY} jfrog/m
 ### Ingress and TLS
 To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
 ```bash
-helm install --name mission-control \
+helm upgrade --install mission-control --namespace mission-control \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="mission-control.company.com" \
   --set server.service.type=NodePort \
-  jfrog/mission-control
+  center/jfrog/mission-control
 ```
 
 If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
@@ -152,7 +156,7 @@ ingress:
 
 * Set mission-control by running helm upgrade command:
 ```
-helm upgrade --name mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL center/jfrog/mission-control
 ```
 
 ### Accessing Mission Control
@@ -162,7 +166,7 @@ Follow the instructions outputted by the install command to get the Mission Cont
 ## Upgrade
 Once you have a new chart version, you can update your deployment with
 ```
-helm upgrade mission-control jfrog/mission-control
+helm upgrade mission-control center/jfrog/mission-control
 ```
 
 **NOTE:** Check for any version specific upgrade nodes in [CHANGELOG.md]
@@ -323,7 +327,7 @@ The following table lists the configurable parameters of the mission-control cha
 
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
-| `initContainerImage`                         | Init Container Image                            | `alpine:3.6`                          |
+| `initContainerImage`                         | Init Container Image                            | `docker.bintray.io/alpine:3.12`                          |
 | `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
 | `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
 | `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
@@ -406,8 +410,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
 | `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1 | `1` |
-| `logger.image.repository`                    | repository for logger image                     | `busybox`                             |
-| `logger.image.tag`                           | tag for logger image                            | `1.30`                                |
+| `logger.image.repository`                    | repository for logger image                     | `docker.bintray.io/busybox`                             |
+| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image`                       | Container image                                 | `docker.jfrog.io/jfrog/mission-control`     |
 | `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |

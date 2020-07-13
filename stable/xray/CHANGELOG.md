@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.2.2] - Jul 13, 2020
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
 ## [2.2.1] - Jul 2, 2020
 * Add support for Ingress version - `networking.k8s.io/v1beta1` for k8s >= 1.14 using helm v3
 * Added compatability to support latest 7.x rabbitmq subchart when `rabbitmq.enabled=true`

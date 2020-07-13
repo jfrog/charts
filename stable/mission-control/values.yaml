@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: alpine:3.11
+initContainerImage: docker.bintray.io/alpine:3.12
 # Init containers
 initContainers:
   resources: {}
@@ -171,7 +171,7 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: alpine:3.11
+  initContainerImage: docker.bintray.io/alpine:3.12
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss-sg
     tag: 6.8.9
@@ -241,18 +241,18 @@ ingress:
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 missionControl:
   name: mission-control
   appName: jfmc-server
   home: /var/opt/jfrog/mission-control
   image: docker.bintray.io/jfrog/mission-control
-  # Set this to true if you want to override credentials in mission-control.properties on startup
-  propertyOverride: true
   ## Note that by default we use appVersion to get image tag
   # version:
+  # Set this to true if you want to override credentials in mission-control.properties on startup
+  propertyOverride: true
 
   ## Add custom init containers
   customInitContainers: |

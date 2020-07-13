@@ -67,7 +67,7 @@ nginx:
 
 2. Install/upgrade artifactory:
 ```bash
-helm upgrade --install artifactory-ha jfrog/artifactory-ha -f nginx-values.yaml
+helm upgrade --install artifactory-ha center/jfrog/artifactory-ha -f nginx-values.yaml
 ```
 
 
@@ -136,5 +136,5 @@ helm upgrade --install artifactory-ha jfrog/artifactory-ha -f nginx-values.yaml
     
     Following is command to set values at runtime:
     ```bash
-    helm install --name artifactory-ha nginx.customArtifactoryConfigMap=art-nginx-conf jfrog/artifactory-ha
+    helm upgrade --install artifactory-ha --namespace artifactory-ha nginx.customArtifactoryConfigMap=art-nginx-conf center/jfrog/artifactory-ha
     ```

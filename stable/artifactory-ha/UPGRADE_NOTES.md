@@ -22,7 +22,7 @@ This file describes special upgrade notes needed at specific versions
         b. Choose to save the export on the persisted Artifactory volume (`/var/opt/jfrog/artifactory/`)
         c. Click `Export` (this can take some time)
       3. Run the `helm upgrade` with the new version. Old PostgreSQL will be removed and new one deployed
-        a. You must pass explicit "ready for upgrade flag" with `--set databaseUpgradeReady=yes`. Failing to provide this will block the upgrade!
+        a. You must pass explicit "ready for upgrade flag" with `--set databaseUpgradeReady=true`. Failing to provide this will block the upgrade!
       4. Once ready, open Artifactory UI (you might need to re-enter a valid license). Skip all onboarding wizard steps
         a. **NOTE:** Don't worry you can't see the old config and files. It will all restore with the system import in the next step 
       5. Perform `Import System` from the `Admin` -> `Import & Export` -> `System` -> `Import System`

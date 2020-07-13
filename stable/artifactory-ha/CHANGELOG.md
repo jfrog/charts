@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.7.3] - Jul 13, 2020
+* Added version for helm install/upgrade in README
+
 ## [1.7.2] - Jul 6, 2020
 * Updated Artifactory version to 6.20.1 - https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.20.1
 * Update alpine version to `3.12`
