@@ -1,10 +1,10 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [6.1.1] -  Jul 9, 2020
+## [6.1.1] - Jul 13, 2020
 * Added migration step for distribution 1.x to 2.x Appverison
 
-## [6.1.0] -  Jul 7, 2020
+## [6.1.0] - Jul 7, 2020
 * Update Distribution version 2.4.0
 * **IMPORTANT**
 * Added ChartCenter Helm repository in README.
