@@ -36,7 +36,7 @@ spec:
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
-      {{- if .Values.access.accessConfig }}
+      {{- if .Values.access.tlsEnabled }}
         checksum/access-config: {{ include (print $.Template.BasePath "/artifactory-access-config.yaml") . | sha256sum }}
       {{- end }}
       {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
@@ -123,7 +123,7 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
-        {{- if .Values.access.accessConfig }}
+        {{- if .Values.access.tlsEnabled }}
           echo "Copy access.config.latest.yml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
           cp -fv /tmp/etc/access.config.import.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.import.yml;
@@ -170,7 +170,7 @@ spec:
         - name: systemyaml
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
-        {{- if .Values.access.accessConfig }}
+        {{- if .Values.access.tlsEnabled }}
         - name: access-config
           mountPath: "/tmp/etc/access.config.import.yml"
           subPath: access.config.import.yml
@@ -454,6 +454,11 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
+            {{- if .Values.access.tlsEnabled }}
+            scheme: HTTPS
+            {{- else }}
+            scheme: HTTP
+            {{- end }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -465,6 +470,11 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
+            {{- if .Values.access.tlsEnabled }}
+            scheme: HTTPS
+            {{- else }}
+            scheme: HTTP
+            {{- end }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
@@ -626,7 +636,7 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ template "artifactory.fullname" . }}-systemyaml
-      {{- if .Values.access.accessConfig }}
+      {{- if .Values.access.tlsEnabled }}
       - name: access-config
         secret:
           secretName: {{ template "artifactory.fullname" . }}-access-config
