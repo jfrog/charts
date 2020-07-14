@@ -843,10 +843,12 @@ artifactory:
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
   ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
-  # tlsEnabled: true
+  # tlsEnabled: false
+
   ## You can use a pre-existing secret by specifying customCertificatesSecretName
   ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=ca.crt --key=ca.private.key`
   # customCertificatesSecretName:
+
   ## When resetAccessCAKeys is true, Access will regenerate the CA certificate and matching private key
   # resetAccessCAKeys: false
   database:
