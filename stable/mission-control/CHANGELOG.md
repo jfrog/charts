@@ -3,7 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [4.3.0] -  Aug 10, 2020
 * Removing insight executor for 4.5.x mission control charts.
-* Update Mission Control version to 4.5.0
+* Update Mission Control version to 4.5.0.
 
 ## [4.2.1] - Jul 30, 2020
 * Fix broken support for External elasticsearch
