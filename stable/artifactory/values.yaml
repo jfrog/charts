@@ -843,6 +843,8 @@ artifactory:
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
   ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
+  ## When security.tls is set to true, JFrog Access will act as the Certificate Authority (CA) and sign the TLS certificates used by all the different JFrog Platform nodes.
+  ## This ensures that the node to node communication is done over TLS.
   accessConfig:
     security:
       tls: false
@@ -1084,7 +1086,7 @@ nginx:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 10
+    initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -1093,7 +1095,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 10
+    initialDelaySeconds: 60
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
