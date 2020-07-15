@@ -9,6 +9,9 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    {{- if .Values.artifactory.node.labels }}
+{{ toYaml .Values.artifactory.node.labels | indent 4 }}
+    {{- end }}
 {{- if .Values.artifactory.service.annotations }}
   annotations:
 {{ toYaml .Values.artifactory.service.annotations | indent 4 }}
@@ -65,6 +68,9 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    {{- if .Values.artifactory.primary.labels }}
+{{ toYaml .Values.artifactory.primary.labels | indent 4 }}
+    {{- end }}
 spec:
   # Statically setting service type to ClusterIP since this is an internal only service
   type: ClusterIP
