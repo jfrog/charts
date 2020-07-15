@@ -1,4 +1,4 @@
-{{- if .Values.access.tlsEnabled }}
+{{- if .Values.access.accessConfig }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -11,6 +11,5 @@ metadata:
 type: Opaque
 stringData:
   access.config.import.yml: |
-    security:
-      tls: true 
+{{ tpl (toYaml .Values.access.accessConfig) .  | indent 4 }}
 {{- end }}
