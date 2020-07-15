@@ -446,11 +446,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
-            {{- if .Values.access.accessConfig.security.tls }}
-            scheme: HTTPS
-            {{- else }}
-            scheme: HTTP
-            {{- end }}
+            scheme: {{ include "scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -462,11 +458,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
-            {{- if .Values.access.accessConfig.security.tls }}
-            scheme: HTTPS
-            {{- else }}
-            scheme: HTTP
-            {{- end }}
+            scheme: {{ include "scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}

@@ -489,7 +489,7 @@ artifactory:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 60
+    initialDelaySeconds: 90
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -1027,7 +1027,7 @@ nginx:
         proxy_read_timeout  900;
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
-        proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        proxy_pass          {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
         {{- if .Values.nginx.service.ssloffload}}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
         {{- else }}
@@ -1040,9 +1040,9 @@ nginx:
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+            proxy_pass       {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
           }
-          proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+          proxy_pass         {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
         }
       }
     }
@@ -1095,7 +1095,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 60
+    initialDelaySeconds: 120
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
