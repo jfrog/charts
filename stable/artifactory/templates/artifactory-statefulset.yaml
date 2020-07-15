@@ -446,7 +446,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
-            {{- if and .Values.access.accessConfig }}
+            {{- if .Values.access.accessConfig.security.tls }}
             scheme: HTTPS
             {{- else }}
             scheme: HTTP
