@@ -8,8 +8,8 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-{{- if .Values.artifactory.node.labels }}
-{{ toYaml .Values.artifactory.node.labels | indent 4 }}
+{{- with .Values.artifactory.node.labels }}
+{{ toYaml . | indent 4 }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.node.name" . }}
@@ -30,8 +30,8 @@ spec:
         heritage: {{ .Release.Service }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
-        {{- if .Values.artifactory.node.labels }}
-          {{ toYaml .Values.artifactory.node.labels | indent 8 }}
+        {{- with .Values.artifactory.node.labels }}
+{{ toYaml . | indent 8 }}
         {{- end }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}

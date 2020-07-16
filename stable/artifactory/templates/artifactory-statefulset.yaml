@@ -8,8 +8,8 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-{{- if .Values.artifactory.labels }}
-{{ toYaml .Values.artifactory.labels | indent 4 }}
+{{- with .Values.artifactory.labels }}
+{{ toYaml . | indent 4 }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
@@ -33,6 +33,9 @@ spec:
         role: {{ template "artifactory.name" . }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
+        {{- with .Values.artifactory.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
