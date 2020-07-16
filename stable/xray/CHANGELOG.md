@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.1.2] - Jul 16, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers
+
 ## [4.1.1] - Jul 10, 2020
 * Move some postgresql values to where they should be according to the subchart.
 

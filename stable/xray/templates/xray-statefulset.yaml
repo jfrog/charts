@@ -555,7 +555,9 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-
+{{- if .Values.common.customSidecarContainers }}
+{{ tpl .Values.common.customSidecarContainers . | indent 6 }}
+{{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
