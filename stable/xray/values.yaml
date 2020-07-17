@@ -620,6 +620,7 @@ router:
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -641,6 +642,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -653,6 +655,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
