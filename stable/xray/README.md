@@ -291,12 +291,13 @@ common:
     ## Sidecar containers template goes here ##
 ```
 
-### Establishing TLS and Adding certificates to xray server
-If you want to add certificates to xray, you can use this option.
-Following example is to copy the `ca.crt` from the Artifactory server to xray server trusted keys folder `/etc/security/keys/trusted`
+### Establishing TLS and Adding certificates
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like # to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted.
+  
 Refer -> https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates
+  
+To add this certificate to xray, Create a configmaps.yaml file with the following content:
 
-Create a configmaps.yaml file with the following content:
 ```yaml
 common:
   configMaps: |
@@ -327,6 +328,19 @@ This will, in turn:
 * Mount said configMap onto `/tmp` using a `customVolumeMounts`
 * Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
 * `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+
+### Custom volumes
+
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+
+```yaml
+server:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
 
 
 ## Configuration
@@ -492,6 +506,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `router.image.pullPolicy`                      | Container pull policy                        | `IfNotPresent`                     |
 | `router.internalPort`                          | Router internal port                         | `8082`                     |
 | `router.externalPort`                          | Router external port                         | `8082`                     |
+| `router.tlsEnabled`                            | Enable TLS connection                        | `false`                    |
 | `router.resources.requests.memory`             | Router initial memory request   |                                    |
 | `router.resources.requests.cpu`                | Router initial cpu request      |                                    |
 | `router.resources.limits.memory`               | Router memory limit             |                                    |
@@ -531,18 +546,6 @@ The following table lists the configurable parameters of the xray chart and thei
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
-### Custom volumes
-
-If you need to use a custom volume in a custom init or sidecar container, you can use this option.
-
-For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
-
-```yaml
-server:
-  ## Add custom volumes
-  customVolumes: |
-    ## Custom volume comes here ##
-```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability
