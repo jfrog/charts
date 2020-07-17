@@ -4,6 +4,7 @@ All changes to this chart will be documented in this file.
 ## [4.1.2] - Jul 16, 2020
 * Added support for `common.customSidecarContainers` to create custom sidecar containers
 * Added support for `common.configMaps` to create custom configMaps
+* Added documentaion for mounting certificates to xray -> https://github.com/jfrog/charts/blob/master/stable/xray/README.md#establishing-tls-and-adding-certificates-to-xray-server
 
 ## [4.1.1] - Jul 10, 2020
 * Move some postgresql values to where they should be according to the subchart.

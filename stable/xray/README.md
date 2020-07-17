@@ -291,6 +291,43 @@ common:
     ## Sidecar containers template goes here ##
 ```
 
+### Establishing TLS and Adding certificates to xray server
+If you want to add certificates to xray, you can use this option.
+Following example is to copy the `ca.crt` from the Artifactory server to xray server trusted keys folder `/etc/security/keys/trusted`
+Refer -> https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates
+
+Create a configmaps.yaml file with the following content:
+```yaml
+common:
+  configMaps: |
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+        <certificate content>
+      -----END CERTIFICATE-----
+
+  customVolumeMounts: |
+    - name: xray-configmaps
+      mountPath: /tmp/ca.crt
+      subPath: ca.crt
+
+server:
+  preStartCommand: "mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+router:
+  tlsEnabled: true  
+```
+
+and use it with you helm install/upgrade:
+```bash
+helm upgrade --install xray -f configmaps.yaml --namespace xray center/jfrog/xray
+```
+
+This will, in turn:
+* create a configMap with the files you specified above
+* create a volume pointing to the configMap with the name `xray-configmaps`
+* Mount said configMap onto `/tmp` using a `customVolumeMounts`
+* Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
+* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+
 
 ## Configuration
 
