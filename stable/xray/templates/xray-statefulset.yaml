@@ -592,6 +592,11 @@ spec:
         configMap:
           name: {{ template "xray.fullname" . }}-filebeat-config
       {{- end }}
+      {{- if .Values.common.configMaps }}
+      - name: xray-configmaps
+        configMap:
+          name: {{ template "xray.fullname" . }}-configmaps
+      {{- end }}
 {{- with .Values.common.persistence }}
   {{- if and .enabled (not .existingClaim) }}
   volumeClaimTemplates:

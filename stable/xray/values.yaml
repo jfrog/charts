@@ -310,6 +310,13 @@ common:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
+  # Add any list of configmaps to Xray
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"
