@@ -292,10 +292,9 @@ common:
 ```
 
 ### Establishing TLS and Adding certificates
-Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like # to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted.
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
   
-Refer -> https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates
-  
+
 To add this certificate to xray, Create a configmaps.yaml file with the following content:
 
 ```yaml
@@ -323,8 +322,8 @@ helm upgrade --install xray -f configmaps.yaml --namespace xray center/jfrog/xra
 ```
 
 This will, in turn:
-* create a configMap with the files you specified above
-* create a volume pointing to the configMap with the name `xray-configmaps`
+* Create a configMap with the files you specified above
+* Create a volume pointing to the configMap with the name `xray-configmaps`
 * Mount said configMap onto `/tmp` using a `customVolumeMounts`
 * Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
 * `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
