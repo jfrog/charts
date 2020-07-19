@@ -124,8 +124,8 @@ spec:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
       {{- end }}
-    {{- if .Values.distribution.customInitContainers }}
-{{ tpl .Values.distribution.customInitContainers . | indent 6}}
+    {{- if .Values.common.customInitContainers }}
+{{ tpl .Values.common.customInitContainers . | indent 6}}
     {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
@@ -377,7 +377,6 @@ spec:
             mountPath: {{ $mountPath }}
         resources:
 {{ toYaml $.Values.distributor.loggersResources | indent 10 }}
-
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
@@ -404,6 +403,9 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+{{- if .Values.common.customSidecarContainers }}
+{{ tpl .Values.common.customSidecarContainers . | indent 6 }}
+{{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -432,6 +434,11 @@ spec:
       - name: filebeat-config
         configMap:
           name: {{ template "distribution.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if .Values.common.configMaps }}
+      - name: distribution-configmaps
+        configMap:
+          name: {{ template "distribution.fullname" . }}-configmaps
       {{- end }}
   volumeClaimTemplates:
     - metadata:

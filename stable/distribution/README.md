@@ -204,6 +204,45 @@ kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].nam
 kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ```
 
+ ### Establishing TLS and Adding certificates
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
+
+ To add this certificate to distribution, Create a configmaps.yaml file with the following content:
+ 
+ ```yaml
+ common:
+   configMaps: |
+     ca.crt: |
+       -----BEGIN CERTIFICATE-----
+         <certificate content>
+       -----END CERTIFICATE-----
+ 
+   customVolumeMounts: |
+     - name: distribution-configmaps
+       mountPath: /tmp/ca.crt
+       subPath: ca.crt
+ 
+ distribution:
+   preStartCommand: "mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+ router:
+   tlsEnabled: true  
+ ```
+ 
+ and use it with you helm install/upgrade:
+ ```bash
+ helm upgrade --install distribution -f configmaps.yaml --namespace distribution center/jfrog/distribution
+ ```
+ 
+ This will, in turn:
+-* create a configMap with the files you specified above
+-* create a volume pointing to the configMap with the name `distribution-configmaps`
++* Create a configMap with the files you specified above
++* Create a volume pointing to the configMap with the name `distribution-configmaps`
+ * Mount said configMap onto `/tmp` using a `customVolumeMounts`
+ * Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
+ * `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+ 
+
 ## Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
@@ -357,8 +396,10 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.loggersResources.limits.cpu`       | Distributor loggers cpu limit                                          |                                                                    |
 | `router.name`                                   | Router name                                                            | `router`                                                           |
 | `router.image.pullPolicy`                       | Container pull policy                                                  | `IfNotPresent`                                                     |
-| `router.image.repository`                       | Container image                                                        | `docker.bintray.io/jfrog/router`                                     |
+| `router.image.repository`                       | Container image                                                        | `docker.bintray.io/jfrog/router`                                   |
 | `router.image.version`                          | Container image tag                                                    | `.Chart.AppVersion`                                                |
+| `router.tlsEnabled`                             | Enable TLS connection                                                  | `false`                                                            |
+
       
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
