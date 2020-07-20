@@ -33,7 +33,7 @@ helm repo update
 ### Install Chart
 Install JFrog Xray
 ```bash
-helm upgrade --install xray --namespace xray center/jfrog/xray --version 2.2.2
+helm upgrade --install xray --namespace xray center/jfrog/xray --version 2.3.0
 ```
 
 ## Status
@@ -97,8 +97,12 @@ While upgrading from Xray 2.x to 2.x charts due to breaking changes, use kubectl
 
 Also, While upgrading from Xray 2.x to 2.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
 
-1. Use kubectl delete statefulsets <old_statefulset_rabbitmq_name> <old_statefulset_xray_name>
-2. Use kubectl delete pvc <old_PVC_rabbitmq_name> and run helm upgrade
+```bash
+$ kubectl delete statefulsets <old_statefulset_xray_name>
+$ kubectl delete statefulsets <old_statefulset_rabbitmq_name>
+$ kubectl delete pvc <old_PVC_rabbitmq_name>
+$ helm upgrade --install xray --namespace xray center/jfrog/xray
+```
 
 ## Remove
 Removing a **helm** release is done with
