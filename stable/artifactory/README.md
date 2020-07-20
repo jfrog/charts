@@ -865,7 +865,7 @@ This will, in turn:
 * Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory.
 
 ### Establishing TLS and Adding certificates
-In HTTPs, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled. 
+In HTTPS, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled. 
 When TLS is enabled, JFrog Access acts as the Certificate Authority (CA) signs the TLS certificates used by all the different JFrog Platform nodes.
 
 To establish TLS between JFrog Platform nodes:
@@ -925,29 +925,44 @@ and use it with you helm install/upgrade:
 helm upgrade --install artifactory -f filebeat.yaml --namespace artifactory center/jfrog/artifactory
 ```
 
-### Install Artifactory with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
-To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx.
+### Install Artifactory HA with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx
 For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
+In order to do that, simply add the following to a `artifactory-ssl-values.yaml` file:
+```yaml
+  nginx:
+    ssloffload: true
+    https:
+      enabled: false
+    service:
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx"
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+```
 
+and use it with you helm install/upgrade:
 ```bash
-helm upgrade --install artifactory \
-   --set nginx.service.ssloffload=true \
-   --set nginx.https.enabled=false \
-   --set nginx.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert"="arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx" \
-   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-backend-protocol=http \
-   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-ssl-ports=https \
-   --namespace artifactory center/jfrog/artifactory
+helm upgrade --install artifactory -f artifactory-ssl-values.yaml --namespace artifactory center/jfrog/artifactory
 ```
 
 ### Ingress and TLS
-To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
+To get Helm to create an ingress object with a hostname, add these below lines to `artifactory-ingress-values.yaml` file
+```yaml
+  ingress:
+    enabled: true
+    hosts:
+      - artifactory.company.com
+  artifactory:
+    service:
+      type: NodePort
+  nginx
+    enabled: false
+```
+
+and use it with you helm install/upgrade:
 ```bash
-helm upgrade --install artifactory \
-  --set ingress.enabled=true \
-  --set ingress.hosts[0]="artifactory.company.com" \
-  --set artifactory.service.type=NodePort \
-  --set nginx.enabled=false \
-  --namespace artifactory center/jfrog/artifactory
+helm upgrade --install artifactory -f artifactory-ingress-values.yaml --namespace artifactory center/jfrog/artifactory
 ```
 
 If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
@@ -1094,7 +1109,7 @@ or `helm upgrade`
 helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true stable/nginx-ingress
 ```
 or create a values.yaml file with the following content:
-```bash
+```yaml
 controller:
   config:
     use-forwarded-headers: "true"
