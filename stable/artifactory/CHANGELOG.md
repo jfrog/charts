@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [10.0.6] - Jul 15, 2020
+## [10.0.6] - Jul 20, 2020
 * Support custom CA and certificates
 
 ## [10.0.5] - Jul 13, 2020

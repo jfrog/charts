@@ -892,7 +892,7 @@ access:
   accessConfig:
     security:
       tls: true
-  customCertificatesSecretName: <tls-secret-name>      
+  customCertificatesSecretName: <tls-secret-name>
 ```
 
 ### Artifactory filebeat
