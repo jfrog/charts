@@ -381,6 +381,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.persistence.accessMode`      | Mission Control persistence volume access mode  | `ReadWriteOnce`                       |
 | `missionControl.persistence.size`            | Mission Control persistence volume size         | `100Gi`                               |
 | `missionControl.preStartCommand`             | Command to run before mission control app starts| ``                                    |
+| `missionControl.labels`                      | Mission Control labels                          | `{}`                                  |
 | `missionControl.javaOpts.other`              | Mission Control JAVA_OPTIONS                    | `-server -XX:+UseG1GC -Dfile.encoding=UTF8` |
 | `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | ` `                                   |
 | `missionControl.resources.requests.memory`   | Mission Control initial memory request          |                                       |
