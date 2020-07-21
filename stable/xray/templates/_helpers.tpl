@@ -178,3 +178,14 @@ Create rabbitmq password secret name
 {{- index .Values "rabbitmq-ha" "existingSecret" | default (printf "%s-%s" .Release.Name "rabbitmq-ha") -}}
 {{- end -}} 
 {{- end -}}
+
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "scheme" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}

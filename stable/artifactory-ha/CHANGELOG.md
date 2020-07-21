@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.6] - Jul 20, 2020
+* Support custom CA and certificates
+
 ## [3.0.5] - Jul 13, 2020
 * Updated Artifactory version to 7.6.3 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.3
 * Fixed Mysql database jar path in `preStartCommand` in README

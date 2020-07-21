@@ -864,6 +864,37 @@ This will, in turn:
 * Set the shell script we mounted as the `postStartCommand`
 * Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory.
 
+### Establishing TLS and Adding certificates
+In HTTPS, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled. 
+When TLS is enabled, JFrog Access acts as the Certificate Authority (CA) signs the TLS certificates used by all the different JFrog Platform nodes.
+
+To establish TLS between JFrog Platform nodes:
+Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file. For more info, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates)
+
+To enable tls in charts, set `tls` to true under `access` in [values.yaml](values.yaml). By default it's false
+```yaml
+access:
+  accessConfig:
+    security:
+      tls: true
+```
+
+To add custom tls certificates, create a tls secret from the certificate files.
+
+```bash
+kubectl create secret tls <tls-secret-name> --cert=ca.crt --key=ca.private.key
+```
+
+For resetting access certificates , you can set `resetAccessCAKeys` to true under access section in [values.yaml](values.yaml) and perform an helm upgrade.
+* Note : Once helm upgrade is done, set `resetAccessCAKeys` to false for subsequent upgrades (to avoid resetting access certificates on every helm upgrade)
+```yaml
+access:
+  accessConfig:
+    security:
+      tls: true
+  customCertificatesSecretName: <tls-secret-name>
+  resetAccessCAKeys: true
+```
 
 ### Artifactory filebeat
 If you want to collect logs from your Artifactory installation and send them to a central log collection solution like ELK, you can use this option.
@@ -895,7 +926,201 @@ and use it with you helm install/upgrade:
 helm upgrade --install artifactory -f filebeat.yaml --namespace artifactory center/jfrog/artifactory
 ```
 
+### Install Artifactory HA with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx
+For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
+In order to do that, simply add the following to a `artifactory-ssl-values.yaml` file:
+```yaml
+  nginx:
+    ssloffload: true
+    https:
+      enabled: false
+    service:
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx"
+        service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+        service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+```
+
+and use it with you helm install/upgrade:
+```bash
+helm upgrade --install artifactory -f artifactory-ssl-values.yaml --namespace artifactory center/jfrog/artifactory
+```
+
+### Ingress and TLS
+To get Helm to create an ingress object with a hostname, add these below lines to `artifactory-ingress-values.yaml` file
+```yaml
+  ingress:
+    enabled: true
+    hosts:
+      - artifactory.company.com
+  artifactory:
+    service:
+      type: NodePort
+  nginx
+    enabled: false
+```
+
+and use it with you helm install/upgrade:
+```bash
+helm upgrade --install artifactory -f artifactory-ingress-values.yaml --namespace artifactory center/jfrog/artifactory
+```
+
+If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
+
+To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
+
+```bash
+kubectl create secret tls artifactory-tls --cert=path/to/tls.cert --key=path/to/tls.key
+```
+
+Include the secret's name, along with the desired hostnames, in the Artifactory Ingress TLS section of your custom `values.yaml` file:
+
+```yaml
+  ingress:
+    ## If true, Artifactory Ingress will be created
+    ##
+    enabled: true
+
+    ## Artifactory Ingress hostnames
+    ## Must be provided if Ingress is enabled
+    ##
+    hosts:
+      - artifactory.domain.com
+    annotations:
+      kubernetes.io/tls-acme: "true"
+    ## Artifactory Ingress TLS configuration
+    ## Secrets must be manually created in the namespace
+    ##
+    tls:
+      - secretName: artifactory-tls
+        hosts:
+          - artifactory.domain.com
+```
+
+### Ingress annotations
+
+This example specifically enables Artifactory to work as a Docker Registry using the Repository Path method. See [Artifactory as Docker Registry](https://www.jfrog.com/confluence/display/RTF/Getting+Started+with+Artifactory+as+a+Docker+Registry) documentation for more information about this setup.
+
+```yaml
+ingress:
+  enabled: true
+  defaultBackend:
+    enabled: false
+  hosts:
+    - myhost.example.com
+  annotations:
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    ingress.kubernetes.io/proxy-body-size: "0"
+    ingress.kubernetes.io/proxy-read-timeout: "600"
+    ingress.kubernetes.io/proxy-send-timeout: "600"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+      rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  tls:
+    - hosts:
+      - "myhost.example.com"
+```
+
+If you're using Artifactory as SSO provider (e.g. with xray), you will need to have the following annotations, and change <artifactory-domain> with your domain:
+```yaml
+..
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        proxy_pass_header   Server;
+        proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
+```
+
+### Ingress additional rules
+
+You have the option to add additional ingress rules to the Artifactory ingress. An example for this use case can be routing the /xray path to Xray.
+In order to do that, simply add the following to a `artifactory-values.yaml` file:
+```yaml
+ingress:
+  enabled: true
+
+  defaultBackend:
+    enabled: false
+
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite "(?i)/xray(/|$)(.*)" /$2 break;
+
+  additionalRules: |
+    - host: <MY_HOSTNAME>
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: <XRAY_SERVER_SERVICE_NAME>
+              servicePort: <XRAY_SERVER_SERVICE_PORT>
+          - path: /xray
+            backend:
+              serviceName: <XRAY_SERVER_SERVICE_NAME>
+              servicePort: <XRAY_SERVER_SERVICE_PORT>
+          - path: /artifactory
+            backend:
+              serviceName: {{ template "artifactory.nginx.fullname" . }}
+              servicePort: {{ .Values.nginx.externalPortHttp }}
+```
+
+and running:
+```bash
+helm upgrade --install xray center/jfrog/artifactory -f artifactory-values.yaml
+```
+
+### Dedicated Ingress object for replicator service
+
+You have the option to add additional ingress object to the Replicator service. An example for this use case can be routing the /replicator/ path to Artifactory.
+In order to do that, simply add the following to a `artifactory-values.yaml` file:
+
+```yaml
+artifactory:
+  replicator:
+    enabled: true
+    ingress:
+      name: <MY_INGRESS_NAME>
+      hosts:
+        - myhost.example.com
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-buffering: "off"
+        nginx.ingress.kubernetes.io/configuration-snippet: |
+          chunked_transfer_encoding on;
+      tls:
+        - hosts:
+          - "myhost.example.com"
+          secretName: <CUSTOM_SECRET>
+```
+
+
+### Ingress behind another load balancer
+If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
+
+To enable it with `helm install`
+```bash
+helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
+```
+or `helm upgrade`
+```bash
+helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true stable/nginx-ingress
+```
+or create a values.yaml file with the following content:
+```yaml
+controller:
+  config:
+    use-forwarded-headers: "true"
+```
+Then install nginx-ingress with the values file you created:
+```bash
+helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
+```
 This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
+
 
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
@@ -1197,185 +1422,6 @@ The following table lists the configurable parameters of the artifactory chart a
 | `filebeat.filebeatYml`      | Filebeat yaml configuration file                | see [values.yaml](stable/artifactory/values.yaml)                                         |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
-
-### Install Artifactory with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
-To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx.
-For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
-
-```bash
-helm upgrade --install artifactory \
-   --set nginx.service.ssloffload=true \
-   --set nginx.https.enabled=false \
-   --set nginx.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert"="arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx" \
-   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-backend-protocol=http \
-   --set nginx.service.annotations."service\.beta\.kubernetes\.io"/aws-load-balancer-ssl-ports=https \
-   --namespace artifactory center/jfrog/artifactory
-```
-
-### Ingress and TLS
-To get Helm to create an ingress object with a hostname, add these two lines to your Helm command:
-```bash
-helm upgrade --install artifactory \
-  --set ingress.enabled=true \
-  --set ingress.hosts[0]="artifactory.company.com" \
-  --set artifactory.service.type=NodePort \
-  --set nginx.enabled=false \
-  --namespace artifactory center/jfrog/artifactory
-```
-
-If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
-
-To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
-
-```bash
-kubectl create secret tls artifactory-tls --cert=path/to/tls.cert --key=path/to/tls.key
-```
-
-Include the secret's name, along with the desired hostnames, in the Artifactory Ingress TLS section of your custom `values.yaml` file:
-
-```yaml
-  ingress:
-    ## If true, Artifactory Ingress will be created
-    ##
-    enabled: true
-
-    ## Artifactory Ingress hostnames
-    ## Must be provided if Ingress is enabled
-    ##
-    hosts:
-      - artifactory.domain.com
-    annotations:
-      kubernetes.io/tls-acme: "true"
-    ## Artifactory Ingress TLS configuration
-    ## Secrets must be manually created in the namespace
-    ##
-    tls:
-      - secretName: artifactory-tls
-        hosts:
-          - artifactory.domain.com
-```
-
-### Ingress annotations
-
-This example specifically enables Artifactory to work as a Docker Registry using the Repository Path method. See [Artifactory as Docker Registry](https://www.jfrog.com/confluence/display/RTF/Getting+Started+with+Artifactory+as+a+Docker+Registry) documentation for more information about this setup.
-
-```yaml
-ingress:
-  enabled: true
-  defaultBackend:
-    enabled: false
-  hosts:
-    - myhost.example.com
-  annotations:
-    ingress.kubernetes.io/force-ssl-redirect: "true"
-    ingress.kubernetes.io/proxy-body-size: "0"
-    ingress.kubernetes.io/proxy-read-timeout: "600"
-    ingress.kubernetes.io/proxy-send-timeout: "600"
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
-      rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-  tls:
-    - hosts:
-      - "myhost.example.com"
-```
-
-If you're using Artifactory as SSO provider (e.g. with xray), you will need to have the following annotations, and change <artifactory-domain> with your domain:
-```yaml
-..
-    annotations:
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/configuration-snippet: |
-        proxy_pass_header   Server;
-        proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
-```
-
-### Ingress additional rules
-
-You have the option to add additional ingress rules to the Artifactory ingress. An example for this use case can be routing the /xray path to Xray.
-In order to do that, simply add the following to a `artifactory-values.yaml` file:
-```yaml
-ingress:
-  enabled: true
-
-  defaultBackend:
-    enabled: false
-
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite "(?i)/xray(/|$)(.*)" /$2 break;
-
-  additionalRules: |
-    - host: <MY_HOSTNAME>
-      http:
-        paths:
-          - path: /
-            backend:
-              serviceName: <XRAY_SERVER_SERVICE_NAME>
-              servicePort: <XRAY_SERVER_SERVICE_PORT>
-          - path: /xray
-            backend:
-              serviceName: <XRAY_SERVER_SERVICE_NAME>
-              servicePort: <XRAY_SERVER_SERVICE_PORT>
-          - path: /artifactory
-            backend:
-              serviceName: {{ template "artifactory.nginx.fullname" . }}
-              servicePort: {{ .Values.nginx.externalPortHttp }}
-```
-
-and running:
-```bash
-helm upgrade --install xray center/jfrog/artifactory -f artifactory-values.yaml
-```
-
-### Dedicated Ingress object for replicator service
-
-You have the option to add additional ingress object to the Replicator service. An example for this use case can be routing the /replicator/ path to Artifactory.
-In order to do that, simply add the following to a `artifactory-values.yaml` file:
-
-```yaml
-artifactory:
-  replicator:
-    enabled: true
-    ingress:
-      name: <MY_INGRESS_NAME>
-      hosts:
-        - myhost.example.com
-      annotations:
-        kubernetes.io/ingress.class: nginx
-        nginx.ingress.kubernetes.io/proxy-buffering: "off"
-        nginx.ingress.kubernetes.io/configuration-snippet: |
-          chunked_transfer_encoding on;
-      tls:
-        - hosts:
-          - "myhost.example.com"
-          secretName: <CUSTOM_SECRET>
-```
-
-
-### Ingress behind another load balancer
-If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
-
-To enable it with `helm install`
-```bash
-helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
-```
-or `helm upgrade`
-```bash
-helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true stable/nginx-ingress
-```
-or create a values.yaml file with the following content:
-```bash
-controller:
-  config:
-    use-forwarded-headers: "true"
-```
-Then install nginx-ingress with the values file you created:
-```bash
-helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
-```
 
 ## Useful links
 https://www.jfrog.com
