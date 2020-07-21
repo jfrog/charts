@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.3.5] - July 20th, 2020
+* Remove 'NodeType' option from pipelines-services-headless
+
 ## [1.3.4] - July 6th, 2020
 * Fixes callHomeUrl
 
