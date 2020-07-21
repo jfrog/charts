@@ -128,6 +128,12 @@ spec:
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Removing join.key file";
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
+        {{- if .Values.access.resetAccessCAKeys }}
+          echo "Resetting Access CA Keys - load from database";
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+          echo "Load custom certificates from database";
+        {{- end }}
         {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;

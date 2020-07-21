@@ -1000,7 +1000,6 @@ access:
     security:
       tls: true
 ```
-For resetting access certificates , you can set `resetAccessCAKeys` to true under access section in [values.yaml](values.yaml) and perform an helm upgrade.
 
 To add custom tls certificates, create a tls secret from the certificate files.
 
@@ -1008,13 +1007,14 @@ To add custom tls certificates, create a tls secret from the certificate files.
 kubectl create secret tls <tls-secret-name> --cert=ca.crt --key=ca.private.key
 ```
 
-Include the secret's name under access in [values.yaml](values.yaml).
+For resetting access certificates , you can set `resetAccessCAKeys` to true under access section in [values.yaml](values.yaml) and perform an helm upgrade.
 ```yaml
 access:
   accessConfig:
     security:
       tls: true
   customCertificatesSecretName: <tls-secret-name>
+  resetAccessCAKeys: true
 ```
 
 ### Artifactory filebeat
