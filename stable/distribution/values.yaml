@@ -327,8 +327,9 @@ distribution:
     config: |
       httpGet:
         path: /api/v1/system/ping
+        scheme: {{ include "scheme" . | upper }}
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 30
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -339,6 +340,7 @@ distribution:
     config: |
       httpGet:
         path: /api/v1/system/ping
+        scheme: {{ include "scheme" . | upper }}
         port: {{ .Values.distribution.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
