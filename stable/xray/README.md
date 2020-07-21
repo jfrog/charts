@@ -280,6 +280,68 @@ common:
     ## Init containers template goes here ##
 ```
 
+### Custom sidecar containers
+There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
+
+For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
+```yaml
+common:
+  ## Add custom sidecar containers
+  customSidecarContainers: |
+    ## Sidecar containers template goes here ##
+```
+
+### Establishing TLS and Adding certificates
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
+  
+
+To add this certificate to xray, Create a configmaps.yaml file with the following content:
+
+```yaml
+common:
+  configMaps: |
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+        <certificate content>
+      -----END CERTIFICATE-----
+
+  customVolumeMounts: |
+    - name: xray-configmaps
+      mountPath: /tmp/ca.crt
+      subPath: ca.crt
+
+server:
+  preStartCommand: "mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+router:
+  tlsEnabled: true  
+```
+
+and use it with you helm install/upgrade:
+```bash
+helm upgrade --install xray -f configmaps.yaml --namespace xray center/jfrog/xray
+```
+
+This will, in turn:
+* Create a configMap with the files you specified above
+* Create a volume pointing to the configMap with the name `xray-configmaps`
+* Mount said configMap onto `/tmp` using a `customVolumeMounts`
+* Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
+* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+
+### Custom volumes
+
+If you need to use a custom volume in a custom init or sidecar container, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+
+```yaml
+server:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
+
+
 ## Configuration
 
 The following table lists the configurable parameters of the xray chart and their default values.
@@ -443,6 +505,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `router.image.pullPolicy`                      | Container pull policy                        | `IfNotPresent`                     |
 | `router.internalPort`                          | Router internal port                         | `8082`                     |
 | `router.externalPort`                          | Router external port                         | `8082`                     |
+| `router.tlsEnabled`                            | Enable TLS connection                        | `false`                    |
 | `router.resources.requests.memory`             | Router initial memory request   |                                    |
 | `router.resources.requests.cpu`                | Router initial cpu request      |                                    |
 | `router.resources.limits.memory`               | Router memory limit             |                                    |
@@ -482,18 +545,6 @@ The following table lists the configurable parameters of the xray chart and thei
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
-### Custom volumes
-
-If you need to use a custom volume in a custom init or sidecar container, you can use this option.
-
-For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
-
-```yaml
-server:
-  ## Add custom volumes
-  customVolumes: |
-    ## Custom volume comes here ##
-```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability
