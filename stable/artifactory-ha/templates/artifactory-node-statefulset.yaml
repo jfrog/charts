@@ -106,7 +106,7 @@ spec:
           echo "Sleeping to allow time for primary node to come up";
           sleep {{ .Values.artifactory.node.waitForPrimaryStartup.time }};
           {{- else }}
-          while [ "$(wget --spider -S -T 3 http://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
+          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
             do echo "Primary not ready. Waiting..."; sleep 3;
           done;
           echo "Primary node ready!";
@@ -128,6 +128,12 @@ spec:
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Removing join.key file";
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
+        {{- if .Values.access.resetAccessCAKeys }}
+          echo "Resetting Access CA Keys - load from database";
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+          echo "Load custom certificates from database";
+        {{- end }}
         {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
@@ -455,6 +461,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
+            scheme: {{ include "scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -466,6 +473,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
+            scheme: {{ include "scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
