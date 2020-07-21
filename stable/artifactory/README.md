@@ -886,6 +886,7 @@ kubectl create secret tls <tls-secret-name> --cert=ca.crt --key=ca.private.key
 ```
 
 For resetting access certificates , you can set `resetAccessCAKeys` to true under access section in [values.yaml](values.yaml) and perform an helm upgrade.
+* Note : Once helm upgrade is done, set `resetAccessCAKeys` to false for subsequent upgrades (to avoid resetting access certificates on every helm upgrade)
 ```yaml
 access:
   accessConfig:
