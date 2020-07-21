@@ -258,7 +258,7 @@ distribution:
 There are cases where you'd like custom files mounted onto your container's file system.
 
 For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
-You can mount custom volumes onto both the distribution and the distributor podsm like so:
+You can mount custom volumes onto both distribution and distributor pods like so:
 ```
 common:
   ## Add custom volumes
