@@ -234,8 +234,8 @@ Create trust between the nodes by copying the ca.crt from the Artifactory server
  ```
  
  This will, in turn:
--* create a configMap with the files you specified above
--* create a volume pointing to the configMap with the name `distribution-configmaps`
+-* Create a configMap with the files you specified above
+-* Create a volume pointing to the configMap with the name `distribution-configmaps`
 +* Create a configMap with the files you specified above
 +* Create a volume pointing to the configMap with the name `distribution-configmaps`
  * Mount said configMap onto `/tmp` using a `customVolumeMounts`
