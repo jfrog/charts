@@ -351,8 +351,8 @@ common:
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    securityContext:
-  #      runAsUser: 0
-  #      fsGroup: 0
+  #      runAsUser: {{ .Values.common.xrayUserId }}
+  #      fsGroup: {{ .Values.common.xrayGroupId }}
   #    command:
   #      - 'sh'
   #      - '-c'
