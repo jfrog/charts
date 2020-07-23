@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.7] - Jul 21, 2020
+* Updated Artifactory-ha Chart to add node and primary labels to pods and service objects.
+
 ## [3.0.6] - Jul 20, 2020
 * Support custom CA and certificates
 
