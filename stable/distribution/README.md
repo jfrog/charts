@@ -234,13 +234,11 @@ Create trust between the nodes by copying the ca.crt from the Artifactory server
  ```
  
  This will, in turn:
--* Create a configMap with the files you specified above
--* Create a volume pointing to the configMap with the name `distribution-configmaps`
-+* Create a configMap with the files you specified above
-+* Create a volume pointing to the configMap with the name `distribution-configmaps`
- * Mount said configMap onto `/tmp` using a `customVolumeMounts`
- * Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
- * `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+* Create a configMap with the files you specified above
+* Create a volume pointing to the configMap with the name `distribution-configmaps`
+* Mount said configMap onto `/tmp` using a `customVolumeMounts`
+* Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
+* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
  
 
 ## Custom init containers
@@ -328,13 +326,15 @@ The following table lists the configurable parameters of the distribution chart 
 | `logger.image.tag`                              | Tag for logger image                                                   | `1.31.1`                                                             |
 | `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
 | `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
-| `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
+| `common.customVolumes`                          | Custom Volumes                                                         | see [values.yaml](values.yaml)                                     |
+| `common.configMaps`                             | Custom configMaps                                                      | see [values.yaml](values.yaml)                                     |
+| `common.customInitContainers`                   | Custom InitContainers                                                  | see [values.yaml](values.yaml)                                     |
+| `common.customSidecarContainers`                | Custom SidecarContainers                                               | see [values.yaml](values.yaml)                                     |
 | `distribution.name`                             | Distribution name                                                      | `distribution`                                                     |
 | `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
 | `distribution.image.repository`                 | Container image                                                        | `docker.bintray.io/jfrog/distribution-distribution`                |
 | `distribution.image.version`                    | Container image tag                                                    | `.Chart.AppVersion`                                                |
 | `distribution.service.type`                     | Distribution service type                                              | `ClusterIP`                                                        |
-| `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
 | `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |

@@ -124,8 +124,8 @@ spec:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
       {{- end }}
-    {{- if .Values.common.customInitContainers }}
-{{ tpl .Values.common.customInitContainers . | indent 6}}
+    {{- with .Values.common.customInitContainers }}
+{{ tpl . $ | indent 6}}
     {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
@@ -403,8 +403,8 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-{{- if .Values.common.customSidecarContainers }}
-{{ tpl .Values.common.customSidecarContainers . | indent 6 }}
+{{- with .Values.common.customSidecarContainers }}
+{{ tpl . $ | indent 6 }}
 {{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
