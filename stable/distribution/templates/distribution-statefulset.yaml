@@ -125,7 +125,7 @@ spec:
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
       {{- end }}
     {{- with .Values.common.customInitContainers }}
-{{ tpl . $ | indent 6}}
+{{ tpl . $ | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
