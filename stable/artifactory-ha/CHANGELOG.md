@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [3.0.8] - Jul 23, 2020
-* Updated artifactory-ha chart to be able to disable the migration init container.
+* Added condition to disable the migration init container.
 
 ## [3.0.7] - Jul 21, 2020
 * Updated Artifactory-ha Chart to add node and primary labels to pods and service objects.
