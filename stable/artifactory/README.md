@@ -1205,6 +1205,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.database.maxOpenConnections`         | Maximum amount of open connections from Artifactory to the DB   | `80` |
 | `artifactory.copyOnEveryStartup`         | List of files to copy on startup from source (which is absolute) to target (which is relative to ARTIFACTORY_HOME   |  |
 | `artifactory.migration.timeoutSeconds`          | Artifactory migration Maximum Timeout in seconds| `3600`       |
+| `artifactory.migration.enabled`          | Artifactory migration enabled or disabled   | `true`       |
 | `artifactory.persistence.mountPath`      | Artifactory persistence volume mount path        | `"/var/opt/jfrog/artifactory"`       |
 | `artifactory.persistence.enabled`        | Artifactory persistence volume enabled           | `true`                               |
 | `artifactory.persistence.existingClaim`  | Artifactory persistence volume claim name        |                                      |
