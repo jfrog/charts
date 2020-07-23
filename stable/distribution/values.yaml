@@ -172,6 +172,12 @@ common:
   #    configMap:
   #      name: custom-script
 
+    ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
   # Add any list of configmaps to distribution
   configMaps: |
   #  posthook-start.sh: |-
@@ -494,6 +500,12 @@ router:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+  
   livenessProbe:
     enabled: true
     config: |

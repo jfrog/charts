@@ -199,6 +199,9 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+        {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         {{- with .Values.distribution.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
         {{- end }}
@@ -280,6 +283,9 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
+        {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         {{- with .Values.distributor.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
         {{- end }}
@@ -299,6 +305,12 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
+        {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
+        {{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
 {{- if .Values.router.livenessProbe.enabled }}
