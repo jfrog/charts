@@ -1155,7 +1155,7 @@ buildPlane:
         ##
         accessKey: ""
         secretKey: ""
-        # Existing secret with AWS keys
+        ## Existing secret with AWS keys
         existingSecret:
       k8s:
         enabled: false
@@ -1166,8 +1166,9 @@ buildPlane:
         memory: "1000"
         namespace: dummy
         storageClass: dummy
-        labels: "{key:value}"
-        ## k8s node pool kubeconfig base64 encoded
+        ## Node Affinity values: {key:value}
+        labels: ""
+        ## Kubernetes node pool kubeconfig base64 encoded
         kubeconfig: ""
-        # Existing secret with kubeconfig
+        ## Existing secret with kubeconfig
         existingSecret:
