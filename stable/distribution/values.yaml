@@ -172,6 +172,58 @@ common:
   #    configMap:
   #      name: custom-script
 
+    ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps to distribution
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: distribution-data
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
 logger:
   image:
     repository: docker.bintray.io/busybox
@@ -262,19 +314,6 @@ distribution:
   service:
     type: ClusterIP
 
-  ## Add custom init containers
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: distribution-data
-
   ## Add custom volumeMounts
   customVolumeMounts: |
   #  - name: custom-script
@@ -294,8 +333,9 @@ distribution:
     config: |
       httpGet:
         path: /api/v1/system/ping
+        scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 30
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -306,6 +346,7 @@ distribution:
     config: |
       httpGet:
         path: /api/v1/system/ping
+        scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
@@ -315,7 +356,7 @@ distribution:
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
+  javaOpts: {}
     # xms: "1g"
     # xmx: "2g"
     # other: ""
@@ -387,7 +428,7 @@ distributor:
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
+  javaOpts: {}
     # xms: "1g"
     # xmx: "2g"
     # other: ""
@@ -446,10 +487,11 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.4.0
+    version: 1.4.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -458,11 +500,18 @@ router:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
   livenessProbe:
     enabled: true
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -475,6 +524,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
