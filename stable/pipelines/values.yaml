@@ -2,7 +2,7 @@
 
 ## Common
 initContainer:
-  image: "alpine:3.11"
+  image: "docker.bintray.io/alpine:3.12"
   pullPolicy: IfNotPresent
 
 ## Available modes: devmode (enable it for debuging) and production
@@ -351,6 +351,58 @@ pipelines:
       # requests:
       #   cpu: 100m
       #   memory: 128Mi
+
+  # Add any list of configmaps to Pipelines
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: pipelines-data
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
 
   systemYaml: |
     shared:

@@ -184,6 +184,7 @@ artifactory:
 
   # Migration support from 6.x to 7.x
   migration:
+    enabled: true
     timeoutSeconds: 3600
     ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
     # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
@@ -489,7 +490,7 @@ artifactory:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 60
+    initialDelaySeconds: 90
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -841,6 +842,20 @@ artifactory:
     externalPort: 1339
 
 access:
+  ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
+  ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
+  ## When security.tls is set to true, JFrog Access will act as the Certificate Authority (CA) and sign the TLS certificates used by all the different JFrog Platform nodes.
+  ## This ensures that the node to node communication is done over TLS.
+  accessConfig:
+    security:
+      tls: false
+
+  ## You can use a pre-existing secret by specifying customCertificatesSecretName
+  ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=ca.crt --key=ca.private.key`
+  # customCertificatesSecretName:
+
+  ## When resetAccessCAKeys is true, Access will regenerate the CA certificate and matching private key
+  # resetAccessCAKeys: false
   database:
     maxOpenConnections: 80
   tomcat:
@@ -1013,7 +1028,7 @@ nginx:
         proxy_read_timeout  900;
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
-        proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        proxy_pass          {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
         {{- if .Values.nginx.service.ssloffload}}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
         {{- else }}
@@ -1026,9 +1041,9 @@ nginx:
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+            proxy_pass       {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
           }
-          proxy_pass          http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+          proxy_pass         {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
         }
       }
     }
@@ -1072,7 +1087,7 @@ nginx:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 10
+    initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -1081,7 +1096,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 10
+    initialDelaySeconds: 120
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10

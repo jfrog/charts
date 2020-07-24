@@ -54,7 +54,7 @@ This file describes special upgrade notes needed at specific versions
       3. Run `helm upgrade` which brings up distribution
          &nbsp;Example :
          ```bash
-         $ helm upgrade --install distribution-new --set distribution.jfrogUrl=<ARTIFACTORY_URL> --set postgresql.postgresqlPassword=<password> --set redis.password=<password> --set distribution.joinKey=<JOIN_KEY> jfrog/distribution
+         $ helm upgrade --install distribution-new --set distribution.jfrogUrl=<ARTIFACTORY_URL> --set postgresql.postgresqlPassword=<password> --set redis.password=<password> --set distribution.joinKey=<JOIN_KEY> --set distribution.migration.enabled=true jfrog/distribution
          ```
       4. Restore access to distribution
       5. Run `helm delete <OLD_RELEASE_NAME>` which will remove  old Distribution deployment and Helm release.

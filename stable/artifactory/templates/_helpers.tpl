@@ -72,3 +72,14 @@ Generate SSL certificates
 tls.crt: {{ $cert.Cert | b64enc }}
 tls.key: {{ $cert.Key | b64enc }}
 {{- end -}}
+
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "scheme" -}}
+{{- if .Values.access.accessConfig.security.tls -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}

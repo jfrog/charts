@@ -108,6 +108,9 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
             readOnly: true
           {{- end }}
+        {{- with .Values.pipelines.customInitContainers }}
+        {{ tpl . $ | nindent 8 }}
+        {{- end }}
       containers:
         {{- if .Values.filebeat.enabled }}
         - name: {{ .Values.filebeat.name }}
@@ -350,6 +353,9 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+    {{- with .Values.pipelines.customSidecarContainers }}
+    {{ tpl  . $ | nindent 8 }}
+    {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -363,6 +369,9 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       volumes:
+      {{- with .Values.pipelines.customVolumes }}
+      {{ tpl . $ | nindent 6 }}
+      {{- end }}
       - name: jfrog-pipelines-folder
         emptyDir: {}
       - name: jfrog-pipelines-logs
@@ -371,6 +380,11 @@ spec:
         secret:
           secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
       {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+      {{- if .Values.pipelines.configMaps }}
+      - name: pipelines-configmaps
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-configmaps
+      {{- end }}
       - name: buildplane-creds-aws
         secret:
           secretName: {{ include "pipelines.fullname" . }}-dynamic-buildplane-creds-aws

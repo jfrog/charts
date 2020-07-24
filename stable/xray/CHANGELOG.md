@@ -1,6 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.1.2] - Jul 16, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers
+* Added support for `common.configMaps` to create custom configMaps
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
 ## [4.1.1] - Jul 10, 2020
 * Move some postgresql values to where they should be according to the subchart.
 
