@@ -7,7 +7,7 @@ metadata:
     {{- include "pipelines.labels" . | nindent 4 }}
 data:
   provider: aws
-  accountId: {{ default .Values.buildPlane.dynamic.provider.aws.accountId .Values.buildPlane.dynamic.customer.accountId | quote }}
+  accountId: {{ default "dummy" .Values.buildPlane.dynamic.customer.accountId | quote }}
   nodePoolName: {{ default .Values.buildPlane.dynamic.provider.aws.nodePoolName .Values.buildPlane.dynamic.customer.nodePoolName | quote }}
   nodelimit: {{ default .Values.buildPlane.dynamic.provider.aws.nodelimit .Values.buildPlane.dynamic.customer.nodelimit | quote }}
   setAsDefault: '"true"'
