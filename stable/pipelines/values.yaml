@@ -1133,7 +1133,7 @@ rbac:
 
 ## The Build Plane is where the actual builds will run
 buildPlane:
-  ## Dynamic Build Plane VMs
+  ## Dynamic Build Plane Setup
   dynamic:
     provider:
       aws:
@@ -1162,5 +1162,5 @@ buildPlane:
         namespace: dummy
         storageClass: dummy
         labels: "{key:value}"
-        ##
+        ## base64
         kubeconfig: ""
