@@ -217,6 +217,7 @@ spec:
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory'
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -306,6 +307,7 @@ spec:
       {{- if .Values.artifactory.customVolumeMounts }}
 {{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
       {{- end }}
+{{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
@@ -554,9 +556,11 @@ spec:
           {{- else }}
           secretName: {{ template "artifactory.fullname" . }}-binarystore
           {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: migration-scripts
         configMap:
           name: {{ template "artifactory.fullname" . }}-migration-scripts
+{{- end }}
       - name: installer-info
         configMap:
           name: {{ template "artifactory.fullname" . }}-installer-info
