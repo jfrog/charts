@@ -39,7 +39,7 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       securityContext:
-        fsGroup: {{ .Values.uid }}
+        fsGroup: {{ .Values.common.uid }}
       initContainers:
     {{- if .Values.elasticsearch.enabled }}
       - name: elasticsearch-init
@@ -65,7 +65,7 @@ spec:
       - name: copy-system-yaml
         image: '{{ .Values.initContainerImage }}'
         securityContext:
-          runAsUser: {{ .Values.uid }}
+          runAsUser: {{ .Values.common.uid }}
         command:
         - '/bin/sh'
         - '-c'
@@ -205,12 +205,12 @@ spec:
         - '-c'
         - >
           mkdir -p {{ .Values.missionControl.persistence.mountPath }};
-          chown -R {{ .Values.uid }}:{{ .Values.uid }} {{ .Values.missionControl.persistence.mountPath }}
+          chown -R {{ .Values.common.uid }}:{{ .Values.common.gid }} {{ .Values.missionControl.persistence.mountPath }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-    {{- if .Values.missionControl.customInitContainers }}
-{{ tpl .Values.missionControl.customInitContainers . | indent 6}}
+    {{- with .Values.common.customInitContainers }}
+{{ tpl . $ | indent 6 }}
     {{- end }}
       containers:
     {{- if .Values.elasticsearch.enabled }}
@@ -268,17 +268,6 @@ spec:
           mountPath: "/scripts"
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /_cluster/health?local=true
-        #     port: 9200
-        #   initialDelaySeconds: 90
-        #   periodSeconds: 10
-        # readinessProbe:
-        #   httpGet:
-        #     path: /_cluster/health?local=true
-        #     port: 9200
-        #   initialDelaySeconds: 60
     {{- end }}
       - name: {{ .Values.router.name }}
         image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
@@ -288,10 +277,13 @@ spec:
           containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
-          runAsUser: {{ .Values.uid }}
+          runAsUser: {{ .Values.common.uid }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
+      {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
 {{- if .Values.router.livenessProbe.enabled }}
@@ -357,7 +349,7 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-      {{- with .Values.missionControl.customVolumeMounts }}
+      {{- with .Values.common.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
       {{- end }}
         resources:
@@ -389,18 +381,6 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /api/v3/ping
-        #     port: {{ .Values.missionControl.internalPort }}
-        #   periodSeconds: 10
-        #   initialDelaySeconds: 600
-        # readinessProbe:
-        #   httpGet:
-        #     path: /api/v3/ping
-        #     port: {{ .Values.missionControl.internalPort }}
-        #   periodSeconds: 20
-        #   initialDelaySeconds: 60
       - name: {{ .Values.insightServer.name }}
         image: {{ .Values.insightServer.image.repository }}:{{ default .Chart.AppVersion .Values.insightServer.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -447,20 +427,11 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+      {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.insightServer.resources | indent 10 }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /api/status
-        #     port: {{ .Values.insightServer.internalHttpPort }}
-        #   initialDelaySeconds: 600
-        #   periodSeconds: 10
-        # readinessProbe:
-        #   httpGet:
-        #     path: /api/status
-        #     port: {{ .Values.insightServer.internalHttpPort }}
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 20
       - name: {{ .Values.insightScheduler.name }}
         image: {{ .Values.insightScheduler.image.repository }}:{{ default .Chart.AppVersion .Values.insightScheduler.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -520,20 +491,11 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+      {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.insightScheduler.resources | indent 10 }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /api/status
-        #     port: {{ .Values.insightScheduler.internalPort }}
-        #   initialDelaySeconds: 600
-        #   periodSeconds: 10
-        # readinessProbe:
-        #   httpGet:
-        #     path: /api/status
-        #     port: {{ .Values.insightScheduler.internalPort }}
-        #   initialDelaySeconds: 60
-        #   periodSeconds: 20
       - name: {{ .Values.insightExecutor.name }}
         image: {{ .Values.insightExecutor.image.repository }}:{{ default .Chart.AppVersion .Values.insightExecutor.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -582,21 +544,9 @@ spec:
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.insightExecutor.resources | indent 10 }}
-        # livenessProbe:
-        #   httpGet:
-        #     path: /executorservice/api
-        #     port: {{ .Values.insightExecutor.internalPort }}
-        #   initialDelaySeconds: 600
-        #   periodSeconds: 10
-        # readinessProbe:
-        #   httpGet:
-        #     path: /executorservice/api
-        #     port: {{ .Values.insightExecutor.internalPort }}
-        #   initialDelaySeconds: 60
-        #   periodSeconds: 20
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
-      {{- $uid := .Values.uid }}
+      {{- $uid := .Values.common.uid }}
       {{- $context := .Values.missionControl.appContext }}
       {{- $name := .Values.missionControl.name }}
       {{- $mountPath := .Values.missionControl.persistence.mountPath }}
@@ -677,6 +627,9 @@ spec:
         resources:
 {{ toYaml $.Values.insightExecutor.loggersResources | indent 10 }}
       {{- end }}
+    {{- with .Values.common.customSidecarContainers }}
+{{ tpl . $ | indent 6 }}
+    {{- end }}
     {{- with .Values.missionControl.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -709,16 +662,13 @@ spec:
         configMap:
           name: {{ template "mission-control.fullname" . }}-elasticsearch-scripts
     {{- end }}
-    {{- with .Values.missionControl.customVolumes }}
-{{ tpl . $ | indent 6 }}
-    {{- end }}
     {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
           name: {{ template "mission-control.fullname" . }}-filebeat-config
     {{- end }}
-    {{- if .Values.missionControl.customVolumes }}
-{{ tpl .Values.missionControl.customVolumes . | indent 6 }}
+    {{- with .Values.common.customVolumes }}
+{{ tpl . $ | indent 6 }}
     {{- end }}
     {{- if not .Values.missionControl.persistence.enabled }}
       - name: mission-control-data
