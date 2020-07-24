@@ -272,6 +272,12 @@ spec:
       - name: {{ .Values.router.name }}
         image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          sleep 10;
+          /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
         - name: router
           containerPort: {{ .Values.router.internalPort }}
