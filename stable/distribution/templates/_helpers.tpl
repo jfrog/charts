@@ -69,5 +69,13 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-    
-
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "distribution.scheme" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}
