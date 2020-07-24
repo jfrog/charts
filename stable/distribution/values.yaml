@@ -333,7 +333,7 @@ distribution:
     config: |
       httpGet:
         path: /api/v1/system/ping
-        scheme: {{ include "scheme" . | upper }}
+        scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -346,7 +346,7 @@ distribution:
     config: |
       httpGet:
         path: /api/v1/system/ping
-        scheme: {{ include "scheme" . | upper }}
+        scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
@@ -511,7 +511,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
-        scheme: {{ include "scheme" . | upper }}
+        scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -524,7 +524,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
-        scheme: {{ include "scheme" . | upper }}
+        scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10

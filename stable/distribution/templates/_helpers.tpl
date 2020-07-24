@@ -72,7 +72,7 @@ Create chart name and version as used by the chart label.
 {{/*
 Scheme (http/https) based on Access TLS enabled/disabled
 */}}
-{{- define "scheme" -}}
+{{- define "distribution.scheme" -}}
 {{- if .Values.router.tlsEnabled -}}
 {{- printf "%s" "https" -}}
 {{- else -}}
