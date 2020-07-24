@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.8] - Jul 23, 2020
+* Added condition to disable the migration init container.
+
 ## [10.0.7] - Jul 21, 2020
 * Updated Artifactory Chart to add node and primary labels to pods and service objects.
 

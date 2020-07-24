@@ -1323,6 +1323,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.haBackupDir.enabled`         | Enable haBackupDir for eventual storage in the HA cluster   | `false` |
 | `artifactory.haBackupDir.path`         | Path to the directory intended for use with NFS eventual configuration for HA   | |
 | `artifactory.migration.timeoutSeconds`          | Artifactory migration Maximum Time out in seconds| `3600`       |
+| `artifactory.migration.enabled`          | Artifactory migration enabled or disabled   | `true`       |
 | `artifactory.persistence.mountPath`    | Artifactory persistence volume mount path           | `"/var/opt/jfrog/artifactory"`  |
 | `artifactory.persistence.enabled`      | Artifactory persistence volume enabled              | `true`                          |
 | `artifactory.persistence.accessMode`   | Artifactory persistence volume access mode          | `ReadWriteOnce`                 |
