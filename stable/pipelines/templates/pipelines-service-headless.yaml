@@ -9,16 +9,10 @@ spec:
   clusterIP: None
   ports:
     - port: {{ .Values.pipelines.api.service.port }}
-{{- if eq .Values.pipelines.api.service.type "NodePort" }}
-      nodePort: 30000
-{{- end }}
       targetPort: 30000
       protocol: TCP
       name: api
     - port: {{ .Values.pipelines.www.service.port }}
-{{- if eq .Values.pipelines.www.service.type "NodePort" }}
-      nodePort: 30001
-{{- end }}
       targetPort: 30001
       protocol: TCP
       name: www

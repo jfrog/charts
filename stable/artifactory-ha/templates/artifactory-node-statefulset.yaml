@@ -8,8 +8,8 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-{{- if .Values.artifactory.node.labels }}
-{{ toYaml .Values.artifactory.node.labels | indent 4 }}
+{{- with .Values.artifactory.node.labels }}
+{{ toYaml . | indent 4 }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.node.name" . }}
@@ -30,6 +30,9 @@ spec:
         heritage: {{ .Release.Service }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
+        {{- with .Values.artifactory.node.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
@@ -106,7 +109,7 @@ spec:
           echo "Sleeping to allow time for primary node to come up";
           sleep {{ .Values.artifactory.node.waitForPrimaryStartup.time }};
           {{- else }}
-          while [ "$(wget --spider -S -T 3 http://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
+          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
             do echo "Primary not ready. Waiting..."; sleep 3;
           done;
           echo "Primary node ready!";
@@ -128,6 +131,12 @@ spec:
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Removing join.key file";
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
+        {{- if .Values.access.resetAccessCAKeys }}
+          echo "Resetting Access CA Keys - load from database";
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+          echo "Load custom certificates from database";
+        {{- end }}
         {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
@@ -181,6 +190,7 @@ spec:
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -293,6 +303,7 @@ spec:
           mountPath: "/artifactory_bootstrap/gcp.credentials.json"
           subPath: gcp.credentials.json
   {{- end }}
+{{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
@@ -455,6 +466,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
+            scheme: {{ include "scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -466,6 +478,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
+            scheme: {{ include "scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
@@ -606,9 +619,11 @@ spec:
           secretName: {{ template "artifactory-ha.fullname" . }}-license
           {{- end }}
       {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: migration-scripts
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-migration-scripts
+{{- end }}
       - name: installer-info
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info

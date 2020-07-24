@@ -1,6 +1,15 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.8] - Jul 23, 2020
+* Added condition to disable the migration init container.
+
+## [10.0.7] - Jul 21, 2020
+* Updated Artifactory Chart to add node and primary labels to pods and service objects.
+
+## [10.0.6] - Jul 20, 2020
+* Support custom CA and certificates
+
 ## [10.0.5] - Jul 13, 2020
 * Updated Artifactory version to 7.6.3 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.3
 * Fixed Mysql database jar path in `preStartCommand` in README
