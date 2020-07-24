@@ -1,10 +1,20 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [6.1.1] - Jul 1, 2020
+## [6.1.3] - Jul 1, 2020
 * Update redis tag version to `6.0.5-debian-10-r22`
 
-## [6.1.0] -  Jul 7, 2020
+## [6.1.2] - Jul 20, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers
+* Added support for `common.configMaps` to create custom configMaps
+* Moved customInitContainers under `common`
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/distribution/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
+## [6.1.1] - Jul 13, 2020
+* Added migration step for distribution 1.x to 2.x Appverison
+
+## [6.1.0] - Jul 7, 2020
 * Update Distribution version 2.4.0
 * **IMPORTANT**
 * Added ChartCenter Helm repository in README.
