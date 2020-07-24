@@ -21,7 +21,7 @@ This chart will do the following:
 - A running Kubernetes cluster
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
-- A running Artifactory 7 with Enterprise+ License
+- A running Artifactory 7.7 with Enterprise+ License
   - Precreated repository `jfrogpipelines` in Artifactory type `Generic` with layout `maven-2-default`
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed

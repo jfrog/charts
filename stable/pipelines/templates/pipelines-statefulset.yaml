@@ -22,6 +22,18 @@ spec:
         component: {{ include "pipelines.services.name" . }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
+        checksum/secretdb: {{ include (print $.Template.BasePath "/database-secret.yaml") . | sha256sum }}
+        {{- if and .Values.buildPlane.dynamic.provider.aws.enabled ( not .Values.buildPlane.dynamic.provider.aws.existingSecret ) }}
+        checksum/secretaws: {{ include (print $.Template.BasePath "/buildplane-secret-aws.yaml") . | sha256sum }}
+        checksum/configaws: {{ include (print $.Template.BasePath "/buildplane-config-aws.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled ( not .Values.buildPlane.dynamic.provider.k8s.existingSecret ) }}
+        checksum/secretk8s: {{ include (print $.Template.BasePath "/buildplane-secret-k8s.yaml") . | sha256sum }}
+        checksum/configk8s: {{ include (print $.Template.BasePath "/buildplane-config-k8s.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.filebeat.enabled }}
+        checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "pipelines.fullname" . }}
     {{- if .Values.imagePullSecrets }}
@@ -395,7 +407,7 @@ spec:
       {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
       - name: buildplane-creds-aws
         secret:
-          secretName: {{ include "pipelines.fullname" . }}-dynamic-buildplane-creds-aws
+          secretName: {{ .Values.buildPlane.dynamic.provider.aws.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "dynamic-buildplane-creds-aws") }}
       - name: buildplane-config-aws
         configMap:
           name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
@@ -403,7 +415,7 @@ spec:
       {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
       - name: buildplane-creds-k8s
         secret:
-          secretName: {{ include "pipelines.fullname" . }}-dynamic-buildplane-creds-k8s
+          secretName: {{ .Values.buildPlane.dynamic.provider.k8s.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "dynamic-buildplane-creds-k8s") }}
       - name: buildplane-config-k8s
         configMap:
           name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-k8s

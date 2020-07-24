@@ -1135,11 +1135,15 @@ rbac:
 buildPlane:
   ## Dynamic Build Plane Setup
   dynamic:
+    ## Not needed for on-prem install
+    customer:
+      accountId: ""
+      nodePoolName: ""
+      nodelimit: ""
     provider:
       aws:
         enabled: false
         ## Replace the dummy values with the real ones
-        accountId: ""
         nodePoolName: ""
         nodelimit: ""
         instanceType: c4.xlarge
@@ -1151,10 +1155,11 @@ buildPlane:
         ##
         accessKey: ""
         secretKey: ""
+        # Existing secret with AWS keys
+        existingSecret:
       k8s:
         enabled: false
         ## Replace the dummy values with the real ones
-        accountId: ""
         nodePoolName: ""
         nodelimit: ""
         cpu: "1"
@@ -1162,5 +1167,7 @@ buildPlane:
         namespace: dummy
         storageClass: dummy
         labels: "{key:value}"
-        ## base64
+        ## k8s node pool kubeconfig base64 encoded
         kubeconfig: ""
+        # Existing secret with kubeconfig
+        existingSecret:
