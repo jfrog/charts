@@ -7,9 +7,9 @@ metadata:
     {{- include "pipelines.labels" . | nindent 4 }}
 data:
   provider: k8s
-  accountId: {{ .Values.buildPlane.dynamic.customer.accountId | quote }}
-  nodePoolName: {{ .Values.buildPlane.dynamic.customer.nodePoolName | quote }}
-  nodelimit: {{ .Values.buildPlane.dynamic.customer.nodelimit | quote }}
+  accountId: {{ default .Values.buildPlane.dynamic.provider.k8s.accountId .Values.buildPlane.dynamic.customer.accountId | quote }}
+  nodePoolName: {{ default .Values.buildPlane.dynamic.provider.k8s.nodePoolName .Values.buildPlane.dynamic.customer.nodePoolName | quote }}
+  nodelimit: {{ default .Values.buildPlane.dynamic.provider.k8s.nodelimit .Values.buildPlane.dynamic.customer.nodelimit | quote }}
   setAsDefault: '"true"'
   cpu: {{ .Values.buildPlane.dynamic.provider.k8s.cpu | quote }}
   memory: {{ .Values.buildPlane.dynamic.provider.k8s.memory | quote }}
