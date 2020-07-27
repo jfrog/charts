@@ -389,6 +389,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.slave.nodeSelector`              | PostgreSQL slave node selector                  | `{}`                                  |
 | `postgresql.slave.affinity`                  | PostgreSQL slave node affinity                  | `{}`                                  |
 | `postgresql.slave.tolerations`               | PostgreSQL slave node tolerations               | `[]`                                  |
+| `common.uid`                                 | user id                                         | `1050`                                |
+| `common.gid`                                 | group id                                        | `1050`                                |
 | `common.customInitContainers`                | Custom init containers                          | see [values.yaml](values.yaml)        |
 | `common.customVolumes`                       | Custom Volumes                                  | see [values.yaml](values.yaml)        |
 | `common.customVolumeMounts`                  | Custom Volume Mounts                            | see [values.yaml](values.yaml)        |
@@ -506,7 +508,11 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightExecutor.loggersResources.requests.cpu`     | Insight Executor loggers initial cpu request    |                              |
 | `insightExecutor.loggersResources.limits.memory`    | Insight Executor loggers memory limit           |                              |
 | `insightExecutor.loggersResources.limits.cpu`       | Insight Executor loggers cpu limit              |                              |
-
+| `router.name`                                | Router name                                            | `router`                        |
+| `router.image.pullPolicy`                    | Container pull policy                                  | `IfNotPresent`                  |
+| `router.image.repository`                    | Container image                                        | `docker.bintray.io/jfrog/router`|
+| `router.image.version`                       | Container image tag                                    | `.Chart.AppVersion`             |
+| `router.tlsEnabled`                          | Enable TLS connection                                  | `false`                         |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 
