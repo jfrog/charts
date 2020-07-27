@@ -1,0 +1,13 @@
+{{- if .Values.common.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mission-control.fullname" . }}-configmaps
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+{{ tpl .Values.common.configMaps . | indent 2 }}
+{{- end }}

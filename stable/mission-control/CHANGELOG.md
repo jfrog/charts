@@ -1,6 +1,13 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.2.0] - Jul 27, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers.
+* Added support for `common.configMaps` to create custom configMaps
+* Moved customVolumes,customVolumeMounts,customInitContainers under `common`
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
 ## [4.1.1] - Jul 20, 2020
 * Updated Mission-Control Chart to add labels from values to service, pods and controller 
 
