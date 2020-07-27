@@ -25,10 +25,14 @@ spec:
         checksum/secretdb: {{ include (print $.Template.BasePath "/database-secret.yaml") . | sha256sum }}
         {{- if and .Values.buildPlane.dynamic.provider.aws.enabled ( not .Values.buildPlane.dynamic.provider.aws.existingSecret ) }}
         checksum/secretaws: {{ include (print $.Template.BasePath "/buildplane-secret-aws.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if and .Values.buildPlane.dynamic.provider.aws.enabled }}
         checksum/configaws: {{ include (print $.Template.BasePath "/buildplane-config-aws.yaml") . | sha256sum }}
         {{- end }}
         {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled ( not .Values.buildPlane.dynamic.provider.k8s.existingSecret ) }}
         checksum/secretk8s: {{ include (print $.Template.BasePath "/buildplane-secret-k8s.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled }}
         checksum/configk8s: {{ include (print $.Template.BasePath "/buildplane-config-k8s.yaml") . | sha256sum }}
         {{- end }}
         {{- if .Values.filebeat.enabled }}
