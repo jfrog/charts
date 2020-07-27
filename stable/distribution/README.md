@@ -204,6 +204,43 @@ kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].nam
 kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ```
 
+ ### Establishing TLS and Adding certificates
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
+
+ To add this certificate to distribution, Create a configmaps.yaml file with the following content:
+ 
+ ```yaml
+ common:
+   configMaps: |
+     ca.crt: |
+       -----BEGIN CERTIFICATE-----
+         <certificate content>
+       -----END CERTIFICATE-----
+ 
+   customVolumeMounts: |
+     - name: distribution-configmaps
+       mountPath: /tmp/ca.crt
+       subPath: ca.crt
+ 
+ distribution:
+   preStartCommand: "mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+ router:
+   tlsEnabled: true  
+ ```
+ 
+ and use it with you helm install/upgrade:
+ ```bash
+ helm upgrade --install distribution -f configmaps.yaml --namespace distribution center/jfrog/distribution
+ ```
+ 
+ This will, in turn:
+* Create a configMap with the files you specified above
+* Create a volume pointing to the configMap with the name `distribution-configmaps`
+* Mount said configMap onto `/tmp` using a `customVolumeMounts`
+* Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
+* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+ 
+
 ## Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
@@ -219,7 +256,7 @@ distribution:
 There are cases where you'd like custom files mounted onto your container's file system.
 
 For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
-You can mount custom volumes onto both the distribution and the distributor podsm like so:
+You can mount custom volumes onto both distribution and distributor pods like so:
 ```
 common:
   ## Add custom volumes
@@ -289,13 +326,15 @@ The following table lists the configurable parameters of the distribution chart 
 | `logger.image.tag`                              | Tag for logger image                                                   | `1.31.1`                                                             |
 | `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
 | `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
-| `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
+| `common.customVolumes`                          | Custom Volumes                                                         | see [values.yaml](values.yaml)                                     |
+| `common.configMaps`                             | Custom configMaps                                                      | see [values.yaml](values.yaml)                                     |
+| `common.customInitContainers`                   | Custom InitContainers                                                  | see [values.yaml](values.yaml)                                     |
+| `common.customSidecarContainers`                | Custom SidecarContainers                                               | see [values.yaml](values.yaml)                                     |
 | `distribution.name`                             | Distribution name                                                      | `distribution`                                                     |
 | `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
 | `distribution.image.repository`                 | Container image                                                        | `docker.bintray.io/jfrog/distribution-distribution`                |
 | `distribution.image.version`                    | Container image tag                                                    | `.Chart.AppVersion`                                                |
 | `distribution.service.type`                     | Distribution service type                                              | `ClusterIP`                                                        |
-| `distribution.customInitContainers`             | Custom init containers for Distribution                                |                                                                    |
 | `distribution.customVolumeMounts`               | Custom Volume Mounts for Distribution                                  | see [values.yaml](values.yaml)                                     |
 | `distribution.externalPort`                     | Distribution service external port                                     | `80`                                                               |
 | `distribution.internalPort`                     | Distribution service internal port                                     | `8080`                                                             |
@@ -357,8 +396,10 @@ The following table lists the configurable parameters of the distribution chart 
 | `distributor.loggersResources.limits.cpu`       | Distributor loggers cpu limit                                          |                                                                    |
 | `router.name`                                   | Router name                                                            | `router`                                                           |
 | `router.image.pullPolicy`                       | Container pull policy                                                  | `IfNotPresent`                                                     |
-| `router.image.repository`                       | Container image                                                        | `docker.bintray.io/jfrog/router`                                     |
+| `router.image.repository`                       | Container image                                                        | `docker.bintray.io/jfrog/router`                                   |
 | `router.image.version`                          | Container image tag                                                    | `.Chart.AppVersion`                                                |
+| `router.tlsEnabled`                             | Enable TLS connection                                                  | `false`                                                            |
+
       
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
