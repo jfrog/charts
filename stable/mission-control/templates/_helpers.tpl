@@ -139,3 +139,14 @@ Set masterKey based on mcKey/masterKey values.
 {{ .Values.missionControl.masterKey }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "mission-control.scheme" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}
