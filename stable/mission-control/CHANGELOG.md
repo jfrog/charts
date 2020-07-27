@@ -8,6 +8,9 @@ All changes to this chart will be documented in this file.
 * Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#establishing-tls-and-adding-certificates)
 * Update router version to `1.4.2`
 
+## [4.1.1] - Jul 20, 2020
+* Updated Mission-Control Chart to add labels from values to service, pods and controller 
+
 ## [4.1.0] - Jul 10, 2020
 * Move some postgresql values to where they should be according to the subchart
 * **IMPORTANT**
