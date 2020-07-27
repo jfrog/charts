@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [3.0.9] - Jul 27, 2020
-* Add tpl to external database secrets
+* Add tpl to external database secrets.
 * Modified `scheme`  to `artifactory-ha.scheme`
 
 ## [3.0.8] - Jul 23, 2020
