@@ -2,7 +2,7 @@
 All changes to this project chart be documented in this file.
 
 ## [6.1.3] - Jul 27, 2020
-* Update Distribution to version `2.4.1` - https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.4.1
+* Update Distribution to version `2.4.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.4.1)
 
 ## [6.1.2] - Jul 20, 2020
 * Added support for `common.customSidecarContainers` to create custom sidecar containers
