@@ -556,7 +556,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -568,7 +568,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
