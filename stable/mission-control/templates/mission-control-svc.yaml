@@ -8,6 +8,9 @@ metadata:
     component: {{ .Values.missionControl.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    {{- with .Values.missionControl.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- if .Values.missionControl.service.annotations }}
   annotations:
 {{ toYaml .Values.missionControl.service.annotations | indent 4 }}
