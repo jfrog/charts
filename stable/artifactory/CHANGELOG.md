@@ -1,8 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [10.0.10] - Jul 28, 2020
+## [10.0.11] - Jul 28, 2020
 * Added maxConnections for persistent storage type aws-s3-v3.
+
+## [10.0.10] - Jul 28, 2020
+* Bugfix / support for userPluginSecrets with Artifactory 7
 
 ## [10.0.9] - Jul 27, 2020
 * Add tpl to external database secrets
