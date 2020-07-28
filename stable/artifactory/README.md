@@ -1290,6 +1290,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.tomcat.connector.maxThreads`         | The max number of connections to Artifactory connector   | `200` |
 | `artifactory.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Artifactory connector  | `'acceptCount="100"'` |
 | `artifactory.systemYaml`                      | Artifactory system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML  | `see values.yaml`    |
+| `artifactory.affinity` | Artifactory node affinity | `{}` |
 | `access.database.maxOpenConnections`                      | Maximum amount of open connections from Access to the DB  | `80`    |
 | `access.tomcat.connector.maxThreads`         | The max number of connections to Aceess connector   | `50` |
 | `access.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Access connector  | `'acceptCount="100"'` |
