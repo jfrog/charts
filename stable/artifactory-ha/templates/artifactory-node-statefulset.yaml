@@ -109,7 +109,7 @@ spec:
           echo "Sleeping to allow time for primary node to come up";
           sleep {{ .Values.artifactory.node.waitForPrimaryStartup.time }};
           {{- else }}
-          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
+          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "artifactory-ha.scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
             do echo "Primary not ready. Waiting..."; sleep 3;
           done;
           echo "Primary node ready!";
@@ -466,7 +466,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -478,7 +478,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
