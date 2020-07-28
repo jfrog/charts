@@ -17,11 +17,6 @@ initContainers:
 
 imagePullPolicy: IfNotPresent
 
-
-uid: 1050
-gid: 1050
-uname: jfmc
-
 imagePullSecrets:
 
 # For HA
@@ -30,6 +25,68 @@ replicaCount: 1
 shared:
   node:
     id:
+
+common:
+  uid: 1050
+  gid: 1050
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: data-volume
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
 
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -237,36 +294,12 @@ missionControl:
   appContext: mc
   appName: jfmc-server
   home: /var/opt/jfrog/mc
+  labels: {}
 
   # env:
 
   # Set this to true if you want to override credentials in mission-control.properties on startup
   propertyOverride: true
-
-  ## Add custom init containers
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
-  #        name: mission-control-data
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
 
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
@@ -615,10 +648,11 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.4.0
+    version: 1.4.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -632,6 +666,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -644,6 +679,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10

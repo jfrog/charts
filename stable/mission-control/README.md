@@ -250,12 +250,71 @@ View specific log
 kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
 ```
 
+### Custom sidecar containers
+There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
+
+For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
+```yaml
+common:
+  ## Add custom sidecar containers
+  customSidecarContainers: |
+    ## Sidecar containers template goes here ##
+```
+
+### Establishing TLS and Adding certificates
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
+
+
+To add this certificate to mission control, Create a configmaps.yaml file with the following content:
+
+```yaml
+common:
+  configMaps: |
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+        <certificate content>
+      -----END CERTIFICATE-----
+  customVolumeMounts: |
+    - name: mission-control-configmaps
+      mountPath: /tmp/ca.crt
+      subPath: ca.crt
+missionControl:
+  preStartCommand: "mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+router:
+  tlsEnabled: true  
+```
+
+and use it with your helm install/upgrade:
+```bash
+helm upgrade --install mission-control -f configmaps.yaml --namespace mission-control center/jfrog/xray
+```
+
+This will, in turn:
+* Create a configMap with the files you specified above
+* Create a volume pointing to the configMap with the name `mission-control-configmaps`
+* Mount said configMap onto `/tmp` using a `customVolumeMounts`
+* Using preStartCommand copy the `ca.crt` file to distribution trusted keys folder `/etc/security/keys/trusted/ca.crt`
+* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
+
+### Custom volumes
+
+If you need to use a custom volume, you can use this option.
+
+For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
+
+```yaml
+common:
+  ## Add custom volumes
+  customVolumes: |
+    ## Custom volume comes here ##
+```
+
 ### Custom init containers
 There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
 
 For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
 ```
-missionControl:
+common:
   ## Add custom init containers
   customInitContainers: |
     ## Init containers template goes here ##
@@ -266,7 +325,7 @@ There are also cases where you'd like custom files or for your init container to
 
 For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
 ```
-missionControl:
+common:
   ## Add custom volumes
   customVolumes: |
   #  - name: custom-script
@@ -330,6 +389,13 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.slave.nodeSelector`              | PostgreSQL slave node selector                  | `{}`                                  |
 | `postgresql.slave.affinity`                  | PostgreSQL slave node affinity                  | `{}`                                  |
 | `postgresql.slave.tolerations`               | PostgreSQL slave node tolerations               | `[]`                                  |
+| `common.uid`                                 | user id                                         | `1050`                                |
+| `common.gid`                                 | group id                                        | `1050`                                |
+| `common.customInitContainers`                | Custom init containers                          | see [values.yaml](values.yaml)        |
+| `common.customVolumes`                       | Custom Volumes                                  | see [values.yaml](values.yaml)        |
+| `common.customVolumeMounts`                  | Custom Volume Mounts                            | see [values.yaml](values.yaml)        |
+| `common.configMaps`                          | Custom configMaps                               | see [values.yaml](values.yaml)        |
+| `common.customSidecarContainers`             | Custom SidecarContainers                        | see [values.yaml](values.yaml)        |
 | `database.type`                              | External database type (`postgresql`)           | `postgresql`                          |
 | `database.driver`                            | External database driver                        | `org.postgresql.Driver`               |
 | `database.name`                              | External database name                          | `mission_control`                     |
@@ -369,7 +435,6 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.joinKey`                     | MissionControl join Key . Mandatory             | ` `                                   |
 | `missionControl.masterKeySecretName`         | MissionControl Master Key secret name           |                                       |
 | `missionControl.joinKeySecretName`           | MissionControl Join Key secret name             |                                       |
-| `missionControl.customInitContainers`        | Custom init containers                          | ` `                                   |
 | `missionControl.service.annotations`         | Mission Control service annotations             | `{}`                                  |
 | `missionControl.service.type`                | Mission Control service type                    | `ClusterIP`                           |
 | `missionControl.externalPort`                | Mission Control service external port           | `80`                                  |
@@ -381,6 +446,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `missionControl.persistence.accessMode`      | Mission Control persistence volume access mode  | `ReadWriteOnce`                       |
 | `missionControl.persistence.size`            | Mission Control persistence volume size         | `100Gi`                               |
 | `missionControl.preStartCommand`             | Command to run before mission control app starts| ``                                    |
+| `missionControl.labels`                      | Mission Control labels                          | `{}`                                  |
 | `missionControl.javaOpts.other`              | Mission Control JAVA_OPTIONS                    | `-server -XX:+UseG1GC -Dfile.encoding=UTF8` |
 | `missionControl.javaOpts.xms`                | Mission Control JAVA_OPTIONS -Xms               | ` `                                   |
 | `missionControl.resources.requests.memory`   | Mission Control initial memory request          |                                       |
@@ -443,7 +509,11 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightExecutor.loggersResources.requests.cpu`     | Insight Executor loggers initial cpu request    |                              |
 | `insightExecutor.loggersResources.limits.memory`    | Insight Executor loggers memory limit           |                              |
 | `insightExecutor.loggersResources.limits.cpu`       | Insight Executor loggers cpu limit              |                              |
-
+| `router.name`                                | Router name                                            | `router`                        |
+| `router.image.pullPolicy`                    | Container pull policy                                  | `IfNotPresent`                  |
+| `router.image.repository`                    | Container image                                        | `docker.bintray.io/jfrog/router`|
+| `router.image.version`                       | Container image tag                                    | `.Chart.AppVersion`             |
+| `router.tlsEnabled`                          | Enable TLS connection                                  | `false`                         |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 

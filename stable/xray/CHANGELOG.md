@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.1.3] - Jul 28, 2020
+* Add tpl to external database secrets.
+* Modified `scheme`  to `xray.scheme`
+
 ## [4.1.2] - Jul 16, 2020
 * Added support for `common.customSidecarContainers` to create custom sidecar containers
 * Added support for `common.configMaps` to create custom configMaps
