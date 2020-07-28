@@ -46,11 +46,14 @@ xray:
           enabled: {{ .Values.xray.consoleLog }}
       jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.xray.jfrogUrl) . }}"
       database:
+      {{- if .Values.postgresql.enabled }}
         type: "postgresql"
         driver: "org.postgresql.Driver"
-      {{- if .Values.postgresql.enabled }}
         username: "{{ .Values.postgresql.postgresqlUsername }}"
         url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
+      {{- else }}
+        type: {{ .Values.database.type }}
+        driver: {{ .Values.database.driver }}
       {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
@@ -183,6 +186,8 @@ postgresql:
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 database:
+  type: "postgresql"
+  driver: "org.postgresql.Driver"
   ## If you would like this chart to create the secret containing the database url, user, password - use these below values
   url:
   user:
@@ -641,7 +646,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
-        scheme: {{ include "scheme" . | upper }}
+        scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -654,7 +659,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
-        scheme: {{ include "scheme" . | upper }}
+        scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10

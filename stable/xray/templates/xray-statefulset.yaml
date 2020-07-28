@@ -127,6 +127,7 @@ spec:
           - '/bin/sh'
           - '-c'
           - >
+            sleep 10;
           {{- with .Values.common.preStartCommand }}
             echo "Running custom common preStartCommand command";
             {{ tpl . $ }};
