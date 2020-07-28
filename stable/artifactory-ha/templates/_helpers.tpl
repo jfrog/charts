@@ -118,7 +118,7 @@ tls.key: {{ $cert.Key | b64enc }}
 {{/*
 Scheme (http/https) based on Access TLS enabled/disabled
 */}}
-{{- define "scheme" -}}
+{{- define "artifactory-ha.scheme" -}}
 {{- if .Values.access.accessConfig.security.tls -}}
 {{- printf "%s" "https" -}}
 {{- else -}}
