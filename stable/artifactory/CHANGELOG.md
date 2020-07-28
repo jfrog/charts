@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [10.0.9] - Jul 23, 2020
+## [10.0.9] - Jul 27, 2020
 * Added maxConnections for persistent storage type aws-s3-v3.
 
 ## [10.0.8] - Jul 23, 2020
