@@ -616,6 +616,9 @@ artifactory:
               <bucketName>{{ .bucketName }}</bucketName>
               <path>{{ .path }}</path>
               <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .maxConnections }}
+              <maxConnections>{{ . }}</maxConnections>
+            {{- end }}
             {{- with .kmsServerSideEncryptionKeyId }}
               <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
             {{- end }}
@@ -758,6 +761,7 @@ artifactory:
       bucketName: artifactory-aws
       path: artifactory/filestore
       endpoint:
+      maxConnections: 50
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
       kmsCryptoMode:

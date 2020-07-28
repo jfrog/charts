@@ -1369,6 +1369,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3V3.bucketName`        | AWS S3 bucket name               | `artifactory-aws`                      |
 | `artifactory.persistence.awsS3V3.path`                | AWS S3 path in bucket                  | `artifactory/filestore`   |
 | `artifactory.persistence.awsS3V3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
+| `artifactory.persistence.awsS3V3.maxConnections`            | AWS S3 bucket maxConnections                | `50` |
 | `artifactory.persistence.awsS3V3.kmsServerSideEncryptionKeyId`        | AWS S3 encryption key ID or alias  |              |
 | `artifactory.persistence.awsS3V3.kmsKeyRegion`        | AWS S3 KMS Key region  |              |
 | `artifactory.persistence.awsS3V3.kmsCryptoMode`        | AWS S3 KMS encryption mode  | See https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate |
