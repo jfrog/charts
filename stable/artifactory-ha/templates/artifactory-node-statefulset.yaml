@@ -315,10 +315,6 @@ spec:
         - '-c'
         - >
           set -e;
-          {{- if .Values.artifactory.userPluginSecrets }}
-          echo "Copying plugins";
-          cp -Lrf /tmp/plugin/*/* /artifactory_bootstrap/plugins;
-          {{- end }}
         {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
@@ -404,14 +400,6 @@ spec:
         - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
           mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         {{- end }}
-      {{- if .Values.artifactory.userPluginSecrets }}
-        - name: bootstrap-plugins
-          mountPath: "/artifactory_bootstrap/plugins/"
-      {{- range .Values.artifactory.userPluginSecrets }}
-        - name: {{ tpl . $ }}
-          mountPath: "/tmp/plugin/{{ tpl . $ }}"
-      {{- end }}
-      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -627,15 +615,6 @@ spec:
       - name: installer-info
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info
-      {{- if .Values.artifactory.userPluginSecrets }}
-      - name: bootstrap-plugins
-        emptyDir: {}
-      {{- range .Values.artifactory.userPluginSecrets }}
-      - name: {{ tpl . $ }}
-        secret:
-          secretName: {{ tpl . $ }}
-      {{- end }}
-      {{- end }}
       {{- if .Values.artifactory.configMapName }}
       - name: bootstrap-config
         configMap:
