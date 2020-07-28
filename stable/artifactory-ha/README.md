@@ -928,7 +928,7 @@ artifactory-ha: # Name of the artifactory-ha dependency
     userPluginSecrets:
       - '{{ template "my-chart.fullname" . }}'
 ```
-NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
+For additional information, please refer [here](https://www.jfrog.com/confluence/display/JFROG/User+Plugins).
 
 ### Provide custom configMaps to Artifactory
 If you want to mount a custom file to Artifactory, either an init shell script or a custom configuration file (such as `logback.xml`), you can use this option.
