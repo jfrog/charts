@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.12] - Jul 28, 2020
+* Document Artifactory node affinity.
+
 ## [10.0.11] - Jul 28, 2020
 * Added maxConnections for persistent storage type aws-s3-v3.
 
