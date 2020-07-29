@@ -1,8 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [1.4.0] - July 29, 2020
+## [1.3.7] - July 29, 2020
 * Allow overriding default version of pipelines tags with a single value in values.yml
+* add `# version:`  to pipelines:
 
 ## [1.3.6] - Jul 23, 2020
 * Added support for customSidecarContainers, customVolumes, customInitcontainers and configMaps
