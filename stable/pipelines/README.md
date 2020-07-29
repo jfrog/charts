@@ -145,6 +145,9 @@ With Helm v3:
 helm status pipelines --namespace pipelines
 ```
 
+### Pipelines Version
+- By default, the pipelines images will use the value `appVersion` in the Chart.yml. This can be over-ridden by adding `version` to the pipelines section of the values.yml
+
 ### Build Plane
 
 #### Build Plane with static and dynamic node-pool VMs

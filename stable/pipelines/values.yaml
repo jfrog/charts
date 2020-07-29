@@ -34,6 +34,8 @@ securityContext:
 ## Pipelines components
 pipelines:
 
+  # version:
+
   ## Artifactory URL - Mandatory
   jfrogUrl: "update_with_artifactory_url"
   ## Artifactory UI URL - Mandatory
@@ -95,7 +97,7 @@ pipelines:
   api:
     image:
       repository: jfrog/pipelines-api
-      # tag:
+
       pullPolicy: IfNotPresent
 
     service:
@@ -143,7 +145,7 @@ pipelines:
   router:
     image:
       repository: jfrog/pipelines-router
-      # tag:
+
       pullPolicy: IfNotPresent
 
     internalPort: 8046
@@ -162,7 +164,7 @@ pipelines:
   www:
     image:
       repository: jfrog/pipelines-www
-      # tag:
+
       pullPolicy: IfNotPresent
 
     service:
@@ -214,7 +216,7 @@ pipelines:
   pipelineSync:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -228,7 +230,7 @@ pipelines:
   runTrigger:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -242,7 +244,7 @@ pipelines:
   stepTrigger:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -256,7 +258,7 @@ pipelines:
   cron:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -270,7 +272,7 @@ pipelines:
   nexec:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -284,7 +286,7 @@ pipelines:
   hookHandler:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -298,7 +300,7 @@ pipelines:
   marshaller:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -312,7 +314,7 @@ pipelines:
   logup:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -326,7 +328,7 @@ pipelines:
   extensionSync:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -341,7 +343,7 @@ pipelines:
   pipelinesInit:
     image:
       repository: jfrog/pipelines-installer
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -1025,7 +1027,7 @@ vault:
   init:
     image:
       repository: jfrog/pipelines-vault-init
-      # tag:
+
       pullPolicy: IfNotPresent
 
   service:

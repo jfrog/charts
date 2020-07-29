@@ -72,7 +72,7 @@ spec:
             done;
             sleep 10;
         - name: create-vault-table
-          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
@@ -96,7 +96,7 @@ spec:
             subPath: system.yaml
       containers:
         - name: vault-init
-          image: "{{ .Values.imageRegistry }}/{{ .Values.vault.init.image.repository }}:{{ default .Chart.AppVersion .Values.vault.init.image.tag }}"
+          image: "{{ .Values.imageRegistry }}/{{ .Values.vault.init.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.vault.init.image.pullPolicy }}
           env:
             - name: CHECK_INTERVAL
