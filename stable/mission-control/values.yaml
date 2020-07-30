@@ -353,7 +353,7 @@ missionControl:
       logging:
         consoleLog:
           enabled: {{ .Values.missionControl.consoleLog }}
-      jfrogUrl: "{{ required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl }}"
+      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: postgresql
