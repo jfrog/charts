@@ -379,12 +379,12 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
-      {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
       {{- if .Values.pipelines.configMaps }}
       - name: pipelines-configmaps
         configMap:
           name: {{ include "pipelines.fullname" . }}-configmaps
       {{- end }}
+      {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
       - name: buildplane-creds-aws
         secret:
           secretName: {{ include "pipelines.fullname" . }}-dynamic-buildplane-creds-aws
