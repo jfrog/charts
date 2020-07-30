@@ -78,6 +78,7 @@ It's possible to configure the migration timeout with the following configuratio
 artifactory:
   # Migration support from 6.x to 7.x
   migration:
+    enabled: true
     timeoutSeconds: 3600
 ```
 

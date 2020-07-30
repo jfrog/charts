@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.13] - Jul 30, 2020
+* Added condition to disable the migration scripts.
+
 ## [10.0.12] - Jul 28, 2020
 * Document Artifactory node affinity.
 
