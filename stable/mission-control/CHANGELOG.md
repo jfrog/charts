@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [4.2.1] - Jul 30, 2020
-* Fix broken support for External Elasticsearch
+* Fix broken support for External elasticsearch
 * Added tpl support for resolve jfrogUrl
 
 ## [4.2.0] - Jul 27, 2020
