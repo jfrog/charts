@@ -5,7 +5,7 @@ All changes to this chart will be documented in this file.
 * Update postgresql tag version to `12.3.0-debian-10-r71`
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
-* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true
 
 ## [4.1.3] - Jul 28, 2020
 * Add tpl to external database secrets.
