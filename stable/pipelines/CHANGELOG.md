@@ -1,9 +1,6 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [1.4.0] - July 31, 2020
-* Added configmap in vault statefulset
-
 ## [1.3.9] - July 31, 2020
 * Added support for customVolumes, configMaps and customInitcontainers for Vault
 * Added tpl for resolving jfrogUrl 
