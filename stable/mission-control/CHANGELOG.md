@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.2.1] - Jul 30, 2020
+* Fix broken support for External elasticsearch
+* Added tpl support for resolve jfrogUrl
+
 ## [4.2.0] - Jul 27, 2020
 * Added support for `common.customSidecarContainers` to create custom sidecar containers.
 * Added support for `common.configMaps` to create custom configMaps
