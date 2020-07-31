@@ -107,10 +107,10 @@ Set grcp url
 */}}
 {{- define "pipelines.grpc.url" -}}
 {{- if (hasPrefix "https://" .Values.pipelines.jfrogUrl) }}
-{{- printf "%s" .Values.pipelines.jfrogUrl | replace "https://" "" }}
+{{- printf "%s" (tpl .Values.pipelines.jfrogUrl . ) | replace "https://" "" }}
 {{- else if (hasPrefix "http://" .Values.pipelines.jfrogUrl) }}
-{{- printf "%s" .Values.pipelines.jfrogUrl | replace "http://" "" }}
+{{- printf "%s" (tpl .Values.pipelines.jfrogUrl . ) | replace "http://" "" }}
 {{- else }}
-{{- printf "%s" .Values.pipelines.jfrogUrl }}
+{{- printf "%s" (tpl .Values.pipelines.jfrogUrl . ) }}
 {{- end }}
 {{- end -}}
