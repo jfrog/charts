@@ -179,5 +179,5 @@ spec:
         {{- if .Values.vault.configMaps }}
         - name: vault-configmaps
           configMap:
-            name: {{ include "pipelines.fullname" . }}-configmaps
+            name: {{ include "pipelines.vault.name" . }}-configmaps
         {{- end }}
