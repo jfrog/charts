@@ -176,3 +176,8 @@ spec:
         - name: systemyaml
           secret:
             secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
+        {{- if .Values.vault.configMaps }}
+        - name: vault-configmaps
+          configMap:
+            name: {{ include "pipelines.fullname" . }}-configmaps
+        {{- end }}
