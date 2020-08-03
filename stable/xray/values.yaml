@@ -330,7 +330,7 @@ analysis:
 
   livenessProbe:
     enabled: true
-    path: /debug/pprof/
+    path: /api/v1/system/ping
     initialDelaySeconds: 90
     periodSeconds: 10
     timeoutSeconds: 1
@@ -339,7 +339,7 @@ analysis:
 
   readinessProbe:
     enabled: true
-    path: /debug/pprof/
+    path: /api/v1/system/ping
     initialDelaySeconds: 60
     periodSeconds: 10
     timeoutSeconds: 1
@@ -405,7 +405,7 @@ indexer:
 
   livenessProbe:
     enabled: true
-    path: /debug/pprof/
+    path: /api/v1/system/ping
     initialDelaySeconds: 90
     periodSeconds: 10
     timeoutSeconds: 1
@@ -414,7 +414,7 @@ indexer:
 
   readinessProbe:
     enabled: true
-    path: /debug/pprof/
+    path: /api/v1/system/ping
     initialDelaySeconds: 60
     periodSeconds: 10
     timeoutSeconds: 1
@@ -484,7 +484,7 @@ persist:
 
   livenessProbe:
     enabled: true
-    path: /debug/pprof/
+    path: /api/v1/system/ping
     initialDelaySeconds: 90
     periodSeconds: 10
     timeoutSeconds: 1
@@ -493,7 +493,7 @@ persist:
 
   readinessProbe:
     enabled: true
-    path: /debug/pprof/
+    path: /api/v1/system/ping
     initialDelaySeconds: 60
     periodSeconds: 10
     timeoutSeconds: 1
