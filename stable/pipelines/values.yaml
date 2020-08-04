@@ -473,6 +473,8 @@ pipelines:
         externalUrl: ""
         {{- if .Values.postgresql.enabled }}
         connectionString: "{{ tpl (printf "postgres://%s:%s@%s-postgresql:%v/%s" .Values.postgresql.postgresqlUsername .Values.postgresql.postgresqlPassword .Release.Name .Values.postgresql.service.port .Values.postgresql.postgresqlDatabase) . }}"
+        {{- else if and (not .Values.postgresql.enabled) (.Values.global.postgresql.ssl) }}
+        connectionString: "{{ tpl (printf "postgres://%s:%s@%v:%v/%s?ssl=%t" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database .Values.global.postgresql.ssl) . }}"
         {{- else }}
         connectionString: "{{ tpl (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) . }}"
         {{- end }}
@@ -849,6 +851,7 @@ global:
     database: "pipelinesdb"
     user: "apiuser"
     password: ""
+    ssl: false
     ## PostgreSQL password using existing secret
     # existingSecret: secret
 
@@ -1097,7 +1100,7 @@ vault:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
   #        name: pipelines-data
-
+  
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Pipeline logs. It assumes you have a logstash installed and configured properly.
 filebeat:
@@ -1168,15 +1171,20 @@ rbac:
 
 ## The Build Plane is where the actual builds will run
 buildPlane:
-  ## Dynamic Build Plane VMs
+  ## Dynamic Build Plane integration for the initial bootstrapping of the build planes.
+  ## Any required changes post install need to be done in UI: Administration/Pipelines/Integrations
   dynamic:
+    ## customer part is not needed for on-prem install
+    customer:
+      accountId: ""
+      nodePoolName: ""
+      nodelimit: ""
     provider:
       aws:
         enabled: false
         ## Replace the dummy values with the real ones
-        accountId: testaccountid
-        nodePoolName: customer-dynamic-nodepool
-        nodelimit: "5"
+        nodePoolName: "aws-dynamic-node-pool"
+        nodelimit: "3"
         instanceType: c4.xlarge
         securityGroupId: testsecuritygroupId
         subnetId: test-subnetId
@@ -1186,3 +1194,20 @@ buildPlane:
         ##
         accessKey: ""
         secretKey: ""
+        ## Existing secret with AWS keys
+        existingSecret:
+      k8s:
+        enabled: false
+        ## Replace the dummy values with the real ones
+        nodePoolName: "k8s-dynamic-node-pool"
+        nodelimit: "3"
+        cpu: "1"
+        memory: "1000"
+        namespace: default
+        storageClass: standard
+        ## Node Affinity values: {key1:value1,key2:value2}
+        labels:
+        ## Kubernetes node pool kubeconfig base64 encoded
+        kubeconfig: ""
+        ## Existing secret with kubeconfig
+        existingSecret:

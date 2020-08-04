@@ -1,6 +1,12 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.4.0] - Aug 4, 2020
+* Adds support for k8s build plane config
+* Adds support for ssl enabled postgresql
+* Support an existing secret for buildPlanes
+* Add checksum for all secrets and configmaps
+
 ## [1.3.9] - July 31, 2020
 * Added support for customVolumes, configMaps and customInitcontainers for Vault
 * Added tpl for resolving jfrogUrl 
