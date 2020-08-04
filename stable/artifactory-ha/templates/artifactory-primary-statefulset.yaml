@@ -338,6 +338,7 @@ spec:
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
         volumeMounts:
+      {{- if .Values.artifactory.migration.enabled }}
         - name: migration-scripts
           mountPath: "/tmp/migrate.sh"
           subPath: migrate.sh
@@ -347,6 +348,7 @@ spec:
         - name: migration-scripts
           mountPath: "/tmp/migrationStatus.sh"
           subPath: migrationStatus.sh
+      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "file-system" }}

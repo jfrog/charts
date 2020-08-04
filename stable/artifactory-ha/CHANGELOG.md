@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.15] - Aug 4, 2020
+* Added condition to disable the volumeMounts of migration scripts.
+
 ## [3.0.14] - Jul 31, 2020
 * Update the README section on Nginx SSL termination to reflect the actual YAML structure.
 
