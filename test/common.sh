@@ -7,7 +7,7 @@ set -o pipefail
 LOCAL_RUN="${LOCAL_RUN:-""}"
 
 docker_exec() {
-    docker exec --interactive -e HELM_HOST=127.0.0.1:44134 ct "$@"
+    docker exec --interactive ct "$@"
 }
 
 git_fetch() {
