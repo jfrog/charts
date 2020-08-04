@@ -21,7 +21,7 @@ This chart will do the following:
 - A running Kubernetes cluster
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
-- A running Artifactory 7 with Enterprise+ License
+- A running Artifactory 7.7 with Enterprise+ License
   - Precreated repository `jfrogpipelines` in Artifactory type `Generic` with layout `maven-2-default`
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
@@ -156,6 +156,8 @@ To start using Pipelines you need to setup a Build Plane:
 - For Static VMs Node-pool setup, please read [Managing Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-static-node-poolsAdministeringStaticNodePools).
 
 - For Dynamic VMs Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
+
+- For Kubernetes Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
 
 ## Useful links
 
