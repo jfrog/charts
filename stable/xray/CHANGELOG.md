@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [2.4.0] - Aug 3, 2020
+* Update Xray version to 2.16.0 - [Release Notes](https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.16.0)
+* Fixed `livenessProbe.path`, `readinessProbe.path` and updated README.
+
 ## [2.3.0] - Jul 20, 2020
 * Update Xray version to 2.15.0 - https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.15.0
 
