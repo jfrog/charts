@@ -26,6 +26,9 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
+        {{- with .Values.vault.customInitContainers }}
+        {{ tpl . $ | nindent 8 }}
+        {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }} 
@@ -66,7 +69,7 @@ spec:
             {{- if .Values.postgresql.enabled }}
             until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
             {{- else }}
-            until nc -z -w 2 {{ .Values.global.postgresql.host }} {{ .Values.global.postgresql.port }} && echo database ok; do
+            until nc -z -w 2 {{ tpl .Values.global.postgresql.host . }} {{ tpl .Values.global.postgresql.port . }} && echo database ok; do
             {{- end }}
               sleep 2;
             done;
@@ -150,6 +153,9 @@ spec:
           volumeMounts:
             - name: vault-config
               mountPath: /etc/vault/config
+    {{- with .Values.vault.customVolumeMounts }}
+{{ tpl . $ | indent 12 }}
+    {{- end }}
     {{- with .Values.vault.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -163,6 +169,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+        {{- with .Values.vault.customVolumes }}
+{{ tpl . $ | nindent 8 }}
+        {{- end }}
         - name: vault-config
           emptyDir: {}
         - name: jfrog-pipelines-folder
@@ -170,3 +179,8 @@ spec:
         - name: systemyaml
           secret:
             secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
+        {{- if .Values.vault.configMaps }}
+        - name: vault-configmaps
+          configMap:
+            name: {{ include "pipelines.vault.name" . }}-configmaps
+        {{- end }}
