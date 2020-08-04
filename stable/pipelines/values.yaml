@@ -367,6 +367,12 @@ pipelines:
   #    configMap:
   #      name: custom-script
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
   ## Add custom init containers
   customInitContainers: |
   #  - name: "custom-setup"
@@ -1060,12 +1066,24 @@ vault:
         verbs:
         - "*"
 
+  # Add any list of configmaps to vault
   configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
   ## Add custom volumes
   customVolumes: |
   #  - name: custom-script
   #    configMap:
   #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
 
   ## Add custom init containers
   customInitContainers: |

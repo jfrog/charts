@@ -153,6 +153,9 @@ spec:
           volumeMounts:
             - name: vault-config
               mountPath: /etc/vault/config
+    {{- with .Values.vault.customVolumeMounts }}
+{{ tpl . $ | indent 12 }}
+    {{- end }}
     {{- with .Values.vault.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -167,7 +170,7 @@ spec:
     {{- end }}
       volumes:
         {{- with .Values.vault.customVolumes }}
-        {{ tpl . $ | nindent 8 }}
+{{ tpl . $ | nindent 8 }}
         {{- end }}
         - name: vault-config
           emptyDir: {}

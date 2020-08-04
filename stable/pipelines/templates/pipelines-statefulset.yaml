@@ -200,6 +200,9 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+          {{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+          {{- end }}
         - name: www
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.www.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
@@ -227,6 +230,9 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+          {{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | indent 10 }}
+          {{- end }}
         - name: pipelinesync
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelineSync.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
@@ -354,7 +360,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
     {{- with .Values.pipelines.customSidecarContainers }}
-    {{ tpl  . $ | nindent 8 }}
+{{ tpl  . $ | nindent 8 }}
     {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
       nodeSelector:
@@ -370,7 +376,7 @@ spec:
     {{- end }}
       volumes:
       {{- with .Values.pipelines.customVolumes }}
-      {{ tpl . $ | nindent 6 }}
+{{ tpl . $ | nindent 6 }}
       {{- end }}
       - name: jfrog-pipelines-folder
         emptyDir: {}
