@@ -2,6 +2,7 @@
 All changes to this chart to be documented in this file.
 
 ## [1.4.0] - Aug 4, 2020
+* Pipelines v1.7.1
 * Adds support for k8s build plane config
 * Adds support for ssl enabled postgresql
 * Support an existing secret for buildPlanes
