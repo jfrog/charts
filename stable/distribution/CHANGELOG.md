@@ -1,6 +1,12 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.0.0] - Aug 5, 2020
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true
+
 ## [6.1.4] - Jul 29, 2020
 * Added tpl support for resolving jfrogUrl
 
