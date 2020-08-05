@@ -353,7 +353,11 @@ missionControl:
       logging:
         consoleLog:
           enabled: {{ .Values.missionControl.consoleLog }}
-      jfrogUrl: "{{ required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl }}"
+      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl) . }}"
+      elasticsearch:
+        username: {{ .Values.elasticsearch.username }}
+        password: {{ .Values.elasticsearch.password }}
+        url: {{ .Values.elasticsearch.url }}
       database:
       {{- if .Values.postgresql.enabled }}
         type: postgresql
@@ -387,7 +391,6 @@ missionControl:
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfscSchema }}
-
       extraJavaOpts: >
       {{- with .Values.insightScheduler.javaOpts }}
       {{- if .xms }}
@@ -400,12 +403,10 @@ missionControl:
         {{ .other }}
       {{- end }}
       {{- end }}
-
     insight-executor:
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfexSchema }}
-
       extraJavaOpts: >
       {{- with .Values.insightExecutor.javaOpts }}
       {{- if .xms }}
@@ -418,7 +419,6 @@ missionControl:
         {{ .other }}
       {{- end }}
       {{- end }}
-
     insight:
       database:
         username: {{ .Values.postgresql.db.user }}

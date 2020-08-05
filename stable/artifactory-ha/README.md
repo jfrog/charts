@@ -1057,10 +1057,10 @@ For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
 In order to do that, simply add the following to a `artifactory-ssl-values.yaml` file:
 ```yaml
   nginx:
-    ssloffload: true
     https:
       enabled: false
     service:
+      ssloffload: true
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx"
         service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"

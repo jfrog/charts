@@ -927,16 +927,16 @@ and use it with you helm install/upgrade:
 helm upgrade --install artifactory -f filebeat.yaml --namespace artifactory center/jfrog/artifactory
 ```
 
-### Install Artifactory HA with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+### Install Artifactory with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
 To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx
 For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
 In order to do that, simply add the following to a `artifactory-ssl-values.yaml` file:
 ```yaml
   nginx:
-    ssloffload: true
     https:
       enabled: false
     service:
+      ssloffload: true
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx"
         service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
