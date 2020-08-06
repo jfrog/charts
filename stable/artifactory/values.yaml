@@ -408,7 +408,6 @@ artifactory:
         {{- if .Values.postgresql.enabled }}
         type: postgresql
         url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
-        host: ""
         driver: org.postgresql.Driver
         username: "{{ .Values.postgresql.postgresqlUsername }}"
         {{- else }}
@@ -617,6 +616,9 @@ artifactory:
               <bucketName>{{ .bucketName }}</bucketName>
               <path>{{ .path }}</path>
               <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .maxConnections }}
+              <maxConnections>{{ . }}</maxConnections>
+            {{- end }}
             {{- with .kmsServerSideEncryptionKeyId }}
               <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
             {{- end }}
@@ -759,6 +761,7 @@ artifactory:
       bucketName: artifactory-aws
       path: artifactory/filestore
       endpoint:
+      maxConnections: 50
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
       kmsCryptoMode:
@@ -1028,7 +1031,7 @@ nginx:
         proxy_read_timeout  900;
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
-        proxy_pass          {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        proxy_pass          {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
         {{- if .Values.nginx.service.ssloffload}}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
         {{- else }}
@@ -1041,9 +1044,9 @@ nginx:
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass       {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+            proxy_pass       {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
           }
-          proxy_pass         {{ include "scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+          proxy_pass         {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
         }
       }
     }

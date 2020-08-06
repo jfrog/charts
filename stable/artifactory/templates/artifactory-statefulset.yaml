@@ -329,7 +329,7 @@ spec:
           {{- end }}
           {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
-          cp -Lrf /tmp/plugin/*/* /tmp/plugins;
+          cp -Lrf /tmp/plugin/*/* /artifactory_bootstrap/plugins;
           {{- end }}
           {{- range .Values.artifactory.copyOnEveryStartup }}
           {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
@@ -407,8 +407,8 @@ spec:
         {{- end }}
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}
-        - name: tmp-plugins
-          mountPath: "/tmp/plugins/"
+        - name: bootstrap-plugins
+          mountPath: "/artifactory_bootstrap/plugins/"
       {{- range .Values.artifactory.userPluginSecrets }}
         - name: {{ tpl . $ }}
           mountPath: "/tmp/plugin/{{ tpl . $ }}"
@@ -451,7 +451,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -463,7 +463,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
@@ -565,7 +565,7 @@ spec:
         configMap:
           name: {{ template "artifactory.fullname" . }}-installer-info
       {{- if .Values.artifactory.userPluginSecrets }}
-      - name: tmp-plugins
+      - name: bootstrap-plugins
         emptyDir: {}
       {{- range .Values.artifactory.userPluginSecrets }}
       - name: {{ tpl . $ }}

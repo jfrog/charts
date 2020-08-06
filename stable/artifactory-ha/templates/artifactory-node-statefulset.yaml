@@ -109,7 +109,7 @@ spec:
           echo "Sleeping to allow time for primary node to come up";
           sleep {{ .Values.artifactory.node.waitForPrimaryStartup.time }};
           {{- else }}
-          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
+          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "artifactory-ha.scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
             do echo "Primary not ready. Waiting..."; sleep 3;
           done;
           echo "Primary node ready!";
@@ -315,10 +315,6 @@ spec:
         - '-c'
         - >
           set -e;
-          {{- if .Values.artifactory.userPluginSecrets }}
-          echo "Copying plugins";
-          cp -Lrf /tmp/plugin/*/* /tmp/plugins;
-          {{- end }}
         {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
@@ -404,14 +400,6 @@ spec:
         - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
           mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         {{- end }}
-      {{- if .Values.artifactory.userPluginSecrets }}
-        - name: tmp-plugins
-          mountPath: "/tmp/plugins/"
-      {{- range .Values.artifactory.userPluginSecrets }}
-        - name: {{ tpl . $ }}
-          mountPath: "/tmp/plugin/{{ tpl . $ }}"
-      {{- end }}
-      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -466,7 +454,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -478,7 +466,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
-            scheme: {{ include "scheme" . | upper }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
@@ -627,15 +615,6 @@ spec:
       - name: installer-info
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info
-      {{- if .Values.artifactory.userPluginSecrets }}
-      - name: tmp-plugins
-        emptyDir: {}
-      {{- range .Values.artifactory.userPluginSecrets }}
-      - name: {{ tpl . $ }}
-        secret:
-          secretName: {{ tpl . $ }}
-      {{- end }}
-      {{- end }}
       {{- if .Values.artifactory.configMapName }}
       - name: bootstrap-config
         configMap:

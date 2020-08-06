@@ -34,6 +34,8 @@ securityContext:
 ## Pipelines components
 pipelines:
 
+  # version:
+
   ## Artifactory URL - Mandatory
   jfrogUrl: "update_with_artifactory_url"
   ## Artifactory UI URL - Mandatory
@@ -95,7 +97,7 @@ pipelines:
   api:
     image:
       repository: jfrog/pipelines-api
-      # tag:
+
       pullPolicy: IfNotPresent
 
     service:
@@ -143,7 +145,7 @@ pipelines:
   router:
     image:
       repository: jfrog/pipelines-router
-      # tag:
+
       pullPolicy: IfNotPresent
 
     internalPort: 8046
@@ -162,7 +164,7 @@ pipelines:
   www:
     image:
       repository: jfrog/pipelines-www
-      # tag:
+
       pullPolicy: IfNotPresent
 
     service:
@@ -214,7 +216,7 @@ pipelines:
   pipelineSync:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -228,7 +230,7 @@ pipelines:
   runTrigger:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -242,7 +244,7 @@ pipelines:
   stepTrigger:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -256,7 +258,7 @@ pipelines:
   cron:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -270,7 +272,7 @@ pipelines:
   nexec:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -284,7 +286,7 @@ pipelines:
   hookHandler:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -298,7 +300,7 @@ pipelines:
   marshaller:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -312,7 +314,7 @@ pipelines:
   logup:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -326,7 +328,7 @@ pipelines:
   extensionSync:
     image:
       repository: jfrog/pipelines-micro
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -341,7 +343,7 @@ pipelines:
   pipelinesInit:
     image:
       repository: jfrog/pipelines-installer
-      # tag:
+
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -364,6 +366,12 @@ pipelines:
   #  - name: custom-script
   #    configMap:
   #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
 
   ## Add custom init containers
   customInitContainers: |
@@ -411,10 +419,10 @@ pipelines:
       artifactory:
         ## Artifactory URL
         ##
-        baseUrl: "{{ required "\n\npipelines.jfrogUrl is required!\n" .Values.pipelines.jfrogUrl }}"
+        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl is required!\n" .Values.pipelines.jfrogUrl) . }}"
         ## Unified UI URL
         ##
-        baseUrlUI: "{{ required "\n\npipelines.jfrogUrlUI is required!\n" .Values.pipelines.jfrogUrlUI }}"
+        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI is required!\n" .Values.pipelines.jfrogUrlUI) . }}"
         ## Pipelines Service ID
         ##
         serviceId: "{{ .Values.pipelines.serviceId }}"
@@ -448,13 +456,13 @@ pipelines:
       db:
         type: "postgres"
         {{- if .Values.postgresql.enabled }}
-        ip: {{ .Release.Name }}-postgresql
+        ip: {{ tpl .Release.Name . }}-postgresql
         port: "{{ .Values.postgresql.service.port }}"
         name: {{ .Values.postgresql.postgresqlDatabase }}
         username: {{ .Values.postgresql.postgresqlUsername }}
         password: {{ .Values.postgresql.postgresqlPassword }}
         {{- else }}
-        ip: {{ .Values.global.postgresql.host }}
+        ip: {{ tpl .Values.global.postgresql.host . }}
         port: "{{ .Values.global.postgresql.port }}"
         name: {{ .Values.global.postgresql.database }}
         username: {{ .Values.global.postgresql.user }}
@@ -464,9 +472,9 @@ pipelines:
         version: 9.5
         externalUrl: ""
         {{- if .Values.postgresql.enabled }}
-        connectionString: "{{ (printf "postgres://%s:%s@%s-postgresql:%v/%s" .Values.postgresql.postgresqlUsername .Values.postgresql.postgresqlPassword .Release.Name .Values.postgresql.service.port .Values.postgresql.postgresqlDatabase) }}"
+        connectionString: "{{ tpl (printf "postgres://%s:%s@%s-postgresql:%v/%s" .Values.postgresql.postgresqlUsername .Values.postgresql.postgresqlPassword .Release.Name .Values.postgresql.service.port .Values.postgresql.postgresqlDatabase) . }}"
         {{- else }}
-        connectionString: "{{ (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) }}"
+        connectionString: "{{ tpl (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) . }}"
         {{- end }}
 
       ## RabbitMQ configuration
@@ -523,7 +531,7 @@ pipelines:
           {{- else if (and .Values.rabbitmq.serviceVmLb.enabled .Values.rabbitmq.serviceVmLb.loadBalancerIP) }}
           url: amqp://{{ .Values.rabbitmq.serviceVmLb.loadBalancerIP }}
           {{- else if .Values.rabbitmq.enabled }}
-          url: amqp://{{ .Release.Name }}-rabbitmq
+          url: amqp://{{ tpl .Release.Name . }}-rabbitmq
           {{- else }}
           url: amqps://{{ .Values.rabbitmq.msg_hostname }}:{{ .Values.rabbitmq.port }}
           {{- end }}
@@ -582,8 +590,8 @@ pipelines:
       group: ""
       noVerifySsl: false
       ignoreTLSErrors: false
-      controlplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
-      buildplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.pipelinesInit.image.tag }}"
+      controlplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.version }}"
+      buildplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.version }}"
       accessControlAllowOrigins:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
@@ -1025,7 +1033,7 @@ vault:
   init:
     image:
       repository: jfrog/pipelines-vault-init
-      # tag:
+
       pullPolicy: IfNotPresent
 
   service:
@@ -1057,6 +1065,38 @@ vault:
         - secrets
         verbs:
         - "*"
+
+  # Add any list of configmaps to vault
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  ## Add custom init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: pipelines-data
 
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Pipeline logs. It assumes you have a logstash installed and configured properly.

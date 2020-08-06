@@ -78,6 +78,7 @@ It's possible to configure the migration timeout with the following configuratio
 artifactory:
   # Migration support from 6.x to 7.x
   migration:
+    enabled: true
     timeoutSeconds: 3600
 ```
 
@@ -806,7 +807,7 @@ artifactory: # Name of the artifactory dependency
     userPluginSecrets:
       - '{{ template "my-chart.fullname" . }}'
 ```
-NOTE: By defining userPluginSecrets, this overrides any pre-defined plugins from the container image that are stored in /tmp/plugins.  At this time [artifactory-pro:6.9.0](https://bintray.com/jfrog/artifactory-pro) is distributed with `internalUser.groovy` plugin.  If you need this plugin in addition to your user plugins, you should include these additional plugins as part of your userPluginSecrets.
+For additional information, please refer [here](https://www.jfrog.com/confluence/display/JFROG/User+Plugins).
 
 ### Provide custom configMaps to Artifactory
 If you want to mount a custom file to Artifactory, either an init shell script or a custom configuration file (such as `logback.xml`), you can use this option.
@@ -926,16 +927,16 @@ and use it with you helm install/upgrade:
 helm upgrade --install artifactory -f filebeat.yaml --namespace artifactory center/jfrog/artifactory
 ```
 
-### Install Artifactory HA with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
+### Install Artifactory with Nginx and Terminate SSL in Nginx Service(LoadBalancer).
 To install the helm chart with performing SSL offload in the LoadBalancer layer of Nginx
 For Ex: Using AWS ACM certificates to do SSL offload in the loadbalancer layer.
 In order to do that, simply add the following to a `artifactory-ssl-values.yaml` file:
 ```yaml
   nginx:
-    ssloffload: true
     https:
       enabled: false
     service:
+      ssloffload: true
       annotations:
         service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:xx-xxxx:xxxxxxxx:certificate/xxxxxxxxxxxxx"
         service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
@@ -1252,6 +1253,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3V3.bucketName`        | AWS S3 bucket name               | `artifactory-aws`                      |
 | `artifactory.persistence.awsS3V3.path`                | AWS S3 path in bucket                  | `artifactory/filestore`   |
 | `artifactory.persistence.awsS3V3.endpoint`            | AWS S3 bucket endpoint                 | See https://docs.aws.amazon.com/general/latest/gr/rande.html |
+| `artifactory.persistence.awsS3V3.maxConnections`            | AWS S3 bucket maxConnections                | `50` |
 | `artifactory.persistence.awsS3V3.kmsServerSideEncryptionKeyId`        | AWS S3 encryption key ID or alias  |              |
 | `artifactory.persistence.awsS3V3.kmsKeyRegion`        | AWS S3 KMS Key region  |              |
 | `artifactory.persistence.awsS3V3.kmsCryptoMode`        | AWS S3 KMS encryption mode  | See https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate |
@@ -1289,6 +1291,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.tomcat.connector.maxThreads`         | The max number of connections to Artifactory connector   | `200` |
 | `artifactory.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Artifactory connector  | `'acceptCount="100"'` |
 | `artifactory.systemYaml`                      | Artifactory system configuration (`system.yaml`) as described here - https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML  | `see values.yaml`    |
+| `artifactory.affinity` | Artifactory node affinity | `{}` |
 | `access.database.maxOpenConnections`                      | Maximum amount of open connections from Access to the DB  | `80`    |
 | `access.tomcat.connector.maxThreads`         | The max number of connections to Aceess connector   | `50` |
 | `access.tomcat.connector.extraConfig`         | The max queue length for incoming connections to Access connector  | `'acceptCount="100"'` |

@@ -117,7 +117,7 @@ spec:
           done;
       {{- end }}
     {{- if .Values.common.customInitContainers }}
-      {{ tpl .Values.common.customInitContainers . | indent 6 }}
+{{ tpl .Values.common.customInitContainers . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
@@ -127,6 +127,7 @@ spec:
           - '/bin/sh'
           - '-c'
           - >
+            sleep 10;
           {{- with .Values.common.preStartCommand }}
             echo "Running custom common preStartCommand command";
             {{ tpl . $ }};

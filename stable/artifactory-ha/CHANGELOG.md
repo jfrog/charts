@@ -1,6 +1,25 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.14] - Jul 31, 2020
+* Update the README section on Nginx SSL termination to reflect the actual YAML structure.
+
+## [3.0.13] - Jul 30, 2020
+* Added condition to disable the migration scripts.
+
+## [3.0.12] - Jul 29, 2020
+* Document Artifactory node affinity.
+
+## [3.0.11] - Jul 28, 2020
+* Added maxConnections for persistent storage type aws-s3-v3.
+
+## [3.0.10] - Jul 28, 2020
+Bugfix / support for userPluginSecrets with Artifactory 7
+
+## [3.0.9] - Jul 27, 2020
+* Add tpl to external database secrets.
+* Modified `scheme`  to `artifactory-ha.scheme`
+
 ## [3.0.8] - Jul 23, 2020
 * Added condition to disable the migration init container.
 

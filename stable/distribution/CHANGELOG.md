@@ -1,8 +1,15 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [6.1.3] - Jul 1, 2020
+
+## [6.1.5] - Aug 6, 2020
 * Update redis tag version to `6.0.5-debian-10-r22`
+
+## [6.1.4] - Jul 29, 2020
+* Added tpl support for resolving jfrogUrl
+
+## [6.1.3] - Jul 27, 2020
+* Update Distribution to version `2.4.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.4.1)
 
 ## [6.1.2] - Jul 20, 2020
 * Added support for `common.customSidecarContainers` to create custom sidecar containers
