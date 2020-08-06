@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.3.10] - August 5, 2020
+* have controlplane and buildplane pull versions from global version override as specified in 1.3.7
+
 ## [1.3.9] - July 31, 2020
 * Added support for customVolumes, configMaps and customInitcontainers for Vault
 * Added tpl for resolving jfrogUrl 
