@@ -1,7 +1,6 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-
 ## [6.1.5] - Aug 6, 2020
 * Update redis tag version to `6.0.5-debian-10-r22`
 
