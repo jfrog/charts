@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.3.11] - August 6, 2020
+* Fix external PG port
+
 ## [1.3.10] - August 5, 2020
 * have controlplane and buildplane pull versions from global version override as specified in 1.3.7
 
