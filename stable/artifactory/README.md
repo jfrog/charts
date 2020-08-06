@@ -24,6 +24,7 @@ Before installing JFrog helm charts, you need to add the [ChartCenter helm repos
 helm repo add center https://repo.chartcenter.io
 ```
 ### Updating Helm Repository
+
 ```helm repo update
 ```
 
@@ -82,9 +83,7 @@ helm upgrade --install artifactory -f values.yaml --namespace artifactory center
 Updating the license should be done via Artifactory UI or REST API.
 If you want to keep managing the artifactory license using the same method, you can use the copyOnEveryStartup example shown in the values.yaml file
 
-## Uninstalling 
-
-## Deleting Artifactory
+## Uninstalling the Chart
 
 On helm v2:
 ```bash
