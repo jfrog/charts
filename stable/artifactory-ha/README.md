@@ -334,6 +334,13 @@ Use this template if you want to attach an IAM role to the Artifactory pod direc
 ...
 ```
 
+To enable [Direct Cloud Storage Download](https://www.jfrog.com/confluence/display/JFROG/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-1.ConfiguretheArtifactoryFilestore)
+```bash
+...
+--set artifactory.persistence.awsS3V3.enableSignedUrlRedirect=true \
+...
+```
+
 #### Microsoft Azure Blob Storage
 To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider)
 - Pass Azure Blob Storage parameters to `helm install` and `helm upgrade`

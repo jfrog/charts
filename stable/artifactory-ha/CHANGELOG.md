@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [3.0.15] - Jul 28, 2020
+## [3.0.15] - Aug 10, 2020
 * Added enableSignedUrlRedirect for persistent storage type aws-s3-v3.
 
 ## [3.0.14] - Jul 31, 2020
