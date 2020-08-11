@@ -493,7 +493,7 @@ pipelines:
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
         {{- else }}
-        ip: {{ .Values.rabbitmq.internal_ip }}
+        ip: {{ tpl .Values.rabbitmq.internal_ip . }}
         port: {{ .Values.rabbitmq.port}}
         adminPort: {{ .Values.rabbitmq.manager_port }}
         erlangCookie: {{ .Values.rabbitmq.erlang_cookie }}
@@ -502,7 +502,7 @@ pipelines:
         defaultExchange: {{ .Values.rabbitmq.root_vhost_exchange_name }}
         amqpVhost: {{ .Values.rabbitmq.build_vhost_name}}
         amqpRootVhost: {{ .Values.rabbitmq.root_vhost_name }}
-        protocol: amqps
+        protocol: amqp
         {{- end }}
         queues:
           - "core.pipelineSync"
@@ -533,7 +533,7 @@ pipelines:
           {{- else if .Values.rabbitmq.enabled }}
           url: amqp://{{ tpl .Release.Name . }}-rabbitmq
           {{- else }}
-          url: amqps://{{ .Values.rabbitmq.msg_hostname }}:{{ .Values.rabbitmq.port }}
+          url: amqp://{{ tpl .Values.rabbitmq.msg_hostname . }}:{{ .Values.rabbitmq.port }}
           {{- end }}
           rootUrl: ""
           adminUrl: ""

@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [1.3.12] - August 11, 2020
+* Enabled support for using external rabbitmq.
+
 ## [1.3.11] - August 6, 2020
 * Fix external PG port
 
