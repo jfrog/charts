@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.1.4] - Aug 11, 2020
+* Added support for using external rabbitmq.
+
 ## [4.1.3] - Jul 28, 2020
 * Add tpl to external database secrets.
 * Modified `scheme`  to `xray.scheme`

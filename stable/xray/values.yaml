@@ -61,6 +61,14 @@ xray:
         username: "{{ .Values.xray.mongoUsername }}"
         password: "{{ .Values.xray.mongoPassword }}"
       {{- end }}
+      {{- if not .Values.rabbitmq.enabled }}
+      rabbitMq:
+        url: "{{ tpl .Values.rabbitmq.external.url . }}"
+        username: "{{ .Values.rabbitmq.external.username }}"
+        password: "{{ .Values.rabbitmq.external.password }}"
+        erlangCookie:
+          value: "{{ .Values.rabbitmq.external.erlang_cookie }}"
+      {{- end }}
     server:
       mailServer: "{{ .Values.server.mailServer }}"
       indexAllBuilds: "{{ .Values.server.indexAllBuilds }}"
