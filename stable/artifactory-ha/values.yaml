@@ -807,6 +807,9 @@ artifactory:
             {{- with .cloudFrontPrivateKey }}
               <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
             {{- end }}
+            {{- with .enableSignedUrlRedirect }}
+              <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
+            {{- end }}
           </provider>
         {{- end }}
       </config>
@@ -1011,6 +1014,7 @@ artifactory:
       cloudFrontDomainName:
       cloudFrontKeyPairId:
       cloudFrontPrivateKey:
+      enableSignedUrlRedirect: false
 
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html

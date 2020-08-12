@@ -69,7 +69,7 @@ spec:
             {{- if .Values.postgresql.enabled }}
             until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
             {{- else }}
-            until nc -z -w 2 {{ tpl .Values.global.postgresql.host . }} {{ tpl .Values.global.postgresql.port . }} && echo database ok; do
+            until nc -z -w 2 {{ tpl .Values.global.postgresql.host . }} {{ .Values.global.postgresql.port }} && echo database ok; do
             {{- end }}
               sleep 2;
             done;

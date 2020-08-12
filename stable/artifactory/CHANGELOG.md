@@ -1,12 +1,15 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.0.0] - Aug 5, 2020
+## [11.0.0] - Aug 12, 2020
 * Update postgresql tag version to `12.3.0-debian-10-r71`
 * Update postgresql chart version to `9.1.2` in requirements.yaml - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true
+
+## [10.0.15] - Aug 10, 2020
+* Added enableSignedUrlRedirect for persistent storage type aws-s3-v3.
 
 ## [10.0.14] - Jul 31, 2020
 * Update the README section on Nginx SSL termination to reflect the actual YAML structure.
