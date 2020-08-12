@@ -1,9 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.3.0] -  Aug 11, 2020
-* Update Mission Control version to 4.5.0.
-* Removed insight executor service.
+## [4.3.0] -  Aug 12, 2020
+* Update Mission Control version to 4.5.0
+* **IMPORTANT**
+* Removed insight executor service
 
 ## [4.2.1] - Jul 30, 2020
 * Fix broken support for External elasticsearch
