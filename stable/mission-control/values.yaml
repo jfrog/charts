@@ -171,7 +171,6 @@ postgresql:
     jfmcSchema: jfmc_server
     jfisSchema: insight_server
     jfscSchema: insight_scheduler
-    jfexSchema: insight_executor
   service:
     port: 5432
   persistence:
@@ -204,7 +203,6 @@ database:
   jfisSchema: insight_server
   jfmcSchema: jfmc_server
   jfscSchema: insight_scheduler
-  jfexSchema: insight_executor
   ## Use single user and password for all the services
   user:
   password:
@@ -403,23 +401,8 @@ missionControl:
         {{ .other }}
       {{- end }}
       {{- end }}
-    insight-executor:
-      database:
-        username: {{ .Values.postgresql.db.user }}
-        schema: {{ .Values.postgresql.db.jfexSchema }}
-      extraJavaOpts: >
-      {{- with .Values.insightExecutor.javaOpts }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
-    insight:
+
+    insight-server:
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfisSchema }}
@@ -575,64 +558,6 @@ insightScheduler:
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
   # - insight-scheduler.log
-  # - access.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
-
-insightExecutor:
-  name: insight-executor
-  ## Note that by default we use appVersion to get image tag/version
-  image:
-    repository: docker.bintray.io/jfrog/insight-executor
-    # version:
-  appContext: insight-executor
-  home: /opt/jfrog
-  internalPort: 8087
-
-  ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
-  ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts: {}
-  #  other:
-  #  xms: "500m"
-  #  xmx: "2g"
-  resources: {}
-  #  requests:
-  #    memory: "500Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2.5Gi"
-  #    cpu: "1"
-
-  # Persistence for the logs
-  persistence:
-    enabled: false
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    mountPath: "/var/opt/jfrog/mc"
-    accessMode: ReadWriteOnce
-    size: 10Gi
-    ## Insight Executor logs Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-
-  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
-  # - insight-executor.log
   # - access.log
 
   # Loggers containers resources
