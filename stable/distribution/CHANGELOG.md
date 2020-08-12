@@ -1,8 +1,8 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [6.1.5] - Aug 6, 2020
-* Update redis tag version to `6.0.5-debian-10-r22`
+## [6.1.5] - Aug 12, 2020
+* Update redis tag version to `6.0.6-debian-10-r12`
 
 ## [6.1.4] - Jul 29, 2020
 * Added tpl support for resolving jfrogUrl
