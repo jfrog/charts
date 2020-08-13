@@ -195,6 +195,7 @@ One option is to create your own [Secret](https://kubernetes.io/docs/concepts/co
 ```bash
 # Create the Kubernetes secret from the file you created earlier.
 # IMPORTANT: The file must be called "gcp.credentials.json" because this is used later as the secret key!
+# (The secret key can be overridden by artifactory.persistence.googleStorage.customSecretKey)
 kubectl create secret generic artifactory-gcp-creds --from-file=./gcp.credentials.json
 ```
 Set this secret in your custom `values.yaml`
