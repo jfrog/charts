@@ -1029,6 +1029,9 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.googleStorage.bucketName`  | Google Storage bucket name          | `artifactory`             |
 | `artifactory.persistence.googleStorage.identity`    | Google Storage service account id   |                              |
 | `artifactory.persistence.googleStorage.credential`  | Google Storage service account key  |                              |
+| `artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName`  | Google Storage service account secret name  |                              |
+| `artifactory.persistence.googleStorage.gcpServiceAccount.customSecretKey`   | Google Storage service account secret key   |   `gcp.credential.json`      
+| `artifactory.persistence.googleStorage.gcpServiceAccount.config`   | Google Storage service account key json   |                         |
 | `artifactory.persistence.googleStorage.path`        | Google Storage path in bucket       | `artifactory/filestore`   |
 | `artifactory.persistence.googleStorage.bucketExists`| Google Storage bucket exists therefore does not need to be created.| `false`             |
 | `artifactory.persistence.awsS3.bucketName`          | AWS S3 bucket name                     | `artifactory-aws`             |
