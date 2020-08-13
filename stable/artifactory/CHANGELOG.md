@@ -1,8 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [10.0.16] - Jun 11, 2020
+## [10.1.1] - Aug 13, 2020
 * Support GCP credentials.json authentication
+
+## [10.1.0] - Aug 13, 2020
+* Updated Artifactory version to 7.7.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7)
 
 ## [10.0.15] - Aug 10, 2020
 * Added enableSignedUrlRedirect for persistent storage type aws-s3-v3.

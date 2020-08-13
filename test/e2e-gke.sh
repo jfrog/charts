@@ -40,7 +40,6 @@ main() {
     trap cleanup EXIT
 
     connect_to_cluster
-    install_tiller
     install_charts
 }
 

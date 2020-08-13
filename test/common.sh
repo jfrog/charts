@@ -7,17 +7,7 @@ set -o pipefail
 LOCAL_RUN="${LOCAL_RUN:-""}"
 
 docker_exec() {
-    docker exec --interactive -e HELM_HOST=127.0.0.1:44134 -e HELM_TILLER_SILENT=true ct "$@"
-}
-
-install_tiller() {
-     docker_exec apk add bash
-     echo "Install Tillerless Helm plugin..."
-     docker_exec helm init --client-only
-     docker_exec helm plugin install https://github.com/rimusz/helm-tiller
-     docker_exec bash -c 'echo "Starting Tiller..."; helm tiller start-ci >/dev/null 2>&1 &'
-     docker_exec bash -c 'echo "Waiting Tiller to launch on 44134..."; while ! nc -z localhost 44134; do sleep 1; done; echo "Tiller launched..."'
-     echo
+    docker exec --interactive ct "$@"
 }
 
 git_fetch() {
@@ -59,10 +49,11 @@ install_helm() {
     then
         echo "Local run, not downloading helm cli..."
     else
-        echo "CI run, downloading helm cli..."
-        curl -s https://raw.githubusercontent.com/helm/helm/master/scripts/get > tmp/get_helm.sh \
-        && chmod 700 tmp/get_helm.sh \
-        && sudo tmp/get_helm.sh
+        echo "Install Helm ${HELM_VERSION} cli"
+        curl -s -O https://get.helm.sh/helm-"${HELM_VERSION}"-linux-amd64.tar.gz
+        tar -zxvf helm-"${HELM_VERSION}"-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
+        cp -f /usr/local/bin/helm /usr/local/bin/helm
+        echo
     fi
 }
 
