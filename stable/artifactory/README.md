@@ -201,17 +201,19 @@ Set this secret in your custom `values.yaml`
 ```bash
 artifactory:
   persistence:
-    googleStorage
+    type: google-storage
+    googleStorage:
       gcpServiceAccount:
         enabled: true
         customSecretName: artifactory-gcp-creds
 ```
 
-Another option is to put your generated config directly in your custom `values.yaml` and the a secret will be created from it
+Another option is to put your generated config directly in your custom `values.yaml` and the secret will be created from it
 ```
 artifactory:
   persistence:
-    googleStorage
+    type: google-storage
+    googleStorage:
       gcpServiceAccount:
         enabled: true
         config: |
