@@ -257,7 +257,7 @@ spec:
       {{- end }}
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
         - name: gcpcreds-json
-          mountPath: "/artifactory_bootstrap/{{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretKey }}"
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
           subPath: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretKey }}
       {{- end }}
       {{- if .Values.artifactory.customVolumeMounts }}
@@ -389,7 +389,7 @@ spec:
           subPath: installer-info.json
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
         - name: gcpcreds-json
-          mountPath: "/artifactory_bootstrap/{{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretKey }}"
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json}"
           subPath: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretKey }}
       {{- end }}
       {{- if .Values.artifactory.customVolumeMounts }}
