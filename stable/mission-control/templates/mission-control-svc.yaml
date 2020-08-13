@@ -26,6 +26,9 @@ spec:
   - name: estransport
     port: {{ .Values.elasticsearch.transportPort }}
     targetPort: estransport
+  - name: eshttp
+    port: {{ .Values.elasticsearch.httpPort }}
+    targetPort: eshttp
 {{- end }}
   publishNotReadyAddresses: true
   selector:

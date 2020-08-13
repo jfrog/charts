@@ -1,7 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.3.0] -  Aug 12, 2020
+## [4.3.1] - Aug 13, 2020
+* Expose Elasticsearch HTTP port with the mission control service
+
+## [4.3.0] - Aug 12, 2020
 * Update Mission Control version to 4.5.0
 * **IMPORTANT**
 * Removed insight executor service
