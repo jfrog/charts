@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.11"
+initContainerImage: docker.bintray.io/alpine:3.12
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -78,7 +78,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 10.13.0-debian-10-r38
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -129,7 +129,6 @@ database:
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
 redis:
-  name: redis
   image:
     repository: docker.bintray.io/bitnami/redis
     tag: 5.0.9-debian-10-r31
@@ -173,10 +172,62 @@ common:
   #    configMap:
   #      name: custom-script
 
+    ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps to distribution
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: distribution-data
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
 logger:
   image:
-    repository: "busybox"
-    tag: "1.30"
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 distribution:
   name: distribution
@@ -205,14 +256,11 @@ distribution:
   ## Artifactory URL . Mandatory
   jfrogUrl:
 
+  ## Migration support from 1.x to 2.x app versions
+  migration:
+    enabled: false
+
   serviceId:
-  env:
-    artifactoryUrl:
-    btServerUrl:
-    artifactoryCi1Url:
-    artifactoryEdge1Url:
-    artifactoryEdge2Url:
-    artifactoryEdge3Url:
 
   ## Extra environment variables that can be used to tune Distribution to your needs.
   ## Uncomment and set value as needed
@@ -225,7 +273,7 @@ distribution:
       logging:
         consoleLog:
           enabled: {{ .Values.distribution.consoleLog }}
-      jfrogUrl: "{{ required "\n\ndistribution.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.distribution.jfrogUrl }}"
+      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.distribution.jfrogUrl) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
@@ -236,22 +284,35 @@ distribution:
         type: "{{ .Values.database.type }}"
         driver: "{{ .Values.database.driver }}"
       {{- end }}
+    distribution:
+      extraJavaOpts: >
+      {{- with .Values.distribution.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+    distributor:
+      extraJavaOpts: >
+      {{- with .Values.distributor.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
 
   service:
     type: ClusterIP
-
-  ## Add custom init containers
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: distribution-data
 
   ## Add custom volumeMounts
   customVolumeMounts: |
@@ -266,11 +327,40 @@ distribution:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        scheme: HTTP
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        scheme: HTTP
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
-    xms:
-    xmx:
+  javaOpts: {}
+    # xms: "1g"
+    # xmx: "2g"
+    # other: ""
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -335,11 +425,14 @@ distributor:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
-    xms:
-    xmx:
+  javaOpts: {}
+    # xms: "1g"
+    # xmx: "2g"
+    # other: ""
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -394,10 +487,11 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.4.0
+    version: 1.4.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -406,11 +500,18 @@ router:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
   livenessProbe:
     enabled: true
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -423,6 +524,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10

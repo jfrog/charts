@@ -10,10 +10,12 @@ Get the latest [Helm release](https://github.com/kubernetes/helm#install).
 
 ## Install Charts
 
-You need to add this Chart repo to Helm:
+### Add ChartCenter Helm repository
 
-```console
-helm repo add jfrog https://charts.jfrog.io/
+Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
+
+```bash
+helm repo add center https://repo.chartcenter.io
 helm repo update
 ```
 

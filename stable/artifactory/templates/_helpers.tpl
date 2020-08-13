@@ -23,6 +23,19 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
+Create a default fully qualified replicator app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "artifactory.replicator.fullname" -}}
+{{- if .Values.artifactory.replicator.ingress.name -}}
+{{- .Values.artifactory.replicator.ingress.name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-replication" .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified nginx name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
@@ -58,4 +71,15 @@ Generate SSL certificates
 {{- $cert := genSignedCert ( include "artifactory.name" . ) nil $altNames 365 $ca -}}
 tls.crt: {{ $cert.Cert | b64enc }}
 tls.key: {{ $cert.Key | b64enc }}
+{{- end -}}
+
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "artifactory.scheme" -}}
+{{- if .Values.access.accessConfig.security.tls -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
 {{- end -}}

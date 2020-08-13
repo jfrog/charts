@@ -52,7 +52,7 @@ Congratulations. You have just deployed JFrog Artifactory!
    {{- else if contains "LoadBalancer"  .Values.nginx.service.type }}
 
    NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-         You can watch the status of the service by running 'kubectl get svc -w {{ template "artifactory.nginx.fullname" . }}'
+         You can watch the status of the service by running 'kubectl get svc --namespace {{ .Release.Namespace }} -w {{ template "artifactory.nginx.fullname" . }}'
    export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory.nginx.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
    echo http://$SERVICE_IP/
 

@@ -70,10 +70,12 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Expand the name of the chart.
+Scheme (http/https) based on Access TLS enabled/disabled
 */}}
-{{- define "redis.name" -}}
-{{- default .Chart.Name .Values.redis.name | trunc 63 | trimSuffix "-" -}}
+{{- define "distribution.scheme" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
 {{- end -}}
-    
-
+{{- end -}}

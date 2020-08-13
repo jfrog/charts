@@ -8,8 +8,8 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-{{- if .Values.artifactory.node.labels }}
-{{ toYaml .Values.artifactory.node.labels | indent 4 }}
+{{- with .Values.artifactory.node.labels }}
+{{ toYaml . | indent 4 }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.node.name" . }}
@@ -30,6 +30,9 @@ spec:
         heritage: {{ .Release.Service }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
+        {{- with .Values.artifactory.node.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
@@ -106,7 +109,7 @@ spec:
           echo "Sleeping to allow time for primary node to come up";
           sleep {{ .Values.artifactory.node.waitForPrimaryStartup.time }};
           {{- else }}
-          while [ "$(wget --spider -S -T 3 http://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
+          while [ "$(wget --spider --no-check-certificate -S -T 3 {{ include "artifactory-ha.scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }}/ 2>&1 | grep '^  HTTP/' | awk '{print $2}')" != "200" ];
             do echo "Primary not ready. Waiting..."; sleep 3;
           done;
           echo "Primary node ready!";
@@ -128,6 +131,12 @@ spec:
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Removing join.key file";
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
+        {{- if .Values.access.resetAccessCAKeys }}
+          echo "Resetting Access CA Keys - load from database";
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+          echo "Load custom certificates from database";
+        {{- end }}
         {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
@@ -181,6 +190,7 @@ spec:
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -205,35 +215,45 @@ spec:
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
         env:
-        {{- if .Values.database.secrets.user }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+              key: db-user
         {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
-              name: {{ template "artifactory-ha.fullname" . }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
         {{- end }}
       {{- end }}
-        {{- if .Values.database.secrets.url }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+              key: db-url
         {{- end }}
+      {{- end }}
         - name: JF_SHARED_NODE_PRIMARY
           value: "false"
         - name: JF_SHARED_NODE_HAENABLED
@@ -283,6 +303,7 @@ spec:
           mountPath: "/artifactory_bootstrap/gcp.credentials.json"
           subPath: gcp.credentials.json
   {{- end }}
+{{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
@@ -294,10 +315,6 @@ spec:
         - '-c'
         - >
           set -e;
-          {{- if .Values.artifactory.userPluginSecrets }}
-          echo "Copying plugins";
-          cp -Lrf /tmp/plugin/*/* /tmp/plugins;
-          {{- end }}
         {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
@@ -319,35 +336,45 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
-        {{- if .Values.database.secrets.user }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+              key: db-user
         {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
-              name: {{ template "artifactory-ha.fullname" . }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
         {{- end }}
       {{- end }}
-        {{- if .Values.database.secrets.url }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+              key: db-url
         {{- end }}
+      {{- end }}
         - name: JF_SHARED_NODE_PRIMARY
           value: "false"
         - name: JF_SHARED_NODE_HAENABLED
@@ -373,14 +400,6 @@ spec:
         - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
           mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         {{- end }}
-      {{- if .Values.artifactory.userPluginSecrets }}
-        - name: tmp-plugins
-          mountPath: "/tmp/plugins/"
-      {{- range .Values.artifactory.userPluginSecrets }}
-        - name: {{ tpl . $ }}
-          mountPath: "/tmp/plugin/{{ tpl . $ }}"
-      {{- end }}
-      {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -435,6 +454,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -446,6 +466,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
+            scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
@@ -586,21 +607,19 @@ spec:
           secretName: {{ template "artifactory-ha.fullname" . }}-license
           {{- end }}
       {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: migration-scripts
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-migration-scripts
+{{- end }}
       - name: installer-info
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-installer-info
-      {{- if .Values.artifactory.userPluginSecrets }}
-      - name: tmp-plugins
-        emptyDir: {}
-      {{- range .Values.artifactory.userPluginSecrets }}
-      - name: {{ tpl . $ }}
-        secret:
-          secretName: {{ tpl . $ }}
-      {{- end }}
-      {{- end }}
+      {{- if .Values.artifactory.configMapName }}
+      - name: bootstrap-config
+        configMap:
+          name: {{ .Values.artifactory.configMapName }}
+      {{- end}}      
       {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
       - name: tail-logger-script
         configMap:

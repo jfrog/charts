@@ -1,5 +1,47 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
+
+## [1.3.11] - August 6, 2020
+* Fix external PG port
+
+## [1.3.10] - August 5, 2020
+* have controlplane and buildplane pull versions from global version override as specified in 1.3.7
+
+## [1.3.9] - July 31, 2020
+* Added support for customVolumes, configMaps and customInitcontainers for Vault
+* Added tpl for resolving jfrogUrl 
+
+## [1.3.8] - July 30, 2020
+* Fix customSideCar container bug for configMaps
+
+## [1.3.7] - July 29, 2020
+* Allow overriding default version of pipelines tags with a single value in values.yml
+* add `# version:`  to pipelines:
+
+## [1.3.6] - Jul 23, 2020
+* Added support for customSidecarContainers, customVolumes, customInitcontainers and configMaps
+* Update alpine version to 3.12
+
+## [1.3.5] - July 20th, 2020
+* Remove 'NodeType' option from pipelines-services-headless
+
+## [1.3.4] - July 6th, 2020
+* Fixes callHomeUrl
+
+## [1.3.3] - June 30th, 2020
+* Pipelines v1.6.2
+
+## [1.3.2] - June 30, 2020
+* Enable extensionSync microservice
+
+## [1.3.1] - June 29, 2020
+* Pipelines v1.6.1
+
+## [1.3.0] - June 25, 2020
+* Pipelines v1.6.0
+* Adds a new configuration accessControlAllowOrigins
+* Use ChartCenter as helm repo
+
 ## [1.2.0] - June 2, 2020
 * Pipelines v1.5.1
 * Update Postgres image to 9.6.18-debian-10-r7

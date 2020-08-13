@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.11"
+initContainerImage: docker.bintray.io/alpine:3.12
 # Init containers
 initContainers:
   resources: {}
@@ -17,11 +17,6 @@ initContainers:
 
 imagePullPolicy: IfNotPresent
 
-
-uid: 1050
-gid: 1050
-uname: jfmc
-
 imagePullSecrets:
 
 # For HA
@@ -30,6 +25,68 @@ replicaCount: 1
 shared:
   node:
     id:
+
+common:
+  uid: 1050
+  gid: 1050
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: data-volume
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
 
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -83,8 +140,8 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: postgres
-      tag: 9.6.18-alpine
+      repository: docker.bintray.io/postgres
+      tag: 10.13-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -96,7 +153,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 10.13.0-debian-10-r38
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
@@ -114,13 +171,20 @@ postgresql:
     jfmcSchema: jfmc_server
     jfisSchema: insight_server
     jfscSchema: insight_scheduler
-    jfexSchema: insight_executor
   service:
     port: 5432
   persistence:
     enabled: true
     size: 50Gi
     existingClaim:
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -128,9 +192,6 @@ postgresql:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
 
 ### If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty
@@ -142,7 +203,6 @@ database:
   jfisSchema: insight_server
   jfmcSchema: jfmc_server
   jfscSchema: insight_scheduler
-  jfexSchema: insight_executor
   ## Use single user and password for all the services
   user:
   password:
@@ -164,7 +224,7 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: "alpine:3.11"
+  initContainerImage: docker.bintray.io/alpine:3.12
   configureDockerHost: true
   image:
     repository: docker.bintray.io/jfrog/elasticsearch-oss
@@ -220,8 +280,8 @@ applicationConfigs: {}
 
 logger:
   image:
-    repository: "busybox"
-    tag: "1.30"
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 missionControl:
   name: mission-control
@@ -232,36 +292,12 @@ missionControl:
   appContext: mc
   appName: jfmc-server
   home: /var/opt/jfrog/mc
+  labels: {}
 
   # env:
 
   # Set this to true if you want to override credentials in mission-control.properties on startup
   propertyOverride: true
-
-  ## Add custom init containers
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
-  #        name: mission-control-data
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
 
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
@@ -315,7 +351,7 @@ missionControl:
       logging:
         consoleLog:
           enabled: {{ .Values.missionControl.consoleLog }}
-      jfrogUrl: "{{ required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl }}"
+      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl) . }}"
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
@@ -336,17 +372,37 @@ missionControl:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfmcSchema }}
 
+      extraJavaOpts: >
+      {{- with .Values.missionControl.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+
     insight-scheduler:
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfscSchema }}
+      extraJavaOpts: >
+      {{- with .Values.insightScheduler.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
 
-    insight-executor:
-      database:
-        username: {{ .Values.postgresql.db.user }}
-        schema: {{ .Values.postgresql.db.jfexSchema }}
-
-    insight:
+    insight-server:
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfisSchema }}
@@ -374,8 +430,8 @@ missionControl:
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts:
-    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
+  javaOpts: {}
+  #  other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
   #  xms: "2g"
   #  xmx: "3g"
   resources: {}
@@ -513,72 +569,15 @@ insightScheduler:
   #    memory: "128Mi"
   #    cpu: "50m"
 
-insightExecutor:
-  name: insight-executor
-  ## Note that by default we use appVersion to get image tag/version
-  image:
-    repository: docker.bintray.io/jfrog/insight-executor
-    # version:
-  appContext: insight-executor
-  home: /opt/jfrog
-  internalPort: 8087
-
-  ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
-  ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts: {}
-  #  other:
-  #  xms: "500m"
-  #  xmx: "2g"
-  resources: {}
-  #  requests:
-  #    memory: "500Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2.5Gi"
-  #    cpu: "1"
-
-  # Persistence for the logs
-  persistence:
-    enabled: false
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    mountPath: "/var/opt/jfrog/mc"
-    accessMode: ReadWriteOnce
-    size: 10Gi
-    ## Insight Executor logs Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-
-  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
-  # - insight-executor.log
-  # - access.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
-
 router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.4.0
+    version: 1.4.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -592,6 +591,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -604,6 +604,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10

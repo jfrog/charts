@@ -1,6 +1,50 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.3.0] -  Aug 12, 2020
+* Update Mission Control version to 4.5.0
+* **IMPORTANT**
+* Removed insight executor service
+
+## [4.2.1] - Jul 30, 2020
+* Fix broken support for External elasticsearch
+* Added tpl support for resolve jfrogUrl
+
+## [4.2.0] - Jul 27, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers.
+* Added support for `common.configMaps` to create custom configMaps
+* Moved customVolumes,customVolumeMounts,customInitContainers under `common`
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
+## [4.1.1] - Jul 20, 2020
+* Updated Mission-Control Chart to add labels from values to service, pods and controller 
+
+## [4.1.0] - Jul 10, 2020
+* Move some postgresql values to where they should be according to the subchart
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
+## [4.0.1] -  Jun 29, 2020
+* Added UPGRADES_NOTES.md for upgrading to 3.x/4.x chart versions
+
+## [4.0.0] - Jun 26, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update busybox tag version to `1.31.1`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
+## [3.4.7] -  Jun 17, 2020
+* Added support for javaopts via systemyaml
+
+## [3.4.6] - June 15, 2020
+* Update Mission Control version to 4.4.2 - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.4.2
+
+## [3.4.5] - June 9, 2020
+* Added support for Elasticsearch secrets 
+
 ## [3.4.4] - June 4, 2020
 * Update postgresql image tag to `9.6.18-debian-10-r7`
 * Added Upgrade Notes in README for 4.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes

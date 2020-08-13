@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: "alpine:3.11"
+initContainerImage: docker.bintray.io/alpine:3.12
 
 installer:
   type:
@@ -102,7 +102,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 10.13.0-debian-10-r38
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
@@ -114,6 +114,14 @@ postgresql:
     size: 50Gi
   service:
     port: 5432
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "512Mi"
@@ -121,7 +129,6 @@ postgresql:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "500m"
-  nodeSelector: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## you MUST specify custom database details here or Artifactory will NOT start
@@ -149,8 +156,8 @@ database:
 
 logger:
   image:
-    repository: "busybox"
-    tag: "1.30"
+    repository: docker.bintray.io/busybox
+    tag: 1.31.1
 
 # Artifactory
 artifactory:
@@ -244,9 +251,10 @@ artifactory:
 
   # Migration support from 6.x to 7.x
   migration:
+    enabled: true
     timeoutSeconds: 3600
     ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
-    # preStartCommand: "wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+    # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
 
 
   ## Add custom init containers execution before predefined init containers
@@ -356,6 +364,19 @@ artifactory:
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
 
+  # Add custom secrets - secret per file
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
+
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
 
@@ -400,7 +421,7 @@ artifactory:
   #  - '{{ template "my-chart.fullname" . }}'
 
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
-  # preStartCommand: "wget -O /opt/jfrog/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+  # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
   ## Extra post-start command to run extra commands after container starts
   # postStartCommand:
 
@@ -436,6 +457,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
       {{- if .xms }}
@@ -475,9 +497,7 @@ artifactory:
         username: "{{ .Values.postgresql.postgresqlUsername }}"
       {{ else }}
         type: "{{ .Values.database.type }}"
-        url: "{{ .Values.database.url }}"
         driver: "{{ .Values.database.driver }}"
-        username: "{{ .Values.database.user }}"
       {{- end }}
     artifactory:
     {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
@@ -512,6 +532,10 @@ artifactory:
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
+    {{- if .Values.artifactory.replicator.enabled }}
+    replicator:
+      enabled: true
+    {{- end }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -534,7 +558,7 @@ artifactory:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 60
+    initialDelaySeconds: 90
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -571,6 +595,7 @@ artifactory:
     ## nfs
     ## google-storage
     ## aws-s3
+    ## aws-s3-v3
     ## azure-blob
     type: file-system
 
@@ -754,6 +779,9 @@ artifactory:
               <bucketName>{{ .bucketName }}</bucketName>
               <path>{{ .path }}</path>
               <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .maxConnections }}
+              <maxConnections>{{ . }}</maxConnections>
+            {{- end }}
             {{- with .kmsServerSideEncryptionKeyId }}
               <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
             {{- end }}
@@ -778,6 +806,9 @@ artifactory:
             {{- end }}
             {{- with .cloudFrontPrivateKey }}
               <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
+            {{- end }}
+            {{- with .enableSignedUrlRedirect }}
+              <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
             {{- end }}
           </provider>
         {{- end }}
@@ -973,6 +1004,7 @@ artifactory:
       bucketName: artifactory-aws
       path: artifactory/filestore
       endpoint:
+      maxConnections: 50
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
       kmsCryptoMode:
@@ -982,6 +1014,7 @@ artifactory:
       cloudFrontDomainName:
       cloudFrontKeyPairId:
       cloudFrontPrivateKey:
+      enableSignedUrlRedirect: false
 
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
@@ -1030,6 +1063,23 @@ artifactory:
   javaOpts: {}
     # other: ""
 
+  ## The following setting are to configure a dedicated Ingress object for Replicator service
+  replicator:
+    enabled: false
+    ingress:
+      name:
+      hosts: []
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # nginx.ingress.kubernetes.io/proxy-buffering: "off"
+        # nginx.ingress.kubernetes.io/configuration-snippet: |
+        #   chunked_transfer_encoding on;
+      tls: []
+        #  Secrets must be manually created in the namespace.
+        # - hosts:
+        #   - artifactory.domain.example
+        #   secretName: chart-example-tls-secret
+
   ssh:
     enabled: false
     internalPort: 1339
@@ -1043,7 +1093,7 @@ artifactory:
   primary:
     name: artifactory-ha-primary
     # preStartCommand specific to the primary node, to be run after artifactory.preStartCommand
-    preStartCommand:
+    # preStartCommand:
     labels: {}
     persistence:
       ## Set existingClaim to true or false
@@ -1087,7 +1137,7 @@ artifactory:
   node:
     name: artifactory-ha-member
     # preStartCommand specific to the member node, to be run after artifactory.preStartCommand
-    preStartCommand:
+    # preStartCommand:
     labels: {}
     persistence:
       ## Set existingClaim to true or false
@@ -1144,6 +1194,20 @@ artifactory:
       topologyKey: "kubernetes.io/hostname"
 
 access:
+  ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
+  ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
+  ## When security.tls is set to true, JFrog Access will act as the Certificate Authority (CA) and sign the TLS certificates used by all the different JFrog Platform nodes.
+  ## This ensures that the node to node communication is done over TLS.
+  accessConfig:
+    security:
+      tls: false
+
+  ## You can use a pre-existing secret by specifying customCertificatesSecretName
+  ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=ca.crt --key=ca.private.key`
+  # customCertificatesSecretName:
+
+  ## When resetAccessCAKeys is true, Access will regenerate the CA certificate and matching private key
+  # resetAccessCAKeys: false
   database:
     maxOpenConnections: 80
   tomcat:
@@ -1214,8 +1278,6 @@ nginx:
     pid        /tmp/nginx.pid;
 
     {{- if .Values.artifactory.ssh.enabled }}
-    # Load the stream module to support TCP streaming
-    load_module /usr/lib/nginx/modules/ngx_stream_module.so;
     ## SSH Server Configuration
     stream {
       server {
@@ -1318,7 +1380,7 @@ nginx:
         proxy_read_timeout  900;
         proxy_pass_header   Server;
         proxy_cookie_path   ~*^/.* /;
-        proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        proxy_pass          {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
         {{- if .Values.nginx.service.ssloffload}}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
         {{- else }}
@@ -1331,9 +1393,9 @@ nginx:
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+            proxy_pass       {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
           }
-          proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+          proxy_pass          {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
         }
       }
     }
@@ -1376,7 +1438,7 @@ nginx:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 60
+    initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10
@@ -1385,7 +1447,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 10
+    initialDelaySeconds: 120
     failureThreshold: 10
     timeoutSeconds: 10
     periodSeconds: 10

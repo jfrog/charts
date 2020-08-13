@@ -7,13 +7,6 @@ Expand the name of the chart.
 {{- end -}}
 
 {{/*
-The insight-executor name
-*/}}
-{{- define "insight-executor.name" -}}
-{{- default .Chart.Name .Values.insightExecutor.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
 The insight-scheduler name
 */}}
 {{- define "insight-scheduler.name" -}}
@@ -55,24 +48,6 @@ This will create one entry per replica.
   {{- range $i, $e := untilStep 0 $replicas 1 -}}
 {{ $releaseName }}-{{ $i }},
   {{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "insight-executor.fullname" -}}
-{{- if .Values.insightExecutor.fullnameOverride -}}
-{{- .Values.insightExecutor.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.insightExecutor.name -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
 {{- end -}}
 
 {{/*
@@ -137,5 +112,16 @@ Set masterKey based on mcKey/masterKey values.
 {{ .Values.missionControl.mcKey }}
 {{- else -}}
 {{ .Values.missionControl.masterKey }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "mission-control.scheme" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
 {{- end -}}
 {{- end -}}

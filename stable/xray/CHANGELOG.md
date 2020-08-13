@@ -1,6 +1,56 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.1.3] - Jul 28, 2020
+* Add tpl to external database secrets.
+* Modified `scheme`  to `xray.scheme`
+
+## [4.1.2] - Jul 16, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers
+* Added support for `common.configMaps` to create custom configMaps
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
+## [4.1.1] - Jul 10, 2020
+* Move some postgresql values to where they should be according to the subchart.
+
+## [4.1.0] - Jul 9, 2020
+* Update Xray to version `3.6.2` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.6.2
+* Update rabbitmq-ha tag version to 3.8.5-alpine
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
+## [4.0.1] - Jul 3, 2020
+* Added compatability to support latest 7.x rabbitmq subchart when `rabbitmq.enabled=true`
+* Update RabbitMQ chart to v7.4.3
+* **IMPORTANT**
+* RabbitMQ 7.x chart is [not compatible](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700) with previous rabbitmq 6.x chart in Xray 3.x chart
+* Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/README.md#special-upgrade-notes) for upgrade notes
+
+## [4.0.0] - Jun 26, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update rabbitmq tag version to 3.8.5-debian-10-r14
+* Update RabbitMQ chart to v7.3.3
+* Update RabbitMQ-HA chart to v1.46.4
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
+## [3.5.1] - Jun 25, 2020
+* Added prestartcommand to router container to match same mechanism in all other xray containers 
+
+## [3.5.0] - Jun 22, 2020
+* Update Xray to version `3.5.2` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.5.2
+* Update alpine to version `3.12`
+
+## [3.4.2] - Jun 13, 2020
+* Adding tpl to customVolumeMounts
+* Fix `replicaCount` in README.md
+
+## [3.4.1] - Jun 12, 2020
+* Fix broken customVolumeMounts
+
 ## [3.4.0] - Jun 1, 2020
 * Update Xray to version `3.4.0` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.4
 * Added Upgrade Notes in README for 3.x upgrades - https://github.com/jfrog/charts/blob/master/stable/mission-control/README.md#special-upgrade-notes

@@ -2,22 +2,26 @@
 
 # If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
 unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
 missionControl:
   jfrogUrl: http://artifactory-artifactory.rt:8082
   image:
-    version: 4.3.2
+    version: 4.4.1
+  javaOpts:
+    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
+    xms: "500m"
+    xmx: "1000m"
 
 insightServer:
   image:
-    version: 4.3.2
+    version: 4.4.1
 
 insightScheduler:
   image:
-    version: 4.3.2
-
-insightExecutor:
-  image:
-    version: 4.3.2
+    version: 4.4.1
+  javaOpts:
+    xms: "500m"
+    xmx: "1000m"
 
 postgresql:
   image:

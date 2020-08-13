@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # General
-initContainerImage: "alpine:3.11"
+initContainerImage: docker.bintray.io/alpine:3.12
 imagePullPolicy: IfNotPresent
 imagePullSecrets:
 
@@ -46,11 +46,14 @@ xray:
           enabled: {{ .Values.xray.consoleLog }}
       jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.xray.jfrogUrl) . }}"
       database:
+      {{- if .Values.postgresql.enabled }}
         type: "postgresql"
         driver: "org.postgresql.Driver"
-      {{- if .Values.postgresql.enabled }}
         username: "{{ .Values.postgresql.postgresqlUsername }}"
         url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
+      {{- else }}
+        type: {{ .Values.database.type }}
+        driver: {{ .Values.database.driver }}
       {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
@@ -152,7 +155,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 10.13.0-debian-10-r38
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -165,6 +168,14 @@ postgresql:
     enabled: true
     size: 50Gi
     existingClaim:
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -172,12 +183,11 @@ postgresql:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 database:
+  type: "postgresql"
+  driver: "org.postgresql.Driver"
   ## If you would like this chart to create the secret containing the database url, user, password - use these below values
   url:
   user:
@@ -203,7 +213,7 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    tag: 3.7.21-alpine
+    tag: 3.8.5-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
@@ -248,18 +258,22 @@ rabbitmq-ha:
 ##
 rabbitmq:
   enabled: false
-  replicas: 1
-  rbacEnabled: true
+  replicaCount: 1
+  rbac:
+    create: true
   image:
-    tag: 3.7.19
-  rabbitmq:
+    registry: docker.bintray.io
+    repository: bitnami/rabbitmq
+    tag: 3.8.5-debian-10-r14
+  auth:
     username: guest
     password: ""
     ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
     # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
+    # existingErlangSecret: <name-of-existing-secret>
   service:
-    nodePort: 5672
+    port: 5672
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
@@ -298,8 +312,15 @@ common:
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
+  #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  # Add any list of configmaps to Xray
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
 
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
@@ -326,6 +347,33 @@ common:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
   #        name: data-volume
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  # - The provided example shows running container as root (id 0)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
 
   persistence:
     enabled: true
@@ -364,7 +412,7 @@ analysis:
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
+  #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
   livenessProbe:
@@ -419,7 +467,7 @@ indexer:
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
+  #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
   livenessProbe:
@@ -470,7 +518,7 @@ persist:
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
+  #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
   livenessProbe:
@@ -525,7 +573,7 @@ server:
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
+  #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
   service:
@@ -572,10 +620,11 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.4.0
+    version: 1.4.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -586,11 +635,18 @@ router:
 
   annotations: {}
 
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
   livenessProbe:
     enabled: true
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -603,6 +659,7 @@ router:
     config: |
       httpGet:
         path: /router/api/v1/system/health
+        scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10

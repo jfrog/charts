@@ -8,8 +8,11 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-{{- if .Values.artifactory.labels }}
-{{ toYaml .Values.artifactory.labels | indent 4 }}
+{{- with .Values.artifactory.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory.name" . }}
@@ -30,9 +33,15 @@ spec:
         role: {{ template "artifactory.name" . }}
         component: {{ .Values.artifactory.name }}
         release: {{ .Release.Name }}
+        {{- with .Values.artifactory.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       annotations:
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
+      {{- if .Values.access.accessConfig }}
+        checksum/access-config: {{ include (print $.Template.BasePath "/artifactory-access-config.yaml") . | sha256sum }}
+      {{- end }}
       {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
         checksum/admin-creds: {{ include (print $.Template.BasePath "/admin-bootstrap-creds.yaml") . | sha256sum }}
       {{- end }}
@@ -117,6 +126,22 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
+        {{- if .Values.access.accessConfig }}
+          echo "Copy access.config.latest.yml to {{ .Values.artifactory.persistence.mountPath }}/etc";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
+          cp -fv /tmp/etc/access.config.import.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.import.yml;
+        {{- end }}
+        {{- if .Values.access.resetAccessCAKeys }}
+          echo "Resetting Access CA Keys";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys;
+          touch {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/reset_ca_keys;
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+          echo "Copying custom certificates to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys;
+          cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.crt;
+          cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.private.key;
+        {{- end }}
         {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
@@ -148,6 +173,19 @@ spec:
         - name: systemyaml
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
+        {{- if .Values.access.accessConfig }}
+        - name: access-config
+          mountPath: "/tmp/etc/access.config.import.yml"
+          subPath: access.config.import.yml
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+        - name: access-certs
+          mountPath: "/tmp/etc/tls.crt"
+          subPath: tls.crt
+        - name: access-certs
+          mountPath: "/tmp/etc/tls.key"
+          subPath: tls.key
+        {{- end }}
     {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
@@ -179,6 +217,7 @@ spec:
     {{- if .Values.artifactory.customInitContainers }}
 {{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
     {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory'
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -201,35 +240,45 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
           bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.version }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
-        {{- if .Values.database.secrets.user }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-user
         {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
-              name: {{ template "artifactory.fullname" . }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
         {{- end }}
       {{- end }}
-        {{- if .Values.database.secrets.url }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-url
         {{- end }}
+      {{- end }}
 {{- with .Values.artifactory.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
@@ -263,6 +312,7 @@ spec:
       {{- if .Values.artifactory.customVolumeMounts }}
 {{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
       {{- end }}
+{{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
@@ -284,7 +334,7 @@ spec:
           {{- end }}
           {{- if .Values.artifactory.userPluginSecrets }}
           echo "Copying plugins";
-          cp -Lrf /tmp/plugin/*/* /tmp/plugins;
+          cp -Lrf /tmp/plugin/*/* /artifactory_bootstrap/plugins;
           {{- end }}
           {{- range .Values.artifactory.copyOnEveryStartup }}
           {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
@@ -309,35 +359,45 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
-        {{- if .Values.database.secrets.user }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.user.name }}
-              key: {{ .Values.database.secrets.user.key }}
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-user
         {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.password }}
-              name: {{ .Values.database.secrets.password.name }}
-              key: {{ .Values.database.secrets.password.key }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
-              name: {{ template "artifactory.fullname" . }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
               key: postgresql-password
         {{- end }}
       {{- end }}
-        {{- if .Values.database.secrets.url }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.database.secrets.url.name }}
-              key: {{ .Values.database.secrets.url.key }}
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-url
         {{- end }}
+      {{- end }}
 {{- with .Values.artifactory.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
@@ -352,8 +412,8 @@ spec:
         {{- end }}
         volumeMounts:
       {{- if .Values.artifactory.userPluginSecrets }}
-        - name: tmp-plugins
-          mountPath: "/tmp/plugins/"
+        - name: bootstrap-plugins
+          mountPath: "/artifactory_bootstrap/plugins/"
       {{- range .Values.artifactory.userPluginSecrets }}
         - name: {{ tpl . $ }}
           mountPath: "/tmp/plugin/{{ tpl . $ }}"
@@ -401,6 +461,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.artifactory.readinessProbe.path }}
+            scheme: {{ include "artifactory.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
@@ -412,6 +473,7 @@ spec:
         livenessProbe:
           httpGet:
             path: {{ .Values.artifactory.livenessProbe.path }}
+            scheme: {{ include "artifactory.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
           initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
@@ -504,14 +566,16 @@ spec:
           {{- else }}
           secretName: {{ template "artifactory.fullname" . }}-binarystore
           {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
       - name: migration-scripts
         configMap:
           name: {{ template "artifactory.fullname" . }}-migration-scripts
+{{- end }}
       - name: installer-info
         configMap:
           name: {{ template "artifactory.fullname" . }}-installer-info
       {{- if .Values.artifactory.userPluginSecrets }}
-      - name: tmp-plugins
+      - name: bootstrap-plugins
         emptyDir: {}
       {{- range .Values.artifactory.userPluginSecrets }}
       - name: {{ tpl . $ }}
@@ -582,6 +646,16 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ template "artifactory.fullname" . }}-systemyaml
+      {{- if .Values.access.accessConfig }}
+      - name: access-config
+        secret:
+          secretName: {{ template "artifactory.fullname" . }}-access-config
+      {{- end }}
+      {{- if .Values.access.customCertificatesSecretName }}
+      - name: access-certs
+        secret:
+          secretName: {{ .Values.access.customCertificatesSecretName }}
+      {{- end }}
   {{- if .Values.artifactory.customPersistentVolumeClaim }}
       - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
         persistentVolumeClaim:

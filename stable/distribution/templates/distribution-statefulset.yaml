@@ -11,6 +11,9 @@ metadata:
 {{- if .Release.IsUpgrade }}
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Distribution 1.x currently not supported!\nIf this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
+{{- end }}
 spec:
   serviceName: {{ template "distribution.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
@@ -94,7 +97,7 @@ spec:
           echo "Waiting for database to be ready...";
           until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
       {{- end }}
-      {{- if .Release.IsUpgrade }}
+      {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
         image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
@@ -121,8 +124,8 @@ spec:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
       {{- end }}
-    {{- if .Values.distribution.customInitContainers }}
-{{ tpl .Values.distribution.customInitContainers . | indent 6}}
+    {{- with .Values.common.customInitContainers }}
+{{ tpl . $ | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
@@ -196,24 +199,22 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+        {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         {{- with .Values.distribution.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
         {{- end }}
         resources:
 {{ toYaml .Values.distribution.resources | indent 10 }}
+      {{- if .Values.distribution.readinessProbe.enabled }}
         readinessProbe:
-          httpGet:
-            path: /api/v1/system/ping
-            port: {{ .Values.distribution.internalPort }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 10
+{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.distribution.livenessProbe.enabled }}
         livenessProbe:
-          httpGet:
-            path: /api/v1/system/ping
-            port: {{ .Values.distribution.internalPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 10
+{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: {{ .Values.distributor.name }}
         image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
@@ -282,6 +283,9 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
+        {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         {{- with .Values.distributor.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
         {{- end }}
@@ -301,6 +305,12 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
+        {{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
+        {{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
 {{- if .Values.router.livenessProbe.enabled }}
@@ -311,8 +321,7 @@ spec:
         readinessProbe:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
-
-      - name: {{ template "redis.name" . }}
+      - name: redis
         image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
         env:
@@ -380,7 +389,6 @@ spec:
             mountPath: {{ $mountPath }}
         resources:
 {{ toYaml $.Values.distributor.loggersResources | indent 10 }}
-
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
@@ -407,6 +415,9 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+{{- with .Values.common.customSidecarContainers }}
+{{ tpl . $ | indent 6 }}
+{{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -436,6 +447,11 @@ spec:
         configMap:
           name: {{ template "distribution.fullname" . }}-filebeat-config
       {{- end }}
+      {{- if .Values.common.configMaps }}
+      - name: distribution-configmaps
+        configMap:
+          name: {{ template "distribution.fullname" . }}-configmaps
+      {{- end }}
   volumeClaimTemplates:
     - metadata:
         name: redis-data
@@ -443,7 +459,7 @@ spec:
       {{- if .Values.redis.persistence.existingClaim }}
         selector:
             matchLabels:
-              app: {{ template "redis.name" . }}
+              app: redis
       {{- else }}
         {{- if .Values.redis.persistence.storageClass }}
         {{- if (eq "-" .Values.redis.persistence.storageClass) }}

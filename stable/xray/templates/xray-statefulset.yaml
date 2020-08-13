@@ -11,6 +11,9 @@ metadata:
 {{- if .Release.IsUpgrade }}
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
+{{- end }}
 spec:
   serviceName: "{{ template "xray.fullname" . }}"
   replicas: {{ .Values.replicaCount }}
@@ -114,12 +117,22 @@ spec:
           done;
       {{- end }}
     {{- if .Values.common.customInitContainers }}
-      {{ tpl .Values.common.customInitContainers . | indent 6 }}
+{{ tpl .Values.common.customInitContainers . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
         image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            sleep 10;
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
           - name: router
             containerPort: {{ .Values.router.internalPort }}
@@ -128,6 +141,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
 {{- if .Values.router.livenessProbe.enabled }}
@@ -210,8 +229,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if .Values.server.customVolumeMounts }}
-{{ tpl .Values.server.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.server.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -303,6 +325,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.analysis.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -315,7 +343,6 @@ spec:
         readinessProbe:
 {{ tpl .Values.analysis.readinessProbe.config . | indent 10 }}
 {{- end }}
-
       - name: {{ .Values.indexer.name }}
         image: {{ .Values.indexer.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -394,6 +421,12 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.indexer.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         securityContext:
           allowPrivilegeEscalation: false
         resources:
@@ -406,7 +439,6 @@ spec:
         readinessProbe:
 {{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
 {{- end }}
-
       - name: {{ .Values.persist.name }}
         image: {{ .Values.persist.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -481,8 +513,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if .Values.indexer.customVolumeMounts }}
-{{ tpl .Values.indexer.customVolumeMounts . | indent 8 }}
+{{- with .Values.common.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+{{- with .Values.persist.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
 {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -496,7 +531,6 @@ spec:
         readinessProbe:
 {{ tpl .Values.persist.readinessProbe.config . | indent 10 }}
 {{- end }}
-
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
@@ -522,7 +556,9 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-
+{{- if .Values.common.customSidecarContainers }}
+{{ tpl .Values.common.customSidecarContainers . | indent 6 }}
+{{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -549,16 +585,18 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.common.persistence.existingClaim }}
       {{- end }}
-      {{- if .Values.indexer.customVolumes }}
-      {{ tpl .Values.indexer.customVolumes . | indent 6 }}
-      {{- end }}
-      {{- if .Values.server.customVolumes }}
-      {{ tpl .Values.server.customVolumes . | indent 6 }}
-      {{- end }}
+{{- with .Values.common.customVolumes }}
+{{ tpl . $ | indent 6 }}
+{{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
           name: {{ template "xray.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if .Values.common.configMaps }}
+      - name: xray-configmaps
+        configMap:
+          name: {{ template "xray.fullname" . }}-configmaps
       {{- end }}
 {{- with .Values.common.persistence }}
   {{- if and .enabled (not .existingClaim) }}

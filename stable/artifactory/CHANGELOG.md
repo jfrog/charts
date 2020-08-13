@@ -1,8 +1,81 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [9.6.0] - Jun 11, 2020
+## [10.0.16] - Jun 11, 2020
 * Support GCP credentials.json authentication
+
+## [10.0.15] - Aug 10, 2020
+* Added enableSignedUrlRedirect for persistent storage type aws-s3-v3.
+
+## [10.0.14] - Jul 31, 2020
+* Update the README section on Nginx SSL termination to reflect the actual YAML structure.
+
+## [10.0.13] - Jul 30, 2020
+* Added condition to disable the migration scripts.
+
+## [10.0.12] - Jul 28, 2020
+* Document Artifactory node affinity.
+
+## [10.0.11] - Jul 28, 2020
+* Added maxConnections for persistent storage type aws-s3-v3.
+
+## [10.0.10] - Jul 28, 2020
+* Bugfix / support for userPluginSecrets with Artifactory 7
+
+## [10.0.9] - Jul 27, 2020
+* Add tpl to external database secrets
+* Modified `scheme`  to `artifactory.scheme`
+
+## [10.0.8] - Jul 23, 2020
+* Added condition to disable the migration init container.
+
+## [10.0.7] - Jul 21, 2020
+* Updated Artifactory Chart to add node and primary labels to pods and service objects.
+
+## [10.0.6] - Jul 20, 2020
+* Support custom CA and certificates
+
+## [10.0.5] - Jul 13, 2020
+* Updated Artifactory version to 7.6.3 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.3
+* Fixed Mysql database jar path in `preStartCommand` in README
+
+## [10.0.4] - Jul 10, 2020
+* Move some postgresql values to where they should be according to the subchart
+
+## [10.0.3] - Jul 8, 2020
+* Set Artifactory access client connections to the same value as the access threads
+
+## [10.0.2] - Jul 6, 2020
+* Updated Artifactory version to 7.6.2
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README
+
+## [10.0.1] - Jul 01, 2020
+* Add dedicated ingress object for Replicator service when enabled
+
+## [10.0.0] - Jun 30, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update busybox tag version to `1.31.1`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
+## [9.6.0] - Jun 29, 2020
+* Updated Artifactory version to 7.6.1 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.6.1
+* Add tpl for external database secrets
+
+## [9.5.5] - Jun 25, 2020
+* Stop loading the Nginx stream module because it is now a core module
+
+## [9.5.4] - Jun 25, 2020
+* Notes.txt update - add --namespace parameter
+
+## [9.5.3] - Jun 11, 2020
+* Support list of custom secrets
+
+## [9.5.2] - Jun 12, 2020
+* Updated Artifactory version to 7.5.7 - https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.5.7
 
 ## [9.5.1] - Jun 8, 2020
 * Readme update - configuring Artifactory with oracledb

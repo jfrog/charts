@@ -1,6 +1,44 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [6.1.4] - Jul 29, 2020
+* Added tpl support for resolving jfrogUrl
+
+## [6.1.3] - Jul 27, 2020
+* Update Distribution to version `2.4.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.4.1)
+
+## [6.1.2] - Jul 20, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers
+* Added support for `common.configMaps` to create custom configMaps
+* Moved customInitContainers under `common`
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/distribution/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
+## [6.1.1] - Jul 13, 2020
+* Added migration step for distribution 1.x to 2.x Appverison
+
+## [6.1.0] - Jul 7, 2020
+* Update Distribution version 2.4.0
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README.
+
+## [6.0.0] - Jun 26, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update busybox tag version to `1.31.1`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
+## [5.2.4] -  Jun 21, 2020
+* Make the readiness and liveness probes configurable
+
+## [5.2.3] -  Jun 12, 2020
+* Added support for javaopts for distrubutor and distribution via systemyaml
+
+## [5.2.2] -  Jun 11, 2020
+* Added Upgrade Notes in README for 2.x upgrades - https://github.com/jfrog/charts/blob/master/stable/distribution/README.md#special-upgrade-notes
+
 ## [5.2.1] -  Jun 1, 2020
 * Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_distribution_name>` and run helm upgrade
 * Readme fixes
