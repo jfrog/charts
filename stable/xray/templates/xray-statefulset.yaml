@@ -32,9 +32,6 @@ spec:
         component: {{ .Values.xray.name }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
-      {{- if index .Values "rabbitmq" "enabled" }}
-        checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-rabbitmq-secret.yaml") . | sha256sum }}
-      {{- end }}
         {{- with .Values.analysis.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
@@ -578,11 +575,6 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ template "xray.fullname" . }}-system-yaml
-      {{- if index .Values "rabbitmq" "enabled" }}
-      - name: rabbitmq-load-definition
-        secret:
-          secretName: {{ template "xray.fullname" . }}-rabbitmq-load-definition
-      {{- end }}
       {{- if not .Values.common.persistence.enabled }}
       - name: data-volume
         emptyDir:

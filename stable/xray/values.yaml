@@ -291,30 +291,34 @@ rabbitmq:
     enabled: true
     accessMode: ReadWriteOnce
     size: 20Gi
+  ## Load Definitions - https://www.rabbitmq.com/management.html#load-definitions
+  # ref : https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions
+  extraSecrets:
+  load-definition:
+    load_definition.json: |
+      {
+        "vhosts": [
+          {
+            "name": "/"
+          }
+        ],
+        "policies": [
+          {
+            "name": "ha-all",
+            "apply-to": "all",
+            "pattern": ".*",
+            "vhost": "/",
+            "definition": {
+              "ha-mode": "all",
+              "ha-sync-mode": "automatic",
+            }
+          }
+        ]
+      }
   loadDefinition:
     enabled: true
-    existingSecret: "xray-rabbitmq-load-definition"
-  definitions: |
-    {
-      "vhosts": [
-        {
-          "name": "/"
-        }
-      ],
-      "policies": [
-        {
-          "name": "ha-all",
-          "apply-to": "all",
-          "pattern": ".*",
-          "vhost": "/",
-          "definition": {
-            "ha-mode": "all",
-            "ha-sync-mode": "automatic",
-          }
-        }
-      ]
-    }
-  extraConfiguration: |-
+    existingSecret: load-definition
+  extraConfiguration: |
     management.load_definitions = /app/load_definition.json
   nodeSelector: {}
   tolerations: []
