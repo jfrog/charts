@@ -280,7 +280,7 @@ rabbitmq:
     size: 20Gi
   loadDefinition:
     enabled: true
-    secretName: "{{ .Release.Name }}-rabbitmq-load-definition"
+    existingSecret: "xray-rabbitmq-load-definition"
   definitions: |
     {
       "vhosts": [
