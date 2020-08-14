@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.2.1] - Aug 13, 2020
+* Added `loadDefinition` for rabbitmq subchart when `rabbitmq.enabled=true`
+* Update RabbitMQ chart to v7.6.0
+
 ## [4.2.0] - Aug 13, 2020
 * Update Xray to version `3.8.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8)
 * Update rabbitmq-ha tag version to `3.8.6-alpine`

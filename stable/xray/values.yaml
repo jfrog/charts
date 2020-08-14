@@ -278,6 +278,31 @@ rabbitmq:
     enabled: true
     accessMode: ReadWriteOnce
     size: 20Gi
+  loadDefinition:
+    enabled: true
+    secretName: "{{ .Release.Name }}-rabbitmq-load-definition"
+  definitions: |
+    {
+      "vhosts": [
+        {
+          "name": "/"
+        }
+      ],
+      "policies": [
+        {
+          "name": "ha-all",
+          "apply-to": "all",
+          "pattern": ".*",
+          "vhost": "/",
+          "definition": {
+            "ha-mode": "all",
+            "ha-sync-mode": "automatic",
+          }
+        }
+      ]
+    }
+  extraConfiguration: |-
+    management.load_definitions = /app/load_definition.json
   nodeSelector: {}
   tolerations: []
   affinity: {}
