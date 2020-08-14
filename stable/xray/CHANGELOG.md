@@ -2,6 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [4.2.1] - Aug 13, 2020
+* Add support for external rabbitmq using global values
 * Added `loadDefinition` for rabbitmq subchart when `rabbitmq.enabled=true`
 * Update RabbitMQ chart to v7.6.0
 

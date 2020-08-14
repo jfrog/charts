@@ -55,6 +55,14 @@ xray:
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
       {{- end }}
+      {{- if not .Values.rabbitmq.enabled }}
+      rabbitMq:
+        url: "{{ tpl .Values.global.rabbitmqUrl . }}"
+        username: "{{ .Values.global.rabbitmqUsername }}"
+        password: "{{ .Values.global.rabbitmqPassword }}"
+        erlangCookie:
+          value: "{{ .Values.global.rabbitmqErlangCookie }}"
+      {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
         url: "{{ .Values.xray.mongoUrl }}"
@@ -422,7 +430,11 @@ common:
 
 global:
   # Kubernetes secret with Postgres TLS certificates
-  postgresqlTlsSecret:
+  # postgresqlTlsSecret:
+  # rabbitmqUrl:
+  # rabbitmqUsername:
+  # rabbitmqPassword:
+  # rabbitmqErlangCookie:
 
 analysis:
   name: xray-analysis
