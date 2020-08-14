@@ -55,7 +55,7 @@ xray:
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
       {{- end }}
-      {{- if and (not .Values.rabbitmq.enabled) .Values.rabbitmq.external }}
+      {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
       rabbitMq:
         url: "{{ .Values.rabbitmq.external.rabbitmqUrl }}"
         username: "{{ .Values.rabbitmq.external.rabbitmqUsername }}"
