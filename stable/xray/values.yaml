@@ -294,27 +294,27 @@ rabbitmq:
   ## Load Definitions - https://www.rabbitmq.com/management.html#load-definitions
   # ref : https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions
   extraSecrets:
-  load-definition:
-    load_definition.json: |
-      {
-        "vhosts": [
-          {
-            "name": "/"
-          }
-        ],
-        "policies": [
-          {
-            "name": "ha-all",
-            "apply-to": "all",
-            "pattern": ".*",
-            "vhost": "/",
-            "definition": {
-              "ha-mode": "all",
-              "ha-sync-mode": "automatic",
+    load-definition:
+      load_definition.json: |
+        {
+          "vhosts": [
+            {
+              "name": "/"
             }
-          }
-        ]
-      }
+          ],
+          "policies": [
+            {
+              "name": "ha-all",
+              "apply-to": "all",
+              "pattern": ".*",
+              "vhost": "/",
+              "definition": {
+                "ha-mode": "all",
+                "ha-sync-mode": "automatic",
+              }
+            }
+          ]
+        }
   loadDefinition:
     enabled: true
     existingSecret: load-definition
