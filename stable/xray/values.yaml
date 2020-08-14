@@ -55,13 +55,13 @@ xray:
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
       {{- end }}
-      {{- if not .Values.rabbitmq.enabled }}
+      {{- if and (not .Values.rabbitmq.enabled) .Values.rabbitmq.external }}
       rabbitMq:
-        url: "{{ tpl .Values.global.rabbitmqUrl . }}"
-        username: "{{ .Values.global.rabbitmqUsername }}"
-        password: "{{ .Values.global.rabbitmqPassword }}"
+        url: "{{ tpl .Values.rabbitmq.external.rabbitmqUrl . }}"
+        username: "{{ .Values.rabbitmq.external.rabbitmqUsername }}"
+        password: "{{ .Values.rabbitmq.external.rabbitmqPassword }}"
         erlangCookie:
-          value: "{{ .Values.global.rabbitmqErlangCookie }}"
+          value: "{{ .Values.rabbitmq.external.rabbitmqErlangCookie }}"
       {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
@@ -282,6 +282,11 @@ rabbitmq:
     # existingErlangSecret: <name-of-existing-secret>
   service:
     port: 5672
+  external:
+    rabbitmqUrl:
+    rabbitmqUsername:
+    rabbitmqPassword:
+    rabbitmqErlangCookie:
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
@@ -430,11 +435,7 @@ common:
 
 global:
   # Kubernetes secret with Postgres TLS certificates
-  # postgresqlTlsSecret:
-  # rabbitmqUrl:
-  # rabbitmqUsername:
-  # rabbitmqPassword:
-  # rabbitmqErlangCookie:
+  postgresqlTlsSecret:
 
 analysis:
   name: xray-analysis
