@@ -57,7 +57,7 @@ xray:
       {{- end }}
       {{- if and (not .Values.rabbitmq.enabled) .Values.rabbitmq.external }}
       rabbitMq:
-        url: "{{ tpl .Values.rabbitmq.external.rabbitmqUrl . }}"
+        url: "{{ .Values.rabbitmq.external.rabbitmqUrl }}"
         username: "{{ .Values.rabbitmq.external.rabbitmqUsername }}"
         password: "{{ .Values.rabbitmq.external.rabbitmqPassword }}"
         erlangCookie:
