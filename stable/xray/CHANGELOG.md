@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [2.4.1] - Aug 17, 2020
 * Update Xray version to 2.16.1 - [Release Notes](https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.16.1)
+* Added support for Load Definitions for rabbitmq subchart when `rabbitmq.enabled=true` . Please refer [here](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions)
 
 ## [2.4.0] - Aug 3, 2020
 * Update Xray version to 2.16.0 - [Release Notes](https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.16.0)
