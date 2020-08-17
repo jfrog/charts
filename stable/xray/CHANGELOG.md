@@ -4,6 +4,7 @@ All changes to this chart will be documented in this file.
 ## [4.2.1] - Aug 14, 2020
 * Added support for external rabbitmq
 * Added support for Load Definitions for rabbitmq subchart when `rabbitmq.enabled=true` . Please refer [here](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions)
+* Update RabbitMQ chart to v7.6.1
 
 ## [4.2.0] - Aug 13, 2020
 * Update Xray to version `3.8.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8)
