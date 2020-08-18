@@ -57,11 +57,11 @@ xray:
       {{- end }}
       {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
       rabbitMq:
-        url: "{{ .Values.rabbitmq.external.rabbitmqUrl }}"
-        username: "{{ .Values.rabbitmq.external.rabbitmqUsername }}"
-        password: "{{ .Values.rabbitmq.external.rabbitmqPassword }}"
+        url: "{{ tpl .Values.rabbitmq.external.url . }}"
+        username: "{{ .Values.rabbitmq.external.username }}"
+        password: "{{ .Values.rabbitmq.external.password }}"
         erlangCookie:
-          value: "{{ .Values.rabbitmq.external.rabbitmqErlangCookie }}"
+          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
       {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
@@ -283,10 +283,10 @@ rabbitmq:
   service:
     port: 5672
   external:
-    rabbitmqUrl:
-    rabbitmqUsername:
-    rabbitmqPassword:
-    rabbitmqErlangCookie:
+    username:
+    password:
+    url:
+    erlangCookie:
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
