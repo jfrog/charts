@@ -338,7 +338,8 @@ common:
     support-router: true
 
   # Use rabbitmq connection config from environment variables.
-  # If false, than connection details should be set directly in system.yaml (systemYaml section).
+  # If false, then connection details should be set directly in system.yaml (systemYaml section).
+  # When using external rabbitmq, set this to false
   rabbitmq:
     connectionConfigFromEnvironment: true
 
