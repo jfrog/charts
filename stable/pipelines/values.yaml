@@ -523,8 +523,8 @@ pipelines:
           password: {{ .Values.pipelines.msg.uiUserPassword }}
           {{- else }}
           protocol: http
-          username: {{ .Values.rabbitmq.cp_username }}
-          password: {{ .Values.rabbitmq.cp_password }}
+          username: {{ .Values.global.rabbitmq.cp_username }}
+          password: {{ .Values.global.rabbitmq.cp_password }}
           {{- end }}
         external:
           ## URL for build plane VMs to access RabbitMQ
@@ -541,8 +541,8 @@ pipelines:
           adminUrl: ""
         {{- if not .Values.rabbitmq.enabled }}
         build:
-          username: {{ .Values.rabbitmq.build_username }}
-          password: {{ .Values.rabbitmq.build_password }}
+          username: {{ .Values.global.rabbitmq.build_username }}
+          password: {{ .Values.global.rabbitmq.build_password }}
         {{- end }}
 
       ## Vault configuration
@@ -572,9 +572,8 @@ pipelines:
       {{- else }}
         ip: {{ tpl .Values.global.redis.host . }}
         port: {{ .Values.global.redis.port }}
-        clusterEnabled: {{ .Values.global.redis.cluster.enabled }} 
-      {{- end }}       
-
+        clusterEnabled: {{ .Values.global.redis.cluster.enabled }}
+      {{- end }}
 
     ## This section is used for bringing up the core services and setting up
     ## configurations required by the installer & the services
@@ -869,18 +868,19 @@ global:
     ms_password: password
     cp_username: admin
     cp_password: password
+    build_username: admin
+    build_password: password
     root_vhost_exchange_name: rootvhost
     erlang_cookie: secretcookie
     build_vhost_name: pipelines
     root_vhost_name: pipelinesRoot
-    protocol: amqps
+    protocol: amqp
 
-  redis: 
+  redis:
     host: "{{ .Release.Name }}-redis-master"
     port: 6379
     cluster:
-      enabled: false 
-    
+      enabled: false
 
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql

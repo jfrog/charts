@@ -144,6 +144,8 @@ global:
     ms_password: password
     cp_username: admin
     cp_password: password
+    build_username: admin
+    build_password: password    
     root_vhost_exchange_name: rootvhost
     erlang_cookie: secretcookie
     build_vhost_name: pipelines
