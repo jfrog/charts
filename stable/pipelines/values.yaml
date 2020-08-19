@@ -567,8 +567,6 @@ pipelines:
       redis:
         ip: {{ .Release.Name }}-redis-master
         port: 6379
-        image: "jfrog/pipelines-redis"
-        version: 3.0.6
         clusterEnabled: false
 
     ## This section is used for bringing up the core services and setting up
@@ -986,7 +984,7 @@ rabbitmq:
 
 ## Redis
 ## Configuration values for the redis dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/redis/README.md
+## ref: https://github.com/bitnami/charts/tree/master/bitnami/redis
 ##
 redis:
   enabled: true
