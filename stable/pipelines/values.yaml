@@ -504,7 +504,7 @@ pipelines:
         defaultExchange: {{ .Values.rabbitmq.root_vhost_exchange_name }}
         amqpVhost: {{ .Values.rabbitmq.build_vhost_name}}
         amqpRootVhost: {{ .Values.rabbitmq.root_vhost_name }}
-        protocol: {{ .Values.rabbitmq.protocol | default "amqps" }}
+        protocol: {{ .Values.rabbitmq.protocol }}
         {{- end }}
         queues:
           - "core.pipelineSync"
@@ -535,7 +535,7 @@ pipelines:
           {{- else if .Values.rabbitmq.enabled }}
           url: amqp://{{ tpl .Release.Name . }}-rabbitmq
           {{- else }}
-          url: {{ .Values.rabbitmq.protocol | default "amqps" }}://{{ tpl .Values.rabbitmq.msg_hostname . }}:{{ .Values.rabbitmq.port }}
+          url: {{ .Values.rabbitmq.protocol }}://{{ tpl .Values.rabbitmq.msg_hostname . }}:{{ .Values.rabbitmq.port }}
           {{- end }}
           rootUrl: ""
           adminUrl: ""
@@ -902,6 +902,7 @@ postgresql:
 ##
 rabbitmq:
   enabled: true
+  protocol: amqps
   replicas: 1
 
   rabbitmq:
