@@ -22,6 +22,12 @@ spec:
         component: {{ include "pipelines.services.name" . }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
+        checksum/secretdb: {{ include (print $.Template.BasePath "/database-secret.yaml") . | sha256sum }}
+        checksum/secretaws: {{ include (print $.Template.BasePath "/buildplane-secret-aws.yaml") . | sha256sum }}
+        checksum/configaws: {{ include (print $.Template.BasePath "/buildplane-config-aws.yaml") . | sha256sum }}
+        checksum/secretk8s: {{ include (print $.Template.BasePath "/buildplane-secret-k8s.yaml") . | sha256sum }}
+        checksum/configk8s: {{ include (print $.Template.BasePath "/buildplane-config-k8s.yaml") . | sha256sum }}
+        checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "pipelines.fullname" . }}
     {{- if .Values.imagePullSecrets }}
@@ -105,6 +111,14 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
             readOnly: true
           - name: buildplane-config-aws
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
+            readOnly: true
+          {{- end }}
+          {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+          - name: buildplane-creds-k8s
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
+            readOnly: true
+          - name: buildplane-config-k8s
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
             readOnly: true
           {{- end }}
@@ -360,7 +374,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
     {{- with .Values.pipelines.customSidecarContainers }}
-{{ tpl  . $ | nindent 8 }}
+    {{ tpl  . $ | nindent 8 }}
     {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
       nodeSelector:
@@ -376,7 +390,7 @@ spec:
     {{- end }}
       volumes:
       {{- with .Values.pipelines.customVolumes }}
-{{ tpl . $ | nindent 6 }}
+      {{ tpl . $ | nindent 6 }}
       {{- end }}
       - name: jfrog-pipelines-folder
         emptyDir: {}
@@ -393,10 +407,18 @@ spec:
       {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
       - name: buildplane-creds-aws
         secret:
-          secretName: {{ include "pipelines.fullname" . }}-dynamic-buildplane-creds-aws
+          secretName: {{ .Values.buildPlane.dynamic.provider.aws.existingSecret | default (printf "%s-dynamic-buildplane-creds-aws" (include "pipelines.fullname" .)) }}
       - name: buildplane-config-aws
         configMap:
           name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
+      {{- end }}
+      {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+      - name: buildplane-creds-k8s
+        secret:
+          secretName: {{ .Values.buildPlane.dynamic.provider.k8s.existingSecret | default (printf "%s-dynamic-buildplane-creds-k8s" (include "pipelines.fullname" .)) }}
+      - name: buildplane-config-k8s
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-k8s
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config

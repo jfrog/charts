@@ -1,8 +1,15 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [1.3.12] - August 11, 2020
-* Enabled support for using external rabbitmq.
+## [1.4.1] - August 19, 2020
+* Add support for using external rabbitmq
+
+## [1.4.0] - Aug 8, 2020
+* Pipelines v1.7.2
+* Adds support for k8s build plane config
+* Adds support for ssl enabled postgresql
+* Support an existing secret for buildPlanes
+* Add checksum for all secrets and configmaps
 
 ## [1.3.11] - August 6, 2020
 * Fix external PG port

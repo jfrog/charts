@@ -377,7 +377,6 @@ The following table lists the configurable parameters of the mission-control cha
 | `postgresql.db.jfmcSchema`                   | PostgreSQL Database mission control Schema      | `jfmc_server`                         |
 | `postgresql.db.jfisSchema`                   | PostgreSQL Database insight server Schema       | `insight_server`                      |
 | `postgresql.db.jfscSchema`                   | PostgreSQL Database insight scheduler Schema    | `insight_scheduler`                   |
-| `postgresql.db.jfexSchema`                   | PostgreSQL Database mission executor Schema     | `insight_executor`                    |
 | `postgresql.service.port`                    | PostgreSQL Database Port                        | `5432`                                |
 | `postgresql.resources.requests.memory`       | PostgreSQL initial memory request               |                                       |
 | `postgresql.resources.requests.cpu`          | PostgreSQL initial cpu request                  |                                       |
@@ -405,7 +404,6 @@ The following table lists the configurable parameters of the mission-control cha
 | `database.jfmcSchema`                        | External database mission control Schema        | `jfmc_server`                         |
 | `database.jfisSchema`                        | External database insight server Schema         | `insight_server`                      |
 | `database.jfscSchema`                        | External database insight scheduler Schema      | `insight_scheduler`                   |
-| `database.jfexSchema`                        | External database mission executor Schema       | `insight_executor`                    |
 | `database.secrets.user.name`                 | External database username `Secret` name        |                                       |
 | `database.secrets.user.key`                  | External database username `Secret` key         |                                       |
 | `database.secrets.password.name`             | External database password `Secret` name        |                                       |
@@ -492,28 +490,12 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.loggersResources.requests.cpu`     | Insight Scheduler loggers initial cpu request    |                              |
 | `insightScheduler.loggersResources.limits.memory`    | Insight Scheduler loggers memory limit           |                              |
 | `insightScheduler.loggersResources.limits.cpu`       | Insight Scheduler loggers cpu limit              |                              |
-| `insightExecutor.name`                       | Insight Executor name                           | `insight-scheduler`                   |
-| `insightExecutor.image.repository`           | Container image                                 | `docker.bintray.io/jfrog/insight-executor`   |
-| `insightExecutor.image.version`              | Container image tag                             | `.Chart.AppVersion`                   |
-| `insightExecutor.externalPort`               | Insight Executor service external port          | `8080`                                |
-| `insightExecutor.internalPort`               | Insight Executor service internal port          | `8080`                                |
-| `insightExecutor.javaOpts.other`             | Insight Executor JFMC_EXTRA_JAVA_OPTS           | ``                                    |
-| `insightExecutor.javaOpts.xms`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xms      | ``                                    |
-| `insightExecutor.javaOpts.xmx`               | Insight Executor JFMC_EXTRA_JAVA_OPTS -Xmx      | ``                                    |
-| `insightExecutorr.resources.requests.memory` | Insight Executor initial memory request         |                                       |
-| `insightExecutorr.resources.requests.cpu`    | Insight Executor initial cpu request            |                                       |
-| `insightExecutorr.resources.limits.memory`   | Insight Executor memory limit                   |                                       |
-| `insightExecutorr.resources.limits.cpu`      | Insight Executor cpu limit                      |                                       |
-| `insightExecutor.loggers`                    | Insight Executor loggers (see values.yaml for possible values)         | ` `            |
-| `insightExecutor.loggersResources.requests.memory`  | Insight Executor loggers initial memory request |                              |
-| `insightExecutor.loggersResources.requests.cpu`     | Insight Executor loggers initial cpu request    |                              |
-| `insightExecutor.loggersResources.limits.memory`    | Insight Executor loggers memory limit           |                              |
-| `insightExecutor.loggersResources.limits.cpu`       | Insight Executor loggers cpu limit              |                              |
 | `router.name`                                | Router name                                            | `router`                        |
 | `router.image.pullPolicy`                    | Container pull policy                                  | `IfNotPresent`                  |
 | `router.image.repository`                    | Container image                                        | `docker.bintray.io/jfrog/router`|
 | `router.image.version`                       | Container image tag                                    | `.Chart.AppVersion`             |
 | `router.tlsEnabled`                          | Enable TLS connection                                  | `false`                         |
+
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 

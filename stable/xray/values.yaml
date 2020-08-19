@@ -55,6 +55,14 @@ xray:
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
       {{- end }}
+      {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+      rabbitMq:
+        url: "{{ tpl .Values.rabbitmq.external.url . }}"
+        username: "{{ .Values.rabbitmq.external.username }}"
+        password: "{{ .Values.rabbitmq.external.password }}"
+        erlangCookie:
+          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+      {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
         url: "{{ .Values.xray.mongoUrl }}"
@@ -213,7 +221,7 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    tag: 3.8.5-alpine
+    tag: 3.8.6-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
@@ -264,7 +272,7 @@ rabbitmq:
   image:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
-    tag: 3.8.5-debian-10-r14
+    tag: 3.8.6-debian-10-r1
   auth:
     username: guest
     password: ""
@@ -274,10 +282,44 @@ rabbitmq:
     # existingErlangSecret: <name-of-existing-secret>
   service:
     port: 5672
+  external:
+    username:
+    password:
+    url:
+    erlangCookie:
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
     size: 20Gi
+  ## Load Definitions - https://www.rabbitmq.com/management.html#load-definitions
+  # ref : https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions
+  extraSecrets:
+    load-definition:
+      load_definition.json: |
+        {
+          "vhosts": [
+            {
+              "name": "/"
+            }
+          ],
+          "policies": [
+            {
+              "name": "ha-all",
+              "apply-to": "all",
+              "pattern": ".*",
+              "vhost": "/",
+              "definition": {
+                "ha-mode": "all",
+                "ha-sync-mode": "automatic",
+              }
+            }
+          ]
+        }
+  loadDefinition:
+    enabled: true
+    existingSecret: load-definition
+  extraConfiguration: |
+    management.load_definitions = /app/load_definition.json
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -296,7 +338,8 @@ common:
     support-router: true
 
   # Use rabbitmq connection config from environment variables.
-  # If false, than connection details should be set directly in system.yaml (systemYaml section).
+  # If false, then connection details should be set directly in system.yaml (systemYaml section).
+  # When using external rabbitmq, set this to false
   rabbitmq:
     connectionConfigFromEnvironment: true
 

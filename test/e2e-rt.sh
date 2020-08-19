@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
 
-readonly namespace=rt
-readonly HELM="helm3"
+# shellcheck source=test/common.sh
+source "${REPO_ROOT}/test/common.sh"
 
-install_helm3() {
-    echo "Install Helm v${HELM_VERSION} cli"
-    curl -s -O https://get.helm.sh/helm-v"${HELM_VERSION}"-linux-amd64.tar.gz
-    tar -zxvf helm-v"${HELM_VERSION}"-linux-amd64.tar.gz && mv linux-amd64/helm /usr/local/bin/helm
-    cp /usr/local/bin/helm /usr/local/bin/helm3
-    echo
-}
+readonly namespace=rt
 
 connect_to_cluster() {
     # shellcheck disable=SC2086
@@ -29,8 +23,8 @@ deploy() {
     echo $RT_LICENSE | base64 --decode -i > "$REPO_ROOT"/artifactory.lic
     kubectl create secret generic artifactory-license -n ${namespace} --from-file="$REPO_ROOT"/artifactory.lic
     echo
-    ${HELM} dep up stable/artifactory/
-    ${HELM} upgrade --install artifactory --namespace ${namespace} stable/artifactory/ \
+    helm dep up stable/artifactory/
+    helm upgrade --install artifactory --namespace ${namespace} stable/artifactory/ \
         --set nginx.enabled=false,postgresql.postgresqlPassword=password \
         --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=artifactory.lic \
         --set artifactory.joinKey=EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE,artifactory.masterKey=FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -44,16 +38,16 @@ deploy() {
 }
 
 clean() {
-    ${HELM} delete --namespace ${namespace} artifactory || true
+    helm delete --namespace ${namespace} artifactory || true
     sleep 20
     kubectl delete ns ${namespace} --force --grace-period=0 || true
     sleep 10
 }
 
 main() {
-    install_helm3
+    install_helm
     connect_to_cluster
-    if [[ "$(${HELM} list -n ${namespace} -f artifactory | grep -c artifactory)" -eq 1 ]]; then
+    if [[ "$(helm list -n ${namespace} -f artifactory | grep -c artifactory)" -eq 1 ]]; then
         echo "Run clean up"
         clean
     fi
