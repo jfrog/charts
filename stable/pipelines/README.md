@@ -129,6 +129,47 @@ Install JFrog Pipelines:
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-ingress-external-secret.yaml
 ```
 
+### Using external rabbitmq
+If you want to use external rabbitmq, set `rabbitmq.enabled=false` and create `values-external-rabbitmq.yaml` with  below yaml configuration
+```yaml
+rabbitmq:
+  enabled: false
+global:
+  rabbitmq:
+    internal_ip: "{{ .Release.Name }}-rabbitmq"
+    msg_hostname: "{{ .Release.Name }}-rabbitmq"
+    port: 5672
+    manager_port: 15672
+    ms_username: admin
+    ms_password: password
+    cp_username: admin
+    cp_password: password
+    root_vhost_exchange_name: rootvhost
+    erlang_cookie: secretcookie
+    build_vhost_name: pipelines
+    root_vhost_name: pipelinesRoot
+    protocol: amqp
+```
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
+```
+
+### Using external redis
+If you want to use external redis, set `redis.enabled=false` and create `values-external-redis.yaml` with  below yaml configuration
+```yaml
+redis:
+  enabled: false
+global:
+  redis:
+    host: "{{ .Release.Name }}-redis-master"
+    port: 6379
+    cluster:
+      enabled: false 
+```
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-redis.yaml
+```
+
 ### Status
 
 See the status of deployed **helm** release:
