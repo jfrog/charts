@@ -1,4 +1,4 @@
-{{ if .Values.common.configMaps }}
+{{- if .Values.common.configMaps }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,4 +10,4 @@ metadata:
     release: {{ .Release.Name }}
 data:
 {{ tpl .Values.common.configMaps . | indent 2 }}
-{{ end -}}
+{{- end }}
