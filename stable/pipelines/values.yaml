@@ -495,16 +495,16 @@ pipelines:
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
         {{- else }}
-        ip: {{ tpl .Values.global.rabbitmq.internal_ip . }}
-        port: {{ .Values.global.rabbitmq.port}}
-        adminPort: {{ .Values.global.rabbitmq.manager_port }}
-        erlangCookie: {{ .Values.global.rabbitmq.erlang_cookie }}
-        username: {{ .Values.global.rabbitmq.ms_username }}
-        password: {{ .Values.global.rabbitmq.ms_password }}
-        defaultExchange: {{ .Values.global.rabbitmq.root_vhost_exchange_name }}
-        amqpVhost: {{ .Values.global.rabbitmq.build_vhost_name}}
-        amqpRootVhost: {{ .Values.global.rabbitmq.root_vhost_name }}
-        protocol: {{ .Values.global.rabbitmq.protocol }}
+        ip: {{ tpl .Values.rabbitmq.internal_ip . }}
+        port: {{ .Values.rabbitmq.port}}
+        adminPort: {{ .Values.rabbitmq.manager_port }}
+        erlangCookie: {{ .Values.rabbitmq.erlang_cookie }}
+        username: {{ .Values.rabbitmq.ms_username }}
+        password: {{ .Values.rabbitmq.ms_password }}
+        defaultExchange: {{ .Values.rabbitmq.root_vhost_exchange_name }}
+        amqpVhost: {{ .Values.rabbitmq.build_vhost_name}}
+        amqpRootVhost: {{ .Values.rabbitmq.root_vhost_name }}
+        protocol: {{ .Values.rabbitmq.protocol }}
         {{- end }}
         queues:
           - "core.pipelineSync"
@@ -523,8 +523,8 @@ pipelines:
           password: {{ .Values.pipelines.msg.uiUserPassword }}
           {{- else }}
           protocol: http
-          username: {{ .Values.global.rabbitmq.cp_username }}
-          password: {{ .Values.global.rabbitmq.cp_password }}
+          username: {{ .Values.rabbitmq.cp_username }}
+          password: {{ .Values.rabbitmq.cp_password }}
           {{- end }}
         external:
           ## URL for build plane VMs to access RabbitMQ
@@ -535,14 +535,14 @@ pipelines:
           {{- else if .Values.rabbitmq.enabled }}
           url: amqp://{{ tpl .Release.Name . }}-rabbitmq
           {{- else }}
-          url: {{ .Values.global.rabbitmq.protocol }}://{{ tpl .Values.global.rabbitmq.msg_hostname . }}:{{ .Values.global.rabbitmq.port }}
+          url: {{ .Values.rabbitmq.protocol }}://{{ tpl .Values.rabbitmq.msg_hostname . }}:{{ .Values.rabbitmq.port }}
           {{- end }}
           rootUrl: ""
           adminUrl: ""
         {{- if not .Values.rabbitmq.enabled }}
         build:
-          username: {{ .Values.global.rabbitmq.build_username }}
-          password: {{ .Values.global.rabbitmq.build_password }}
+          username: {{ .Values.rabbitmq.build_username }}
+          password: {{ .Values.rabbitmq.build_password }}
         {{- end }}
 
       ## Vault configuration
@@ -565,15 +565,9 @@ pipelines:
       ## Redis configuration
       ##
       redis:
-      {{- if .Values.redis.enabled }}
         ip: {{ .Release.Name }}-redis-master
         port: 6379
         clusterEnabled: false
-      {{- else }}
-        ip: {{ tpl .Values.global.redis.host . }}
-        port: {{ .Values.global.redis.port }}
-        clusterEnabled: {{ .Values.global.redis.cluster.enabled }}
-      {{- end }}
 
     ## This section is used for bringing up the core services and setting up
     ## configurations required by the installer & the services
@@ -859,29 +853,6 @@ global:
     ## PostgreSQL password using existing secret
     # existingSecret: secret
 
-  rabbitmq:
-    internal_ip: "{{ .Release.Name }}-rabbitmq"
-    msg_hostname: "{{ .Release.Name }}-rabbitmq"
-    port: 5672
-    manager_port: 15672
-    ms_username: admin
-    ms_password: password
-    cp_username: admin
-    cp_password: password
-    build_username: admin
-    build_password: password
-    root_vhost_exchange_name: rootvhost
-    erlang_cookie: secretcookie
-    build_vhost_name: pipelines
-    root_vhost_name: pipelinesRoot
-    protocol: amqp
-
-  redis:
-    host: "{{ .Release.Name }}-redis-master"
-    port: 6379
-    cluster:
-      enabled: false
-
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql
 ## Configuration values for the postgresql dependency
@@ -931,6 +902,7 @@ postgresql:
 ##
 rabbitmq:
   enabled: true
+  protocol: amqps
   replicas: 1
 
   rabbitmq:
