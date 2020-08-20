@@ -1,5 +1,5 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file.
+All changes to this chart to be documented in this file
 
 ## [1.4.1] - August 19, 2020
 * Add support for external rabbitmq and redis.
