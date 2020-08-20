@@ -334,6 +334,13 @@ Use this template if you want to attach an IAM role to the Artifactory pod direc
 ...
 ```
 
+To enable [Direct Cloud Storage Download](https://www.jfrog.com/confluence/display/JFROG/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-1.ConfiguretheArtifactoryFilestore)
+```bash
+...
+--set artifactory.persistence.awsS3V3.enableSignedUrlRedirect=true \
+...
+```
+
 #### Microsoft Azure Blob Storage
 To use Azure Blob Storage as the cluster's filestore. See [Azure Blob Storage Binary Provider](https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AzureBlobStorageClusterBinaryProvider)
 - Pass Azure Blob Storage parameters to `helm install` and `helm upgrade`
@@ -1376,6 +1383,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.persistence.awsS3V3.kmsCryptoMode`        | AWS S3 KMS encryption mode  | See https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-AmazonS3OfficialSDKTemplate |
 | `artifactory.persistence.awsS3V3.useInstanceCredentials`        | AWS S3 Use default authentication mechanism  | See https://www.jfrog.com/confluence/display/RTF/Configuring+the+Filestore#ConfiguringtheFilestore-authentication             |
 | `artifactory.persistence.awsS3V3.usePresigning`        | AWS S3 Use URL signing  | `false`            |
+| `artifactory.persistence.awsS3V3.enableSignedUrlRedirect`        | AWS S3 enable direct cloud storage download  | `false`            |
 | `artifactory.persistence.awsS3V3.signatureExpirySeconds`        | AWS S3 Validity period in seconds for signed URLs  | `300`            |
 | `artifactory.persistence.awsS3V3.cloudFrontDomainName`        | AWS CloudFront domain name  | See https://www.jfrog.com/confluence/display/RTF/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-UsingCloudFront(Optional)|
 | `artifactory.persistence.awsS3V3.cloudFrontKeyPairId`        | AWS CloudFront key pair ID  | See https://www.jfrog.com/confluence/display/RTF/Direct+Cloud+Storage+Download#DirectCloudStorageDownload-UsingCloudFront(Optional)|

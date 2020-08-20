@@ -2,8 +2,9 @@
 MAC_ARGS ?=
 CHARTS_REPO ?= https://github.com/jfrog/charts
 CHART_TESTING_IMAGE ?= quay.io/helmpack/chart-testing
-CHART_TESTING_TAG ?= v2.4.1
-TEST_IMAGE_TAG ?= v3.4.1
+CHART_TESTING_TAG ?= v3.0.0
+TEST_IMAGE_TAG ?= v0.0.3
+HELM_VERSION ?= v3.2.4
 
 # If the first argument is "lint" or "mac" or "gke" or "kind"
 ifneq ( $(filter wordlist 1,lint mac gke kind), $(firstword $(MAKECMDGOALS)))

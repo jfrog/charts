@@ -9,7 +9,11 @@ postgresql:
   postgresqlPassword: xray
 
 rabbitmq-ha:
-  rabbitmqUsername: guest
-  rabbitmqPassword: guest
-  persistentVolume:
-    enabled: false
+  enabled: false
+
+rabbitmq:
+  enabled: true
+  replicaCount: 3
+  auth:
+    username: guest
+    password: password
