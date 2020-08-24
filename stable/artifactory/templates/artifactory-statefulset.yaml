@@ -58,9 +58,9 @@ spec:
     {{- end }}
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
-    {{- if .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets  .Values.global.imagePullSecrets }}
       imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+      - name: {{ include "artifactory.imagePullSecrets" . }}
     {{- end }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
@@ -214,8 +214,8 @@ spec:
           done;
       {{- end }}
     {{- end }}
-    {{- if .Values.artifactory.customInitContainers }}
-{{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
+    {{- if or .Values.artifactory.customInitContainers }}
+{{ tpl (include "artifactory.customInitContainers" .)  . | indent 6 }}
     {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory'
@@ -648,7 +648,7 @@ spec:
           name: {{ template "artifactory.name" . }}-filebeat-config
   {{- end }}
     {{- if .Values.artifactory.customVolumes }}
-{{ tpl .Values.artifactory.customVolumes . | indent 6 }}
+{{ tpl (include "artifactory.customVolumes" .) . | indent 6 }}
     {{- end }}
   {{- if not .Values.artifactory.persistence.enabled }}
       - name: volume

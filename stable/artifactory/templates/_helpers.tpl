@@ -103,6 +103,27 @@ Resolve joinKey value
 Resolve joinKeySecretName value
 */}}
 {{- define "artifactory.joinKeySecretName" -}}
-{{- default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName  .Values.global.joinKeySecretName -}}
+{{- default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName -}}
 {{- end -}}
 
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "artifactory.imagePullSecrets" -}}
+{{- default .Values.imagePullSecrets .Values.global.imagePullSecrets -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "artifactory.customInitContainers" -}}
+{{- default .Values.artifactory.customInitContainers .Values.global.customInitContainers -}}
+{{- end -}}
+
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory.customVolumes" -}}
+{{- default .Values.artifactory.customVolumes .Values.global.customVolumes -}}
+{{- end -}}
