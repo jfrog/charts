@@ -533,7 +533,7 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-    {{- if .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
+    {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
     {{- with .Values.artifactory.nodeSelector }}
