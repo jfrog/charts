@@ -305,7 +305,7 @@ spec:
           subPath: binarystore.xml
       {{- end }}
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "artifactory.customVolumeMounts" . ) . | indent 8 }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
 {{- end }}
       containers:
@@ -443,7 +443,7 @@ spec:
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "artifactory.customVolumeMounts" . ) . | indent 8 }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.artifactory.resources | indent 10 }}
@@ -533,8 +533,8 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-    {{- if .Values.artifactory.customSidecarContainers }}
-{{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
+    {{- if .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "artifactory.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
     {{- with .Values.artifactory.nodeSelector }}
       nodeSelector:

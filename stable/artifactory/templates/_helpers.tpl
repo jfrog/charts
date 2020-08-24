@@ -135,3 +135,11 @@ Resolve customVolumeMounts value
 {{- define "artifactory.customVolumeMounts" -}}
 {{- default .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts -}}
 {{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "artifactory.customSidecarContainers" -}}
+{{- default .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- end -}}
+
