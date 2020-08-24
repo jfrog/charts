@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.3.0] - Aug 24, 2020
+## [4.2.2] - Aug 24, 2020
 * Update Xray to version `3.8.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.2)
 * Update rabbitmq tag version to `3.8.7-debian-10-r3`
 * Update rabbitmq-ha tag version to `3.8.7-alpine`
