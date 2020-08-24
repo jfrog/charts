@@ -2,12 +2,9 @@
 All changes to this chart will be documented in this file.
 
 ## [4.3.0] - Aug 24, 2020
-* Update xray to version `3.8.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.2)
-* Update rabbitmq chart to v7.6.3
-* Update rabbitmq-ha chart to v1.47.0
+* Update Xray to version `3.8.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.2)
 * Update rabbitmq tag version to `3.8.7-debian-10-r3`
 * Update rabbitmq-ha tag version to `3.8.7-alpine`
-
 
 ## [4.2.1] - Aug 14, 2020
 * Added support for external rabbitmq
