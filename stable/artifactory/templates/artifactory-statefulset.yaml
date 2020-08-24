@@ -214,7 +214,7 @@ spec:
           done;
       {{- end }}
     {{- end }}
-    {{- if or .Values.artifactory.customInitContainers }}
+    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "artifactory.customInitContainers" .)  . | indent 6 }}
     {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
