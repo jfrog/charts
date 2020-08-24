@@ -27,6 +27,17 @@ global: {}
   #  - name: custom-script
   #    configMap:
   #      name: custom-script
+  ## Add custom volumesMounts
+  # customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: "/scripts/script.sh"
+  #    subPath: script.sh
+  #  - name: posthook-start
+  #    mountPath: "/scripts/posthoook-start.sh"
+  #    subPath: posthoook-start.sh
+  #  - name: prehook-start
+  #    mountPath: "/scripts/prehook-start.sh"
+  #    subPath: prehook-start.sh
 
 # Common
 initContainerImage: docker.bintray.io/alpine:3.12

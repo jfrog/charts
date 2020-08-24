@@ -304,8 +304,8 @@ spec:
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
       {{- end }}
-      {{- if .Values.artifactory.customVolumeMounts }}
-{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" . ) . | indent 8 }}
       {{- end }}
 {{- end }}
       containers:
@@ -442,8 +442,8 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
-      {{- if .Values.artifactory.customVolumeMounts }}
-{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" . ) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.artifactory.resources | indent 10 }}
@@ -647,7 +647,7 @@ spec:
         configMap:
           name: {{ template "artifactory.name" . }}-filebeat-config
   {{- end }}
-    {{- if .Values.artifactory.customVolumes }}
+    {{- if or .Values.artifactory.customVolumes .Values.global.customVolumes }}
 {{ tpl (include "artifactory.customVolumes" .) . | indent 6 }}
     {{- end }}
   {{- if not .Values.artifactory.persistence.enabled }}

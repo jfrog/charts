@@ -127,3 +127,11 @@ Resolve customVolumes value
 {{- define "artifactory.customVolumes" -}}
 {{- default .Values.artifactory.customVolumes .Values.global.customVolumes -}}
 {{- end -}}
+
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "artifactory.customVolumeMounts" -}}
+{{- default .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- end -}}
