@@ -3,7 +3,8 @@ All changes to this chart will be documented in this file.
 
 ## [5.0.0] - Aug 24, 2020
 * Update Xray to version `3.8.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.2)
-* Update postgresql chart version to `9.3.2` in requirements.yaml - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* Update postgresql chart version to `9.3.2` - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* Update rabbitmq chart version to `7.6.x` - [7.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true
