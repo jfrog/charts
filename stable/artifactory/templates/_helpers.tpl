@@ -83,3 +83,26 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- printf "%s" "http" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "artifactory.joinKey" -}}
+{{- default .Values.artifactory.joinKey .Values.global.joinKey -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "artifactory.masterKey" -}}
+{{- default .Values.artifactory.masterKey .Values.global.masterKey -}}
+{{- end -}}
+
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "artifactory.joinKeySecretName" -}}
+{{- default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName  .Values.global.joinKeySecretName -}}
+{{- end -}}
+

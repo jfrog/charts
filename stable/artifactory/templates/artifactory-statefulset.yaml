@@ -142,29 +142,29 @@ spec:
           cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.crt;
           cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.private.key;
         {{- end }}
-        {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName }}
+        {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
           echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security/join.key;
         {{- end }}
-        {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
+        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
           echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
-        {{- if or .Values.artifactory.joinKey .Values.artifactory.joinKeySecretName}}
+        {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
         - name: ARTIFACTORY_JOIN_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.artifactory.joinKeySecretName | default (include "artifactory.fullname" .) }}"
+              name: {{ include "artifactory.joinKeySecretName" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
+        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName s}}
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory.fullname" .) }}"
+              name: {{ include "artifactory.masterKeySecretName" . }}
               key: master-key
         {{- end }}
         volumeMounts:
