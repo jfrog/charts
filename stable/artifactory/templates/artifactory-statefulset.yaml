@@ -160,7 +160,7 @@ spec:
               name: {{ include "artifactory.joinKeySecretName" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName s}}
+        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
