@@ -495,7 +495,7 @@ pipelines:
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
         {{- else }}
-        ip: {{ .Values.rabbitmq.internal_ip }}
+        ip: {{ tpl .Values.rabbitmq.internal_ip . }}
         port: {{ .Values.rabbitmq.port}}
         adminPort: {{ .Values.rabbitmq.manager_port }}
         erlangCookie: {{ .Values.rabbitmq.erlang_cookie }}
@@ -504,7 +504,7 @@ pipelines:
         defaultExchange: {{ .Values.rabbitmq.root_vhost_exchange_name }}
         amqpVhost: {{ .Values.rabbitmq.build_vhost_name}}
         amqpRootVhost: {{ .Values.rabbitmq.root_vhost_name }}
-        protocol: amqps
+        protocol: {{ .Values.rabbitmq.protocol }}
         {{- end }}
         queues:
           - "core.pipelineSync"
@@ -535,7 +535,7 @@ pipelines:
           {{- else if .Values.rabbitmq.enabled }}
           url: amqp://{{ tpl .Release.Name . }}-rabbitmq
           {{- else }}
-          url: amqps://{{ .Values.rabbitmq.msg_hostname }}:{{ .Values.rabbitmq.port }}
+          url: {{ .Values.rabbitmq.protocol }}://{{ tpl .Values.rabbitmq.msg_hostname . }}:{{ .Values.rabbitmq.port }}
           {{- end }}
           rootUrl: ""
           adminUrl: ""
@@ -567,8 +567,6 @@ pipelines:
       redis:
         ip: {{ .Release.Name }}-redis-master
         port: 6379
-        image: "jfrog/pipelines-redis"
-        version: 3.0.6
         clusterEnabled: false
 
     ## This section is used for bringing up the core services and setting up
@@ -904,6 +902,7 @@ postgresql:
 ##
 rabbitmq:
   enabled: true
+  protocol: amqps
   replicas: 1
 
   rabbitmq:
@@ -986,7 +985,7 @@ rabbitmq:
 
 ## Redis
 ## Configuration values for the redis dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/redis/README.md
+## ref: https://github.com/bitnami/charts/tree/master/bitnami/redis
 ##
 redis:
   enabled: true
