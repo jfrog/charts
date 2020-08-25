@@ -283,7 +283,7 @@ elasticsearch:
       initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 5
+      failureThreshold: 3
       successThreshold: 1
 
   readinessProbe:
@@ -295,7 +295,7 @@ elasticsearch:
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 5
+      failureThreshold: 10
       successThreshold: 1
 
 podRestartTime:
@@ -485,7 +485,7 @@ missionControl:
         port: {{ .Values.missionControl.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
@@ -497,7 +497,7 @@ missionControl:
         port: {{ .Values.missionControl.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 10
       successThreshold: 1
 
@@ -568,7 +568,7 @@ insightServer:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
@@ -580,7 +580,7 @@ insightServer:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 10
       successThreshold: 1
 
@@ -651,7 +651,7 @@ insightScheduler:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
@@ -663,7 +663,7 @@ insightScheduler:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 10
       successThreshold: 1
 
@@ -693,7 +693,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
@@ -706,7 +706,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 5
       failureThreshold: 10
       successThreshold: 1
 
