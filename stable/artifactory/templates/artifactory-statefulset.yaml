@@ -58,7 +58,7 @@ spec:
     {{- end }}
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
-    {{- if or .Values.imagePullSecrets  .Values.global.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
       imagePullSecrets:
       - name: {{ include "artifactory.imagePullSecrets" . }}
     {{- end }}

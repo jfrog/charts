@@ -125,3 +125,66 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- printf "%s" "http" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "artifactory-ha.joinKey" -}}
+{{- default .Values.artifactory.joinKey .Values.global.joinKey -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "artifactory-ha.masterKey" -}}
+{{- default .Values.artifactory.masterKey .Values.global.masterKey -}}
+{{- end -}}
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "artifactory-ha.joinKeySecretName" -}}
+{{- default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "artifactory-ha.masterKeySecretName" -}}
+{{- default (include "artifactory.fullname" .) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "artifactory-ha.imagePullSecrets" -}}
+{{- default .Values.imagePullSecrets .Values.global.imagePullSecrets -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "artifactory-ha.customInitContainers" -}}
+{{- default .Values.artifactory.customInitContainers .Values.global.customInitContainers -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory-ha.customVolumes" -}}
+{{- default .Values.artifactory.customVolumes .Values.global.customVolumes -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "artifactory-ha.customVolumeMounts" -}}
+{{- default .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "artifactory-ha.customSidecarContainers" -}}
+{{- default .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- end -}}

@@ -52,9 +52,9 @@ spec:
     {{- end }}
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
-    {{- if .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
       imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+      - name: {{ include "artifactory-ha.imagePullSecrets" .  }}
     {{- end }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
@@ -137,7 +137,7 @@ spec:
         {{- if .Values.access.customCertificatesSecretName }}
           echo "Load custom certificates from database";
         {{- end }}
-        {{- if or .Values.artifactory.masterKey .Values.artifactory.masterKeySecretName }}
+        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
           echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
@@ -145,7 +145,7 @@ spec:
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.artifactory.masterKeySecretName | default (include "artifactory-ha.fullname" .) }}"
+              name: {{ include "artifactory-ha.masterKeySecretName" . }}
               key: master-key
         {{- end }}
         resources:
@@ -187,8 +187,8 @@ spec:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- end }}
     {{- end }}
-    {{- if .Values.artifactory.customInitContainers }}
-{{ tpl .Values.artifactory.customInitContainers . | indent 6 }}
+    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "artifactory-ha.customInitContainers" .)  . | indent 6 }}
     {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
@@ -283,8 +283,8 @@ spec:
           mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
     {{- end }}
   {{- end }}
-  {{- if .Values.artifactory.customVolumeMounts }}
-{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
+  {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
   {{- end }}
   {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
@@ -445,8 +445,8 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
-      {{- if .Values.artifactory.customVolumeMounts }}
-{{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
@@ -536,8 +536,8 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-    {{- if .Values.artifactory.customSidecarContainers }}
-{{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
+    {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
     {{- with .Values.artifactory.node.nodeSelector }}
       nodeSelector:
@@ -663,8 +663,8 @@ spec:
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-filebeat-config
       {{- end }}
-      {{- if .Values.artifactory.customVolumes }}
-{{ tpl .Values.artifactory.customVolumes . | indent 6 }}
+      {{- if or .Values.artifactory.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "artifactory-ha.customVolumes" .) . | indent 6 }}
       {{- end }}
   {{- if not .Values.artifactory.persistence.enabled }}
       - name: volume

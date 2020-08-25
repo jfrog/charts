@@ -92,18 +92,24 @@ Resolve joinKey value
 {{- end -}}
 
 {{/*
-Resolve joinKey value
+Resolve masterKey value
 */}}
 {{- define "artifactory.masterKey" -}}
 {{- default .Values.artifactory.masterKey .Values.global.masterKey -}}
 {{- end -}}
-
 
 {{/*
 Resolve joinKeySecretName value
 */}}
 {{- define "artifactory.joinKeySecretName" -}}
 {{- default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "artifactory.masterKeySecretName" -}}
+{{- default (include "artifactory.fullname" .) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName -}}
 {{- end -}}
 
 {{/*
@@ -119,7 +125,6 @@ Resolve customInitContainers value
 {{- define "artifactory.customInitContainers" -}}
 {{- default .Values.artifactory.customInitContainers .Values.global.customInitContainers -}}
 {{- end -}}
-
 
 {{/*
 Resolve customVolumes value
@@ -142,4 +147,3 @@ Resolve customSidecarContainers value
 {{- define "artifactory.customSidecarContainers" -}}
 {{- default .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers -}}
 {{- end -}}
-
