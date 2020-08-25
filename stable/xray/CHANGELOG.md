@@ -7,7 +7,7 @@ All changes to this chart will be documented in this file.
 * Update rabbitmq chart version to `7.6.4` - [7.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
-* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true.
 * Update postgresql tag version to `12.3.0-debian-10-r71`
 * Update rabbitmq tag version to `3.8.7-debian-10-r3`
 * Update rabbitmq-ha tag version to `3.8.7-alpine`
