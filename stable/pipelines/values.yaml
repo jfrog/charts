@@ -80,6 +80,9 @@ pipelines:
   accessControlAllowOrigins_0: "update_with_artifactory_url"
   accessControlAllowOrigins_1: "update_with_www_external_url"
 
+  # RabbitMQ health check interval in mins
+  rabbitmqHealthCheckIntervalInMins: 1
+
   updateStrategy: RollingUpdate
 
   nodeSelector: {}
@@ -595,7 +598,7 @@ pipelines:
       accessControlAllowOrigins:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
-
+      rabbitmqHealthCheckIntervalInMins: {{ .Values.pipelines.rabbitmqHealthCheckIntervalInMins}}
       ## Global proxy settings, to be applied to all services
       ##
       proxy:

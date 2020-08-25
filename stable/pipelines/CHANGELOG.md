@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.0] - Aug 25, 2020
+* Pipelines v1.8.0
+* Adds support for making api rabbitmq health check interval configurable
+
 ## [1.4.1] - August 19, 2020
 * Add support for external rabbitmq and redis
 
