@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.3.2] - Aug 25, 2020
+* Add support for livenessProbe and livenessProbe for all Microservices.
+
 ## [4.3.1] - Aug 13, 2020
 * Expose Elasticsearch HTTP port with the mission control service.
 

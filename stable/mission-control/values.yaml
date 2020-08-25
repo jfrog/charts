@@ -274,6 +274,30 @@ elasticsearch:
   #    memory: "2.5Gi"
   #    cpu: "500m"
 
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cluster/health?local=true
+        port: {{ .Values.elasticsearch.httpPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 5
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cluster/health?local=true
+        port: {{ .Values.elasticsearch.httpPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 5
+      successThreshold: 1
+
 podRestartTime:
 
 applicationConfigs: {}
@@ -453,6 +477,30 @@ missionControl:
   internalPort: 8080
   externalPort: 80
 
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.missionControl.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.missionControl.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
   ## Extra pre start command to run extra commands before container starts
   # preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
@@ -466,7 +514,8 @@ insightServer:
     # version:
   appContext: insight
   home: /opt/jfrog
-  internalHttpPort: 8082
+  internalPort: 8082
+  externalPort: 8082
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
@@ -511,6 +560,30 @@ insightServer:
   #    memory: "128Mi"
   #    cpu: "50m"
 
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.insightServer.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.insightServer.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
 insightScheduler:
   name: insight-scheduler
   ## Note that by default we use appVersion to get image tag/version
@@ -520,6 +593,7 @@ insightScheduler:
   appContext: insight-scheduler
   home: /opt/jfrog
   internalPort: 8085
+  externalPort: 8085
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
@@ -568,6 +642,30 @@ insightScheduler:
   #  limits:
   #    memory: "128Mi"
   #    cpu: "50m"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.insightServer.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.insightServer.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
 
 router:
   name: router

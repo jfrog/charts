@@ -461,8 +461,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightServer.name`                         | Insight Server name                             | `insight-server`                      |
 | `insightServer.image.repository`             | Container image                                 | `docker.bintray.io/jfrog/insight-server`|
 | `insightServer.image.version`                | Container image tag                             | `.Chart.AppVersion`                   |
-| `insightServer.externalHttpPort`             | Insight Server service external port            | `8082`                                |
-| `insightServer.internalHttpPort`             | Insight Server service internal port            | `8082`                                |
+| `insightServer.externalPort`                 | Insight Server service external port            | `8082`                                |
+| `insightServer.internalPort`                 | Insight Server service internal port            | `8082`                                |
 | `insightServer.allowIP`                      | Range of IPs allowed to be served by Insight Server service  | `"0.0.0.0/0"`            |
 | `insightServer.resources.requests.memory`    | Insight Server initial memory request           |                                        |
 | `insightServer.resources.requests.cpu`       | Insight Server initial cpu request              |                                        |
@@ -476,8 +476,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `insightScheduler.name`                      | Insight Scheduler name                          | `insight-scheduler`                   |
 | `insightScheduler.image.repository`          | Container image                                 | `docker.bintray.io/jfrog/insight-scheduler`  |
 | `insightScheduler.image.version`             | Container image tag                             | `.Chart.AppVersion`                   |
-| `insightScheduler.externalPort`              | Insight Scheduler service external port         | `8080`                                |
-| `insightScheduler.internalPort`              | Insight Scheduler service internal port         | `8080`                                |
+| `insightScheduler.externalPort`              | Insight Scheduler service external port         | `8085`                                |
+| `insightScheduler.internalPort`              | Insight Scheduler service internal port         | `8085`                                |
 | `insightScheduler.javaOpts.other`            | Insight Scheduler JFMC_EXTRA_JAVA_OPTS          | ``                                    |
 | `insightScheduler.javaOpts.xms`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xms     | ``                                    |
 | `insightScheduler.javaOpts.xmx`              | Insight Scheduler JFMC_EXTRA_JAVA_OPTS -Xmx     | ``                                    |

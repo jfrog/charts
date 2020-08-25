@@ -274,6 +274,14 @@ spec:
           mountPath: "/scripts"
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
+{{- if .Values.elasticsearch.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.elasticsearch.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.elasticsearch.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.elasticsearch.readinessProbe.config . | indent 10 }}
+{{- end }}
     {{- end }}
       - name: {{ .Values.router.name }}
         image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
@@ -366,6 +374,14 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
+{{- if .Values.missionControl.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.missionControl.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.missionControl.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.missionControl.readinessProbe.config . | indent 10 }}
+{{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
@@ -434,7 +450,7 @@ spec:
         {{- end }}
       {{- end }}
         ports:
-        - containerPort: {{ .Values.insightServer.internalHttpPort }}
+        - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
         volumeMounts:
         - name: mission-control-data
@@ -444,6 +460,14 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.insightServer.resources | indent 10 }}
+{{- if .Values.insightServer.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.insightServer.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.insightServer.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.insightServer.readinessProbe.config . | indent 10 }}
+{{- end }}
       - name: {{ .Values.insightScheduler.name }}
         image: {{ .Values.insightScheduler.image.repository }}:{{ default .Chart.AppVersion .Values.insightScheduler.image.version }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -508,6 +532,14 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.insightScheduler.resources | indent 10 }}
+{{- if .Values.insightScheduler.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.insightScheduler.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.insightScheduler.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.insightScheduler.readinessProbe.config . | indent 10 }}
+{{- end }}
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $uid := .Values.common.uid }}
