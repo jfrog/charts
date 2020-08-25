@@ -514,8 +514,7 @@ insightServer:
     # version:
   appContext: insight
   home: /opt/jfrog
-  internalPort: 8082
-  externalPort: 8082
+  internalPort: 8087
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
@@ -593,7 +592,6 @@ insightScheduler:
   appContext: insight-scheduler
   home: /opt/jfrog
   internalPort: 8085
-  externalPort: 8085
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
@@ -674,7 +672,6 @@ router:
     version: 1.4.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
-  externalPort: 8082
   tlsEnabled: false
   resources: {}
   #  requests:
