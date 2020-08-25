@@ -100,7 +100,6 @@ pipelines:
   api:
     image:
       repository: jfrog/pipelines-api
-
       pullPolicy: IfNotPresent
 
     service:
@@ -148,7 +147,6 @@ pipelines:
   router:
     image:
       repository: jfrog/pipelines-router
-
       pullPolicy: IfNotPresent
 
     internalPort: 8046
@@ -167,7 +165,6 @@ pipelines:
   www:
     image:
       repository: jfrog/pipelines-www
-
       pullPolicy: IfNotPresent
 
     service:
@@ -219,7 +216,6 @@ pipelines:
   pipelineSync:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -233,7 +229,6 @@ pipelines:
   runTrigger:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -247,7 +242,6 @@ pipelines:
   stepTrigger:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -261,7 +255,6 @@ pipelines:
   cron:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -275,7 +268,6 @@ pipelines:
   nexec:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -289,7 +281,6 @@ pipelines:
   hookHandler:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -303,7 +294,6 @@ pipelines:
   marshaller:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -317,7 +307,6 @@ pipelines:
   logup:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -331,7 +320,6 @@ pipelines:
   extensionSync:
     image:
       repository: jfrog/pipelines-micro
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -346,7 +334,6 @@ pipelines:
   pipelinesInit:
     image:
       repository: jfrog/pipelines-installer
-
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -356,6 +343,21 @@ pipelines:
       # requests:
       #   cpu: 100m
       #   memory: 128Mi
+
+  ## Cluster Role Based Access
+  ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
+  rbac:
+    role:
+      ## Rules to create. It follows the role specification
+      rules:
+      - apiGroups: ["", "extensions", "apps"]
+        resources:
+        - deployments
+        - persistentvolumes
+        - persistentvolumeclaims
+        - pods
+        - deployments/scale
+        verbs: ["*"]
 
   # Add any list of configmaps to Pipelines
   configMaps: |
@@ -445,7 +447,6 @@ pipelines:
       ## Router configuration
       ##
       router:
-        image: "jfrog/pipelines-router"
         ip: ""
         accessPort: {{ .Values.pipelines.router.internalPort }}
         dataPort: {{ .Values.pipelines.router.externalPort }}
@@ -471,8 +472,6 @@ pipelines:
         username: {{ .Values.global.postgresql.user }}
         password: {{ .Values.global.postgresql.password }}
         {{- end }}
-        image: "jfrog/pipelines-postgres"
-        version: 9.5
         externalUrl: ""
         {{- if .Values.postgresql.enabled }}
         connectionString: "{{ tpl (printf "postgres://%s:%s@%s-postgresql:%v/%s" .Values.postgresql.postgresqlUsername .Values.postgresql.postgresqlPassword .Release.Name .Values.postgresql.service.port .Values.postgresql.postgresqlDatabase) . }}"
@@ -485,8 +484,6 @@ pipelines:
       ## RabbitMQ configuration
       ##
       msg:
-        image: "jfrog/pipelines-msg"
-        version: 3.5.7
         {{- if .Values.rabbitmq.enabled }}
         ip: {{ .Release.Name }}-rabbitmq
         port: {{ .Values.rabbitmq.service.port }}
@@ -551,8 +548,6 @@ pipelines:
       ## Vault configuration
       ##
       vault:
-        image: "jfrog/pipelines-vault"
-        version: 1.0.2
         ip: {{ include "pipelines.vault.name" . }}
         port: {{ .Values.vault.service.port }}
         clusterPort: 30101
@@ -619,7 +614,6 @@ pipelines:
         ssl: ""
       apiRetryIntervalMs: 3000
       accountSyncFrequencyHr: 1
-      kubernetesNamespace: "pipelines"
       imageRegistrySecret: "{{ .Values.imagePullSecrets }}"
       hardDeleteIntervalInMins: 60
       configBackupCount: 5
@@ -646,7 +640,6 @@ pipelines:
           {{- else }}
           externalUrl: {{ .Values.pipelines.api.externalUrl }}
           {{- end }}
-          image: "jfrog/pipelines-api"
         www:
           name: {{ include "pipelines.www.name" . }}
           port: {{ .Values.pipelines.www.service.port }}
@@ -662,31 +655,22 @@ pipelines:
           externalUrl: {{ .Values.pipelines.www.externalUrl }}
           {{- end }}
           sessionSecret: "{{ .Values.pipelines.authToken }}"
-          image: "jfrog/pipelines-www"
         pipelineSync:
           name: pipelineSync
-          image: "jfrog/pipelines-micro"
         runTrigger:
           name: runTrigger
-          image: "jfrog/pipelines-micro"
         stepTrigger:
           name: stepTrigger
-          image: "jfrog/pipelines-micro"
         cron:
           name: cron
-          image: "jfrog/pipelines-micro"
         nexec:
           name: nexec
-          image: "jfrog/pipelines-micro"
         hookHandler:
           name: hookHandler
-          image: "jfrog/pipelines-micro"
         marshaller:
           name: marshaller
-          image: "jfrog/pipelines-micro"
         extensionSync:
           name: extensionSync
-          image: "jfrog/pipelines-micro"
 
     ## Runtime configuration
     ##
