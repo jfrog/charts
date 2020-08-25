@@ -488,9 +488,9 @@ pipelines:
         ip: {{ .Release.Name }}-rabbitmq
         port: {{ .Values.rabbitmq.service.port }}
         adminPort: {{ .Values.rabbitmq.service.managerPort }}
-        erlangCookie: {{ .Values.rabbitmq.rabbitmq.erlangCookie }}
-        username: {{ .Values.rabbitmq.rabbitmq.username }}
-        password: {{ .Values.rabbitmq.rabbitmq.password }}
+        erlangCookie: {{ .Values.rabbitmq.auth.erlangCookie }}
+        username: {{ .Values.rabbitmq.auth.username }}
+        password: {{ .Values.rabbitmq.auth.password }}
         defaultExchange: pipelinesEx
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
@@ -903,9 +903,9 @@ postgresql:
 rabbitmq:
   enabled: true
   protocol: amqps
-  replicas: 1
+  replicaCount: 1
 
-  rabbitmq:
+  auth:
     username: admin
 
     ## RabbitMQ application password
