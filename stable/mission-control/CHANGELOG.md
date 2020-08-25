@@ -2,8 +2,9 @@
 All changes to this chart will be documented in this file.
 
 ## [4.4.0] - Aug 25, 2020
-* **IMPORTANT**
-* Add support for livenessProbe and readinessProbe for all Microservices.
+* **Breaking**
+* Changed `insightServer.internalHttpPort` to `insightServer.internalPort`
+* Add support for livenessProbe and readinessProbe for all microservices.
 
 ## [4.3.1] - Aug 13, 2020
 * Expose Elasticsearch HTTP port with the mission control service.
