@@ -320,7 +320,7 @@ rabbitmq:
     enabled: true
     existingSecret: load-definition
   extraConfiguration: |
-    load_definitions = /app/load_definition.json
+    management.load_definitions = /app/load_definition.json
   nodeSelector: {}
   tolerations: []
   affinity: {}
