@@ -275,24 +275,24 @@ elasticsearch:
   #    cpu: "500m"
 
   livenessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
   readinessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -478,24 +478,24 @@ missionControl:
   externalPort: 80
 
   livenessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.missionControl.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
   readinessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.missionControl.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -560,24 +560,24 @@ insightServer:
   #    cpu: "50m"
 
   livenessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
   readinessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -642,24 +642,24 @@ insightScheduler:
   #    cpu: "50m"
 
   livenessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
 
   readinessProbe:
-    enabled: false
+    enabled: true
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 240
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
