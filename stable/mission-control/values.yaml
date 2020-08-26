@@ -275,7 +275,7 @@ elasticsearch:
   #    cpu: "500m"
 
   livenessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /_cat/health
@@ -287,12 +287,12 @@ elasticsearch:
       successThreshold: 1
 
   readinessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 120
+      initialDelaySeconds: 180
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -478,7 +478,7 @@ missionControl:
   externalPort: 80
 
   livenessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /api/v1/system/ping
@@ -490,7 +490,7 @@ missionControl:
       successThreshold: 1
 
   readinessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /api/v1/system/ping
@@ -560,7 +560,7 @@ insightServer:
   #    cpu: "50m"
 
   livenessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /api/v1/system/ping
@@ -572,12 +572,12 @@ insightServer:
       successThreshold: 1
 
   readinessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 120
+      initialDelaySeconds: 180
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -642,12 +642,12 @@ insightScheduler:
   #    cpu: "50m"
 
   livenessProbe:
-    enabled: true
+    enabled: false
     config: |
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 120
+      initialDelaySeconds: 180
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -659,7 +659,7 @@ insightScheduler:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 180
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -688,7 +688,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 180
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -701,7 +701,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 120
+      initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
