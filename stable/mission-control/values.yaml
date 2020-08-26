@@ -278,7 +278,7 @@ elasticsearch:
     enabled: true
     config: |
       httpGet:
-        path: /_cluster/health?local=true
+        path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
       initialDelaySeconds: 120
       periodSeconds: 10
@@ -290,7 +290,7 @@ elasticsearch:
     enabled: true
     config: |
       httpGet:
-        path: /_cluster/health?local=true
+        path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
