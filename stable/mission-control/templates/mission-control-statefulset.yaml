@@ -172,8 +172,6 @@ spec:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-password
-        - name: JFEX_DB_USERNAME
-          value: '{{ .Values.postgresql.db.user }}'
         - name: JFEX_DB_SCHEMA
           value: '{{ .Values.postgresql.db.jfexSchema }}'
         - name: JFSC_DB_USERNAME
