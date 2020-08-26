@@ -280,7 +280,7 @@ elasticsearch:
       httpGet:
         path: /_cluster/health?local=true
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 120
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -292,10 +292,10 @@ elasticsearch:
       httpGet:
         path: /_cluster/health?local=true
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 10
+      failureThreshold: 3
       successThreshold: 1
 
 podRestartTime:
@@ -483,7 +483,7 @@ missionControl:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.missionControl.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 120
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -495,10 +495,10 @@ missionControl:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.missionControl.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 120
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 10
+      failureThreshold: 3
       successThreshold: 1
 
   ## Extra pre start command to run extra commands before container starts
@@ -565,7 +565,7 @@ insightServer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 120
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -577,10 +577,10 @@ insightServer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.insightServer.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 10
+      failureThreshold: 3
       successThreshold: 1
 
 insightScheduler:
@@ -662,7 +662,7 @@ insightScheduler:
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 10
+      failureThreshold: 3
       successThreshold: 1
 
 router:
@@ -688,7 +688,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 120
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -701,10 +701,10 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 10
+      failureThreshold: 3
       successThreshold: 1
 
   persistence:
