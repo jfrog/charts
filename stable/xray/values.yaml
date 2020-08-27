@@ -4,6 +4,8 @@
 # Access the values with {{ .Values.key.subkey }}
 
 global: {}
+  ## Kubernetes secret with Postgres TLS certificates
+  # postgresqlTlsSecret:
   # imagePullSecrets:
   # masterKey:
   # masterKeySecretName:
@@ -514,9 +516,6 @@ common:
     ##
     # storageClass: "-"
 
-global:
-  # Kubernetes secret with Postgres TLS certificates
-  postgresqlTlsSecret:
 
 analysis:
   name: xray-analysis
