@@ -102,14 +102,14 @@ Resolve masterKey value
 Resolve joinKeySecretName value
 */}}
 {{- define "artifactory.joinKeySecretName" -}}
-{{- default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName -}}
+{{- default (default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName) .Values.global.joinKeySecretName -}}
 {{- end -}}
 
 {{/*
 Resolve masterKeySecretName value
 */}}
 {{- define "artifactory.masterKeySecretName" -}}
-{{- default (include "artifactory.fullname" .) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName -}}
+{{- default (default (include "artifactory.fullname" .) .Values.artifactory.masterKeySecretName) .Values.global.masterKeySecretName -}}
 {{- end -}}
 
 {{/*

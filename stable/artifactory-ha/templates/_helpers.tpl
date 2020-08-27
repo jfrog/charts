@@ -144,14 +144,14 @@ Resolve masterKey value
 Resolve joinKeySecretName value
 */}}
 {{- define "artifactory-ha.joinKeySecretName" -}}
-{{- default (include "artifactory-ha.fullname" .) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName -}}
+{{- default (default (include "artifactory-ha.fullname" .) .Values.artifactory.joinKeySecretName) .Values.global.joinKeySecretName -}}
 {{- end -}}
 
 {{/*
 Resolve masterKeySecretName value
 */}}
 {{- define "artifactory-ha.masterKeySecretName" -}}
-{{- default (include "artifactory-ha.fullname" .) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName -}}
+{{- default (default (include "artifactory-ha.fullname" .) .Values.artifactory.masterKeySecretName) .Values.global.masterKeySecretName -}}
 {{- end -}}
 
 {{/*
