@@ -47,8 +47,7 @@ global: {}
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
   #    securityContext:
-  #      runAsUser: 0
-  #      fsGroup: 0
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'

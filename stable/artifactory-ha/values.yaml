@@ -20,7 +20,7 @@ global: {}
   #      - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-  #        name: artifactory-volume
+  #        name: volume
   ## Add custom volumes
   # customVolumes: |
   #  - name: custom-script
@@ -53,7 +53,7 @@ global: {}
   #      - 'sh /scripts/script.sh'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-  #        name: artifactory-volume
+  #        name: volume
   #      - mountPath: "/scripts/script.sh"
   #        name: custom-script
   #        subPath: script.sh
@@ -354,8 +354,7 @@ artifactory:
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
   #    securityContext:
-  #      runAsUser: 0
-  #      fsGroup: 0
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
