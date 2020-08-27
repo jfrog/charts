@@ -1,8 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
-## [1.5.0] - Aug 25, 2020
-* Pipelines v1.8.0
+## [1.4.2] - August 27, 2020
 * Adds support for making api rabbitmq health check interval configurable
 * Cleanup system.yaml
 * Add RBAC rules for Pipelines Statefulset
