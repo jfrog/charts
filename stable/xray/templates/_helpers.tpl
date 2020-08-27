@@ -260,3 +260,11 @@ Resolve customSidecarContainers value
 {{- define "xray.customSidecarContainers" -}}
 {{- default .Values.xray.customSidecarContainers .Values.global.customSidecarContainers -}}
 {{- end -}}
+
+{{/*
+Resolve consoleLog value
+*/}}
+{{- define "xray.consoleLog" -}}
+{{- default .Values.xray.consoleLog .Values.global.consoleLog -}}
+{{- end -}}
+
