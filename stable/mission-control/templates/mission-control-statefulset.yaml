@@ -204,7 +204,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
-    {{- if and .Values.database.url (eq "postgresql" .Values.database.type) }}
+    {{- if and (eq false .Values.postgresql.enabled) (eq "postgresql" .Values.database.type) .Values.database.url }}
       - name: external-postgresql-setup
         image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
         env:
