@@ -204,6 +204,72 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
+    {{- if and .Values.database.url (eq "postgresql" .Values.database.type) }}
+      - name: external-postgresql-setup
+        image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
+        env:
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.password .Values.database.password }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+              name: {{ template "mission-control.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}
+        - name: DATABASE_NAME
+          value: '{{ .Values.database.name}}'
+        - name: JFMC_DB_SCHEMA
+          value: '{{ .Values.database.jfmcSchema }}'
+        - name: JFSC_DB_SCHEMA
+          value: '{{ .Values.database.jfscSchema }}'
+        - name: JFIS_DB_SCHEMA
+          value: '{{ .Values.database.jfisSchema }}'
+        command:
+          - 'bash'
+          - '-c'
+          - |
+            POSTGRES_URL=$(echo ${JF_SHARED_DATABASE_URL//jdbc:/})
+            cat <<EOF > mission-control-init.sql
+            GRANT ALL ON DATABASE ${DATABASE_NAME} TO ${JF_SHARED_DATABASE_USERNAME};
+            CREATE SCHEMA IF NOT EXISTS ${JFMC_DB_SCHEMA} AUTHORIZATION ${JF_SHARED_DATABASE_USERNAME};
+            CREATE SCHEMA IF NOT EXISTS ${JFSC_DB_SCHEMA} AUTHORIZATION ${JF_SHARED_DATABASE_USERNAME};
+            CREATE SCHEMA IF NOT EXISTS ${JFIS_DB_SCHEMA} AUTHORIZATION ${JF_SHARED_DATABASE_USERNAME};
+            GRANT ALL ON SCHEMA ${JFMC_DB_SCHEMA} TO ${JF_SHARED_DATABASE_USERNAME};
+            GRANT ALL ON SCHEMA ${JFSC_DB_SCHEMA} TO ${JF_SHARED_DATABASE_USERNAME};
+            GRANT ALL ON SCHEMA ${JFIS_DB_SCHEMA} TO ${JF_SHARED_DATABASE_USERNAME};
+            EOF
+            psql ${POSTGRES_URL} -U mission_control -w -f mission-control-init.sql
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+    {{- end }}
       - name: prepare-storage
         image: "{{ .Values.initContainerImage }}"
         command:
