@@ -189,3 +189,74 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- printf "%s" "http" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "xray.jfrogUrl" -}}
+{{- default .Values.xray.joinKey .Values.global.jfrogUrl -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "xray.joinKey" -}}
+{{- default .Values.xray.joinKey .Values.global.joinKey -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "xray.masterKey" -}}
+{{- default .Values.xray.masterKey .Values.global.masterKey -}}
+{{- end -}}
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "xray.joinKeySecretName" -}}
+{{- default (default (include "xray.fullname" .) .Values.xray.joinKeySecretName) .Values.global.joinKeySecretName -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "xray.masterKeySecretName" -}}
+{{- default (default (include "xray.fullname" .) .Values.xray.masterKeySecretName) .Values.global.masterKeySecretName -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "xray.imagePullSecrets" -}}
+{{- default .Values.imagePullSecrets .Values.global.imagePullSecrets -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "xray.customInitContainers" -}}
+{{- default .Values.xray.customInitContainers .Values.global.customInitContainers -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "xray.customVolumes" -}}
+{{- default .Values.xray.customVolumes .Values.global.customVolumes -}}
+{{- end -}}
+
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "xray.customVolumeMounts" -}}
+{{- default .Values.xray.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "xray.customSidecarContainers" -}}
+{{- default .Values.xray.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- end -}}

@@ -3,6 +3,81 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
+global: {}
+  # imagePullSecrets:
+  # masterKey:
+  # masterKeySecretName:
+  # joinKey:
+  # joinKeySecretName:
+  # jfrogUrl:
+  # consoleLog: false
+  # ## Add custom volumes
+  # customVolumes: |
+  # #  - name: custom-script
+  # #    configMap:
+  # #      name: custom-script
+  # ## Add custom volumesMounts
+  # customVolumeMounts: |
+  # #  - name: custom-script
+  # #    mountPath: /scripts/script.sh
+  # #    subPath: script.sh
+  # ## Add any list of configmaps to Xray
+  # configMaps: |
+  # #  posthook-start.sh: |-
+  # #    echo "This is a post start script"
+  # #  posthook-end.sh: |-
+  # #    echo "This is a post end script"
+  # ## Add custom init containers execution before predefined init containers
+  # customInitContainersBegin: |
+  # #  - name: "custom-setup"
+  # #    image: "{{ .Values.initContainerImage }}"
+  # #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  # #    command:
+  # #      - 'sh'
+  # #      - '-c'
+  # #      - 'touch {{ .Values.common.xrayConfigPath }}/example-custom-setup'
+  # #    volumeMounts:
+  # #      - mountPath: "{{ .Values.common.xrayConfigPath }}"
+  # #        name: data-volume
+  # ## Add custom init containers execution after predefined init containers
+  # customInitContainers: |
+  # #  - name: "custom-setup"
+  # #    image: "{{ .Values.initContainerImage }}"
+  # #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  # #    command:
+  # #      - 'sh'
+  # #      - '-c'
+  # #      - 'touch {{ .Values.xray.persistence.mountPath }}/example-custom-setup'
+  # #    volumeMounts:
+  # #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  # #        name: data-volume
+  # ## Add custom sidecar containers
+  # # - The provided example uses a custom volume (customVolumes)
+  # # - The provided example shows running container as root (id 0)
+  # customSidecarContainers: |
+  # #  - name: "sidecar-list-etc"
+  # #    image: "{{ .Values.initContainerImage }}"
+  # #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  # #    securityContext:
+  # #      allowPrivilegeEscalation: false
+  # #    command:
+  # #      - 'sh'
+  # #      - '-c'
+  # #      - 'sh /scripts/script.sh'
+  # #    volumeMounts:
+  # #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  # #        name: volume
+  # #      - mountPath: "/scripts/script.sh"
+  # #        name: custom-script
+  # #        subPath: script.sh
+  # #    resources:
+  # #      requests:
+  # #        memory: "32Mi"
+  # #        cpu: "50m"
+  # #      limits:
+  # #        memory: "128Mi"
+  # #        cpu: "100m"
+
 # General
 initContainerImage: docker.bintray.io/alpine:3.12
 imagePullPolicy: IfNotPresent
@@ -43,8 +118,8 @@ xray:
     shared:
       logging:
         consoleLog:
-          enabled: {{ .Values.xray.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.xray.jfrogUrl) . }}"
+          enabled: {{ .Values.global.consoleLog | default .Values.xray.consoleLog }}
+      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" (include xray.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
