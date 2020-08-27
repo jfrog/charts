@@ -9,6 +9,7 @@ global: {}
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
+  # consoleLog: false
   # customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
@@ -516,7 +517,7 @@ artifactory:
     shared:
       logging:
         consoleLog:
-          enabled: {{ .Values.artifactory.consoleLog }}
+          enabled: {{ .Values.global.consoleLog | default .Values.artifactory.consoleLog }}
       extraJavaOpts: >
         -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
