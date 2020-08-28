@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [3.1.1] - Aug 24, 2020
+## [3.2.0] - Aug 24, 2020
 * Added support for global values
 * **Breaking change:** changed `imagePullSecrets` from string to list.
 
