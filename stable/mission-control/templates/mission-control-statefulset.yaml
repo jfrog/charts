@@ -230,10 +230,6 @@ spec:
           value: '{{ .Values.elasticsearch.env.networkHost }}'
         - name: 'transport.host'
           value: '{{ .Values.elasticsearch.env.transportHost }}'
-        - name: 'http.port'
-          value: '{{ .Values.elasticsearch.httpPort }}'
-        - name: 'transport.port'
-          value: '{{ .Values.elasticsearch.transportPort }}'
         - name: 'discovery.seed_hosts'
           value: '{{ template "mission-control.fullname" . }}'
         - name: 'cluster.initial_master_nodes'
@@ -262,11 +258,6 @@ spec:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
               key: url
-        ports:
-        - name: eshttp
-          containerPort: {{ .Values.elasticsearch.httpPort }}
-        - name: estransport
-          containerPort: {{ .Values.elasticsearch.transportPort }}
         volumeMounts:
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}

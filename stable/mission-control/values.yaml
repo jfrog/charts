@@ -231,9 +231,7 @@ elasticsearch:
     tag: 7.6.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
-  url: http://localhost:9200
-  httpPort: 9200
-  transportPort: 9300
+  url: http://localhost:8082
   username: "admin"
   password: "admin"
   env:
@@ -356,6 +354,9 @@ missionControl:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
         url: {{ .Values.elasticsearch.url }}
+      {{- if not .Values.elasticsearch.enabled }}
+        external: true
+      {{- end }}
       database:
       {{- if .Values.postgresql.enabled }}
         type: postgresql
