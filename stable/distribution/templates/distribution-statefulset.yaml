@@ -73,7 +73,7 @@ spec:
               name: {{ include "distribution.joinKeySecretName" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName }}
+        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: DISTRIBUTION_MASTER_KEY
           valueFrom:
             secretKeyRef:

@@ -70,8 +70,8 @@ global: {}
 initContainerImage: docker.bintray.io/alpine:3.12
 
 # For supporting pulling from private registries
-# imagePullSecrets:
-#   - myRegistryKeySecretName
+imagePullSecrets:
+  # - myRegistryKeySecretName
 
 # For HA
 replicaCount: 1
