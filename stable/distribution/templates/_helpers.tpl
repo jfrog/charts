@@ -129,28 +129,28 @@ imagePullSecrets:
 Resolve customInitContainers value
 */}}
 {{- define "distribution.customInitContainers" -}}
-{{- default .Values.distribution.customInitContainers .Values.global.customInitContainers -}}
+{{- default .Values.common.customInitContainers .Values.global.customInitContainers -}}
 {{- end -}}
 
 {{/*
 Resolve customVolumes value
 */}}
 {{- define "distribution.customVolumes" -}}
-{{- default .Values.distribution.customVolumes .Values.global.customVolumes -}}
+{{- default .Values.common.customVolumes .Values.global.customVolumes -}}
 {{- end -}}
 
 {{/*
 Resolve customVolumeMounts value
 */}}
 {{- define "distribution.customVolumeMounts" -}}
-{{- default .Values.distribution.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- default .Values.common.customVolumeMounts .Values.global.customVolumeMounts -}}
 {{- end -}}
 
 {{/*
 Resolve customSidecarContainers value
 */}}
 {{- define "distribution.customSidecarContainers" -}}
-{{- default .Values.distribution.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- default .Values.common.customSidecarContainers .Values.global.customSidecarContainers -}}
 {{- end -}}
 
 {{/*
