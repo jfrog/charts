@@ -95,10 +95,12 @@ spec:
               sleep 2;
             done;
           {{- end }}
+          {{- if .Values.redis.enabled }}
             echo "Waiting for Redis to come up...";
             until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
               sleep 2;
             done;
+          {{- end }}
             sleep 20;
             ./pipelines-k8s;
             echo "Setting router as user for system.yaml";
