@@ -1,6 +1,11 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [6.2.0] - Aug 28, 2020
+* **Breaking change:** changed `imagePullSecrets` from string to list.
+* Added support for global values
+* Updated maintainers in chart.yaml
+
 ## [6.1.4] - Jul 29, 2020
 * Added tpl support for resolving jfrogUrl
 
