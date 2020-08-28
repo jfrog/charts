@@ -12,8 +12,7 @@ data:
   initSG.sh: |
     LABEL="Elasticsearch"
     SEARCH_GUARD_DIR=/usr/share/elasticsearch/plugins/search-guard-6
-    : ${JF_SHARED_ELASTICSEARCH_URL:="http://localhost:9200"}
-    : ${ELASTIC_TRANSPORT_PORT:=9300}
+    : ${JF_SHARED_ELASTICSEARCH_URL:="http://localhost:8082/elasticsearch"}
 
     if [ ! -d "${SEARCH_GUARD_DIR}" ]; then
         echo "Unable to find ${SEARCH_GUARD_DIR} (SEARCH_GUARD_DIR) directory, please install secure guard plugin and retry"
