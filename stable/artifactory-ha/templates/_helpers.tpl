@@ -198,3 +198,10 @@ Resolve customSidecarContainers value
 {{- define "artifactory-ha.customSidecarContainers" -}}
 {{- default .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers -}}
 {{- end -}}
+
+{{/*
+Resolve consoleLog value
+*/}}
+{{- define "artifactory-ha.consoleLog" -}}
+{{- default .Values.xray.consoleLog .Values.global.consoleLog -}}
+{{- end -}}

@@ -518,7 +518,7 @@ artifactory:
     shared:
       logging:
         consoleLog:
-          enabled: {{ .Values.global.consoleLog | default .Values.artifactory.consoleLog }}
+          enabled: {{ include "artifactory-ha.consoleLog" . }}
       extraJavaOpts: >
         -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
