@@ -4,7 +4,7 @@ All changes to this chart will be documented in this file.
 ## [4.4.0] - Aug 28, 2020
 * Update Mission Control version to 4.6.0
 * **IMPORTANT**
-* Enable Elasticsearch request via router 
+* Enable Elasticsearch request via router.
 
 ## [4.3.1] - Aug 13, 2020
 * Expose Elasticsearch HTTP port with the mission control service.
