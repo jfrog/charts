@@ -5,6 +5,7 @@
 
 global: {}
   # imagePullSecrets:
+  #   - myRegistryKeySecretName
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -75,7 +76,8 @@ installer:
 installerInfo: '{"productId": "Helm_artifactory-ha/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
 
 # For supporting pulling from private registries
-imagePullSecrets:
+# imagePullSecrets:
+#   - myRegistryKeySecretName
 
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/

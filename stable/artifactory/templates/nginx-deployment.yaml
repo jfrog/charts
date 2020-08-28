@@ -39,9 +39,8 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "artifactory.imagePullSecrets" . | indent 6 }}
     {{- end }}
       initContainers:
       - name: "setup"

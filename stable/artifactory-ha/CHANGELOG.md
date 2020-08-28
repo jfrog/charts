@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [3.1.1] - Aug 24, 2020
 * Added support for global values
+* **Breaking change:** changed `imagePullSecrets` from string to list.
 
 ## [3.1.0] - Aug 13, 2020
 * Updated Artifactory version to 7.7.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7)

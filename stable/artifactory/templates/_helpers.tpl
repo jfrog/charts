@@ -116,7 +116,17 @@ Resolve masterKeySecretName value
 Resolve imagePullSecrets value
 */}}
 {{- define "artifactory.imagePullSecrets" -}}
-{{- default .Values.imagePullSecrets .Values.global.imagePullSecrets -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/*

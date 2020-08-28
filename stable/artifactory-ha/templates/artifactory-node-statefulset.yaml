@@ -53,8 +53,7 @@ spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ include "artifactory-ha.imagePullSecrets" .  }}
+{{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
     {{- end }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
