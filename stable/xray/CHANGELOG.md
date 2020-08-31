@@ -1,7 +1,8 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [5.0.1] - Aug 27, 2020
+## [5.1.0] - Aug 27, 2020
+* **Breaking change:** changed `imagePullSecrets` from string to list.
 * Added support for global values
 
 ## [5.0.0] - Aug 24, 2020

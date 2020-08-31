@@ -194,56 +194,98 @@ Scheme (http/https) based on Access TLS enabled/disabled
 Resolve jfrogUrl value
 */}}
 {{- define "xray.jfrogUrl" -}}
-{{- default .Values.xray.joinKey .Values.global.jfrogUrl -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.xray.jfrogUrl -}}
+{{- .Values.xray.jfrogUrl -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve joinKey value
 */}}
 {{- define "xray.joinKey" -}}
-{{- default .Values.xray.joinKey .Values.global.joinKey -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.xray.joinKey -}}
+{{- .Values.xray.joinKey -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve masterKey value
 */}}
 {{- define "xray.masterKey" -}}
-{{- default .Values.xray.masterKey .Values.global.masterKey -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.xray.masterKey -}}
+{{- .Values.xray.masterKey -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve joinKeySecretName value
 */}}
 {{- define "xray.joinKeySecretName" -}}
-{{- default (default (include "xray.fullname" .) .Values.xray.joinKeySecretName) .Values.global.joinKeySecretName -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.xray.joinKeySecretName -}}
+{{- .Values.xray.joinKeySecretName -}}
+{{- else -}}
+{{ include "xray.fullname" . }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve masterKeySecretName value
 */}}
 {{- define "xray.masterKeySecretName" -}}
-{{- default (default (include "xray.fullname" .) .Values.xray.masterKeySecretName) .Values.global.masterKeySecretName -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.xray.masterKeySecretName -}}
+{{- .Values.xray.masterKeySecretName -}}
+{{- else -}}
+{{ include "xray.fullname" . }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve imagePullSecrets value
 */}}
 {{- define "xray.imagePullSecrets" -}}
-{{- default .Values.imagePullSecrets .Values.global.imagePullSecrets -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customInitContainers value
 */}}
 {{- define "xray.customInitContainers" -}}
-{{- default .Values.xray.customInitContainers .Values.global.customInitContainers -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.common.customInitContainers -}}
+{{- .Values.common.customInitContainers -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customVolumes value
 */}}
 {{- define "xray.customVolumes" -}}
-{{- default .Values.xray.customVolumes .Values.global.customVolumes -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.common.customVolumes -}}
+{{- .Values.common.customVolumes -}}
+{{- end -}}
 {{- end -}}
 
 
@@ -251,20 +293,31 @@ Resolve customVolumes value
 Resolve customVolumeMounts value
 */}}
 {{- define "xray.customVolumeMounts" -}}
-{{- default .Values.xray.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.common.customVolumeMounts -}}
+{{- .Values.common.customVolumeMounts -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customSidecarContainers value
 */}}
 {{- define "xray.customSidecarContainers" -}}
-{{- default .Values.xray.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.common.customSidecarContainers -}}
+{{- .Values.common.customSidecarContainers -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve consoleLog value
 */}}
 {{- define "xray.consoleLog" -}}
-{{- default .Values.xray.consoleLog .Values.global.consoleLog -}}
+{{- if .Values.global.consoleLog -}}
+{{- .Values.global.consoleLog -}}
+{{- else if .Values.xray.consoleLog -}}
+{{- .Values.xray.consoleLog -}}
 {{- end -}}
-
+{{- end -}}
