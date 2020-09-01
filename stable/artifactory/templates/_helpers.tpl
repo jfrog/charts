@@ -88,28 +88,48 @@ Scheme (http/https) based on Access TLS enabled/disabled
 Resolve joinKey value
 */}}
 {{- define "artifactory.joinKey" -}}
-{{- default .Values.artifactory.joinKey .Values.global.joinKey -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.artifactory.joinKey -}}
+{{- .Values.artifactory.joinKey -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve masterKey value
 */}}
 {{- define "artifactory.masterKey" -}}
-{{- default .Values.artifactory.masterKey .Values.global.masterKey -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.artifactory.masterKey -}}
+{{- .Values.artifactory.masterKey -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve joinKeySecretName value
 */}}
 {{- define "artifactory.joinKeySecretName" -}}
-{{- default (default (include "artifactory.fullname" .) .Values.artifactory.joinKeySecretName) .Values.global.joinKeySecretName -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.artifactory.joinKeySecretName -}}
+{{- .Values.artifactory.joinKeySecretName -}}
+{{- else -}}
+{{ include "artifactory.fullname" . }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve masterKeySecretName value
 */}}
 {{- define "artifactory.masterKeySecretName" -}}
-{{- default (default (include "artifactory.fullname" .) .Values.artifactory.masterKeySecretName) .Values.global.masterKeySecretName -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.artifactory.masterKeySecretName -}}
+{{- .Values.artifactory.masterKeySecretName -}}
+{{- else -}}
+{{ include "artifactory.fullname" . }}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -133,34 +153,54 @@ imagePullSecrets:
 Resolve customInitContainers value
 */}}
 {{- define "artifactory.customInitContainers" -}}
-{{- default .Values.artifactory.customInitContainers .Values.global.customInitContainers -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.artifactory.customInitContainers -}}
+{{- .Values.artifactory.customInitContainers -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customVolumes value
 */}}
 {{- define "artifactory.customVolumes" -}}
-{{- default .Values.artifactory.customVolumes .Values.global.customVolumes -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.artifactory.customVolumes -}}
+{{- .Values.artifactory.customVolumes -}}
 {{- end -}}
-
+{{- end -}}
 
 {{/*
 Resolve customVolumeMounts value
 */}}
 {{- define "artifactory.customVolumeMounts" -}}
-{{- default .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.artifactory.customVolumeMounts -}}
+{{- .Values.artifactory.customVolumeMounts -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customSidecarContainers value
 */}}
 {{- define "artifactory.customSidecarContainers" -}}
-{{- default .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.artifactory.customSidecarContainers -}}
+{{- .Values.artifactory.customSidecarContainers -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve consoleLog value
 */}}
 {{- define "artifactory.consoleLog" -}}
-{{- default .Values.xray.consoleLog .Values.global.consoleLog -}}
+{{- if .Values.global.consoleLog -}}
+{{- .Values.global.consoleLog -}}
+{{- else if .Values.artifactory.consoleLog -}}
+{{- .Values.artifactory.consoleLog -}}
 {{- end -}}
+{{- end -}}
+
