@@ -339,6 +339,40 @@ common:
   #    subPath: script.sh
 ```
 
+### Custom secrets
+If you need to add a custom secret in a custom init or any common container, you can use this option.
+
+For this, there is a section for defining custom secrets in the [values.yaml](values.yaml). By default it's commented out
+```yaml
+common:
+  # Add custom secrets - secret per file
+    customSecrets:
+      - name: custom-secret
+        key: custom-secret.yaml
+        data: >
+          secret data
+```
+
+To use a custom secret, need to define a custom volume.
+```yaml
+common:
+  ## Add custom volumes
+  customVolumes: |
+    - name: custom-secret
+      secret:
+        secretName: custom-secret
+```
+
+To use a volume, need to define a volume mount as part of a custom init or sidecar container.
+```yaml
+common:
+  customVolumeMounts:
+    - name: custom-secret
+      mountPath: /opt/custom-secret.yaml
+      subPath: custom-secret.yaml
+      readOnly: true
+```
+
 ## Configuration
 The following table lists the configurable parameters of the mission-control chart and their default values.
 
@@ -395,6 +429,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `common.customVolumeMounts`                  | Custom Volume Mounts                            | see [values.yaml](values.yaml)        |
 | `common.configMaps`                          | Custom configMaps                               | see [values.yaml](values.yaml)        |
 | `common.customSidecarContainers`             | Custom SidecarContainers                        | see [values.yaml](values.yaml)        |
+| `common.customSecrets`                       | Custom secrets                                  | see [values.yaml](values.yaml)        |
 | `database.type`                              | External database type (`postgresql`)           | `postgresql`                          |
 | `database.driver`                            | External database driver                        | `org.postgresql.Driver`               |
 | `database.name`                              | External database name                          | `mission_control`                     |
