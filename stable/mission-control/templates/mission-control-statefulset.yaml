@@ -681,7 +681,7 @@ spec:
       - name: mission-control-configmaps
         configMap:
           name: {{ template "mission-control.fullname" . }}-configmaps
-      {{- end }}    
+      {{- end }}
     {{- with .Values.common.customVolumes }}
 {{ tpl . $ | indent 6 }}
     {{- end }}
