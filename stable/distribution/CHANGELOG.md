@@ -7,6 +7,7 @@ All changes to this project chart be documented in this file.
 * Updated maintainers in chart.yaml
 * Update postgresql tag version to `12.3.0-debian-10-r71`
 * Update redis tag version to `6.0.6-debian-10-r12`
+* Update router version to `1.4.3`
 * Update postgresql chart version to `9.3.4` in requirements.yaml - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
