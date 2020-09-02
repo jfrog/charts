@@ -6,6 +6,7 @@ All changes to this chart will be documented in this file.
 * Added support for global values
 * Update postgresql chart version to `9.3.4`
 * Updated chart maintainers in chart.yaml
+* Update router version to `1.4.3`
 
 ## [5.0.0] - Aug 24, 2020
 * Update Xray to version `3.8.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.2)
