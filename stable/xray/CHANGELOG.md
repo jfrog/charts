@@ -5,7 +5,7 @@ All changes to this chart will be documented in this file.
 * Update Xray version to 2.16.2 - [Release Notes](https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.16.2)
 * Update rabbitmq-ha tag version to `3.8.7-alpine`
 * Update rabbitmq tag version to `3.8.7-debian-10-r3`
-* Updated chart maintainers in chart.yaml
+* Updated chart maintainers in chart.yaml.
 
 ## [2.4.1] - Aug 17, 2020
 * Update Xray version to 2.16.1 - [Release Notes](https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.16.1)
