@@ -81,31 +81,62 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- end -}}
 
 {{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "distribution.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.distribution.jfrogUrl -}}
+{{- .Values.distribution.jfrogUrl -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve joinKey value
 */}}
 {{- define "distribution.joinKey" -}}
-{{- default .Values.distribution.joinKey .Values.global.joinKey -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.distribution.joinKey -}}
+{{- .Values.distribution.joinKey -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve masterKey value
 */}}
 {{- define "distribution.masterKey" -}}
-{{- default .Values.distribution.masterKey .Values.global.masterKey -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.distribution.masterKey -}}
+{{- .Values.distribution.masterKey -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve joinKeySecretName value
 */}}
 {{- define "distribution.joinKeySecretName" -}}
-{{- default (default (include "distribution.fullname" .) .Values.distribution.joinKeySecretName) .Values.global.joinKeySecretName -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.distribution.joinKeySecretName -}}
+{{- .Values.distribution.joinKeySecretName -}}
+{{- else -}}
+{{ include "distribution.fullname" . }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve masterKeySecretName value
 */}}
 {{- define "distribution.masterKeySecretName" -}}
-{{- default (default (include "distribution.fullname" .) .Values.distribution.masterKeySecretName) .Values.global.masterKeySecretName -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.distribution.masterKeySecretName -}}
+{{- .Values.distribution.masterKeySecretName -}}
+{{- else -}}
+{{ include "distribution.fullname" . }}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -129,33 +160,54 @@ imagePullSecrets:
 Resolve customInitContainers value
 */}}
 {{- define "distribution.customInitContainers" -}}
-{{- default .Values.common.customInitContainers .Values.global.customInitContainers -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.common.customInitContainers -}}
+{{- .Values.common.customInitContainers -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customVolumes value
 */}}
 {{- define "distribution.customVolumes" -}}
-{{- default .Values.common.customVolumes .Values.global.customVolumes -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.common.customVolumes -}}
+{{- .Values.common.customVolumes -}}
 {{- end -}}
+{{- end -}}
+
 
 {{/*
 Resolve customVolumeMounts value
 */}}
 {{- define "distribution.customVolumeMounts" -}}
-{{- default .Values.common.customVolumeMounts .Values.global.customVolumeMounts -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.common.customVolumeMounts -}}
+{{- .Values.common.customVolumeMounts -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customSidecarContainers value
 */}}
 {{- define "distribution.customSidecarContainers" -}}
-{{- default .Values.common.customSidecarContainers .Values.global.customSidecarContainers -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.common.customSidecarContainers -}}
+{{- .Values.common.customSidecarContainers -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve consoleLog value
 */}}
 {{- define "distribution.consoleLog" -}}
-{{- default .Values.distribution.consoleLog .Values.global.consoleLog -}}
+{{- if .Values.global.consoleLog -}}
+{{- .Values.global.consoleLog -}}
+{{- else if .Values.distribution.consoleLog -}}
+{{- .Values.distribution.consoleLog -}}
+{{- end -}}
 {{- end -}}
