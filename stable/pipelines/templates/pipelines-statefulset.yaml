@@ -81,6 +81,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
                   key: postgresql-url
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "postgresql") }}
+                  key: postgresql-password
             - name: PIPELINES_NODE_ID
               valueFrom:
                 fieldRef:
