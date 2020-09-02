@@ -88,6 +88,19 @@ common:
   #        memory: "128Mi"
   #        cpu: "100m"
 
+  # Add custom secrets - secret per file
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
+
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
