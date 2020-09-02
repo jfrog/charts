@@ -337,7 +337,7 @@ distribution:
       logging:
         consoleLog:
           enabled: {{ include "distribution.consoleLog" . }}
-      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" (include "xray.jfrogUrl" .)) . }}"
+      jfrogUrl: "{{ tpl (required "\n\distribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "distribution.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
