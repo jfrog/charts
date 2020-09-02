@@ -1105,17 +1105,16 @@ artifactory:
           secretName: <CUSTOM_SECRET>
 ```
 
-
 ### Ingress behind another load balancer
 If you are running a load balancer, that is used to offload the TLS, in front of Nginx Ingress Controller, or if you are setting **X-Forwarded-*** headers, you might want to enable **'use-forwarded-headers=true'** option. Otherwise nginx will be filling those headers with the request information it receives from the external load balancer.
 
 To enable it with `helm install`
 ```bash
-helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress --set-string controller.config.use-forwarded-headers=true
+helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes-ingress-nginx/ingress-nginx --set-string controller.config.use-forwarded-headers=true
 ```
 or `helm upgrade`
 ```bash
-helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true stable/nginx-ingress
+helm upgrade nginx-ingress --set-string controller.config.use-forwarded-headers=true center/kubernetes-ingress-nginx/ingress-nginx
 ```
 or create a values.yaml file with the following content:
 ```yaml
@@ -1125,7 +1124,7 @@ controller:
 ```
 Then install nginx-ingress with the values file you created:
 ```bash
-helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
+helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes-ingress-nginx/ingress-nginx -f values.yaml
 ```
 This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
 
