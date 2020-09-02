@@ -4,7 +4,10 @@ All changes to this chart will be documented in this file.
 ## [4.4.0] - Aug 25, 2020
 * **Breaking**
 * Changed `insightServer.internalHttpPort` to `insightServer.internalPort`
-* Add support for livenessProbe and readinessProbe for all microservices.
+* Add support for livenessProbe and readinessProbe for all microservices
+
+## [4.3.2] - Aug 20, 2020
+* Support list of custom secrets.
 
 ## [4.3.1] - Aug 13, 2020
 * Expose Elasticsearch HTTP port with the mission control service.
