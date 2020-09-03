@@ -174,7 +174,7 @@ dbSetup:
   postgresql:
     image:
       repository: docker.bintray.io/postgres
-      tag: 10.13-alpine
+      tag: 12.3-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -186,7 +186,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 10.13.0-debian-10-r38
+    tag: 12.3.0-debian-10-r71
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
