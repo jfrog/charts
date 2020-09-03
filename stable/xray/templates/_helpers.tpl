@@ -311,13 +311,3 @@ Resolve customSidecarContainers value
 {{- end -}}
 {{- end -}}
 
-{{/*
-Resolve consoleLog value
-*/}}
-{{- define "xray.consoleLog" -}}
-{{- if .Values.global.consoleLog -}}
-{{- .Values.global.consoleLog -}}
-{{- else if .Values.xray.consoleLog -}}
-{{- .Values.xray.consoleLog -}}
-{{- end -}}
-{{- end -}}
