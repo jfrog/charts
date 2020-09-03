@@ -1,0 +1,22 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "artifactory-ha.fullname" . }}-metrics
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    component: metrics
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: tcp-metrics
+    port: {{ .Values.metrics.service.port }}
+    protocol: TCP
+  selector:
+    app: {{ template "artifactory-ha.name" . }}
+    component: "{{ .Values.artifactory.name }}"
+    release: {{ .Release.Name }}
+{{- end }}

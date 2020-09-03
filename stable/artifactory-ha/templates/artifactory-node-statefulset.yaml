@@ -445,6 +445,10 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
+      {{- if .Values.metrics.enabled }}
+        - name: artifactory-logs
+          mountPath: /opt/jfrog/artifactory/var/log
+      {{- end }}
       {{- if .Values.artifactory.customVolumeMounts }}
 {{ tpl .Values.artifactory.customVolumeMounts . | indent 8 }}
       {{- end }}
@@ -536,6 +540,20 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+      {{- if .Values.metrics.enabled }}
+      - name: fluentd
+        image: "{{ .Values.metrics.fluentd.image.repository }}:{{ .Values.metrics.fluentd.image.tag }}"
+        volumeMounts:
+          - mountPath: /opt/bitnami/fluentd/conf/
+            name: fluentd-config
+          - mountPath: /opt/jfrog/artifactory/var/log
+            name: artifactory-logs
+        env:
+          - name: JFROG_HOME
+            value: /opt/jfrog
+          - name: FLUENTD_CONF
+            value: fluentd.conf
+      {{- end }}
     {{- if .Values.artifactory.customSidecarContainers }}
 {{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
     {{- end }}
@@ -619,7 +637,7 @@ spec:
       - name: bootstrap-config
         configMap:
           name: {{ .Values.artifactory.configMapName }}
-      {{- end}}      
+      {{- end}}
       {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
       - name: tail-logger-script
         configMap:
@@ -671,6 +689,13 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+      {{- if .Values.metrics.enabled }}
+      - name: artifactory-logs
+        emptyDir: {}
+      - name: fluentd-config
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-fluentd-config
+      {{- end }}
   volumeClaimTemplates:
   {{- if .Values.artifactory.persistence.enabled }}
   - metadata:

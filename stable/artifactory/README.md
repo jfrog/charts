@@ -639,7 +639,7 @@ database:
   user: <DB_USER>
   password: <DB_PASSWORD>
 artifactory:
-  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."  
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."
   extraEnvironmentVariables:
   - name: LD_LIBRARY_PATH
     value: /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
@@ -873,7 +873,7 @@ This will, in turn:
 * Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory.
 
 ### Establishing TLS and Adding certificates
-In HTTPS, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled. 
+In HTTPS, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled.
 When TLS is enabled, JFrog Access acts as the Certificate Authority (CA) signs the TLS certificates used by all the different JFrog Platform nodes.
 
 To establish TLS between JFrog Platform nodes:
@@ -1129,6 +1129,17 @@ helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingr
 ```
 This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
 
+### Prometheus Metrics
+
+If you want to enable Prometheus metrics you can use the `metrics` configuration options.
+
+The simplest way is to install Artifactory with the following command:
+
+```bash
+helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true center/jfrog/artifactory
+```
+
+This will create a new service exposing the Prometheus metrics as well as a ServiceMonitor object for the Prometheus Operator to start scraping.  Additionally it will run a Fluentd sidecar container in the Artifactory pod which will parse Artifactory log files.
 
 ## Configuration
 The following table lists the configurable parameters of the artifactory chart and their default values.
@@ -1432,6 +1443,13 @@ The following table lists the configurable parameters of the artifactory chart a
 | `filebeat.resources.limits.memory`   | Filebeat memory limit            |                                          |
 | `filebeat.resources.limits.cpu`      | Filebeat cpu limit               |                                          |
 | `filebeat.filebeatYml`      | Filebeat yaml configuration file                | see [values.yaml](stable/artifactory/values.yaml)                                         |
+| `metrics.enabled` | Enable the export of Prometheus metrics | `false` |
+| `metrics.service.port` | Prometheus metrics service port | 24231 |
+| `metrics.serviceMonitor.interval` | Interval at which metrics should be scraped | `15s` |
+| `metrics.serviceMonitor.scrapeTimeout` | Timeout after which the scrape is ended | `15s` |
+| `metrics.fluentd.image.repository` | Fluentd Docker image repository | `docker.io/bitnami/fluentd` |
+| `metrics.fluentd.image.tag` | Fluentd Docker image tag | `1.11.2` |
+| `metrics.fluentd.fluentdConf` | Fluentd configuration file | see [values.yaml](stable/artifactory/values.yaml) |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
