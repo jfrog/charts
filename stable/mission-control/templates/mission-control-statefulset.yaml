@@ -266,7 +266,7 @@ spec:
             GRANT ALL ON SCHEMA ${JFSC_DB_SCHEMA} TO ${JF_SHARED_DATABASE_USERNAME};
             GRANT ALL ON SCHEMA ${JFIS_DB_SCHEMA} TO ${JF_SHARED_DATABASE_USERNAME};
             EOF
-            psql ${POSTGRES_URL} -U mission_control -w -f mission-control-init.sql
+            psql ${POSTGRES_URL} -U ${JF_SHARED_DATABASE_USERNAME} -w -f mission-control-init.sql
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
