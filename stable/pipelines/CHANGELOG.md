@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [1.4.3] September 2, 2020
-* Add Postgres external secret support
+* Add external Vault support
 
 ## [1.4.2] - August 27, 2020
 * Adds support for making api rabbitmq health check interval configurable

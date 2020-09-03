@@ -129,8 +129,10 @@ Install JFrog Pipelines:
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-ingress-external-secret.yaml
 ```
 
-### Using external rabbitmq
-If you want to use external rabbitmq, set `rabbitmq.enabled=false` and create `values-external-rabbitmq.yaml` with  below yaml configuration
+### Using external Rabbitmq
+
+If you want to use external Rabbitmq, set `rabbitmq.enabled=false` and create `values-external-rabbitmq.yaml` with below yaml configuration
+
 ```yaml
 rabbitmq:
   enabled: false
@@ -150,18 +152,38 @@ rabbitmq:
   root_vhost_name: pipelinesRoot
   protocol: amqp
 ```
+
 ```bash
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
 ```
 
-### Using external redis
-If you want to use external redis, set `redis.enabled=false` and create `values-external-redis.yaml` with  below yaml configuration
+### Using external Vault
+
+If you want to use external Vault, set `vault.enabled=false` and create `values-external-vault.yaml` with below yaml configuration
+
 ```yaml
-redis:
+vault:
   enabled: false
+
+global:
+  vault:
+    host: vault_url
+    port: vault_port
+    token: vault_token
+    ## Set Vault token using existing secret
+    # existingSecret: vault-secret
 ```
+
+If you store external Vault token in a pre-existing Kubernetes Secret, you can specify it via `existingSecret`.
+
+To create a secret containing the Vault token:
+
 ```bash
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-redis.yaml
+kubectl create secret generic vault-secret --from-literal=token=${VAULT_TOKEN}
+```
+
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-vault.yaml
 ```
 
 ### Status
