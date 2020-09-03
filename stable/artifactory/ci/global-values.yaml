@@ -2,7 +2,6 @@ databaseUpgradeReady: true
 global:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  consoleLog: false
   customInitContainers: |
    - name: "custom-setup"
      image: "{{ .Values.initContainerImage }}"

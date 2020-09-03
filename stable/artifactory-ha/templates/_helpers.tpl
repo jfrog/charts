@@ -234,14 +234,3 @@ Resolve customSidecarContainers value
 {{- .Values.artifactory.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
-
-{{/*
-Resolve consoleLog value
-*/}}
-{{- define "artifactory-ha.consoleLog" -}}
-{{- if .Values.global.consoleLog -}}
-{{- .Values.global.consoleLog -}}
-{{- else if .Values.artifactory.consoleLog -}}
-{{- .Values.artifactory.consoleLog -}}
-{{- end -}}
-{{- end -}}
