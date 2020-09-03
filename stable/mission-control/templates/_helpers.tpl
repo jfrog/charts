@@ -105,17 +105,6 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Set masterKey based on mcKey/masterKey values.
-*/}}
-{{- define "masterKey" -}}
-{{- if .Values.missionControl.mcKey -}}
-{{ .Values.missionControl.mcKey }}
-{{- else -}}
-{{ .Values.missionControl.masterKey }}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Scheme (http/https) based on Access TLS enabled/disabled
 */}}
 {{- define "mission-control.scheme" -}}
@@ -123,5 +112,128 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- printf "%s" "https" -}}
 {{- else -}}
 {{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "mission-control.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.missionControl.jfrogUrl -}}
+{{- .Values.missionControl.jfrogUrl -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "mission-control.joinKey" -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.missionControl.joinKey -}}
+{{- .Values.missionControl.joinKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "mission-control.masterKey" -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.missionControl.mcKey -}}
+{{ .Values.missionControl.mcKey }}
+{{- else if .Values.missionControl.masterKey -}}
+{{- .Values.missionControl.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "mission-control.joinKeySecretName" -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.missionControl.joinKeySecretName -}}
+{{- .Values.missionControl.joinKeySecretName -}}
+{{- else -}}
+{{ include "missionControl.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "mission-control.masterKeySecretName" -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.missionControl.masterKeySecretName -}}
+{{- .Values.missionControl.masterKeySecretName -}}
+{{- else -}}
+{{ include "missionControl.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "mission-control.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "mission-control.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.common.customInitContainers -}}
+{{- .Values.common.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "mission-control.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.common.customVolumes -}}
+{{- .Values.common.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "mission-control.customVolumeMounts" -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.common.customVolumeMounts -}}
+{{- .Values.common.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "mission-control.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.common.customSidecarContainers -}}
+{{- .Values.common.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}

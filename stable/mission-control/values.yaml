@@ -3,8 +3,30 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
+global: {}
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # jfrogUrl:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # configMaps: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
 initContainerImage: docker.bintray.io/alpine:3.12
+
+# For supporting pulling from private registries
+imagePullSecrets:
+  # - myRegistryKeySecretName
+
 # Init containers
 initContainers:
   resources: {}
@@ -16,8 +38,6 @@ initContainers:
 #      cpu: "250m"
 
 imagePullPolicy: IfNotPresent
-
-imagePullSecrets:
 
 # For HA
 replicaCount: 1
@@ -364,7 +384,7 @@ missionControl:
       logging:
         consoleLog:
           enabled: {{ .Values.missionControl.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl) . }}"
+      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "mission-control.jfrogUrl" .)) . }}"
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
@@ -586,7 +606,7 @@ router:
   name: router
   image:
     repository: docker.bintray.io/jfrog/router
-    version: 1.4.2
+    version: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

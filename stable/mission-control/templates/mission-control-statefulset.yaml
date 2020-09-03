@@ -15,7 +15,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Mission Control 3.x currently not supported!\nIf this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
   {{- end }}
   {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/mission-control/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x" .Values.databaseUpgradeReady | quote }}
   {{- end }}
 spec:
   serviceName: {{ template "mission-control.fullname" . }}
@@ -40,9 +40,8 @@ spec:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/mission-control-system-yaml.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "mission-control.serviceAccountName" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "mission-control.imagePullSecrets" . | indent 6 }}
     {{- end }}
       securityContext:
         fsGroup: {{ .Values.common.uid }}
@@ -84,29 +83,29 @@ spec:
           cp -fv /tmp/etc/application.yaml {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc/application.yaml;
           echo "Remove {{ .Values.missionControl.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.missionControl.persistence.mountPath }}/lost+found;
-        {{- if or .Values.missionControl.joinKey .Values.missionControl.joinKeySecretName }}
+        {{- if or .Values.missionControl.joinKey .Values.missionControl.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.missionControl.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security;
           echo ${MC_JOIN_KEY} > {{ .Values.missionControl.persistence.mountPath }}/etc/security/join.key;
         {{- end }}
-        {{- if or .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName }}
+        {{- if or .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.missionControl.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security;
           echo ${MC_MASTER_KEY} > {{ .Values.missionControl.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
-        {{- if or .Values.missionControl.joinKey .Values.missionControl.joinKeySecretName }}
+        {{- if or .Values.missionControl.joinKey .Values.missionControl.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
         - name: MC_JOIN_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.missionControl.joinKeySecretName | default (include "mission-control.fullname" .) }}"
+              name: {{ include "mission-control.joinKey" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.missionControl.mcKey .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName }}
+        {{- if or .Values.missionControl.mcKey .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: MC_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.missionControl.masterKeySecretName | default (include "mission-control.fullname" .) }}"
+              name: {{ include "mission-control.masterKey" . }}
               key: master-key
         {{- end }}
         volumeMounts:
@@ -215,8 +214,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-    {{- with .Values.common.customInitContainers }}
-{{ tpl . $ | indent 6 }}
+    {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "mission-control.customInitContainers" .)  . | indent 6 }}
     {{- end }}
       containers:
     {{- if .Values.elasticsearch.enabled }}
@@ -293,8 +292,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-      {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "mission-control.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
@@ -361,8 +360,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-      {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "mission-control.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
@@ -439,8 +438,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-      {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "mission-control.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.insightServer.resources | indent 10 }}
@@ -503,8 +502,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-      {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "mission-control.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         resources:
 {{ toYaml .Values.insightScheduler.resources | indent 10 }}
@@ -571,8 +570,8 @@ spec:
         resources:
 {{ toYaml $.Values.insightScheduler.loggersResources | indent 10 }}
       {{- end }}
-    {{- with .Values.common.customSidecarContainers }}
-{{ tpl . $ | indent 6 }}
+    {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "mission-control.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
     {{- with .Values.missionControl.nodeSelector }}
       nodeSelector:
@@ -616,9 +615,9 @@ spec:
         configMap:
           name: {{ template "mission-control.fullname" . }}-configmaps
       {{- end }}
-    {{- with .Values.common.customVolumes }}
-{{ tpl . $ | indent 6 }}
-    {{- end }}
+      {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "mission-control.customVolumes" .) . | indent 6 }}
+      {{- end }}
     {{- if not .Values.missionControl.persistence.enabled }}
       - name: mission-control-data
         emptyDir: {}
