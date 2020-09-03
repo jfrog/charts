@@ -201,13 +201,3 @@ Resolve customSidecarContainers value
 {{- end -}}
 {{- end -}}
 
-{{/*
-Resolve consoleLog value
-*/}}
-{{- define "distribution.consoleLog" -}}
-{{- if .Values.global.consoleLog -}}
-{{- .Values.global.consoleLog -}}
-{{- else if .Values.distribution.consoleLog -}}
-{{- .Values.distribution.consoleLog -}}
-{{- end -}}
-{{- end -}}

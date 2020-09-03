@@ -11,62 +11,17 @@ global: {}
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
-  # consoleLog: false
-  ## Add custom volumes
   # customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-  ## Add custom volumesMounts
+  
   # customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: /scripts/script.sh
-  #    subPath: script.sh
-  ## Add any list of configmaps to distribution
-  # configMaps: |
-  #  posthook-start.sh: |-
-  #    echo "This is a post start script"
-  #  posthook-end.sh: |-
-  #    echo "This is a post end script"
-  ## Add custom init containers
-  # customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: distribution-data
-  ## Add custom sidecar containers
-  # - The provided example uses a custom volume (customVolumes)
-  # customSidecarContainers: |
-  #  - name: "sidecar-list-etc"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    securityContext:
-  #      allowPrivilegeEscalation: false
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'sh /scripts/script.sh'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: volume
-  #      - mountPath: "/scripts/script.sh"
-  #        name: custom-script
-  #        subPath: script.sh
-  #    resources:
-  #      requests:
-  #        memory: "32Mi"
-  #        cpu: "50m"
-  #      limits:
-  #        memory: "128Mi"
-  #        cpu: "100m"
 
-# Common
+  # configMaps: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
+
 initContainerImage: docker.bintray.io/alpine:3.12
 
 # For supporting pulling from private registries
@@ -336,7 +291,7 @@ distribution:
     shared:
       logging:
         consoleLog:
-          enabled: {{ include "distribution.consoleLog" . }}
+          enabled: {{ .Values.distribution.consoleLog }}
       jfrogUrl: "{{ tpl (required "\n\distribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "distribution.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
