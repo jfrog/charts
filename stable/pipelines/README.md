@@ -70,7 +70,7 @@ Edit local copies of `values-ingress.yaml`, `values-ingress-passwords.yaml` and 
   - Artifactory URL
   - Ingress hosts
   - Ingress tls secrets
-- Passwords, `masterKey` and `joinKey` in `values-ingress-passwords.yaml`
+- Passwords `uiUserPassword`, `postgresqlPassword` and `rabbitmq.password` must be set, and same for `masterKey` and `joinKey` in `values-ingress-passwords.yaml`
 
 #### Install JFrog Pipelines
 
