@@ -213,8 +213,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.user }}
-              name: {{ tpl .Values.database.secrets.user.name .}}
-              key: {{ tpl .Values.database.secrets.user.key .}}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-user
@@ -237,8 +237,8 @@ spec:
           valueFrom:
             secretKeyRef:
         {{- if .Values.database.secrets.url }}
-              name: {{ tpl .Values.database.secrets.url.name .}}
-              key: {{ tpl .Values.database.secrets.url.key .}}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               name: {{ template "mission-control.fullname" . }}-database-creds
               key: db-url
