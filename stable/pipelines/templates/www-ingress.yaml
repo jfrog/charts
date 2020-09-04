@@ -1,7 +1,7 @@
 {{- if .Values.pipelines.www.ingress.enabled }}
 {{- $fullName := include "pipelines.www.name" . -}}
 {{- $ingressPath := .Values.pipelines.www.ingress.path -}}
-{{- if semverCompare ">=v1.14.0" .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">=v1.14.0" .Capabilities.KubeVersion.Version }}
 apiVersion: networking.k8s.io/v1beta1
 {{- else }}
 apiVersion: extensions/v1beta1

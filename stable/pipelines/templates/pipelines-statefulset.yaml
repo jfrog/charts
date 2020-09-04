@@ -30,9 +30,8 @@ spec:
         checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "pipelines.fullname" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
       initContainers:
         - name: copy-system-yaml
@@ -177,7 +176,7 @@ spec:
                 fieldRef:
                   fieldPath: "status.podIP"
             - name: JF_SHARED_SECURITY_JOINKEY
-              value: "{{ .Values.pipelines.joinKey }}"
+              value: {{ include "pipelines.joinKey" . }}
             - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
               value: "true"
           ports:
@@ -253,7 +252,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
           {{- with .Values.pipelines.customVolumeMounts }}
-{{ tpl . $ | indent 10 }}
+{{ tpl . $ | nindent 10 }}
           {{- end }}
         - name: pipelinesync
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelineSync.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
@@ -381,9 +380,9 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
-    {{- with .Values.pipelines.customSidecarContainers }}
-    {{ tpl  . $ | nindent 8 }}
-    {{- end }}
+          {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "mission-control.customSidecarContainers" .) . | nindent 8 }}
+          {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -114,3 +114,99 @@ Set grcp url
 {{- printf "%s" (tpl .Values.pipelines.jfrogUrl . ) }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "pipelines.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.pipelines.jfrogUrl -}}
+{{- .Values.pipelines.jfrogUrl -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "pipelines.joinKey" -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.pipelines.joinKey -}}
+{{- .Values.pipelines.joinKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "pipelines.masterKey" -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.pipelines.masterKey -}}
+{{- .Values.pipelines.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "pipelines.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "pipelines.vault.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.vault.customInitContainers -}}
+{{- .Values.vault.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "pipelines.vault.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.vault.customVolumes -}}
+{{- .Values.vault.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "pipelines.vault.customVolumeMounts" -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.vault.customVolumeMounts -}}
+{{- .Values.vault.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "pipelines.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.pipelines.customSidecarContainers -}}
+{{- .Values.pipelines.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}

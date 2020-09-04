@@ -1,5 +1,43 @@
 ## Default values for pipelines
 
+## For setting up external services
+global:
+  ## Internal Postgres must be set to false
+  postgresql:
+    host:
+    port: 5432
+    database: "pipelinesdb"
+    user: "apiuser"
+    # Password must be set
+    password: ""
+    ssl: false
+    ## PostgreSQL password using existing secret
+    # existingSecret: secret
+
+  ## Internal Vault must be set to false
+  vault:
+    host:
+    port:
+    token:
+    ## Vault token using existing secret
+    # existingSecret: secret
+
+
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # jfrogUrl:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
 ## Common
 initContainer:
   image: "docker.bintray.io/alpine:3.12"
@@ -15,6 +53,7 @@ imageRegistry: docker.bintray.io
 ## For supporting pulling from private registries
 ## Secret type: kubernetes.io/dockerconfigjson
 imagePullSecrets:
+  # - myRegistryKeySecretName
 
 ## Existing secret with Pipelines system.yaml
 existingSecret:
@@ -425,10 +464,10 @@ pipelines:
       artifactory:
         ## Artifactory URL
         ##
-        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl is required!\n" .Values.pipelines.jfrogUrl) . }}"
+        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "pipelines.jfrogUrl" .)) . }}"
         ## Unified UI URL
         ##
-        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI is required!\n" .Values.pipelines.jfrogUrlUI) . }}"
+        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI is required!" (include "pipelines.jfrogUrl" .)) . }}"
         ## Pipelines Service ID
         ##
         serviceId: "{{ .Values.pipelines.serviceId }}"
@@ -451,10 +490,10 @@ pipelines:
         ip: ""
         accessPort: {{ .Values.pipelines.router.internalPort }}
         dataPort: {{ .Values.pipelines.router.externalPort }}
-        joinKey: "{{ .Values.pipelines.joinKey }}"
+        joinKey: {{ include "pipelines.joinKey" . }}
 
       security:
-        masterKey: "{{ .Values.pipelines.masterKey }}"
+        masterKey: {{ include "pipelines.masterKey" . }}
 
       ## Database configuration
       ##
@@ -619,7 +658,6 @@ pipelines:
         ssl: ""
       apiRetryIntervalMs: 3000
       accountSyncFrequencyHr: 1
-      imageRegistrySecret: "{{ .Values.imagePullSecrets }}"
       hardDeleteIntervalInMins: 60
       configBackupCount: 5
       lastUpdateTime: ""
@@ -830,29 +868,7 @@ pipelines:
           defaultVersion: 1.12.14
 
 ## Runtime Override Properties Section
-runtimeOverride: {}
-
-## For setting up external services
-global:
-  ## Internal Postgres must be set to false
-  postgresql:
-    host:
-    port: 5432
-    database: "pipelinesdb"
-    user: "apiuser"
-    # Password must be set
-    password: ""
-    ssl: false
-    ## PostgreSQL password using existing secret
-    # existingSecret: secret
-
-  ## Internal Vault must be set to false
-  vault:
-    host:
-    port:
-    token:
-    ## Vault token using existing secret
-    # existingSecret: secret
+runtimeOverride: {}s
 
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql
@@ -865,7 +881,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 12.3.0-debian-10-r71
 
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
