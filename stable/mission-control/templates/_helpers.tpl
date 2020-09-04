@@ -143,8 +143,6 @@ Resolve masterKey value
 {{- define "mission-control.masterKey" -}}
 {{- if .Values.global.masterKey -}}
 {{- .Values.global.masterKey -}}
-{{- else if .Values.missionControl.mcKey -}}
-{{ .Values.missionControl.mcKey }}
 {{- else if .Values.missionControl.masterKey -}}
 {{- .Values.missionControl.masterKey -}}
 {{- end -}}
