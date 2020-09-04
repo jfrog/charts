@@ -380,8 +380,8 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
-          {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
-{{ tpl (include "mission-control.customSidecarContainers" .) . | nindent 8 }}
+          {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "pipelines.customSidecarContainers" .) . | nindent 8 }}
           {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
       nodeSelector:
