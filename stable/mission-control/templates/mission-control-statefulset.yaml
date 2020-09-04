@@ -98,14 +98,14 @@ spec:
         - name: MC_JOIN_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ include "mission-control.joinKey" . }}
+              name: {{ include "mission-control.joinKeySecretName" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.missionControl.mcKey .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
+        {{- if or .Values.missionControl.masterKey .Values.missionControl.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: MC_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ include "mission-control.masterKey" . }}
+              name: {{ include "mission-control.masterKeySecretName" . }}
               key: master-key
         {{- end }}
         volumeMounts:

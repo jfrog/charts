@@ -159,7 +159,7 @@ Resolve joinKeySecretName value
 {{- else if .Values.missionControl.joinKeySecretName -}}
 {{- .Values.missionControl.joinKeySecretName -}}
 {{- else -}}
-{{ include "missionControl.fullname" . }}
+{{ include "mission-control.fullname" . }}
 {{- end -}}
 {{- end -}}
 
@@ -172,7 +172,7 @@ Resolve masterKeySecretName value
 {{- else if .Values.missionControl.masterKeySecretName -}}
 {{- .Values.missionControl.masterKeySecretName -}}
 {{- else -}}
-{{ include "missionControl.fullname" . }}
+{{ include "mission-control.fullname" . }}
 {{- end -}}
 {{- end -}}
 
