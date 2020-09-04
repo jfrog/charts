@@ -62,7 +62,11 @@ spec:
           - '-c'
           - >
             echo "Waiting for Vault to come up...";
-            until nc -z -w 2 {{ include "pipelines.vault.name" . }} {{ .Values.vault.service.port }} && echo vault ok; do
+            {{- if .Values.vault.enabled }}
+            until nc -z -w 2 {{ include "pipelines.vault.name" . }} {{ .Values.vault.service.port }} && echo Vault ok; do
+            {{- else }}
+            until nc -z -w 2 {{ tpl .Values.global.vault.host . }} {{ .Values.global.vault.port }} && echo Vault ok; do
+            {{- end }}
               sleep 2;
             done;
         - name: pipelines-installer
@@ -74,13 +78,15 @@ spec:
             - name: VAULT_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: root-vault-secret
+                  name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
                   key: token
+          {{- if .Values.vault.enabled }}
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
                   key: postgresql-url
+          {{- end }}
             - name: PIPELINES_NODE_ID
               valueFrom:
                 fieldRef:
