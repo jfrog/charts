@@ -238,7 +238,7 @@ Resolve customSidecarContainers value
 {{/*
 Return the proper artifactory chart image names
 */}}
-{{- define "artifactory-ha.image" -}}
+{{- define "artifactory-ha.getImageInfoByValue" -}}
 {{- $dot := index . 0 }}
 {{- $indexReference := index . 1 }}
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}

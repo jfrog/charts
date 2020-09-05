@@ -57,7 +57,7 @@ spec:
         fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
-        image: {{ include "artifactory-ha.image" (list . "nginx") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "nginx") }}
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         command:
           - 'nginx'
@@ -132,7 +132,7 @@ spec:
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "artifactory-ha.image" (list $ "logger") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
         command:
         - tail
         args:

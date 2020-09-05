@@ -267,7 +267,7 @@ spec:
     {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
-        image: {{ include "artifactory-ha.image" (list . "artifactory") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         resources:
 {{ toYaml .Values.artifactory.primary.resources | indent 10 }}
@@ -381,7 +381,7 @@ spec:
 {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
-        image: {{ include "artifactory-ha.image" (list . "artifactory") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -578,7 +578,7 @@ spec:
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "artifactory-ha.image" (list $ "logger") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
         command:
           - 'sh'
           - '-c'
@@ -595,7 +595,7 @@ spec:
       {{ if .Values.artifactory.catalinaLoggers }}
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "artifactory-ha.image" (list $ "logger") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
         command:
         - 'sh'
         - '-c'
