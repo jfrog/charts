@@ -234,3 +234,23 @@ Resolve customSidecarContainers value
 {{- .Values.artifactory.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return the proper artifactory chart image names
+*/}}
+{{- define "artifactory-ha.image" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference := index . 1 }}
+{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
+{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}

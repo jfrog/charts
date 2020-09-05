@@ -191,7 +191,7 @@ spec:
     {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
-        image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
+        image: {{ include "artifactory-ha.image" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -210,7 +210,7 @@ spec:
           cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
           cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
-          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.version }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
         env:
@@ -305,7 +305,7 @@ spec:
 {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
-        image: '{{ .Values.artifactory.image.repository }}:{{ default .Chart.AppVersion .Values.artifactory.image.version }}'
+        image: {{ include "artifactory-ha.image" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -473,12 +473,10 @@ spec:
           failureThreshold: {{ .Values.artifactory.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.artifactory.livenessProbe.successThreshold }}
         {{- end }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "artifactory-ha.image" (list $ "logger") }}
         command:
           - 'sh'
           - '-c'
@@ -495,7 +493,7 @@ spec:
       {{ if .Values.artifactory.catalinaLoggers }}
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "artifactory-ha.image" (list $ "logger") }}
         command:
         - 'sh'
         - '-c'
