@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [11.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets`values from string to list.
+* **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
 * Added support for global values
 * Updated maintainers in chart.yaml
 * Update postgresql tag version to `12.3.0-debian-10-r71`

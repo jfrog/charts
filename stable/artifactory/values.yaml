@@ -112,7 +112,8 @@ networkpolicy:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
+    registry: docker.bintray.io
+    repository: busybox
     tag: 1.31.1
 
 # Artifactory
@@ -120,8 +121,9 @@ artifactory:
   name: artifactory
   # Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/artifactory-pro
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/artifactory-pro
+    # tag:
     pullPolicy: IfNotPresent
   labels: {}
 
@@ -902,8 +904,9 @@ nginx:
   gid: 107
   # Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/nginx-artifactory-pro
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/nginx-artifactory-pro
+    # tag:
     pullPolicy: IfNotPresent
 
   # Sidecar containers for tailing Nginx logs
