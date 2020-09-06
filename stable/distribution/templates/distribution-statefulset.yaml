@@ -98,7 +98,7 @@ spec:
       {{- end }}
       {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
-        image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -128,7 +128,7 @@ spec:
     {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
-        image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -215,7 +215,7 @@ spec:
 {{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
       {{- end }}
       - name: {{ .Values.distributor.name }}
-        image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "distributor") }}
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -291,7 +291,7 @@ spec:
         resources:
 {{ toYaml .Values.distributor.resources | indent 10 }}
       - name: {{ .Values.router.name }}
-        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         env:
           - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
@@ -321,7 +321,7 @@ spec:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: redis
-        image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "redis") }}
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
         env:
         - name: REDIS_REPLICATION_MODE
@@ -355,13 +355,11 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
       {{- $name := .Values.distribution.name }}
       {{- $mountPath := .Values.distribution.persistence.mountPath }}
       {{- range .Values.distribution.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
         command:
           - tail
         args:
@@ -377,7 +375,7 @@ spec:
       {{- $mountPath := .Values.distributor.persistence.mountPath }}
       {{- range .Values.distributor.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
         command:
           - tail
         args:

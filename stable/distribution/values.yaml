@@ -4,6 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 global: {}
+  # imageRegistry:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   # jfrogUrl:
@@ -146,7 +147,8 @@ database:
 ##
 redis:
   image:
-    repository: docker.bintray.io/bitnami/redis
+    registry: docker.bintray.io
+    repository: bitnami/redis
     tag: 6.0.6-debian-10-r12
     pullPolicy: IfNotPresent
   port: 6379
@@ -242,15 +244,17 @@ common:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
+    registry: docker.bintray.io
+    repository: busybox
     tag: 1.31.1
 
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/distribution-distribution
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/distribution-distribution
+    # tag:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
   externalPort: 80
@@ -424,8 +428,9 @@ distributor:
   name: distributor
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/distribution-distributor
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/distribution-distributor
+    # tag:
     imagePullPolicy: IfNotPresent
 
   ## Extra environment variables that can be used to tune Distributor to your needs.
@@ -502,8 +507,9 @@ distributor:
 router:
   name: router
   image:
-    repository: docker.bintray.io/jfrog/router
-    version: 1.4.3
+    registry: docker.bintray.io
+    repository: jfrog/router
+    tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
