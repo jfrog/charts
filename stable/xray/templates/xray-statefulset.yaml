@@ -120,7 +120,7 @@ spec:
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
-        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -157,7 +157,7 @@ spec:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.server.name }}
-        image: {{ .Values.server.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -247,7 +247,7 @@ spec:
 {{ tpl .Values.server.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.analysis.name }}
-        image: {{ .Values.analysis.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -343,7 +343,7 @@ spec:
 {{ tpl .Values.analysis.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.indexer.name }}
-        image: {{ .Values.indexer.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -439,7 +439,7 @@ spec:
 {{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.persist.name }}
-        image: {{ .Values.persist.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'

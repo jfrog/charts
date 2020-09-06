@@ -344,8 +344,6 @@ rabbitmq:
 
 # Common Xray settings
 common:
-  ## Note that by default we use appVersion to get image tag
-  # xrayVersion:
   xrayUserId: 1035
   xrayGroupId: 1035
 
@@ -461,8 +459,9 @@ analysis:
   name: xray-analysis
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-analysis
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-analysis
+    # tag:
   internalPort: 7000
   externalPort: 7000
   annotations: {}
@@ -516,8 +515,9 @@ indexer:
   name: xray-indexer
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-indexer
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-indexer
+    # tag:
   internalPort: 7002
   externalPort: 7002
   annotations: {}
@@ -567,8 +567,9 @@ persist:
   name: xray-persist
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-persist
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-persist
+    # tag:
   internalPort: 7003
   externalPort: 7003
   annotations: {}
@@ -622,8 +623,9 @@ server:
   name: xray-server
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-server
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-server
+    # tag:
   internalPort: 8000
   externalPort: 80
   annotations: {}
@@ -677,8 +679,9 @@ server:
 router:
   name: router
   image:
-    repository: docker.bintray.io/jfrog/router
-    version: 1.4.3
+    registry: docker.bintray.io
+    repository: jfrog/router
+    tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
