@@ -220,7 +220,7 @@ spec:
       containers:
     {{- if .Values.elasticsearch.enabled }}
       - name: {{ .Values.elasticsearch.name }}
-        image: "{{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}"
+        image: {{ include "mission-control.getImageInfoByValue" (list . "elasticsearch") }}
         imagePullPolicy: {{ .Values.elasticsearch.imagePullPolicy }}
         env:
         - name: 'cluster.name'
@@ -275,7 +275,7 @@ spec:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
     {{- end }}
       - name: {{ .Values.router.name }}
-        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        image: {{ include "mission-control.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         command:
         - '/bin/sh'
@@ -306,7 +306,7 @@ spec:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.missionControl.name }}
-        image: {{ .Values.missionControl.image.repository }}:{{ default .Chart.AppVersion .Values.missionControl.image.version }}
+        image: {{ include "mission-control.getImageInfoByValue" (list . "missionControl") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
         - '/bin/sh'
@@ -393,7 +393,7 @@ spec:
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
       - name: {{ .Values.insightServer.name }}
-        image: {{ .Values.insightServer.image.repository }}:{{ default .Chart.AppVersion .Values.insightServer.image.version }}
+        image: {{ include "mission-control.getImageInfoByValue" (list . "insightServer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
@@ -444,7 +444,7 @@ spec:
         resources:
 {{ toYaml .Values.insightServer.resources | indent 10 }}
       - name: {{ .Values.insightScheduler.name }}
-        image: {{ .Values.insightScheduler.image.repository }}:{{ default .Chart.AppVersion .Values.insightScheduler.image.version }}
+        image: {{ include "mission-control.getImageInfoByValue" (list . "insightScheduler") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
         - name: JFMC_EXTRA_JAVA_OPTS
@@ -507,15 +507,13 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.insightScheduler.resources | indent 10 }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
       {{- $uid := .Values.common.uid }}
       {{- $context := .Values.missionControl.appContext }}
       {{- $name := .Values.missionControl.name }}
       {{- $mountPath := .Values.missionControl.persistence.mountPath }}
       {{- range .Values.missionControl.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "mission-control.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
@@ -535,7 +533,7 @@ spec:
       {{- $mountPath := .Values.insightServer.persistence.mountPath }}
       {{- range .Values.insightServer.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "mission-control.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false
@@ -555,7 +553,7 @@ spec:
       {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
       {{- range .Values.insightScheduler.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "mission-control.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsUser: {{ $uid }}
           allowPrivilegeEscalation: false

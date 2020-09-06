@@ -5,6 +5,9 @@ postgresql:
   db:
     password: password
 global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - dockerjfrogio  
   jfrogUrl: http://artifactory-artifactory.rt:8082
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE

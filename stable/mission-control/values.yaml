@@ -4,6 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 global: {}
+  # imageRegistry:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   # jfrogUrl:
@@ -258,7 +259,8 @@ elasticsearch:
   initContainerImage: docker.bintray.io/alpine:3.12
   configureDockerHost: true
   image:
-    repository: docker.bintray.io/jfrog/elasticsearch-oss
+    registry: docker.bintray.io
+    repository: jfrog/elasticsearch-oss
     tag: 7.6.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
@@ -311,15 +313,17 @@ applicationConfigs: {}
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
+    registry: docker.bintray.io
+    repository: busybox
     tag: 1.31.1
 
 missionControl:
   name: mission-control
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/mission-control
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/mission-control
+    # tag:
   appContext: mc
   appName: jfmc-server
   home: /var/opt/jfrog/mc
@@ -493,8 +497,9 @@ insightServer:
   name: insight-server
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/insight-server
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/insight-server
+    # tag:
   appContext: insight
   home: /opt/jfrog
   internalHttpPort: 8082
@@ -546,8 +551,9 @@ insightScheduler:
   name: insight-scheduler
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/insight-scheduler
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/insight-scheduler
+    # tag:
   appContext: insight-scheduler
   home: /opt/jfrog
   internalPort: 8085
@@ -603,8 +609,9 @@ insightScheduler:
 router:
   name: router
   image:
-    repository: docker.bintray.io/jfrog/router
-    version: 1.4.3
+    registry: docker.bintray.io
+    repository: jfrog/router
+    tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
