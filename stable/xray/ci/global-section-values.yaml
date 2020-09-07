@@ -2,22 +2,17 @@ unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 postgresql:
   postgresqlPassword: xray
-
 global:
   jfrogUrl: http://artifactory-artifactory.rt:8082
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  consoleLog: true
-
   customVolumes: |
    - name: custom-script2
      emptyDir:
        sizeLimit: 100Mi
-
   customVolumeMounts: |
    - name: custom-script2
      mountPath: "/scripts"
-
   customInitContainers: |
    - name: "custom-setup2"
      image: "{{ .Values.initContainerImage }}"
@@ -29,7 +24,6 @@ global:
      volumeMounts:
        - mountPath: "{{ .Values.xray.persistence.mountPath }}"
          name: data-volume
-
   customSidecarContainers: |
    - name: "sidecar-list-etc2"
      image: "{{ .Values.initContainerImage }}"
