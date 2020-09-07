@@ -467,7 +467,7 @@ pipelines:
         baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "pipelines.jfrogUrl" .)) . }}"
         ## Unified UI URL
         ##
-        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI is required!" (include "pipelines.jfrogUrl" .)) . }}"
+        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI or global.jfrogUrlUI is required!" (include "pipelines.jfrogUrlUI" .)) . }}"
         ## Pipelines Service ID
         ##
         serviceId: "{{ .Values.pipelines.serviceId }}"

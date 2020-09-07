@@ -127,6 +127,17 @@ Resolve jfrogUrl value
 {{- end -}}
 
 {{/*
+Resolve jfrogUrlUI value
+*/}}
+{{- define "pipelines.jfrogUrlUI" -}}
+{{- if .Values.global.jfrogUrlUI -}}
+{{- .Values.global.jfrogUrlUI -}}
+{{- else if .Values.pipelines.jfrogUrlUI -}}
+{{- .Values.pipelines.jfrogUrlUI -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve joinKey value
 */}}
 {{- define "pipelines.joinKey" -}}

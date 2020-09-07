@@ -30,7 +30,7 @@ spec:
     {{- end }}
       initContainers:
           {{- if or .Values.vault.customInitContainers .Values.global.customInitContainers }}
-{{ tpl (include "pipelines.vault.customInitContainers" .)  . | nindent 6 }}
+{{ tpl (include "pipelines.vault.customInitContainers" .)  . | indent 8 }}
           {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'

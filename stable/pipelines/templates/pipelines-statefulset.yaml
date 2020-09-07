@@ -158,7 +158,7 @@ spec:
           imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
           env:
             - name: JF_ROUTER_SERVICEREGISTRY_URL
-              value: "{{ tpl .Values.pipelines.jfrogUrl . }}/access"
+              value: "{{ include "pipelines.jfrogUrl" . }}/access"
             - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
               value: "{{ include "pipelines.grpc.url" . }}"
             - name: JF_ROUTER_ENTRYPOINTS_INTERNALPORT
