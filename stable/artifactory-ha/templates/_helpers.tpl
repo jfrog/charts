@@ -125,3 +125,132 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- printf "%s" "http" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "artifactory-ha.joinKey" -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.artifactory.joinKey -}}
+{{- .Values.artifactory.joinKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "artifactory-ha.masterKey" -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.artifactory.masterKey -}}
+{{- .Values.artifactory.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "artifactory-ha.joinKeySecretName" -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.artifactory.joinKeySecretName -}}
+{{- .Values.artifactory.joinKeySecretName -}}
+{{- else -}}
+{{ include "artifactory-ha.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "artifactory-ha.masterKeySecretName" -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.artifactory.masterKeySecretName -}}
+{{- .Values.artifactory.masterKeySecretName -}}
+{{- else -}}
+{{ include "artifactory-ha.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "artifactory-ha.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "artifactory-ha.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.artifactory.customInitContainers -}}
+{{- .Values.artifactory.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory-ha.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.artifactory.customVolumes -}}
+{{- .Values.artifactory.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "artifactory-ha.customVolumeMounts" -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.artifactory.customVolumeMounts -}}
+{{- .Values.artifactory.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "artifactory-ha.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.artifactory.customSidecarContainers -}}
+{{- .Values.artifactory.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper artifactory chart image names
+*/}}
+{{- define "artifactory-ha.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference := index . 1 }}
+{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
+{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
