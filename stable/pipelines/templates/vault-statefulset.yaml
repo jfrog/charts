@@ -1,3 +1,4 @@
+{{- if .Values.vault.enabled }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -184,3 +185,4 @@ spec:
           configMap:
             name: {{ include "pipelines.vault.name" . }}-configmaps
         {{- end }}
+{{- end }}
