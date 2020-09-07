@@ -211,6 +211,7 @@ pipelines:
 
   msg:
     uiUser: monitor
+    # Password must be set
     uiUserPassword: ""
 
   pipelineSync:
@@ -548,9 +549,13 @@ pipelines:
       ## Vault configuration
       ##
       vault:
+        {{- if .Values.vault.enabled }}
         ip: {{ include "pipelines.vault.name" . }}
         port: {{ .Values.vault.service.port }}
-        clusterPort: 30101
+        {{- else }}
+        ip: {{ .Values.global.vault.host }}
+        port: {{ .Values.global.vault.port }}
+        {{- end }}
         ## DO NOT CHANGE THE TOKEN VALUE!!!
         token: "_VAULT_TOKEN_"
         unsealKeys:
@@ -835,9 +840,18 @@ global:
     port: 5432
     database: "pipelinesdb"
     user: "apiuser"
+    # Password must be set
     password: ""
     ssl: false
     ## PostgreSQL password using existing secret
+    # existingSecret: secret
+
+  ## Internal Vault must be set to false
+  vault:
+    host:
+    port:
+    token:
+    ## Vault token using existing secret
     # existingSecret: secret
 
 # PostgreSQL
@@ -855,6 +869,7 @@ postgresql:
 
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
+  # Password must be set
   postgresqlPassword: ""
 
   ## PostgreSQL password using existing secret
@@ -897,6 +912,7 @@ rabbitmq:
 
     ## RabbitMQ application password
     ## ref: https://github.com/bitnami/bitnami-docker-rabbitmq#environment-variables
+    # Password must be set
     password: ""
     # existingPasswordSecret: name-of-existing-secret
 
@@ -1011,6 +1027,7 @@ redis:
 
 ## Vault
 vault:
+  enabled: true
 
   updateStrategy: RollingUpdate
 
