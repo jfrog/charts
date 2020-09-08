@@ -19,8 +19,10 @@ The Artifactory HA cluster in this chart is made up of
 
 Load balancing is done to the member nodes only.
 This leaves the primary node free to handle jobs and tasks and not be interrupted by inbound traffic.
-> This can be controlled by the parameter `artifactory.service.pool`.
-> To install with only a single node(only primary), set the replicaCount to 0 in `artifactory.node.replicaCount`. Note that you should enter all licenses before scaling up. Otherwise you may get redirected to a node without a license and the UI won't load for that node.
+This can be controlled by the parameter `artifactory.service.pool`.
+**NOTE:**
+ Using artifactory pro license (which supports single node only), set `artifactory.node.replicaCount=0` in values.yaml.
+ To scale from single node to multiple nodes(>1), use Enterprise(+) license and then do an helm upgrade (Each node need a seperate license).
 
 ## Installing the Chart
 
