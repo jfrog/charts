@@ -622,7 +622,7 @@ pipelines:
       installerIP: "1.2.3.4"
       installerAuthToken: "{{ .Values.pipelines.authToken }}"
       installerImage: "jfrog/pipelines-installer"
-      registryUrl: "{{ .Values.imageRegistry }}"
+      registryUrl: "{{ include "pipelines.imageRegistry" . }}"
       os: "Ubuntu_16.04"
       osDistribution: "xenial"
       architecture: "x86_64"

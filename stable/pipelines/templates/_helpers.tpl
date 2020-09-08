@@ -159,6 +159,16 @@ Resolve masterKey value
 {{- end -}}
 {{- end -}}
 
+{{/*
+Resolve imageRegistry value
+*/}}
+{{- define "pipelines.imageRegistry" -}}
+{{- if .Values.global.imageRegistry -}}
+{{- .Values.global.imageRegistry -}}
+{{- else if .Values.imageRegistry -}}
+{{- .Values.imageRegistry -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Resolve imagePullSecrets value
