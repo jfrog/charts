@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.1] - Sep 8, 2020
+* Add support for custom ingress 
+
 ## [4.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list
 * **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images

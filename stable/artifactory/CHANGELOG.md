@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.0.1] - Sep 8, 2020
-* Add custom ingress object
+* Add support for custom ingress 
 
 ## [11.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets`values from string to list.
