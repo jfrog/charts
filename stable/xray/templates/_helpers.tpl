@@ -189,3 +189,144 @@ Scheme (http/https) based on Access TLS enabled/disabled
 {{- printf "%s" "http" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "xray.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.xray.jfrogUrl -}}
+{{- .Values.xray.jfrogUrl -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "xray.joinKey" -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.xray.joinKey -}}
+{{- .Values.xray.joinKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "xray.masterKey" -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.xray.masterKey -}}
+{{- .Values.xray.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "xray.joinKeySecretName" -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.xray.joinKeySecretName -}}
+{{- .Values.xray.joinKeySecretName -}}
+{{- else -}}
+{{ include "xray.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "xray.masterKeySecretName" -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.xray.masterKeySecretName -}}
+{{- .Values.xray.masterKeySecretName -}}
+{{- else -}}
+{{ include "xray.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "xray.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "xray.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.common.customInitContainers -}}
+{{- .Values.common.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "xray.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.common.customVolumes -}}
+{{- .Values.common.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "xray.customVolumeMounts" -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.common.customVolumeMounts -}}
+{{- .Values.common.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "xray.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.common.customSidecarContainers -}}
+{{- .Values.common.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper xray chart image names
+*/}}
+{{- define "xray.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference := index . 1 }}
+{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
+{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
