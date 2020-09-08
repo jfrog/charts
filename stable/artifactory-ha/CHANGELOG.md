@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [4.0.1] - Sep 8, 2020
-* Support for single node installation.
+* Added support for artifactory pro license (single node) installation.
 
 ## [4.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list
