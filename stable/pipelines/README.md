@@ -81,6 +81,17 @@ kubectl create ns pipelines
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
 ```
 
+### Special Upgrade Notes
+
+While upgrading from Pipelines 1.x to 2.x and above charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes please run,
+
+```bash
+$ kubectl delete statefulsets <old_statefulset_pipelines_name>
+$ kubectl delete statefulsets <old_statefulset_rabbitmq_name>
+$ kubectl delete pvc <old_PVC_rabbitmq_name>
+$ helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines
+```
+
 ### Use external secret
 
 **Note:** Best practice is to use external secrets instead of storing passwords in `values.yaml` files.
