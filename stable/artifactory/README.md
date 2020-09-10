@@ -1128,6 +1128,10 @@ helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes
 ```
 This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
 
+## Fluent Bit
+Enable the fluent bit sidecar to turn on a fluent bit side car that will extract the relevent fields from the logs into JSON format and send them to stdout to be captured by the docker log. 
+
+Note a daemon set must be deployed to your Kubernetes cluster that can then route all the logs of your entire cluster to the relevant log analytic vendor of your choice.
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
