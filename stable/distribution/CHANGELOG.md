@@ -1,6 +1,19 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.0.0] - Aug 28, 2020
+* **Breaking change:** Changed `imagePullSecrets` from string to list.
+* **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
+* Added support for global values
+* Updated maintainers in chart.yaml
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update redis tag version to `6.0.6-debian-10-r12`
+* Update router version to `1.4.3`
+* Update postgresql chart version to `9.3.4` in requirements.yaml - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true
+
 ## [6.1.4] - Jul 29, 2020
 * Added tpl support for resolving jfrogUrl
 

@@ -36,9 +36,8 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
     {{- end }}
       initContainers:
       - name: "setup"
@@ -58,7 +57,7 @@ spec:
         fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
-        image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "nginx") }}
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         command:
           - 'nginx'
@@ -130,12 +129,10 @@ spec:
           failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.nginx.livenessProbe.successThreshold }}
         {{- end }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
         command:
         - tail
         args:

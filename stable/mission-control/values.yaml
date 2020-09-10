@@ -3,8 +3,29 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
+global: {}
+  # imageRegistry:
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # jfrogUrl:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
 initContainerImage: docker.bintray.io/alpine:3.12
+
+# For supporting pulling from private registries
+imagePullSecrets:
+  # - myRegistryKeySecretName
+
 # Init containers
 initContainers:
   resources: {}
@@ -16,8 +37,6 @@ initContainers:
 #      cpu: "250m"
 
 imagePullPolicy: IfNotPresent
-
-imagePullSecrets:
 
 # For HA
 replicaCount: 1
@@ -154,7 +173,7 @@ dbSetup:
   postgresql:
     image:
       repository: docker.bintray.io/postgres
-      tag: 10.13-alpine
+      tag: 12.3-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -166,7 +185,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 10.13.0-debian-10-r38
+    tag: 12.3.0-debian-10-r71
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
@@ -240,7 +259,8 @@ elasticsearch:
   initContainerImage: docker.bintray.io/alpine:3.12
   configureDockerHost: true
   image:
-    repository: docker.bintray.io/jfrog/elasticsearch-oss
+    registry: docker.bintray.io
+    repository: jfrog/elasticsearch-oss
     tag: 7.6.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
@@ -292,15 +312,17 @@ applicationConfigs: {}
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
+    registry: docker.bintray.io
+    repository: busybox
     tag: 1.31.1
 
 missionControl:
   name: mission-control
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/mission-control
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/mission-control
+    # tag:
   appContext: mc
   appName: jfmc-server
   home: /var/opt/jfrog/mc
@@ -363,7 +385,7 @@ missionControl:
       logging:
         consoleLog:
           enabled: {{ .Values.missionControl.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.missionControl.jfrogUrl) . }}"
+      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "mission-control.jfrogUrl" .)) . }}"
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
@@ -477,8 +499,9 @@ insightServer:
   name: insight-server
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/insight-server
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/insight-server
+    # tag:
   appContext: insight
   home: /opt/jfrog
   internalHttpPort: 8082
@@ -530,8 +553,9 @@ insightScheduler:
   name: insight-scheduler
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/insight-scheduler
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/insight-scheduler
+    # tag:
   appContext: insight-scheduler
   home: /opt/jfrog
   internalPort: 8085
@@ -587,8 +611,9 @@ insightScheduler:
 router:
   name: router
   image:
-    repository: docker.bintray.io/jfrog/router
-    version: 1.4.2
+    registry: docker.bintray.io
+    repository: jfrog/router
+    tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
