@@ -4,7 +4,23 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
+
+global: {}
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customInitContainers: |
+
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customSidecarContainers: |
+
+
 initContainerImage: docker.bintray.io/alpine:3.12
 
 installer:
@@ -14,7 +30,8 @@ installer:
 installerInfo: '{"productId": "Helm_artifactory/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
 
 # For supporting pulling from private registries
-imagePullSecrets:
+# imagePullSecrets:
+#   - myRegistryKeySecretName
 
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -95,7 +112,8 @@ networkpolicy:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
+    registry: docker.bintray.io
+    repository: busybox
     tag: 1.31.1
 
 # Artifactory
@@ -103,8 +121,9 @@ artifactory:
   name: artifactory
   # Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/artifactory-pro
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/artifactory-pro
+    # tag:
     pullPolicy: IfNotPresent
   labels: {}
 
@@ -885,8 +904,9 @@ nginx:
   gid: 107
   # Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/nginx-artifactory-pro
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/nginx-artifactory-pro
+    # tag:
     pullPolicy: IfNotPresent
 
   # Sidecar containers for tailing Nginx logs
@@ -1157,7 +1177,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 10.13.0-debian-10-r38
+    tag: 12.3.0-debian-10-r71
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
