@@ -70,7 +70,7 @@ Edit local copies of `values-ingress.yaml`, `values-ingress-passwords.yaml` and 
   - Artifactory URL
   - Ingress hosts
   - Ingress tls secrets
-- Passwords, `masterKey` and `joinKey` in `values-ingress-passwords.yaml`
+- Passwords `uiUserPassword`, `postgresqlPassword` and `rabbitmq.password` must be set, and same for `masterKey` and `joinKey` in `values-ingress-passwords.yaml`
 
 #### Install JFrog Pipelines
 
@@ -127,6 +127,63 @@ Install JFrog Pipelines:
 
 ```bash
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-ingress-external-secret.yaml
+```
+
+### Using external Rabbitmq
+
+If you want to use external Rabbitmq, set `rabbitmq.enabled=false` and create `values-external-rabbitmq.yaml` with below yaml configuration
+
+```yaml
+rabbitmq:
+  enabled: false
+  internal_ip: "{{ .Release.Name }}-rabbitmq"
+  msg_hostname: "{{ .Release.Name }}-rabbitmq"
+  port: 5672
+  manager_port: 15672
+  ms_username: admin
+  ms_password: password
+  cp_username: admin
+  cp_password: password
+  build_username: admin
+  build_password: password    
+  root_vhost_exchange_name: rootvhost
+  erlang_cookie: secretcookie
+  build_vhost_name: pipelines
+  root_vhost_name: pipelinesRoot
+  protocol: amqp
+```
+
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
+```
+
+### Using external Vault
+
+If you want to use external Vault, set `vault.enabled=false` and create `values-external-vault.yaml` with below yaml configuration
+
+```yaml
+vault:
+  enabled: false
+
+global:
+  vault:
+    host: vault_url
+    port: vault_port
+    token: vault_token
+    ## Set Vault token using existing secret
+    # existingSecret: vault-secret
+```
+
+If you store external Vault token in a pre-existing Kubernetes Secret, you can specify it via `existingSecret`.
+
+To create a secret containing the Vault token:
+
+```bash
+kubectl create secret generic vault-secret --from-literal=token=${VAULT_TOKEN}
+```
+
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-vault.yaml
 ```
 
 ### Status

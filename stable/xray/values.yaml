@@ -3,10 +3,27 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# General
+global: {}
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customInitContainers: |
+
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customSidecarContainers: |
+
+
 initContainerImage: docker.bintray.io/alpine:3.12
 imagePullPolicy: IfNotPresent
+# For supporting pulling from private registries
 imagePullSecrets:
+  # - myRegistryKeySecretName
 
 replicaCount: 1
 
@@ -44,7 +61,7 @@ xray:
       logging:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.xray.jfrogUrl) . }}"
+      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "xray.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
@@ -163,7 +180,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 10.13.0-debian-10-r38
+    tag: 12.3.0-debian-10-r71
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -221,7 +238,8 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    tag: 3.8.6-alpine
+    repository: docker.bintray.io/rabbitmq
+    tag: 3.8.7-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
@@ -272,7 +290,7 @@ rabbitmq:
   image:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
-    tag: 3.8.6-debian-10-r1
+    tag: 3.8.7-debian-10-r3
   auth:
     username: guest
     password: ""
@@ -326,8 +344,6 @@ rabbitmq:
 
 # Common Xray settings
 common:
-  ## Note that by default we use appVersion to get image tag
-  # xrayVersion:
   xrayUserId: 1035
   xrayGroupId: 1035
 
@@ -438,16 +454,14 @@ common:
     ##
     # storageClass: "-"
 
-global:
-  # Kubernetes secret with Postgres TLS certificates
-  postgresqlTlsSecret:
 
 analysis:
   name: xray-analysis
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-analysis
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-analysis
+    # tag:
   internalPort: 7000
   externalPort: 7000
   annotations: {}
@@ -501,8 +515,9 @@ indexer:
   name: xray-indexer
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-indexer
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-indexer
+    # tag:
   internalPort: 7002
   externalPort: 7002
   annotations: {}
@@ -552,8 +567,9 @@ persist:
   name: xray-persist
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-persist
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-persist
+    # tag:
   internalPort: 7003
   externalPort: 7003
   annotations: {}
@@ -607,8 +623,9 @@ server:
   name: xray-server
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/xray-server
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/xray-server
+    # tag:
   internalPort: 8000
   externalPort: 80
   annotations: {}
@@ -662,8 +679,9 @@ server:
 router:
   name: router
   image:
-    repository: docker.bintray.io/jfrog/router
-    version: 1.4.2
+    registry: docker.bintray.io
+    repository: jfrog/router
+    tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

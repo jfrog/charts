@@ -1,10 +1,27 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.0.0] - Sep 2, 2020
+* **Breaking change:** Changed `imagePullSecrets` value from string to list.
+* **Breaking change:** Added `image.registry` and `common.xrayVersion` is changed to `image.tag` under analysis,indexer,persist,server and router sections
+* Added support for global values
+* Update postgresql chart version to `9.3.4`
+* Updated chart maintainers in chart.yaml
+* Update router version to `1.4.3`
+
+## [5.0.0] - Aug 24, 2020
+* Update Xray to version `3.8.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.2)
+* Update postgresql chart version to `9.3.2` - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update rabbitmq tag version to `3.8.7-debian-10-r3`
+* Update rabbitmq-ha tag version to `3.8.7-alpine`
+
 ## [4.2.1] - Aug 14, 2020
 * Added support for external rabbitmq
 * Added support for Load Definitions for rabbitmq subchart when `rabbitmq.enabled=true` . Please refer [here](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions)
-* Update RabbitMQ chart to v7.6.1
 
 ## [4.2.0] - Aug 13, 2020
 * Update Xray to version `3.8.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8)

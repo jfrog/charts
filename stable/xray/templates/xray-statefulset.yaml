@@ -12,7 +12,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 spec:
   serviceName: "{{ template "xray.fullname" . }}"
@@ -51,9 +51,8 @@ spec:
 {{ toYaml . | indent 8 }}
         {{- end }}
     spec:
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "xray.imagePullSecrets" . | indent 6 }}
     {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
       securityContext:
@@ -79,24 +78,24 @@ spec:
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
           echo ${XRAY_JOIN_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/join.key;
         {{- end }}
-        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName }}
+        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
           echo ${XRAY_MASTER_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
-        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName }}
+        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
         - name: XRAY_JOIN_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.xray.joinKeySecretName | default (include "xray.fullname" .) }}"
+              name: {{ include "xray.joinKeySecretName" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName }}
+        {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: XRAY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.xray.masterKeySecretName | default (include "xray.fullname" .) }}"
+              name: {{ include "xray.masterKeySecretName" . }}
               key: master-key
         {{- end }}
         volumeMounts:
@@ -116,12 +115,12 @@ spec:
             sleep 2;
           done;
       {{- end }}
-    {{- if .Values.common.customInitContainers }}
-{{ tpl .Values.common.customInitContainers . | indent 6 }}
+    {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "xray.customInitContainers" .) . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
-        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -141,8 +140,8 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-{{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
 {{- with .Values.router.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -158,7 +157,7 @@ spec:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.server.name }}
-        image: {{ .Values.server.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -229,8 +228,8 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
 {{- with .Values.server.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -248,7 +247,7 @@ spec:
 {{ tpl .Values.server.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.analysis.name }}
-        image: {{ .Values.analysis.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -325,8 +324,8 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
 {{- with .Values.analysis.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -344,7 +343,7 @@ spec:
 {{ tpl .Values.analysis.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.indexer.name }}
-        image: {{ .Values.indexer.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -421,8 +420,8 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
 {{- with .Values.indexer.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -440,7 +439,7 @@ spec:
 {{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.persist.name }}
-        image: {{ .Values.persist.image.repository }}:{{ default .Chart.AppVersion .Values.common.xrayVersion }}
+        image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -513,8 +512,8 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
 {{- with .Values.persist.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -556,8 +555,8 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-{{- if .Values.common.customSidecarContainers }}
-{{ tpl .Values.common.customSidecarContainers . | indent 6 }}
+{{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "xray.customSidecarContainers" .) . | indent 6 }}
 {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -585,8 +584,8 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.common.persistence.existingClaim }}
       {{- end }}
-{{- with .Values.common.customVolumes }}
-{{ tpl . $ | indent 6 }}
+{{- if or .Values.common.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "xray.customVolumes" .) . | indent 6 }}
 {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config

@@ -49,7 +49,9 @@ spec:
   {{- end }}
   {{- end }}
   selector:
-{{- if eq .Values.artifactory.service.pool "members" }}
+{{- if eq (int .Values.artifactory.node.replicaCount) 0 }}
+    role: {{ template "artifactory-ha.primary.name" . }}
+{{- else if eq .Values.artifactory.service.pool "members" }}
     role: {{ template "artifactory-ha.node.name" . }}
 {{- end }}
     app: {{ template "artifactory-ha.name" . }}
