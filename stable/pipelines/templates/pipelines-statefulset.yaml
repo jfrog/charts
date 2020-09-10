@@ -69,7 +69,7 @@ spec:
               sleep 2;
             done;
         - name: pipelines-installer
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
@@ -154,7 +154,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         {{- end }}
         - name: router
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.router.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "router" ) }}
           imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
           env:
             - name: JF_ROUTER_SERVICEREGISTRY_URL
@@ -190,7 +190,7 @@ spec:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.router.mountPath }}
         - name: api
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.api.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
           imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
           env:
             - name: PIPELINES_NODE_ID
@@ -225,7 +225,7 @@ spec:
 {{ tpl . $ | nindent 10 }}
           {{- end }}
         - name: www
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.www.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
           imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
           ports:
             - name: www
@@ -255,7 +255,7 @@ spec:
 {{ tpl . $ | nindent 10 }}
           {{- end }}
         - name: pipelinesync
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.pipelineSync.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/pipelineSync
           env:
@@ -269,7 +269,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: runtrigger
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.runTrigger.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "runTrigger" ) }}
           imagePullPolicy: {{ .Values.pipelines.runTrigger.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/runTrigger
           env:
@@ -283,7 +283,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: steptrigger
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.stepTrigger.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepTrigger" ) }}
           imagePullPolicy: {{ .Values.pipelines.stepTrigger.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/stepTrigger
           env:
@@ -297,7 +297,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: cron
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.cron.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "cron" ) }}
           imagePullPolicy: {{ .Values.pipelines.cron.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/cron
           env:
@@ -311,7 +311,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: nexec
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.nexec.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nexec" ) }}
           imagePullPolicy: {{ .Values.pipelines.nexec.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/nexec
           env:
@@ -325,7 +325,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: hookhandler
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.hookHandler.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "hookHandler" ) }}
           imagePullPolicy: {{ .Values.pipelines.hookHandler.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/hookHandler
           env:
@@ -339,7 +339,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: marshaller
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.marshaller.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "marshaller" ) }}
           imagePullPolicy: {{ .Values.pipelines.marshaller.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/marshaller
           env:
@@ -353,7 +353,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: logup
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.logup.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "logup" ) }}
           imagePullPolicy: {{ .Values.pipelines.logup.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/logup
           env:
@@ -367,7 +367,7 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
         - name: extensionsync
-          image: "{{ include "pipelines.imageRegistry" . }}/{{ .Values.pipelines.extensionSync.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "extensionSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.extensionSync.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/extensionSync
           env:

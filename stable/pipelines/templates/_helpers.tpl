@@ -160,17 +160,6 @@ Resolve masterKey value
 {{- end -}}
 
 {{/*
-Resolve imageRegistry value
-*/}}
-{{- define "pipelines.imageRegistry" -}}
-{{- if .Values.global.imageRegistry -}}
-{{- .Values.global.imageRegistry -}}
-{{- else if .Values.imageRegistry -}}
-{{- .Values.imageRegistry -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve imagePullSecrets value
 */}}
 {{- define "pipelines.imagePullSecrets" -}}
@@ -229,5 +218,56 @@ Resolve customSidecarContainers value
 {{- .Values.global.customSidecarContainers -}}
 {{- else if .Values.pipelines.customSidecarContainers -}}
 {{- .Values.pipelines.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper pipelines chart image names
+*/}}
+{{- define "pipelines.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference1 := index . 1 }}
+{{- $indexReference2 := index . 2 }}
+{{- $registryName := index $dot.Values $indexReference1 $indexReference2 "image" "registry" -}}
+{{- $repositoryName := index $dot.Values $indexReference1 $indexReference2 "image" "repository" -}}
+{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.pipelines.version (index $dot.Values $indexReference1 $indexReference2 "image" "tag"))  | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper vault image name
+*/}}
+{{- define "vault.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference := index . 1 }}
+{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
+{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
 {{- end -}}
