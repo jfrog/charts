@@ -533,6 +533,23 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: {{ .Values.fluentd.name }}
+        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.version }}"
+        imagePullPolicy: {{ .Values.fluentd.image.pullPolicy }}
+        volumeMounts:
+        - name: fluent-conf
+          mountPath: /fluent-bit/etc/
+        - name: artifactory-volume
+          mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        livenessProbe:
+{{ toYaml .Values.fluentd.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.fluentd.readinessProbe | indent 10 }}
+        resources:
+{{ toYaml .Values.fluentd.resources | indent 10 }}
+        terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
+      {{- end }}
     {{- if .Values.artifactory.customSidecarContainers }}
 {{ tpl .Values.artifactory.customSidecarContainers . | indent 6 }}
     {{- end }}
@@ -646,6 +663,11 @@ spec:
       - name: filebeat-config
         configMap:
           name: {{ template "artifactory.name" . }}-filebeat-config
+  {{- end }}
+  {{- if .Values.fluentd.enabled }}
+      - name: fluent-conf
+        configMap:
+          name: {{ template "artifactory.fullname" . }}-fluent-config
   {{- end }}
     {{- if .Values.artifactory.customVolumes }}
 {{ tpl .Values.artifactory.customVolumes . | indent 6 }}

@@ -1270,3 +1270,12 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+# FLUENT BIT SIDECAR CONFIGURATION
+fluentd:
+  enabled: true
+  name: artifactory-fluentd
+  image:
+    repository: fluent/fluent-bit
+    version: 1.5.5
+  resources: {}

@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "artifactory.fullname" . }}-fluent-config
+  labels:
+    app: {{ template "artifactory.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+      Parsers_File  /fluent-bit/etc/parsers.conf
+
+    [INPUT]
+      Name             tail
+      Path             /var/opt/jfrog/artifactory/log/access-service.log
+      DB               /var/opt/jfrog/artifactory/log/access-service.log.pos
+      Multiline        On
+      Parser_Firstline service
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/artifactory-service.log
+      DB            /var/opt/jfrog/artifactory/log/artifactory-service.log.pos
+      Multiline     On
+      Parser_Firstline service
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/frontend-service.log
+      DB            /var/opt/jfrog/artifactory/log/frontend-service.log.pos
+      Multiline     On
+      Parser_Firstline service
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/router-service.log
+      DB            /var/opt/jfrog/artifactory/log/router-service.log.pos
+      Multiline     On
+      Parser_Firstline service
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/router-traefik.log
+      DB            /var/opt/jfrog/artifactory/log/router-traefik.log.pos
+      Multiline     On
+      Parser_Firstline service
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/access-request.log
+      DB            /var/opt/jfrog/artifactory/log/access-request.log.pos
+      Parser        request
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/artifactory-request.log
+      DB            /var/opt/jfrog/artifactory/log/artifactory-request.log.pos
+      Parser        request
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/frontend-request.log
+      DB            /var/opt/jfrog/artifactory/log/frontend-request.log.pos
+      Parser        request
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/metadata-request.log
+      DB            /var/opt/jfrog/artifactory/log/metadata-request.log.pos
+      Parser        request
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/router-request.log
+      DB            /var/opt/jfrog/artifactory/log/router-request.log.pos
+      Parser        request
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/artifactory-access.log
+      DB            /var/opt/jfrog/artifactory/log/artifactory-access.log.pos
+      Parser        access
+
+    [INPUT]
+      Name          tail
+      Path          /var/opt/jfrog/artifactory/log/access-security-audit.log
+      DB            /var/opt/jfrog/artifactory/log/access-security-audit.log.pos
+      Parser        security
+
+    [OUTPUT]
+      Name   stdout
+      Match  *
+
+  parsers.conf: |
+    [PARSER]
+      Name        service
+      Format      regex
+      Regex       ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$
+
+    [PARSER]
+      Name        request
+      Format      regex
+      Regex       ^(?<timestamp>[^ ]*)\|(?<trace_id>[^\|]*)\|(?<remote_address>[^\|]*)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_content_length>[^\|]*)\|(?<request_duration>[^\|]*)\|(?<request_user_agent>.+)$
+
+    [PARSER]
+      Name        access
+      Format      regex
+      Regex       ^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+)$
+
+    [PARSER]
+      Name        security
+      Format      regex
+      Regex       ^(?<timestamp>[^ ]*)\|(?<token_id>[^ ]*)\|(?<user_ip>[^ ]*)\|(?<user>[^ ]*)\|(?<logged_principal>[^ ]*)\|(?<entity_name>[^ ]*)\|(?<event_type>[^ ]*)\|(?<event>[^ ]*)\|(?<data_changed>.*)
