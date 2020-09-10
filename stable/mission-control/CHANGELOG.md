@@ -1,8 +1,8 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [5.1.0] - Sep 10, 2020
-* Update Mission Control version to 4.6.0
+## [5.2.0] - Sep 10, 2020
+* Update Mission Control version to 4.7.0
 * **IMPORTANT**
 * Enable Elasticsearch request via router.
 
