@@ -516,7 +516,7 @@ missionControl:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: /api/v1/system/health_check/node
         port: {{ .Values.missionControl.internalPort }}
       initialDelaySeconds: 150
       periodSeconds: 10
@@ -528,7 +528,7 @@ missionControl:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: /api/v1/system/health_check/node
         port: {{ .Values.missionControl.internalPort }}
       initialDelaySeconds: 120
       periodSeconds: 10
