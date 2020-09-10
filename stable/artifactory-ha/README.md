@@ -1241,7 +1241,7 @@ controller:
 ```
 Then install nginx-ingress with the values file you created:
 ```bash
-helm upgrade --install nginx-ingress --namespace nginx-ingress stable/nginx-ingress -f values.yaml
+helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes-ingress-nginx/ingress-nginx -f values.yaml
 ```
 
 ### Prometheus Metrics
