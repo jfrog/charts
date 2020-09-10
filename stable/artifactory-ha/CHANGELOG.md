@@ -1,6 +1,20 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.1] - Sep 8, 2020
+* Added support for artifactory pro license (single node) installation.
+
+## [4.0.0] - Sep 2, 2020
+* **Breaking change:** Changed `imagePullSecrets` value from string to list
+* **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
+* Added support for global values
+* Updated maintainers in chart.yaml
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update postgresqlsub chart version to `9.3.4` - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x's postgresql.image.tag and databaseUpgradeReady=true.
+
 ## [3.1.0] - Aug 13, 2020
 * Updated Artifactory version to 7.7.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7)
 

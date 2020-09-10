@@ -3,11 +3,28 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
+global: {}
+  # imageRegistry:
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # jfrogUrl:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
 initContainerImage: docker.bintray.io/alpine:3.12
 
 # For supporting pulling from private registries
 imagePullSecrets:
+  # - myRegistryKeySecretName
 
 # For HA
 replicaCount: 1
@@ -78,7 +95,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 10.13.0-debian-10-r38
+    tag: 12.3.0-debian-10-r71
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -130,8 +147,9 @@ database:
 ##
 redis:
   image:
-    repository: docker.bintray.io/bitnami/redis
-    tag: 5.0.9-debian-10-r31
+    registry: docker.bintray.io
+    repository: bitnami/redis
+    tag: 6.0.6-debian-10-r12
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
@@ -226,15 +244,17 @@ common:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
+    registry: docker.bintray.io
+    repository: busybox
     tag: 1.31.1
 
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/distribution-distribution
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/distribution-distribution
+    # tag:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
   externalPort: 80
@@ -273,7 +293,7 @@ distribution:
       logging:
         consoleLog:
           enabled: {{ .Values.distribution.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl is required! This allows to connect to Artifactory.\n(You can copy the JFrog URL from Admin > Security > Settings)" .Values.distribution.jfrogUrl) . }}"
+      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "distribution.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
@@ -408,8 +428,9 @@ distributor:
   name: distributor
   ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: docker.bintray.io/jfrog/distribution-distributor
-    # version:
+    registry: docker.bintray.io
+    repository: jfrog/distribution-distributor
+    # tag:
     imagePullPolicy: IfNotPresent
 
   ## Extra environment variables that can be used to tune Distributor to your needs.
@@ -486,8 +507,9 @@ distributor:
 router:
   name: router
   image:
-    repository: docker.bintray.io/jfrog/router
-    version: 1.4.2
+    registry: docker.bintray.io
+    repository: jfrog/router
+    tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

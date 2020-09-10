@@ -12,7 +12,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Distribution 1.x currently not supported!\nIf this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x." .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 spec:
   serviceName: {{ template "distribution.fullname" . }}-headless
@@ -36,9 +36,8 @@ spec:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/distribution-system-yaml.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "distribution.serviceAccountName" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "distribution.imagePullSecrets" . | indent 6 }}
     {{- end }}
       securityContext:
         runAsUser: {{ .Values.common.uid }}
@@ -56,29 +55,29 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.distribution.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.distribution.persistence.mountPath }}/lost+found;
-        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName }}
+        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
           echo ${DISTRIBUTION_JOIN_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/join.key;
         {{- end }}
-        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName }}
+        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
           echo ${DISTRIBUTION_MASTER_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
-        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName }}
+        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
         - name: DISTRIBUTION_JOIN_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.distribution.joinKeySecretName | default (include "distribution.fullname" .) }}"
+              name: {{ include "distribution.joinKeySecretName" . }}
               key: join-key
         {{- end }}
-        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName }}
+        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: DISTRIBUTION_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.distribution.masterKeySecretName | default (include "distribution.fullname" .) }}"
+              name: {{ include "distribution.masterKeySecretName" . }}
               key: master-key
         {{- end }}
         volumeMounts:
@@ -99,7 +98,7 @@ spec:
       {{- end }}
       {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
-        image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -124,12 +123,12 @@ spec:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
       {{- end }}
-    {{- with .Values.common.customInitContainers }}
-{{ tpl . $ | indent 6 }}
+    {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "distribution.customInitContainers" .)  . | indent 6 }}
     {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
-        image: '{{ .Values.distribution.image.repository }}:{{ default .Chart.AppVersion .Values.distribution.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -199,9 +198,9 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
-        {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
-        {{- end }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "distribution.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
         {{- with .Values.distribution.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
         {{- end }}
@@ -216,7 +215,7 @@ spec:
 {{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
       {{- end }}
       - name: {{ .Values.distributor.name }}
-        image: '{{ .Values.distributor.image.repository }}:{{ default .Chart.AppVersion .Values.distributor.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "distributor") }}
         imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -283,8 +282,8 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
-        {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+        {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "distribution.customVolumeMounts" .) . | indent 8 }}
         {{- end }}
         {{- with .Values.distributor.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -292,7 +291,7 @@ spec:
         resources:
 {{ toYaml .Values.distributor.resources | indent 10 }}
       - name: {{ .Values.router.name }}
-        image: '{{ .Values.router.image.repository }}:{{ default .Chart.AppVersion .Values.router.image.version }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         env:
           - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
@@ -305,8 +304,8 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-        {{- with .Values.common.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
+        {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "distribution.customVolumeMounts" .) . | indent 8 }}
         {{- end }}
         {{- with .Values.router.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
@@ -322,7 +321,7 @@ spec:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: redis
-        image: '{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "redis") }}
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
         env:
         - name: REDIS_REPLICATION_MODE
@@ -356,13 +355,11 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
       {{- $name := .Values.distribution.name }}
       {{- $mountPath := .Values.distribution.persistence.mountPath }}
       {{- range .Values.distribution.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
         command:
           - tail
         args:
@@ -378,7 +375,7 @@ spec:
       {{- $mountPath := .Values.distributor.persistence.mountPath }}
       {{- range .Values.distributor.loggers }}
       - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
         command:
           - tail
         args:
@@ -415,9 +412,9 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-{{- with .Values.common.customSidecarContainers }}
-{{ tpl . $ | indent 6 }}
-{{- end }}
+    {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "distribution.customSidecarContainers" .) . | indent 6 }}
+    {{- end }}
   {{- with .Values.distribution.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -431,8 +428,8 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      {{- with .Values.common.customVolumes }}
-{{ tpl . $ | indent 6 }}
+      {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "distribution.customVolumes" .) . | indent 6 }}
       {{- end }}
       - name: distribution-data
         emptyDir:

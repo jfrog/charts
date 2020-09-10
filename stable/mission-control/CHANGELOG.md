@@ -1,10 +1,23 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.4.0] - Aug 25, 2020
+## [5.1.0] - Sep 10, 2020
 * **Breaking**
 * Changed `insightServer.internalHttpPort` to `insightServer.internalPort`
 * Add support for livenessProbe and readinessProbe for all microservices
+
+## [5.0.0] - Sep 3, 2020
+* **Breaking change:** Modified `imagePullSecrets` value from string to list.
+* **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
+* Added support for global values
+* Updated maintainers in chart.yaml
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update router version to `1.4.3`
+* Update postgresql chart version to `9.3.4` in requirements.yaml - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* Removed redundant mcKey
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true
 
 ## [4.3.2] - Aug 20, 2020
 * Support list of custom secrets.
