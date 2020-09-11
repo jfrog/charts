@@ -2,9 +2,9 @@
 All changes to this chart will be documented in this file.
 
 ## [7.0.0] - Sep 14, 2020
-* **Breaking change:** deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
+* **Breaking change:** Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
 * **IMPORTANT**
-* If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq-ha.enabled=true`), these changes **do not affect you**!
+* If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq.enabled=true`), these changes **do not affect you**!
 * Added additional rabbitmq configuration
 
 ## [6.0.0] - Sep 2, 2020
