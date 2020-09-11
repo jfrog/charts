@@ -1,13 +1,3 @@
-rabbitmq-ha:
-  replicaCount: 4
-  rabbitmqMemoryHighWatermark: 2000MB
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "2Gi"
-      cpu: "2"
 postgresql:
   postgresqlExtendedConf:
     maxConnections: "800"

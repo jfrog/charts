@@ -138,16 +138,6 @@ networkpolicy:
   #     - podSelector:
   #         matchLabels:
   #           app: xray
-  # Uncomment to allow only xray pods to communicate with rabbitmq-ha (if rabbitmq-ha.enabled is true)
-  # - name: rabbitmq-ha
-  #   podSelector:
-  #     matchLabels:
-  #       app: rabbitmq-ha
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: xray
 
 ## Affinity rules
 nodeSelector: {}
@@ -230,60 +220,12 @@ database:
   #    name: "xray-database-creds"
   #    key: "db-url"
 
-# RabbitMQ HA
-## Configuration values for the rabbitmq-ha dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq-ha/README.md
-##
-rabbitmq-ha:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: docker.bintray.io/rabbitmq
-    tag: 3.8.7-alpine
-  rabbitmqUsername: guest
-  rabbitmqPassword: ""
-  ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
-  # existingSecret: <name-of-existing-secret>
-  rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
-  rabbitmqMemoryHighWatermark: 500MB
-  rabbitmqNodePort: 5672
-  definitions:
-    policies: |-
-      {
-        "name": "ha-all",
-        "apply-to": "all",
-        "pattern": ".*",
-        "vhost": "/",
-        "definition": {
-          "ha-mode": "all",
-          "ha-sync-mode": "automatic",
-        }
-      }
-  resources: {}
-  #  requests:
-  #    memory: "250Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "550Mi"
-  #    cpu: "200m"
-  persistentVolume:
-    enabled: true
-    size: 20Gi
-  rbac:
-    create: true
-  nodeSelector: {}
-  tolerations: []
-  ## Configuration values for the prometheus
-  prometheus:
-    operator:
-      enabled: false
-
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/README.md
 ##
 rabbitmq:
-  enabled: false
+  enabled: true
   replicaCount: 1
   rbac:
     create: true
@@ -298,6 +240,13 @@ rabbitmq:
     # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
     # existingErlangSecret: <name-of-existing-secret>
+  maxAvailableSchedulers: null
+  onlineSchedulers: null
+  ## Additional environment variables to set
+  ## ref: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#adding-extra-environment-variables
+  extraEnvVars:
+    - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+      value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
   service:
     port: 5672
   external:
