@@ -7,7 +7,7 @@ All changes to this chart will be documented in this file.
 * If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq.enabled=true`), these changes **do not affect you**!
 * Update Xray to version `3.8.5` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.5
 * Added additional rabbitmq configuration
-* Added common.xrayVersion
+* Added back `common.xrayVersion` in values.yaml
 
 ## [6.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list.
