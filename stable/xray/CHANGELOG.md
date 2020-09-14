@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file.
 * **Breaking change:** Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
 * **IMPORTANT**
 * If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq.enabled=true`), these changes **do not affect you**!
+* Update Xray to version `3.8.5` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.5
 * Added additional rabbitmq configuration
 
 ## [6.0.0] - Sep 2, 2020
