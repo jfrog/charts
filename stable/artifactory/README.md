@@ -639,7 +639,7 @@ database:
   user: <DB_USER>
   password: <DB_PASSWORD>
 artifactory:
-  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O instantclient-basic-linux.x64-19.6.0.0.0dbru.zip https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-19.6.0.0.0dbru.zip && wget -O libaio1_0.3.110-3_amd64.deb http://ftp.br.debian.org/debian/pool/main/liba/libaio/libaio1_0.3.110-3_amd64.deb &&  dpkg-deb -x libaio1_0.3.110-3_amd64.deb . && cp lib/x86_64-linux-gnu/* ."  
   extraEnvironmentVariables:
   - name: LD_LIBRARY_PATH
     value: /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
@@ -873,7 +873,7 @@ This will, in turn:
 * Copy the `logback.xml` file to its proper location in the `$ARTIFACTORY_HOME/etc` directory.
 
 ### Establishing TLS and Adding certificates
-In HTTPS, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled.
+In HTTPS, the communication protocol is encrypted using Transport Layer Security (TLS). By default, TLS between JFrog Platform nodes is disabled. 
 When TLS is enabled, JFrog Access acts as the Certificate Authority (CA) signs the TLS certificates used by all the different JFrog Platform nodes.
 
 To establish TLS between JFrog Platform nodes:
