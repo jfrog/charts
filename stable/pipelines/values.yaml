@@ -50,6 +50,10 @@ initContainer:
 ## Available modes: devmode (enable it for debuging) and production
 runMode: production
 
+## Image Registry to pull images for Pipelines components from
+## You can override it with your private Artifactory registry
+imageRegistry: docker.bintray.io
+
 ## For supporting pulling from private registries
 ## Secret type: kubernetes.io/dockerconfigjson
 imagePullSecrets:
@@ -138,7 +142,7 @@ pipelines:
 
   api:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-api
       # tag:
       pullPolicy: IfNotPresent
@@ -187,7 +191,7 @@ pipelines:
 
   router:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-router
       # tag:
       pullPolicy: IfNotPresent
@@ -207,7 +211,7 @@ pipelines:
 
   www:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-www
       # tag:
       pullPolicy: IfNotPresent
@@ -261,7 +265,7 @@ pipelines:
 
   pipelineSync:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -276,7 +280,7 @@ pipelines:
 
   runTrigger:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -291,7 +295,7 @@ pipelines:
 
   stepTrigger:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -306,7 +310,7 @@ pipelines:
 
   cron:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -321,7 +325,7 @@ pipelines:
 
   nexec:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -336,7 +340,7 @@ pipelines:
 
   hookHandler:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -351,7 +355,7 @@ pipelines:
 
   marshaller:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -366,7 +370,7 @@ pipelines:
 
   logup:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -381,7 +385,7 @@ pipelines:
 
   extensionSync:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
@@ -397,7 +401,7 @@ pipelines:
   ## Pipelines installer
   pipelinesInit:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-installer
       # tag:
       pullPolicy: IfNotPresent
@@ -648,7 +652,7 @@ pipelines:
       installerIP: "1.2.3.4"
       installerAuthToken: "{{ .Values.pipelines.authToken }}"
       installerImage: "jfrog/pipelines-installer"
-      registryUrl: "{{ .Values.global.imageRegistry }}"
+      registryUrl: "{{ .Values.imageRegistry }}"
       os: "Ubuntu_16.04"
       osDistribution: "xenial"
       architecture: "x86_64"
@@ -1080,14 +1084,14 @@ vault:
   updateStrategy: RollingUpdate
 
   image:
-    registry: docker.bintray.io
+    # registry:
     repository: vault
     tag: 1.3.4
     pullPolicy: IfNotPresent
 
   init:
     image:
-      registry: docker.bintray.io
+      # registry:
       repository: jfrog/pipelines-vault-init
       # tag:
 

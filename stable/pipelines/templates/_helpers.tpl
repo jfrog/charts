@@ -228,7 +228,7 @@ Return the proper pipelines chart image names
 {{- $dot := index . 0 }}
 {{- $indexReference1 := index . 1 }}
 {{- $indexReference2 := index . 2 }}
-{{- $registryName := index $dot.Values $indexReference1 $indexReference2 "image" "registry" -}}
+{{- $registryName := default $dot.Values.imageRegistry (index $dot.Values $indexReference1 $indexReference2 "image" "registry") -}}
 {{- $repositoryName := index $dot.Values $indexReference1 $indexReference2 "image" "repository" -}}
 {{- $tag := default (default $dot.Chart.AppVersion $dot.Values.pipelines.version (index $dot.Values $indexReference1 $indexReference2 "image" "tag"))  | toString -}}
 {{/*
@@ -253,7 +253,7 @@ Return the proper vault image name
 {{- define "vault.getImageInfoByValue" -}}
 {{- $dot := index . 0 }}
 {{- $indexReference := index . 1 }}
-{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
+{{- $registryName := default $dot.Values.imageRegistry (index $dot.Values $indexReference "image" "registry") -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{/*
