@@ -7,10 +7,11 @@ All changes to this chart will be documented in this file.
 * If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq.enabled=true`), these changes **do not affect you**!
 * Update Xray to version `3.8.5` - https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.5
 * Added additional rabbitmq configuration
+* Added common.xrayVersion
 
 ## [6.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list.
-* **Breaking change:** Added `image.registry` and `image.version` is changed to `image.tag` under analysis,indexer,persist,server and router sections
+* **Breaking change:** Added `image.registry` and `common.xrayVersion` is changed to `image.tag` under analysis,indexer,persist,server and router sections
 * Added support for global values
 * Update postgresql chart version to `9.3.4`
 * Updated chart maintainers in chart.yaml
