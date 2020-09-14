@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.2] - Sep 14, 2020
+* Updated Artifactory version to 7.7.8
+
 ## [4.0.1] - Sep 8, 2020
 * Added support for artifactory pro license (single node) installation.
 
