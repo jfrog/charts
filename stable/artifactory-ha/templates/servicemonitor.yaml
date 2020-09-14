@@ -8,6 +8,9 @@ metadata:
     chart: {{ template "artifactory-ha.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
