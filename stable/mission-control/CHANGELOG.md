@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [5.0.1] - Sep 14, 2020
+* Upgrade Elasticsearch version to 7.8.0
+
 ## [5.0.0] - Sep 3, 2020
 * **Breaking change:** Modified `imagePullSecrets` value from string to list.
 * **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
