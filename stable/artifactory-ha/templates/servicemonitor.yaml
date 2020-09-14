@@ -17,10 +17,8 @@ spec:
   endpoints:
   - port: tcp-metrics
     path: "/metrics"
-    {{- if .Values.metrics.serviceMonitor.interval }}
-    interval: {{ .Values.metrics.serviceMonitor.interval }}
-    {{- end }}
-    {{- if .Values.metrics.serviceMonitor.scrapeTimeout }}
-    scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+    {{- with .Values.metrics.serviceMonitor }}
+    interval: {{ .interval }}
+    scrapeTimeout: {{ .scrapeTimeout }}
     {{- end }}
 {{- end }}
