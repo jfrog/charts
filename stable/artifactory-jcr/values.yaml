@@ -13,10 +13,11 @@ artifactory:
   ## Artifactory
   ## See full list of supported Artifactory options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
   artifactory:
-    ## Default version is from the artifactory sub-chart in the requirements.yaml
+    ## Default tag is from the artifactory sub-chart in the requirements.yaml
     image:
-      repository: docker.bintray.io/jfrog/artifactory-jcr
-      # version:
+      registry: docker.bintray.io
+      repository: jfrog/artifactory-jcr
+      # tag:
 
     ## Uncomment the following resources definitions or pass them from command line
     ## to control the cpu and memory resources allocated by the Kubernetes cluster
