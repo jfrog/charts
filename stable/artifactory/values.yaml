@@ -1365,8 +1365,8 @@ metrics:
       <source>
         @type tail
         @id access_service_tail
-        path "#{ENV['JFROG_HOME']}/log/access-service.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/access-service.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/access-service.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/access-service.log.pos"
         tag jfrog.rt.access.service
         <parse>
             @type multiline
@@ -1379,8 +1379,8 @@ metrics:
       <source>
         @type tail
         @id artifactory_service_tail
-        path "#{ENV['JFROG_HOME']}/log/artifactory-service.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/artifactory-service.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/artifactory-service.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/artifactory-service.log.pos"
         tag jfrog.rt.artifactory.service
         <parse>
             @type multiline
@@ -1393,8 +1393,8 @@ metrics:
       <source>
         @type tail
         @id frontend_service_tail
-        path "#{ENV['JFROG_HOME']}/log/frontend-service.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/frontend-service.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/frontend-service.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/frontend-service.log.pos"
         tag jfrog.rt.frontend.service
         <parse>
             @type multiline
@@ -1407,8 +1407,8 @@ metrics:
       <source>
         @type tail
         @id metadata_service_tail
-        path "#{ENV['JFROG_HOME']}/log/metadata-service.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/metadata-service.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/metadata-service.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/metadata-service.log.pos"
         tag jfrog.rt.metadata.service
         <parse>
             @type multiline
@@ -1421,8 +1421,8 @@ metrics:
       <source>
         @type tail
         @id router_service_tail
-        path "#{ENV['JFROG_HOME']}/log/router-service.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/router-service.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/router-service.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/router-service.log.pos"
         tag jfrog.rt.router.service
         <parse>
             @type multiline
@@ -1435,8 +1435,8 @@ metrics:
       <source>
         @type tail
         @id router_traefik_tail
-        path "#{ENV['JFROG_HOME']}/log/router-traefik.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/router-traefik.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/router-traefik.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/router-traefik.log.pos"
         tag jfrog.rt.router.traefik
         <parse>
             @type multiline
@@ -1450,8 +1450,8 @@ metrics:
       <source>
         @type tail
         @id access_request_tail
-        path "#{ENV['JFROG_HOME']}/log/access-request.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/access-request.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/access-request.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/access-request.log.pos"
         tag jfrog.rt.access.request
         <parse>
           @type regexp
@@ -1463,8 +1463,8 @@ metrics:
       <source>
         @type tail
         @id artifactory_request_tail
-        path "#{ENV['JFROG_HOME']}/log/artifactory-request.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/artifactory-request.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/artifactory-request.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/artifactory-request.log.pos"
         tag jfrog.rt.artifactory.request
         <parse>
           @type regexp
@@ -1489,8 +1489,8 @@ metrics:
       <source>
         @type tail
         @id frontend_request_tail
-        path "#{ENV['JFROG_HOME']}/log/frontend-request.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/frontend-request.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/frontend-request.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/frontend-request.log.pos"
         tag jfrog.rt.frontend.request
         <parse>
           @type regexp
@@ -1502,8 +1502,8 @@ metrics:
       <source>
         @type tail
         @id metadata_request_tail
-        path "#{ENV['JFROG_HOME']}/log/metadata-request.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/metadata-request.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/metadata-request.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/metadata-request.log.pos"
         tag jfrog.rt.metadata.request
         <parse>
           @type regexp
@@ -1515,8 +1515,8 @@ metrics:
       <source>
         @type tail
         @id router_request_tail
-        path "#{ENV['JFROG_HOME']}/log/router-request.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/router-request.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/router-request.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/router-request.log.pos"
         tag jfrog.rt.router.request
         <parse>
           @type json
@@ -1527,8 +1527,8 @@ metrics:
       <source>
         @type tail
         @id artifactory_access_tail
-        path "#{ENV['JFROG_HOME']}/log/artifactory-access.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/artifactory-access.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/artifactory-access.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/artifactory-access.log.pos"
         tag jfrog.rt.artifactory.access
         <parse>
           @type regexp
@@ -1540,8 +1540,8 @@ metrics:
       <source>
         @type tail
         @id access_security_audit_tail
-        path "#{ENV['JFROG_HOME']}/log/access-security-audit.log"
-        pos_file "#{ENV['JFROG_HOME']}/log/access-security-audit.log.pos"
+        path "#{ENV['JFROG_LOGS_DIR']}/access-security-audit.log"
+        pos_file "#{ENV['JFROG_LOGS_DIR']}/access-security-audit.log.pos"
         tag jfrog.rt.access.audit
         <parse>
           @type regexp
