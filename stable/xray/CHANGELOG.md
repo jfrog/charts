@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.0.2] - Sep 16, 2020
+* Update Xray to version `3.8.6` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.6)
+
 ## [6.0.1] - Sep 16, 2020
 * Update Xray to version `3.8.5` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.5)
 * Added additional rabbitmq configuration
