@@ -429,6 +429,9 @@ artifactory:
         url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
         driver: org.postgresql.Driver
         username: "{{ .Values.postgresql.postgresqlUsername }}"
+        {{- if .Values.postgresql.postgresqlPassword }}
+        password: "{{ .Values.postgresql.postgresqlPassword }}"
+        {{- end }}
         {{- else }}
         type: "{{ .Values.database.type }}"
         driver: "{{ .Values.database.driver }}"
