@@ -120,7 +120,7 @@ spec:
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
-        image: {{ include "xray.getImageInfoByValue" (list . "router") }}
+        image: {{ include "router.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         command:
           - '/bin/sh'
