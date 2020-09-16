@@ -441,7 +441,7 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
-      {{- if .Values.metrics.enabled }}
+      {{- if .Values.fluentd.enabled }}
         - name: artifactory-logs
           mountPath: {{ .Values.artifactory.persistence.mountPath }}/log
       {{- end }}
@@ -534,9 +534,9 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-      {{- if .Values.metrics.enabled }}
+      {{- if .Values.fluentd.enabled }}
       - name: fluentd
-        image: "{{ .Values.metrics.fluentd.image.repository }}:{{ .Values.metrics.fluentd.image.tag }}"
+        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
         volumeMounts:
           - mountPath: /opt/bitnami/fluentd/conf/
             name: fluentd-config
@@ -670,7 +670,7 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
-      {{- if .Values.metrics.enabled }}
+      {{- if .Values.fluentd.enabled }}
       - name: artifactory-logs
         emptyDir: {}
       - name: fluentd-config

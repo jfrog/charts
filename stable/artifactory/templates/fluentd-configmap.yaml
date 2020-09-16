@@ -1,4 +1,4 @@
-{{- if .Values.metrics.enabled }}
+{{- if .Values.fluentd.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,5 +10,5 @@ metadata:
     release: {{ .Release.Name | quote }}
 data:
   fluentd.conf: |
-{{ tpl .Values.metrics.fluentd.fluentdConf . | indent 4 }}
+{{ tpl .Values.fluentd.fluentdConf . | indent 4 }}
 {{- end -}}

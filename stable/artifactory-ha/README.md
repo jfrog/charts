@@ -1246,12 +1246,12 @@ helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes
 
 ### Prometheus Metrics
 
-If you want to enable Prometheus metrics you can use the `metrics` configuration options.
+If you want to enable Prometheus metrics you can use the `metrics` and `fluentd` configuration options.
 
 The simplest way is to install Artifactory with the following command:
 
 ```bash
-helm upgrade --install artifactory-ha --namespace artifactory-ha --set metrics.enabled=true center/jfrog/artifactory-ha
+helm upgrade --install artifactory-ha --namespace artifactory-ha --set metrics.enabled=true --set fluentd.enabled=true center/jfrog/artifactory-ha
 ```
 
 This will create a new service exposing the Prometheus metrics as well as a ServiceMonitor object for the Prometheus Operator to start scraping.  Additionally it will run a Fluentd sidecar container in each of the Artifactory pods which will parse Artifactory log files.

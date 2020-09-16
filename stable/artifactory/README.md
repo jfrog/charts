@@ -1130,12 +1130,12 @@ This will start sending your Artifactory logs to the log aggregator of your choi
 
 ### Prometheus Metrics
 
-If you want to enable Prometheus metrics you can use the `metrics` configuration options.
+If you want to enable Prometheus metrics you can use the `metrics` and `fluentd` configuration options.
 
 The simplest way is to install Artifactory with the following command:
 
 ```bash
-helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true center/jfrog/artifactory
+helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true --set fluentd.enabled=true center/jfrog/artifactory
 ```
 
 This will create a new service exposing the Prometheus metrics as well as a ServiceMonitor object for the Prometheus Operator to start scraping.  Additionally it will run a Fluentd sidecar container in the Artifactory pod which will parse Artifactory log files.
