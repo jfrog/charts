@@ -1292,10 +1292,14 @@ filebeat:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
 
 # FLUENT BIT SIDECAR CONFIGURATION
-fluentd:
+fluentbit:
   enabled: false
-  name: artifactory-fluentd
+  name: artifactory-fluent-bit
   image:
     repository: fluent/fluent-bit
     version: 1.5.5
   resources: {}
+  # TO ENABLE READINESS / LIVENESS ADD HTTP INPUT
+  # IN FLUENT BIT CONF AND CURL ENDPOINT
+  #readinessProbe:
+  #livenessProbe:
