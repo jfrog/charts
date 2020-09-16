@@ -19,8 +19,8 @@ spec:
       release: {{ .Release.Name }}
   endpoints:
   - port: tcp-metrics
-    path: "/metrics"
     {{- with .Values.metrics.serviceMonitor }}
+    path: {{ .path }}
     interval: {{ .interval }}
     scrapeTimeout: {{ .scrapeTimeout }}
     {{- end }}

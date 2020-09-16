@@ -1303,6 +1303,7 @@ metrics:
   ## Prometheus Operator ServiceMonitor configuration
   ##
   serviceMonitor:
+    path: "/metrics"
     labels: {}
 
     ## Interval at which metrics should be scraped
@@ -1332,6 +1333,8 @@ fluentd:
     # input plugin that exports metrics
     <source>
       @type prometheus
+      port {{ .Values.metrics.service.port }}
+      metrics_path {{ .Values.metrics.serviceMonitor.path }}
     </source>
 
     <source>
