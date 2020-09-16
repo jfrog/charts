@@ -21,14 +21,15 @@ For example:
 ```yaml
 nginx:
   artifactoryConf: |
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
     ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
     ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
     ssl_session_cache shared:SSL:1m;
-    ssl_prefer_server_ciphers   on;
+    ssl_prefer_server_ciphers   off;
     ## server configuration
     server {
-      listen {{ .Values.nginx.internalPortHttps }} ssl;
+      listen {{ .Values.nginx.internalPortHttps }} ssl http2;
       listen {{ .Values.nginx.internalPortHttp }} ;
       ## Change to you DNS name you use to access Artifactory 
       server_name ~(?<repo>.+)\.{{ include "artifactory-ha.fullname" . }} {{ include "artifactory-ha.fullname" . }};

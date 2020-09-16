@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.3] - Sep 16, 2020
+* Update nginx TLS config to match "Intermediate" from ssl-config.mozilla.org
+
 ## [4.0.2] - Sep 14, 2020
 * Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
 
