@@ -1,8 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.1.0] - Sep 10, 20202
+## [11.1.0] - Sep 16, 20202
 * Expose Prometheus metrics via a ServiceMonitor
+
+## [11.0.1] - Sep 14, 2020
+* Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
 
 ## [11.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets`values from string to list.

@@ -1,8 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.1.0] - Sep 10, 2020
+## [4.1.0] - Sep 16, 2020
 * Expose Prometheus metrics via a ServiceMonitor
+
+## [4.0.2] - Sep 14, 2020
+* Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
 
 ## [4.0.1] - Sep 8, 2020
 * Added support for artifactory pro license (single node) installation.
