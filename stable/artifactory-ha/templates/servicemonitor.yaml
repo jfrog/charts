@@ -21,7 +21,11 @@ spec:
   - port: tcp-metrics
     {{- with .Values.metrics.serviceMonitor }}
     path: {{ .path }}
-    interval: {{ .interval }}
-    scrapeTimeout: {{ .scrapeTimeout }}
+    {{- with .interval }}
+    interval: {{ . }}
+    {{- end }}
+    {{- with .scrapeTimeout }}
+    scrapeTimeout: {{ . }}
+    {{- end }}
     {{- end }}
 {{- end }}
