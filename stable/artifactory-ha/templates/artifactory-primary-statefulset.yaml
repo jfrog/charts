@@ -546,10 +546,6 @@ spec:
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
-      {{- if .Values.fluentd.enabled }}
-        - name: artifactory-logs
-          mountPath: {{ .Values.artifactory.persistence.mountPath }}/log
-      {{- end }}
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
@@ -645,8 +641,8 @@ spec:
         volumeMounts:
           - mountPath: /opt/bitnami/fluentd/conf/
             name: fluentd-config
-          - mountPath: {{ .Values.artifactory.persistence.mountPath }}/log
-            name: artifactory-logs
+          - mountPath: {{ .Values.artifactory.persistence.mountPath }}
+            name: artifactory-volume
         env:
           - name: JFROG_LOGS_DIR
             value: {{ .Values.artifactory.persistence.mountPath }}/log
@@ -811,8 +807,6 @@ spec:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
       {{- if .Values.fluentd.enabled }}
-      - name: artifactory-logs
-        emptyDir: {}
       - name: fluentd-config
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-fluentd-config
