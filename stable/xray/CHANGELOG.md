@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.0.1] - Sep 16, 2020
+* Update Xray to version `3.8.5` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.5)
+
 ## [6.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list.
 * **Breaking change:** Added `image.registry` and `common.xrayVersion` is changed to `image.tag` under analysis,indexer,persist,server and router sections
