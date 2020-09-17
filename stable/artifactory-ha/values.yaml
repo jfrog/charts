@@ -531,6 +531,9 @@ artifactory:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
           extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
+    frontend:
+      session:
+        timeMinutes: {{ .Values.frontend.session.timeoutMinutes }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
@@ -1208,6 +1211,12 @@ artifactory:
       ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
       type: ""
       topologyKey: "kubernetes.io/hostname"
+
+frontend:
+  ## Session settings
+  session:
+    ## After how much time the frontend token need to be refreshed
+    timeoutMinutes: '30'
 
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
