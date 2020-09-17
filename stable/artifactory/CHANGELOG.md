@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.0.3] - Sep 17, 2020
-* Added configurable session timeout in frontend microservice
+* Added configurable session(UI) timeout in frontend microservice
 
 ## [11.0.2] - Sep 17, 2020
 * Added proper required text to be shown while postgres upgrades
