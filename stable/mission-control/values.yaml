@@ -315,7 +315,7 @@ elasticsearch:
         port: {{ .Values.elasticsearch.httpPort }}
       initialDelaySeconds: 150
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -327,7 +327,7 @@ elasticsearch:
         port: {{ .Values.elasticsearch.httpPort }}
       initialDelaySeconds: 120
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -520,7 +520,7 @@ missionControl:
         port: {{ .Values.missionControl.internalPort }}
       initialDelaySeconds: 150
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -532,7 +532,7 @@ missionControl:
         port: {{ .Values.missionControl.internalPort }}
       initialDelaySeconds: 120
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -603,7 +603,7 @@ insightServer:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 150
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -615,7 +615,7 @@ insightServer:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 120
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -686,7 +686,7 @@ insightScheduler:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 150
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -698,7 +698,7 @@ insightScheduler:
         port: {{ .Values.insightServer.internalPort }}
       initialDelaySeconds: 120
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -728,7 +728,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -741,7 +741,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
