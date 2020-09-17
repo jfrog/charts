@@ -1,6 +1,12 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.3] - Sep 17, 2020
+* Fix small typo in README and added proper required text to be shown while postgres upgrades
+
+## [4.0.2] - Sep 14, 2020
+* Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
+
 ## [4.0.1] - Sep 8, 2020
 * Added support for artifactory pro license (single node) installation.
 
