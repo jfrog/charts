@@ -298,6 +298,13 @@ rabbitmq:
     # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
     # existingErlangSecret: <name-of-existing-secret>
+  maxAvailableSchedulers: null
+  onlineSchedulers: null
+  ## Additional environment variables to set
+  ## ref: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#adding-extra-environment-variables
+  extraEnvVars:
+    - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+      value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
   service:
     port: 5672
   external:
@@ -344,6 +351,8 @@ rabbitmq:
 
 # Common Xray settings
 common:
+  ## Note that by default we use appVersion to get image tag
+  # xrayVersion:
   xrayUserId: 1035
   xrayGroupId: 1035
 
