@@ -45,10 +45,12 @@ xray:
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
+
+  ## Artifactory URL - Mandatory
+  jfrogUrl: "update_with_artifactory_url"
+
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
-  ## Artifactory URL . Mandatory
-  jfrogUrl:
 
   ## Mongo details are used only for Manual migration of data from Mongo to Postgres in Xray 2.x to 3.x
   # mongoUrl:

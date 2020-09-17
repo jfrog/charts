@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.0.3] - Sep 17, 2020
+* Update jfrogUrl default value
+
 ## [6.0.2] - Sep 17, 2020
 * Update Xray to version `3.8.6` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.6)
 
