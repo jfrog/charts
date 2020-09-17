@@ -1,8 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.1.0] - Sep 16, 20202
+## [11.1.0] - Sep 17, 20202
 * Expose Prometheus metrics via a ServiceMonitor
+* Parse log files for metric data with Fluentd
+
+## [11.0.2] - Sep 17, 2020
+* Added proper required text to be shown while postgres upgrades
 
 ## [11.0.1] - Sep 14, 2020
 * Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)

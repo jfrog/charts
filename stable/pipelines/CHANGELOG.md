@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.4.4] September 17, 2020
+* Change jfrogUrl and jfrogUrlUI default values
+* Rename ci/test-values.yaml to ci/default-values.yaml
+
 ## [1.4.3] September 2, 2020
 * Add external Vault support
 
