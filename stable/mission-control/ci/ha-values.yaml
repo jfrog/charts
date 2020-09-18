@@ -5,27 +5,11 @@ unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 missionControl:
   jfrogUrl: http://artifactory-artifactory.rt:8082
-  image:
-    tag: 4.4.1
-  javaOpts:
-    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
-    xms: "500m"
-    xmx: "1000m"
-
-insightServer:
-  image:
-    tag: 4.4.1
-
-insightScheduler:
-  image:
-    tag: 4.4.1
-  javaOpts:
-    xms: "500m"
-    xmx: "1000m"
 
 postgresql:
-  image:
-    tag: 9.6.15-debian-9-r91
   postgresqlPassword: password
   db:
     password: password
+
+# For HA
+replicaCount: 2
