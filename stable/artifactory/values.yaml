@@ -441,6 +441,9 @@ artifactory:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
           extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
+    frontend:
+      session:
+        timeMinutes: {{ .Values.frontend.session.timeoutMinutes }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
@@ -866,6 +869,12 @@ artifactory:
     enabled: false
     internalPort: 1339
     externalPort: 1339
+
+frontend:
+  ## Session settings
+  session:
+    ## Time in minutes after which the frontend token will need to be refreshed
+    timeoutMinutes: '30'
 
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
