@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [2.0.0] Sept 8, 2020
-* **Breaking change:** Updated `imagePullSecrets` value from string to list.
+* **Breaking change:** Updated `imagePullSecrets` value from string to list
 * Added support for global values
 * Updated maintainers in chart.yaml
 * Update postgresql tag version to `12.3.0-debian-10-r71`
