@@ -1,9 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.1.0] - Sep 17, 20202
+## [11.1.0] - Sep 18, 20202
 * Expose Prometheus metrics via a ServiceMonitor
 * Parse log files for metric data with Fluentd
+
+## [11.0.3] - Sep 17, 2020
+* Added configurable session(UI) timeout in frontend microservice
 
 ## [11.0.2] - Sep 17, 2020
 * Added proper required text to be shown while postgres upgrades
