@@ -1047,10 +1047,10 @@ vault:
     port: 30100
 
   # https://www.vaultproject.io/docs/configuration#disable_mlock
-  # disable_mlock (bool: false) – Disables the server from executing the mlock syscall.
-  # mlock prevents memory from being swapped to disk.
   # Disabling mlock is not recommended in production, but is fine for local development and testing.
-  disablemlock: true
+  # true - dev or test mlock is diabled
+  # false - production mlock is enabled
+  disablemlock: false
 
   resources: {}
   #  requests:
