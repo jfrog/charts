@@ -6,13 +6,17 @@ All changes to this chart to be documented in this file
 * Added support for global values
 * Updated maintainers in chart.yaml
 * Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update redis sub chart version to `10.9.0`
 * Update postgresql sub chart version to `9.3.4` - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
 * Update rabbitmq sub chart version to `7.4.3` - [7.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
 * Please refer [here](https://github.com/jfrog/charts/blob/master/stable/pipelines/README.md#special-upgrade-notes) for upgrade notes
-* Update redis sub chart version to `10.9.0`
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x's postgresql.image.tag and databaseUpgradeReady=true
+
+## [1.4.4] September 17, 2020
+* Change jfrogUrl and jfrogUrlUI default values
+* Rename ci/test-values.yaml to ci/default-values.yaml
 
 ## [1.4.3] September 2, 2020
 * Add external Vault support
