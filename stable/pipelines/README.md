@@ -157,35 +157,6 @@ rabbitmq:
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
 ```
 
-### Using external Vault
-
-If you want to use external Vault, set `vault.enabled=false` and create `values-external-vault.yaml` with below yaml configuration
-
-```yaml
-vault:
-  enabled: false
-
-global:
-  vault:
-    host: vault_url
-    port: vault_port
-    token: vault_token
-    ## Set Vault token using existing secret
-    # existingSecret: vault-secret
-```
-
-If you store external Vault token in a pre-existing Kubernetes Secret, you can specify it via `existingSecret`.
-
-To create a secret containing the Vault token:
-
-```bash
-kubectl create secret generic vault-secret --from-literal=token=${VAULT_TOKEN}
-```
-
-```bash
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-vault.yaml
-```
-
 ### Status
 
 See the status of deployed **helm** release:
@@ -215,6 +186,18 @@ To start using Pipelines you need to setup a Build Plane:
 - For Dynamic VMs Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
 
 - For Kubernetes Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
+
+### Using Vault in Production environments
+To use vault securely you must set the disablemlock setting in the values.yaml to false as per the Hashicorp Vault recommendations here:
+
+https://www.vaultproject.io/docs/configuration#disable_mlock
+
+For dev or test environment it is acceptable to leave this value set to true.
+
+Note however this does enable a potential security issue where encrypted credentials could potentially be swapped onto an unencrypted disk. 
+
+For this reason we recommend you always set this value to false to ensure mlock is enabled.
+
 
 ## Useful links
 

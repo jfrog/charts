@@ -846,13 +846,13 @@ global:
     ## PostgreSQL password using existing secret
     # existingSecret: secret
 
-  ## Internal Vault must be set to false
+  ## Internal Vault must be used until pipelines-1.9.0 release
   vault:
     host:
     port:
     token:
-    ## Vault token using existing secret
-    # existingSecret: secret
+  #  ## Vault token using existing secret
+  #  # existingSecret: secret
 
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql
@@ -1028,7 +1028,6 @@ redis:
 ## Vault
 vault:
   enabled: true
-
   updateStrategy: RollingUpdate
 
   image:
@@ -1046,6 +1045,12 @@ vault:
     # Supported service types: ClusterIP and NodePort
     type: ClusterIP
     port: 30100
+
+  # https://www.vaultproject.io/docs/configuration#disable_mlock
+  # disable_mlock (bool: false) – Disables the server from executing the mlock syscall.
+  # mlock prevents memory from being swapped to disk.
+  # Disabling mlock is not recommended in production, but is fine for local development and testing.
+  disablemlock: true
 
   resources: {}
   #  requests:
