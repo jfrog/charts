@@ -157,6 +157,31 @@ rabbitmq:
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
 ```
 
+### Using Vault in Production environments
+To use vault securely you must set the disablemlock setting in the values.yaml to false as per the Hashicorp Vault recommendations here:
+
+https://www.vaultproject.io/docs/configuration#disable_mlock
+
+For non-prod environments it is acceptable to leave this value set to true.
+
+Note however this does enable a potential security issue where encrypted credentials could potentially be swapped onto an unencrypted disk. 
+
+For this reason we recommend you always set this value to false to ensure mlock is enabled.
+
+Non-Prod environments:
+
+````
+vault:
+  disablemlock: true
+````
+
+Production environments:
+
+````
+vault:
+  disablemlock: false
+````
+
 ### Status
 
 See the status of deployed **helm** release:
@@ -187,30 +212,6 @@ To start using Pipelines you need to setup a Build Plane:
 
 - For Kubernetes Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
 
-### Using Vault in Production environments
-To use vault securely you must set the disablemlock setting in the values.yaml to false as per the Hashicorp Vault recommendations here:
-
-https://www.vaultproject.io/docs/configuration#disable_mlock
-
-For non-prod environments it is acceptable to leave this value set to true.
-
-Note however this does enable a potential security issue where encrypted credentials could potentially be swapped onto an unencrypted disk. 
-
-For this reason we recommend you always set this value to false to ensure mlock is enabled.
-
-Non-Prod environments:
-
-````
-vault:
-  disablemlock: true
-````
-
-Production environments:
-
-````
-vault:
-  disablemlock: false
-````
 
 ## Useful links
 
