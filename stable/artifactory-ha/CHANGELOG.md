@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.5] - Sep 21, 2020
+* Added mitigation yaml for Artifactory
+
 ## [4.0.4] - Sep 17, 2020
 * Added configurable session(UI) timeout in frontend microservice
 
