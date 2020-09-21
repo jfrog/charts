@@ -192,13 +192,13 @@ To use vault securely you must set the disablemlock setting in the values.yaml t
 
 https://www.vaultproject.io/docs/configuration#disable_mlock
 
-For dev or test environment it is acceptable to leave this value set to true.
+For non-prod environments it is acceptable to leave this value set to true.
 
 Note however this does enable a potential security issue where encrypted credentials could potentially be swapped onto an unencrypted disk. 
 
 For this reason we recommend you always set this value to false to ensure mlock is enabled.
 
-Dev/TEST environments:
+Non-Prod environments:
 
 ````
 vault:
