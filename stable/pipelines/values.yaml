@@ -1046,10 +1046,7 @@ vault:
     type: ClusterIP
     port: 30100
 
-  # https://www.vaultproject.io/docs/configuration#disable_mlock
-  # Disabling mlock is not recommended in production, but is fine for local development and testing.
-  # true - dev or test mlock is disabled
-  # false - production mlock is enabled
+  # DISABLE MLOCK ONLY FOR DEV/TEST
   disablemlock: true
 
   resources: {}

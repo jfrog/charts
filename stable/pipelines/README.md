@@ -198,6 +198,19 @@ Note however this does enable a potential security issue where encrypted credent
 
 For this reason we recommend you always set this value to false to ensure mlock is enabled.
 
+Dev/TEST environments:
+
+````
+vault:
+  disablemlock: true
+````
+
+Production environments:
+
+````
+vault:
+  disablemlock: false
+````
 
 ## Useful links
 
