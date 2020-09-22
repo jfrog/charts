@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.0.4] - Sep 21, 2020
-* Added mitigation yaml for Artifactory
+* Added mitigation yaml for Artifactory - [More info](https://github.com/jfrog/chartcenter/blob/master/docs/securitymitigationspec.md)
 
 ## [11.0.3] - Sep 17, 2020
 * Added configurable session(UI) timeout in frontend microservice
