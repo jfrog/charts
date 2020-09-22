@@ -1,18 +1,26 @@
 # JFrog Xray Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 1.X to 3.X (Chart Versions)
-
+## Upgrade from 1.X or 2x to 3.X and above (Chart Versions)
+* JFrog Xray v3.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x.
 * To upgrade from a version prior to 1.x, you first need to upgrade to latest version of 1.x as described in https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md.
+* To upgrade from a version of 2x, you first need to upgrade to the latest version of 2x as described in https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/CHANGELOG.md.
 
 **DOWNTIME IS REQUIRED FOR AN UPGRADE!**
+### For 1.x to 3.x
 * PostgreSQL sub chart was upgraded to version `8.x.x`. This version is not backward compatible with the old version (`0.9.5`)!
 * Note the following **PostgreSQL** Helm chart changes
   * The chart configuration has changed! See [values.yaml](values.yaml) for the new keys used
   * **PostgreSQL** is deployed as a StatefulSet
   * See [PostgreSQL helm chart](https://hub.helm.sh/charts/stable/postgresql) for all available configurations
-* Upgrade
   * Due to breaking changes in the **PostgreSQL** Helm chart, a migration of the database is needed from the old to the new database
+* Follow the upgrade process to proceed with the upgrade
+
+### For 2.x to 3.x
+* From version 3.x, the MongoDB is not used by Xray. Helm upgrade is not possible as mongodb subchart is not there in xray 3x charts. The solution is to create a new release of xray 3x and do the migration steps.
+* Follow the upgrade process to proceed with the upgrade
+
+## Upgrade process
   * The recommended migration process has 2 Main steps 1.Existing MongoDB data to Existing Postgresql 2.Full DB export and import of Postgresql
     * Upgrade steps:
       1. Prerequisite step to get details of existing chart\
