@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.4.5] September 18, 2020
+* Removed external Vault support as Pipelines does not support external vault until version 1.9.0
+* Added disablemlock flag to enable users to set to false for production grade system security requirements.
+
 ## [1.4.4] September 17, 2020
 * Change jfrogUrl and jfrogUrlUI default values
 * Rename ci/test-values.yaml to ci/default-values.yaml
