@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [1.4.6] September 23, 2020
-* Added security context run as user for pipelines-installer to work still with pipelines can using all non-root based docker images for Openshift.
+* Escalated privileges to init container only for pipelines-installer to work with pipelines images as non-root based for Openshift.
 
 ## [1.4.5] September 18, 2020
 * Removed external Vault support as Pipelines does not support external vault until version 1.9.0
