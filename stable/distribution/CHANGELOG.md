@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.0.1] - Sep 22, 2020
+* Readme updates
+
 ## [7.0.0] - Aug 28, 2020
 * **Breaking change:** Changed `imagePullSecrets` from string to list.
 * **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
