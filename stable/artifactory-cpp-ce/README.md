@@ -2,7 +2,7 @@
 
 JFrog Artifactory CE for C++ is a free Artifactory edition to host C/C++ packages in Conan repositories.
 
-**Heads up: our Helm Chart installer docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
+**Heads up: Our Helm Chart docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
 
 ## Prerequisites Details
 
