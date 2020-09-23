@@ -1,6 +1,18 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.0.6] - Sep 22, 2020
+* Fix lint issue in migitation yaml
+
+## [11.0.5] - Sep 22, 2020
+* Fix broken migitation yaml
+
+## [11.0.4] - Sep 21, 2020
+* Added mitigation yaml for Artifactory - [More info](https://github.com/jfrog/chartcenter/blob/master/docs/securitymitigationspec.md)
+
+## [11.0.3] - Sep 17, 2020
+* Added configurable session(UI) timeout in frontend microservice
+
 ## [11.0.2] - Sep 17, 2020
 * Added proper required text to be shown while postgres upgrades
 
