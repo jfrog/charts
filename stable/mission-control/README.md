@@ -1,6 +1,6 @@
 # JFrog Mission-Control Helm Chart
 
-**Heads up: our Helm Chart installer docs are moving to our main documentation site. For Mission Control installers, see [Installing Mission Control](https://www.jfrog.com/confluence/display/JFROG/Installing+Mission+Control).**
+**Heads up: Our Helm Chart docs are moving to our main documentation site. For Mission Control installers, see [Installing Mission Control](https://www.jfrog.com/confluence/display/JFROG/Installing+Mission+Control).**
 
 ## Prerequisites Details
 
