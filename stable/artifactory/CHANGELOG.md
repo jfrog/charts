@@ -1,7 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
+
 ## [11.0.6] - Sep 22, 2020
-* Updated readme file
+* Readme updates
 
 ## [11.0.5] - Sep 22, 2020
 * Fix broken migitation yaml
