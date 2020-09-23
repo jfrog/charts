@@ -1,6 +1,6 @@
 # JFrog Artifactory High Availability Helm Chart
 
-**Heads up: our Helm Chart installer docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
+**Heads up: Our Helm Chart docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
 
 ## Prerequisites Details
 
