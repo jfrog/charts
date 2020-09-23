@@ -33,7 +33,7 @@ helm repo update
 ### Install Chart
 Install JFrog Xray
 ```bash
-helm upgrade --install xray --namespace xray center/jfrog/xray --version 2.4.2
+helm upgrade --install xray --namespace xray center/jfrog/xray --version 2.4.3
 ```
 
 ## Status
