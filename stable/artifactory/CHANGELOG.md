@@ -1,8 +1,26 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.0.1] - Sept 10, 2020
+## [11.0.7] - Sept 22, 2020
 * Added fluent bit sidecar with confs for Jfrog Platform log field extractions
+
+## [11.0.6] - Sep 22, 2020
+* Fix lint issue in migitation yaml
+
+## [11.0.5] - Sep 22, 2020
+* Fix broken migitation yaml
+
+## [11.0.4] - Sep 21, 2020
+* Added mitigation yaml for Artifactory - [More info](https://github.com/jfrog/chartcenter/blob/master/docs/securitymitigationspec.md)
+
+## [11.0.3] - Sep 17, 2020
+* Added configurable session(UI) timeout in frontend microservice
+
+## [11.0.2] - Sep 17, 2020
+* Added proper required text to be shown while postgres upgrades
+
+## [11.0.1] - Sep 14, 2020
+* Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
 
 ## [11.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets`values from string to list.
