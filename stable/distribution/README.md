@@ -1,6 +1,6 @@
 # JFrog Distribution Helm Chart
 
-**Heads up: our Helm Chart installer docs are moving to our main documentation site. For Distribution installers, see [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution).**
+**Heads up: Our Helm Chart docs are moving to our main documentation site. For Distribution installers, see [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution).**
 
 ## Prerequisites Details
 
