@@ -543,11 +543,11 @@ spec:
         volumeMounts:
           - mountPath: /opt/bitnami/fluentd/conf/
             name: fluentd-config
-          - mountPath: {{ .Values.artifactory.persistence.mountPath }}
+          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
             name: artifactory-volume
         env:
-          - name: JF_PRODUCT_HOME
-            value: /opt/jfrog/artifactory
+          - name: JF_PRODUCT_DATA_INTERNAL
+            value: {{ .Values.artifactory.persistence.mountPath }}
           - name: FLUENTD_CONF
             value: fluentd.conf
       {{- end }}
