@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.0.8] - Sep 24, 2020
+* Fixed broken issue - when setting `waitForDatabase: false` container startup still waits for DB
+
 ## [11.0.7] - Sep 22, 2020
 * Readme updates
 
