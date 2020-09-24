@@ -546,6 +546,8 @@ spec:
           - mountPath: {{ .Values.artifactory.persistence.mountPath }}
             name: artifactory-volume
         env:
+          - name: JF_PRODUCT_HOME
+            value: /opt/jfrog/artifactory
           - name: FLUENTD_CONF
             value: fluentd.conf
       {{- end }}
