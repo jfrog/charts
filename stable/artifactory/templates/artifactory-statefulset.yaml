@@ -546,8 +546,6 @@ spec:
           - mountPath: {{ .Values.artifactory.persistence.mountPath }}
             name: artifactory-volume
         env:
-          - name: JFROG_LOGS_DIR
-            value: {{ .Values.artifactory.persistence.mountPath }}/log
           - name: FLUENTD_CONF
             value: fluentd.conf
       {{- end }}
