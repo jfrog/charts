@@ -118,7 +118,6 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
-          sleep 30;
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
@@ -201,7 +200,7 @@ spec:
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
     {{- end }}
     {{- if .Values.waitForDatabase }}
-      {{- if or .Values.postgresql.enabled }}
+      {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         command:
@@ -239,6 +238,10 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
           bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -353,6 +356,10 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:

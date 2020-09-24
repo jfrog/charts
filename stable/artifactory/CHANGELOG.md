@@ -1,9 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.1.0] - Sep 23, 2020
+## [11.1.0] - Sep 24, 2020
 * Expose Prometheus metrics via a ServiceMonitor
 * Parse log files for metric data with Fluentd
+
+## [11.0.8] - Sep 24, 2020
+* Fixed broken issue - when setting `waitForDatabase: false` container startup still waits for DB
 
 ## [11.0.7] - Sep 22, 2020
 * Readme updates
