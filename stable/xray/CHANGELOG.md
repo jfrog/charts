@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.0.4] - Sep 24, 2020
+* Added support for labels and extralabels
+
 ## [6.0.3] - Sep 22, 2020
 * Readme Updates
 
