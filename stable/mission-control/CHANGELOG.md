@@ -4,7 +4,10 @@ All changes to this chart will be documented in this file.
 ## [5.2.0] - Sep 10, 2020
 * Update Mission Control version to 4.7.0
 * **IMPORTANT**
-* Enable Elasticsearch request via router.
+* Enable Elasticsearch request via router
+
+## [5.0.1] - Sep 22, 2020
+* Readme updates
 
 ## [5.0.0] - Sep 3, 2020
 * **Breaking change:** Modified `imagePullSecrets` value from string to list.
