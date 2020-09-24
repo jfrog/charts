@@ -1132,7 +1132,7 @@ This will start sending your Artifactory logs to the log aggregator of your choi
 
 ### Prometheus Metrics
 
-If you want to enable Prometheus metrics you can use the `metrics` configuration options.
+If you want to enable Prometheus metrics you can use the `metrics` configuration options.  Enabling this option requires that the Promtheus Operator already be deployed and the associated CRDs created.
 
 The simplest way is to install Artifactory with the following command:
 
