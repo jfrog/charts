@@ -214,6 +214,10 @@ spec:
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+            value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -335,6 +339,10 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+            value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:

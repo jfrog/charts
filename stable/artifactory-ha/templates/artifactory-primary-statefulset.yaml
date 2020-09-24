@@ -290,6 +290,10 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
           bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
+      {{- if and (not .Values.waitForDatabase)  (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+            value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -429,6 +433,10 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+            value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
