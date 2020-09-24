@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [4.0.9] - Sep 24, 2020
-* Fixed broken issue - when setting `waitForDatabase: false` container startup still waits for DB
+* Fixed broken issue - when setting `waitForDatabase:false` container startup still waits for DB
 
 ## [4.0.8] - Sep 22, 2020
 * Updated readme
