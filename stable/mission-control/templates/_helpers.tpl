@@ -43,7 +43,7 @@ Create a list of elasticsearch master eligible nodes.
 This will create one entry per replica.
 */}}
 {{- define "elasticsearch.endpoints" -}}
-{{- $replicas := int (toString (.Values.replicaCount)) }}
+{{- $replicas := 1 }}
 {{- $releaseName := printf "%s" (include "mission-control.fullname" .) }}
   {{- range $i, $e := untilStep 0 $replicas 1 -}}
 {{ $releaseName }}-{{ $i }},
