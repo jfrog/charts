@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.10] - Sep 25, 2020
+* Update filebeat version to `7.9.2`
+
 ## [4.0.9] - Sep 24, 2020
 * Fixed broken issue - when setting `waitForDatabase:false` container startup still waits for DB
 
