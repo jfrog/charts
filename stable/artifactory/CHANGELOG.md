@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.0.9] - Sep 25, 2020
-* Update filebeat version to 7.9.2
+* Update filebeat version to `7.9.2`
 
 ## [11.0.8] - Sep 24, 2020
 * Fixed broken issue - when setting `waitForDatabase: false` container startup still waits for DB
