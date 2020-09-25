@@ -502,7 +502,7 @@ insightServer:
     # tag:
   appContext: insight
   home: /opt/jfrog
-  internalHttpPort: 8082
+  internalHttpPort: 8087
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
@@ -669,7 +669,7 @@ filebeat:
   name: mission-control-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.5.1
+    version: 7.9.2
   logstashUrl: "logstash:5044"
 
   terminationGracePeriod: 10
