@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.0.10] - Sep 25, 2020
+* Update to use linux capability CAP_CHOWN instead of root base init container to avoid any use of root containers to pass Redhat security requirements
+
+
 ## [11.0.9] - Sep 25, 2020
 * Update filebeat version to `7.9.2`
 
