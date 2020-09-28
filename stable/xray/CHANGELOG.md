@@ -1,11 +1,26 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [7.0.0] - Sep 14, 2020
+## [7.0.0] - Sep 28, 2020
 * **Breaking change:** Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
 * **IMPORTANT**
 * If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq.enabled=true`), these changes **do not affect you**!
 * **Breaking change:** Increased persistence size to `200Gi`
+
+## [6.0.4] - Sep 25, 2020
+* Update Xray to version `3.8.7` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.7)
+* Update filebeat version to `7.9.2`
+
+## [6.0.3] - Sep 22, 2020
+* Readme Updates
+
+## [6.0.2] - Sep 17, 2020
+* Update Xray to version `3.8.6` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.6)
+
+## [6.0.1] - Sep 16, 2020
+* Update Xray to version `3.8.5` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.5)
+* Added additional rabbitmq configuration
+* Added back `common.xrayVersion` in values.yaml
 
 ## [6.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list.

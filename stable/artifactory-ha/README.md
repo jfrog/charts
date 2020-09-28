@@ -1,5 +1,7 @@
 # JFrog Artifactory High Availability Helm Chart
 
+**Heads up: Our Helm Chart docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
+
 ## Prerequisites Details
 
 * Kubernetes 1.12+
@@ -65,7 +67,7 @@ artifactory:
     <YOUR_SYSTEM_YAML_CONFIGURATION>
 ```
 
-### Deploying Artifactory for small/medium/large instllations
+### Deploying Artifactory for small/medium/large installations
 In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
 
 ### Accessing Artifactory

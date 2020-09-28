@@ -37,9 +37,9 @@ pipelines:
   # version:
 
   ## Artifactory URL - Mandatory
-  jfrogUrl: "update_with_artifactory_url"
+  jfrogUrl:
   ## Artifactory UI URL - Mandatory
-  jfrogUrlUI: "update_with_artifactory_ui_url"
+  jfrogUrlUI:
 
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
@@ -1028,7 +1028,6 @@ redis:
 ## Vault
 vault:
   enabled: true
-
   updateStrategy: RollingUpdate
 
   image:
@@ -1046,6 +1045,9 @@ vault:
     # Supported service types: ClusterIP and NodePort
     type: ClusterIP
     port: 30100
+
+  # Disable mlock only in non-prod environments
+  disablemlock: true
 
   resources: {}
   #  requests:

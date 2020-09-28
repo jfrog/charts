@@ -148,11 +148,6 @@ data:
     : ${JFSC_DB_PASSWORD:="password"}
     : ${JFSC_DB_SCHEMA:="insight_scheduler"}
 
-    ##  Insight Executor
-    : ${JFEX_DB_USERNAME:="mc"}
-    : ${JFEX_DB_PASSWORD:="password"}
-    : ${JFEX_DB_SCHEMA:="insight_executor"}
-
     ##  Jfmc Server
     : ${JFMC_DB_USERNAME:="mc"}
     : ${JFMC_DB_PASSWORD:="password"}
@@ -171,7 +166,6 @@ data:
     init
     [[ $SERVICE =~ all|jfis ]] && setupDB "${JFIS_DB_USERNAME}" "${JFIS_DB_PASSWORD}" "${DB_NAME}" "${JFIS_DB_SCHEMA}" || true
     [[ $SERVICE =~ all|jfsc ]] && setupDB "${JFSC_DB_USERNAME}" "${JFSC_DB_PASSWORD}" "${DB_NAME}" "${JFSC_DB_SCHEMA}" || true
-    [[ $SERVICE =~ all|jfex ]] && setupDB "${JFEX_DB_USERNAME}" "${JFEX_DB_PASSWORD}" "${DB_NAME}" "${JFEX_DB_SCHEMA}" || true
     [[ $SERVICE =~ all|jfmc ]] && setupDB "${JFMC_DB_USERNAME}" "${JFMC_DB_PASSWORD}" "${DB_NAME}" "${JFMC_DB_SCHEMA}" || true
     log "$POSTGRES_LABEL setup is now complete"
 

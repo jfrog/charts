@@ -1,6 +1,33 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.11] - Sep 28, 2020
+* Setting chart coordinates in migitation yaml
+
+## [4.0.10] - Sep 25, 2020
+* Update filebeat version to `7.9.2`
+
+## [4.0.9] - Sep 24, 2020
+* Fixed broken issue - when setting `waitForDatabase:false` container startup still waits for DB
+
+## [4.0.8] - Sep 22, 2020
+* Updated readme
+
+## [4.0.7] - Sep 22, 2020
+* Fix lint issue in migitation yaml
+
+## [4.0.6] - Sep 22, 2020
+* Fix broken migitation yaml
+
+## [4.0.5] - Sep 21, 2020
+* Added mitigation yaml for Artifactory - [More info](https://github.com/jfrog/chartcenter/blob/master/docs/securitymitigationspec.md)
+
+## [4.0.4] - Sep 17, 2020
+* Added configurable session(UI) timeout in frontend microservice
+
+## [4.0.3] - Sep 17, 2020
+* Fix small typo in README and added proper required text to be shown while postgres upgrades
+
 ## [4.0.2] - Sep 14, 2020
 * Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
 
