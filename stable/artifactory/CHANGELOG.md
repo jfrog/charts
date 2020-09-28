@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.0.10] - Sep 28, 2020
+* Setting chart coordinates in migitation yaml
+
 ## [11.0.9] - Sep 25, 2020
 * Update filebeat version to `7.9.2`
 
