@@ -60,12 +60,12 @@ This file describes special upgrade notes needed at specific versions
       5. Run `helm delete <OLD_RELEASE_NAME>` which will remove  old Distribution deployment and Helm release.
     * Distribution should now be ready to get back to normal operation
 
-## Upgrade from 4.X to 5.X and above (Chart Versions)
+## Upgrade from 4.x to 5.x and above (Chart Versions)
 
-* JFrog Distribution v2.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x.
+* JFrog Distribution v2.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x
 * It is recommended to upgrade to the latest available chart versions. **Important** All the breaking changes should be resolved manually, see [changelog](https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md).
 
-* Upgrading to 7x version
+* Upgrading to 7.x (chart version)
   * Postgresql subchart is upgraded to 9x chart version - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
   * Upgrade steps:
     1. Delete the existing service and statefulset of distribution. kubectl delete statefulsets <old_statefulset_distribution_name>, kubectl delete services <old_service_distribution_name>
