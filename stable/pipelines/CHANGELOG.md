@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.4.7] September 25, 2020
+* Changed init container to use linux capabilities CAP_CHOWN instead of runAsUser: 0
+
 ## [1.4.6] September 23, 2020
 * Escalated privileges to init container only for pipelines-installer to work with pipelines images as non-root based for Openshift.
 
