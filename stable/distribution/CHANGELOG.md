@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.0.3] - Sep 28, 2020
+* Added upgrade notes for 4x to 5x and above chart versions
+
 ## [7.0.2] - Sep 25, 2020
 * Update filebeat version to 7.9.2
 
