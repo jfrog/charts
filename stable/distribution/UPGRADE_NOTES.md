@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 3.X to 5.X (Chart Versions)
+## Upgrade from 3.X to 5.X and above (Chart Versions)
 
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you!**
 * To upgrade from a version prior to 3.x, you first need to upgrade to latest version of 3.x as described in https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md.
@@ -59,3 +59,18 @@ This file describes special upgrade notes needed at specific versions
       4. Restore access to distribution
       5. Run `helm delete <OLD_RELEASE_NAME>` which will remove  old Distribution deployment and Helm release.
     * Distribution should now be ready to get back to normal operation
+
+## Upgrade from 4.X to 5.X and above (Chart Versions)
+
+* JFrog Distribution v2.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x.
+* It is recommended to upgrade to the latest available chart versions. **Important** All the breaking changes should be resolved manually , see [changelog](https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md).
+
+* Upgrading to 7x version
+  * Postgresql subchart is upgraded to 9x chart version - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+  * Upgrade steps:
+    1. Delete the existing service and statefulset of distribution. kubectl delete statefulsets <old_statefulset_distribution_name>, kubectl delete services <old_service_distribution_name>
+    2. If you are using the default PostgreSQL (postgresql.enabled=true), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true , also should delete the existing statefulset of postgresql subchart before helm upgrade
+    3. Run `helm upgrade` with the following values set
+       ```bash
+       $ helm upgrade distribution --set databaseUpgradeReady=true --set unifiedUpgradeAllowed=true --set postgresql.postgresqlPassword=<old password> --set postgresql.image.tag=<old image tag> --set redis.password=<old password> --set distribution.joinKey=<JOIN_KEY> --set distribution.jfrogUrl=<ARTIFACTORY_URL> --set distribution.masterKey=<old master key> --set distribution.migration.enabled=true jfrog/distribution
+       ```
