@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [6.0.5] - Sep 28, 2020
 * Update Xray to version `3.8.8` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.8)
+* Added support for labels for STS and pods
 
 ## [6.0.4] - Sep 25, 2020
 * Update Xray to version `3.8.7` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.7)
