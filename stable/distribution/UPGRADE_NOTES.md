@@ -63,7 +63,7 @@ This file describes special upgrade notes needed at specific versions
 ## Upgrade from 4.X to 5.X and above (Chart Versions)
 
 * JFrog Distribution v2.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x.
-* It is recommended to upgrade to the latest available chart versions. **Important** All the breaking changes should be resolved manually , see [changelog](https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md).
+* It is recommended to upgrade to the latest available chart versions. **Important** All the breaking changes should be resolved manually, see [changelog](https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md).
 
 * Upgrading to 7x version
   * Postgresql subchart is upgraded to 9x chart version - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
