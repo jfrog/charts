@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.4.8] September 29, 2020
+* Hardcodes routers refresh interval for pipelines
+
 ## [1.4.7] September 25, 2020
 * Changed init container to use linux capabilities CAP_CHOWN instead of runAsUser: 0
 
