@@ -67,7 +67,11 @@ This file describes special upgrade notes needed at specific versions
 
 * Upgrading to 7.x (chart version)
   * Upgrade steps:
-    1. Delete the existing service and statefulset of distribution. kubectl delete statefulsets <OLD_RELEASE_NAME>-distribution, kubectl delete services <OLD_RELEASE_NAME>-distribution
+    1. Delete the existing service and statefulset of distribution.
+       ```bash
+       $ kubectl delete statefulsets <OLD_RELEASE_NAME>-distribution
+       $ kubectl delete services <OLD_RELEASE_NAME>-distribution
+       ```    
     2. If you are using the default PostgreSQL (postgresql.enabled=true), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true, also should delete the existing statefulset of postgresql subchart before helm upgrade since 9.x chart version of postgresql has breaking changes, see [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
     3. Run `helm upgrade` with the following values set
        ```bash
