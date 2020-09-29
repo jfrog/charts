@@ -611,20 +611,25 @@ spec:
       - name: mission-control-data
         emptyDir: {}
     {{- end }}
+    {{- if and (.Values.missionControl.persistence.enabled) (.Values.missionControl.persistence.existingClaim) }}
+      - name: mission-control-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.missionControl.persistence.existingClaim }}
+    {{- end }}
     {{- if not .Values.elasticsearch.persistence.enabled }}
       - name: elasticsearch-data
         emptyDir: {}
     {{- end }}
+    {{- if and (.Values.elasticsearch.persistence.enabled) (.Values.elasticsearch.persistence.existingClaim) }}
+      - name: elasticsearch-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.elasticsearch.persistence.existingClaim }}
+    {{- end }}    
   volumeClaimTemplates:
-    {{- if .Values.missionControl.persistence.enabled }}
+    {{- if and (.Values.missionControl.persistence.enabled) (not .Values.missionControl.persistence.existingClaim) }}
     - metadata:
         name: mission-control-data
       spec:
-      {{- if .Values.missionControl.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
         {{- if .Values.missionControl.persistence.storageClass }}
         {{- if (eq "-" .Values.missionControl.persistence.storageClass) }}
         storageClassName: ''
@@ -636,17 +641,11 @@ spec:
         resources:
           requests:
             storage: {{ .Values.missionControl.persistence.size }}
-      {{- end }}
     {{- end }}
-    {{- if .Values.elasticsearch.persistence.enabled }}
+    {{- if and (.Values.elasticsearch.persistence.enabled) (not .Values.elasticsearch.persistence.existingClaim) }}
     - metadata:
         name: elasticsearch-data
       spec:
-      {{- if .Values.elasticsearch.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
         {{- if .Values.elasticsearch.persistence.storageClass }}
         {{- if (eq "-" .Values.elasticsearch.persistence.storageClass) }}
         storageClassName: ''
@@ -658,5 +657,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.elasticsearch.persistence.size }}
-      {{- end }}
     {{- end }}
