@@ -74,7 +74,9 @@ spec:
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
-            runAsUser: 0
+            capabilities:
+              add:
+                - CHOWN
           env:
             - name: VAULT_TOKEN
               valueFrom:
