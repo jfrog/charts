@@ -34,7 +34,7 @@ spec:
         release: {{ .Release.Name }}
         component: {{ .Values.xray.name }}
     {{- with .Values.xray.labels }}
-{{ toYaml . | indent 4 }}
+{{ toYaml . | indent 8 }}
     {{- end }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
