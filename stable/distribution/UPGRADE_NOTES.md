@@ -66,10 +66,9 @@ This file describes special upgrade notes needed at specific versions
 * It is recommended to upgrade to the latest available chart versions. **Important** All the breaking changes should be resolved manually, see [changelog](https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md).
 
 * Upgrading to 7.x (chart version)
-  * Postgresql subchart is upgraded to 9x chart version - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
   * Upgrade steps:
-    1. Delete the existing service and statefulset of distribution. kubectl delete statefulsets <old_statefulset_distribution_name>, kubectl delete services <old_service_distribution_name>
-    2. If you are using the default PostgreSQL (postgresql.enabled=true), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true , also should delete the existing statefulset of postgresql subchart before helm upgrade
+    1. Delete the existing service and statefulset of distribution. kubectl delete statefulsets <OLD_RELEASE_NAME>-distribution, kubectl delete services <OLD_RELEASE_NAME>-distribution
+    2. If you are using the default PostgreSQL (postgresql.enabled=true), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true, also should delete the existing statefulset of postgresql subchart before helm upgrade since 9.x chart version of postgresql has breaking changes, see [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
     3. Run `helm upgrade` with the following values set
        ```bash
        $ helm upgrade distribution --set databaseUpgradeReady=true --set unifiedUpgradeAllowed=true --set postgresql.postgresqlPassword=<old password> --set postgresql.image.tag=<old image tag> --set redis.password=<old password> --set distribution.joinKey=<JOIN_KEY> --set distribution.jfrogUrl=<ARTIFACTORY_URL> --set distribution.masterKey=<old master key> --set distribution.migration.enabled=true jfrog/distribution
