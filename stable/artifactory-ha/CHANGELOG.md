@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.0.12] - Sep 25, 2020
+* Update to use linux capability CAP_CHOWN instead of root base init container to avoid any use of root containers to pass Redhat security requirements
+
 ## [4.0.11] - Sep 28, 2020
 * Setting chart coordinates in migitation yaml
 
