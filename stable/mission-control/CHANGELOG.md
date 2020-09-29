@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [5.0.3] - Sep 29, 2020
-* Fix failure when using existing pvc
+* Fix broken failure when using existing pvc
 
 ## [5.0.2] - Sep 25, 2020
 * Changed insightServer.internalHttpPort to `8087`
