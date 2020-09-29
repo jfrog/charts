@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 3.X to 5.X and above (Chart Versions)
+## Upgrade from 3.x to 5.x and above (Chart Versions)
 
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you!**
 * To upgrade from a version prior to 3.x, you first need to upgrade to latest version of 3.x as described in https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md.
@@ -62,7 +62,7 @@ This file describes special upgrade notes needed at specific versions
 
 ## Upgrade from 4.x to 5.x and above (Chart Versions)
 
-* JFrog Distribution v2.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x
+* JFrog Distribution v2.x is only compatible with JFrog Artifactory v7.x and To upgrade, you must first install JFrog Artifactory 7.x
 * It is recommended to upgrade to the latest available chart versions. **Important** All the breaking changes should be resolved manually, see [changelog](https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md).
 
 * Upgrading to 7.x (chart version)
