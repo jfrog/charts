@@ -161,8 +161,10 @@ spec:
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.router.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
           env:
+          {{- if not .Values.router.routerConfiguration }}
             - name: JF_ROUTER_SERVICEREGISTRY_URL
               value: "{{ tpl .Values.pipelines.jfrogUrl . }}/access"
+          {{- end }}
             - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
               value: "{{ include "pipelines.grpc.url" . }}"
             - name: JF_ROUTER_ENTRYPOINTS_INTERNALPORT

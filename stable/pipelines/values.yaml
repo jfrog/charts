@@ -419,12 +419,16 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
+    {{- if .Values.router.routerConfiguration }}
     router:
       ## Router configuration
       topology:
         external:
           refresh:
-            interval: 120s
+            interval: "{{ .Values.router.topology.external.refresh.interval }}"
+      serviceRegistry:
+        url: "{{ .Values.router.serviceRegistry.url }}"
+    {{- end }}
     shared:
       ## Artifactory configuration
       ##
@@ -859,6 +863,16 @@ global:
     token:
     ## Vault token using existing secret
     # existingSecret: secret
+
+# Router Configuration
+router:
+  routerConfiguration: false
+  topology:
+    external:
+      refresh:
+        interval: "3s"
+  serviceRegistry:
+    url:
 
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql
