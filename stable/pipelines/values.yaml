@@ -488,6 +488,12 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
+    router:
+      ## Router configuration
+      topology:
+        external:
+          refresh:
+            interval: 120s
     shared:
       ## Artifactory configuration
       ##
@@ -1087,7 +1093,6 @@ redis:
 ## Vault
 vault:
   enabled: true
-
   updateStrategy: RollingUpdate
 
   image:
@@ -1108,6 +1113,9 @@ vault:
     # Supported service types: ClusterIP and NodePort
     type: ClusterIP
     port: 30100
+
+  # Disable mlock only in non-prod environments
+  disablemlock: true
 
   resources: {}
   #  requests:
