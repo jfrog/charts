@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.4.9] September 30, 2020
+* Supports router configuration to set internal artifactory endpoint for saas
+
 ## [1.4.8] September 29, 2020
 * Hardcodes routers refresh interval for pipelines
 
