@@ -311,6 +311,8 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+        resources:
+{{ toYaml .Values.artifactory.resources | indent 10 }}
 {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
