@@ -41,7 +41,7 @@ All changes to this chart will be documented in this file.
 * Updated Artifactory version to 7.7.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.7.8)
 
 ## [4.0.1] - Sep 8, 2020
-* Added support for artifactory pro license (single node) installation
+* Added support for artifactory pro license (single node) installation.
 
 ## [4.0.0] - Sep 2, 2020
 * **Breaking change:** Changed `imagePullSecrets` value from string to list
