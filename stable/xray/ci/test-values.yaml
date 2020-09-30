@@ -13,3 +13,12 @@ rabbitmq-ha:
   rabbitmqPassword: guest
   persistentVolume:
     enabled: false
+
+initContainers:
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "10m"
+    limits:
+      memory: "128Mi"
+      cpu: "250m"
