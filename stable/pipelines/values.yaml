@@ -419,6 +419,12 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
+    router:
+      ## Router configuration
+      topology:
+        external:
+          refresh:
+            interval: 120s
     shared:
       ## Artifactory configuration
       ##

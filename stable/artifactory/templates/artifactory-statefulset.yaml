@@ -70,6 +70,8 @@ spec:
       - name: "delete-db-properties"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -81,6 +83,8 @@ spec:
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -93,6 +97,8 @@ spec:
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -114,6 +120,8 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - '/bin/sh'
         - '-c'
@@ -187,6 +195,8 @@ spec:
     {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -205,6 +215,8 @@ spec:
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
