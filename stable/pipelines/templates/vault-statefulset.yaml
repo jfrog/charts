@@ -53,7 +53,7 @@ spec:
               }
 
               max_lease_ttl = "768h"
-              disable_mlock = true
+              disable_mlock = {{ .Values.vault.disablemlock }}
 
               EOF
           volumeMounts:

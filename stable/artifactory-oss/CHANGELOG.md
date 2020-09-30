@@ -1,6 +1,16 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.0.2] - Sep 22, 2020
+* Updated readme
+
+## [3.0.1] - Sep 15, 2020
+* Update dependency Artifactory chart version to 11.0.1 (Artifactory 7.7.8)
+
+## [3.0.0] - Sep 14, 2020
+* **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
+* Update dependency Artifactory chart version to 11.0.0 (Artifactory 7.7.3)
+
 ## [2.5.1] - Jul 29, 2020
 * Update dependency Artifactory chart version to 10.0.12 (Artifactory 7.6.3)
 

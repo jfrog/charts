@@ -1,5 +1,7 @@
 # JFrog Artifactory High Availability Helm Chart
 
+**Heads up: Our Helm Chart docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
+
 ## Prerequisites Details
 
 * Kubernetes 1.12+
@@ -19,7 +21,10 @@ The Artifactory HA cluster in this chart is made up of
 
 Load balancing is done to the member nodes only.
 This leaves the primary node free to handle jobs and tasks and not be interrupted by inbound traffic.
-> This can be controlled by the parameter `artifactory.service.pool`.
+This can be controlled by the parameter `artifactory.service.pool`.
+**NOTE:**
+ Using artifactory pro license (which supports single node only), set `artifactory.node.replicaCount=0` in values.yaml.
+ To scale from single node to multiple nodes(>1), use Enterprise(+) license and then do an helm upgrade (Each node need a seperate license).
 
 ## Installing the Chart
 
@@ -62,7 +67,7 @@ artifactory:
     <YOUR_SYSTEM_YAML_CONFIGURATION>
 ```
 
-### Deploying Artifactory for small/medium/large instllations
+### Deploying Artifactory for small/medium/large installations
 In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
 
 ### Accessing Artifactory

@@ -444,6 +444,9 @@ artifactory:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
           extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
+    frontend:
+      session:
+        timeMinutes: {{ .Values.frontend.session.timeoutMinutes }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
@@ -870,6 +873,12 @@ artifactory:
     internalPort: 1339
     externalPort: 1339
 
+frontend:
+  ## Session settings
+  session:
+    ## Time in minutes after which the frontend token will need to be refreshed
+    timeoutMinutes: '30'
+
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
   ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
@@ -1239,7 +1248,7 @@ filebeat:
   name: artifactory-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.5.1
+    version: 7.9.2
   logstashUrl: "logstash:5044"
 
   livenessProbe:
