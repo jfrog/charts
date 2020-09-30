@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.1.0] - Sep 30, 2020
+* Updated Artifactory version to 7.9.0 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.9)
+* Added support for resources in init container
+
 ## [11.0.11] - Sep 25, 2020
 * Update to use linux capability CAP_CHOWN instead of root base init container to avoid any use of root containers to pass Redhat security requirements
 
