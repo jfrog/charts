@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.0] - Sep 30, 2020
+* Update Distribution to version `2.5.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+
 ## [7.0.2] - Sep 25, 2020
 * Update filebeat version to 7.9.2
 
