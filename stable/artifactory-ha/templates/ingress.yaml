@@ -99,4 +99,8 @@ spec:
 {{ toYaml .Values.artifactory.replicator.ingress.tls | indent 4 }}
   {{- end -}}
 {{- end -}}
+{{- range .Values.customIngress }}
+---
+{{ toYaml . $}}
+{{- end -}}
 {{- end -}}
