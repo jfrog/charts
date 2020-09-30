@@ -419,7 +419,7 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
-    {{- if .Values.router.enabled }}
+    {{- if .Values.router.routerConfiguration }}
     router:
       ## Router configuration
       topology:
@@ -866,7 +866,7 @@ global:
 
 # Router Configuration
 router:
-  enabled: false
+  routerConfiguration: false
   topology:
     external:
       refresh:
