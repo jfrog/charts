@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.0.7] - Oct 1, 2020
+* Added router user and group id options to values.yaml to enable running all containers in custom user or group id ranges
+
 ## [6.0.6] - Sep 30, 2020
 * Added support for resources in init containers
 

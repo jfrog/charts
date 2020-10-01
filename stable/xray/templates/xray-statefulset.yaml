@@ -147,6 +147,8 @@ spec:
             containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
+          runAsUser: {{ .Values.common.routerUserId }}
+          fsGroup: {{ .Values.common.routerGroupId }}
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
