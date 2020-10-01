@@ -22,7 +22,6 @@ This chart will do the following:
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory 7.7.x with Enterprise+ License
-  - Precreated repository `jfrogpipelines` in Artifactory type `Generic` with layout `maven-2-default`
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
@@ -79,6 +78,17 @@ Install JFrog Pipelines
 ```bash
 kubectl create ns pipelines
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
+```
+
+### Special Upgrade Notes
+
+While upgrading from Pipelines 1.x to 2.x and above charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes please run,
+
+```bash
+$ kubectl delete statefulsets <old_statefulset_pipelines_name>
+$ kubectl delete statefulsets <old_statefulset_rabbitmq_name>
+$ kubectl delete pvc <old_PVC_rabbitmq_name>
+$ helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines
 ```
 
 ### Use external secret
