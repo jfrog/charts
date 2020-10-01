@@ -6,6 +6,9 @@ metadata:
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
     component: {{ include "pipelines.vault.name" . }}
+  {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/pipelines/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x" .Values.databaseUpgradeReady | quote }}
+  {{- end }}
 spec:
   serviceName: {{ include "pipelines.vault.name" . }}-headless
   replicas: 1
@@ -22,14 +25,13 @@ spec:
         component: {{ include "pipelines.vault.name" . }}
     spec:
       serviceAccountName: {{ include "pipelines.vault.name" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
       initContainers:
-        {{- with .Values.vault.customInitContainers }}
-        {{ tpl . $ | nindent 8 }}
-        {{- end }}
+          {{- if or .Values.vault.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "pipelines.vault.customInitContainers" .)  . | indent 8 }}
+          {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -80,7 +82,7 @@ spec:
             done;
             sleep 10;
         - name: create-vault-table
-          image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
@@ -106,7 +108,7 @@ spec:
             subPath: system.yaml
       containers:
         - name: vault-init
-          image: "{{ .Values.imageRegistry }}/{{ .Values.vault.init.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
+          image: {{ include "pipelines.getImageInfoByValue" (list . "vault" "init" ) }}
           imagePullPolicy: {{ .Values.vault.init.image.pullPolicy }}
           env:
             - name: CHECK_INTERVAL
@@ -123,7 +125,7 @@ spec:
               memory: 50Mi
               cpu: 50m          
         - name: vault
-          image: "{{ .Values.vault.image.repository }}:{{ .Values.vault.image.tag }}"
+          image: {{ include "vault.getImageInfoByValue" (list . "vault" ) }}
           imagePullPolicy: {{ .Values.vault.image.pullPolicy }}
           env:
             - name: POD_IP
@@ -160,9 +162,9 @@ spec:
           volumeMounts:
             - name: vault-config
               mountPath: /etc/vault/config
-    {{- with .Values.vault.customVolumeMounts }}
-{{ tpl . $ | indent 12 }}
-    {{- end }}
+            {{- if or .Values.vault.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "pipelines.vault.customVolumeMounts" .) . | indent 12 }}
+            {{- end }}
     {{- with .Values.vault.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -176,8 +178,8 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-        {{- with .Values.vault.customVolumes }}
-{{ tpl . $ | nindent 8 }}
+        {{- if or .Values.vault.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "pipelines.vault.customVolumes" .) . | indent 8 }}
         {{- end }}
         - name: vault-config
           emptyDir: {}

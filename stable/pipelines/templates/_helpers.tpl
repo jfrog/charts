@@ -114,3 +114,160 @@ Set grcp url
 {{- printf "%s" (tpl .Values.pipelines.jfrogUrl . ) }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "pipelines.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.pipelines.jfrogUrl -}}
+{{- .Values.pipelines.jfrogUrl -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve jfrogUrlUI value
+*/}}
+{{- define "pipelines.jfrogUrlUI" -}}
+{{- if .Values.global.jfrogUrlUI -}}
+{{- .Values.global.jfrogUrlUI -}}
+{{- else if .Values.pipelines.jfrogUrlUI -}}
+{{- .Values.pipelines.jfrogUrlUI -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "pipelines.joinKey" -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.pipelines.joinKey -}}
+{{- .Values.pipelines.joinKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "pipelines.masterKey" -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.pipelines.masterKey -}}
+{{- .Values.pipelines.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "pipelines.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "pipelines.vault.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.vault.customInitContainers -}}
+{{- .Values.vault.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "pipelines.vault.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.vault.customVolumes -}}
+{{- .Values.vault.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "pipelines.vault.customVolumeMounts" -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.vault.customVolumeMounts -}}
+{{- .Values.vault.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "pipelines.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.pipelines.customSidecarContainers -}}
+{{- .Values.pipelines.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper pipelines chart image names
+*/}}
+{{- define "pipelines.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference1 := index . 1 }}
+{{- $indexReference2 := index . 2 }}
+{{- $registryName := default $dot.Values.imageRegistry (index $dot.Values $indexReference1 $indexReference2 "image" "registry") -}}
+{{- $repositoryName := index $dot.Values $indexReference1 $indexReference2 "image" "repository" -}}
+{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.pipelines.version (index $dot.Values $indexReference1 $indexReference2 "image" "tag"))  | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper vault image name
+*/}}
+{{- define "vault.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference := index . 1 }}
+{{- $registryName := default $dot.Values.imageRegistry (index $dot.Values $indexReference "image" "registry") -}}
+{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{/*
+Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
+but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
+Also, we can't use a single if because lazy evaluation is not an option
+*/}}
+{{- if $dot.Values.global }}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
