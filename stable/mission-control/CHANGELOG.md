@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [5.0.4] - Oct 1, 2020
+* Added support for resources in init containers
+
 ## [5.0.3] - Sep 29, 2020
 * Fix broken failure when using existing pvc
 
