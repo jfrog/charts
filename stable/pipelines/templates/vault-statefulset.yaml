@@ -34,7 +34,9 @@ spec:
           {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }} 
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
@@ -64,6 +66,8 @@ spec:
         - name: wait-for-db
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
           - 'sh'
           - '-c'
@@ -80,6 +84,8 @@ spec:
         - name: create-vault-table
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:

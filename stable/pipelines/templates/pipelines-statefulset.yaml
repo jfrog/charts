@@ -37,6 +37,8 @@ spec:
         - name: copy-system-yaml
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -54,6 +56,8 @@ spec:
         - name: wait-for-vault
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -71,6 +75,8 @@ spec:
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -160,6 +166,7 @@ spec:
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "router" ) }}
           imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
           env:
+          {{- if not .Values.router.routerConfiguration }}
             - name: JF_ROUTER_SERVICEREGISTRY_URL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}/access"
             - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS

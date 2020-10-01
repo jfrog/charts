@@ -47,6 +47,17 @@ initContainer:
   image: "docker.bintray.io/alpine:3.12"
   pullPolicy: IfNotPresent
 
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
+
 ## Available modes: devmode (enable it for debuging) and production
 runMode: production
 
@@ -488,12 +499,16 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
+    {{- if .Values.router.routerConfiguration }}
     router:
       ## Router configuration
       topology:
         external:
           refresh:
-            interval: 120s
+            interval: "{{ .Values.router.topology.external.refresh.interval }}"
+      serviceRegistry:
+        url: "{{ .Values.router.serviceRegistry.url }}"
+    {{- end }}
     shared:
       ## Artifactory configuration
       ##
@@ -905,6 +920,38 @@ pipelines:
 
 ## Runtime Override Properties Section
 runtimeOverride: {}
+
+## For setting up external services
+global:
+  ## Internal Postgres must be set to false
+  postgresql:
+    host:
+    port: 5432
+    database: "pipelinesdb"
+    user: "apiuser"
+    # Password must be set
+    password: ""
+    ssl: false
+    ## PostgreSQL password using existing secret
+    # existingSecret: secret
+
+  ## Internal Vault must be set to false
+  vault:
+    host:
+    port:
+    token:
+    ## Vault token using existing secret
+    # existingSecret: secret
+
+# Router Configuration
+router:
+  routerConfiguration: false
+  topology:
+    external:
+      refresh:
+        interval: "3s"
+  serviceRegistry:
+    url:
 
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql

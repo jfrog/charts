@@ -1,5 +1,5 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file
+All changes to this chart to be documented in this file.
 
 ## [2.0.0] Sept 30, 2020
 * **Breaking change:** Updated `imagePullSecrets` value from string to list
@@ -13,6 +13,13 @@ All changes to this chart to be documented in this file
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x's postgresql.image.tag and databaseUpgradeReady=true
+
+## [1.5.0] Oct 1, 2020
+* Pipelines v1.8.0
+* Added support for resources in init containers
+
+## [1.4.9] September 30, 2020
+* Supports router configuration to set internal artifactory endpoint for saas
 
 ## [1.4.8] September 29, 2020
 * Hardcodes routers refresh interval for pipelines
