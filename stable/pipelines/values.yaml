@@ -921,28 +921,6 @@ pipelines:
 ## Runtime Override Properties Section
 runtimeOverride: {}
 
-## For setting up external services
-global:
-  ## Internal Postgres must be set to false
-  postgresql:
-    host:
-    port: 5432
-    database: "pipelinesdb"
-    user: "apiuser"
-    # Password must be set
-    password: ""
-    ssl: false
-    ## PostgreSQL password using existing secret
-    # existingSecret: secret
-
-  ## Internal Vault must be set to false
-  vault:
-    host:
-    port:
-    token:
-    ## Vault token using existing secret
-    # existingSecret: secret
-
 # Router Configuration
 router:
   routerConfiguration: false
