@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.4.10] Oct 1, 2020
+* Added support for resources in init containers
+
 ## [1.4.9] September 30, 2020
 * Supports router configuration to set internal artifactory endpoint for saas
 
