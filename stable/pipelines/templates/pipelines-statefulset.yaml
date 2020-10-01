@@ -39,7 +39,7 @@ spec:
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
           resources:
-{{ toYaml .Values.initContainers.resources | nindent 12 }}      
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
           command:
@@ -77,7 +77,7 @@ spec:
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           resources:
-{{ toYaml .Values.initContainers.resources | nindent 12 }}     
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

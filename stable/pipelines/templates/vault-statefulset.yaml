@@ -65,7 +65,7 @@ spec:
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
           resources:
-{{ toYaml .Values.initContainers.resources | nindent 12 }}     
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
           - 'sh'
           - '-c'
