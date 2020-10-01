@@ -169,6 +169,7 @@ spec:
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_ROUTER_SERVICEREGISTRY_URL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}/access"
+          {{- end }}
             - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
               value: "{{ include "pipelines.grpc.url" . }}"
             - name: JF_ROUTER_ENTRYPOINTS_INTERNALPORT
