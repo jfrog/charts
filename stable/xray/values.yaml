@@ -21,6 +21,17 @@ global: {}
 
 initContainerImage: docker.bintray.io/alpine:3.12
 imagePullPolicy: IfNotPresent
+
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
 # For supporting pulling from private registries
 imagePullSecrets:
   # - myRegistryKeySecretName
@@ -29,6 +40,7 @@ replicaCount: 1
 
 xray:
   name: xray
+  labels: {}
   persistence:
     mountPath: /var/opt/jfrog/xray
 
@@ -752,7 +764,7 @@ filebeat:
   name: xray-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.5.1
+    version: 7.9.2
   logstashUrl: "logstash:5044"
 
   annotations: {}

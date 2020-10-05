@@ -117,6 +117,8 @@ spec:
         - name: applicationyaml
           mountPath: "/tmp/etc/application.yaml"
           subPath: application.yaml
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- if or .Values.postgresql.enabled ( and .Values.database.host .Values.database.port ) }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
@@ -205,6 +207,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "mission-control.customInitContainers" .)  . | indent 6 }}
     {{- end }}
@@ -645,20 +649,25 @@ spec:
       - name: mission-control-data
         emptyDir: {}
     {{- end }}
+    {{- if and (.Values.missionControl.persistence.enabled) (.Values.missionControl.persistence.existingClaim) }}
+      - name: mission-control-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.missionControl.persistence.existingClaim }}
+    {{- end }}
     {{- if not .Values.elasticsearch.persistence.enabled }}
       - name: elasticsearch-data
         emptyDir: {}
     {{- end }}
+    {{- if and (.Values.elasticsearch.persistence.enabled) (.Values.elasticsearch.persistence.existingClaim) }}
+      - name: elasticsearch-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.elasticsearch.persistence.existingClaim }}
+    {{- end }}    
   volumeClaimTemplates:
-    {{- if .Values.missionControl.persistence.enabled }}
+    {{- if and (.Values.missionControl.persistence.enabled) (not .Values.missionControl.persistence.existingClaim) }}
     - metadata:
         name: mission-control-data
       spec:
-      {{- if .Values.missionControl.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
         {{- if .Values.missionControl.persistence.storageClass }}
         {{- if (eq "-" .Values.missionControl.persistence.storageClass) }}
         storageClassName: ''
@@ -670,17 +679,11 @@ spec:
         resources:
           requests:
             storage: {{ .Values.missionControl.persistence.size }}
-      {{- end }}
     {{- end }}
-    {{- if .Values.elasticsearch.persistence.enabled }}
+    {{- if and (.Values.elasticsearch.persistence.enabled) (not .Values.elasticsearch.persistence.existingClaim) }}
     - metadata:
         name: elasticsearch-data
       spec:
-      {{- if .Values.elasticsearch.persistence.existingClaim }}
-        selector:
-          matchLabels:
-            app: {{ template "mission-control.name" . }}
-      {{- else }}
         {{- if .Values.elasticsearch.persistence.storageClass }}
         {{- if (eq "-" .Values.elasticsearch.persistence.storageClass) }}
         storageClassName: ''
@@ -692,5 +695,4 @@ spec:
         resources:
           requests:
             storage: {{ .Values.elasticsearch.persistence.size }}
-      {{- end }}
     {{- end }}

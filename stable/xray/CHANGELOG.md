@@ -1,6 +1,23 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.1.0] - Oct 1, 2020
+* Update Xray to version 3.9.1
+
+## [6.0.6] - Sep 30, 2020
+* Added support for resources in init containers
+
+## [6.0.5] - Sep 28, 2020
+* Update Xray to version 3.8.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.8)
+* Added support for labels for STS and pods
+
+## [6.0.4] - Sep 25, 2020
+* Update Xray to version `3.8.7` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.7)
+* Update filebeat version to `7.9.2`
+
+## [6.0.3] - Sep 22, 2020
+* Readme Updates
+
 ## [6.0.2] - Sep 17, 2020
 * Update Xray to version `3.8.6` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.8.6)
 

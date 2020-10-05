@@ -70,6 +70,8 @@ spec:
       - name: "delete-db-properties"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -81,6 +83,8 @@ spec:
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -93,6 +97,8 @@ spec:
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -114,11 +120,12 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - '/bin/sh'
         - '-c'
         - >
-          sleep 30;
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
@@ -188,6 +195,8 @@ spec:
     {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -195,15 +204,19 @@ spec:
             echo "Setting ownership {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} on PVC {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}"
             chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
-          runAsUser: 0
+          capabilities:
+            add:
+              - CHOWN
         volumeMounts:
           - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
     {{- end }}
     {{- if .Values.waitForDatabase }}
-      {{- if or .Values.postgresql.enabled }}
+      {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -239,6 +252,10 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
           bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -353,6 +370,10 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:

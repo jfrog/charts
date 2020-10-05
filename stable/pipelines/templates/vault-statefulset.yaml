@@ -32,7 +32,9 @@ spec:
         {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }} 
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
@@ -53,7 +55,7 @@ spec:
               }
 
               max_lease_ttl = "768h"
-              disable_mlock = true
+              disable_mlock = {{ .Values.vault.disablemlock }}
 
               EOF
           volumeMounts:
@@ -62,6 +64,8 @@ spec:
         - name: wait-for-db
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
           - 'sh'
           - '-c'
@@ -78,6 +82,8 @@ spec:
         - name: create-vault-table
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:

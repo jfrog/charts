@@ -5,6 +5,17 @@ initContainer:
   image: "docker.bintray.io/alpine:3.12"
   pullPolicy: IfNotPresent
 
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
+
 ## Available modes: devmode (enable it for debuging) and production
 runMode: production
 
@@ -37,9 +48,9 @@ pipelines:
   # version:
 
   ## Artifactory URL - Mandatory
-  jfrogUrl: "update_with_artifactory_url"
+  jfrogUrl:
   ## Artifactory UI URL - Mandatory
-  jfrogUrlUI: "update_with_artifactory_ui_url"
+  jfrogUrlUI:
 
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
@@ -419,6 +430,16 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
+    {{- if .Values.router.routerConfiguration }}
+    router:
+      ## Router configuration
+      topology:
+        external:
+          refresh:
+            interval: "{{ .Values.router.topology.external.refresh.interval }}"
+      serviceRegistry:
+        url: "{{ .Values.router.serviceRegistry.url }}"
+    {{- end }}
     shared:
       ## Artifactory configuration
       ##
@@ -854,6 +875,16 @@ global:
     ## Vault token using existing secret
     # existingSecret: secret
 
+# Router Configuration
+router:
+  routerConfiguration: false
+  topology:
+    external:
+      refresh:
+        interval: "3s"
+  serviceRegistry:
+    url:
+
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql
 ## Configuration values for the postgresql dependency
@@ -1028,7 +1059,6 @@ redis:
 ## Vault
 vault:
   enabled: true
-
   updateStrategy: RollingUpdate
 
   image:
@@ -1046,6 +1076,9 @@ vault:
     # Supported service types: ClusterIP and NodePort
     type: ClusterIP
     port: 30100
+
+  # Disable mlock only in non-prod environments
+  disablemlock: true
 
   resources: {}
   #  requests:
