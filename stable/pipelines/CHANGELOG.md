@@ -1,6 +1,22 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.1] Oct 5, 2020
+* adding a healthcheck configuration within pipelines chart for artifactory
+
+## [1.5.0] Oct 1, 2020
+* Pipelines v1.8.0
+* Added support for resources in init containers
+
+## [1.4.9] September 30, 2020
+* Supports router configuration to set internal artifactory endpoint for saas
+
+## [1.4.8] September 29, 2020
+* Hardcodes routers refresh interval for pipelines
+
+## [1.4.7] September 25, 2020
+* Changed init container to use linux capabilities CAP_CHOWN instead of runAsUser: 0
+
 ## [1.4.6] September 23, 2020
 * Escalated privileges to init container only for pipelines-installer to work with pipelines images as non-root based for Openshift.
 

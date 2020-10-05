@@ -12,8 +12,8 @@ mitigations:
   - cves:
       - CVE-2017-8399
     ## Indicates package Uri for which the security mitigation is provided. helm://… || docker://…
-    affectedPackageUri: docker://docker.bintray.io/jfrog/nginx-artifactory-pro
+    affectedPackageUri: helm://jfrog/artifactory
     ## Which chart versions this cve note belongs to
-    affectedVersions: => 10.1.0
+    affectedVersions: ">= 10.1.0"
     ## Description / note
     description: This CVE needs to be fixed in the alpine base image of nginx container.
