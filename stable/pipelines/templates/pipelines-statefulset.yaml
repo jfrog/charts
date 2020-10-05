@@ -216,16 +216,20 @@ spec:
             httpGet:
               path: /
               port: api
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 6
+            initialDelaySeconds: {{ default 10 .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ default 10 .Values.pipelines.api.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ default 10 .Values.pipelines.api.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ default 6 .Values.pipelines.api.livenessProbe.failureThreshold }}
+            successThreshold: {{ default 1 .Values.pipelines.api.livenessProbe.successThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: api
-            initialDelaySeconds: 10
-            timeoutSeconds: 3
-            periodSeconds: 5
+            initialDelaySeconds: {{ default 10 .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ default 10 .Values.pipelines.api.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ default 10 .Values.pipelines.api.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ default 6 .Values.pipelines.api.readinessProbe.failureThreshold }}
+            successThreshold: {{ default 1 .Values.pipelines.api.readinessProbe.successThreshold }}
           resources:
             {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
           volumeMounts:
@@ -245,17 +249,21 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: www
-            initialDelaySeconds: 10
-            failureThreshold: 6
-            timeoutSeconds: 5
+              port: www/
+            initialDelaySeconds: {{ default 10 .Values.pipelines.www.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ default 5 .Values.pipelines.www.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ default 5 .Values.pipelines.www.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ default 6 .Values.pipelines.www.livenessProbe.failureThreshold }}
+            successThreshold: {{ default 1 .Values.pipelines.www.livenessProbe.successThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: www
-            initialDelaySeconds: 10
-            timeoutSeconds: 3
-            periodSeconds: 5
+            initialDelaySeconds: {{ default 10 .Values.pipelines.www.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ default 5 .Values.pipelines.www.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ default 5 .Values.pipelines.www.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ default 6 .Values.pipelines.www.readinessProbe.failureThreshold }}
+            successThreshold: {{ default 1 .Values.pipelines.www.readinessProbe.successThreshold }}
           resources:
             {{- toYaml .Values.pipelines.www.resources | nindent 12 }}
           volumeMounts:

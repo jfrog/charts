@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.2] Oct 5, 2020
+* increasing liveness and readiness probe settings for api and www
+* source above configs from values.yaml
+
 ## [1.5.1] Oct 5, 2020
 * adding a healthcheck configuration within pipelines chart for artifactory
 

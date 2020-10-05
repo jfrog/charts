@@ -131,7 +131,19 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
 
+    readinessProbe:
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
 
@@ -156,7 +168,6 @@ pipelines:
       # requests:
       #   cpu: 100m
       #   memory: 128Mi
-
   router:
     image:
       repository: jfrog/pipelines-router
@@ -196,7 +207,19 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
 
+    readinessProbe:
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
 
