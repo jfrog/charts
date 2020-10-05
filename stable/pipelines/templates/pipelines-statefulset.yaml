@@ -249,7 +249,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: www/
+              port: www
             initialDelaySeconds: {{ default 10 .Values.pipelines.www.livenessProbe.initialDelaySeconds }}
             timeoutSeconds: {{ default 5 .Values.pipelines.www.livenessProbe.timeoutSeconds }}
             periodSeconds: {{ default 5 .Values.pipelines.www.livenessProbe.timeoutSeconds }}
