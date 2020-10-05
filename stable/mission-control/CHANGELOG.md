@@ -2,6 +2,8 @@
 All changes to this chart will be documented in this file.
 
 ## [5.1.0] - Oct 5, 2020
+* **Breaking**
+* Changed `insightServer.internalHttpPort` to `insightServer.internalPort`
 * Add support for livenessProbe and readinessProbe for all microservices
 * Updated UPGRADE_NOTES.md
 

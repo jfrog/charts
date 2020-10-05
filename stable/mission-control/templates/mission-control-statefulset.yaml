@@ -444,7 +444,7 @@ spec:
         {{- end }}
       {{- end }}
         ports:
-        - containerPort: {{ .Values.insightServer.internalHttpPort }}
+        - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
         volumeMounts:
         - name: mission-control-data
