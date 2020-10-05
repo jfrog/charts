@@ -93,6 +93,8 @@ pipelines:
 
   # RabbitMQ health check interval in mins
   rabbitmqHealthCheckIntervalInMins: 1
+  # Artifactory health check interval in mins
+  artifactoryHealthCheckIntervalInMins: 1
 
   updateStrategy: RollingUpdate
 
@@ -620,6 +622,7 @@ pipelines:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
       rabbitmqHealthCheckIntervalInMins: {{ .Values.pipelines.rabbitmqHealthCheckIntervalInMins}}
+      artifactoryHealthCheckIntervalInMins: {{ .Values.pipelines.artifactoryHealthCheckIntervalInMins}}
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
