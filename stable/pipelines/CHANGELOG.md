@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.1] Oct 5, 2020
+* adding a healthcheck configuration within pipelines chart for artifactory
+
 ## [1.5.0] Oct 1, 2020
 * Pipelines v1.8.0
 * Added support for resources in init containers
