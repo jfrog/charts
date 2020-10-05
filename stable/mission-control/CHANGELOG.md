@@ -1,8 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [5.1.0] - Sep 10, 2020
+## [5.1.0] - Oct 5, 2020
 * Add support for livenessProbe and readinessProbe for all microservices
+* Updated UPGRADE_NOTES.md
 
 ## [5.0.4] - Oct 1, 2020
 * Added support for resources in init containers
