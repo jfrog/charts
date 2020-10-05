@@ -313,7 +313,7 @@ elasticsearch:
       httpGet:
         path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 150
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 3
@@ -325,10 +325,10 @@ elasticsearch:
       httpGet:
         path: /_cat/health
         port: {{ .Values.elasticsearch.httpPort }}
-      initialDelaySeconds: 120
+      initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 10
-      failureThreshold: 3
+      failureThreshold: 10
       successThreshold: 1
 
 podRestartTime:
@@ -520,7 +520,7 @@ missionControl:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 10
+      timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
@@ -532,8 +532,8 @@ missionControl:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
+      timeoutSeconds: 1
+      failureThreshold: 10
       successThreshold: 1
 
   ## Extra pre start command to run extra commands before container starts
@@ -603,7 +603,7 @@ insightServer:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 10
+      timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
@@ -615,8 +615,8 @@ insightServer:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
+      timeoutSeconds: 1
+      failureThreshold: 10
       successThreshold: 1
 
 insightScheduler:
@@ -686,7 +686,7 @@ insightScheduler:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 10
+      timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
@@ -698,8 +698,8 @@ insightScheduler:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
+      timeoutSeconds: 1
+      failureThreshold: 10
       successThreshold: 1
 
 router:
@@ -710,6 +710,7 @@ router:
     tag: 1.4.3
     imagePullPolicy: IfNotPresent
   internalPort: 8082
+  externalPort: 8082
   tlsEnabled: false
   resources: {}
   #  requests:
@@ -728,7 +729,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 10
+      timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
@@ -741,8 +742,8 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
+      timeoutSeconds: 1
+      failureThreshold: 10
       successThreshold: 1
 
   persistence:
