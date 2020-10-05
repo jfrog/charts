@@ -5,6 +5,17 @@ initContainer:
   image: "docker.bintray.io/alpine:3.12"
   pullPolicy: IfNotPresent
 
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
+
 ## Available modes: devmode (enable it for debuging) and production
 runMode: production
 

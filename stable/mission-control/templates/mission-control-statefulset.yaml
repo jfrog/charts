@@ -117,6 +117,8 @@ spec:
         - name: applicationyaml
           mountPath: "/tmp/etc/application.yaml"
           subPath: application.yaml
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- if or .Values.postgresql.enabled ( and .Values.database.host .Values.database.port ) }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
@@ -205,6 +207,8 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "mission-control.customInitContainers" .)  . | indent 6 }}
     {{- end }}
