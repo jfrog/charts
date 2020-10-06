@@ -216,24 +216,24 @@ spec:
           {{- if .Values.pipelines.api.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: {{ default "/" .Values.pipelines.api.livenessProbe.path}}
-              port: {{ default "api" .Values.pipelines.api.livenessProbe.port}}
-            initialDelaySeconds: {{ default 20 .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ default 10 .Values.pipelines.api.livenessProbe.timeoutSeconds }}
-            periodSeconds: {{ default 10 .Values.pipelines.api.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ default 10 .Values.pipelines.api.livenessProbe.failureThreshold }}
-            successThreshold: {{ default 1 .Values.pipelines.api.livenessProbe.successThreshold }}
+              path: {{ .Values.pipelines.api.livenessProbe.path}}
+              port: {{  .Values.pipelines.api.livenessProbe.port}}
+            initialDelaySeconds: {{  .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{  .Values.pipelines.api.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.api.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.api.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.api.livenessProbe.successThreshold }}
           {{- end }}
           {{- if .Values.pipelines.api.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: {{ default "/" .Values.pipelines.api.readinessProbe.path}}
-              port: {{ default "api" .Values.pipelines.api.readinessProbe.port}}
-            initialDelaySeconds: {{ default 20 .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ default 10 .Values.pipelines.api.readinessProbe.timeoutSeconds }}
-            periodSeconds: {{ default 10 .Values.pipelines.api.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ default 10 .Values.pipelines.api.readinessProbe.failureThreshold }}
-            successThreshold: {{ default 1 .Values.pipelines.api.readinessProbe.successThreshold }}
+              path: {{ .Values.pipelines.api.readinessProbe.path}}
+              port: {{ .Values.pipelines.api.readinessProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.api.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.api.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.api.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.api.readinessProbe.successThreshold }}
           {{- end }}
           resources:
             {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
@@ -254,24 +254,24 @@ spec:
           {{- if .Values.pipelines.www.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: {{ default "/" .Values.pipelines.www.livenessProbe.path}}
-              port: {{ default "www" .Values.pipelines.www.livenessProbe.port}}
-            initialDelaySeconds: {{ default 10 .Values.pipelines.www.livenessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ default 5 .Values.pipelines.www.livenessProbe.timeoutSeconds }}
-            periodSeconds: {{ default 5 .Values.pipelines.www.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ default 6 .Values.pipelines.www.livenessProbe.failureThreshold }}
-            successThreshold: {{ default 1 .Values.pipelines.www.livenessProbe.successThreshold }}
+              path: {{ .Values.pipelines.www.livenessProbe.path}}
+              port: {{ .Values.pipelines.www.livenessProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.www.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.www.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.www.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.www.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.www.livenessProbe.successThreshold }}
           {{- end }}
           {{- if .Values.pipelines.www.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: {{ default "/" .Values.pipelines.www.readinessProbe.path}}
-              port: {{ default "www" .Values.pipelines.www.readinessProbe.port}}
-            initialDelaySeconds: {{ default 10 .Values.pipelines.www.readinessProbe.initialDelaySeconds }}
-            timeoutSeconds: {{ default 5 .Values.pipelines.www.readinessProbe.timeoutSeconds }}
-            periodSeconds: {{ default 5 .Values.pipelines.www.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ default 6 .Values.pipelines.www.readinessProbe.failureThreshold }}
-            successThreshold: {{ default 1 .Values.pipelines.www.readinessProbe.successThreshold }}
+              path: {{ .Values.pipelines.www.readinessProbe.path}}
+              port: {{ .Values.pipelines.www.readinessProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.www.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.www.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.www.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.www.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.www.readinessProbe.successThreshold }}
           {{- end }}
           resources:
             {{- toYaml .Values.pipelines.www.resources | nindent 12 }}
