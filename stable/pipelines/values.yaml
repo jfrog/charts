@@ -132,18 +132,25 @@ pipelines:
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
     livenessProbe:
+      enabled: true
       initialDelaySeconds: 20
       timeoutSeconds: 10
       periodSeconds: 10
       failureThreshold: 10
       successThreshold: 1
+      path: /
+      port: api
 
     readinessProbe:
+      enabled: true
       initialDelaySeconds: 20
       timeoutSeconds: 10
       periodSeconds: 10
       failureThreshold: 10
       successThreshold: 1
+      path: /
+      port: api
+
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
 
@@ -208,18 +215,26 @@ pipelines:
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
     livenessProbe:
+      enabled: true
       initialDelaySeconds: 20
       failureThreshold: 10
       timeoutSeconds: 10
       periodSeconds: 10
       successThreshold: 1
+      path: /
+      port: api
+
 
     readinessProbe:
+      enabled: true
       initialDelaySeconds: 20
       failureThreshold: 10
       timeoutSeconds: 10
       periodSeconds: 10
       successThreshold: 1
+      path: /
+      port: api
+
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
 
