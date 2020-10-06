@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.1.1] - Oct 06, 2020
+## [4.2.0] - Oct 06, 2020
 * Fix `storageClass` to correct `storageClassName` in values.yaml
 
 ## [4.1.0] - Sep 30, 2020
