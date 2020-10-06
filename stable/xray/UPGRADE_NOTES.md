@@ -1,10 +1,10 @@
 # JFrog Xray Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 1.X or 2x to 3.X and above (Chart Versions)
-* JFrog Xray v3.x is only compatible with JFrog Artifactory v7.x. To upgrade, you must first install JFrog Artifactory 7.x.
+## Upgrade from 1.x/2.x to 3.x and above (Chart Versions)
+* JFrog Xray v3.x is only compatible with JFrog Artifactory v7.x To upgrade, you must first install JFrog Artifactory 7.x
 * To upgrade from a version prior to 1.x, you first need to upgrade to latest version of 1.x as described in https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md.
-* To upgrade from a version of 2x, you first need to upgrade to the latest version of 2x as described in https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/CHANGELOG.md.
+* To upgrade from a version of 2.x, you first need to upgrade to the latest version of 2.x as described in https://github.com/jfrog/charts/blob/pre-unified-platform/stable/xray/CHANGELOG.md.
 
 **DOWNTIME IS REQUIRED FOR AN UPGRADE!**
 ### For 1.x to 3.x and above
@@ -17,7 +17,7 @@ This file describes special upgrade notes needed at specific versions
 * Follow the upgrade process to proceed with the upgrade
 
 ### For 2.x to 3.x and above
-* From version 3.x, the MongoDB is not used by Xray. Helm upgrade is not possible as mongodb subchart is not there in xray 3x charts. The solution is to create a new release of xray 3x and do the migration steps.
+* From version 3.x, the MongoDB is not used by Xray. Helm upgrade is not possible as mongodb subchart is not there in xray 3.x charts. The solution is to create a new release of xray 3.x and do the migration steps.
 * Follow the upgrade process to proceed with the upgrade
 
 ## Upgrade process
