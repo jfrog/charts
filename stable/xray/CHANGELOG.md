@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.1.0] - Oct 1, 2020
+* Update Xray to version 3.9.1
+
 ## [6.0.6] - Sep 30, 2020
 * Added support for resources in init containers
 
