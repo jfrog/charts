@@ -515,9 +515,10 @@ missionControl:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /mc/api/v1/system/ping
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+        - curl 
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 1
@@ -527,9 +528,10 @@ missionControl:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /mc/api/v1/system/ping
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+        - curl 
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 1
@@ -598,9 +600,10 @@ insightServer:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /insight/api/v1/system/ping
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+        - curl 
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 1
@@ -610,9 +613,10 @@ insightServer:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /insight/api/v1/system/ping
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+        - curl 
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 1
@@ -681,9 +685,10 @@ insightScheduler:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /insight-scheduler/api/v1/system/ping
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+        - curl 
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 1
@@ -693,9 +698,10 @@ insightScheduler:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /insight-scheduler/api/v1/system/ping
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+        - curl 
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 1
