@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.1.1] - Oct 06, 2020
+## [11.2.0] - Oct 06, 2020
 * Fix `storageClass` to correct `storageClassName` in values.yaml
 
 ## [11.1.0] - Sep 30, 2020
