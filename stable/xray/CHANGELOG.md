@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [6.1.1] - Oct 5, 2020
-* Fixed broken joinkey condition logic
+* Fixed broken joinkey condition
 * Updated UPGRADE_NOTES.md
 
 ## [6.1.0] - Oct 1, 2020
