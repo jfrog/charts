@@ -212,20 +212,29 @@ spec:
           ports:
             - name: api
               containerPort: 30000
+
+          {{- if .Values.pipelines.api.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: /
-              port: api
-            initialDelaySeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 6
+              path: {{ .Values.pipelines.api.livenessProbe.path}}
+              port: {{  .Values.pipelines.api.livenessProbe.port}}
+            initialDelaySeconds: {{  .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{  .Values.pipelines.api.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.api.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.api.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.api.livenessProbe.successThreshold }}
+          {{- end }}
+          {{- if .Values.pipelines.api.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: /
-              port: api
-            initialDelaySeconds: 10
-            timeoutSeconds: 3
-            periodSeconds: 5
+              path: {{ .Values.pipelines.api.readinessProbe.path}}
+              port: {{ .Values.pipelines.api.readinessProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.api.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.api.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.api.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.api.readinessProbe.successThreshold }}
+          {{- end }}
           resources:
             {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
           volumeMounts:
@@ -242,20 +251,28 @@ spec:
           ports:
             - name: www
               containerPort: 30001
+          {{- if .Values.pipelines.www.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: /
-              port: www
-            initialDelaySeconds: 10
-            failureThreshold: 6
-            timeoutSeconds: 5
+              path: {{ .Values.pipelines.www.livenessProbe.path}}
+              port: {{ .Values.pipelines.www.livenessProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.www.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.www.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.www.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.www.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.www.livenessProbe.successThreshold }}
+          {{- end }}
+          {{- if .Values.pipelines.www.readinessProbe.enabled }}
           readinessProbe:
             httpGet:
-              path: /
-              port: www
-            initialDelaySeconds: 10
-            timeoutSeconds: 3
-            periodSeconds: 5
+              path: {{ .Values.pipelines.www.readinessProbe.path}}
+              port: {{ .Values.pipelines.www.readinessProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.www.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.www.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.www.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.www.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.www.readinessProbe.successThreshold }}
+          {{- end }}
           resources:
             {{- toYaml .Values.pipelines.www.resources | nindent 12 }}
           volumeMounts:
