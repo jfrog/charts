@@ -62,15 +62,82 @@ This file describes special upgrade notes needed at specific versions
            ```bash
            --set xray.mongoUsername=<OLD_MONGO_USERNAME> --set xray.mongoPassword=<OLD_MONGO_PASSWORD> --set xray.mongoUrl="mongodb://<SERVICE_NAME_MONGODB>:27017/?authSource=xray&authMechanism=SCRAM-SHA-1"
            ```
-          d. It will trigger the migration process
+          d. It will trigger the migration process\
           Example:
-          ```bash
-          $ helm install xray-new --set router.livenessProbe.enabled=false --set router.readinessProbe.enabled=false --set indexer.livenessProbe.enabled=false --set analysis.livenessProbe.enabled=false --set server.livenessProbe.enabled=false --set persist.livenessProbe.enabled=false --set indexer.readinessProbe.enabled=false --set analysis.readinessProbe.enabled=false --set server.readinessProbe.enabled=false --set persist.readinessProbe.enabled=false --set postgresql.enabled=false --set database.user=<OLD_PG_USERNAME> --set database.password=<OLD_PG_PASSWORD> --set database.url="postgres://<SERVICE_NAME_POSTGRES>:5432/xraydb?sslmode=disable" --set xray.mongoUsername=<OLD_MONGO_USERNAME> --set xray.mongoPassword=<OLD_MONGO_PASSWORD> --set xray.mongoUrl="mongodb://<SERVICE_NAME_MONGODB>:27017/?authSource=xray&authMechanism=SCRAM-SHA-1" --set xray.masterKey=<PREVIOUS_MASTER_KEY>  --set rabbitmq.auth.password=<PASSWORD> --set rabbitmq.enabled=true --set rabbitmq-ha.enabled=false --set xray.jfrogUrl=<NEW_ARTIFACTORY_URL> --set  xray.joinKey=<JOIN_KEY>
-          ```
+            ```yaml
+            # Create a customvalues.yaml file
+            router: 
+              livenessProbe:
+                enabled: false
+              readinessProbe: 
+                enabled: false
+            indexer: 
+              livenessProbe:
+                enabled: false
+              readinessProbe: 
+                enabled: false
+            analysis: 
+              livenessProbe:
+                enabled: false
+              readinessProbe: 
+                enabled: false
+            server: 
+              livenessProbe:
+                enabled: false
+              readinessProbe: 
+                enabled: false  
+            persist: 
+              livenessProbe:
+                enabled: false
+              readinessProbe: 
+                enabled: false
+            postgresql:
+              enabled: false
+            database: 
+              user: <OLD_PG_USERNAME>
+              password: <OLD_PG_PASSWORD>
+              url: "postgres://<SERVICE_NAME_POSTGRES>:5432/xraydb?sslmode=disable"
+            xray: 
+              mongoUsername: <OLD_MONGO_USERNAME>
+              mongoPassword: <OLD_MONGO_PASSWORD>
+              mongoUrl: "mongodb://<SERVICE_NAME_MONGODB>:27017/?authSource=xray&authMechanism=SCRAM-SHA-1"
+              masterKey: <PREVIOUS_MASTER_KEY>
+              jfrogUrl: <NEW_ARTIFACTORY_URL>
+              joinKey: <JOIN_KEY>
+            rabbitmq:
+              enabled: true
+              auth: 
+                password: <PASSWORD>
+            rabbitmq-ha:
+              enabled: false
+            ```
+            ```bash
+            # Apply the values file during install
+            helm upgrade --install xray-new center/jfrog/xray -f customvalues.yaml
+            ```
       3. Stop new Xray pods (scale down replicas to 0). Both Postgresql pods still exists
-          ```bash
-          $ helm upgrade xray-new --set replicaCount=0  --set postgresql.postgresqlPassword=<NEW_PG_PASSWORD> --set rabbitmq.auth.password=<PASSWORD> --set rabbitmq.enabled=true --set rabbitmq-ha.enabled=false --set xray.masterKey=<PREVIOUS_MASTER_KEY> --set xray.jfrogUrl=<NEW_ARTIFACTORY_URL> --set  xray.joinKey=<JOIN_KEY> --set unifiedUpgradeAllowed=true --set databaseUpgradeReady=true
-          ```
+            ```yaml
+            # Create a customvalues.yaml file
+            replicaCount: 0
+            postgresql:
+              postgresqlPassword: <NEW_PG_PASSWORD>
+            rabbitmq:
+              enabled: true
+              auth:
+                password: <PASSWORD>
+            rabbitmq-ha:
+              enabled: false
+            xray: 
+              masterKey: <PREVIOUS_MASTER_KEY>
+              jfrogUrl: <NEW_ARTIFACTORY_URL>
+              joinKey: <JOIN_KEY>
+            unifiedUpgradeAllowed: true
+            databaseUpgradeReady: true
+            ```
+            ```bash
+            # Apply the values file during install
+            helm upgrade --install xray-new center/jfrog/xray -f customvalues.yaml
+            ```
       4. To Migrate Postgresql data between old and new pods\
           a. Connect to the new PostgreSQL pod (you can obtain the name by running kubectl get pods)
            ```bash
@@ -88,9 +155,27 @@ This file describes special upgrade notes needed at specific versions
           e. After run above command you should be prompted for a password, this is current chart password.This operation could  take some time depending on the database size.
       5. Run the Upgrade final time which would start xray.\
          Example :
-         ```bash
-         helm upgrade xray-new --set xray.masterKey=<PREVIOUS_MASTER_KEY> --set xray.jfrogUrl=<NEW_ARTIFACTORY_URL> --set  xray.joinKey=<JOIN_KEY> --set rabbitmq.auth.password=<PASSWORD> --set rabbitmq.enabled=true --set rabbitmq-ha.enabled=false --set postgresql.postgresqlPassword=<NEW_PG_PASSWORD> --set unifiedUpgradeAllowed=true --set databaseUpgradeReady=true
-         ```
+          ```yaml
+          # Create a customvalues.yaml file
+          xray: 
+            masterKey: <PREVIOUS_MASTER_KEY>
+            jfrogUrl: <NEW_ARTIFACTORY_URL>
+            joinKey: <JOIN_KEY>
+          rabbitmq:
+            enabled: true
+            auth: 
+              password: <PASSWORD>
+          rabbitmq-ha:
+            enabled: false
+          postgresql:
+            postgresqlPassword: <NEW_PG_PASSWORD>
+          unifiedUpgradeAllowed: true
+          databaseUpgradeReady: true
+          ```
+          ```bash
+          # Apply the values file during install
+          helm upgrade --install xray-new center/jfrog/xray -f customvalues.yaml
+          ```
       6. Restore access to new Xray
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Xray deployment and Helm release.
     * Xray should now be ready to get back to normal operation
