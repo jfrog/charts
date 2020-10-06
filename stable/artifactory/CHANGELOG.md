@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.1.1] - Oct 06, 2020
-* value name in values yaml changed from `storageClass` to correct `storageClassName`
+* Fix `storageClass` to correct `storageClassName` in values.yaml
 
 ## [11.1.0] - Sep 30, 2020
 * Updated Artifactory version to 7.9.0 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.9)
