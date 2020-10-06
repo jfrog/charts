@@ -216,19 +216,19 @@ spec:
             httpGet:
               path: /
               port: api
-            initialDelaySeconds: {{ default 10 .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ default 20 .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
             timeoutSeconds: {{ default 10 .Values.pipelines.api.livenessProbe.timeoutSeconds }}
             periodSeconds: {{ default 10 .Values.pipelines.api.livenessProbe.timeoutSeconds }}
-            failureThreshold: {{ default 6 .Values.pipelines.api.livenessProbe.failureThreshold }}
+            failureThreshold: {{ default 10 .Values.pipelines.api.livenessProbe.failureThreshold }}
             successThreshold: {{ default 1 .Values.pipelines.api.livenessProbe.successThreshold }}
           readinessProbe:
             httpGet:
               path: /
               port: api
-            initialDelaySeconds: {{ default 10 .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
+            initialDelaySeconds: {{ default 20 .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
             timeoutSeconds: {{ default 10 .Values.pipelines.api.readinessProbe.timeoutSeconds }}
             periodSeconds: {{ default 10 .Values.pipelines.api.readinessProbe.timeoutSeconds }}
-            failureThreshold: {{ default 6 .Values.pipelines.api.readinessProbe.failureThreshold }}
+            failureThreshold: {{ default 10 .Values.pipelines.api.readinessProbe.failureThreshold }}
             successThreshold: {{ default 1 .Values.pipelines.api.readinessProbe.successThreshold }}
           resources:
             {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
