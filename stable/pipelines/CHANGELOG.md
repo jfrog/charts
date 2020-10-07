@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [2.0.0] Sept 30, 2020
+## [2.0.0] Oct 7, 2020
 * **Breaking change:** Updated `imagePullSecrets` value from string to list
 * Added support for global values
 * Updated maintainers in chart.yaml
@@ -13,6 +13,13 @@ All changes to this chart to be documented in this file.
 * **IMPORTANT**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x's postgresql.image.tag and databaseUpgradeReady=true
+
+## [1.5.2] Oct 5, 2020
+* increasing liveness and readiness probe settings for api and www
+* source above configs from values.yaml
+
+## [1.5.1] Oct 5, 2020
+* adding a healthcheck configuration within pipelines chart for artifactory
 
 ## [1.5.0] Oct 1, 2020
 * Pipelines v1.8.0

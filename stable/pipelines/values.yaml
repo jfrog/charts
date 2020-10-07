@@ -136,6 +136,8 @@ pipelines:
 
   # RabbitMQ health check interval in mins
   rabbitmqHealthCheckIntervalInMins: 1
+  # Artifactory health check interval in mins
+  artifactoryHealthCheckIntervalInMins: 1
 
   updateStrategy: RollingUpdate
 
@@ -174,6 +176,25 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /
+      port: api
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /
+      port: api
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -199,7 +220,6 @@ pipelines:
       # requests:
       #   cpu: 100m
       #   memory: 128Mi
-
   router:
     image:
       # registry:
@@ -243,6 +263,26 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      path: /
+      port: www
+
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      path: /
+      port: www
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -689,6 +729,7 @@ pipelines:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
       rabbitmqHealthCheckIntervalInMins: {{ .Values.pipelines.rabbitmqHealthCheckIntervalInMins}}
+      artifactoryHealthCheckIntervalInMins: {{ .Values.pipelines.artifactoryHealthCheckIntervalInMins}}
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
