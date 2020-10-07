@@ -645,6 +645,20 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd
+        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
+        volumeMounts:
+          - mountPath: /opt/bitnami/fluentd/conf/
+            name: fluentd-config
+          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+            name: volume
+        env:
+          - name: JF_PRODUCT_DATA_INTERNAL
+            value: {{ .Values.artifactory.persistence.mountPath }}
+          - name: FLUENTD_CONF
+            value: fluentd.conf
+      {{- end }}
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
@@ -802,6 +816,11 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd-config
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-fluentd-config
+      {{- end }}
   volumeClaimTemplates:
   {{- if .Values.artifactory.persistence.enabled }}
   - metadata:

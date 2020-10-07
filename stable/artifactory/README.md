@@ -1130,6 +1130,29 @@ helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes
 ```
 This will start sending your Artifactory logs to the log aggregator of your choice, based on your configuration in the `filebeatYml`
 
+### Prometheus Metrics
+
+If you want to enable Prometheus metrics you can use the `metrics` configuration options.  Enabling this option requires that the Promtheus Operator already be deployed and the associated CRDs created.
+
+The simplest way is to install Artifactory with the following command:
+
+```bash
+helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true center/jfrog/artifactory
+```
+
+This will create a new service exposing the Prometheus metrics as well as a ServiceMonitor object for the Prometheus Operator to start scraping.
+
+NOTE: Enabling this does NOT create a container which actually parses the log files for metrics.  See the Fluentd section below.
+
+### Fluentd
+
+The suggested way to parse the log files for metrics is to install Fluentd as a sidecar container.  This can be done with the `fluentd` configuration options.
+
+```bash
+helm upgrade --install artifactory --namespace artifactory --set fluentd.enabled=true center/jfrog/artifactory
+```
+
+This will install Artifactory with Fluentd running as a sidecar container sharing the persistent volume where the log files are written.
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
