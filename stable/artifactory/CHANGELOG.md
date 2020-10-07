@@ -2,6 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.3.0] - Oct 7, 2020
+* Updated Artifactory version to 7.9.1
 * **Breaking change:** Fix `storageClass` to correct `storageClassName` in values.yaml
 
 ## [11.2.0] - Oct 5, 2020
