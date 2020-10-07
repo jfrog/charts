@@ -8,8 +8,10 @@ postgresql:
     limits:
       memory: "8Gi"
       cpu: "6"
+
+replicaCount: 4
+
 server:
-  replicaCount: 4
   resources:
     requests:
       memory: "1Gi"
@@ -41,5 +43,7 @@ indexer:
     limits:
       memory: "2Gi"
       cpu: "2"
+
+common:
   persistence:
     size: 500Gi
