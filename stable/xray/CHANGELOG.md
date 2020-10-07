@@ -2,10 +2,10 @@
 All changes to this chart will be documented in this file.
 
 ## [7.0.0] - Oct 6, 2020
-* **Breaking change:** Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
-* **IMPORTANT**
-* If this is a new deployment or you already use a rabbitmq subchart (`rabbitmq.enabled=true`), these changes **do not affect you**!
-* **Breaking change:** Increased persistence size to `200Gi`
+* **Breaking changes:** 
+* Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
+* Increased xray persistence size to `200Gi`
+* Increased postgresql persistence size to `300Gi`
 
 ## [6.1.1] - Oct 5, 2020
 * Fixed broken joinkey condition
