@@ -34,6 +34,9 @@ spec:
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
       initContainers:
+        {{- with .Values.pipelines.customInitBeginContainers }}
+{{ tpl . $ | nindent 8 }}
+        {{- end }}
         - name: copy-system-yaml
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
