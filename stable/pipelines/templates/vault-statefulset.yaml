@@ -29,12 +29,12 @@ spec:
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
       initContainers:
-        {{- with .Values.vault.customInitBeginContainers }}
-{{ tpl . $ | nindent 8 }}
+        {{- with .Values.global.customInitContainersBegin }}
+        {{- tpl . $ | nindent 8 }}
         {{- end }}
-          {{- if or .Values.vault.customInitContainers .Values.global.customInitContainers }}
-{{ tpl (include "pipelines.vault.customInitContainers" .)  . | indent 8 }}
-          {{- end }}
+        {{- with .Values.vault.customInitContainersBegin }}
+        {{- tpl . $ | nindent 8 }}
+        {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -109,6 +109,12 @@ spec:
           - name: systemyaml
             mountPath: "/tmp/etc/system.yaml"
             subPath: system.yaml
+        {{- with .Values.global.customInitContainers }}
+        {{- tpl . $ | nindent 8 }}
+        {{- end }}
+        {{- with .Values.vault.customInitContainers }}
+        {{- tpl . $ | nindent 8 }}
+        {{- end }}
       containers:
         - name: vault-init
           image: {{ include "pipelines.getImageInfoByValue" (list . "vault" "init" ) }}
