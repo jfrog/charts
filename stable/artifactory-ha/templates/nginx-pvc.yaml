@@ -15,11 +15,11 @@ spec:
   resources:
     requests:
       storage: {{ .Values.nginx.persistence.size | quote }}
-{{- if .Values.nginx.persistence.storageClass }}
-{{- if (eq "-" .Values.nginx.persistence.storageClass) }}
+{{- if .Values.nginx.persistence.storageClassName }}
+{{- if (eq "-" .Values.nginx.persistence.storageClassName) }}
   storageClassName: ""
 {{- else }}
-  storageClassName: "{{ .Values.nginx.persistence.storageClass }}"
+  storageClassName: "{{ .Values.nginx.persistence.storageClassName }}"
 {{- end }}
 {{- end }}
 {{- end }}
