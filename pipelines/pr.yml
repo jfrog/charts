@@ -4,10 +4,8 @@ pipelines:
       environmentVariables:
         readOnly:
           PIPELINES_BRANCH: charts-public-pipelines
-          CHART_TESTING_IMAGE: quay.io/helmpack/chart-testing
-          CHART_TESTING_TAG: v3.1.1
-          TEST_IMAGE: quay.io/rimusz/gke-charts-ci
-          TEST_IMAGE_TAG: v0.0.6
+          CHART_TESTING_IMAGE: quay.io/rimusz/gke-charts-ci
+          CHART_TESTING_TAG: v0.0.12
           CHARTS_REPO: https://github.com/jfrog/charts
           KUBEVAL_VERSION: 0.15.0
           HELM_VERSION: v3.3.4
