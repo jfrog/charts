@@ -1,6 +1,10 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.3.0] - Oct 07, 2020
+* Updated Artifactory version to 7.9.1
+* **Breaking change:** Fix `storageClass` to correct `storageClassName` in values.yaml
+
 ## [4.2.0] - Oct 5, 2020
 * Expose Prometheus metrics via a ServiceMonitor
 * Parse log files for metric data with Fluentd
