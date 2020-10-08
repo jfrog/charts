@@ -477,6 +477,11 @@ pipelines:
         external:
           refresh:
             interval: "{{ .Values.router.topology.external.refresh.interval }}"
+        healthCheck:
+          interval: "{{ .Values.router.healthCheck.interval }}"
+          requestTimeout: "{{ .Values.router.healthCheck.requestTimeout }}"
+          healthyThreshold: "{{ .Values.router.healthCheck.healthyThreshold }}"
+          unhealthyThreshold: "{{ .Values.router.healthCheck.unhealthyThreshold }}"
       serviceRegistry:
         url: "{{ .Values.router.serviceRegistry.url }}"
     {{- end }}
@@ -923,6 +928,11 @@ router:
     external:
       refresh:
         interval: "3s"
+    healthCheck:
+      interval: 10s
+      requestTimeout: 10s
+      healthyThreshold: 1
+      unhealthyThreshold: 5
   serviceRegistry:
     url:
 
