@@ -35,8 +35,8 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
-        {{- with .Values.pipelines.customInitBeginContainers }}
-        {{ tpl . $ | nindent 8 }}
+        {{- with .Values.pipelines.customInitContainersBegin }}
+        {{- tpl . $ | nindent 8 }}
         {{- end }}
         - name: copy-system-yaml
           image: "{{ .Values.initContainer.image }}"
@@ -143,7 +143,7 @@ spec:
             readOnly: true
           {{- end }}
         {{- with .Values.pipelines.customInitContainers }}
-        {{ tpl . $ | nindent 8 }}
+        {{- tpl . $ | nindent 8 }}
         {{- end }}
       containers:
         {{- if .Values.filebeat.enabled }}

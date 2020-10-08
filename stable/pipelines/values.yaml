@@ -430,7 +430,20 @@ pipelines:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
-  ## Add custom init containers
+  ## Add custom init begin containers - first init container to run
+  customInitContainersBegin: |
+  #  - name: "custom-begin-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: jfrog-pipelines-folder
+
+  ## Add custom init containers - last init container to run
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainer.image }}"
@@ -441,7 +454,7 @@ pipelines:
   #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: pipelines-data
+  #        name: jfrog-pipelines-folder
 
   ## Add custom sidecar containers
   # - The provided example uses a custom volume (customVolumes)
@@ -1166,7 +1179,7 @@ vault:
   #    subPath: script.sh
 
   ## Add custom init begin containers - first init container to run
-  customInitBeginContainers: |
+  customInitContainersBegin: |
   #  - name: "custom-begin-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
