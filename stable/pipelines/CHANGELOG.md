@@ -14,6 +14,14 @@ All changes to this chart to be documented in this file.
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x's postgresql.image.tag and databaseUpgradeReady=true
 
+## [1.5.5] Oct 9, 2020
+* Added configurable healthcheck for router
+* Updated mantainers list in chart.yaml
+
+## [1.5.4] Oct 8, 2020
+* Changed customInitBeginContainer to customInitContainerBegin to match other jfrog charts
+* Added examples in values.yaml for .Values.pipelines.customInitContainerBegin
+
 ## [1.5.3] Oct 7, 2020
 * Adding custom init begin container to pipelines statefulset and vault statefulset
 * Moved custom init container in vault statefulset from first to last position
