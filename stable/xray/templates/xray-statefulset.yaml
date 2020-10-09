@@ -65,8 +65,8 @@ spec:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
       initContainers:
-    {{- if .Values.common.customInitContainersBegin }}
-      {{ tpl .Values.common.customInitContainersBegin . | indent 6 }}
+    {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
