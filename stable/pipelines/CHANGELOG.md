@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [1.5.4] Oct 8, 2020
-* Changed customInitBeginContainer to customInitContainerBegin to match other charts
+* Changed customInitBeginContainer to customInitContainerBegin to match other jfrog charts
 * Added examples in values.yaml for .Values.pipelines.customInitContainerBegin
 
 ## [1.5.3] Oct 7, 2020
