@@ -12,6 +12,8 @@ global: {}
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
+  # customInitContainersBegin: |
+
   # customInitContainers: |
 
   # customVolumes: |
@@ -218,7 +220,20 @@ artifactory:
     ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
     # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
 
-  ## Add custom init containers
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+  #        name: artifactory-volume
+
+  ## Add custom init containers execution after predefined init containers
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"

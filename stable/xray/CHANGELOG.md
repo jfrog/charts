@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.1.2] - Oct 9, 2020
+* Add global support for customInitContainersBegin
+
 ## [6.1.1] - Oct 5, 2020
 * Fixed broken joinkey condition
 * Updated UPGRADE_NOTES.md
