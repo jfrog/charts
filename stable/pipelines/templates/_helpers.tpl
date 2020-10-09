@@ -177,6 +177,17 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Resolve customInitContainersBegin value
+*/}}
+{{- define "pipelines.vault.customInitContainersBegin" -}}
+{{- if .Values.global.customInitContainersBegin -}}
+{{- .Values.global.customInitContainersBegin -}}
+{{- else if .Values.vault.customInitContainersBegin -}}
+{{- .Values.vault.customInitContainersBegin -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customInitContainers value
 */}}
 {{- define "pipelines.vault.customInitContainers" -}}

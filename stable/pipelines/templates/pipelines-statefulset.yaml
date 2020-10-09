@@ -34,9 +34,6 @@ spec:
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
       initContainers:
-        {{- with .Values.global.customInitContainersBegin }}
-        {{- tpl . $ | nindent 8 }}
-        {{- end }}
         {{- with .Values.pipelines.customInitContainersBegin }}
         {{- tpl . $ | nindent 8 }}
         {{- end }}
@@ -144,9 +141,6 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
             readOnly: true
           {{- end }}
-        {{- with .Values.global.customInitContainers }}
-        {{- tpl . $ | nindent 8 }}
-        {{- end }}
         {{- with .Values.pipelines.customInitContainers }}
         {{- tpl . $ | nindent 8 }}
         {{- end }}
