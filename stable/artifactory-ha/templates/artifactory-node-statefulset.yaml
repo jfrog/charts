@@ -190,7 +190,7 @@ spec:
     {{- end }}
     {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "artifactory-ha.customInitContainers" .)  . | indent 6 }}
-    {{- end }}    
+    {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
