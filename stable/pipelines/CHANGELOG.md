@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.5] Oct 9, 2020
+* Added configurable healthcheck for router
+* Updated mantainers list in chart.yaml
+
 ## [1.5.4] Oct 8, 2020
 * Changed customInitBeginContainer to customInitContainerBegin to match other jfrog charts
 * Added examples in values.yaml for .Values.pipelines.customInitContainerBegin
