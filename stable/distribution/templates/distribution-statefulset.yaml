@@ -43,6 +43,9 @@ spec:
         runAsUser: {{ .Values.common.uid }}
         fsGroup: {{ .Values.common.gid }}
       initContainers:
+    {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "distribution.customInitContainersBegin" .)  . | indent 6 }}
+    {{- end }}      
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
         resources:
