@@ -27,8 +27,8 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
-        {{- with .Values.vault.customInitBeginContainers }}
-        {{ tpl . $ | nindent 8 }}
+        {{- with .Values.vault.customInitContainersBegin }}
+        {{- tpl . $ | nindent 8 }}
         {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
@@ -105,7 +105,7 @@ spec:
             mountPath: "/tmp/etc/system.yaml"
             subPath: system.yaml
         {{- with .Values.vault.customInitContainers }}
-        {{ tpl . $ | nindent 8 }}
+        {{- tpl . $ | nindent 8 }}
         {{- end }}
       containers:
         - name: vault-init
