@@ -32,39 +32,12 @@ global:
   # jfrogUrlUi:
   # joinKey:
   # masterKey:
-  # joinKeySecretName:
-  # masterKeySecretName:
   # customVolumes: |
-
   # customVolumeMounts: |
-
   ## Add custom init begin containers - first init container to run
-  customInitContainersBegin: |
-  #  - name: "custom-begin-setup"
-  #    image: "{{ .Values.initContainer.image }}"
-  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: jfrog-pipelines-folder
-
+  # customInitContainersBegin: |
   ## Add custom init containers - last init container to run
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainer.image }}"
-  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: jfrog-pipelines-folder
-
-
+  # customInitContainers: |
   # customSidecarContainers: |
 
 ## Common
