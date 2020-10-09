@@ -267,6 +267,17 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Resolve customInitContainersBegin value
+*/}}
+{{- define "xray.customInitContainersBegin" -}}
+{{- if .Values.global.customInitContainersBegin -}}
+{{- .Values.global.customInitContainersBegin -}}
+{{- else if .Values.common.customInitContainersBegin -}}
+{{- .Values.common.customInitContainersBegin -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customInitContainers value
 */}}
 {{- define "xray.customInitContainers" -}}
