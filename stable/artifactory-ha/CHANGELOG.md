@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.4.0] - Oct 9, 2020
+## [4.3.1] - Oct 9, 2020
 * Add global support for customInitContainersBegin
 
 ## [4.3.0] - Oct 07, 2020

@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.4.0] - Oct 9, 2020
+## [11.3.1] - Oct 9, 2020
 * Add support for customInitContainersBegin
 
 ## [11.3.0] - Oct 7, 2020
