@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.2.0] - Oct 9, 2020
+* Add support for customInitContainersBegin
+
 ## [7.1.0] - Sep 30, 2020
 * Update Distribution to version `2.5.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
 * Added support for resources in init containers

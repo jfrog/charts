@@ -18,6 +18,8 @@ global: {}
 
   # customInitContainers: |
 
+  # customInitContainersBegin: |
+
   # customSidecarContainers: |
 
 initContainerImage: docker.bintray.io/alpine:3.12
@@ -213,7 +215,20 @@ common:
   #  posthook-end.sh: |-
   #    echo "This is a post end script"
 
-  ## Add custom init containers
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: distribution-data
+
+  ## Add custom init containers execution after predefined init containers
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
