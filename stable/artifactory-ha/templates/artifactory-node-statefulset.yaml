@@ -59,8 +59,8 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
-    {{- if .Values.artifactory.customInitContainersBegin }}
-{{ tpl .Values.artifactory.customInitContainersBegin . | indent 6 }}
+    {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
     {{- end }}
   {{- if .Values.artifactory.persistence.enabled }}
     {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -188,9 +188,6 @@ spec:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- end }}
     {{- end }}
-    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
-{{ tpl (include "artifactory-ha.customInitContainers" .)  . | indent 6 }}
-    {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory-ha'
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
@@ -309,6 +306,9 @@ spec:
           subPath: gcp.credentials.json
   {{- end }}
 {{- end }}
+    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "artifactory-ha.customInitContainers" .)  . | indent 6 }}
+    {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}

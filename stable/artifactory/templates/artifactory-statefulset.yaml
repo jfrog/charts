@@ -65,6 +65,9 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
+    {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "artifactory.customInitContainersBegin" .)  . | indent 6 }}
+    {{- end }}      
     {{- if .Values.artifactory.persistence.enabled }}
     {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"
@@ -226,9 +229,6 @@ spec:
           done;
       {{- end }}
     {{- end }}
-    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
-{{ tpl (include "artifactory.customInitContainers" .)  . | indent 6 }}
-    {{- end }}
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory'
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
@@ -324,6 +324,9 @@ spec:
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
 {{- end }}
+    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "artifactory.customInitContainers" .)  . | indent 6 }}
+    {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}

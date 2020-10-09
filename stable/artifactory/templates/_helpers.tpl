@@ -150,6 +150,17 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Resolve customInitContainersBegin value
+*/}}
+{{- define "artifactory.customInitContainersBegin" -}}
+{{- if .Values.global.customInitContainersBegin -}}
+{{- .Values.global.customInitContainersBegin -}}
+{{- else if .Values.artifactory.customInitContainersBegin -}}
+{{- .Values.artifactory.customInitContainersBegin -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customInitContainers value
 */}}
 {{- define "artifactory.customInitContainers" -}}
