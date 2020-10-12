@@ -238,6 +238,7 @@ spec:
           value: 'YES'
         {{- else }}
           value: 'NO'
+        {{- end }}
         - name: ELASTICSEARCH_PASSWORD
           valueFrom:
             secretKeyRef:
