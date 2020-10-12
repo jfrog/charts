@@ -282,7 +282,7 @@ spec:
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
         - name: elasticsearch-scripts
-          mountPath: "/usr/local/bin"
+          mountPath: "/scripts"
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
     {{- end }}
