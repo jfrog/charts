@@ -5,6 +5,17 @@ initContainer:
   image: "docker.bintray.io/alpine:3.12"
   pullPolicy: IfNotPresent
 
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
+
 ## Available modes: devmode (enable it for debuging) and production
 runMode: production
 
@@ -82,6 +93,8 @@ pipelines:
 
   # RabbitMQ health check interval in mins
   rabbitmqHealthCheckIntervalInMins: 1
+  # Artifactory health check interval in mins
+  artifactoryHealthCheckIntervalInMins: 1
 
   updateStrategy: RollingUpdate
 
@@ -118,6 +131,25 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /
+      port: api
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /
+      port: api
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -143,7 +175,6 @@ pipelines:
       # requests:
       #   cpu: 100m
       #   memory: 128Mi
-
   router:
     image:
       repository: jfrog/pipelines-router
@@ -183,6 +214,26 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      path: /
+      port: www
+
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      path: /
+      port: www
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -379,7 +430,20 @@ pipelines:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
-  ## Add custom init containers
+  ## Add custom init begin containers - first init container to run
+  customInitContainersBegin: |
+  #  - name: "custom-begin-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: jfrog-pipelines-folder
+
+  ## Add custom init containers - last init container to run
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainer.image }}"
@@ -390,7 +454,7 @@ pipelines:
   #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: pipelines-data
+  #        name: jfrog-pipelines-folder
 
   ## Add custom sidecar containers
   # - The provided example uses a custom volume (customVolumes)
@@ -419,12 +483,21 @@ pipelines:
   #        cpu: "100m"
 
   systemYaml: |
+    {{- if .Values.router.routerConfiguration }}
     router:
       ## Router configuration
       topology:
         external:
           refresh:
-            interval: 120s
+            interval: "{{ .Values.router.topology.external.refresh.interval }}"
+        healthCheck:
+          interval: "{{ .Values.router.healthCheck.interval }}"
+          requestTimeout: "{{ .Values.router.healthCheck.requestTimeout }}"
+          healthyThreshold: "{{ .Values.router.healthCheck.healthyThreshold }}"
+          unhealthyThreshold: "{{ .Values.router.healthCheck.unhealthyThreshold }}"
+      serviceRegistry:
+        url: "{{ .Values.router.serviceRegistry.url }}"
+    {{- end }}
     shared:
       ## Artifactory configuration
       ##
@@ -605,6 +678,7 @@ pipelines:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
       rabbitmqHealthCheckIntervalInMins: {{ .Values.pipelines.rabbitmqHealthCheckIntervalInMins}}
+      artifactoryHealthCheckIntervalInMins: {{ .Values.pipelines.artifactoryHealthCheckIntervalInMins}}
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
@@ -860,6 +934,21 @@ global:
     ## Vault token using existing secret
     # existingSecret: secret
 
+# Router Configuration
+router:
+  routerConfiguration: false
+  topology:
+    external:
+      refresh:
+        interval: "3s"
+    healthCheck:
+      interval: 10s
+      requestTimeout: 10s
+      healthyThreshold: 1
+      unhealthyThreshold: 5
+  serviceRegistry:
+    url:
+
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql
 ## Configuration values for the postgresql dependency
@@ -1099,7 +1188,20 @@ vault:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
-  ## Add custom init containers
+  ## Add custom init begin containers - first init container to run
+  customInitContainersBegin: |
+  #  - name: "custom-begin-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: jfrog-pipelines-folder
+
+  ## Add custom init containers - last init container to run
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainer.image }}"
@@ -1110,7 +1212,8 @@ vault:
   #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: pipelines-data
+  #        name: jfrog-pipelines-folder
+
 
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Pipeline logs. It assumes you have a logstash installed and configured properly.

@@ -27,12 +27,14 @@ spec:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
       initContainers:
-        {{- with .Values.vault.customInitContainers }}
-        {{ tpl . $ | nindent 8 }}
+        {{- with .Values.vault.customInitContainersBegin }}
+        {{- tpl . $ | nindent 8 }}
         {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }} 
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
@@ -62,6 +64,8 @@ spec:
         - name: wait-for-db
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
           - 'sh'
           - '-c'
@@ -78,6 +82,8 @@ spec:
         - name: create-vault-table
           image: "{{ .Values.imageRegistry }}/{{ .Values.pipelines.pipelinesInit.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
@@ -98,6 +104,9 @@ spec:
           - name: systemyaml
             mountPath: "/tmp/etc/system.yaml"
             subPath: system.yaml
+        {{- with .Values.vault.customInitContainers }}
+        {{- tpl . $ | nindent 8 }}
+        {{- end }}
       containers:
         - name: vault-init
           image: "{{ .Values.imageRegistry }}/{{ .Values.vault.init.image.repository }}:{{ default .Chart.AppVersion .Values.pipelines.version }}"

@@ -1,8 +1,19 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.1.1] - Sep 30, 2020
+## [11.3.2] - Sep 30, 2020
 * Added support for custom ingress
+
+## [11.3.1] - Oct 9, 2020
+* Add support for customInitContainersBegin
+
+## [11.3.0] - Oct 7, 2020
+* Updated Artifactory version to 7.9.1
+* **Breaking change:** Fix `storageClass` to correct `storageClassName` in values.yaml
+
+## [11.2.0] - Oct 5, 2020
+* Expose Prometheus metrics via a ServiceMonitor
+* Parse log files for metric data with Fluentd
 
 ## [11.1.0] - Sep 30, 2020
 * Updated Artifactory version to 7.9.0 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.9)

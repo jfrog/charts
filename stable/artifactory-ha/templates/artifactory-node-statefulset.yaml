@@ -59,8 +59,8 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
-    {{- if .Values.artifactory.customInitContainersBegin }}
-{{ tpl .Values.artifactory.customInitContainersBegin . | indent 6 }}
+    {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
     {{- end }}
   {{- if .Values.artifactory.persistence.enabled }}
     {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -543,6 +543,20 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd
+        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
+        volumeMounts:
+          - mountPath: /opt/bitnami/fluentd/conf/
+            name: fluentd-config
+          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+            name: volume
+        env:
+          - name: JF_PRODUCT_DATA_INTERNAL
+            value: {{ .Values.artifactory.persistence.mountPath }}
+          - name: FLUENTD_CONF
+            value: fluentd.conf
+      {{- end }}
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
@@ -626,7 +640,7 @@ spec:
       - name: bootstrap-config
         configMap:
           name: {{ .Values.artifactory.configMapName }}
-      {{- end}}      
+      {{- end}}
       {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
       - name: tail-logger-script
         configMap:
@@ -678,6 +692,11 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd-config
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-fluentd-config
+      {{- end }}
   volumeClaimTemplates:
   {{- if .Values.artifactory.persistence.enabled }}
   - metadata:
