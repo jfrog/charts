@@ -4,8 +4,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly IMAGE_TAG=${TEST_IMAGE_TAG}
-readonly IMAGE_REPOSITORY="docker.io/rimusz/gke-charts-ci"
+readonly IMAGE_TAG=${CHART_TESTING_TAG}
+readonly IMAGE_REPOSITORY="quay.io/rimusz/harts-ci"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 # shellcheck source=test/common.sh

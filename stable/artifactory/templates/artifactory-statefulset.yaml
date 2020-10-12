@@ -65,11 +65,16 @@ spec:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.uid }}
       initContainers:
+    {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "artifactory.customInitContainersBegin" .)  . | indent 6 }}
+    {{- end }}      
     {{- if .Values.artifactory.persistence.enabled }}
     {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -81,6 +86,8 @@ spec:
       - name: "remove-lost-found"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -93,6 +100,8 @@ spec:
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -114,11 +123,12 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - '/bin/sh'
         - '-c'
         - >
-          sleep 30;
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
@@ -188,6 +198,8 @@ spec:
     {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
@@ -195,15 +207,19 @@ spec:
             echo "Setting ownership {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} on PVC {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}"
             chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
-          runAsUser: 0
+          capabilities:
+            add:
+              - CHOWN
         volumeMounts:
           - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
     {{- end }}
     {{- if .Values.waitForDatabase }}
-      {{- if or .Values.postgresql.enabled }}
+      {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
@@ -239,6 +255,10 @@ spec:
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
           bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -353,6 +373,10 @@ spec:
                 {{ tpl . $ }}
               {{- end }}
         env:
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -530,6 +554,20 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd
+        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
+        volumeMounts:
+          - mountPath: /opt/bitnami/fluentd/conf/
+            name: fluentd-config
+          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+            name: artifactory-volume
+        env:
+          - name: JF_PRODUCT_DATA_INTERNAL
+            value: {{ .Values.artifactory.persistence.mountPath }}
+          - name: FLUENTD_CONF
+            value: fluentd.conf
+      {{- end }}
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
@@ -652,6 +690,11 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd-config
+        configMap:
+          name: {{ template "artifactory.name" . }}-fluentd-config
+      {{- end }}
 {{- with .Values.artifactory.persistence }}
   {{- if and .enabled (not .existingClaim) }}
   volumeClaimTemplates:

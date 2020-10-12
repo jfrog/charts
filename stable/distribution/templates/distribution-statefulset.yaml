@@ -43,8 +43,13 @@ spec:
         runAsUser: {{ .Values.common.uid }}
         fsGroup: {{ .Values.common.gid }}
       initContainers:
+    {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "distribution.customInitContainersBegin" .)  . | indent 6 }}
+    {{- end }}      
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - '/bin/sh'
         - '-c'
@@ -89,6 +94,8 @@ spec:
       {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - '/bin/sh'
         - '-c'
@@ -100,6 +107,8 @@ spec:
       - name: migration-{{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         securityContext:
           allowPrivilegeEscalation: false
         command:

@@ -16,6 +16,8 @@ global: {}
 
   # customVolumeMounts: |
 
+  # customInitContainersBegin: |
+
   # customInitContainers: |
 
   # customSidecarContainers: |
@@ -67,6 +69,19 @@ common:
   #    echo "This is a post start script"
   #  posthook-end.sh: |-
   #    echo "This is a post end script"
+
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: data-volume
 
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |
@@ -260,8 +275,8 @@ elasticsearch:
   configureDockerHost: true
   image:
     registry: docker.bintray.io
-    repository: jfrog/elasticsearch-oss
-    tag: 7.6.1
+    repository: jfrog/elasticsearch-oss-sg
+    tag: 7.8.0
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   url: http://localhost:8082
@@ -390,6 +405,9 @@ missionControl:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
         url: {{ .Values.elasticsearch.url }}
+      {{- if and .Values.elasticsearch.enabled  (gt (int .Values.replicaCount) 1)  }}
+        clusterSetup: "yes"
+      {{- end }}
       {{- if not .Values.elasticsearch.enabled }}
         external: true
       {{- end }}
@@ -671,7 +689,7 @@ filebeat:
   name: mission-control-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.5.1
+    version: 7.9.2
   logstashUrl: "logstash:5044"
 
   terminationGracePeriod: 10

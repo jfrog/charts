@@ -2,9 +2,25 @@
 All changes to this chart will be documented in this file.
 
 ## [5.2.0] - Sep 10, 2020
-* Update Mission Control version to 4.7.0
+* Update Mission Control version to 4.6.0
+* Upgrade Elasticsearch version to 7.8.0
 * **IMPORTANT**
 * Enable Elasticsearch request via router
+* 
+
+## [5.0.5] - Oct 9, 2020
+* Add support for customInitContainersBegin
+
+## [5.0.4] - Oct 1, 2020
+* Added support for resources in init containers
+
+## [5.0.3] - Sep 29, 2020
+* Fix broken failure when using existing pvc
+
+## [5.0.2] - Sep 25, 2020
+* Changed insightServer.internalHttpPort to `8087`
+* Changed initial replicaCount to 1 when replicacount > 1
+* Update filebeat version to `7.9.2`
 
 ## [5.0.1] - Sep 22, 2020
 * Readme updates

@@ -1,6 +1,41 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.5] Oct 9, 2020
+* Added configurable healthcheck for router
+* Updated mantainers list in chart.yaml
+
+## [1.5.4] Oct 8, 2020
+* Changed customInitBeginContainer to customInitContainerBegin to match other jfrog charts
+* Added examples in values.yaml for .Values.pipelines.customInitContainerBegin
+
+## [1.5.3] Oct 7, 2020
+* Adding custom init begin container to pipelines statefulset and vault statefulset
+* Moved custom init container in vault statefulset from first to last position
+
+## [1.5.2] Oct 5, 2020
+* increasing liveness and readiness probe settings for api and www
+* source above configs from values.yaml
+
+## [1.5.1] Oct 5, 2020
+* adding a healthcheck configuration within pipelines chart for artifactory
+
+## [1.5.0] Oct 1, 2020
+* Pipelines v1.8.0
+* Added support for resources in init containers
+
+## [1.4.9] September 30, 2020
+* Supports router configuration to set internal artifactory endpoint for saas
+
+## [1.4.8] September 29, 2020
+* Hardcodes routers refresh interval for pipelines
+
+## [1.4.7] September 25, 2020
+* Changed init container to use linux capabilities CAP_CHOWN instead of runAsUser: 0
+
+## [1.4.6] September 23, 2020
+* Escalated privileges to init container only for pipelines-installer to work with pipelines images as non-root based for Openshift.
+
 ## [1.4.5] September 18, 2020
 * Removed external Vault support as Pipelines does not support external vault until version 1.9.0
 * Added disablemlock flag to enable users to set to false for production grade system security requirements.

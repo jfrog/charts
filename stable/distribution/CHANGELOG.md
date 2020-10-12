@@ -1,6 +1,18 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.1] - Oct 9, 2020
+* Update Distribution to version `2.5.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.1)
+* Add support for customInitContainersBegin
+
+## [7.1.0] - Sep 30, 2020
+* Update Distribution to version `2.5.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+* Added support for resources in init containers
+* Added upgrade notes for 4.x to 5.x and above chart versions
+
+## [7.0.2] - Sep 25, 2020
+* Update filebeat version to 7.9.2
+
 ## [7.0.1] - Sep 22, 2020
 * Readme updates
 

@@ -1,6 +1,32 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.3.1] - Oct 9, 2020
+* Add global support for customInitContainersBegin
+
+## [4.3.0] - Oct 07, 2020
+* Updated Artifactory version to 7.9.1
+* **Breaking change:** Fix `storageClass` to correct `storageClassName` in values.yaml
+
+## [4.2.0] - Oct 5, 2020
+* Expose Prometheus metrics via a ServiceMonitor
+* Parse log files for metric data with Fluentd
+
+## [4.1.0] - Sep 30, 2020
+* Updated Artifactory version to 7.9.0 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.9)
+
+## [4.0.12] - Sep 25, 2020
+* Update to use linux capability CAP_CHOWN instead of root base init container to avoid any use of root containers to pass Redhat security requirements
+
+## [4.0.11] - Sep 28, 2020
+* Setting chart coordinates in migitation yaml
+
+## [4.0.10] - Sep 25, 2020
+* Update filebeat version to `7.9.2`
+
+## [4.0.9] - Sep 24, 2020
+* Fixed broken issue - when setting `waitForDatabase:false` container startup still waits for DB
+
 ## [4.0.8] - Sep 22, 2020
 * Updated readme
 

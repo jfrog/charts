@@ -8,6 +8,9 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.xray.name }}
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- if .Release.IsUpgrade }}
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
@@ -30,6 +33,9 @@ spec:
         app: {{ template "xray.name" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.xray.name }}
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
         {{- with .Values.analysis.annotations }}
@@ -59,11 +65,13 @@ spec:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
       initContainers:
-    {{- if .Values.common.customInitContainersBegin }}
-      {{ tpl .Values.common.customInitContainersBegin . | indent 6 }}
+    {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - '/bin/sh'
         - '-c'
@@ -73,7 +81,7 @@ spec:
           cp -fv /tmp/etc/system.yaml {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
           echo "Remove {{ .Values.xray.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.xray.persistence.mountPath }}/lost+found;
-        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName }}
+        {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.xray.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
           echo ${XRAY_JOIN_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/join.key;
@@ -107,6 +115,8 @@ spec:
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'sh'
         - '-c'
