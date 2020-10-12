@@ -136,6 +136,10 @@ pipelines:
   rabbitmqHealthCheckIntervalInMins: 1
   # Artifactory health check interval in mins
   artifactoryHealthCheckIntervalInMins: 1
+  # PostgresDB health check interval in mins
+  dbHealthCheckIntervalInMins: 1
+  # PostgressDB health check timeout in seconds
+  dbHealthCheckTimeoutInSeconds: 2
 
   updateStrategy: RollingUpdate
 
@@ -746,6 +750,9 @@ pipelines:
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
       rabbitmqHealthCheckIntervalInMins: {{ .Values.pipelines.rabbitmqHealthCheckIntervalInMins}}
       artifactoryHealthCheckIntervalInMins: {{ .Values.pipelines.artifactoryHealthCheckIntervalInMins}}
+      dbHealthCheckIntervalInMins: {{ .Values.pipelines.dbHealthCheckIntervalInMins }}
+      dbHealthCheckTimeoutInSeconds: {{ .Values.pipelines.dbHealthCheckTimeoutInSeconds }}
+
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
@@ -985,11 +992,11 @@ router:
     external:
       refresh:
         interval: "3s"
-    healthCheck:
-      interval: 10s
-      requestTimeout: 10s
-      healthyThreshold: 1
-      unhealthyThreshold: 5
+  healthCheck:
+    interval: 10s
+    requestTimeout: 10s
+    healthyThreshold: 1
+    unhealthyThreshold: 5
   serviceRegistry:
     url:
 

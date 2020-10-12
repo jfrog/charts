@@ -14,6 +14,10 @@ All changes to this chart to be documented in this file.
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x's postgresql.image.tag and databaseUpgradeReady=true
 
+## [1.5.6] Oct 12, 2020
+* Added configurable healthcheck for postgresDb
+* Fixes the router configuration indentation
+
 ## [1.5.5] Oct 9, 2020
 * Added configurable healthcheck for router
 * Updated mantainers list in chart.yaml
