@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file.
+All changes to this chart to be documented in this file
 
-## [2.0.0] Oct 7, 2020
+## [2.0.0] Oct 13, 2020
 * **Breaking change:** Updated `imagePullSecrets` value from string to list
 * Added support for global values
 * Updated maintainers in chart.yaml
