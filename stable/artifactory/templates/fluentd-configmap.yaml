@@ -1,0 +1,14 @@
+{{- if .Values.fluentd.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "artifactory.name" . }}-fluentd-config
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+data:
+  fluentd.conf: |
+{{ tpl .Values.fluentd.fluentdConf . | indent 4 }}
+{{- end -}}

@@ -93,6 +93,12 @@ pipelines:
 
   # RabbitMQ health check interval in mins
   rabbitmqHealthCheckIntervalInMins: 1
+  # Artifactory health check interval in mins
+  artifactoryHealthCheckIntervalInMins: 1
+  # PostgresDB health check interval in mins
+  dbHealthCheckIntervalInMins: 1
+  # PostgressDB health check timeout in seconds
+  dbHealthCheckTimeoutInSeconds: 2
 
   updateStrategy: RollingUpdate
 
@@ -129,6 +135,25 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /
+      port: api
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /
+      port: api
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -154,7 +179,6 @@ pipelines:
       # requests:
       #   cpu: 100m
       #   memory: 128Mi
-
   router:
     image:
       repository: jfrog/pipelines-router
@@ -194,6 +218,26 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      path: /
+      port: www
+
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 20
+      failureThreshold: 10
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      path: /
+      port: www
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -390,7 +434,20 @@ pipelines:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
-  ## Add custom init containers
+  ## Add custom init begin containers - first init container to run
+  customInitContainersBegin: |
+  #  - name: "custom-begin-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: jfrog-pipelines-folder
+
+  ## Add custom init containers - last init container to run
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainer.image }}"
@@ -401,7 +458,7 @@ pipelines:
   #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: pipelines-data
+  #        name: jfrog-pipelines-folder
 
   ## Add custom sidecar containers
   # - The provided example uses a custom volume (customVolumes)
@@ -437,6 +494,11 @@ pipelines:
         external:
           refresh:
             interval: "{{ .Values.router.topology.external.refresh.interval }}"
+        healthCheck:
+          interval: "{{ .Values.router.healthCheck.interval }}"
+          requestTimeout: "{{ .Values.router.healthCheck.requestTimeout }}"
+          healthyThreshold: "{{ .Values.router.healthCheck.healthyThreshold }}"
+          unhealthyThreshold: "{{ .Values.router.healthCheck.unhealthyThreshold }}"
       serviceRegistry:
         url: "{{ .Values.router.serviceRegistry.url }}"
     {{- end }}
@@ -620,6 +682,10 @@ pipelines:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
       rabbitmqHealthCheckIntervalInMins: {{ .Values.pipelines.rabbitmqHealthCheckIntervalInMins}}
+      artifactoryHealthCheckIntervalInMins: {{ .Values.pipelines.artifactoryHealthCheckIntervalInMins}}
+      dbHealthCheckIntervalInMins: {{ .Values.pipelines.dbHealthCheckIntervalInMins }}
+      dbHealthCheckTimeoutInSeconds: {{ .Values.pipelines.dbHealthCheckTimeoutInSeconds }}
+
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
@@ -882,6 +948,11 @@ router:
     external:
       refresh:
         interval: "3s"
+  healthCheck:
+    interval: 10s
+    requestTimeout: 10s
+    healthyThreshold: 1
+    unhealthyThreshold: 5
   serviceRegistry:
     url:
 
@@ -1124,7 +1195,20 @@ vault:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
-  ## Add custom init containers
+  ## Add custom init begin containers - first init container to run
+  customInitContainersBegin: |
+  #  - name: "custom-begin-setup"
+  #    image: "{{ .Values.initContainer.image }}"
+  #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.pipelines.mountPath}}"
+  #        name: jfrog-pipelines-folder
+
+  ## Add custom init containers - last init container to run
   customInitContainers: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainer.image }}"
@@ -1135,7 +1219,8 @@ vault:
   #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
-  #        name: pipelines-data
+  #        name: jfrog-pipelines-folder
+
 
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Pipeline logs. It assumes you have a logstash installed and configured properly.

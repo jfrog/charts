@@ -16,6 +16,8 @@ global: {}
 
   # customVolumeMounts: |
 
+  # customInitContainersBegin: |
+
   # customInitContainers: |
 
   # customSidecarContainers: |
@@ -67,6 +69,19 @@ common:
   #    echo "This is a post start script"
   #  posthook-end.sh: |-
   #    echo "This is a post end script"
+
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: data-volume
 
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |

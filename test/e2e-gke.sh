@@ -24,7 +24,7 @@ run_ct_container() {
     docker run --rm --interactive --detach --name ct \
         --volume "$REPO_ROOT/gcloud-service-key.json:/gcloud-service-key.json" \
         --volume "$REPO_ROOT:/workdir" \
-        "$TEST_IMAGE:$TEST_IMAGE_TAG" \
+        "$CHART_TESTING_IMAGE:$CHART_TESTING_TAG" \
         cat
     echo
 }
