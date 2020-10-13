@@ -517,7 +517,7 @@ missionControl:
     config: |
       exec:
         command:
-        - curl 
+        - curl
         - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -530,7 +530,7 @@ missionControl:
     config: |
       exec:
         command:
-        - curl 
+        - curl
         - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 60
       periodSeconds: 10
@@ -602,7 +602,7 @@ insightServer:
     config: |
       exec:
         command:
-        - curl 
+        - curl
         - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -615,7 +615,7 @@ insightServer:
     config: |
       exec:
         command:
-        - curl 
+        - curl
         - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 60
       periodSeconds: 10
@@ -687,7 +687,7 @@ insightScheduler:
     config: |
       exec:
         command:
-        - curl 
+        - curl
         - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 90
       periodSeconds: 10
@@ -700,7 +700,7 @@ insightScheduler:
     config: |
       exec:
         command:
-        - curl 
+        - curl
         - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
       initialDelaySeconds: 60
       periodSeconds: 10
