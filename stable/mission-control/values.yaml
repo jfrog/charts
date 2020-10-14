@@ -322,6 +322,30 @@ elasticsearch:
   #    memory: "2.5Gi"
   #    cpu: "500m"
 
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cat/health
+        port: {{ .Values.elasticsearch.httpPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cat/health
+        port: {{ .Values.elasticsearch.httpPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+
 podRestartTime:
 
 applicationConfigs: {}
@@ -503,6 +527,32 @@ missionControl:
   internalPort: 8080
   externalPort: 80
 
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
   ## Extra pre start command to run extra commands before container starts
   # preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
@@ -517,7 +567,7 @@ insightServer:
     # tag:
   appContext: insight
   home: /opt/jfrog
-  internalHttpPort: 8087
+  internalPort: 8087
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
@@ -561,6 +611,32 @@ insightServer:
   #  limits:
   #    memory: "128Mi"
   #    cpu: "50m"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
 
 insightScheduler:
   name: insight-scheduler
@@ -620,6 +696,32 @@ insightScheduler:
   #  limits:
   #    memory: "128Mi"
   #    cpu: "50m"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
 
 router:
   name: router
