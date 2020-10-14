@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.3.2] - Oct 13, 2020
-* Updated install instructions
+* Documentation updates
 
 ## [11.3.1] - Oct 9, 2020
 * Add support for customInitContainersBegin
