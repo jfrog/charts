@@ -1,176 +1,72 @@
 # JFrog Xray HA on Kubernetes Helm Chart
 
-**Heads up: Our Helm Chart docs are moving to our main documentation site. For Xray installers, see [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray).**
+**Heads up: Our Helm Chart docs have moved to our main documentation site. For Xray, see [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray#InstallingXray-HelmInstallation.1).**
 
-## Prerequisites Details
-
-* Kubernetes 1.12+
+## Requirements
+See [Helm Chart Requirements](https://www.jfrog.com/confluence/display/JFROG/System+Requirements#SystemRequirements-HelmChartRequirements) for details.
 
 ## Chart Details
-
 This chart will do the following:
 
-* Optionally deploy PostgreSQL (**NOTE:** For production grade installations it is recommended to use an external PostgreSQL)
+* Optionally deploy PostgreSQL (**NOTE:** For production grade installations it is recommended to use an external PostgreSQL.)
 * Deploy RabbitMQ (optionally as an HA cluster)
 * Deploy JFrog Xray micro-services
 
-## Requirements
+## Deploying Artifactory for Small, Medium or Large Installations
 
-- A running Kubernetes cluster
-  - Dynamic storage provisioning enabled
-  - Default StorageClass set to allow services using the default StorageClass for persistent storage
-- A running Artifactory
-- [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) v2 or v3 installed
+In the chart directory, includes three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. You can find the files in the corresponding chart directory.
 
+# Installation Steps
 
-## Install JFrog Xray
+The installation procedure involves the following main steps:
 
-### Add ChartCenter Helm repository
+1. Download Xray.
+2. Install third party dependencies (PostgreSQL database, included in the archive)
+3. Install Xray.
+4. Configure Xray basic settings:
+  a. Connect to an Artifactory instance (requires a joinKey and a jfrogUrl).
+  b. Optional: Configure the PostgreSQL database connection details if you have set Postgres as an external database.
+5. Start the Service using the start scripts or OS service management.
+6. Check the Service Log to check the status of the service.
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
+## Helm Charts Installers for Advanced Users
+Helm Chart for Artifactory provides a wide range of advanced options, which are documented [here](https://www.jfrog.com/confluence/display/JFROG/Helm+Charts+Installers+for+Advanced+Users).
+
+**Default Home Directory / $JFROG_HOME**
+The default Xray home directory is defined according to the installation type. For additional details see the Product Directory Structure page.
+**Note:** This guide uses $JFROG_HOME to represent the JFrog root directory containing the deployed product.
+
+## Installing Xray
+In the chart directory, include three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. You can find the files in the corresponding chart directory.
+
+**Note:** To set Xray for high availability, set the replicaCount in the values.yaml file to >1 (the recommended is 3). It is highly recommended to also set RabbitMQ to run as an HA cluster. Start Xray with 3 replicas per service and 3 replicas for RabbitMQ.
+```bash
+helm upgrade --install xray --namespace xray --set replicaCount=3  --set rabbitmq-ha.replicaCount=3 center/jfrog/xray
+```
+
+1. Add the ChartCenter Helm repository to your Helm client.
 
 ```bash
 helm repo add center https://repo.chartcenter.io
+```
+2. Update the repository.
+
+```bash
 helm repo update
 ```
+3. Next, create a unique master key; JFrog Xray requires a unique master key to be used by all micro-services in the same cluster. By default the chart has one set in values.yaml (xray.masterKey). For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage This key is for demo purpose and should not be used in a production environment.
 
-### Install Chart
-
-#### Artifactory Connection Details
-
-In order to connect Xray to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Xray installation. Here's how you do that:
-
-Retrieve the connection details of your Artifactory installation, from the UI - https://www.jfrog.com/confluence/display/JFROG/General+Security+Settings#GeneralSecuritySettings-ViewingtheJoinKey. 
-
-#### Initiate Installation
-
-Provide join key and jfrog url as a parameter to the Xray chart installation:
-
-```bash
-helm upgrade --install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  --namespace xray center/jfrog/xray
-```
-
-Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
-```bash
-
-# Create a secret containing the key. The key in the secret must be named join-key
-kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
-
-# Pass the created secret to helm
-helm upgrade --install --set xray.joinKeySecretName=my-secret --namespace xray center/jfrog/xray
-```
-**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set xray.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
-
-### Special Upgrade Notes
-Xray 2.x to 3.x (App Version) is not directly supported.For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/xray/UPGRADE_NOTES.md). If this is an upgrade over an existing Xray 3.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
-
-While upgrading from Xray 3.x to 3.x charts due to breaking changes, use `kubectl delete statefulsets <old_statefulset_xray_name>` and run helm upgrade
-
-Also, While upgrading from Xray 3.x to 4.x charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) subchart changes,
-
-```bash
-$ kubectl delete statefulsets <old_statefulset_xray_name>
-$ kubectl delete statefulsets <old_statefulset_rabbitmq_name>
-$ kubectl delete pvc <old_PVC_rabbitmq_name>
-$ helm upgrade --install xray --namespace xray center/jfrog/xray
-```
-
-### System Configuration
-
-Xray uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
-
-## Status
-
-See the status of your deployed **helm** releases
-
-```bash
-helm status xray
-```
-
-## Upgrade
-To upgrade an existing Xray, you still use **helm**
-
-```bash
-# Update existing deployed version to 3.6.2
-helm upgrade --set common.xrayVersion=3.6.2 center/jfrog/xray
-```
-
-If Xray was installed without providing a value to postgresql.postgresqlPassword (a password was autogenerated), follow these instructions:
-1. Get the current password by running:
-
-```bash
-POSTGRES_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
-```
-
-2. Upgrade the release by passing the previously auto-generated secret:
-
-```bash
-helm upgrade <myrelease> center/jfrog/xray --set postgresql.postgresqlPassword=${POSTGRES_PASSWORD}
-```
-
-If Xray was installed without providing a value to rabbitmq.rabbitmqPassword/rabbitmq-ha.rabbitmqPassword (a password was autogenerated), follow these instructions:
-1. Get the current password by running:
-
-```bash
-RABBITMQ_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-rabbitmq -o jsonpath="{.data.rabbitmq-password}" | base64 --decode)
-```
-
-2. Upgrade the release by passing the previously auto-generated secret:
-
-```bash
-helm upgrade <myrelease> center/jfrog/xray --set rabbitmq.rabbitmqPassword=${RABBITMQ_PASSWORD}/rabbitmq-ha.rabbitmqPassword=${RABBITMQ_PASSWORD}
-```
-
-If Xray was installed with all of the default values (e.g. with no user-provided values for rabbit/postgres), follow these steps:
-1. Retrieve all current passwords (rabbitmq/postgresql) as explained in the above section.
-2. Upgrade the release by passing the previously auto-generated secrets:
-
-```bash
-helm upgrade --install xray --namespace xray center/jfrog/xray --set rabbitmq-ha.rabbitmqPassword=<rabbit-password> --set postgresql.postgresqlPassword=<postgresql-password>
-```
-
-## Remove
-
-Removing a **helm** release is done with
-
-```bash
-# Remove the Xray services and data tools
-
-#On helm v2:
-helm delete --purge xray
-
-#On helm v3:
-helm delete xray --namespace xray
-
-# Remove the data disks
-kubectl delete pvc -l release=xray
-```
-
-### Deploying Xray for small/medium/large instllations
-In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
-
-### Create a unique Master Key
-
-JFrog Xray requires a unique master key to be used by all micro-services in the same cluster. By default the chart has one set in values.yaml (`xray.masterKey`).
-
-**This key is for demo purpose and should not be used in a production environment!**
-
-You should generate a unique one and pass it to the template at install/upgrade time.
+Generate a unique key and pass it to the template during installation/upgrade.
 
 ```bash
 # Create a key
 export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
-# Pass the created master key to helm
+# Pass the created master key to Helm
 helm upgrade --install --set xray.masterKey=${MASTER_KEY} --namespace xray center/jfrog/xray
+Alternatively, you can create a secret containing the master key manually and pass it to the template during installation/upgrade.
 
-```
-
-Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
-```bash
 # Create a key
 export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
@@ -178,172 +74,25 @@ echo ${MASTER_KEY}
 # Create a secret containing the key. The key in the secret must be named master-key
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
-# Pass the created secret to helm
+# Pass the created secret to Helm
 helm upgrade --install xray --set xray.masterKeySecretName=my-secret --namespace xray center/jfrog/xray
 ```
-**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set xray.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set xray.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
+In either case, make sure to pass the same master key on all future calls to helm install and helm upgrade. In the first case, this means always passing --set xray.masterKey=${MASTER_KEY}. In the second, this means always passing --set xray.masterKeySecretName=my-secret and ensuring the contents of the secret remain unchanged.
 
-## Special deployments
-This is a list of special use cases for non-standard deployments
+4. [Customize the product configuration (optional) including database, Java Opts, and filestore](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray#InstallingXray-ProductConfiguration).
 
-### High Availability
-
-For **high availability** of Xray, set the replica count to be equal or higher than **2**. Recommended is **3**.
-> It is highly recommended to also set **RabbitMQ** to run as an HA cluster.
-
-```bash
-# Start Xray with 3 replicas per service and 3 replicas for RabbitMQ
-helm upgrade --install xray --namespace xray --set replicaCount=3  --set rabbitmq-ha.replicaCount=3 center/jfrog/xray
-```
-
-### External Databases
-There is an option to use external PostgreSQL database for your Xray.
-
-#### PostgreSQL
-
-##### PostgreSQL without TLS
-
-To use an external **PostgreSQL**, you need to disable the use of the bundled **PostgreSQL** and set a custom **PostgreSQL** connection URL.
-
-For this, pass the parameters: `postgresql.enabled=false` and `database.url=${XRAY_POSTGRESQL_CONN_URL}`.
-
-**IMPORTANT:** Make sure the DB is already created before deploying Xray services
+**Note:** Unlike other installations, Helm Chart configurations are made to the values.yaml and are then applied to the system.yaml.
+Follow these steps to apply the configuration changes.
+a. Make the changes to values.yaml. 
+b. Run the command.
 
 ```bash
-# Passing a custom PostgreSQL to Xray
-
-# Example
-export POSTGRESQL_HOST=custom-postgresql-host
-export POSTGRESQL_PORT=5432
-export POSTGRESQL_USER=xray
-export POSTGRESQL_PASSWORD=password2_X
-export POSTGRESQL_DATABASE=xraydb
-
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslmode=disable"
-helm upgrade --install xray --namespace xray \
-    --set postgresql.enabled=false \
-    --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
-    --set database.user="${POSTGRESQL_USER}" \
-    --set database.password="${POSTGRESQL_PASSWORD}" \
-    jfrog/xray
+helm upgrade --install xray --namespace xray -f values.yaml
 ```
-
-##### PostgreSQL with TLS
-If external **PostgreSQL** is set with TLS, you need to disable the use of the bundled **PostgreSQL**, set a custom **PostgreSQL** connection URL and provide a secret with **PostgreSQL** TLS certificates.
-
-Create the Kubernetes secret (assuming the local files are `client-cert.pem	client-key.pem server-ca.pem`)
+5. Access Xray from your browser at: http://<jfrogUrl>/ui/, then go to the Security & Compliance tab in the Application module in the UI.
+6. Check the status of your deployed helm releases.
 
 ```bash
-kubectl create secret generic postgres-tls --from-file=client-key.pem --from-file=client-cert.pem --from-file=server-ca.pem
-
+helm status xray
 ```
-
-**IMPORTANT:** `PostgreSQL` connection URL needs to have listed TLS files with the path `/var/opt/jfrog/xray/data/tls/` 
-and `sslmode==verify-ca` otherwise Xray will fail to connect to Postgres.
-
-```bash
-# Passing a custom PostgreSQL with TLS to Xray
-
-# Example
-export POSTGRESQL_HOST=custom-postgresql-host
-export POSTGRESQL_PORT=5432
-export POSTGRESQL_USER=xray
-export POSTGRESQL_PASSWORD=password2_X
-export POSTGRESQL_DATABASE=xraydb
-export POSTGRESQL_SERVER_CA=server-ca.pem
-export POSTGRESQL_CLIENT_CERT=client-key.pem
-export POSTGRESQL_CLIENT_KEY=client-cert.pem
-export POSTGRESQL_TLS_SECRET=postgres-tls
-
-export XRAY_POSTGRESQL_CONN_URL="postgres://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${POSTGRESQL_DATABASE}?sslrootcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_SERVER_CA}&sslkey=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_KEY}&sslcert=/var/opt/jfrog/xray/data/tls/${POSTGRESQL_CLIENT_CERT}&sslmode=verify-ca"
-helm upgrade --install xray --namespace xray \
-    --set postgresql.enabled=false \
-    --set database.url="${XRAY_POSTGRESQL_CONN_URL}" \
-    --set database.user="${POSTGRESQL_USER}" \
-    --set database.password="${POSTGRESQL_PASSWORD}" \
-    jfrog/xray
-```
-
-### Custom init containers
-
-There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
-
-For this, there is a section for writing custom init containers before and after the predefined init containers in the [values.yaml](values.yaml) . By default it's commented out
-
-```yaml
-common:
-  ## Add custom init containers executed before predefined init containers
-  customInitContainersBegin: |
-    ## Init containers template goes here ##
-
-    ## Add custom init containers executed after predefined init containers
-  customInitContainers: |
-    ## Init containers template goes here ##
-```
-
-### Custom sidecar containers
-There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
-
-For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
-```yaml
-common:
-  ## Add custom sidecar containers
-  customSidecarContainers: |
-    ## Sidecar containers template goes here ##
-```
-
-### Establishing TLS and Adding certificates
-Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
-  
-
-To add this certificate to xray, Create a configmaps.yaml file with the following content:
-
-```yaml
-common:
-  configMaps: |
-    ca.crt: |
-      -----BEGIN CERTIFICATE-----
-        <certificate content>
-      -----END CERTIFICATE-----
-
-  customVolumeMounts: |
-    - name: xray-configmaps
-      mountPath: /tmp/ca.crt
-      subPath: ca.crt
-
-server:
-  preStartCommand: "mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
-router:
-  tlsEnabled: true  
-```
-
-and use it with you helm install/upgrade:
-```bash
-helm upgrade --install xray -f configmaps.yaml --namespace xray center/jfrog/xray
-```
-
-This will, in turn:
-* Create a configMap with the files you specified above
-* Create a volume pointing to the configMap with the name `xray-configmaps`
-* Mount said configMap onto `/tmp` using a `customVolumeMounts`
-* Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
-* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
-
-### Custom volumes
-
-If you need to use a custom volume in a custom init or sidecar container, you can use this option.
-
-For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
-
-```yaml
-server:
-  ## Add custom volumes
-  customVolumes: |
-    ## Custom volume comes here ##
-```
-
-## Useful links
-- https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability
-- https://www.jfrog.com/confluence/display/EP/Getting+Started
-- https://www.jfrog.com/confluence/
