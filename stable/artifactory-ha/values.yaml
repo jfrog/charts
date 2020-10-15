@@ -1120,9 +1120,11 @@ artifactory:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-primary-0`
       existingClaim: false
+
     ## IMPORTANT: This value should remain at 1!
     replicaCount: 1
     # minAvailable: 1
+
     ## Resources for the primary node
     resources: {}
     #  requests:
