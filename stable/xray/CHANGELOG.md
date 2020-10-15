@@ -1,5 +1,5 @@
 # JFrog Xray Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
 ## [6.1.3] - Oct 9, 2020
 * Updated doc for move to Confluence
