@@ -1,3 +1,4 @@
+{{- if .Values.artifactory.primary.minAvailable -}}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -16,3 +17,4 @@ spec:
       role: {{ template "artifactory-ha.primary.name" . }}
       release: {{ .Release.Name }}
   minAvailable: {{ .Values.artifactory.primary.minAvailable }}
+{{- end }}
