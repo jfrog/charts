@@ -1,5 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
+## [4.3.3] - Oct 15, 2020
+* Add support to specify priorityClassName for nginx deployment
 
 ## [4.3.2] - Oct 14, 2020
 * Add support to allow more than 1 Primary in Artifactory-ha STS
