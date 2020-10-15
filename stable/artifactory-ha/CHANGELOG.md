@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.3.2] - Oct 14, 2020
+* Add support to allow more than 1 Primary in Artifactory-ha STS
+
 ## [4.3.1] - Oct 9, 2020
 * Add global support for customInitContainersBegin
 
