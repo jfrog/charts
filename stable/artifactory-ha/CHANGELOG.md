@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [4.3.3] - Oct 15, 2020
-* Fix PodDisruptionBudget selector issue
+* Fix PodDisruptionBudget selector issue.
 
 ## [4.3.2] - Oct 14, 2020
 * Add support to allow more than 1 Primary in Artifactory-ha STS
