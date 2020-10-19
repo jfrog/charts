@@ -1,8 +1,14 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.3.2] - Oct 13, 2020
+## [11.4.1] - Oct 19, 2020
 * Documentation updates
+
+## [11.4.0] - Oct 19, 2020
+* Updated Artifactory version to 7.10.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.10.2)
+
+## [11.3.2] - Oct 15, 2020
+* Add support to specify priorityClassName for nginx deployment
 
 ## [11.3.1] - Oct 9, 2020
 * Add support for customInitContainersBegin
