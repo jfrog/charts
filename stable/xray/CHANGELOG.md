@@ -1,9 +1,6 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [6.1.3] - Oct 14, 2020
-* Updated Readme per new Confluence page
-
 ## [6.1.2] - Oct 9, 2020
 * Add global support for customInitContainersBegin
 
