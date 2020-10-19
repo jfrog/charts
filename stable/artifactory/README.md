@@ -1,6 +1,6 @@
 # JFrog Artifactory Helm Chart
 
-**Our Helm Chart docs have moved to our main documentation site. For JFrog Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
+**Our Helm Chart docs have moved to our main documentation site. For JFrog Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory#InstallingArtifactory-HelmInstallation).**
 
 ## Prerequisites Details
 * Kubernetes 1.12+
