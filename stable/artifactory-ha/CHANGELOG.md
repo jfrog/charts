@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.3.4] - Oct 19, 2020
+* Add support to specify priorityClassName for nginx deployment
+
 ## [4.3.3] - Oct 15, 2020
 * Fixed issue with node PodDisruptionBudget which also getting applied on the primary
 * Fix mandatory masterKey check issue when upgrading from 6.x to 7.x

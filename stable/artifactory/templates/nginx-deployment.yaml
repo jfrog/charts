@@ -42,6 +42,9 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory.imagePullSecrets" . | indent 6 }}
     {{- end }}
+      {{- if .Values.nginx.priorityClassName }}
+      priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
+      {{- end }}
       initContainers:
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
