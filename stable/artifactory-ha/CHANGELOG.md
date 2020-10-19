@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.4.0] - Oct 19, 2020
+* Updated Artifactory version to 7.10.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.10.2)
+
 ## [4.3.2] - Oct 14, 2020
 * Add support to allow more than 1 Primary in Artifactory-ha STS
 
