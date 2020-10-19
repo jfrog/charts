@@ -1,5 +1,6 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
+
 ## [11.3.2] - Oct 15, 2020
 * Add support to specify priorityClassName for nginx deployment
 
