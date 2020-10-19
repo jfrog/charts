@@ -82,7 +82,9 @@ helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f
 
 ### Special Upgrade Notes
 
-While upgrading from Pipelines 1.x to 2.x and above charts due to breaking rabbitmq (when `rabbitmq.enabled=true`) and postgresql (when `postgresql.enabled=true`) subchart changes please run,
+While upgrading from Pipelines 1.x to 2.x and above charts, Due to breaking changes in rabbitmq subchart (6.x to 7.x chart version when `rabbitmq.enabled=true`) and postgresql subchart(8.x to 9.x chart version when `postgresql.enabled=true`) please run below manual commands (downtime is required)
+
+**Note:** Also, Make sure all existing pipelines build runs are completed (rabbitmq queues are empty) when you start an upgrade 
 
 ```bash
 $ kubectl delete statefulsets <release_name>-pipelines-services
