@@ -333,8 +333,8 @@ elasticsearch:
     enabled: true
     config: |
       httpGet:
-        path: /_cat/health
-        port: {{ .Values.elasticsearch.httpPort }}
+        path: /_searchguard/health
+        port: 9200
       initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 10
@@ -345,8 +345,8 @@ elasticsearch:
     enabled: true
     config: |
       httpGet:
-        path: /_cat/health
-        port: {{ .Values.elasticsearch.httpPort }}
+        path: /_searchguard/health
+        port: 9200
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 10
