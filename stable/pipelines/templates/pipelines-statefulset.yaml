@@ -70,11 +70,25 @@ spec:
             echo "Waiting for Vault to come up...";
             {{- if .Values.vault.enabled }}
             until nc -z -w 2 {{ include "pipelines.vault.name" . }} {{ .Values.vault.service.port }} && echo Vault ok; do
-            {{- else }}
-            until nc -z -w 2 {{ tpl .Values.global.vault.host . }} {{ .Values.global.vault.port }} && echo Vault ok; do
-            {{- end }}
               sleep 2;
             done;
+            {{- else }}
+            is_vault_up=0;
+            initilized_check_endpoint="/v1/sys/init";
+            until [[ "$is_vault_up" == "1" ]] && echo Vault ok; do
+              url="{{ .Values.global.vault.url }}$initilized_check_endpoint";
+              wget_cmd="wget \
+                -T 2 \
+                --header=\"Content-Type: application/json; charset=utf-8\" \
+                --header=\"X-Vault-Token: {{ .Values.global.vault.token }}\" \
+                $url \
+                --quiet \
+                --server-response 2>&1| grep -c 'HTTP/1.1 200 OK'";
+                is_vault_up=$(eval $wget_cmd);
+              echo "Reponse = $is_vault_up"
+              sleep 2;
+            done;
+            {{- end }}
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
@@ -91,13 +105,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
                   key: token
-          {{- if .Values.vault.enabled }}
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
                   key: postgresql-url
-          {{- end }}
             - name: PIPELINES_NODE_ID
               valueFrom:
                 fieldRef:
@@ -117,6 +129,10 @@ spec:
             until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
               sleep 2;
             done;
+          {{- end }}
+          {{- if (not .Values.vault.enabled) }}
+            echo "Creating Vault Table...";
+            ./pipelines-k8s initVault;
           {{- end }}
             sleep 20;
             ./pipelines-k8s;
