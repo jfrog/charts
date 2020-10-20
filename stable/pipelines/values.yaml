@@ -65,6 +65,7 @@ imageRegistry: docker.bintray.io
 
 ## For supporting pulling from private registries
 ## Secret type: kubernetes.io/dockerconfigjson
+## Note: This is a breaking change from 1.x to 2.x (chart versions) of Pipelines chart
 imagePullSecrets:
   # - myRegistryKeySecretName
 
@@ -89,8 +90,10 @@ pipelines:
   # version:
 
   ## Artifactory URL - Mandatory
+  ## If Artifactory and Pipelines are in same namespace, jfrogUrl is Artifactory service name, otherwise its external URL of Artifactory
   jfrogUrl: ""
   ## Artifactory UI URL - Mandatory
+  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
   jfrogUrlUI: ""
 
   ## Join Key to connect to Artifactory
@@ -480,6 +483,7 @@ pipelines:
         - persistentvolumeclaims
         - pods
         - deployments/scale
+        - secrets
         verbs: ["*"]
 
   # Add any list of configmaps to Pipelines
@@ -1047,7 +1051,8 @@ postgresql:
 ## https://hub.helm.sh/charts/bitnami/rabbitmq
 ## Configuration values for the rabbitmq dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
-##
+## Important: This is a breaking change from 6.x to 7.x of rabbitmq chart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700
+## Note: This would impact upgrading from 1.x to 2.x (chart versions) Pipelines chart
 rabbitmq:
   enabled: true
   protocol: amqps
