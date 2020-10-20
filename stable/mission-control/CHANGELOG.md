@@ -1,12 +1,17 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [5.2.0] - Sep 10, 2020
+## [5.2.0] - Oct 20, 2020
 * Update Mission Control version to 4.6.0
-* Upgrade Elasticsearch version to 7.8.0
+* Upgrade Elasticsearch version to 7.8.0 with searchguard
 * **IMPORTANT**
 * Enable Elasticsearch request via router
-* 
+
+## [5.1.0] - Oct 13, 2020
+* **Breaking**
+* Changed `insightServer.internalHttpPort` to `insightServer.internalPort`
+* Add support for livenessProbe and readinessProbe for all microservices
+* Updated UPGRADE_NOTES.md - Upgrading to 4.x and above charts versions
 
 ## [5.0.5] - Oct 9, 2020
 * Add support for customInitContainersBegin

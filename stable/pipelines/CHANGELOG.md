@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [1.5.6] Oct 12, 2020
+* Added configurable healthcheck for postgresDb
+* Fixes the router configuration indentation
+
 ## [1.5.5] Oct 9, 2020
 * Added configurable healthcheck for router
 * Updated mantainers list in chart.yaml
