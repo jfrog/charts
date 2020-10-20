@@ -1,6 +1,20 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.0.0] Oct 19, 2020
+* **Breaking change:** Updated `imagePullSecrets` value from string to list
+* Added support for global values
+* Updated maintainers in chart.yaml
+* Update piplines version to `1.8.7`
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update redis sub chart version to `10.9.0`
+* Update postgresql sub chart version to `9.3.4` - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* Update rabbitmq sub chart version to `7.4.3` - [7.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
+* Please refer [here](https://github.com/jfrog/charts/blob/master/stable/pipelines/README.md#special-upgrade-notes) for upgrade notes
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x's postgresql.image.tag and databaseUpgradeReady=true
+
 ## [1.5.6] Oct 12, 2020
 * Added configurable healthcheck for postgresDb
 * Fixes the router configuration indentation
