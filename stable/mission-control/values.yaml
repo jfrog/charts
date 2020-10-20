@@ -22,6 +22,12 @@ global: {}
 
   # customSidecarContainers: |
 
+## Partially override mission-control.fullname template (eg: <releaseName>-<nameOverride>)
+# nameOverride:
+
+## Fully override mission-control.fullname template
+# fullnameOverride:
+
 initContainerImage: docker.bintray.io/alpine:3.12
 
 # For supporting pulling from private registries
@@ -279,7 +285,9 @@ elasticsearch:
     tag: 7.8.0
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
-  url: http://localhost:8082
+  ## By default url is set to localhost:8082 (router)
+  ## If external elasticsearch is used, provide external elasticsearch url and set elasticsearch.enabled=false
+  url: '{{ include "elasticsearch.url" . }}'
   transportPort: 9300
   username: "admin"
   password: "admin"
@@ -404,7 +412,7 @@ missionControl:
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
-        url: {{ .Values.elasticsearch.url }}
+        url: {{ tpl .Values.elasticsearch.url . }}
       {{- if and .Values.elasticsearch.enabled  (gt (int .Values.replicaCount) 1)  }}
         clusterSetup: "yes"
       {{- end }}
