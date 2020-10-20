@@ -229,7 +229,7 @@ spec:
           mountPath: "/tmp/etc/tls.key"
           subPath: tls.key
         {{- end }}
-    {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
+    {{- if and .Values.artifactory.customPersistentPodVolumeClaim (not .Values.artifactory.customPersistentPodVolumeClaim.skipPrepareContainer) }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
         resources:
