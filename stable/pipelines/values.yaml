@@ -1,5 +1,45 @@
 ## Default values for pipelines
 
+## For setting up external services
+global:
+  ## Image Registry to pull images for Pipelines components from
+  ## You can override it with your private Artifactory registry
+  # imageRegistry: docker.bintray.io
+  ## Internal Postgres must be set to false
+  postgresql:
+    host:
+    port: 5432
+    database: "pipelinesdb"
+    user: "apiuser"
+    # Password must be set
+    password: ""
+    ssl: false
+    ## PostgreSQL password using existing secret
+    # existingSecret: secret
+
+  ## Internal Vault must be set to false
+  vault:
+    host:
+    port:
+    token:
+    ## Vault token using existing secret
+    # existingSecret: secret
+
+
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  # jfrogUrl:
+  # jfrogUrlUi:
+  # joinKey:
+  # masterKey:
+  # customVolumes: |
+  # customVolumeMounts: |
+  ## Add custom init begin containers - first init container to run
+  # customInitContainersBegin: |
+  ## Add custom init containers - last init container to run
+  # customInitContainers: |
+  # customSidecarContainers: |
+
 ## Common
 initContainer:
   image: "docker.bintray.io/alpine:3.12"
@@ -25,7 +65,9 @@ imageRegistry: docker.bintray.io
 
 ## For supporting pulling from private registries
 ## Secret type: kubernetes.io/dockerconfigjson
+## Note: This is a breaking change from 1.x to 2.x (chart versions) of Pipelines chart
 imagePullSecrets:
+  # - myRegistryKeySecretName
 
 ## Existing secret with Pipelines system.yaml
 existingSecret:
@@ -48,9 +90,11 @@ pipelines:
   # version:
 
   ## Artifactory URL - Mandatory
-  jfrogUrl:
+  ## If Artifactory and Pipelines are in same namespace, jfrogUrl is Artifactory service name, otherwise its external URL of Artifactory
+  jfrogUrl: ""
   ## Artifactory UI URL - Mandatory
-  jfrogUrlUI:
+  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
+  jfrogUrlUI: ""
 
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
@@ -116,7 +160,9 @@ pipelines:
 
   api:
     image:
+      # registry:
       repository: jfrog/pipelines-api
+      # tag:
       pullPolicy: IfNotPresent
 
     service:
@@ -181,7 +227,9 @@ pipelines:
       #   memory: 128Mi
   router:
     image:
+      # registry:
       repository: jfrog/pipelines-router
+      # tag:
       pullPolicy: IfNotPresent
 
     internalPort: 8046
@@ -199,7 +247,9 @@ pipelines:
 
   www:
     image:
+      # registry:
       repository: jfrog/pipelines-www
+      # tag:
       pullPolicy: IfNotPresent
 
     service:
@@ -271,7 +321,9 @@ pipelines:
 
   pipelineSync:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -284,7 +336,9 @@ pipelines:
 
   runTrigger:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -297,7 +351,9 @@ pipelines:
 
   stepTrigger:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -310,7 +366,9 @@ pipelines:
 
   cron:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -323,7 +381,9 @@ pipelines:
 
   nexec:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -336,7 +396,9 @@ pipelines:
 
   hookHandler:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -349,7 +411,9 @@ pipelines:
 
   marshaller:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -362,7 +426,9 @@ pipelines:
 
   logup:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -375,7 +441,9 @@ pipelines:
 
   extensionSync:
     image:
+      # registry:
       repository: jfrog/pipelines-micro
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -389,7 +457,9 @@ pipelines:
   ## Pipelines installer
   pipelinesInit:
     image:
+      # registry:
       repository: jfrog/pipelines-installer
+      # tag:
       pullPolicy: IfNotPresent
 
     resources: {}
@@ -413,6 +483,7 @@ pipelines:
         - persistentvolumeclaims
         - pods
         - deployments/scale
+        - secrets
         verbs: ["*"]
 
   # Add any list of configmaps to Pipelines
@@ -508,10 +579,10 @@ pipelines:
       artifactory:
         ## Artifactory URL
         ##
-        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl is required!\n" .Values.pipelines.jfrogUrl) . }}"
+        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "pipelines.jfrogUrl" .)) . }}"
         ## Unified UI URL
         ##
-        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI is required!\n" .Values.pipelines.jfrogUrlUI) . }}"
+        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI or global.jfrogUrlUI is required!" (include "pipelines.jfrogUrlUI" .)) . }}"
         ## Pipelines Service ID
         ##
         serviceId: "{{ .Values.pipelines.serviceId }}"
@@ -534,10 +605,10 @@ pipelines:
         ip: ""
         accessPort: {{ .Values.pipelines.router.internalPort }}
         dataPort: {{ .Values.pipelines.router.externalPort }}
-        joinKey: "{{ .Values.pipelines.joinKey }}"
+        joinKey: {{ include "pipelines.joinKey" . }}
 
       security:
-        masterKey: "{{ .Values.pipelines.masterKey }}"
+        masterKey: {{ include "pipelines.masterKey" . }}
 
       ## Database configuration
       ##
@@ -572,9 +643,9 @@ pipelines:
         ip: {{ .Release.Name }}-rabbitmq
         port: {{ .Values.rabbitmq.service.port }}
         adminPort: {{ .Values.rabbitmq.service.managerPort }}
-        erlangCookie: {{ .Values.rabbitmq.rabbitmq.erlangCookie }}
-        username: {{ .Values.rabbitmq.rabbitmq.username }}
-        password: {{ .Values.rabbitmq.rabbitmq.password }}
+        erlangCookie: {{ .Values.rabbitmq.auth.erlangCookie }}
+        username: {{ .Values.rabbitmq.auth.username }}
+        password: {{ .Values.rabbitmq.auth.password }}
         defaultExchange: pipelinesEx
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
@@ -635,9 +706,9 @@ pipelines:
         {{- if .Values.vault.enabled }}
         ip: {{ include "pipelines.vault.name" . }}
         port: {{ .Values.vault.service.port }}
+        url: http://{{ include "pipelines.vault.name" . }}:{{ .Values.vault.service.port }}
         {{- else }}
-        ip: {{ .Values.global.vault.host }}
-        port: {{ .Values.global.vault.port }}
+        url: {{ .Values.global.vault.url }}
         {{- end }}
         ## DO NOT CHANGE THE TOKEN VALUE!!!
         token: "_VAULT_TOKEN_"
@@ -706,7 +777,6 @@ pipelines:
         ssl: ""
       apiRetryIntervalMs: 3000
       accountSyncFrequencyHr: 1
-      imageRegistrySecret: "{{ .Values.imagePullSecrets }}"
       hardDeleteIntervalInMins: 60
       configBackupCount: 5
       lastUpdateTime: ""
@@ -919,28 +989,6 @@ pipelines:
 ## Runtime Override Properties Section
 runtimeOverride: {}
 
-## For setting up external services
-global:
-  ## Internal Postgres must be set to false
-  postgresql:
-    host:
-    port: 5432
-    database: "pipelinesdb"
-    user: "apiuser"
-    # Password must be set
-    password: ""
-    ssl: false
-    ## PostgreSQL password using existing secret
-    # existingSecret: secret
-
-  ## Internal Vault must be set to false
-  vault:
-    host:
-    port:
-    token:
-    ## Vault token using existing secret
-    # existingSecret: secret
-
 # Router Configuration
 router:
   routerConfiguration: false
@@ -967,7 +1015,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 9.6.18-debian-10-r7
+    tag: 12.3.0-debian-10-r71
 
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
@@ -1003,13 +1051,17 @@ postgresql:
 ## https://hub.helm.sh/charts/bitnami/rabbitmq
 ## Configuration values for the rabbitmq dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
-##
+## Important: This is a breaking change from 6.x to 7.x of rabbitmq chart - https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700
+## Note: This would impact upgrading from 1.x to 2.x (chart versions) Pipelines chart
 rabbitmq:
   enabled: true
   protocol: amqps
-  replicas: 1
-
-  rabbitmq:
+  replicaCount: 1
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/rabbitmq
+    tag: 3.8.7-debian-10-r3
+  auth:
     username: admin
 
     ## RabbitMQ application password
@@ -1022,7 +1074,14 @@ rabbitmq:
     erlangCookie: PIPELINESRABBITMQCLUSTER
     # existingErlangSecret: name-of-existing-secret
 
-    extraPlugins: ""
+  extraPlugins: ""
+  maxAvailableSchedulers: null
+  onlineSchedulers: null
+  ## Additional environment variables to set
+  ## ref: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#adding-extra-environment-variables
+  extraEnvVars:
+    - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+      value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
 
   service:
 
@@ -1094,7 +1153,10 @@ rabbitmq:
 ##
 redis:
   enabled: true
-
+  image:
+    registry: docker.bintray.io
+    repository: bitnami/redis
+    tag: 6.0.6-debian-10-r12
   redisPort: 6379
 
   cluster:
@@ -1133,13 +1195,16 @@ vault:
   updateStrategy: RollingUpdate
 
   image:
+    # registry:
     repository: vault
     tag: 1.3.4
     pullPolicy: IfNotPresent
 
   init:
     image:
+      # registry:
       repository: jfrog/pipelines-vault-init
+      # tag:
 
       pullPolicy: IfNotPresent
 

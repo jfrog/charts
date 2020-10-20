@@ -22,7 +22,6 @@ This chart will do the following:
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory 7.7.x with Enterprise+ License
-  - Precreated repository `jfrogpipelines` in Artifactory type `Generic` with layout `maven-2-default`
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
@@ -40,9 +39,28 @@ helm repo update
 
 ### Artifactory Connection Details
 
-In order to connect Pipelines to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Pipelines installation. Here's how you do that:
+In order to connect Pipelines to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key, jfrogUrl and jfrogUrlUI to your Pipelines installation. Here's how you do that:
 
 Retrieve the connection details of your Artifactory installation, from the UI - https://www.jfrog.com/confluence/display/JFROG/General+Security+Settings#GeneralSecuritySettings-ViewingtheJoinKey.
+
+```yaml
+pipelines:
+  ## Artifactory URL - Mandatory
+  ## If Artifactory and Pipelines are in same namespace, jfrogUrl is Artifactory service name, otherwise its external URL of Artifactory
+  jfrogUrl: ""
+  ## Artifactory UI URL - Mandatory
+  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
+  jfrogUrlUI: ""
+
+  ## Join Key to connect to Artifactory
+  ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+  ## Pipelines requires a unique master key
+  ## You can generate one with the command: "openssl rand -hex 32"
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+```
 
 ### Install Pipelines Chart with Ingress
 
@@ -70,7 +88,7 @@ Edit local copies of `values-ingress.yaml`, `values-ingress-passwords.yaml` and 
   - Artifactory URL
   - Ingress hosts
   - Ingress tls secrets
-- Passwords `uiUserPassword`, `postgresqlPassword` and `rabbitmq.password` must be set, and same for `masterKey` and `joinKey` in `values-ingress-passwords.yaml`
+- Passwords `uiUserPassword`, `postgresqlPassword` and `auth.password` must be set, and same for `masterKey` and `joinKey` in `values-ingress-passwords.yaml`
 
 #### Install JFrog Pipelines
 
@@ -79,6 +97,23 @@ Install JFrog Pipelines
 ```bash
 kubectl create ns pipelines
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
+```
+
+### Special Upgrade Notes
+
+While upgrading from Pipelines chart version 1.x to 2.x and above, due to breaking changes in rabbitmq subchart (6.x to 7.x chart version when `rabbitmq.enabled=true`) and postgresql subchart(8.x to 9.x chart version when `postgresql.enabled=true`) please run below manual commands (downtime is required)
+
+**Note:** Also, Make sure all existing pipelines build runs are completed (rabbitmq queues are empty) when you start an upgrade
+
+**Important:** This is a breaking change from 6.x to 7.x (chart versions) of Rabbitmq chart - Please refer [here](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
+
+```bash
+$ kubectl delete statefulsets <release_name>-pipelines-services
+$ kubectl delete statefulsets <release_name>-pipelines-vault
+$ kubectl delete statefulsets <release_name>-postgresql
+$ kubectl delete statefulsets <release_name>-rabbitmq
+$ kubectl delete pvc data-<release_name>-rabbitmq-0
+$ helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines
 ```
 
 ### Use external secret
