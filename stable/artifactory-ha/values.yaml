@@ -349,6 +349,7 @@ artifactory:
   #    subPath: prehook-start.sh
 
   # Add custom persistent volume mounts - Available for the pod
+  # If skipPrepareContainer is set to true , this will skip the prepare-custom-persistent-volume init container
   customPersistentPodVolumeClaim: {}
   #  name:
   #  mountPath:
@@ -356,6 +357,7 @@ artifactory:
   #   - "-"
   #  size:
   #  storageClassName:
+  #  skipPrepareContainer: false
 
   # Add custom persistent volume mounts - Available to the entire namespace
   customPersistentVolumeClaim: {}
