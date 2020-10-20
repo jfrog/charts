@@ -706,9 +706,9 @@ pipelines:
         {{- if .Values.vault.enabled }}
         ip: {{ include "pipelines.vault.name" . }}
         port: {{ .Values.vault.service.port }}
+        url: http://{{ include "pipelines.vault.name" . }}:{{ .Values.vault.service.port }}
         {{- else }}
-        ip: {{ .Values.global.vault.host }}
-        port: {{ .Values.global.vault.port }}
+        url: {{ .Values.global.vault.url }}
         {{- end }}
         ## DO NOT CHANGE THE TOKEN VALUE!!!
         token: "_VAULT_TOKEN_"

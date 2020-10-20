@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.0.1] October 20, 2020
+* Added support for external vault
+
 ## [2.0.0] Oct 19, 2020
 * **Breaking change:** Updated `imagePullSecrets` value from string to list
 * Added support for global values
