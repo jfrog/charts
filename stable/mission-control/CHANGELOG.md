@@ -1,9 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [5.2.0] - Oct 20, 2020
+## [5.2.0] - Oct 21, 2020
 * Update Mission Control version to 4.6.0
-* Upgrade Elasticsearch version to 7.8.0 with searchguard
+* Upgrade Elasticsearch version to 7.8.0 with Searchguard
+* Added configurable `insightServer.clients.elasticsearch.connectionWaitTimeoutSecs` in values.yaml 
 * **IMPORTANT**
 * Enable Elasticsearch request via router
 

@@ -453,12 +453,12 @@ missionControl:
         driver: "{{ .Values.database.driver }}"
       {{- end }}
 
-    {{- if .Values.postgresql.enabled }}
     mc:
+    {{- if .Values.postgresql.enabled }}
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfmcSchema }}
-
+    {{- end }}
       extraJavaOpts: >
       {{- with .Values.missionControl.javaOpts }}
       {{- if .xms }}
@@ -473,9 +473,11 @@ missionControl:
       {{- end }}
 
     insight-scheduler:
+    {{- if .Values.postgresql.enabled }}
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfscSchema }}
+    {{- end }}
       extraJavaOpts: >
       {{- with .Values.insightScheduler.javaOpts }}
       {{- if .xms }}
@@ -490,11 +492,14 @@ missionControl:
       {{- end }}
 
     insight-server:
+    {{- if .Values.postgresql.enabled }}
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfisSchema }}
     {{- end }}
-
+      clients:
+        elasticsearch:
+          connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.connectionWaitTimeoutSecs }}
 
   persistence:
     enabled: true
@@ -581,6 +586,10 @@ insightServer:
   appContext: insight
   home: /opt/jfrog
   internalPort: 8087
+  ## Timeout in seconds (default 60 seconds) for which insightServer waits for elasticsearch to comeup.
+  clients:
+    elasticsearch:
+      connectionWaitTimeoutSecs: 180
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
