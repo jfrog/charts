@@ -155,7 +155,7 @@ spec:
         - name: systemyaml
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
-    {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
+    {{- if and .Values.artifactory.customPersistentPodVolumeClaim (not .Values.artifactory.customPersistentPodVolumeClaim.skipPrepareContainer) }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
         command:
