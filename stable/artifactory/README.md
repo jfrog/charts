@@ -98,4 +98,9 @@ Once the installation is complete,
 # Helm Charts Installers for Advanced Users
 Helm Chart for Artifactory provides a wide range of advanced options, which are documented [here](https://www.jfrog.com/confluence/display/JFROG/Helm+Charts+Installers+for+Advanced+Users).
 
+# Useful Links
+[Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory)
+[Onboarding Best Practices: JFrog Artifactory](https://www.jfrog.com/confluence/display/JFROG/Onboarding+Best+Practices%3A+JFrog+Artifactory)
+[JFrog Artifactory](https://www.jfrog.com/confluence/display/JFROG/JFrog+Artifactory)
+
 
