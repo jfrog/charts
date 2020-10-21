@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.0.2] October 21, 2020
+* Corrected RabbitMQ properies in `values-ingress.yaml`
+
 ## [2.0.1] October 20, 2020
 * Added support for external vault
 
