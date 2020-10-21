@@ -1,5 +1,7 @@
 # JFrog Platform Helm Chart
 
+**NOTE:** This is the intial beta release of the Jfrog Platform chart (Backward compatibility is not guaranteed)
+
 ## Prerequisites Details
 
 * Kubernetes 1.12+
