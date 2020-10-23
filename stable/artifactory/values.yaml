@@ -470,7 +470,7 @@ artifactory:
           extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
     frontend:
       session:
-        timeMinutes: {{ .Values.frontend.session.timeoutMinutes }}
+        timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
     access:
       database:
         maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
