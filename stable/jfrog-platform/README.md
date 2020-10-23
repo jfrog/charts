@@ -1,6 +1,6 @@
 # JFrog Platform Helm Chart
 
-**NOTE:** This is the intial beta release of the Jfrog Platform chart (Backward compatibility is not guaranteed)
+**NOTE:** This is the Initial **beta** release of the JFrog Platform chart (Backward compatibility is not guaranteed)
 
 ## Prerequisites Details
 
@@ -10,7 +10,7 @@
 ## Chart Details
 This chart will do the following:
 
-* Deploy Jfrog Platform (artifactory-ha, xray, distribution, mission-control and pipelines). Fully customizable.
+* Deploy JFrog Platform (artifactory-ha, xray, distribution, mission-control and pipelines). Fully customizable.
 * Deploy a PostgreSQL database using the bitnami/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy a Rabbitmq using the bitnami/rabbitmq chart (can be changed)
 * Deploy a Redis using the bitnami/redis chart (can be changed)
@@ -34,7 +34,7 @@ helm upgrade --install jfrog-platform --namespace jfrog-platform center/jfrog/jf
 ```
 
 ### Install Artifactory license
-The jfrog platform chart requires an artifactory license. There are three ways to manage the license. **Artifactory UI**, **REST API**, or a **Kubernetes Secret**.
+The JFrog platform chart requires an artifactory license. There are three ways to manage the license. **Artifactory UI**, **REST API**, or a **Kubernetes Secret**.
 
 The easier and recommended way is the **Artifactory UI**. Using the **Kubernetes Secret** or **REST API** is for advanced users and is better suited for automation.
 
