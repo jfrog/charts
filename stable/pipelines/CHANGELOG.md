@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.0.3] October 23, 2020
+* Fix RabbitMQ extra service
+
 ## [2.0.2] October 21, 2020
 * Corrected RabbitMQ properies in `values-ingress.yaml`
 
