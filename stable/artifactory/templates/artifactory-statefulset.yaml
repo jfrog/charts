@@ -207,9 +207,7 @@ spec:
             echo "Setting ownership {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} on PVC {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}"
             chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
-          capabilities:
-            add:
-              - CHOWN
+          runAsUser: 0
         volumeMounts:
           - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
