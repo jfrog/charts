@@ -165,10 +165,10 @@ This file describes special upgrade notes needed at specific versions
     **For artifactory-ha chart**  
     **Note**: artifactory-ha chart does not have the option to provide existing claim name for **PVC**. Instead you will need to create a persistent volume claim by a defined name.
     Please refer for more details [here](https://github.com/jfrog/charts/tree/master/stable/artifactory-ha#existing-volume-claim). 
-    1. Backup data from existing rlease(artifactory-ha chart) to a location on the local system.
+    1. Backup postgresql data from existing rlease(artifactory-ha chart) to a location on the local system.
     2. Uninstall the existing release `helm uninstall <old-release-name>` . This would uninstall everything except the **PVC's**. **PVC's** would exist with names like volume-`<old-release-name>`-artifactory-ha-primary-0 and volume-`<old-release-name>`-artifactory-ha-member-`<ordinal-number>` depending upon the number of node replica sets defined.
     3. Manually delete the postgresql **PVC**, as we already have the backup file in local system.
-    4. Backup and restore the postgresql data from old release(artifactory-ha chart) to the new jfrog platform chart release.
+    4. Restore the postgresql data from old release(artifactory-ha chart) to the new jfrog platform chart release.
         1.  Install jfrog platform chart with only postgres  
             Create custom-values.yaml with the following configuration
             ```yaml
@@ -198,9 +198,9 @@ This file describes special upgrade notes needed at specific versions
             helm upgrade --install <old-release-name> stable/jfrog-platform -f custom-values.yaml
             ```
             This would bring up a jfrog-platform release with only postgresql.
-        2. Backup and restore postgres data from the old release (artifactory-ha chart) to new postgresql in jfrog platform release. Make sure to create the database and credentials before restoring data.
+        2.  Restore postgres data from the old release (artifactory-ha chart) to new postgresql in jfrog platform release. Make sure to create the database and credentials before restoring data.
 
-    2. Reuse the old **PVC** of artifactory chart in new jfrog platform chart release
+    5. Reuse the old **PVC** of artifactory chart in new jfrog platform chart release
         1.  Enable artifactory-ha subchart in jfrog platform release and do an helm upgrade.   
             Create custom-values.yaml with the following configuration
             ```yaml
