@@ -107,6 +107,8 @@ While upgrading from Pipelines chart version 1.x to 2.x and above, due to breaki
 
 **Important:** This is a breaking change from 6.x to 7.x (chart versions) of Rabbitmq chart - Please refer [here](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
 
+ RabbitMQ password configuration in the Values.yaml has changed from rabbit.rabbit.password to rabbit.auth.password
+
 ```bash
 kubectl --namespace <namespace> delete statefulsets <release_name>-pipelines-services
 kubectl --namespace <namespace> delete statefulsets <release_name>-pipelines-vault
