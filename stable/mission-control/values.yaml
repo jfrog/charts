@@ -436,12 +436,12 @@ missionControl:
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
-        url: {{ tpl .Values.elasticsearch.url . }}
       {{- if and .Values.elasticsearch.enabled  (gt (int .Values.replicaCount) 1)  }}
         clusterSetup: "yes"
       {{- end }}
       {{- if not .Values.elasticsearch.enabled }}
         external: true
+        url: {{ tpl .Values.elasticsearch.url . }}
       {{- end }}
       database:
       {{- if .Values.postgresql.enabled }}
