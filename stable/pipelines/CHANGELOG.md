@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.0.5] October 27, 2020
+* make imagePullPolicy for containers globally configurable
+
 ## [2.0.4] October 26, 2020
 * Readme update for upgrading rabbitmq
 

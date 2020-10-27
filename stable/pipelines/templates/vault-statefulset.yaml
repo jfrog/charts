@@ -34,7 +34,7 @@ spec:
           {{- end }}
         - name: config
           image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.initContainer.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
@@ -65,7 +65,7 @@ spec:
               mountPath: /etc/vault/config
         - name: wait-for-db
           image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.initContainer.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
@@ -83,7 +83,7 @@ spec:
             sleep 10;
         - name: create-vault-table
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
-          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.pipelinesInit.image.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
@@ -112,7 +112,7 @@ spec:
       containers:
         - name: vault-init
           image: {{ include "pipelines.getImageInfoByValue" (list . "vault" "init" ) }}
-          imagePullPolicy: {{ .Values.vault.init.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.vault.init.image.pullPolicy }}
           env:
             - name: CHECK_INTERVAL
               value: "10s"
@@ -129,7 +129,7 @@ spec:
               cpu: 50m          
         - name: vault
           image: {{ include "vault.getImageInfoByValue" (list . "vault" ) }}
-          imagePullPolicy: {{ .Values.vault.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.vault.image.pullPolicy }}
           env:
             - name: POD_IP
               valueFrom:

@@ -43,7 +43,7 @@ global:
 ## Common
 initContainer:
   image: "docker.bintray.io/alpine:3.12"
-  pullPolicy: IfNotPresent
+  # pullPolicy:
 
 # Init containers
 initContainers:
@@ -158,12 +158,15 @@ pipelines:
     maxReplicas: 3
     targetCPUUtilizationPercentage: 70
 
+  #default for images
+  imagePullPolicy: IfNotPresent
+
   api:
     image:
       # registry:
       repository: jfrog/pipelines-api
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     service:
       ## Supported service types: ClusterIP, NodePort and LoadBalancer
@@ -230,7 +233,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-router
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     internalPort: 8046
     externalPort: 8082
@@ -250,7 +253,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-www
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     service:
       ## Supported service types: ClusterIP, NodePort and LoadBalancer
@@ -324,7 +327,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -339,7 +342,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -354,7 +357,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -369,7 +372,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -384,7 +387,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -399,7 +402,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -414,7 +417,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -429,7 +432,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -444,7 +447,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -460,7 +463,7 @@ pipelines:
       # registry:
       repository: jfrog/pipelines-installer
       # tag:
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
     resources: {}
       # limits:
@@ -1198,7 +1201,7 @@ vault:
     # registry:
     repository: vault
     tag: 1.3.4
-    pullPolicy: IfNotPresent
+    # pullPolicy:
 
   init:
     image:
@@ -1206,7 +1209,7 @@ vault:
       repository: jfrog/pipelines-vault-init
       # tag:
 
-      pullPolicy: IfNotPresent
+      # pullPolicy:
 
   service:
     # Supported service types: ClusterIP and NodePort

@@ -39,7 +39,7 @@ spec:
         {{- end }}
         - name: copy-system-yaml
           image: "{{ .Values.initContainer.image }}"
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.initContainer.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
@@ -58,7 +58,7 @@ spec:
             subPath: system.yaml
         - name: wait-for-vault
           image: "{{ .Values.initContainer.image }}"
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.initContainer.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
@@ -91,7 +91,7 @@ spec:
             {{- end }}
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
-          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy  .Values.pipelines.pipelinesInit.image.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
@@ -164,7 +164,7 @@ spec:
         {{- if .Values.filebeat.enabled }}
         - name: {{ .Values.filebeat.name }}
           image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
-          imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.filebeat.image.pullPolicy }}
           args:
           - "-e"
           - "-E"
@@ -183,7 +183,7 @@ spec:
         {{- end }}
         - name: router
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "router" ) }}
-          imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.router.image.pullPolicy }}
           env:
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_ROUTER_SERVICEREGISTRY_URL
@@ -221,7 +221,7 @@ spec:
             mountPath: {{ .Values.pipelines.router.mountPath }}
         - name: api
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
-          imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.api.image.pullPolicy }}
           env:
             - name: PIPELINES_NODE_ID
               valueFrom:
@@ -265,7 +265,7 @@ spec:
           {{- end }}
         - name: www
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
-          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.www.image.pullPolicy }}
           ports:
             - name: www
               containerPort: 30001
@@ -303,7 +303,7 @@ spec:
           {{- end }}
         - name: pipelinesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
-          imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.pipelineSync.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/pipelineSync
           env:
             - name: COMPONENT
@@ -317,7 +317,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: runtrigger
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "runTrigger" ) }}
-          imagePullPolicy: {{ .Values.pipelines.runTrigger.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.runTrigger.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/runTrigger
           env:
             - name: COMPONENT
@@ -331,7 +331,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: steptrigger
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepTrigger" ) }}
-          imagePullPolicy: {{ .Values.pipelines.stepTrigger.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.stepTrigger.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/stepTrigger
           env:
             - name: COMPONENT
@@ -345,7 +345,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: cron
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "cron" ) }}
-          imagePullPolicy: {{ .Values.pipelines.cron.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.cron.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/cron
           env:
             - name: COMPONENT
@@ -359,7 +359,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: nexec
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nexec" ) }}
-          imagePullPolicy: {{ .Values.pipelines.nexec.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.nexec.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/nexec
           env:
             - name: COMPONENT
@@ -373,7 +373,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: hookhandler
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "hookHandler" ) }}
-          imagePullPolicy: {{ .Values.pipelines.hookHandler.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.hookHandler.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/hookHandler
           env:
             - name: COMPONENT
@@ -387,7 +387,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: marshaller
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "marshaller" ) }}
-          imagePullPolicy: {{ .Values.pipelines.marshaller.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.marshaller.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/marshaller
           env:
             - name: COMPONENT
@@ -401,7 +401,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: logup
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "logup" ) }}
-          imagePullPolicy: {{ .Values.pipelines.logup.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.logup.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/logup
           env:
             - name: COMPONENT
@@ -415,7 +415,7 @@ spec:
             mountPath: {{ .Values.pipelines.logPath }}
         - name: extensionsync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "extensionSync" ) }}
-          imagePullPolicy: {{ .Values.pipelines.extensionSync.image.pullPolicy }}
+          imagePullPolicy: {{ default .Values.pipelines.imagePullPolicy .Values.pipelines.extensionSync.image.pullPolicy }}
           workingDir: /opt/jfrog/pipelines/app/micro/extensionSync
           env:
             - name: COMPONENT
