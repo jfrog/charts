@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [2.0.4] October 26, 2020
-* Readme notes for upgrading rabbitMQ
+* Readme update for upgrading rabbitmq
 
 ## [2.0.3] October 23, 2020
 * Fix RabbitMQ extra service
