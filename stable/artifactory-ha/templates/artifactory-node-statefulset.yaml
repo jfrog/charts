@@ -164,9 +164,7 @@ spec:
           - >
             chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
-          capabilities:
-            add:
-              - CHOWN
+          runAsUser: 0
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         volumeMounts:

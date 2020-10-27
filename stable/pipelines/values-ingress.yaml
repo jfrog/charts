@@ -71,10 +71,10 @@ rabbitmq:
   ingress:
     enabled: true
     
-    hostName: pipelines-msg.example.com
+    hostname: pipelines-msg.example.com
     path: /
     tls: true
-    tlsSecret: pipelines-msg.example.com
+    existingSecret: pipelines-msg.example.com
 
     annotations:
       ## If NOT using letsencrypt, you can omit these two lines

@@ -1,8 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.4.2] - Oct 20, 2020
+## [11.4.3] - Oct 27, 2020
 * Documentation updates
+
+## [11.4.2] - Oct 22, 2020
+* Chown bug fix where Linux capability cannot chown all files causing log line warnings
+* Fix Frontend timeout linting issue
 
 ## [11.4.1] - Oct 20, 2020
 * Add flag to disable prepare-custom-persistent-volume init container

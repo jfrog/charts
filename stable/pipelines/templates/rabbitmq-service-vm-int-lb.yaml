@@ -29,6 +29,6 @@ spec:
     protocol: TCP
     targetPort: amqp
   selector:
-    app: rabbitmq
-    release: {{ .Release.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: rabbitmq
 {{- end }}

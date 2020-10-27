@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [5.1.1] - Oct 24, 2020
+* Update router version to `1.4.4`
+
 ## [5.1.0] - Oct 13, 2020
 * **Breaking**
 * Changed `insightServer.internalHttpPort` to `insightServer.internalPort`
