@@ -1,6 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.2.1] - Oct 23, 2020
+* Update router version to `1.4.4`
+
+## [6.2.0] - Oct 23, 2020
+* Update Xray to version 3.10.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.10.3)
+
 ## [6.1.2] - Oct 9, 2020
 * Add global support for customInitContainersBegin
 

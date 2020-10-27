@@ -107,13 +107,15 @@ While upgrading from Pipelines chart version 1.x to 2.x and above, due to breaki
 
 **Important:** This is a breaking change from 6.x to 7.x (chart versions) of Rabbitmq chart - Please refer [here](https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#to-700)
 
+ RabbitMQ password configuration in the Values.yaml has changed from rabbit.rabbit.password to rabbit.auth.password
+
 ```bash
-$ kubectl delete statefulsets <release_name>-pipelines-services
-$ kubectl delete statefulsets <release_name>-pipelines-vault
-$ kubectl delete statefulsets <release_name>-postgresql
-$ kubectl delete statefulsets <release_name>-rabbitmq
-$ kubectl delete pvc data-<release_name>-rabbitmq-0
-$ helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines
+kubectl --namespace <namespace> delete statefulsets <release_name>-pipelines-services
+kubectl --namespace <namespace> delete statefulsets <release_name>-pipelines-vault
+kubectl --namespace <namespace> delete statefulsets <release_name>-postgresql
+kubectl --namespace <namespace> delete statefulsets <release_name>-rabbitmq
+kubectl --namespace <namespace> delete pvc data-<release_name>-rabbitmq-0
+helm upgrade --install pipelines --namespace <namespace> center/jfrog/pipelines
 ```
 
 ### Use external secret

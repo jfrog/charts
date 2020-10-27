@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.2] - Oct 23, 2020
+* Update router version to `1.4.4`
+
 ## [7.1.1] - Oct 9, 2020
 * Update Distribution to version `2.5.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.1)
 * Add support for customInitContainersBegin
