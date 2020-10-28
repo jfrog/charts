@@ -55,11 +55,15 @@ pipelines:
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
 
   ## Pipelines requires a unique master key
   ## You can generate one with the command: "openssl rand -hex 32"
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
 ```
 
 ### Install Pipelines Chart with Ingress

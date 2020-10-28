@@ -114,6 +114,20 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: "metadata.name"
+            {{- if .Values.pipelines.masterKeySecretName }}
+            - name: PIPELINES_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.pipelines.masterKeySecretName | default (include "pipelines.fullname" .) }}"
+                  key: master-key
+            {{- end }}
+            {{- if .Values.pipelines.joinKeySecretName }}
+            - name: PIPELINES_JOIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.pipelines.joinKeySecretName | default (include "pipelines.fullname" .) }}"
+                  key: join-key
+            {{- end }}
           command:
           - 'sh'
           - '-c'
@@ -133,6 +147,16 @@ spec:
           {{- if (not .Values.vault.enabled) }}
             echo "Creating Vault Table...";
             ./pipelines-k8s initVault;
+          {{- end }}
+          {{- if .Values.pipelines.masterKeySecretName }}
+            echo "Copy masterKey to {{ .Values.pipelines.mountPath }}/security";
+            mkdir -p -m 777 {{ .Values.pipelines.mountPath }}/security;
+            echo -n ${PIPELINES_MASTER_KEY} > {{ .Values.pipelines.mountPath }}/security/master.key;
+          {{- end }}
+          {{- if .Values.pipelines.joinKeySecretName }}
+            echo "Copy joinKey to {{ .Values.pipelines.mountPath }}/security";
+            mkdir -p -m 777 {{ .Values.pipelines.mountPath }}/security;
+            echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
           {{- end }}
             sleep 20;
             ./pipelines-k8s;
@@ -206,7 +230,14 @@ spec:
                 fieldRef:
                   fieldPath: "status.podIP"
             - name: JF_SHARED_SECURITY_JOINKEY
+              {{- if .Values.pipelines.joinKeySecretName }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.pipelines.joinKeySecretName | default (include "pipelines.fullname" .) }}"
+                  key: join-key
+              {{- else }}
               value: {{ include "pipelines.joinKey" . }}
+              {{- end }}
             - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
               value: "true"
           ports:

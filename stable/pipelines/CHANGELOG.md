@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.0.5] October 28, 2020
+* Added support to provide join-key and master-key from secret
+
 ## [2.0.4] October 26, 2020
 * Readme update for upgrading rabbitmq
 
