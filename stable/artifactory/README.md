@@ -66,22 +66,23 @@ helm upgrade --install artifactory --namespace artifactory -f values.yaml
 It may take a few minutes for Artifactory's public IP to become available. Follow the instructions that are output by the install command above to get the Artifactory IP to access it. Below you will find a sample instruction of what to look for to pick the URL to reach Artifactory (in the example below, art77 is the release name and art is the namespace).
 
 Congratulations. You have just deployed JFrog Artifactory.
-a. Get the Artifactory URL by running these commands:
-   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-         You can watch the status of the service by running 'kubectl get svc --namespace art -w art77-artifactory-nginx'
+
+8. To get the Artifactory URL, run the following commands.
+   NOTE: It may take a few minutes for the LoadBalancer IP to be available. You can watch the status of the service by running 'kubectl get svc --namespace art -w art77-artifactory-nginx'
+   ```bash
    export SERVICE_IP=$(kubectl get svc --namespace art art77-artifactory-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
    echo http://$SERVICE_IP/
-b. Open Artifactory in your browser
-   Default credential for Artifactory:
+   ```
+9. Open Artifactory in your browser; the default credentials for Artifactory are:
    user: admin
    password: password
 
-8. To access the logs, find the name of the pod using this command.
+10. To access the logs, find the name of the pod using this command.
 
 ```bash
 kubectl --namespace <your namespace> get pods
 ```
-9. To get the container logs, run the following command.
+11. To get the container logs, run the following command.
 
 ```bash
 kubectl --namespace <your namespace> logs -f <name of the pod>
