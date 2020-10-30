@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.3.0] - Oct 30, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
 ## [6.2.1] - Oct 23, 2020
 * Update router version to `1.4.4`
 
