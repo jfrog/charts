@@ -210,7 +210,7 @@ spec:
             - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
               value: "true"
           ports:
-            - name: router
+            - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
           securityContext:
             allowPrivilegeEscalation: false
@@ -228,7 +228,7 @@ spec:
                 fieldRef:
                   fieldPath: "metadata.name"
           ports:
-            - name: api
+            - name: http-api
               containerPort: 30000
 
           {{- if .Values.pipelines.api.livenessProbe.enabled }}
@@ -267,7 +267,7 @@ spec:
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
           imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
           ports:
-            - name: www
+            - name: http-www
               containerPort: 30001
           {{- if .Values.pipelines.www.livenessProbe.enabled }}
           livenessProbe:

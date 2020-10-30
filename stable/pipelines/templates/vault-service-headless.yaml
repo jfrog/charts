@@ -14,7 +14,7 @@ spec:
       port: {{ .Values.vault.service.port }}
       targetPort: 30100
       protocol: TCP
-    - name: server
+    - name: http-server
       port: 30101
       protocol: TCP  
   selector:
