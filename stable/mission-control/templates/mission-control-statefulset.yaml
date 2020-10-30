@@ -260,9 +260,9 @@ spec:
               name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
               key: url
         ports:
-        - name: eshttp
+        - name: http-eshttp
           containerPort: {{ .Values.elasticsearch.httpPort }}
-        - name: estransport
+        - name: tcp-estransport
           containerPort: {{ .Values.elasticsearch.transportPort }}
         volumeMounts:
         - name: elasticsearch-data
@@ -290,7 +290,7 @@ spec:
           sleep 10;
           /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
-        - name: router
+        - name: http-router
           containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -363,6 +363,7 @@ spec:
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
+          name: http-missioncontrol
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -449,6 +450,7 @@ spec:
         ports:
         - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
+          name: http-insightServer
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -521,6 +523,7 @@ spec:
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
+          name: http-insightScheduler
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
