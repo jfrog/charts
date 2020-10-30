@@ -363,7 +363,7 @@ spec:
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
-          name: http-missioncontrol
+          name: http-mc
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -450,7 +450,7 @@ spec:
         ports:
         - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
-          name: http-insightServer
+          name: http-inserver
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -523,7 +523,7 @@ spec:
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
-          name: http-insightScheduler
+          name: http-insched
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}

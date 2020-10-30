@@ -419,9 +419,9 @@ spec:
 {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
-          name: http-internal
+          name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
-          name: http-internalArtifactory
+          name: http-internal
         {{- if .Values.artifactory.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.javaOpts.jmx.port }}
           name: tcp-jmx
