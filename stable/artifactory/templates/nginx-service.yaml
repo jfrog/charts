@@ -64,7 +64,7 @@ spec:
   - port: {{ .Values.nginx.ssh.externalPort }}
     targetPort: {{ .Values.nginx.ssh.internalPort }}
     protocol: TCP
-    name: ssh
+    name: tcp-ssh
   {{- end }}
   selector:
     app: {{ template "artifactory.name" . }}

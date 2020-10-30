@@ -75,19 +75,24 @@ spec:
         {{- if .Values.nginx.http }}
         {{- if .Values.nginx.http.enabled }}
         - containerPort: {{ .Values.nginx.http.internalPort }}
+          name: http-internal
         {{- end }}
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttp }}
+          name: http-internalHttp
         {{- end }}
         {{- if .Values.nginx.https }}
         {{- if .Values.nginx.https.enabled }}
         - containerPort: {{ .Values.nginx.https.internalPort }}
+          name: https-internal
         {{- end }}
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttps }}
+          name: https-internalHttps
         {{- end }}
         {{- if .Values.artifactory.ssh.enabled }}
         - containerPort: {{ .Values.nginx.ssh.internalPort }}
+          name: tcp-ssh
         {{- end }}
         volumeMounts:
         - name: nginx-conf
