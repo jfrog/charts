@@ -143,7 +143,7 @@ spec:
           {{- end }}
             /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
-          - name: router
+          - name: http-router
             containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -235,6 +235,7 @@ spec:
       {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
+          name: http-server
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -331,6 +332,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
+          name: http-analysis
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -427,6 +429,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
+          name: http-indexer
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -519,6 +522,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.persist.internalPort }}
+          name: http-persist
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
