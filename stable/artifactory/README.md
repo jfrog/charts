@@ -1139,6 +1139,11 @@ The simplest way is to install Artifactory with the following command:
 ```bash
 helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true center/jfrog/artifactory
 ```
+This will create a new service exposing the Prometheus metrics for the Prometheus Community to start scraping. (For Promethus Operator and ServiceMonitor check below)
+
+```bash
+helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true --set metrics.serviceMonitor.enabled=true center/jfrog/artifactory
+```
 
 This will create a new service exposing the Prometheus metrics as well as a ServiceMonitor object for the Prometheus Operator to start scraping.
 

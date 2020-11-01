@@ -1334,6 +1334,8 @@ filebeat:
 ##
 metrics:
   enabled: false
+  path: "/metrics"
+  scheme: http
 
   service:
     port: 24231
@@ -1342,7 +1344,7 @@ metrics:
   ## Prometheus Operator ServiceMonitor configuration
   ##
   serviceMonitor:
-    path: "/metrics"
+    enabled: false
     labels: {}
 
     ## Interval at which metrics should be scraped
@@ -1373,7 +1375,7 @@ fluentd:
     <source>
       @type prometheus
       port {{ .Values.metrics.service.port }}
-      metrics_path {{ .Values.metrics.serviceMonitor.path }}
+      metrics_path {{ .Values.metrics.path }}
     </source>
 
     <source>
@@ -1470,11 +1472,11 @@ fluentd:
       @type parser
       key_name message
       <parse>
-        @type multiline
-        format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-        format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
-        time_key timestamp
-        time_format %Y-%m-%dT%H:%M:%S.%LZ
+          @type multiline
+          format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+          format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
+          time_key timestamp
+          time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
     </filter>
     # End Service Fields Extraction
@@ -1492,6 +1494,7 @@ fluentd:
           time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
     </source>
+
     <source>
       @type tail
       @id access_request_tail
@@ -1523,8 +1526,9 @@ fluentd:
       @type record_transformer
       enable_ruby true
       <record>
-        repo ${!record["request_url"].strip().start_with?("/api") ? (record["request_url"].strip().split('/')[1]) : ("")}
-        artifact ${!record["request_url"].strip().start_with?("/api") ? (val = record["request_url"].strip().split('/'); val[val.length()-1]) : ("")}
+        user ${!record["username"].strip().start_with?("token") ? (record["username"].strip()) : ("")}
+        repo ${record["request_url"].strip().start_with?("/api/download") ? (record["request_url"].strip().split('/')[3]) : ("")}
+        artifact ${record["request_url"].strip().start_with?("/api/download") ? (val = record["request_url"].strip().split('/'); val[val.length()-1]) : ("")}
         dockerRepo ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2") ? (record["request_url"].strip().split('/')[3]) : ("")}
         dockerImage ${record["request_url"].strip().include?("/api/docker") && !record["request_url"].include?("/api/docker/null") && !record["request_url"].include?("/api/docker/v2")  ? (record["request_url"].strip().split('/')[5]) : ("")}
         data_download ${record["response_content_length"] == -1 ? 0 : record["response_content_length"]}
@@ -1544,6 +1548,13 @@ fluentd:
         time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
     </source>
+    <filter jfrog.rt.frontend.request>
+      @type record_transformer
+      enable_ruby true
+      <record>
+        user ${!record["username"].strip().start_with?("token") ? (record["username"].strip()) : ("")}
+      </record>
+    </filter>
     <source>
       @type tail
       @id metadata_request_tail
@@ -1557,6 +1568,13 @@ fluentd:
         time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
     </source>
+    <filter jfrog.rt.metadata.request>
+      @type record_transformer
+      enable_ruby true
+      <record>
+        user ${!record["username"].strip().start_with?("token") ? (record["username"].strip()) : ("")}
+      </record>
+    </filter>
     <source>
       @type tail
       @id router_request_tail
@@ -1577,7 +1595,7 @@ fluentd:
       tag jfrog.rt.artifactory.access
       <parse>
         @type regexp
-        expression /^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+)$/
+        expression /^(?<timestamp>[^ ]*) \[(?<trace_id>[^\]]*)\] \[(?<action_response>[^\]]*)\] (?<repo_path>.*) for client : (?<username>.+)/(?<ip>.+).$/
         time_key timestamp
         time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
@@ -1600,38 +1618,90 @@ fluentd:
     <filter jfrog.**>
       @type record_transformer
       <record>
+        hostname "#{Socket.gethostname}"
         log_source ${tag}
       </record>
     </filter>
+
+    #JFROG CALL HOME
+    <source>
+      @type exec
+      tag jfrog.callhome
+      command "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/fluentd-1.11.0-linux-x86_64/lib/ruby/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'"
+      run_interval 1d
+      <parse>
+        @type ltsv
+      </parse>
+    </source>
+    <source>
+      @type exec
+      tag jfrog.callhome
+      command /opt/td-agent/embedded/bin/gem list --local | grep fluent | sed 's/ (/:/g' | sed 's/)//g'  | sed ':a;N;$!ba;s/\n/\t/g'
+      run_interval 1d
+      <parse>
+        @type ltsv
+      </parse>
+    </source>
+    <filter jfrog.callhome>
+      @type record_transformer
+      renew_record true
+      keep_keys 'productId,features'
+      enable_ruby true
+      <record>
+        productId 'jfrogLogAnalytics/v0.1.0'
+        features ${return(record.map { |k,v| { "featureId" => (k + ':' + v).to_sym} })}
+      </record>
+    </filter>
+    <match jfrog.callhome>
+      @type http
+      endpoint http://localhost:8081/artifactory/api/system/usage
+      open_timeout 5
+      content_type application/json
+      <format>
+        @type json
+      </format>
+      <buffer>
+        flush_interval 5s
+      </buffer>
+    </match>
+    #END CALL HOME
 
     <filter jfrog.rt.artifactory.request>
       @type prometheus
 
       <metric>
         name jfrog_rt_data_download
-        type gauge
+        type counter
         desc artifactory data download
         key data_download
         <labels>
           host ${hostname}
           remote_address ${remote_address}
+          artifact ${artifact}
           repo ${repo}
+          dockerImage ${dockerImage}
+          dockerRepo ${dockerRepo}
           response_content_length ${response_content_length}
           data_download ${data_download}
+          method ${request_method}
         </labels>
       </metric>
 
       <metric>
         name jfrog_rt_data_upload
-        type gauge
+        type counter
         desc artifactory data upload
         key data_upload
         <labels>
           host ${hostname}
           remote_address ${remote_address}
+          artifact ${artifact}
           repo ${repo}
+          dockerImage ${dockerImage}
+          dockerRepo ${dockerRepo}
           request_content_length ${request_content_length}
           data_upload ${data_upload}
+          method ${request_method}
         </labels>
       </metric>
 
@@ -1640,14 +1710,16 @@ fluentd:
         type counter
         desc artifactory requests
         <labels>
+          user ${user}
           host ${hostname}
           request_url ${request_url}
-          return_status ${return_status}
           repo ${repo}
           artifact ${artifact}
-          dockerRepo ${dockerRepo}
           dockerImage ${dockerImage}
+          dockerRepo ${dockerRepo}
+          return_status ${return_status}
           remote_address ${remote_address}
+          method ${request_method}
         </labels>
       </metric>
     </filter>
@@ -1663,6 +1735,16 @@ fluentd:
           log_level ${log_level}
         </labels>
       </metric>
+
+      <metric>
+          name jfrog_rt_service_message
+          type counter
+          desc artifactory service message
+          <labels>
+            host ${hostname}
+            message ${message}
+          </labels>
+        </metric>
     </filter>
 
     <filter jfrog.rt.artifactory.access>
@@ -1675,6 +1757,7 @@ fluentd:
       <labels>
         host ${hostname}
         username ${username}
+        repo_path ${repo_path}
         action_response ${action_response}
         ip ${ip}
       </labels>
