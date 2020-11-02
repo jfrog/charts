@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.4.3] - Nov 2, 2020
+* Updated Artifactory version to 7.10.5 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.10.5)
+
 ## [4.4.2] - Oct 22, 2020
 * Chown bug fix where Linux capability cannot chown all files causing log line warnings
 * Fix Frontend timeout linting issue
