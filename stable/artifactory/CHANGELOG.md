@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.4.3] - Nov 02, 2020
+* Add enablePathStyleAccess property for aws-s3-v3 binary provider template
+
 ## [11.4.2] - Oct 22, 2020
 * Chown bug fix where Linux capability cannot chown all files causing log line warnings
 * Fix Frontend timeout linting issue
