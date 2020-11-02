@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.0.5] - Nov 2, 2020
+* Update dependency artifactory chart version to 11.4.4 (Artifactory 7.10.5)
+* Update dependency artifactory-ha chart version to 4.4.4 (Artifactory 7.10.5)
+
 ## [0.0.4] - Oct 23, 2020
 * Added Migration steps to move existing artifactory/artifactory-ha installations to JFrog platform chart - Refer [here](https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/UPGRADE_NOTES.md)
 * Updated dependency charts
