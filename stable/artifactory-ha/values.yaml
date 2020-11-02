@@ -833,6 +833,9 @@ artifactory:
             {{- with .enableSignedUrlRedirect }}
               <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
             {{- end }}
+            {{- with .enablePathStyleAccess }}
+              <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
+            {{- end }}
           </provider>
         {{- end }}
       </config>
@@ -1038,6 +1041,7 @@ artifactory:
       cloudFrontKeyPairId:
       cloudFrontPrivateKey:
       enableSignedUrlRedirect: false
+      enablePathStyleAccess: false
 
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html

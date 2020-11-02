@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.4.4] - Nov 2, 2020
+* Add enablePathStyleAccess property for aws-s3-v3 binary provider template
+
 ## [11.4.3] - Nov 2, 2020
 * Updated Artifactory version to 7.10.5 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.10.5)
 
