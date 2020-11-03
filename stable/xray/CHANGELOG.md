@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.2.2] - Nov 3, 2020
+* Change stable repository location to https://charts.helm.sh/stable
+
 ## [6.2.1] - Oct 23, 2020
 * Update router version to `1.4.4`
 
