@@ -2,7 +2,7 @@
 MAC_ARGS ?=
 CHARTS_REPO ?= https://github.com/jfrog/charts
 CHART_TESTING_IMAGE ?= quay.io/rimusz/charts-ci
-CHART_TESTING_TAG ?= v0.0.12
+CHART_TESTING_TAG ?= v0.0.13
 HELM_VERSION ?= v3.4.0
 
 # If the first argument is "lint" or "mac" or "gke" or "kind"
