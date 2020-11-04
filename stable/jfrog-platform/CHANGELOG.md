@@ -1,5 +1,5 @@
 # JFrog Platform Chart Changelog
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
 
 ## [0.0.6] - Nov 4, 2020
 * Update dependency xray chart version to 6.3.0
