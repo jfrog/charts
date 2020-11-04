@@ -540,6 +540,10 @@ artifactory:
   uid: 1030
   terminationGracePeriodSeconds: 30
 
+  ## By default, the Artifactory StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `artifactory.uid` value.
+  ## If you want to disable the securityContext for the Artifactory StatefulSet, set this tag to false
+  setSecurityContext: true
+
   ## The following settings are to configure the frequency of the liveness and readiness probes
   livenessProbe:
     enabled: true
