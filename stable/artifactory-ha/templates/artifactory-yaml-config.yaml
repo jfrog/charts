@@ -1,0 +1,40 @@
+{{- if .Values.artifactory.artifactoryYaml.configTpl }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "artifactory-ha.fullname" . }}-yaml-config
+  labels:
+    app: {{ template "artifactory-ha.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  artifactory-config.yaml: |-
+{{ tpl .Values.artifactory.artifactoryYaml.configTpl . | indent 4 }}
+  entrypoint.sh: |-
+    #!/bin/sh
+    set -e
+    # TODO: Add HTTPS support
+    curl "-u${ADMIN_USER}:${ADMIN_PASS}" -X PATCH \
+        http://{{ template "artifactory-ha.primary.name" . }}.{{ .Release.Namespace }}:{{ .Values.artifactory.internalArtifactoryPort }}/artifactory/api/system/configuration \
+        -H "Content-Type: application/yaml" -T /artifactory/config/artifactory-config.yaml && \
+    curl "-u${ADMIN_USER}:${ADMIN_PASS}" -X PATCH \
+        http://{{ template "artifactory-ha.primary.name" . }}.{{ .Release.Namespace }}:{{ .Values.artifactory.internalArtifactoryPort }}/artifactory/api/system/configuration \
+        -H "Content-Type: application/yaml" -T /artifactory/secret/artifactory-secret.yaml
+{{- end }}
+---
+{{- if .Values.artifactory.artifactoryYaml.configSecretName }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "artifactory-ha.fullname" . }}-yaml-config
+  labels:
+    app: {{ template "artifactory-ha.fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  artifactory-secret.yaml: |-
+{{ .Values.artifactory.artifactoryYaml.configSecretName | indent 4 }}
+{{- end }}
