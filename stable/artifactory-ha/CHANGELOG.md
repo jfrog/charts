@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.5.0] - Nov 7, 2020
+* Added ability to set Artifactory configuration [#1207](https://github.com/jfrog/charts/issues/1207)
+
 ## [4.4.4] - Nov 2, 2020
 * Add enablePathStyleAccess property for aws-s3-v3 binary provider template
 
