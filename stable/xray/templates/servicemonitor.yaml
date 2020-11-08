@@ -1,0 +1,31 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "xray.fullname" . }}
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "xray.name" . }}
+      component: metrics
+      release: {{ .Release.Name }}
+  endpoints:
+  - port: tcp-metrics
+    {{- with .Values.metrics.serviceMonitor }}
+    path: {{ .path }}
+    {{- with .interval }}
+    interval: {{ . }}
+    {{- end }}
+    {{- with .scrapeTimeout }}
+    scrapeTimeout: {{ . }}
+    {{- end }}
+    {{- end }}
+{{- end }}

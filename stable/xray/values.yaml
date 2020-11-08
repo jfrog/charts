@@ -825,3 +825,230 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Prometheus Exporter / Metrics
+##
+metrics:
+  enabled: false
+  path: "/metrics"
+  scheme: http
+
+  service:
+    port: 24231
+    type: ClusterIP
+
+  ## Prometheus Operator ServiceMonitor configuration
+  ##
+  serviceMonitor:
+    enabled: false
+    path: "/metrics"
+    labels: {}
+
+    ## Interval at which metrics should be scraped
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ##
+    # interval:
+
+    ## Timeout after which the scrape is ended
+    ## ref: https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ##
+    # scrapeTimeout:
+
+## Fluentd Sidecar Container
+##
+fluentd:
+  enabled: false
+
+  image:
+    ## The Bitnami Fluentd image has the Prometheus plugin pre-installed.
+    ##
+    repository: docker.io/bitnami/fluentd
+    tag: 1.11.2
+
+  fluentdConf: |
+    ## Prometheus Input Plugin Configuration
+
+    # quiet down the excessive parser warnings
+    <system>
+      log_level error
+    </system>
+
+    # input plugin that exports metrics
+    <source>
+      @type prometheus
+      port {{ .Values.metrics.service.port }}
+      metrics_path {{ .Values.metrics.serviceMonitor.path }}
+    </source>
+
+    <source>
+    @type monitor_agent
+    </source>
+
+    <source>
+    @type forward
+    </source>
+
+    # input plugin that collects metrics from MonitorAgent
+    <source>
+    @type prometheus_monitor
+    <labels>
+      host ${hostname}
+    </labels>
+    </source>
+
+    # input plugin that collects metrics for output plugin
+    <source>
+    @type prometheus_output_monitor
+    <labels>
+      host ${hostname}
+    </labels>
+    </source>
+
+    # input plugin that collects metrics for in_tail plugin
+    <source>
+    @type prometheus_tail_monitor
+    <labels>
+      host ${hostname}
+    </labels>
+    </source>
+    <source>
+      @type tail
+      @id xray_server_tail
+      path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-server-service.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-server-service.log.pos"
+      tag jfrog.xray.server.service
+      <parse>
+        @type none
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_persist_tail
+      path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-persist-service.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-persist-service.log.pos"
+      tag jfrog.xray.persist.service
+      <parse>
+        @type none
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_indexer_tail
+      path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-indexer-service.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-indexer-service.log.pos"
+      tag jfrog.xray.indexer.service
+      <parse>
+        @type none
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_analysis_tail
+      path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-analysis-service.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-analysis-service.log.pos"
+      tag jfrog.xray.analysis.service
+      <parse>
+        @type none
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_router_tail
+      path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-service.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-service.log.pos"
+      tag jfrog.xray.router.service
+      <parse>
+        @type none
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_router_traefik_tail
+      path "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log.pos"
+      tag jfrog.xray.router.traefik
+      <parse>
+          @type regexp
+          expression ^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$
+          time_key timestamp
+          time_format %Y-%m-%dT%H:%M:%S.%LZ
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_router_request_tail
+      path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-request.log"
+      pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-request.log.pos"
+      tag jfrog.xray.router.request
+      <parse>
+        @type json
+        time_key time
+        time_format %Y-%m-%dT%H:%M:%SZ
+      </parse>
+    </source>
+    <source>
+      @type tail
+      @id xray_request_tail
+      path  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-request.log"
+      pos_file  "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/xray-request.log.pos"
+      tag jfrog.xray.xray.request
+      <parse>
+        @type regexp
+        expression ^(?<timestamp>[^ ]*)\|(?<trace_id>[^ ]*)\|(?<remote_address>.+)\|(?<username>[^\|]*)\|(?<request_method>[^\|]*)\|(?<request_url>[^\|]*)\|(?<return_status>[^\|]*)\|(?<response_content_length>[^\|]*)\|(?<request_duration>.*)$
+        time_key timestamp
+        time_format %Y-%m-%dT%H:%M:%S.%LZ
+      </parse>
+    </source>
+    # STRIP COLOR CODES FROM SERVICE LOGS
+    <filter jfrog.xray.**.service>
+      @type record_transformer
+      enable_ruby true
+      <record>
+        message ${record["message"].gsub(/\e\[([;\d]+)?m/, '')}
+      </record>
+    </filter>
+    # FIELD EXTRACT SERVICE LOG
+    <filter jfrog.xray.**.service>
+      @type parser
+      key_name message
+      <parse>
+          @type multiline
+          format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+          format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] (?<message>.*)$/
+          time_key timestamp
+          time_format %Y-%m-%dT%H:%M:%S.%LZ
+      </parse>
+    </filter>
+    <filter jfrog.**>
+      @type record_transformer
+      <record>
+        log_source ${tag}
+      </record>
+    </filter>
+    <filter jfrog.xray.xray.request>
+    @type prometheus
+    <metric>
+      name jfrog_xray_req
+      type counter
+      desc xray requests
+      <labels>
+        host ${hostname}
+        remote_address ${remote_address}
+        request_url ${request_url}
+        return_status ${return_status}
+        method ${request_method}
+      </labels>
+    </metric>
+    </filter>
+    <filter jfrog.xray.**.service>
+    @type prometheus
+    <metric>
+      name jfrog_xray_log_level
+      type counter
+      desc xray log_levels
+      <labels>
+        host ${hostname}
+        log_level ${log_level}
+      </labels>
+    </metric>
+    </filter>

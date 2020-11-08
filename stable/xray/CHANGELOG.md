@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [6.3.1] - Nov 8, 2020
+* Expose Prometheus metrics via a scrape annotations or ServiceMonitor
+* Fluentd configuration added (https://github.com/jfrog/log-analytics-prometheus) 
+
 ## [6.3.0] - Nov 3, 2020
 * Change stable repository location to https://charts.helm.sh/stable
 * Update bitnami rabbitmq chart to 7.7.1

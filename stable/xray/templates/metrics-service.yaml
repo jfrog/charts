@@ -1,0 +1,29 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  {{- if not .Values.metrics.serviceMonitor.enabled }}
+  annotations:
+    prometheus.io/path: {{ .Values.metrics.path | quote }}
+    prometheus.io/scheme: {{  .Values.metrics.scheme }}
+    prometheus.io/port: {{ .Values.metrics.service.port | quote }}
+    prometheus.io/scrape: "true"
+  {{- end }}
+  name: {{ template "xray.fullname" . }}-metrics
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    component: metrics
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  type: {{ .Values.metrics.service.type }}
+  ports:
+  - name: tcp-metrics
+    port: {{ .Values.metrics.service.port }}
+    protocol: TCP
+  selector:
+    app: {{ template "xray.name" . }}
+    component: "{{ .Values.xray.name }}"
+    release: {{ .Release.Name }}
+{{- end }}

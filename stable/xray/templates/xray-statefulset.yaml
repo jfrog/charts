@@ -565,6 +565,20 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd
+        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
+        volumeMounts:
+          - mountPath: /opt/bitnami/fluentd/conf/
+            name: fluentd-config
+          - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+            name: data-volume
+        env:
+          - name: JF_PRODUCT_DATA_INTERNAL
+            value: {{ .Values.xray.persistence.mountPath }}
+          - name: FLUENTD_CONF
+            value: fluentd.conf
+      {{- end }}
 {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "xray.customSidecarContainers" .) . | indent 6 }}
 {{- end }}
@@ -606,6 +620,11 @@ spec:
       - name: xray-configmaps
         configMap:
           name: {{ template "xray.fullname" . }}-configmaps
+      {{- end }}
+      {{- if .Values.fluentd.enabled }}
+      - name: fluentd-config
+        configMap:
+          name: {{ template "xray.fullname" . }}-fluentd-config
       {{- end }}
 {{- with .Values.common.persistence }}
   {{- if and .enabled (not .existingClaim) }}

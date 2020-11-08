@@ -1,0 +1,14 @@
+{{- if .Values.fluentd.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "xray.fullname" . }}-fluentd-config
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  fluentd.conf: |
+{{ tpl .Values.fluentd.fluentdConf . | indent 4 }}
+{{- end -}}
