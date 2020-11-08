@@ -1472,11 +1472,11 @@ fluentd:
       @type parser
       key_name message
       <parse>
-          @type multiline
-          format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-          format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
-          time_key timestamp
-          time_format %Y-%m-%dT%H:%M:%S.%LZ
+        @type multiline
+        format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+        format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] -(?<message>.*)$/
+        time_key timestamp
+        time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
     </filter>
     # End Service Fields Extraction
@@ -1487,11 +1487,11 @@ fluentd:
       pos_file "#{ENV['JF_PRODUCT_DATA_INTERNAL']}/log/router-traefik.log.pos"
       tag jfrog.rt.router.traefik
       <parse>
-          @type multiline
-          format_firstline /\d{4}-\d{1,2}-\d{1,2}/
-          format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
-          time_key timestamp
-          time_format %Y-%m-%dT%H:%M:%S.%LZ
+        @type multiline
+        format_firstline /\d{4}-\d{1,2}-\d{1,2}/
+        format1 /^(?<timestamp>[^ ]*) \[(?<service_type>[^\]]*)\] \[(?<log_level>[^\]]*)\] \[(?<trace_id>[^\]]*)\] \[(?<class_line_number>.*)\] \[(?<thread>.*)\] - (?<message>.+)$/
+        time_key timestamp
+        time_format %Y-%m-%dT%H:%M:%S.%LZ
       </parse>
     </source>
 
