@@ -142,7 +142,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         ports:
-        - name: distribution
+        - name: http-distro
           containerPort: {{ .Values.distribution.internalPort }}
         command:
           - '/bin/sh'
@@ -306,7 +306,7 @@ spec:
           - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
             value: 'jfds'
         ports:
-          - name: router
+          - name: http-router
             containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false

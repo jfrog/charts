@@ -17,7 +17,7 @@ spec:
   ports:
   - name: distribution
     port: {{ .Values.distribution.externalPort }}
-    targetPort: distribution
+    targetPort: http-distro
   selector:
     app: {{ template "distribution.name" . }}
     release: {{ .Release.Name }}

@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.2.0] - Nov 9, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
 ## [7.1.2] - Oct 23, 2020
 * Update router version to `1.4.4`
 
