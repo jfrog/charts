@@ -1,10 +1,6 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [6.4.0] - Nov 9, 2020
-* Update Xray to version 3.11.0 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.11.0)
-
-
 ## [6.3.0] - Nov 3, 2020
 * Change stable repository location to https://charts.helm.sh/stable
 * Update bitnami rabbitmq chart to 7.7.1
