@@ -1,3 +1,7 @@
+replicaCount: 4
+common:
+  persistence:
+    size: 500Gi
 rabbitmq-ha:
   replicaCount: 4
   rabbitmqMemoryHighWatermark: 2000MB
@@ -19,7 +23,6 @@ postgresql:
       memory: "8Gi"
       cpu: "6"
 server:
-  replicaCount: 4
   resources:
     requests:
       memory: "1Gi"
@@ -51,5 +54,3 @@ indexer:
     limits:
       memory: "2Gi"
       cpu: "2"
-  persistence:
-    size: 500Gi
