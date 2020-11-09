@@ -4,6 +4,7 @@ All changes to this chart will be documented in this file.
 ## [1.10.0] - Nov 9, 2020
 * Updated Artifactory version to 6.23.1 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.23.1)
 * Change stable repository location to https://charts.helm.sh/stable
+* Updated chart maintainers
 
 ## [1.9.0] - Sep 30, 2020
 * Updated Artifactory version to 6.22.0 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.22)
