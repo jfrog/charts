@@ -841,7 +841,6 @@ metrics:
   ##
   serviceMonitor:
     enabled: false
-    path: "/metrics"
     labels: {}
 
     ## Interval at which metrics should be scraped
@@ -877,7 +876,7 @@ fluentd:
     <source>
       @type prometheus
       port {{ .Values.metrics.service.port }}
-      metrics_path {{ .Values.metrics.serviceMonitor.path }}
+      metrics_path {{ .Values.metrics.path }}
     </source>
 
     <source>
