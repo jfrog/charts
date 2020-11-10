@@ -3,7 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [2.5.0] - Nov 9, 2020
 * Change stable repository location to https://charts.helm.sh/stable
-* Update RabbitMQ chart to v7.7.1
+* Update Rabbitmq chart to v7.7.1
 
 ## [2.4.5] - Oct 30, 2020
 * Update Xray version to 2.16.10 - [Release Notes](https://www.jfrog.com/confluence/display/XRAY2X/Release+Notes#ReleaseNotes-Xray2.16.10)
