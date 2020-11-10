@@ -1,8 +1,13 @@
 # CI values for Xray
 databaseUpgradeReady: true
+postgresql:
+  postgresqlPassword: xray
 
 rabbitmq-ha:
   enabled: false
 
 rabbitmq:
   enabled: true
+  auth:
+    username: guest
+    password: password
