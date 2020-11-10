@@ -1,5 +1,5 @@
 # JFrog Platform Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
 ## [0.0.7] - Nov 10, 2020
 * Update dependency artifactory chart version to 11.4.5 (Artifactory 7.10.6)
