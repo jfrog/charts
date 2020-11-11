@@ -559,10 +559,10 @@ artifactory:
     replicator:
       enabled: true
     {{- end }}
-  
+
   # See https://www.jfrog.com/confluence/display/JFROG/Artifactory+YAML+Configuration for more details
   artifactoryYaml:
-    
+
     # artifactory.artifactoryYaml.configTpl -- Specify your config here. Supports Go templating
     configTpl: |-
       {{- if .Values.ingress.enabled }}
