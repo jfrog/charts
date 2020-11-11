@@ -559,6 +559,22 @@ artifactory:
     replicator:
       enabled: true
     {{- end }}
+  
+  # See https://www.jfrog.com/confluence/display/JFROG/Artifactory+YAML+Configuration for more details
+  artifactoryYaml:
+    
+    # artifactory.artifactoryYaml.configTpl -- Specify your config here. Supports Go templating
+    configTpl: |-
+      {{- if .Values.ingress.enabled }}
+      {{- if .Values.ingress.tls }}
+      urlBase: "https://{{ index .Values.ingress.hosts 0 }}"
+      {{- else }}
+      urlBase: "http://{{ index .Values.ingress.hosts 0 }}"
+      {{- end }}
+      {{- end }}
+
+    # artifactory.artifactoryYaml.configSecretName -- Name of the secret containing your sensitive configuration. Assumes `admin-user` and `admin-pass` data keys for the Artifactory admin username and password if using `artifactory.admin.secret`
+    configSecretName:
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!

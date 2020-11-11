@@ -1,0 +1,72 @@
+{{- if .Values.artifactory.artifactoryYaml.configTpl }}
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: {{ .Release.Name }}-apply-yaml-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    component: {{ .Values.artifactory.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  annotations:
+    helm.sh/hook: 'post-install,post-upgrade'
+    helm.sh/hook-delete-policy: hook-succeeded
+    helm.sh/hook-weight: '-5'
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      name: {{ .Release.Name }}-apply-yaml-config
+      labels:
+        app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
+        role: {{ template "artifactory-ha.node.name" . }}
+        heritage: {{ .Release.Service }}
+        component: {{ .Values.artifactory.name }}
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "artifactory-ha.fullname" . }}-yaml-config
+        {{- if .Values.artifactory.artifactoryYaml.configSecretName }}
+        - name: config-secret
+          secret:
+            name: {{ template "artifactory-ha.fullname" . }}-yaml-config
+        {{- end }}
+      containers:
+        - name: apply-config
+          image: 'curlimages/curl:7.73.0'
+          command:
+            - /bin/sh
+            - /artifactory/entrypoint.sh
+          env:
+            {{- if .Values.artifactory.admin.secret }}
+            - name: ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.artifactory.admin.secret }}
+                  key: admin-user
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.artifactory.admin.secret }}
+                  key: admin-pass
+            {{- else }}
+            - name: ADMIN_USER
+              value: {{ .Values.artifactory.admin.username }}
+            - name: ADMIN_PASS
+              value: {{ .Values.artifactory.admin.password }}
+            {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /artifactory/config
+            {{- if .Values.artifactory.artifactoryYaml.configSecretName }}
+            - name: config-secret
+              mountPath: /artifactory/secret
+            {{- end }}
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+{{- end }}

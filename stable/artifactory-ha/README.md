@@ -66,6 +66,23 @@ artifactory:
   systemYaml: |
     <YOUR_SYSTEM_YAML_CONFIGURATION>
 ```
+### Artifactory Configuration
+Artifactory features and repositories can be configured via YAML. This enables you to automate much of the Artifactory configuration and maintain it in SCM. Full configuration options can be found [here](https://www.jfrog.com/confluence/display/JFROG/Artifactory+YAML+Configuration).
+
+In order to add your own configurations, this Helm chart provides you with:
+```yaml
+artifactory:
+  artifactoryYaml:
+    configTpl: |-
+      {{- if .Values.ingress.enabled }}
+      {{- if .Values.ingress.tls }}
+      urlBase: "https://{{ index .Values.ingress.hosts 0 }}"
+      {{- else }}
+      urlBase: "http://{{ index .Values.ingress.hosts 0 }}"
+      {{- end }}
+      {{- end }}
+    configSecretName: <YOUR_SECRET_NAME>
+```
 
 ### Deploying Artifactory for small/medium/large installations
 In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
