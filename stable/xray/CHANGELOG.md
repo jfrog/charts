@@ -1,5 +1,9 @@
 # JFrog Xray Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
+
+## [6.4.0] - Nov 9, 2020
+* Update Xray to version 3.11.1 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.11)
+* Fix values-small,medium,large yaml files
 
 ## [6.3.0] - Nov 3, 2020
 * Change stable repository location to https://charts.helm.sh/stable
