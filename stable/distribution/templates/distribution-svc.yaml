@@ -15,7 +15,7 @@ metadata:
 spec:
   type: {{ .Values.distribution.service.type }}
   ports:
-  - name: distribution
+  - name: http-distro
     port: {{ .Values.distribution.externalPort }}
     targetPort: http-distro
   selector:
