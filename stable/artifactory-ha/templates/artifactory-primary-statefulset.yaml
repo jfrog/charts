@@ -424,16 +424,16 @@ spec:
         {{- end }}
           exec /entrypoint-artifactory.sh
         lifecycle:
+          {{- with .Values.artifactory.postStartCommand }}
           postStart:
             exec:
               command:
               - '/bin/bash'
               - '-c'
               - >
-                echo;
-              {{- with .Values.artifactory.postStartCommand }}
-                {{ tpl . $ }}
-              {{- end }}
+                echo "Running primary specific custom postStartCommand command";
+                {{ tpl . $ }};
+           {{- end }}
         env:
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
