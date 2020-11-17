@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.1.1] - Nov 17, 2020
+* Change semverCompare checks to support hosted Kubernetes
+
 ## [2.1.0] Nov 3, 2020
 * Update bitnami rabbitmq chart to 7.7.1
 * Readme update for using external database
