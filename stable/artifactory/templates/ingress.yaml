@@ -3,7 +3,7 @@
 {{- $servicePort := .Values.artifactory.externalPort -}}
 {{- $artifactoryServicePort := .Values.artifactory.externalArtifactoryPort -}}
 {{- $ingressName := default ( include "artifactory.fullname" . ) .Values.ingress.name -}}
-{{- if semverCompare ">=v1.14.0" .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1beta1
 {{- else }}
 apiVersion: extensions/v1beta1
@@ -56,7 +56,7 @@ spec:
 {{- if .Values.artifactory.replicator.enabled }}
 ---
 {{- $replicatorIngressName := default ( include "artifactory.replicator.fullname" . ) .Values.artifactory.replicator.ingress.name -}}
-  {{- if semverCompare ">=v1.14.0" .Capabilities.KubeVersion.GitVersion }}
+  {{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1beta1
   {{- else }}
 apiVersion: extensions/v1beta1
