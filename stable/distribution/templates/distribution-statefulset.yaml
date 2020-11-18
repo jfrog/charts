@@ -33,6 +33,7 @@ spec:
         role: {{ template "distribution.name" . }}
         component: {{ .Values.distribution.name }}
       annotations:
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/distribution-system-yaml.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "distribution.serviceAccountName" . }}
@@ -57,7 +58,11 @@ spec:
           sleep 30;
           echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc;
+          {{- if .Values.systemYaml.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
           echo "Remove {{ .Values.distribution.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.distribution.persistence.mountPath }}/lost+found;
         {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
@@ -88,9 +93,16 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+      {{- if or .Values.systemYaml.existingSecret .Values.distribution.systemYaml }}
         - name: systemyaml
+          {{- if .Values.systemYaml.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
+          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- else if .Values.distribution.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
+          {{- end }}
+      {{- end }}
       {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
@@ -445,9 +457,11 @@ spec:
           sizeLimit: {{ .Values.distribution.persistence.size }}
       - name: redis-data
         emptyDir: {}
+      {{- if or .Values.systemYaml.existingSecret .Values.distribution.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ template "distribution.fullname" . }}-systemyaml
+          secretName: {{ default (printf "%s-%s" (include "distribution.fullname" .) "systemyaml") .Values.systemYaml.existingSecret }}
+      {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
