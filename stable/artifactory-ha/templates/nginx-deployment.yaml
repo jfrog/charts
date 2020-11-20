@@ -182,11 +182,13 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
+      {{- if .Values.nginx.https.enabled }}
       - name: ssl-certificates
         secret:
       {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}
       {{- else }}
           secretName: {{ template "artifactory-ha.fullname" . }}-nginx-certificate
+      {{- end }}
       {{- end }}
 {{- end }}
