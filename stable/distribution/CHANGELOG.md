@@ -1,6 +1,13 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.4] - Nov 16, 2020
+* Update Distribution to version `2.5.2` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.2)
+
+## [7.1.3] - Oct 29, 2020
+* Pass system.yaml via external secret for advanced usecases
+* Bugfix - stateful set not picking up changes to database secrets
+
 ## [7.1.2] - Oct 23, 2020
 * Update router version to `1.4.4`
 
