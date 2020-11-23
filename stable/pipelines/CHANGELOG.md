@@ -1,6 +1,14 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.1.1] Nov 20, 2020
+* Pipelines v1.8.12
+
+## [2.1.0] Nov 3, 2020
+* Update bitnami rabbitmq chart to 7.7.1
+* Readme update for using external database
+* Fixed incorrect values in values-ingress-external-secret.yaml
+
 ## [2.0.4] October 26, 2020
 * Readme update for upgrading rabbitmq
 
