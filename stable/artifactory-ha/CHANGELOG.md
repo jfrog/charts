@@ -1,8 +1,21 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.4.6] - Nov 14, 2020
+# [4.5.1] - Nov 23, 2020
+* Updated Artifactory version to 7.11.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)
+* Updated port namings on services and pods to allow for istio protocol discovery
+* Change semverCompare checks to support hosted Kubernetes
+* Add flag to disable creation of ServiceMonitor when enabling prometheus metrics
 * Prevent the PostHook command to be executed if the user did not specify a command in the values file
+
+## [4.5.0] - Nov 17, 2020
+* Updated Artifactory version to 7.11.1
+* Update alpine tag version to `3.12.1`
+
+## [4.4.6] - Nov 10, 2020
+* Pass system.yaml via external secret for advanced usecases
+* Added support for custom ingress
+* Bugfix - stateful set not picking up changes to database secrets
 
 ## [4.4.5] - Nov 9, 2020
 * Updated Artifactory version to 7.10.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.10.6)
