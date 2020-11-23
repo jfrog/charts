@@ -175,9 +175,9 @@ spec:
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
         {{- if .Values.access.accessConfig }}
-          echo "Copy access.config.latest.yml to {{ .Values.artifactory.persistence.mountPath }}/etc";
+          echo "Copy access.config.patch.yml to {{ .Values.artifactory.persistence.mountPath }}/etc/access";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
-          cp -fv /tmp/etc/access.config.import.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.import.yml;
+          cp -fv /tmp/etc/access.config.patch.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.patch.yml;
         {{- end }}
         {{- if .Values.access.resetAccessCAKeys }}
           echo "Resetting Access CA Keys";
@@ -230,8 +230,8 @@ spec:
       {{- end }}
         {{- if .Values.access.accessConfig }}
         - name: access-config
-          mountPath: "/tmp/etc/access.config.import.yml"
-          subPath: access.config.import.yml
+          mountPath: "/tmp/etc/access.config.patch.yml"
+          subPath: access.config.patch.yml
         {{- end }}
         {{- if .Values.access.customCertificatesSecretName }}
         - name: access-certs
