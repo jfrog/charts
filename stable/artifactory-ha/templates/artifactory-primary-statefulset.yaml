@@ -431,7 +431,7 @@ spec:
               - '/bin/bash'
               - '-c'
               - >
-                echo "Running primary specific custom postStartCommand command";
+                echo "Running custom postStartCommand command";
                 {{ tpl . $ }};
         {{- end }}
         env:

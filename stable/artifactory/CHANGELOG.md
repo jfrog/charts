@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.4.6] - Nov 14, 2020
+* Prevent the PostHook command to be executed if the user did not specify a command in the values file
+
 ## [11.4.5] - Nov 9, 2020
 * Updated Artifactory version to 7.10.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.10.6)
 

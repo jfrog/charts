@@ -335,8 +335,7 @@ spec:
               - '/bin/bash'
               - '-c'
               - >
-                echo;
-
+                echo "Running custom postStartCommand command";
                 {{ tpl . $ }}
         {{- end }}
         env:
