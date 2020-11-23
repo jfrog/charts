@@ -6,6 +6,7 @@ All changes to this chart will be documented in this file.
 * Updated port namings on services and pods to allow for istio protocol discovery
 * Change semverCompare checks to support hosted Kubernetes
 * Add flag to disable creation of ServiceMonitor when enabling prometheus metrics
+* Prevent the PostHook command to be executed if the user did not specify a command in the values file
 
 ## [4.5.0] - Nov 17, 2020
 * Updated Artifactory version to 7.11.1
