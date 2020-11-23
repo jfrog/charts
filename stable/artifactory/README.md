@@ -1132,7 +1132,7 @@ This will start sending your Artifactory logs to the log aggregator of your choi
 
 ### Prometheus Metrics
 
-If you want to enable Prometheus metrics you can use the `metrics` configuration options.  Enabling this option requires that the Promtheus Operator already be deployed and the associated CRDs created.
+If you want to enable Prometheus metrics you can use the `metrics` configuration options. By default this option requires that the Promtheus Operator already be deployed and the associated CRDs created.
 
 The simplest way is to install Artifactory with the following command:
 
@@ -1141,6 +1141,12 @@ helm upgrade --install artifactory --namespace artifactory --set metrics.enabled
 ```
 
 This will create a new service exposing the Prometheus metrics as well as a ServiceMonitor object for the Prometheus Operator to start scraping.
+
+The `ServiceMonitor` creation can be disabled by setting `metrics.serviceMonitor.enabled` to `false` for environments that are not using the Prometheus Operator.
+
+```bash
+helm upgrade --install artifactory --namespace artifactory --set metrics.enabled=true --set metrics.serviceMonitor.enabled=false center/jfrog/artifactory
+```
 
 NOTE: Enabling this does NOT create a container which actually parses the log files for metrics.  See the Fluentd section below.
 
