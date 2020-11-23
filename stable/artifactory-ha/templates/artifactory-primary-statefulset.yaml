@@ -38,6 +38,7 @@ spec:
 {{ toYaml . | indent 8 }}
         {{- end }}
       annotations:
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/artifactory-database-secrets.yaml") . | sha256sum }}
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
       {{- if .Values.access.accessConfig }}
@@ -166,13 +167,17 @@ spec:
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
+          {{- if .Values.systemYaml.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
         {{- if .Values.access.accessConfig }}
-          echo "Copy access.config.latest.yml to {{ .Values.artifactory.persistence.mountPath }}/etc";
+          echo "Copy access.config.patch.yml to {{ .Values.artifactory.persistence.mountPath }}/etc/access";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
-          cp -fv /tmp/etc/access.config.import.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.import.yml;
+          cp -fv /tmp/etc/access.config.patch.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.patch.yml;
         {{- end }}
         {{- if .Values.access.resetAccessCAKeys }}
           echo "Resetting Access CA Keys";
@@ -213,13 +218,20 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}  
         - name: systemyaml
+          {{- if .Values.systemYaml.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
+          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- else if .Values.artifactory.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
+          {{- end }}
+      {{- end }}
         {{- if .Values.access.accessConfig }}
         - name: access-config
-          mountPath: "/tmp/etc/access.config.import.yml"
-          subPath: access.config.import.yml
+          mountPath: "/tmp/etc/access.config.patch.yml"
+          subPath: access.config.patch.yml
         {{- end }}
         {{- if .Values.access.customCertificatesSecretName }}
         - name: access-certs
@@ -423,6 +435,7 @@ spec:
           {{ tpl . $ }};
         {{- end }}
           exec /entrypoint-artifactory.sh
+        {{- with .Values.artifactory.postStartCommand }}
         lifecycle:
           postStart:
             exec:
@@ -430,10 +443,9 @@ spec:
               - '/bin/bash'
               - '-c'
               - >
-                echo;
-              {{- with .Values.artifactory.postStartCommand }}
-                {{ tpl . $ }}
-              {{- end }}
+                echo "Running custom postStartCommand command";
+                {{ tpl . $ }};
+        {{- end }}
         env:
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
@@ -487,12 +499,16 @@ spec:
 {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
+          name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
+          name: http-internal
         {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.primary.javaOpts.jmx.port }}
+          name: tcp-jmx
         {{- end }}
         {{- if .Values.artifactory.ssh.enabled }}
         - containerPort: {{ .Values.artifactory.ssh.internalPort }}
+          name: tcp-ssh
         {{- end }}
         volumeMounts:
         {{- if .Values.artifactory.customPersistentVolumeClaim }}
@@ -785,9 +801,11 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
       {{- end }}
+      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ template "artifactory-ha.primary.name" . }}-system-yaml
+          secretName: {{ default (printf "%s-%s" (include "artifactory-ha.primary.name" .) "system-yaml") .Values.systemYaml.existingSecret }}
+      {{- end }}
       {{- if .Values.access.accessConfig }}
       - name: access-config
         secret:
