@@ -83,6 +83,10 @@ artifactory:
     enabled: true
     timeoutSeconds: 3600
 ```
+* Note: If you are upgrading from 8.x to 11.x and above chart versions, please delete the existing statefulset of postgresql before upgrading the chart due to breaking changes in postgresql subchart.
+```bash
+kubectl delete statefulsets <OLD_RELEASE_NAME>-postgresql
+```
 
 ### Artifactory memory and CPU resources
 The Artifactory Helm chart comes with support for configured resource requests and limits to Artifactory, Nginx and PostgreSQL. By default, these settings are commented out.
