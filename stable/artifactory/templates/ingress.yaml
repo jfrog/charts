@@ -100,4 +100,8 @@ spec:
 {{ toYaml .Values.artifactory.replicator.ingress.tls | indent 4 }}
   {{- end -}}
 {{- end -}}
+{{- if .Values.customIngress }}
+---
+{{ .Values.customIngress | toYaml | trimSuffix "\n" }}
+{{- end -}}
 {{- end -}}
