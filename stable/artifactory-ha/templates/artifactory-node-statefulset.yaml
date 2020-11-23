@@ -403,12 +403,16 @@ spec:
 {{- end }}
         ports:
         - containerPort: {{ .Values.artifactory.internalPort }}
+          name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
+          name: http-internal
         {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.node.javaOpts.jmx.port }}
+          name: tcp-jmx
         {{- end }}
         {{- if .Values.artifactory.ssh.enabled }}
         - containerPort: {{ .Values.artifactory.ssh.internalPort }}
+          name: tcp-ssh
         {{- end }}
         volumeMounts:
        {{- if .Values.artifactory.customPersistentVolumeClaim }}
