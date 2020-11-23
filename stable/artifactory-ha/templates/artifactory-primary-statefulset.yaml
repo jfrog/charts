@@ -38,6 +38,7 @@ spec:
 {{ toYaml . | indent 8 }}
         {{- end }}
       annotations:
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/artifactory-database-secrets.yaml") . | sha256sum }}
         checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
       {{- if .Values.access.accessConfig }}
@@ -166,7 +167,11 @@ spec:
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
+          {{- if .Values.systemYaml.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
         {{- if .Values.access.accessConfig }}
@@ -213,9 +218,16 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}  
         - name: systemyaml
+          {{- if .Values.systemYaml.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
+          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- else if .Values.artifactory.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
+          {{- end }}
+      {{- end }}
         {{- if .Values.access.accessConfig }}
         - name: access-config
           mountPath: "/tmp/etc/access.config.import.yml"
@@ -789,9 +801,11 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
       {{- end }}
+      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ template "artifactory-ha.primary.name" . }}-system-yaml
+          secretName: {{ default (printf "%s-%s" (include "artifactory-ha.primary.name" .) "system-yaml") .Values.systemYaml.existingSecret }}
+      {{- end }}
       {{- if .Values.access.accessConfig }}
       - name: access-config
         secret:
