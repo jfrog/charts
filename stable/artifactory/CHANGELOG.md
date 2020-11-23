@@ -7,6 +7,7 @@ All changes to this chart will be documented in this file.
 * Change semverCompare checks to support hosted Kubernetes
 * Add flag to disable creation of ServiceMonitor when enabling prometheus metrics
 * Prevent the PostHook command to be executed if the user did not specify a command in the values file
+* Fix issue with tls file generation when nginx.https.enabled is false
 
 ## [11.5.0] - Nov 17, 2020
 * Updated Artifactory version to 7.11.1
