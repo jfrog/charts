@@ -1,6 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [6.4.4] - Nov 20, 2020
+* Support external rabbitmq credentials to come from existing secret
+
+## [6.4.3] - Nov 16, 2020
+* Support actualUsername for Azure
+* Bugfix - Issue with custom image tags
+
 ## [6.4.2] - Nov 16, 2020
 * Update Xray to version 3.11.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.11)
 
