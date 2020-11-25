@@ -330,7 +330,7 @@ Return the proper xray chart image names
 {{- $indexReference := index . 1 }}
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
-{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.common.xrayVersion (index $dot.Values $indexReference "image" "tag"))  | toString -}}
+{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.common.xrayVersion) (index $dot.Values $indexReference "image" "tag")  | toString -}}
 {{/*
 Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
 but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
