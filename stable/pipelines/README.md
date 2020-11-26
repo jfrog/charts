@@ -194,6 +194,30 @@ rabbitmq:
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
 ```
 
+### Using external Postgresql
+
+If you want to use external postgresql, set `postgresql.enabled=false` and create `values-external-postgresql.yaml` with below yaml configuration
+
+```yaml
+global:
+  # Internal Postgres must be set to false
+  postgresql:
+    user: db_username
+    password: db_user_password
+    host: db_host
+    port: 5432
+    database: db_name
+    ssl: false / true
+postgresql:
+  enabled: false
+```
+Make sure User `db_username` and database `db_name` exists before running helm install / upgrade
+
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-postgresql.yaml
+```
+
+
 ### Using Vault in Production environments
 To use vault securely you must set the disablemlock setting in the values.yaml to false as per the Hashicorp Vault recommendations here:
 
