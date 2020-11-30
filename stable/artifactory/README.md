@@ -1,4 +1,4 @@
-# JFrog Artifactory Helm Chart
+# JFrog Artifactory Helm Chart [test commit]
 
 **Heads up: Our Helm Chart docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
 
