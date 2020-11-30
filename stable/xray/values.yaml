@@ -22,7 +22,7 @@ global: {}
   # customSidecarContainers: |
 
 
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: docker.bintray.io/alpine:3.12.1
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -734,7 +734,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 1.4.4
+    tag: 7.11.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
