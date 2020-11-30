@@ -23,7 +23,7 @@ spec:
     targetPort: {{ .Values.server.internalPort }}
   - port: {{ .Values.router.externalPort }}
     protocol: TCP
-    name: router
+    name: http-router
     targetPort: {{ .Values.router.internalPort }}
   selector:
     app: {{ template "xray.name" . }}
