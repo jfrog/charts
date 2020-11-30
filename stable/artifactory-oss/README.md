@@ -28,7 +28,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-oss`:
 ```bash
-helm upgrade --install artifactory-oss --namespace artifactory-oss center/jfrog/artifactory-oss --version 1.5.0
+helm upgrade --install artifactory-oss --namespace artifactory-oss center/jfrog/artifactory-oss --version 1.6.1
 ```
 
 ### Accessing Artifactory OSS
