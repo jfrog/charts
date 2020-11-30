@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file
 * Update Xray to version `3.12.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.12)
 * Update router version to `7.11.2`
 * Update alpine tag version to `3.12.1`
+* Updated port namings on services and pods to allow for istio protocol discovery
 
 ## [6.4.4] - Nov 20, 2020
 * Support external rabbitmq credentials to come from existing secret
