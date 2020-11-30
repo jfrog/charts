@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file
 * Update Xray to version `3.12.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.12)
 * Update router version to `7.11.2`
 * Update alpine tag version to `3.12.1`
+* Updated port namings on services and pods to allow for istio protocol discovery
 
 ## [6.4.4] - Nov 20, 2020
 * Support external rabbitmq credentials to come from existing secret
@@ -27,9 +28,6 @@ All changes to this chart will be documented in this file
 ## [6.3.0] - Nov 3, 2020
 * Change stable repository location to https://charts.helm.sh/stable
 * Update bitnami rabbitmq chart to 7.7.1
-
-## [6.3.0] - Oct 30, 2020
-* Updated port namings on services and pods to allow for istio protocol discovery
 
 ## [6.2.1] - Oct 23, 2020
 * Update router version to `1.4.4`
