@@ -1,3 +1,4 @@
+{{- if not .Values.systemYaml.existingSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -12,3 +13,4 @@ type: Opaque
 stringData:
   system.yaml: |
 {{ tpl .Values.distribution.systemYaml . | indent 4 }}
+{{- end }}
