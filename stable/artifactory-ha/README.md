@@ -55,7 +55,7 @@ echo ${MASTER_KEY}
 To install the chart with the release name `artifactory-ha`:
 
 ```bash
-helm upgrade --install artifactory-ha --set artifactory.masterKey=${MASTER_KEY} --namespace artifactory-ha center/jfrog/artifactory-ha
+helm install artifactory-ha --set artifactory.masterKey=${MASTER_KEY} --namespace artifactory-ha center/jfrog/artifactory-ha
 ```
 
 ### System Configuration

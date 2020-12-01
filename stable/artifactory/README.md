@@ -29,7 +29,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory`:
 ```bash
-helm upgrade --install artifactory --namespace artifactory center/jfrog/artifactory
+helm install artifactory --namespace artifactory center/jfrog/artifactory
 ```
 
 ### System Configuration
