@@ -30,7 +30,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm upgrade --install artifactory-cpp-ce --set postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
 ```
 
 ### Accessing Artifactory CE for C++
