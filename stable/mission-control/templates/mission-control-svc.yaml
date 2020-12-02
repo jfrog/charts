@@ -22,13 +22,14 @@ spec:
     port: {{ .Values.missionControl.externalPort }}
     targetPort: {{ .Values.missionControl.internalPort }}
     protocol: TCP
+  - name: router
+    port: {{ .Values.router.externalPort }}
+    targetPort: {{ .Values.router.internalPort }}
+    protocol: TCP    
 {{- if .Values.elasticsearch.enabled }}
   - name: estransport
     port: {{ .Values.elasticsearch.transportPort }}
-    targetPort: estransport
-  - name: eshttp
-    port: {{ .Values.elasticsearch.httpPort }}
-    targetPort: eshttp
+    targetPort: {{ .Values.elasticsearch.transportPort }}
 {{- end }}
   publishNotReadyAddresses: true
   selector:
