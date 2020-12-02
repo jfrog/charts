@@ -3,21 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "mission-control.name" -}}
-{{- default .Chart.Name .Values.missionControl.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-The insight-scheduler name
-*/}}
-{{- define "insight-scheduler.name" -}}
-{{- default .Chart.Name .Values.insightScheduler.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-The insight-server name
-*/}}
-{{- define "insight-server.name" -}}
-{{- default .Chart.Name .Values.insightServer.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -26,10 +12,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "mission-control.fullname" -}}
-{{- if .Values.missionControl.fullnameOverride -}}
-{{- .Values.missionControl.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.missionControl.name -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -48,42 +34,6 @@ This will create one entry per replica.
   {{- range $i, $e := untilStep 0 $replicas 1 -}}
 {{ $releaseName }}-{{ $i }},
   {{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "insight-scheduler.fullname" -}}
-{{- if .Values.insightScheduler.fullnameOverride -}}
-{{- .Values.insightScheduler.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.insightScheduler.name -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "insight-server.fullname" -}}
-{{- if .Values.insightServer.fullnameOverride -}}
-{{- .Values.insightServer.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.insightServer.name -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
 {{- end -}}
 
 {{/*
@@ -264,5 +214,16 @@ Return the proper mission-control chart image names
     {{- end -}}
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve elastic search url
+*/}}
+{{- define "elasticsearch.url" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "https://localhost:%d" (int .Values.router.internalPort) -}}
+{{- else -}}
+{{- printf "http://localhost:%d" (int .Values.router.internalPort) -}}
 {{- end -}}
 {{- end -}}
