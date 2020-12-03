@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.0.11] - Dec 3, 2020
+* Update dependency distribution chart version to 7.1.5 (Distribution 2.5.2)
+
 ## [0.0.10] - Dec 3, 2020
 * Update dependency mission-control chart version to 5.3.3 (MissionControl 4.6.1)
 * Update dependency pipelines chart version to 2.3.6 (Pipelines 1.9.8)
