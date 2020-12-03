@@ -212,7 +212,7 @@ pipelines:
       failureThreshold: 10
       successThreshold: 1
       path: /
-      port: api
+      port: http-api
 
     readinessProbe:
       enabled: true
@@ -222,7 +222,7 @@ pipelines:
       failureThreshold: 10
       successThreshold: 1
       path: /
-      port: api
+      port: http-api
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -299,7 +299,7 @@ pipelines:
       periodSeconds: 10
       successThreshold: 1
       path: /
-      port: www
+      port: http-www
 
 
     readinessProbe:
@@ -310,7 +310,7 @@ pipelines:
       periodSeconds: 10
       successThreshold: 1
       path: /
-      port: www
+      port: http-www
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:

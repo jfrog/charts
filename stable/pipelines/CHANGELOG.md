@@ -3,6 +3,7 @@ All changes to this chart to be documented in this file
 
 ## [2.3.5] - Dec 3, 2020
 * Change semverCompare checks to support hosted Kubernetes
+* Updated port namings on services and pods to allow for istio protocol discovery
 
 ## [2.3.4] Dec 1, 2020
 * Pipelines v1.9.8

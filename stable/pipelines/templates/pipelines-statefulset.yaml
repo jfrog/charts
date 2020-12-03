@@ -258,7 +258,7 @@ spec:
             - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
               value: "true"
           ports:
-            - name: router
+            - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
           securityContext:
             allowPrivilegeEscalation: false
@@ -280,7 +280,7 @@ spec:
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
           ports:
-            - name: api
+            - name: http-api
               containerPort: 30000
 
           {{- if .Values.pipelines.api.livenessProbe.enabled }}
@@ -325,7 +325,7 @@ spec:
 {{- end }}
 {{- end }}
           ports:
-            - name: www
+            - name: http-www
               containerPort: 30001
           {{- if .Values.pipelines.www.livenessProbe.enabled }}
           livenessProbe:
