@@ -509,6 +509,8 @@ pipelines:
   ## Cluster Role Based Access
   ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
   rbac:
+    ## Sets ClusterRole if enabled, otherwise Role
+    clusterRole: false
     role:
       ## Rules to create. It follows the role specification
       rules:
@@ -520,6 +522,7 @@ pipelines:
         - pods
         - deployments/scale
         - secrets
+        - configmaps
         verbs: ["*"]
 
   # Add any list of configmaps to Pipelines

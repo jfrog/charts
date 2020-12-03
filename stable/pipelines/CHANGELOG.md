@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.3.6] - Dec 3, 2020
+* Update Pipelines services RBAC rules 
+* Make Pipelines services RBAC kind Role as default, with an option to switch to ClusterRole, it disables by default access to Cluster wide access
+
 ## [2.3.5] - Dec 3, 2020
 * Change semverCompare checks to support hosted Kubernetes
 * Updated port namings on services and pods to allow for istio protocol discovery
@@ -28,7 +32,7 @@ All changes to this chart to be documented in this file
 * Added support to provide join-key and master-key from secret
 
 ## [2.2.0] Nov 10, 2020
-* Add steps for using system.yaml via external secret for advanced usecases
+* Add steps for using system.yaml via external secret for advanced use cases
 * **IMPORTANT**
 * Changed .Values.existingSecret to .Values.systemYaml.existingSecret and .Values.systemYaml.dataKey
 * Add configurable support for vault-init container resources
