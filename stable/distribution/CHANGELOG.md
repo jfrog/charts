@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.5] - Dec 3, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
 ## [7.1.4] - Nov 16, 2020
 * Update Distribution to version `2.5.2` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.2)
 
