@@ -97,15 +97,26 @@ spec:
           - '-c'
           - >
             echo "Copy system.yaml to {{ .Values.pipelines.mountPath }}";
+            {{- if .Values.systemYaml.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- else }}
             cp -fv /tmp/etc/system.yaml {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- end }}
             echo "Creating Vault Table...";
             ./pipelines-k8s initVault;
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
+        {{- if or .Values.systemYaml.existingSecret .Values.pipelines.systemYaml }}
           - name: systemyaml
+            {{- if .Values.systemYaml.existingSecret }}
+            mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
+            subPath: {{ .Values.systemYaml.dataKey }}
+            {{- else if .Values.pipelines.systemYaml }}
             mountPath: "/tmp/etc/system.yaml"
             subPath: system.yaml
+            {{- end }}
+        {{- end }}
           {{- if or .Values.vault.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "pipelines.vault.customInitContainers" .)  . | indent 8 }}
           {{- end }}
@@ -121,12 +132,7 @@ spec:
             - name: VAULT_ADDRESS
               value: "http://localhost:30100"
           resources:
-            requests:
-              memory: 10Mi
-              cpu: 10m
-            limits:
-              memory: 50Mi
-              cpu: 50m          
+            {{- toYaml .Values.vault.init.resources | nindent 12 }}
         - name: vault
           image: {{ include "vault.getImageInfoByValue" (list . "vault" ) }}
           imagePullPolicy: {{ .Values.vault.image.pullPolicy }}
@@ -146,7 +152,7 @@ spec:
             - name: http
               containerPort: 30100
               protocol: "TCP"
-            - name: server
+            - name: http-server
               containerPort: 30101
               protocol: "TCP"
           readinessProbe:
@@ -188,9 +194,11 @@ spec:
           emptyDir: {}
         - name: jfrog-pipelines-folder
           emptyDir: {}
+        {{- if or .Values.systemYaml.existingSecret .Values.pipelines.systemYaml }}
         - name: systemyaml
           secret:
-            secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
+            secretName: {{ default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") .Values.systemYaml.existingSecret }}
+        {{- end }}
         {{- if .Values.vault.configMaps }}
         - name: vault-configmaps
           configMap:
