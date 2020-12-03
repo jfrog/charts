@@ -1,8 +1,39 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
-## [2.1.1] Nov 18, 2020
+## [2.3.5] - Dec 3, 2020
+* Change semverCompare checks to support hosted Kubernetes
 * Updated port namings on services and pods to allow for istio protocol discovery
+
+## [2.3.4] Dec 1, 2020
+* Pipelines v1.9.8
+
+## [2.3.3] Nov 18, 2020
+* Pipelines v1.9.2
+* Fixed external Vault support
+
+## [2.3.2] Nov 17, 2020
+* Add support for `pipelines.extraEnvironmentVariables` to pass more environment variables to Pipelines services
+* Bugfix - Issue with custom image tags
+
+## [2.3.1] November 16, 2020
+* Update console output with the correct url for accessing pipelines
+* Pipelines v1.9.1
+
+## [2.3.0] November 11, 2020
+* Adds template microservice
+
+## [2.2.1] Nov 10, 2020
+* Added support to provide join-key and master-key from secret
+
+## [2.2.0] Nov 10, 2020
+* Add steps for using system.yaml via external secret for advanced usecases
+* **IMPORTANT**
+* Changed .Values.existingSecret to .Values.systemYaml.existingSecret and .Values.systemYaml.dataKey
+* Add configurable support for vault-init container resources
+
+## [2.1.1] Nov 20, 2020
+* Pipelines v1.8.12
 
 ## [2.1.0] Nov 3, 2020
 * Update bitnami rabbitmq chart to 7.7.1
@@ -25,7 +56,7 @@ All changes to this chart to be documented in this file
 * **Breaking change:** Updated `imagePullSecrets` value from string to list
 * Added support for global values
 * Updated maintainers in chart.yaml
-* Update piplines version to `1.8.7`
+* Update Pipelines version to `1.8.7`
 * Update postgresql tag version to `12.3.0-debian-10-r71`
 * Update redis sub chart version to `10.9.0`
 * Update postgresql sub chart version to `9.3.4` - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
