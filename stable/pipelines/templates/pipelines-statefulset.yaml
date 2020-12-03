@@ -49,13 +49,24 @@ spec:
           - '-c'
           - >
             echo "Copy system.yaml to {{ .Values.pipelines.mountPath }}";
+            {{- if .Values.systemYaml.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- else }}
             cp -fv /tmp/etc/system.yaml {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- end }}
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
+        {{- if or .Values.systemYaml.existingSecret .Values.pipelines.systemYaml }}
           - name: systemyaml
+            {{- if .Values.systemYaml.existingSecret }}
+            mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
+            subPath: {{ .Values.systemYaml.dataKey }}
+            {{- else if .Values.pipelines.systemYaml }}
             mountPath: "/tmp/etc/system.yaml"
             subPath: system.yaml
+            {{- end }}
+        {{- end }}
         - name: wait-for-vault
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -63,6 +74,14 @@ spec:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
+          {{- if not .Values.vault.enabled }}
+          env:
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.vault.existingSecret | default (printf "%s" "vault-token-secret") }}
+                  key: token
+          {{- end }}
           command:
           - 'sh'
           - '-c'
@@ -74,18 +93,18 @@ spec:
             done;
             {{- else }}
             is_vault_up=0;
-            initilized_check_endpoint="/v1/sys/init";
+            initialized_check_endpoint="/v1/sys/init";
+            url="{{ .Values.global.vault.url }}$initialized_check_endpoint";
             until [[ "$is_vault_up" == "1" ]] && echo Vault ok; do
-              url="{{ .Values.global.vault.url }}$initilized_check_endpoint";
               wget_cmd="wget \
                 -T 2 \
                 --header=\"Content-Type: application/json; charset=utf-8\" \
-                --header=\"X-Vault-Token: {{ .Values.global.vault.token }}\" \
+                --header=\"X-Vault-Token: ${VAULT_TOKEN}\" \
                 $url \
                 --quiet \
                 --server-response 2>&1| grep -c 'HTTP/1.1 200 OK'";
                 is_vault_up=$(eval $wget_cmd);
-              echo "Reponse = $is_vault_up"
+              echo "Response = $is_vault_up"
               sleep 2;
             done;
             {{- end }}
@@ -114,6 +133,20 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: "metadata.name"
+            {{- if or .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
+            - name: PIPELINES_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ include "pipelines.masterKeySecretName" . }}"
+                  key: master-key
+            {{- end }}
+            {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+            - name: PIPELINES_JOIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                  key: join-key
+            {{- end }}
           command:
           - 'sh'
           - '-c'
@@ -134,10 +167,18 @@ spec:
             echo "Creating Vault Table...";
             ./pipelines-k8s initVault;
           {{- end }}
+          {{- if or .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
+            echo "Copy masterKey to {{ .Values.pipelines.mountPath }}/security";
+            mkdir -p {{ .Values.pipelines.mountPath }}/security;
+            echo -n ${PIPELINES_MASTER_KEY} > {{ .Values.pipelines.mountPath }}/security/master.key;
+          {{- end }}
+          {{- if or .Values.pipelines.joinKeySecretName .Values.global.masterKeySecretName }}
+            echo "Copy joinKey to {{ .Values.pipelines.mountPath }}/security";
+            mkdir -p {{ .Values.pipelines.mountPath }}/security;
+            echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
+          {{- end }}
             sleep 20;
             ./pipelines-k8s;
-            echo "Setting router as user for system.yaml";
-            chown 1117:1117 /opt/jfrog/pipelines/var/etc/system.yaml;
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
@@ -206,14 +247,22 @@ spec:
                 fieldRef:
                   fieldPath: "status.podIP"
             - name: JF_SHARED_SECURITY_JOINKEY
+              {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                  key: join-key
+              {{- else }}
               value: {{ include "pipelines.joinKey" . }}
+              {{- end }}
             - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
               value: "true"
           ports:
-            - name: router
+            - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
           securityContext:
             allowPrivilegeEscalation: false
+            runAsUser: 0
           resources:
             {{ toYaml .Values.pipelines.router.resources | nindent 12 }}
           volumeMounts:
@@ -227,8 +276,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: "metadata.name"
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
           ports:
-            - name: api
+            - name: http-api
               containerPort: 30000
 
           {{- if .Values.pipelines.api.livenessProbe.enabled }}
@@ -266,8 +318,14 @@ spec:
         - name: www
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
           imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}          
+          env:
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
           ports:
-            - name: www
+            - name: http-www
               containerPort: 30001
           {{- if .Values.pipelines.www.livenessProbe.enabled }}
           livenessProbe:
@@ -308,6 +366,9 @@ spec:
           env:
             - name: COMPONENT
               value: pipelinesync
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
           volumeMounts:
@@ -322,6 +383,9 @@ spec:
           env:
             - name: COMPONENT
               value: runtrigger
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -336,6 +400,9 @@ spec:
           env:
             - name: COMPONENT
               value: steptrigger
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -350,6 +417,9 @@ spec:
           env:
             - name: COMPONENT
               value: cron
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.cron.resources | nindent 12 }}
           volumeMounts:
@@ -364,6 +434,9 @@ spec:
           env:
             - name: COMPONENT
               value: nexec
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
           volumeMounts:
@@ -378,6 +451,9 @@ spec:
           env:
             - name: COMPONENT
               value: hookhandler
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
           volumeMounts:
@@ -392,6 +468,9 @@ spec:
           env:
             - name: COMPONENT
               value: marshaller
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
           volumeMounts:
@@ -406,6 +485,9 @@ spec:
           env:
             - name: COMPONENT
               value: logup
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
           volumeMounts:
@@ -420,6 +502,9 @@ spec:
           env:
             - name: COMPONENT
               value: extensionsync
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
           resources:
             {{- toYaml .Values.pipelines.extensionSync.resources | nindent 12 }}
           volumeMounts:
@@ -428,6 +513,23 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
           {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
+        - name: templatesync
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "templateSync" ) }}
+          imagePullPolicy: {{ .Values.pipelines.templateSync.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/templateSync
+          env:
+            - name: COMPONENT
+              value: templatesync
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}              
+          resources:
+            {{- toYaml .Values.pipelines.templateSync.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
 {{ tpl (include "pipelines.customSidecarContainers" .) . | nindent 8 }}
           {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
@@ -450,9 +552,11 @@ spec:
         emptyDir: {}
       - name: jfrog-pipelines-logs
         emptyDir: {}
+      {{- if or .Values.systemYaml.existingSecret .Values.pipelines.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ .Values.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") }}
+          secretName: {{ default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") .Values.systemYaml.existingSecret }}
+      {{- end }}
       {{- if .Values.pipelines.configMaps }}
       - name: pipelines-configmaps
         configMap:

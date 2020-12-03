@@ -13,7 +13,7 @@ This chart will do the following:
 - Deploy PostgreSQL (optionally with an external PostgreSQL instance)
 - Deploy RabbitMQ (optionally as an HA cluster)
 - Deploy Redis (optionally as an HA cluster)
-- Deploy Vault (optionally as an HA cluster)
+- Deploy Vault (optionally with an external Vault instance)
 - Deploy JFrog Pipelines
 
 ## Requirements
@@ -21,7 +21,7 @@ This chart will do the following:
 - A running Kubernetes cluster
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
-- A running Artifactory 7.7.x with Enterprise+ License
+- A running Artifactory 7.11.x with Enterprise+ License
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
@@ -55,11 +55,17 @@ pipelines:
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  ## Note: This feature is available on pipelines app version 1.9.x and later
+  # joinKeySecretName:
 
   ## Pipelines requires a unique master key
   ## You can generate one with the command: "openssl rand -hex 32"
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  ## Note: This feature is available on pipelines app version 1.9.x and later
+  # masterKeySecretName:
 ```
 
 ### Install Pipelines Chart with Ingress
@@ -217,6 +223,53 @@ Make sure User `db_username` and database `db_name` exists before running helm i
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-postgresql.yaml
 ```
 
+### Using external Vault
+
+If you want to use external Vault, set `vault.enabled=false` and create `values-external-vault.yaml` with below yaml configuration
+
+```yaml
+vault:
+  enabled: false
+
+global:
+  vault:
+    ## Vault url examples
+    # external one: https://vault.example.com
+    # internal one running in the same Kubernetes cluster: http://vault-active:8200
+    url: vault_url
+    token: vault_token
+    ## Set Vault token using existing secret
+    # existingSecret: vault-secret
+```
+
+If you store external Vault token in a pre-existing Kubernetes Secret, you can specify it via `existingSecret`.
+
+To create a secret containing the Vault token:
+```
+kubectl create secret generic vault-secret --from-literal=token=${VAULT_TOKEN}
+```
+
+```
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-vault.yaml
+```
+
+### Using an external systemYaml with existingSecret
+
+This is for advanced usecases where users wants to provide their own systemYaml for configuring pipelines. Refer - https://www.jfrog.com/confluence/display/JFROG/Pipelines+System+YAML
+Note: This will override existing systemYaml in values.yaml.
+
+```yaml
+systemYaml:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
+```
+Note: From chart version 2.2.0 and above `.Values.existingSecret` is changed to `.Values.systemYaml.existingSecret` and `.Values.systemYaml.dataKey`.
+
+```bash
+helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-systemyaml.yaml
+```
 
 ### Using Vault in Production environments
 To use vault securely you must set the disablemlock setting in the values.yaml to false as per the Hashicorp Vault recommendations here:

@@ -1,6 +1,30 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.0.10] - Dec 3, 2020
+* Update dependency mission-control chart version to 5.3.3 (MissionControl 4.6.1)
+* Update dependency pipelines chart version to 2.3.6 (Pipelines 1.9.8)
+
+## [0.0.9] - Dec 3, 2020
+* Update dependency artifactory chart version to 11.5.4 (Artifactory 7.11.5)
+* Update dependency artifactory-ha chart version to 4.5.4 (Artifactory 7.11.5)
+* Update dependency xray chart version to 6.5.0 (Xray 3.12.0)
+* Update dependency distribution chart version to 7.1.4 (Distribution 2.5.2)
+* Update dependency mission-control chart version to 5.3.2 (MissionControl 4.6.1)
+* Update dependency pipelines chart version to 2.3.5 (Pipelines 1.9.8)
+
+## [0.0.8] - Nov 23, 2020
+* Update dependency artifactory chart version to 11.5.2 (Artifactory 7.11.2)
+* Update dependency artifactory-ha chart version to 4.5.2 (Artifactory 7.11.2)
+* Update dependency xray chart version to 6.4.2 (Xray 3.11.2)
+* Update dependency distribution chart version to 7.1.4 (Distribution 2.5.2)
+* Update dependency pipelines chart version to 2.1.1 (Pipelines 1.8.12)
+
+## [0.0.7] - Nov 10, 2020
+* Update dependency artifactory chart version to 11.4.5 (Artifactory 7.10.6)
+* Update dependency artifactory-ha chart version to 4.4.5 (Artifactory 7.10.6)
+* Update dependency xray chart version to 6.4.0 (Xray 3.11.1)
+
 ## [0.0.6] - Nov 4, 2020
 * Update dependency xray chart version to 6.3.0
 * Update dependency pipelines chart version to 2.1.0

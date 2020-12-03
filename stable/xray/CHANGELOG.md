@@ -1,5 +1,31 @@
 # JFrog Xray Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
+
+## [6.5.1] - Nov 30, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
+## [6.5.0] - Nov 30, 2020
+* Update Xray to version `3.12.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.12)
+* Update router version to `7.11.2`
+* Update alpine tag version to `3.12.1`
+
+## [6.4.4] - Nov 20, 2020
+* Support external rabbitmq credentials to come from existing secret
+
+## [6.4.3] - Nov 16, 2020
+* Support actualUsername for Azure
+* Bugfix - Issue with custom image tags
+
+## [6.4.2] - Nov 16, 2020
+* Update Xray to version 3.11.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.11)
+
+## [6.4.1] - Nov 10, 2020
+* Pass system.yaml via external secret for advanced usecases
+* Bugfix - stateful set not picking up changes to database secrets
+
+## [6.4.0] - Nov 9, 2020
+* Update Xray to version 3.11.1 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.11)
+* Fix values-small,medium,large yaml files
 
 ## [6.3.0] - Nov 3, 2020
 * Change stable repository location to https://charts.helm.sh/stable
