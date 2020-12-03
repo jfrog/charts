@@ -22,7 +22,7 @@ global: {}
   # customSidecarContainers: |
 
 
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: docker.bintray.io/alpine:3.12.1
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -98,14 +98,19 @@ xray:
       {{- else }}
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
+        {{- if .Values.database.actualUsername }}
+        actualUsername: {{ .Values.database.actualUsername }}
+        {{- end }}
       {{- end }}
       {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
       rabbitMq:
+        erlangCookie:
+          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+      {{- if not .Values.rabbitmq.external.secrets }}
         url: "{{ tpl .Values.rabbitmq.external.url . }}"
         username: "{{ .Values.rabbitmq.external.username }}"
         password: "{{ .Values.rabbitmq.external.password }}"
-        erlangCookie:
-          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+      {{- end }}
       {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
@@ -244,6 +249,8 @@ database:
   url:
   user:
   password:
+  ## When working with Azure managed PG you have to provide the actualUsername. The application will pick actualUsername and will use it in some cases where it is needed
+  actualUsername:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
@@ -339,6 +346,16 @@ rabbitmq:
     password:
     url:
     erlangCookie:
+    secrets: {}
+    #  username:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "username"
+    #  password:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "password"
+    #  url:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "url"
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
@@ -717,7 +734,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 1.4.4
+    tag: 7.11.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

@@ -64,6 +64,10 @@ helm upgrade --install mission-control --set missionControl.joinKeySecretName=my
 ### Special Upgrade Notes
 Mission-control 3.x to 4.x (App Version) upgrade is not currently supported. For manual upgrade, please refer [here](https://github.com/jfrog/charts/blob/master/stable/mission-control/UPGRADE_NOTES.md). If this is an upgrade over an existing Mission Control 4.x, explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
 
+#### Upgrading mission-control to 5.2.x and above chart versions in HA setup (replicaCount > 1)
+From 5.2.x chart version and above, elasticsearch was updated with serach guard plugin. Due to this change, rolling updates would break for elastic search.
+Please set `replicaCount: 1` and do an helm upgrade. (Downtime is required)
+
 ### System Configuration
 Mission Control uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 

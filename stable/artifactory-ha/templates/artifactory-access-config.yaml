@@ -10,6 +10,6 @@ metadata:
     release: {{ .Release.Name }}
 type: Opaque
 stringData:
-  access.config.import.yml: |
+  access.config.patch.yml: |
 {{ tpl (toYaml .Values.access.accessConfig) . | indent 4 }}
 {{- end }}
