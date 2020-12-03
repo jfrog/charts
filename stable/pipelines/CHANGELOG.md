@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.3.6] - Dec 3, 2020
+* Update Pipelines services RBAC rules
+
 ## [2.3.5] - Dec 3, 2020
 * Change semverCompare checks to support hosted Kubernetes
 * Updated port namings on services and pods to allow for istio protocol discovery
