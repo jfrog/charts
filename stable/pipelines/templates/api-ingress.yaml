@@ -1,7 +1,7 @@
 {{- if .Values.pipelines.api.ingress.enabled -}}
 {{- $fullName := include "pipelines.api.name" . -}}
 {{- $ingressPath := .Values.pipelines.api.ingress.path -}}
-{{- if semverCompare ">=v1.14.0" .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1beta1
 {{- else }}
 apiVersion: extensions/v1beta1
@@ -35,6 +35,6 @@ spec:
           - path: {{ $ingressPath }}
             backend:
               serviceName: {{ $fullName }}
-              servicePort: api
+              servicePort: http-api
   {{- end }}
 {{- end }}
