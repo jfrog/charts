@@ -1,6 +1,10 @@
 {{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
+{{- if .Values.pipelines.rbac.clusterRole }}
 kind: ClusterRoleBinding
+{{- else }}
+kind: RoleBinding
+{{- end }}
 metadata:
   name: {{ include "pipelines.fullname" . }}
   labels:

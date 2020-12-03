@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [2.3.6] - Dec 3, 2020
-* Update Pipelines services RBAC rules
+* Update Pipelines services RBAC rules and settings
 
 ## [2.3.5] - Dec 3, 2020
 * Change semverCompare checks to support hosted Kubernetes
@@ -31,7 +31,7 @@ All changes to this chart to be documented in this file
 * Added support to provide join-key and master-key from secret
 
 ## [2.2.0] Nov 10, 2020
-* Add steps for using system.yaml via external secret for advanced usecases
+* Add steps for using system.yaml via external secret for advanced use cases
 * **IMPORTANT**
 * Changed .Values.existingSecret to .Values.systemYaml.existingSecret and .Values.systemYaml.dataKey
 * Add configurable support for vault-init container resources
