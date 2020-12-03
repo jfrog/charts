@@ -22,12 +22,12 @@ spec:
     port: {{ .Values.missionControl.externalPort }}
     targetPort: {{ .Values.missionControl.internalPort }}
     protocol: TCP
-  - name: router
+  - name: http-router
     port: {{ .Values.router.externalPort }}
     targetPort: {{ .Values.router.internalPort }}
     protocol: TCP    
 {{- if .Values.elasticsearch.enabled }}
-  - name: estransport
+  - name: tcp-estransport
     port: {{ .Values.elasticsearch.transportPort }}
     targetPort: {{ .Values.elasticsearch.transportPort }}
 {{- end }}

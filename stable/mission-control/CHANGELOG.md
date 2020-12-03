@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.3.3] - Dec 3, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
 ## [5.3.2] - Nov 30, 2020
 * Update router version to `7.11.5`
 * Added special notes in readme for upgrading to 5.2.x and above chart versions
