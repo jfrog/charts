@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.6] - Dec 4, 2020
+* **Important:** Changed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
 ## [7.1.5] - Dec 3, 2020
 * Updated port namings on services and pods to allow for istio protocol discovery
 

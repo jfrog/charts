@@ -133,8 +133,8 @@ spec:
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
-          {{- if .Values.systemYaml.existingSecret }}
-          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
@@ -184,11 +184,11 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.artifactory.systemYaml }}
         - name: systemyaml
-          {{- if .Values.systemYaml.existingSecret }}
-          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
-          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
           {{- else if .Values.artifactory.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
@@ -673,10 +673,10 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}
-      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.artifactory.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ default (printf "%s-%s" (include "artifactory.fullname" .) "systemyaml") .Values.systemYaml.existingSecret }}
+          secretName: {{ default (printf "%s-%s" (include "artifactory.fullname" .) "systemyaml") .Values.systemYamlOverride.existingSecret }}
       {{- end }}
       {{- if .Values.access.accessConfig }}
       - name: access-config

@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.5.5] - Dec 4, 2020
+* **Important:** Changed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
 ## [11.5.4] - Dec 1, 2020
 * Improve error message returned when attempting helm upgrade command
 

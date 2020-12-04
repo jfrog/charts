@@ -77,7 +77,8 @@ imagePullSecrets:
 ## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section for an example. Have to be set for both vault and pipelines
 ## Note: Order of preference is 1) customInitContainers 2) systemYaml existingSecret 3) default systemYaml in values.yaml
 ## Note: From chart version 2.2.0 and above .Values.existingSecret is changed to .Values.systemYaml.existingSecret and .Values.systemYaml.dataKey
-systemYaml:
+## Note: From chart version 2.3.7 and above `.Values.systemYaml` is changed to `.Values.systemYamlOverride`.
+systemYamlOverride:
 ## You can use a pre-existing secret by specifying existingSecret
   existingSecret:
 ## The dataKey should be the name of the secret data key created.

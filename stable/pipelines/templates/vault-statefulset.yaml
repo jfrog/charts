@@ -97,8 +97,8 @@ spec:
           - '-c'
           - >
             echo "Copy system.yaml to {{ .Values.pipelines.mountPath }}";
-            {{- if .Values.systemYaml.existingSecret }}
-            cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.pipelines.mountPath }}/system.yaml;
             {{- else }}
             cp -fv /tmp/etc/system.yaml {{ .Values.pipelines.mountPath }}/system.yaml;
             {{- end }}
@@ -107,11 +107,11 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
-        {{- if or .Values.systemYaml.existingSecret .Values.pipelines.systemYaml }}
+        {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
           - name: systemyaml
-            {{- if .Values.systemYaml.existingSecret }}
-            mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
-            subPath: {{ .Values.systemYaml.dataKey }}
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+            subPath: {{ .Values.systemYamlOverride.dataKey }}
             {{- else if .Values.pipelines.systemYaml }}
             mountPath: "/tmp/etc/system.yaml"
             subPath: system.yaml
@@ -194,10 +194,10 @@ spec:
           emptyDir: {}
         - name: jfrog-pipelines-folder
           emptyDir: {}
-        {{- if or .Values.systemYaml.existingSecret .Values.pipelines.systemYaml }}
+        {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
         - name: systemyaml
           secret:
-            secretName: {{ default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") .Values.systemYaml.existingSecret }}
+            secretName: {{ default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
         {{- end }}
         {{- if .Values.vault.configMaps }}
         - name: vault-configmaps

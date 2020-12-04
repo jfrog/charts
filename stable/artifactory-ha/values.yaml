@@ -38,7 +38,7 @@ installerInfo: '{"productId": "Helm_artifactory-ha/{{ .Chart.Version }}", "featu
 ## Note: This will override existing systemYaml in values.yaml
 ## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
 ## Note: Order of preference is 1) customInitContainers 2) systemYaml existingSecret 3) default systemYaml in values.yaml
-systemYaml:
+systemYamlOverride:
 ## You can use a pre-existing secret by specifying existingSecret
   existingSecret:
 ## The dataKey should be the name of the secret data key created.
