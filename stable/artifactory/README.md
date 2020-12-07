@@ -397,7 +397,7 @@ You can deploy the Artifactory license as a [Kubernetes secret](https://kubernet
 Prepare a text file with the license written in it and create a Kubernetes secret from it.
 ```bash
 # Create the Kubernetes secret (assuming the local license file is 'art.lic')
-kubectl create secret generic artifactory-license --from-file=./art.lic
+kubectl create secret generic -n artifactory artifactory-license --from-file=./art.lic
 
 # Pass the license to helm
 helm upgrade --install artifactory --set artifactory.license.secret=artifactory-license,artifactory.license.dataKey=art.lic --namespace artifactory center/jfrog/artifactory
