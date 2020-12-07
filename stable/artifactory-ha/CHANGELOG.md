@@ -1,5 +1,5 @@
 # JFrog Artifactory-ha Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
 ## [4.5.5] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
