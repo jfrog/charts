@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file
 
 ## [6.5.2] - Dec 4, 2020
-* **Important:** Changed `.Values.systemYaml` to `.Values.systemYamlOverride`
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 
 ## [6.5.1] - Nov 30, 2020
 * Updated port namings on services and pods to allow for istio protocol discovery

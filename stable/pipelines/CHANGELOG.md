@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [2.3.7] - Dec 4, 2020
-* **Important:** Changed `.Values.systemYaml` to `.Values.systemYamlOverride`
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 
 ## [2.3.6] - Dec 3, 2020
 * Update Pipelines services RBAC rules 
