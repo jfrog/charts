@@ -259,13 +259,14 @@ This is for advanced usecases where users wants to provide their own systemYaml 
 Note: This will override existing systemYaml in values.yaml.
 
 ```yaml
-systemYaml:
+systemYamlOverride:
 ## You can use a pre-existing secret by specifying existingSecret
   existingSecret:
 ## The dataKey should be the name of the secret data key created.
   dataKey:
 ```
 Note: From chart version 2.2.0 and above `.Values.existingSecret` is changed to `.Values.systemYaml.existingSecret` and `.Values.systemYaml.dataKey`.
+Note: From chart version 2.3.7 and above `.Values.systemYaml` is changed to `.Values.systemYamlOverride`.
 
 ```bash
 helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-systemyaml.yaml

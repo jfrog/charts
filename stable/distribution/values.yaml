@@ -41,10 +41,10 @@ imagePullSecrets:
 ## Distribution systemYaml override
 ## This is for advanced usecases where users wants to provide their own systemYaml for configuring distribution
 ## Refer - https://www.jfrog.com/confluence/display/JFROG/Distribution+System+YAML
-## Note: This will override existing systemYaml in values.yaml
+## Note: This will override existing (default) .Values.distribution.systemYaml in values.yaml
 ## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
-## Note: Order of preference is 1) customInitContainers 2) systemYaml existingSecret 3) default systemYaml in values.yaml
-systemYaml:
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
 ## You can use a pre-existing secret by specifying existingSecret
   existingSecret:
 ## The dataKey should be the name of the secret data key created.

@@ -1,4 +1,4 @@
-{{- if not .Values.systemYaml.existingSecret }}
+{{- if not .Values.systemYamlOverride.existingSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
