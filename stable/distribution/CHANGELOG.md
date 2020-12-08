@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.1.7] - Dec 8, 2020
+* Update Distribution to version `2.5.3` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+
 ## [7.1.6] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 
