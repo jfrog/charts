@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.5.6] - Dec 8, 2020
+* Added `.Values.artifactory.openMetrics.enabled`
+
 ## [11.5.5] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 

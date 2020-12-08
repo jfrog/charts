@@ -477,6 +477,10 @@ artifactory:
         {{- end }}
       {{- end }}
     artifactory:
+    {{- if .Values.artifactory.openMetrics }}
+      metrics:
+        enabled: {{ .Values.artifactory.openMetrics.enabled }}
+    {{- end }}
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
       tomcat:
