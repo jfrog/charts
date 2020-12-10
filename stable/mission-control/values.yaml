@@ -22,11 +22,29 @@ global: {}
 
   # customSidecarContainers: |
 
-initContainerImage: docker.bintray.io/alpine:3.12
+## Partially override mission-control.fullname template (eg: <releaseName>-<nameOverride>)
+# nameOverride:
+
+## Fully override mission-control.fullname template
+# fullnameOverride:
+
+initContainerImage: docker.bintray.io/alpine:3.12.1
 
 # For supporting pulling from private registries
 imagePullSecrets:
   # - myRegistryKeySecretName
+
+## Mission-control systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring mission-control
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+System+YAML
+## Note: This will override existing (default) .Values.missionControl.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
 
 # Init containers
 initContainers:
@@ -85,13 +103,13 @@ common:
 
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.missionControl.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
   #        name: data-volume
@@ -271,16 +289,17 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: docker.bintray.io/alpine:3.12
+  initContainerImage: docker.bintray.io/alpine:3.12.1
   configureDockerHost: true
   image:
     registry: docker.bintray.io
-    repository: jfrog/elasticsearch-oss
-    tag: 7.6.1
+    repository: jfrog/elasticsearch-oss-sg
+    tag: 7.8.0
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
-  url: http://localhost:9200
-  httpPort: 9200
+  ## By default url is set to localhost:8082 (router)
+  ## If external elasticsearch is used, provide external elasticsearch url and set elasticsearch.enabled=false
+  url: '{{ include "elasticsearch.url" . }}'
   transportPort: 9300
   username: "admin"
   password: "admin"
@@ -326,8 +345,8 @@ elasticsearch:
     enabled: true
     config: |
       httpGet:
-        path: /_cat/health
-        port: {{ .Values.elasticsearch.httpPort }}
+        path: /_cluster/health
+        port: 9200
       initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 10
@@ -338,8 +357,8 @@ elasticsearch:
     enabled: true
     config: |
       httpGet:
-        path: /_cat/health
-        port: {{ .Values.elasticsearch.httpPort }}
+        path: /_cluster/health
+        port: 9200
       initialDelaySeconds: 60
       periodSeconds: 10
       timeoutSeconds: 10
@@ -429,7 +448,13 @@ missionControl:
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
-        url: {{ .Values.elasticsearch.url }}
+      {{- if and .Values.elasticsearch.enabled  (gt (int .Values.replicaCount) 1)  }}
+        clusterSetup: "yes"
+      {{- end }}
+      {{- if not .Values.elasticsearch.enabled }}
+        external: true
+        url: {{ tpl .Values.elasticsearch.url . }}
+      {{- end }}
       database:
       {{- if .Values.postgresql.enabled }}
         type: postgresql
@@ -440,12 +465,12 @@ missionControl:
         driver: "{{ .Values.database.driver }}"
       {{- end }}
 
-    {{- if .Values.postgresql.enabled }}
     mc:
+    {{- if .Values.postgresql.enabled }}
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfmcSchema }}
-
+    {{- end }}
       extraJavaOpts: >
       {{- with .Values.missionControl.javaOpts }}
       {{- if .xms }}
@@ -460,9 +485,11 @@ missionControl:
       {{- end }}
 
     insight-scheduler:
+    {{- if .Values.postgresql.enabled }}
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfscSchema }}
+    {{- end }}
       extraJavaOpts: >
       {{- with .Values.insightScheduler.javaOpts }}
       {{- if .xms }}
@@ -477,11 +504,16 @@ missionControl:
       {{- end }}
 
     insight-server:
+    {{- if .Values.postgresql.enabled }}
       database:
         username: {{ .Values.postgresql.db.user }}
         schema: {{ .Values.postgresql.db.jfisSchema }}
     {{- end }}
-
+      clients:
+        elasticsearch:
+          connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.connectionWaitTimeoutSecs }}
+          searchguard:
+            connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.searchguard.connectionWaitTimeoutSecs }}
 
   persistence:
     enabled: true
@@ -568,6 +600,12 @@ insightServer:
   appContext: insight
   home: /opt/jfrog
   internalPort: 8087
+  ## Timeout in seconds (default 60 seconds) for which insightServer waits for elasticsearch to comeup.
+  clients:
+    elasticsearch:
+      connectionWaitTimeoutSecs: 180
+      searchguard:
+        connectionWaitTimeoutSecs: 1800
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
@@ -728,7 +766,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 1.4.4
+    tag: 7.11.5
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -750,7 +788,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 90
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 10
       failureThreshold: 3
       successThreshold: 1
 
@@ -763,7 +801,7 @@ router:
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 60
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: 10
       failureThreshold: 10
       successThreshold: 1
 

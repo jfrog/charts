@@ -27,7 +27,7 @@ spec:
 {{- end }}
       targetPort: 30001
       protocol: TCP
-      name: www
+      name: http-www
   selector:
     {{- include "pipelines.selectorLabels" . | nindent 4 }}
     component: {{ include "pipelines.services.name" . }}

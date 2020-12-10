@@ -22,7 +22,7 @@ global: {}
   # customSidecarContainers: |
 
 
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: docker.bintray.io/alpine:3.12.1
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -38,6 +38,18 @@ initContainers:
 # For supporting pulling from private registries
 imagePullSecrets:
   # - myRegistryKeySecretName
+
+## Xray systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring xray
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Xray+System+YAML
+## Note: This will override existing (default) .Values.xray.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
 
 replicaCount: 1
 
@@ -86,14 +98,19 @@ xray:
       {{- else }}
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
+        {{- if .Values.database.actualUsername }}
+        actualUsername: {{ .Values.database.actualUsername }}
+        {{- end }}
       {{- end }}
       {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
       rabbitMq:
+        erlangCookie:
+          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+      {{- if not .Values.rabbitmq.external.secrets }}
         url: "{{ tpl .Values.rabbitmq.external.url . }}"
         username: "{{ .Values.rabbitmq.external.username }}"
         password: "{{ .Values.rabbitmq.external.password }}"
-        erlangCookie:
-          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+      {{- end }}
       {{- end }}
       {{- if .Values.xray.mongoUrl }}
       mongo:
@@ -232,6 +249,8 @@ database:
   url:
   user:
   password:
+  ## When working with Azure managed PG you have to provide the actualUsername. The application will pick actualUsername and will use it in some cases where it is needed
+  actualUsername:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
@@ -327,6 +346,16 @@ rabbitmq:
     password:
     url:
     erlangCookie:
+    secrets: {}
+    #  username:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "username"
+    #  password:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "password"
+    #  url:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "url"
   persistence:
     enabled: true
     accessMode: ReadWriteOnce
@@ -420,13 +449,13 @@ common:
 
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.xray.persistence.mountPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.xray.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
   #        name: data-volume
@@ -705,7 +734,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 1.4.4
+    tag: 7.11.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

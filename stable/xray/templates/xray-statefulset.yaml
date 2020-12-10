@@ -37,6 +37,7 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       annotations:
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/xray-database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
         {{- with .Values.analysis.annotations }}
 {{ toYaml . | indent 8 }}
@@ -78,7 +79,11 @@ spec:
         - >
           echo "Copy system.yaml to {{ .Values.xray.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
           echo "Remove {{ .Values.xray.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.xray.persistence.mountPath }}/lost+found;
         {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
@@ -109,9 +114,16 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.xray.persistence.mountPath | quote }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
         - name: systemyaml
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
+          {{- else if .Values.xray.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
+          {{- end }}
+      {{- end }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
@@ -143,7 +155,7 @@ spec:
           {{- end }}
             /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
-          - name: router
+          - name: http-router
             containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -183,6 +195,23 @@ spec:
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -235,6 +264,7 @@ spec:
       {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
+          name: http-server
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -273,6 +303,23 @@ spec:
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -331,6 +378,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
+          name: http-analysis
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -369,6 +417,23 @@ spec:
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -427,6 +492,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
+          name: http-indexer
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -465,6 +531,23 @@ spec:
           {{- end }}
             /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -519,6 +602,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.persist.internalPort }}
+          name: http-persist
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -581,9 +665,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ template "xray.fullname" . }}-system-yaml
+          secretName: {{ default (printf "%s-%s" (include "xray.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
       {{- if not .Values.common.persistence.enabled }}
       - name: data-volume
         emptyDir:

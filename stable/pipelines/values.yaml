@@ -19,12 +19,13 @@ global:
 
   ## Internal Vault must be set to false
   vault:
-    host:
-    port:
+    ## Vault url examples
+    # external one: https://vault.example.com
+    # internal one running in the same Kubernetes cluster: http://vault-active:8200
+    url:
     token:
     ## Vault token using existing secret
     # existingSecret: secret
-
 
   # imagePullSecrets:
   #   - myRegistryKeySecretName
@@ -42,7 +43,7 @@ global:
 
 ## Common
 initContainer:
-  image: "docker.bintray.io/alpine:3.12"
+  image: "docker.bintray.io/alpine:3.12.1"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -69,8 +70,19 @@ imageRegistry: docker.bintray.io
 imagePullSecrets:
   # - myRegistryKeySecretName
 
-## Existing secret with Pipelines system.yaml
-existingSecret:
+## Pipelines systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring pipelines
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Pipelines+System+YAML
+## Note: This will override existing (default) .Values.pipelines.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section for an example. Have to be set for both vault and pipelines
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+## Note: From chart version 2.2.0 and above .Values.existingSecret is changed to .Values.systemYaml.existingSecret and .Values.systemYaml.dataKey
+## Note: From chart version 2.3.7 and above `.Values.systemYaml` is changed to `.Values.systemYamlOverride`.
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
 
 ## String to partially override pipelines.fullname template (will maintain the release name)
 # nameOverride:
@@ -99,11 +111,17 @@ pipelines:
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  ## Note: This feature is available on pipelines app version 1.9.x and later
+  # joinKeySecretName:
 
   ## Pipelines requires a unique master key
   ## You can generate one with the command: "openssl rand -hex 32"
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName.
+  ## Note: This feature is available on pipelines app version 1.9.x and later
+  # masterKeySecretName:
 
   ## Installer Authentication Token
   ## The unique token can be generated with: uuidgen | tr '[:upper:]' '[:lower:]'
@@ -158,6 +176,12 @@ pipelines:
     maxReplicas: 3
     targetCPUUtilizationPercentage: 70
 
+  ## Extra environment variables that can be used to tune pipelines services to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: MY_ENV_VAR
+  #   value: "example_value"
+
   api:
     image:
       # registry:
@@ -189,7 +213,7 @@ pipelines:
       failureThreshold: 10
       successThreshold: 1
       path: /
-      port: api
+      port: http-api
 
     readinessProbe:
       enabled: true
@@ -199,7 +223,7 @@ pipelines:
       failureThreshold: 10
       successThreshold: 1
       path: /
-      port: api
+      port: http-api
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -276,7 +300,7 @@ pipelines:
       periodSeconds: 10
       successThreshold: 1
       path: /
-      port: www
+      port: http-www
 
 
     readinessProbe:
@@ -287,7 +311,7 @@ pipelines:
       periodSeconds: 10
       successThreshold: 1
       path: /
-      port: www
+      port: http-www
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -454,6 +478,19 @@ pipelines:
       #   cpu: 100m
       #   memory: 128Mi
 
+  templateSync:
+    image:
+      repository: jfrog/pipelines-micro
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+
   ## Pipelines installer
   pipelinesInit:
     image:
@@ -473,6 +510,8 @@ pipelines:
   ## Cluster Role Based Access
   ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
   rbac:
+    ## Sets ClusterRole if enabled, otherwise Role
+    clusterRole: false
     role:
       ## Rules to create. It follows the role specification
       rules:
@@ -484,6 +523,7 @@ pipelines:
         - pods
         - deployments/scale
         - secrets
+        - configmaps
         verbs: ["*"]
 
   # Add any list of configmaps to Pipelines
@@ -520,13 +560,13 @@ pipelines:
 
   ## Add custom init containers - last init container to run
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.pipelines.mountPath }}/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
   #        name: jfrog-pipelines-folder
@@ -607,8 +647,10 @@ pipelines:
         dataPort: {{ .Values.pipelines.router.externalPort }}
         joinKey: {{ include "pipelines.joinKey" . }}
 
+      {{- if or .Values.pipelines.masterKey .Values.global.masterKey }}
       security:
         masterKey: {{ include "pipelines.masterKey" . }}
+      {{- end }}
 
       ## Database configuration
       ##
@@ -672,6 +714,7 @@ pipelines:
           - "core.nexec"
           - "core.hookHandler"
           - "core.extensionSync"
+          - "core.templateSync"
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
@@ -833,6 +876,8 @@ pipelines:
           name: marshaller
         extensionSync:
           name: extensionSync
+        templateSync:
+          name: templateSync
 
     ## Runtime configuration
     ##
@@ -1207,6 +1252,13 @@ vault:
       # tag:
 
       pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: 10Mi
+        cpu: 10m
+      limits:
+        memory: 50Mi
+        cpu: 50m
 
   service:
     # Supported service types: ClusterIP and NodePort
@@ -1275,13 +1327,13 @@ vault:
 
   ## Add custom init containers - last init container to run
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.pipelines.mountPath }}/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
   #        name: jfrog-pipelines-folder
