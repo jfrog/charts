@@ -1,3 +1,4 @@
+{{- if not .Values.systemYamlOverride.existingSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -11,3 +12,4 @@ type: Opaque
 stringData:
   system.yaml: |
 {{ tpl .Values.artifactory.systemYaml . | indent 4 }}
+{{- end }}

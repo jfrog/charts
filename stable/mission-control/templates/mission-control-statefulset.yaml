@@ -37,6 +37,7 @@ spec:
 {{ toYaml . | indent 8 }}
         {{- end }}
       annotations:
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/mission-control-system-yaml.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ template "mission-control.serviceAccountName" . }}
@@ -80,7 +81,11 @@ spec:
         - >
           echo "Copy system.yaml to {{ .Values.missionControl.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.missionControl.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.missionControl.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
           echo "Copy application.yaml to {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc";
           mkdir -p {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc;
           cp -fv /tmp/etc/application.yaml {{ .Values.missionControl.persistence.mountPath }}/bootstrap/mc/application.yaml;
@@ -114,9 +119,16 @@ spec:
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.missionControl.systemYaml }}
         - name: systemyaml
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
+          {{- else if .Values.missionControl.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
+          {{- end }}
+      {{- end }}
         - name: applicationyaml
           mountPath: "/tmp/etc/application.yaml"
           subPath: application.yaml
@@ -220,21 +232,35 @@ spec:
       - name: {{ .Values.elasticsearch.name }}
         image: {{ include "mission-control.getImageInfoByValue" (list . "elasticsearch") }}
         imagePullPolicy: {{ .Values.elasticsearch.imagePullPolicy }}
-        env:
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          sleep 10;
+          if [[ $mission_control_pod_name == *"-0"* ]] ; then echo "Setting clustersetup to no" && export ELASTICSEARCH_CLUSTERSETUP=NO; else echo "Setting clustersetup to yes" && export ELASTICSEARCH_CLUSTERSETUP=YES; fi;
+          (/usr/local/bin/initializeSearchGuard.sh &) && docker-entrypoint.sh 'elasticsearch';        
+        env:  
+        - name: 'mission_control_pod_name'
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name        
         - name: 'cluster.name'
           value: '{{ .Values.elasticsearch.env.clusterName }}'
         - name: 'network.host'
           value: '{{ .Values.elasticsearch.env.networkHost }}'
         - name: 'transport.host'
           value: '{{ .Values.elasticsearch.env.transportHost }}'
-        - name: 'http.port'
-          value: '{{ .Values.elasticsearch.httpPort }}'
-        - name: 'transport.port'
+        - name: 'transport.port'	
           value: '{{ .Values.elasticsearch.transportPort }}'
         - name: 'discovery.seed_hosts'
           value: '{{ template "mission-control.fullname" . }}'
         - name: 'cluster.initial_master_nodes'
           value: '{{ template "elasticsearch.endpoints" . }}'
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
+              key: password
         - name: JF_SHARED_ELASTICSEARCH_USERNAME
           valueFrom:
             secretKeyRef:
@@ -260,15 +286,11 @@ spec:
               name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
               key: url
         ports:
-        - name: eshttp
-          containerPort: {{ .Values.elasticsearch.httpPort }}
-        - name: estransport
+        - name: tcp-estransprt
           containerPort: {{ .Values.elasticsearch.transportPort }}
         volumeMounts:
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
-        - name: elasticsearch-scripts
-          mountPath: "/scripts"
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
 {{- if .Values.elasticsearch.livenessProbe.enabled }}
@@ -290,7 +312,7 @@ spec:
           sleep 10;
           /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
-        - name: router
+        - name: http-router
           containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -363,6 +385,7 @@ spec:
         ports:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
+          name: http-mc
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -449,6 +472,7 @@ spec:
         ports:
         - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
+          name: http-inserver
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -521,6 +545,7 @@ spec:
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
+          name: http-insched
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -619,9 +644,11 @@ spec:
       - name: applicationyaml
         secret:
           secretName: {{ template "mission-control.fullname" . }}-applicationyaml
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.missionControl.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ template "mission-control.fullname" . }}-systemyaml
+          secretName: {{ default (printf "%s-%s" (include "mission-control.fullname" .) "systemyaml") .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
       {{- if .Values.postgresql.enabled }}
       - name: postgresql-setup
         configMap:
@@ -630,11 +657,6 @@ spec:
       - name: jfmc-setup-scripts
         configMap:
           name: {{ template "mission-control.fullname" . }}-jfmc-setup-scripts
-    {{- if .Values.elasticsearch.enabled }}
-      - name: elasticsearch-scripts
-        configMap:
-          name: {{ template "mission-control.fullname" . }}-elasticsearch-scripts
-    {{- end }}
     {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:

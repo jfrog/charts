@@ -75,19 +75,24 @@ spec:
         {{- if .Values.nginx.http }}
         {{- if .Values.nginx.http.enabled }}
         - containerPort: {{ .Values.nginx.http.internalPort }}
+          name: http
         {{- end }}
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttp }}
+          name: http-internal
         {{- end }}
         {{- if .Values.nginx.https }}
         {{- if .Values.nginx.https.enabled }}
         - containerPort: {{ .Values.nginx.https.internalPort }}
+          name: https
         {{- end }}
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttps }}
+          name: https-internal
         {{- end }}
         {{- if .Values.artifactory.ssh.enabled }}
         - containerPort: {{ .Values.nginx.ssh.internalPort }}
+          name: tcp-ssh
         {{- end }}
         volumeMounts:
         - name: nginx-conf
@@ -97,8 +102,10 @@ spec:
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
+        {{- if .Values.nginx.https.enabled }}  
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
+        {{- end }}  
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.readinessProbe.enabled }}
@@ -184,11 +191,13 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
+      {{- if .Values.nginx.https.enabled }}
       - name: ssl-certificates
         secret:
       {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}
       {{- else }}
           secretName: {{ template "artifactory.fullname" . }}-nginx-certificate
+      {{- end }}
       {{- end }}
 {{- end }}
