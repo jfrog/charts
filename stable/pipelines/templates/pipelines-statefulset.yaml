@@ -268,6 +268,8 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.router.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.router.logPath }}
         - name: api
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
           imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
@@ -512,7 +514,6 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
-          {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
         - name: templatesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "templateSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.templateSync.image.pullPolicy }}
@@ -520,16 +521,17 @@ spec:
           env:
             - name: COMPONENT
               value: templatesync
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+              {{- with .Values.pipelines.extraEnvironmentVariables }}
+              {{ tpl (toYaml .) $ | indent 12 }}
+              {{- end }}
           resources:
             {{- toYaml .Values.pipelines.templateSync.resources | nindent 12 }}
           volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+          {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "pipelines.customSidecarContainers" .) . | nindent 8 }}
           {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
