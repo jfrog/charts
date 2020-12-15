@@ -1,6 +1,6 @@
 # JFrog Mission-Control Helm Chart
 
-**Heads up: Our Helm Chart docs are moving to our main documentation site. For Mission Control installers, see [Installing Mission Control](https://www.jfrog.com/confluence/display/JFROG/Installing+Mission+Control).**
+**Our Helm Chart docs have moved to our main documentation site. For Mission Control installers, see [Installing Mission Control](https://www.jfrog.com/confluence/display/JFROG/Installing+Mission+Control).**
 
 ## Prerequisites Details
 
@@ -21,122 +21,95 @@ This chart will do the following:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
 
-### Install Chart
+## Installation Steps
+
+1. Download the relevant package from the [Download JFrog Platform page](https://jfrog.com/download-jfrog-platform/).
+2. Install Mission Control either as a single node installation, or high availability cluster.
+ * Install third party dependencies (PostgreSQL database, included in the archive)
+ * Install Mission Control
+3. Configure Mission Control basic settings:
+ * Connect to an Artifactory instance (requires a `joinKey` and a `jfrogUrl`).
+ * Optional: Configure the PostgreSQL database connection details if you have set Postgres as an external database.
+4. Start the Service using the start scripts or OS service management.
+5. Check the Service Log to check the status of the service.
+
+### Install JFrog Mission Control
+*Note:** The chart directory includes three values files, one for each installation type–small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. You can find the files in the corresponding chart directory. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). 
 
 ### Add ChartCenter Helm repository
+1. Add the ChartCenter Helm repository to your Helm client.
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
-
-```bash
+```
 helm repo add center https://repo.chartcenter.io
+```
+
+2. Update the repository.
+
+```
 helm repo update
 ```
 
-**NOTE:** Check [CHANGELOG.md] for version specific install notes.
+3. Next, create a unique master key; JFrog Mission Control requires a unique master key to be used by all micro-services in the same cluster. By default the chart has one set in `values.yaml` (`mission-control.masterKey`).
+**Note:** For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage This key is for demo purpose and should not be used in a production environment.
+Generate a unique key and pass it to the template during installation/upgrade.
 
-#### Special Notes
-
-Mission Control version 4.3.2 is compatible with Artifactory 7.4.1 and above. Refer Mission Control release notes for more details - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.3.2.
-
-#### Artifactory Connection Details
-In order to connect Mission Control to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Mission Control installation. Here's how you do that:
-
-Retrieve the connection details of your Artifactory installation, from the UI - https://www.jfrog.com/confluence/display/JFROG/General+Security+Settings#GeneralSecuritySettings-ViewingtheJoinKey. 
-
-#### Initiate Installation
-Provide join key and jfrog url as a parameter to the Mission Control chart installation:
-
-```bash
-helm upgrade --install mission-control --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace mission-control center/jfrog/mission-control
 ```
-Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
-```bash
+# Create a key
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
+ 
+# Pass the created master key to Helm
+helm upgrade --install --set mission-control.masterKey=${MASTER_KEY} --namespace mission-control center/jfrog/mission-control
+```
+Alternatively, you can create a secret containing the master key manually and pass it to the template during installation/upgrade.
 
+```
+# Create a key
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
+ 
+# Create a secret containing the key. The key in the secret must be named master-key
+kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
+ 
+# Pass the created secret to Helm
+helm upgrade --install mission-control --set mission-control.masterKeySecretName=my-secret --namespace mission-control center/jfrog/mission-control
+```
+
+**Note:** In either case, make sure to pass the same master key on all future calls to helm install and helm upgrade. In the first case, this means always passing `--set mission-control.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set mission-control.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
+4. Initiate installation by providing a join key and JFrog url as a parameter to the Mission Control chart installation.
+
+```
+helm upgrade --install --set mission-control.joinKey=<YOUR_PREVIOUSLY_RETRIEVED_JOIN_KEY> \
+             --set mission-control.jfrogUrl=<YOUR_PREVIOUSLY_RETRIEVED_BASE_URL>  --namespace mission-control center/jfrog/mission-control
+```
+
+Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
+
+```
 # Create a secret containing the key. The key in the secret must be named join-key
 kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
 
 # Pass the created secret to helm
-helm upgrade --install mission-control --set missionControl.joinKeySecretName=my-secret --namespace mission-control center/jfrog/mission-control
-```
-**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set missionControl.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
-
-### Special Upgrade Notes
-Mission-control 3.x to 4.x (App Version) upgrade is not currently supported. For manual upgrade, please refer [here](https://github.com/jfrog/charts/blob/master/stable/mission-control/UPGRADE_NOTES.md). If this is an upgrade over an existing Mission Control 4.x, explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
-
-#### Upgrading mission-control to 5.2.x and above chart versions in HA setup (replicaCount > 1)
-From 5.2.x chart version and above, elasticsearch was updated with serach guard plugin. Due to this change, rolling updates would break for elastic search.
-Please set `replicaCount: 1` and do an helm upgrade. (Downtime is required)
-
-### System Configuration
-Mission Control uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
-
-### Auto generated passwords
-
-This section is applicable only for deployments with internal postgreSQL.
-
-Internal postgreSQL needs 1 variable to be available on install or upgrade. If it is not set by user, a random 10 character alphanumeric string will be set for the same. It is recommended for the user to set this explicitly during install and upgrade.
-```bash
-...
---set postgresql.postgresqlPassword=<value> \
-...
-```
-The values should remain same between upgrades.
-
-If this was autogenerated during `helm install`, the same password will have to be passed on future upgrades.
-
-Following can be used to read current set password,(refer [decoding-a-secret](https://kubernetes.io/docs/concepts/configuration/secret/#decoding-a-secret) for more info on reading a sceret value)
-
-POSTGRES_PASSWORD=$(kubectl get secret -n <namespace> <release_name>-postgresql -o jsonpath="{.data.postgresql-password}" | base64 --decode)
-
-Following parameter can be set during upgrade,
-```bash
-...
---set postgresql.postgresqlPassword=${POSTGRES_PASSWORD} \
-...
+helm upgrade --install --set mission-control.joinKeySecretName=my-secret --namespace mission-control center/jfrog/mission-control
 ```
 
-### Deploying JFMC for small/medium/large instllations
-In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
+**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set mission-control.joinKey=<YOUR_PREVIOUSLY_RETRIEVED_JOIN_KEY>`. In the second, this means always passing `--set mission-control.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
-### Create a unique Master Key
-Mission Control HA cluster uses a unique master key. By default the chart has one set in values.yaml (`missionControl.masterKey`).
+5. Customize the product configuration (optional) including database, Java Opts, and filestore. Unlike other installations, Helm Chart configurations are made to the values.yaml and are then applied to the system.yaml. Make the changes to the `values.yaml` and then run the following commmand: 
 
-**This key is for demo purpose and should not be used in a production environment!**
-
-You should generate a unique one and pass it to the template at install/upgrade time.
-```bash
-# Create a key
-export MASTER_KEY=$(openssl rand -hex 32)
-echo ${MASTER_KEY}
-
-# Pass the created master key to helm
-helm upgrade --install mission-control --set missionControl.masterKey=${MASTER_KEY} --namespace mission-control center/jfrog/mission-control
 ```
-
-Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
-```bash
-
-# Create a secret containing the key. The key in the secret must be named master-key
-kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
-
-# Pass the created secret to helm
-helm upgrade --install mission-control --namespace mission-control --set missionControl.masterKeySecretName=my-secret center/jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control -f values.yaml
 ```
-**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set missionControl.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
-
-
-## Upgrade
-Once you have a new chart version, you can update your deployment with
+6. Access Mission Control from your browser at: http://<jfrogUrl>/ui/and go to the Dashboard tab in the Application module in the UI.
+7. Check the status of your deployed Helm releases.
 ```
-helm upgrade mission-control center/jfrog/mission-control
+helm status mission-control
 ```
-
-**NOTE:** Check for any version specific upgrade notes in [CHANGELOG.md]
-
-### Non compatible upgrades
+  
+## Non-compatible Upgrades
 In cases where a new version is not compatible with existing deployed version (look in CHANGELOG.md) you should
-* Deploy new version along side old version (set a new release name)
+* Deploy a new version alongside the old version (set a new release name)
 * Copy configurations and data from old deployment to new one (The following instructions were tested for chart migration from 0.9.4 (3.4.3) to 1.0.0 (3.5.0))
   * Copy data and config from old deployment to local filesystem
     ```
@@ -185,201 +158,10 @@ export MC_KEY=$(kubectl exec -it <mission-control-pod> -n <new_namespace> -c mis
 ```
 * Remove old release
 
-### Use external Database
+# Helm Charts Installers for Advanced Users
+Helm Chart provides a wide range of advanced options, which are documented [here](https://www.jfrog.com/confluence/display/JFROG/Helm+Charts+Installers+for+Advanced+Users).
 
-**For production grade installations it is recommended to use an external PostgreSQL with a static password**
-
-#### PostgreSQL
-There are cases where you will want to use an external **PostgreSQL** and not the enclosed **PostgreSQL**.
-See more details on [configuring the database](https://www.jfrog.com/confluence/display/MC/Using+External+Databases#UsingExternalDatabases-ExternalizingPostgreSQL)
-
-This can be done with the following parameters
-```bash
-...
---set postgresql.enabled=false \
---set database.url=${DB_URL} \
---set database.user=${DB_USER} \
---set database.password=${DB_PASSWORD} \
-...
-```
-**NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
-
-##### Use existing secrets for PostgreSQL connection details
-You can use already existing secrets for managing the database connection details.
-
-Pass them to the install command with the following parameters
-```bash
-export POSTGRES_USERNAME_SECRET_NAME=
-export POSTGRES_USERNAME_SECRET_KEY=
-export POSTGRES_PASSWORD_SECRET_NAME=
-export POSTGRES_PASSWORD_SECRET_KEY=
-...
-    --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
-    --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
-    --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
-    --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
-...
-```
-
-#### Elasticsearch
-
-By default, this HELM chart deploys elasticsearch pod. It also configures docker host kernel parameters
-using a privileged initContainer. In some installations, you would not be allowed to run privileged 
-containers, in which case you can disable docker host configuration by configuring following parameter:
-
-```
---set elasticsearch.configureDockerHost=false
-```
-
-There are cases where you will want to use an external **Elasticsearch** and not the enclosed **Elasticsearch**.
-
-This can be done with the following parameters
-```bash
-...
---set elasticsearch.enabled=false \
---set elasticsearch.url=${ES_URL} \
---set elasticsearch.username=${ES_USERNAME} \
---set elasticsearch.password=${ES_PASSWORD} \
-...
-```
-
-### Logger sidecars
-This chart provides the option to add sidecars to tail various logs from Mission Control containers. See the available values in `values.yaml`
-
-Get list of containers in the pod
-```bash
-kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
-```
-
-View specific log
-```bash
-kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
-```
-
-### Custom sidecar containers
-There are cases where an extra sidecar container is needed. For example monitoring agents or log collection.
-
-For this, there is a section for writing a custom sidecar container in the [values.yaml](values.yaml). By default it's commented out
-```yaml
-common:
-  ## Add custom sidecar containers
-  customSidecarContainers: |
-    ## Sidecar containers template goes here ##
-```
-
-### Establishing TLS and Adding certificates
-Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
-
-
-To add this certificate to mission control, Create a configmaps.yaml file with the following content:
-
-```yaml
-common:
-  configMaps: |
-    ca.crt: |
-      -----BEGIN CERTIFICATE-----
-        <certificate content>
-      -----END CERTIFICATE-----
-  customVolumeMounts: |
-    - name: mission-control-configmaps
-      mountPath: /tmp/ca.crt
-      subPath: ca.crt
-missionControl:
-  preStartCommand: "mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
-router:
-  tlsEnabled: true  
-```
-
-and use it with your helm install/upgrade:
-```bash
-helm upgrade --install mission-control -f configmaps.yaml --namespace mission-control center/jfrog/xray
-```
-
-This will, in turn:
-* Create a configMap with the files you specified above
-* Create a volume pointing to the configMap with the name `mission-control-configmaps`
-* Mount said configMap onto `/tmp` using a `customVolumeMounts`
-* Using preStartCommand copy the `ca.crt` file to distribution trusted keys folder `/etc/security/keys/trusted/ca.crt`
-* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
-
-### Custom volumes
-
-If you need to use a custom volume, you can use this option.
-
-For this, there is a section for defining custom volumes in the [values.yaml](values.yaml). By default it's commented out
-
-```yaml
-common:
-  ## Add custom volumes
-  customVolumes: |
-    ## Custom volume comes here ##
-```
-
-### Custom init containers
-There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
-
-For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
-```
-common:
-  ## Add custom init containers
-  customInitContainers: |
-    ## Init containers template goes here ##
-```
-
-### Custom volumes
-There are also cases where you'd like custom files or for your init container to make changes to the file system the mission control container will see.
-
-For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
-```
-common:
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-```
-
-### Custom secrets
-If you need to add a custom secret in a custom init or any common container, you can use this option.
-
-For this, there is a section for defining custom secrets in the [values.yaml](values.yaml). By default it's commented out
-```yaml
-common:
-  # Add custom secrets - secret per file
-    customSecrets:
-      - name: custom-secret
-        key: custom-secret.yaml
-        data: >
-          secret data
-```
-
-To use a custom secret, need to define a custom volume.
-```yaml
-common:
-  ## Add custom volumes
-  customVolumes: |
-    - name: custom-secret
-      secret:
-        secretName: custom-secret
-```
-
-To use a volume, need to define a volume mount as part of a custom init or sidecar container.
-```yaml
-common:
-  customVolumeMounts:
-    - name: custom-secret
-      mountPath: /opt/custom-secret.yaml
-      subPath: custom-secret.yaml
-      readOnly: true
-```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/JFROG/JFrog+Mission+Control
-- https://www.jfrog.com/confluence/
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
