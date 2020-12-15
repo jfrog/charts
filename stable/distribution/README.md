@@ -1,6 +1,6 @@
 # JFrog Distribution Helm Chart
 
-**Heads up: Our Helm Chart docs are moving to our main documentation site. For Distribution installers, see [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution).**
+**Heads up: Our Helm Chart docs have moved to our main documentation site. For Distribution installers, see [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution).**
 
 ## Prerequisites Details
 
@@ -22,267 +22,100 @@ This chart does the following:
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
 - [Helm](https://helm.sh/) v2 or v3 installed
 
-## Installing the Chart
+## Installation Steps
+
+1. Download the relevant package from the [Download JFrog Platform page](https://jfrog.com/download-jfrog-platform/).
+2. Install Distribution either as a single node installation, or high availability cluster.
+ * Install third party dependencies (PostgreSQL database, included in the archive)
+ * Install Distribution
+3. Configure Distribution basic settings:
+ * Connect to an Artifactory instance (requires a `joinKey` and a `jfrogUrl`).
+ * Optional: Configure the PostgreSQL database connection details if you have set Postgres as an external database.
+4. Start the Service using the start scripts or OS service management.
+5. Check the Service Log to check the status of the service.
+
+### Install JFrog Distribution
+*Note:** The chart directory includes three values files, one for each installation type–small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. You can find the files in the corresponding chart directory. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). 
 
 ### Add ChartCenter Helm repository
+1. Add the ChartCenter Helm repository to your Helm client.
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
-
-```bash
+```
 helm repo add center https://repo.chartcenter.io
+```
+
+2. Update the repository.
+
+```
 helm repo update
 ```
 
-### Install Chart
+3. Next, create a unique master key; JFrog Distribution requires a unique master key to be used by all micro-services in the same cluster. By default the chart has one set in `values.yaml` (`distribution.masterKey`).
+**Note:** For production grade installations it is strongly recommended to use a custom master key. If you initially use the default master key it will be very hard to change the master key at a later stage This key is for demo purpose and should not be used in a production environment.
+Generate a unique key and pass it to the template during installation/upgrade.
 
-#### Artifactory Connection Details
-In order to connect Distribution to your Artifactory installation, you have to use a Join Key, hence it is *MANDATORY* to provide a Join Key and Jfrog Url to your Distribution installation. Here's how you do that:
-
-Retrieve the connection details of your Artifactory installation, from the UI - https://www.jfrog.com/confluence/display/JFROG/General+Security+Settings#GeneralSecuritySettings-ViewingtheJoinKey. 
-
-#### Initiate Installation
-Provide join key and jfrog url as a parameter to the Distribution chart installation:
-
-```bash
-helm upgrade --install distribution --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace distribution center/jfrog/distribution
 ```
-
-Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
-```bash
-# Create a secret containing the key. The key in the secret must be named join-key
-kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
-# Pass the created secret to helm
-helm upgrade --install distribution --set distribution.joinKeySecretName=my-secret --namespace distribution center/jfrog/distribution
-```
-**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set distribution.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
-
-### Special Upgrade Notes
-Distribution upgrade from 1.x to 2.x (App Version) is not directly supported. For manual upgrade, Please refer [here](https://github.com/jfrog/charts/blob/master/stable/distribution/UPGRADE_NOTES.md). If this is an upgrade over an existing Distribution 2.x (App Version), explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
-
-### System Configuration
-Distribution uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
-
-### Deploying Distribution for small/medium/large installations
-In the chart directory, we have added three values files, one for each installation type - small/medium/large. These values files are recommendations for setting resources requests and limits for your installation. The values are derived from the following [documentation](https://www.jfrog.com/confluence/display/EP/Installing+on+Kubernetes#InstallingonKubernetes-Systemrequirements). You can find them in the corresponding chart directory -  values-small.yaml, values-medium.yaml and values-large.yaml
-
-### Accessing Distribution
-**NOTE:** It might take a few minutes for Distribution's public IP to become available, and the nodes to complete initial setup.
-Follow the instructions outputted by the install command to get the Distribution IP and URL to access it.
-
-### Updating Distribution
-Once you have a new chart version, you can update your deployment with
-```bash
-helm upgrade distribution center/jfrog/distribution
-```
-
-If distribution was installed without providing a value to redis.password (a password was autogenerated), follow these instructions:
-1. Get the current password by running:
-```bash
-REDIS_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-redis-secret -o jsonpath="{.data.redis-password}" | base64 --decode)
-```
-2. Upgrade the release by passing the previously auto-generated secret:
-```bash
-helm upgrade <myrelease> center/jfrog/distribution --set redis.password=${REDIS_PASSWORD}
-```
-
-Alternatively, you can create a secret  which is required to have a key with the name `redis-password` and pass it to the template at install/upgrade time.
-```bash
-# Create a secret containing the redis password. The key in the secret must be named redis-password
-kubectl create secret generic my-secret --from-literal=redis-password=${REDIS_PASSWORD}
-# Pass the created secret to helm
-helm upgrade --install distribution --set redis.existingSecret=my-secret --namespace distribution center/jfrog/distribution
-```
-
-If distribution was installed without providing a value to postgresql.postgresqlPassword (a password was autogenerated), follow these instructions:
-1. Get the current password by running:
-```bash
-POSTGRES_PASSWORD=$(kubectl get secret -n <namespace> <myrelease>-postgresql -o jsonpath="{.data.password}" | base64 --decode)
-```
-2. Upgrade the release by passing the previously auto-generated secret:
-```bash
-helm upgrade <myrelease> center/jfrog/distribution --set postgresql.postgresqlPassword=${POSTGRES_PASSWORD}
-```
-
-### Create a unique Master Key
-JFrog Distribution requires a unique master key to be used by all micro-services in the same cluster. By default the chart has one set in values.yaml (`distribution.masterKey`).
-
-**This key is for demo purpose and should not be used in a production environment!**
-
-You should generate a unique one and pass it to the template at install/upgrade time.
-```bash
 # Create a key
 export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
+ 
+# Pass the created master key to Helm
+helm upgrade --install --set distribution.masterKey=${MASTER_KEY} --namespace distribution center/jfrog/distribution
+```
+Alternatively, you can create a secret containing the master key manually and pass it to the template during installation/upgrade.
 
-# Pass the created master key to helm
-helm upgrade --install distribution --set distribution.masterKey=${MASTER_KEY} --namespace distribution center/jfrog/distribution
-
-Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
-```bash
-
+```
+# Create a key
+export MASTER_KEY=$(openssl rand -hex 32)
+echo ${MASTER_KEY}
+ 
 # Create a secret containing the key. The key in the secret must be named master-key
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
-
-# Pass the created secret to helm
+ 
+# Pass the created secret to Helm
 helm upgrade --install distribution --set distribution.masterKeySecretName=my-secret --namespace distribution center/jfrog/distribution
 ```
-**NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set -n distribution.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set -n distribution.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
+**Note:** In either case, make sure to pass the same master key on all future calls to helm install and helm upgrade. In the first case, this means always passing `--set distribution.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set distribution.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
+
+4. Initiate installation by providing a join key and JFrog url as a parameter to the Distribution chart installation.
+
+```
+helm upgrade --install --set distribution.joinKey=<YOUR_PREVIOUSLY_RETRIEVED_JOIN_KEY> \
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETRIEVED_BASE_URL>  --namespace distribution center/jfrog/distribution
 ```
 
-### High Availability
-JFrog Distribution can run in High Availability by having multiple replicas of the Distribution service.
+Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
 
-To enable this, pass replica count to the `helm install` and `helm upgrade` commands.
-```bash
-# Run 3 replicas of the Distribution service
-helm upgrade --install distribution --set replicaCount=3 --namespace distribution center/jfrog/distribution
+```
+# Create a secret containing the key. The key in the secret must be named join-key
+kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
+
+# Pass the created secret to helm
+helm upgrade --install --set distribution.joinKeySecretName=my-secret --namespace distribution center/jfrog/distribution
 ```
 
-### External Database
+**NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set distribution.joinKey=<YOUR_PREVIOUSLY_RETRIEVED_JOIN_KEY>`. In the second, this means always passing `--set distribution.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
-**For production grade installations it is recommended to use an external PostgreSQL with a static password**
+5. Customize the product configuration (optional) including database, Java Opts, and filestore. Unlike other installations, Helm Chart configurations are made to the values.yaml and are then applied to the system.yaml. Make the changes to the `values.yaml` and then run the following commmand: 
 
-There is an option to use an external PostgreSQL database for your Distribution.
-
-To use an external **PostgreSQL**, You need to set the Distribution **PostgreSQL** connection details
-```bash
-export POSTGRES_URL=
-export POSTGRES_USERNAME=
-export POSTGRES_PASSWORD=
-
-helm upgrade --install distribution \
-    --set database.url=${POSTGRES_URL} \
-    --set database.user=${POSTGRES_USERNAME} \
-    --set database.password=${POSTGRES_PASSWORD} \
-    --namespace distribution center/jfrog/distribution
 ```
-**NOTE:** The Database password is saved as a Kubernetes secret
-
-
-#### Use existing secrets for PostgreSQL connection details
-You can use already existing secrets for managing the database connection details.
-
-Pass them to the install command like this
-```bash
-export POSTGRES_USERNAME_SECRET_NAME=
-export POSTGRES_USERNAME_SECRET_KEY=
-export POSTGRES_PASSWORD_SECRET_NAME=
-export POSTGRES_PASSWORD_SECRET_KEY=
-
-helm upgrade --install distribution \
-    --set database.secrets.user.name=${POSTGRES_USERNAME_SECRET_NAME} \
-    --set database.secrets.user.key=${POSTGRES_USERNAME_SECRET_KEY} \
-    --set database.secrets.password.name=${POSTGRES_PASSWORD_SECRET_NAME} \
-    --set database.secrets.password.key=${POSTGRES_PASSWORD_SECRET_KEY} \
-    --namespace distribution center/jfrog/distribution
+helm upgrade --install distribution --namespace distribution -f values.yaml
+```
+6. Access Distribution from your browser at: http://<jfrogUrl>/ui/and go to the Distribution tab in the Application module in the UI.
+7. Check the status of your deployed Helm releases.
+```
+helm status distribution
 ```
 
-## Upgrade
-Upgrading Distribution is a simple helm command
-```bash
-helm upgrade distribution center/jfrog/distribution
-```
+## Non-compatible Upgrades
+In cases where a new version is not compatible with existing deployed version (look in the CHANGELOG.md) you should do the following:
+* Deploy a new version alongside the old version (set a new release name)
+* Copy configurations and data from the old deployment to the new one (/var/opt/jfrog)
+* Update DNS to point to the new Distribution service
+* Remove the old release
 
-**NOTE:** Check for any version specific upgrade nodes in [CHANGELOG.md]
-
-### Non compatible upgrades
-In cases where a new version is not compatible with existing deployed version (look in CHANGELOG.md) you should
-* Deploy new version along side old version (set a new release name)
-* Copy configurations and data from old deployment to new one (/var/opt/jfrog)
-* Update DNS to point to new Distribution service
-* Remove old release
-
-## Logger sidecars
-This chart provides the option to add sidecars to tail various logs from Distribution containers. See the available values in `values.yaml`
-
- Get list of containers in the pod
-```bash
-kubectl get pods -n <NAMESPACE> <POD_NAME> -o jsonpath='{.spec.containers[*].name}' | tr ' ' '\n'
-```
-
- View specific log
-```bash
-kubectl logs -n <NAMESPACE> <POD_NAME> -c <LOG_CONTAINER_NAME>
-```
-
- ### Establishing TLS and Adding certificates
-Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
-
- To add this certificate to distribution, Create a configmaps.yaml file with the following content:
- 
- ```yaml
- common:
-   configMaps: |
-     ca.crt: |
-       -----BEGIN CERTIFICATE-----
-         <certificate content>
-       -----END CERTIFICATE-----
- 
-   customVolumeMounts: |
-     - name: distribution-configmaps
-       mountPath: /tmp/ca.crt
-       subPath: ca.crt
- 
- distribution:
-   preStartCommand: "mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
- router:
-   tlsEnabled: true  
- ```
- 
- and use it with you helm install/upgrade:
- ```bash
- helm upgrade --install distribution -f configmaps.yaml --namespace distribution center/jfrog/distribution
- ```
- 
- This will, in turn:
-* Create a configMap with the files you specified above
-* Create a volume pointing to the configMap with the name `distribution-configmaps`
-* Mount said configMap onto `/tmp` using a `customVolumeMounts`
-* Using preStartCommand copy the `ca.crt` file to xray trusted keys folder `/etc/security/keys/trusted/ca.crt`
-* `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
- 
-
-## Custom init containers
-There are cases where a special, unsupported init processes is needed like checking something on the file system or testing something before spinning up the main container.
-
-For this, there is a section for writing a custom init container in the [values.yaml](values.yaml). By default it's commented out
-```
-distribution:
-  ## Add custom init containers
-  customInitContainers: |
-    ## Init containers template goes here ##
-```
-
-### Custom volumes
-There are cases where you'd like custom files mounted onto your container's file system.
-
-For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
-You can mount custom volumes onto both distribution and distributor pods like so:
-```
-common:
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-distribution:
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-
-distributor:
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-```
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
 - https://www.jfrog.com/confluence/display/DIST/Installing+Distribution
-- https://www.jfrog.com/confluence/
