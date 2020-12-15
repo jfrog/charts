@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [4.5.6] - Dec 14, 2020
+* Add setSecurityContext flag to allow securityContext block to be removed from artifactory statefulset
+
 ## [4.5.5] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 
