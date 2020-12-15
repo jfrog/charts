@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+# [4.5.3] - December 15, 2020
+* Updated Artifactory-HA readme.md file and moved content to Confluence page.
+
 # [4.5.2] - Nov 23, 2020
 * Updated Artifactory version to 7.11.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)
 * Updated port namings on services and pods to allow for istio protocol discovery
