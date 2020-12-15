@@ -119,6 +119,3 @@ helm upgrade --install xray --namespace xray --set replicaCount=3  --set rabbitm
 # Helm Charts Installers for Advanced Users
 Helm Chart provides a wide range of advanced options, which are documented [here](https://www.jfrog.com/confluence/display/JFROG/Helm+Charts+Installers+for+Advanced+Users).
 
-## Useful links
-- https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability
-- https://www.jfrog.com/confluence/display/EP/Getting+Started
