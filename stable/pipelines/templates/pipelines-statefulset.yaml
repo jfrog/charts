@@ -268,8 +268,6 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.router.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.router.logPath }}
         - name: api
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
           imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
