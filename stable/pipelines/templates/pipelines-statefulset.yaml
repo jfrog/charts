@@ -519,9 +519,9 @@ spec:
           env:
             - name: COMPONENT
               value: templatesync
-              {{- with .Values.pipelines.extraEnvironmentVariables }}
-              {{ tpl (toYaml .) $ | indent 12 }}
-              {{- end }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.templateSync.resources | nindent 12 }}
           volumeMounts:
