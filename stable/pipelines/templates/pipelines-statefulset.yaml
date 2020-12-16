@@ -512,7 +512,6 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
-          {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
         - name: templatesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "templateSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.templateSync.image.pullPolicy }}
@@ -522,14 +521,15 @@ spec:
               value: templatesync
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.templateSync.resources | nindent 12 }}
           volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+          {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "pipelines.customSidecarContainers" .) . | nindent 8 }}
           {{- end }}
     {{- with .Values.pipelines.nodeSelector }}
