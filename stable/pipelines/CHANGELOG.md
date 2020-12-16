@@ -2,7 +2,7 @@
 All changes to this chart to be documented in this file
 
 ## [2.3.8] - Dec 4, 2020
-* remove the templateSync container's dependency on custom sidecar definitions
+* Remove the templateSync container's dependency on custom sidecar definitions
 
 ## [2.3.7] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
