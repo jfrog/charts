@@ -26,11 +26,11 @@ This chart does the following:
 
 1. Download the relevant package from the [Download JFrog Platform page](https://jfrog.com/download-jfrog-platform/).
 2. Install Distribution either as a single node installation, or high availability cluster.
- * Install third party dependencies (PostgreSQL database, included in the archive)
- * Install Distribution
+  * Install third party dependencies (PostgreSQL database, included in the archive)
+  * Install Distribution
 3. Configure Distribution basic settings:
- * Connect to an Artifactory instance (requires a `joinKey` and a `jfrogUrl`).
- * Optional: Configure the PostgreSQL database connection details if you have set Postgres as an external database.
+  * Connect to an Artifactory instance (requires a `joinKey` and a `jfrogUrl`).
+  * Optional: Configure the PostgreSQL database connection details if you have set Postgres as an external database.
 4. Start the Service using the start scripts or OS service management.
 5. Check the Service Log to check the status of the service.
 
