@@ -1250,10 +1250,6 @@ Then install nginx-ingress with the values file you created:
 helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes-ingress-nginx/ingress-nginx -f values.yaml
 ```
 
-### Open Metrics
-
-Since Artifactory 7.7, support for open metrics is available. Enable Open Metrics by setting `artifactory.openMetrics.enabled` to `true`
-
 ### Prometheus Metrics
 
 If you want to enable Prometheus metrics you can use the `metrics` configuration options. By default this option requires that the Promtheus Operator already be deployed and the associated CRDs created.
