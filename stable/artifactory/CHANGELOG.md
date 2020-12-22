@@ -2,7 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [11.5.6] - Dec 22, 2020
-* Support for using gid.
+* Add gid support for artifactory statefulset
 
 ## [11.5.5] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
