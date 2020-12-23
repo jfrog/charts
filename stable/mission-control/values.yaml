@@ -3,10 +3,14 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-global: {}
+global:
   # imageRegistry:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.missionControl or image tags
+  ## Note: Order of preference is 1) global.versions 2) image tags 3) Chart.AppVersion
+  versions: {}
+  #   missionControl:
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -206,7 +210,7 @@ dbSetup:
   postgresql:
     image:
       repository: docker.bintray.io/postgres
-      tag: 12.3-alpine
+      tag: 12.5-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -218,7 +222,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 12.3.0-debian-10-r71
+    tag: 12.5.0-debian-10-r25
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
