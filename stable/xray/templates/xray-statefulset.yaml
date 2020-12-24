@@ -142,7 +142,7 @@ spec:
     {{- end }}
       containers:
       - name: {{ .Values.router.name }}
-        image: {{ include "router.getImageInfoByValue" (list . "router") }}
+        image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -222,6 +222,18 @@ spec:
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
         {{- end }}
       {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
@@ -330,6 +342,18 @@ spec:
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
         {{- end }}
       {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
@@ -446,6 +470,18 @@ spec:
               key: db-user
         {{- end }}
       {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
@@ -558,6 +594,18 @@ spec:
         {{- else if .Values.database.user }}
               name: {{ template "xray.fullname" . }}-database-creds
               key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
         {{- end }}
       {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
