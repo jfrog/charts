@@ -330,13 +330,14 @@ Return the proper xray chart image names
 {{- $indexReference := index . 1 }}
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
-{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.common.xrayVersion) (index $dot.Values $indexReference "image" "tag")  | toString -}}
-{{/*
-Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
-but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
-Also, we can't use a single if because lazy evaluation is not an option
-*/}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
+{{- $tag = $dot.Values.common.xrayVersion | toString -}}
+{{- end -}}
 {{- if $dot.Values.global }}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
+    {{- $tag = $dot.Values.global.versions.xray | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
     {{- else -}}
@@ -347,27 +348,3 @@ Also, we can't use a single if because lazy evaluation is not an option
 {{- end -}}
 {{- end -}}
 
-{{/*
-Return the proper xray router image name
-*/}}
-{{- define "router.getImageInfoByValue" -}}
-{{- $dot := index . 0 }}
-{{- $indexReference := index . 1 }}
-{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
-{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
-{{- $tag := index $dot.Values $indexReference "image" "tag" | toString -}}
-{{/*
-Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
-but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
-Also, we can't use a single if because lazy evaluation is not an option
-*/}}
-{{- if $dot.Values.global }}
-    {{- if $dot.Values.global.imageRegistry }}
-        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
-    {{- else -}}
-        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
-    {{- end -}}
-{{- else -}}
-    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
-{{- end -}}
-{{- end -}}

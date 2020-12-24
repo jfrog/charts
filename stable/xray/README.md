@@ -48,7 +48,7 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 Provide join key and jfrog url as a parameter to the Xray chart installation:
 
 ```bash
-helm upgrade --install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+helm upgrade --install xray --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  --namespace xray center/jfrog/xray
 ```
 
@@ -165,7 +165,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm upgrade --install --set xray.masterKey=${MASTER_KEY} --namespace xray center/jfrog/xray
+helm upgrade --install xray --set xray.masterKey=${MASTER_KEY} --namespace xray center/jfrog/xray
 
 ```
 
