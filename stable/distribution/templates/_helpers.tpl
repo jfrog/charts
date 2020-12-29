@@ -222,6 +222,9 @@ Return the proper distribution chart image names
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- if $dot.Values.global }}
+    {{- if and $dot.Values.global.versions.distribution (or (eq $indexReference "distribution") (eq $indexReference "distributor") ) }}
+    {{- $tag = $dot.Values.global.versions.distribution | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
     {{- else -}}
@@ -231,3 +234,4 @@ Return the proper distribution chart image names
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
 {{- end -}}
+
