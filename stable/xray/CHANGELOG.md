@@ -1,6 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [6.8.3] - Dec 29, 2020
+* Update Xray to version `3.14.3` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.14.3)
+
+## [6.8.2] - Dec 28, 2020
+* Updated Xray application sizing yamls (values-small.yaml, values-medium.yaml, values-large.yaml)
+
 ## [6.8.1] - Dec 24, 2020
 * Update Xray to version `3.14.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.14.1)
 
