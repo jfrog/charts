@@ -1,7 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.5.6] - Dec 8, 2020
+## [11.5.6] - Dec 22, 2020
+* Added gid support for statefulset
 * Added `.Values.artifactory.openMetrics.enabled`
 
 ## [11.5.5] - Dec 4, 2020

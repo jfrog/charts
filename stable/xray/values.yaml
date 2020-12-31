@@ -3,9 +3,14 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-global: {}
+global:
+  # imageRegistry: docker.bintray.io
   # imagePullSecrets:
   #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.xray, common.xrayVersion or image tags
+  ## Note: Order of preference is 1) global.versions 2) common.xrayVersion 3) image tags 4) Chart.AppVersion
+  versions: {}
+  #   xray:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -98,9 +103,6 @@ xray:
       {{- else }}
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
-        {{- if .Values.database.actualUsername }}
-        actualUsername: {{ .Values.database.actualUsername }}
-        {{- end }}
       {{- end }}
       {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
       rabbitMq:
@@ -212,7 +214,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 12.3.0-debian-10-r71
+    tag: 12.5.0-debian-10-r25
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -263,6 +265,9 @@ database:
   #  url:
   #    name: "xray-database-creds"
   #    key: "db-url"
+  #  actualUsername:
+  #    name: "xray-database-creds"
+  #    key: "db-actualUsername"
 
 # RabbitMQ HA
 ## Configuration values for the rabbitmq-ha dependency
@@ -273,7 +278,7 @@ rabbitmq-ha:
   replicaCount: 1
   image:
     repository: docker.bintray.io/rabbitmq
-    tag: 3.8.7-alpine
+    tag: 3.8.9-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
@@ -324,7 +329,7 @@ rabbitmq:
   image:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
-    tag: 3.8.7-debian-10-r3
+    tag: 3.8.9-debian-10-r58
   auth:
     username: guest
     password: ""

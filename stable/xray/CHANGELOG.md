@@ -1,8 +1,32 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [6.8.3] - Dec 29, 2020
+* Update Xray to version `3.14.3` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.14.3)
+
+## [6.8.2] - Dec 28, 2020
+* Updated Xray application sizing yamls (values-small.yaml, values-medium.yaml, values-large.yaml)
+
+## [6.8.1] - Dec 24, 2020
+* Update Xray to version `3.14.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.14.1)
+
+## [6.8.0] - Dec 18, 2020
+* Update Xray to version `3.14.0`
+
+## [6.7.2] - Dec 14, 2020
+* Added support for passing actualUsername in secrets
+
+## [6.7.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.xray` in values.yaml
+
+## [6.7.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Update rabbitmq tag version to `3.8.9-debian-10-r58`
+* Update rabbitmq-ha tag version to `3.8.9-alpine`
+
 ## [6.6.0] - Dec 8, 2020
-* * Update Xray to version `3.13.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.13)
+* Update Xray to version `3.13.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.13)
+* Updated chart maintainers email
 
 ## [6.5.2] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`

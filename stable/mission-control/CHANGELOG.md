@@ -1,6 +1,16 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.4.2] - Dec 17, 2020
+* Update Mission Control version to 4.6.2
+
+## [5.4.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.missionControl` in values.yaml
+
+## [5.4.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Updated chart maintainers email
+
 ## [5.3.4] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 
