@@ -1,10 +1,29 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.5.6] - Dec 22, 2020
+## [11.7.3] - Dec 31, 2020
 * Added gid support for statefulset
-* Added `.Values.artifactory.openMetrics.enabled`
 * Add setSecurityContext flag to allow securityContext block to be removed from artifactory statefulset
+
+## [11.7.2] - Dec 29, 2020
+* **Important:** Removed `.Values.metrics` and `.Values.fluentd` (Fluentd and Prometheus integrations)
+* Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-values.yaml)
+* Updated Artifactory version to 7.12.5
+
+## [11.7.1] - Dec 21, 2020
+* Updated Artifactory version to 7.12.3
+
+## [11.7.0] - Dec 18, 2020
+* Updated Artifactory version to 7.12.2
+* Added `.Values.artifactory.openMetrics.enabled`
+
+## [11.6.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.artifactory` in values.yaml
+
+## [11.6.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Fixed `artifactory.persistence.googleStorage.endpoint` from `storage.googleapis.com` to `commondatastorage.googleapis.com`
+* Updated chart maintainers email
 
 ## [11.5.5] - Dec 4, 2020
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`

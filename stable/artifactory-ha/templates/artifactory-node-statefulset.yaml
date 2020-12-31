@@ -228,7 +228,7 @@ spec:
           cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
           cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
-          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+          bash $scriptsPath/migrationStatus.sh {{ include "artifactory-ha.app.version" . }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         resources:
 {{ toYaml .Values.artifactory.node.resources | indent 10 }}
         env:
@@ -563,20 +563,6 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-      {{- if .Values.fluentd.enabled }}
-      - name: fluentd
-        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
-        volumeMounts:
-          - mountPath: /opt/bitnami/fluentd/conf/
-            name: fluentd-config
-          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-            name: volume
-        env:
-          - name: JF_PRODUCT_DATA_INTERNAL
-            value: {{ .Values.artifactory.persistence.mountPath }}
-          - name: FLUENTD_CONF
-            value: fluentd.conf
-      {{- end }}
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
@@ -714,11 +700,6 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
-      {{- if .Values.fluentd.enabled }}
-      - name: fluentd-config
-        configMap:
-          name: {{ template "artifactory-ha.fullname" . }}-fluentd-config
-      {{- end }}
   volumeClaimTemplates:
   {{- if .Values.artifactory.persistence.enabled }}
   - metadata:
