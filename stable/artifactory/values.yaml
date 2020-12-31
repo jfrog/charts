@@ -174,6 +174,12 @@ artifactory:
       maxThreads: 200
       extraConfig: 'acceptCount="100"'
 
+  # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
+  # To enable set `.Values.artifactory.openMetrics.enabled` to `true`
+  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  openMetrics:
+    enabled: false
+
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
   #  # Absolute path
@@ -477,6 +483,10 @@ artifactory:
         {{- end }}
       {{- end }}
     artifactory:
+    {{- if .Values.artifactory.openMetrics }}
+      metrics:
+        enabled: {{ .Values.artifactory.openMetrics.enabled }}
+    {{- end }}
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
       tomcat:
