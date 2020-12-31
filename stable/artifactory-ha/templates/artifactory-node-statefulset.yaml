@@ -59,12 +59,7 @@ spec:
       {{- if .Values.artifactory.setSecurityContext }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
-<<<<<<< HEAD
-        fsGroup: {{ .Values.artifactory.uid }}
-      {{- end }}
-=======
         fsGroup: {{ .Values.artifactory.gid }}
->>>>>>> rt-7-12-5
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
