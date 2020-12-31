@@ -8,7 +8,7 @@ All changes to this chart will be documented in this file
 ## [4.7.2] - Dec 29, 2020
 * **Important:** Removed `.Values.metrics` and `.Values.fluentd` (Fluentd and Prometheus integrations)
 * Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-ha-values.yaml)
-* Updated Artifactory version to 7.12.5 [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.5)
+* Updated Artifactory version to 7.12.5
 
 ## [4.7.1] - Dec 21, 2020
 * Updated Artifactory version to 7.12.3
