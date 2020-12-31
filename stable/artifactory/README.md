@@ -1138,7 +1138,12 @@ This will start sending your Artifactory logs to the log aggregator of your choi
 
 #### FluentD, Prometheus and Grafana
 
-To configure Prometheus and Grafana to gather metrics from Artifactory through the use of FluentD, please refer - https://github.com/jfrog/log-analytics-prometheus
+To configure Prometheus and Grafana to gather metrics from Artifactory through the use of FluentD, please refer to the log analytics repo:
+
+https://github.com/jfrog/log-analytics-prometheus
+
+That repo contains a file `artifactory-values.yaml` that can be used to deploy Prometheus, Service Monitor, and Grafana with this chart.
+
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
