@@ -65,8 +65,7 @@ spec:
       {{- if .Values.artifactory.setSecurityContext }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
-        fsGroup: {{ .Values.artifactory.uid }}
-      {{- end }}
+        fsGroup: {{ .Values.artifactory.gid }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "artifactory.customInitContainersBegin" .)  . | indent 6 }}
@@ -218,8 +217,8 @@ spec:
           - 'sh'
           - '-c'
           - >
-            echo "Setting ownership {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} on PVC {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}"
-            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
+            echo "Setting ownership {{ .Values.artifactory.uid }}:{{ .Values.artifactory.gid }} on PVC {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}"
+            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.gid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
           runAsUser: 0
         volumeMounts:

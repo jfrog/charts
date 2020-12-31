@@ -59,8 +59,12 @@ spec:
       {{- if .Values.artifactory.setSecurityContext }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
+<<<<<<< HEAD
         fsGroup: {{ .Values.artifactory.uid }}
       {{- end }}
+=======
+        fsGroup: {{ .Values.artifactory.gid }}
+>>>>>>> rt-7-12-5
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
@@ -176,7 +180,7 @@ spec:
           - 'sh'
           - '-c'
           - >
-            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
+            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.gid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
           runAsUser: 0
         resources:

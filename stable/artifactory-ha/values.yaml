@@ -220,6 +220,12 @@ artifactory:
       maxThreads: 200
       extraConfig: 'acceptCount="100"'
 
+  # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
+  # To enable set `.Values.artifactory.openMetrics.enabled` to `true`
+  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  openMetrics:
+    enabled: false
+
   # This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
     enabled: false
@@ -534,6 +540,10 @@ artifactory:
         driver: "{{ .Values.database.driver }}"
       {{- end }}
     artifactory:
+    {{- if .Values.artifactory.openMetrics }}
+      metrics:
+        enabled: {{ .Values.artifactory.openMetrics.enabled }}
+    {{- end }}
     {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
       node:
       {{- if .Values.artifactory.haDataDir.path }}
@@ -581,6 +591,7 @@ artifactory:
   externalArtifactoryPort: 8081
   internalArtifactoryPort: 8081
   uid: 1030
+  gid: 1030
   terminationGracePeriodSeconds: 30
 
   ## By default, the Artifactory StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `artifactory.uid` value.
