@@ -1254,7 +1254,12 @@ helm upgrade --install nginx-ingress --namespace nginx-ingress center/kubernetes
 
 #### FluentD, Prometheus and Grafana
 
-To configure Prometheus and Grafana to gather metrics from Artifactory through the use of FluentD, please refer - https://github.com/jfrog/log-analytics-prometheus
+To configure Prometheus and Grafana to gather metrics from Artifactory through the use of FluentD, please refer to the log analytics repo:
+
+https://github.com/jfrog/log-analytics-prometheus
+
+That repo contains a file `artifactory-ha-values.yaml` that can be used to deploy Prometheus, Service Monitor, and Grafana with this chart.
+
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
