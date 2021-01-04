@@ -1,6 +1,9 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [3.4.0] - Jan 4, 2020
+* Update dependency Artifactory chart version to 11.7.4 (Artifactory 7.12.5)
+
 ## [3.3.1] - Dec 1, 2020
 * Update dependency Artifactory chart version to 11.5.4 (Artifactory 7.11.5)
 
