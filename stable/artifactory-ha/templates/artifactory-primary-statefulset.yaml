@@ -69,7 +69,7 @@ spec:
       {{- if .Values.artifactory.setSecurityContext }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
-        fsGroup: {{ .Values.artifactory.uid }}
+        fsGroup: {{ .Values.artifactory.gid }}
       {{- end }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
