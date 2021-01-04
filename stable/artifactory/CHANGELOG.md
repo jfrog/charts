@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.7.4] - Jan 04, 2020
+* Fixed gid support for statefulset
+
 ## [11.7.3] - Dec 31, 2020
 * Added gid support for statefulset
 * Add setSecurityContext flag to allow securityContext block to be removed from artifactory statefulset
