@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [6.9.1] - Jan 5, 2020
+* Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/xray-values.yaml)
+* Update router version to `7.12.4`
+
 ## [6.9.0] - Dec 31, 2020
 * Update Xray to version `3.15.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.15.1)
 

@@ -739,7 +739,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 7.11.2
+    tag: 7.12.4
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -859,3 +859,8 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/xray-values.yaml
+additionalResources: |
