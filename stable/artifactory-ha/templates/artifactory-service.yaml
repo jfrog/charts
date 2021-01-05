@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "artifactory-ha.fullname" . }}
+  name: {{ template "artifactory-ha.node.name" . }}
   labels:
     app: {{ template "artifactory-ha.name" . }}
     chart: {{ template "artifactory-ha.chart" . }}
