@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [8.10.2] - Jan 5, 2020
+* Updated Artifactory version to 6.23.7 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.23.7)
+
 ## [8.10.1] - Nov 30, 2020
 * Updated Artifactory version to 6.23.3 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.23.3)
 * Updated chart maintainers email
