@@ -343,6 +343,16 @@ server:
     ## Custom volume comes here ##
 ```
 
+### Log Analytics
+
+#### FluentD, Prometheus and Grafana
+
+To configure Prometheus and Grafana to gather metrics from Xray through the use of FluentD, please refer to the log analytics repo:
+
+https://github.com/jfrog/log-analytics-prometheus
+
+That repo contains a file `xray-values.yaml` that can be used to deploy Prometheus, Service Monitor, and Grafana with this chart.
+
 ## Useful links
 - https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability
 - https://www.jfrog.com/confluence/display/EP/Getting+Started
