@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [4.7.5] - Jan 05, 2020
+* Aligned service name with node statefulset spec.serviceName
+
 ## [4.7.4] - Jan 04, 2020
 * Fixed gid support for statefulset
 
