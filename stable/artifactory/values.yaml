@@ -546,6 +546,22 @@ artifactory:
        # - hosts:
        #   - artifactory.domain.example
        #   secretName: chart-example-tls-secret
+    ## When replicator is enabled and want to use tracker feature, trackerIngress.enabled flag should be set to true
+    ## Please refer - https://www.jfrog.com/confluence/display/JFROG/JFrog+Peer-to-Peer+%28P2P%29+Downloads
+    trackerIngress:
+      enabled: false
+      name:
+      hosts: []
+      annotations: {}
+       # kubernetes.io/ingress.class: nginx
+       # nginx.ingress.kubernetes.io/proxy-buffering: "off"
+       # nginx.ingress.kubernetes.io/configuration-snippet: |
+       #   chunked_transfer_encoding on;
+      tls: []
+       #  Secrets must be manually created in the namespace.
+       # - hosts:
+       #   - artifactory.domain.example
+       #   secretName: chart-example-tls-secret
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
