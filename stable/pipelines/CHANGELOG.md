@@ -1,6 +1,39 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.5.5] - Jan 8, 2020
+* Add support for creating additional kubernetes resources
+
+## [2.5.4] - Dec 23, 2020
+* Updated resource requests for the router container
+
+## [2.5.3] - Dec 23, 2020
+* Updated resource(memory) requests for the containers
+
+## [2.5.2] - Dec 23, 2020
+* Remove the quotes around nodePollerIntervalMS to maintain consistency
+
+## [2.5.1] - Dec 23, 2020
+* Adds nodePollerIntervalMS in systemYaml for buildPlane poller
+
+## [2.5.0] - Dec 21, 2020
+* Pipelines v1.10.0
+
+## [2.4.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.pipelines` in values.yaml
+
+## [2.4.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Update rabbitmq tag version to `3.8.9-debian-10-r58`
+* Update redis tag version to `6.0.9-debian-10-r39`
+* Updated chart maintainers email
+
+## [2.3.10] - Dec 9, 2020
+* Added NetworkPolicy configurations (defaults to allow all)
+
+## [2.3.9] - Dec 8, 2020
+* mount logs volume to the router container
+
 ## [2.3.8] - Dec 4, 2020
 * Remove the templateSync container's dependency on custom sidecar definitions
 
@@ -8,7 +41,7 @@ All changes to this chart to be documented in this file
 * **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
 
 ## [2.3.6] - Dec 3, 2020
-* Update Pipelines services RBAC rules 
+* Update Pipelines services RBAC rules
 * Make Pipelines services RBAC kind Role as default, with an option to switch to ClusterRole, it disables by default access to Cluster wide access
 
 ## [2.3.5] - Dec 3, 2020
@@ -150,7 +183,7 @@ All changes to this chart to be documented in this file
 
 ## [1.3.9] - July 31, 2020
 * Added support for customVolumes, configMaps and customInitcontainers for Vault
-* Added tpl for resolving jfrogUrl 
+* Added tpl for resolving jfrogUrl
 
 ## [1.3.8] - July 30, 2020
 * Fix customSideCar container bug for configMaps
@@ -191,7 +224,7 @@ All changes to this chart to be documented in this file
 
 ## [1.1.5] - May 13, 2020
 * Pipelines v1.4.7
- 
+
 ## [1.1.4] - April 30, 2020
 * In readme fix helm template examples
 
@@ -252,7 +285,7 @@ All changes to this chart to be documented in this file
 * Pipelines v1.3.1
 
 ## [1.0.25] - Feb 27, 2020
-* Initial public release 
+* Initial public release
 
 ## [1.0.24] - Feb 26, 2020
 * Bump Redis chart to 10.5.6
