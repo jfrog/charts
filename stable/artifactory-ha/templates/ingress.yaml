@@ -99,6 +99,49 @@ spec:
 {{ toYaml .Values.artifactory.replicator.ingress.tls | indent 4 }}
   {{- end -}}
 {{- end -}}
+{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.trackerIngress.enabled }}
+---
+{{- $replicatorTrackerIngressName := default ( include "artifactory-ha.replicator.tracker.fullname" . ) .Values.artifactory.replicator.trackerIngress.name -}}
+  {{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
+apiVersion: networking.k8s.io/v1beta1
+  {{- else }}
+apiVersion: extensions/v1beta1
+  {{- end }}
+kind: Ingress
+metadata:
+  name: {{ $replicatorTrackerIngressName }}
+  labels:
+    app: "{{ template "artifactory-ha.name" $ }}"
+    chart: "{{ template "artifactory-ha.chart" $ }}"
+    release: {{ $.Release.Name | quote }}
+    heritage: {{ $.Release.Service | quote }}
+  {{- if .Values.artifactory.replicator.trackerIngress.annotations }}
+  annotations:
+{{ .Values.artifactory.replicator.trackerIngress.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
+  {{- end }}
+spec:
+  {{- if .Values.ingress.defaultBackend.enabled }}
+  backend:
+    serviceName: {{ $serviceName }}
+    servicePort: {{ $servicePort }}
+  {{- end }}
+  rules:
+{{- if .Values.artifactory.replicator.trackerIngress.hosts }}
+  {{- range $host := .Values.artifactory.replicator.trackerIngress.hosts }}
+  - host: {{ $host | quote }}
+    http:
+      paths:
+        - path: /
+          backend:
+            serviceName: {{ $serviceName }}
+            servicePort: {{ $servicePort }}
+  {{- end -}}
+{{- end -}}
+  {{- if .Values.artifactory.replicator.trackerIngress.tls }}
+  tls:
+{{ toYaml .Values.artifactory.replicator.trackerIngress.tls | indent 4 }}
+  {{- end -}}
+{{- end -}}
 {{- if .Values.customIngress }}
 ---
 {{ .Values.customIngress | toYaml | trimSuffix "\n" }}
