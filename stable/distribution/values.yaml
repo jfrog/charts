@@ -674,3 +674,7 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+additionalResources: |
