@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.3.0] - Jan 13, 2020
+* Update Distribution to version `2.6.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6)
+
 ## [7.2.3] - Jan 8, 2020
 * Add support for creating additional kubernetes resources
 
