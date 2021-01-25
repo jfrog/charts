@@ -860,3 +860,15 @@ filebeat:
 ## Use --- as a separator between multiple resources
 ## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/xray-values.yaml
 additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"

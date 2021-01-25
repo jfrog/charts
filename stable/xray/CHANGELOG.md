@@ -1,15 +1,18 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
-## [6.10.0] - Jan 25, 2020
+## [6.10.0] - Jan 25, 2021
 * Update Xray to version `3.16.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.16)
 * Added support for passing additionalSpec to xray service resource
 * Removed unused variables in values.yaml
 
-## [6.9.2] - Jan 13, 2020
+## [6.9.3] - Jan 25, 2021
+* Add support for hostAliases
+
+## [6.9.2] - Jan 13, 2021
 * Update Xray to version `3.15.3` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.15.3)
 
-## [6.9.1] - Jan 5, 2020
+## [6.9.1] - Jan 5, 2021
 * Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/xray-values.yaml)
 * Update router version to `7.12.4`
 
