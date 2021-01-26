@@ -554,10 +554,6 @@ analysis:
       failureThreshold: 10
       successThreshold: 1
 
-  ## Container storage limit
-  persistence:
-    size: 10Gi
-
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -662,10 +658,6 @@ persist:
       failureThreshold: 10
       successThreshold: 1
 
-  ## Container storage limit
-  persistence:
-    size: 10Gi
-
   ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -698,6 +690,12 @@ server:
     type: ClusterIP
     name: xray
     annotations: {}
+    ## Provide additional spec to xray service
+    ## Example:
+    ## additionalSpec: |
+    ##   customKey: customVal
+    ##
+    additionalSpec: |
 
   livenessProbe:
     enabled: true
@@ -787,9 +785,7 @@ router:
       successThreshold: 1
 
   persistence:
-    accessMode: ReadWriteOnce
     mountPath: "/var/opt/jfrog/router"
-    size: 5Gi
 
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
@@ -864,3 +860,15 @@ filebeat:
 ## Use --- as a separator between multiple resources
 ## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/xray-values.yaml
 additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"
