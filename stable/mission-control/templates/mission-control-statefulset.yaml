@@ -62,10 +62,14 @@ spec:
         - '-c'
         - >
           chmod -R 777 {{ .Values.elasticsearch.persistence.mountPath }};
+          mkdir -p /usr/share/elasticsearch/data/certs;
+          cp -fv /tmp/certs/* /usr/share/elasticsearch/data/certs;
         {{- if .Values.elasticsearch.configureDockerHost }}
           sysctl -w vm.max_map_count={{ .Values.elasticsearch.env.maxMapCount }}
         {{- end }}
         volumeMounts:
+        - name: elastic-certs
+          mountPath: /tmp/certs
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
         resources:
@@ -227,6 +231,10 @@ spec:
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "mission-control.customInitContainers" .)  . | indent 6 }}
     {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
     {{- if .Values.elasticsearch.enabled }}
       - name: {{ .Values.elasticsearch.name }}
@@ -261,6 +269,11 @@ spec:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
               key: password
+        - name: ELASTICSEARCH_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-elasticsearch-cred
+              key: username
         - name: JF_SHARED_ELASTICSEARCH_USERNAME
           valueFrom:
             secretKeyRef:
@@ -641,6 +654,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if .Values.elasticsearch.enabled }}
+      - name: elastic-certs
+        secret:
+          secretName: {{ default (printf "%s-%s" (include "mission-control.fullname" .) "elasticsearch-certs") .Values.elasticsearch.certificatesSecretName }}
+      {{- end }}
       - name: applicationyaml
         secret:
           secretName: {{ template "mission-control.fullname" . }}-applicationyaml

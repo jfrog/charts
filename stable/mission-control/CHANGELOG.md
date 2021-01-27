@@ -1,6 +1,23 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.4.6] - Jan 27, 2021
+* Update router version to `7.12.4`
+
+## [5.4.5] - Jan 25, 2021
+* Add support for hostAliases
+
+## [5.4.4] - Jan 18, 2021
+* Update Mission Control version to 4.6.3
+* Upgrade Elasticsearch version to 7.8.1 with Searchguard
+* Added support for `.Values.elasticsearch.username`
+* Added support for custom tls certificates for elastic searchguard
+* **IMPORTANT**
+* If the certificates are changed, rolling update is not possible. Scale down to one replica and do an helm upgrade
+
+## [5.4.3] - Jan 8, 2021
+* Add support for creating additional kubernetes resources
+
 ## [5.4.2] - Dec 17, 2020
 * Update Mission Control version to 4.6.2
 

@@ -243,6 +243,23 @@ This can be done with the following parameters
 ...
 ```
 
+#### Elasticsearch with custom tls-certificates
+
+By default the internal elasticsearch uses the bundled tls-certificates for configuring searchguard. For production deployments it is recommended to use you own certificates.
+Custom certificates can be added by using kubernetes secret. The secret should be created outside of this chart and provided using the tag `.Values.elasticsearch.certificatesSecretName`. Please refer the example below.
+
+```bash
+kubectl create secret generic elastic-certs --from-file=localhost.key=localhost.key --from-file=localhost.pem=localhost.pem --from-file=sgadmin.key=sgadmin.key --from-file=sgadmin.pem=sgadmin.pem --from-file=root-ca.pem=root-ca.pem
+```
+Refer- https://docs.search-guard.com/latest/offline-tls-tool for creating certificates
+
+And then pass it to the helm installation
+```yaml
+elasticsearch:
+  certificatesSecretName: elastic-certs
+```
+**NOTE:** If the certificates are changed, rolling update is not possible. Scale down the deployment to one replica and do an helm upgrade
+
 ### Logger sidecars
 This chart provides the option to add sidecars to tail various logs from Mission Control containers. See the available values in `values.yaml`
 
