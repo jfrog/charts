@@ -550,7 +550,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 1.4.4
+    tag: 7.12.4
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -678,3 +678,15 @@ filebeat:
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
 additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"

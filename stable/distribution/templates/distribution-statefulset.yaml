@@ -147,6 +147,10 @@ spec:
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "distribution.customInitContainers" .)  . | indent 6 }}
     {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
