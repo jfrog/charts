@@ -1098,7 +1098,7 @@ To get Helm to create an ingress object with a hostname, add these below lines t
   artifactory:
     service:
       type: NodePort
-  nginx
+  nginx:
     enabled: false
 ```
 
