@@ -303,6 +303,7 @@ To use an AWS S3 bucket as the cluster's filestore. See [S3 Binary Provider](htt
 --set artifactory.persistence.awsS3.region=${AWS_REGION} \
 --set artifactory.persistence.awsS3.identity=${AWS_ACCESS_KEY_ID} \
 --set artifactory.persistence.awsS3.credential=${AWS_SECRET_ACCESS_KEY} \
+--set artifactory.persistence.awsS3V3.useInstanceCredentials=false \
 ...
 
 ...
