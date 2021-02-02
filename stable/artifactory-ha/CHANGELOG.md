@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+# [4.7.7] - December 15, 2020
+* Updated Artifactory-HA readme.md file and moved content to Confluence page.
+
 ## [4.7.6] - Jan 11, 2020
 * Updated Artifactory version to 7.12.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.6)
 
@@ -42,9 +45,6 @@ All changes to this chart will be documented in this file
 
 ## [4.5.3] - Nov 30, 2020
 * Updated Artifactory version to 7.11.5 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)
-
-# [4.5.3] - December 15, 2020
-* Updated Artifactory-HA readme.md file and moved content to Confluence page.
 
 # [4.5.2] - Nov 23, 2020
 * Updated Artifactory version to 7.11.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)
