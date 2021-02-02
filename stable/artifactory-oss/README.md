@@ -30,7 +30,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-oss`:
 ```bash
-helm upgrade --install artifactory-oss --set postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-oss center/jfrog/artifactory-oss
+helm upgrade --install artifactory-oss --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-oss center/jfrog/artifactory-oss
 ```
 
 ### Accessing Artifactory OSS

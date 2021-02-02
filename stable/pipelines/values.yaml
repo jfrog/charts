@@ -19,15 +19,20 @@ global:
 
   ## Internal Vault must be set to false
   vault:
-    host:
-    port:
+    ## Vault url examples
+    # external one: https://vault.example.com
+    # internal one running in the same Kubernetes cluster: http://vault-active:8200
+    url:
     token:
     ## Vault token using existing secret
     # existingSecret: secret
 
-
   # imagePullSecrets:
   #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.pipelines, pipelines.version or image tags
+  ## Note: Order of preference is 1) global.versions 2) pipelines.version 3) image tags 4) Chart.AppVersion
+  versions: {}
+  #   pipelines:
   # jfrogUrl:
   # jfrogUrlUi:
   # joinKey:
@@ -42,7 +47,7 @@ global:
 
 ## Common
 initContainer:
-  image: "docker.bintray.io/alpine:3.12"
+  image: "docker.bintray.io/alpine:3.12.1"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -69,8 +74,19 @@ imageRegistry: docker.bintray.io
 imagePullSecrets:
   # - myRegistryKeySecretName
 
-## Existing secret with Pipelines system.yaml
-existingSecret:
+## Pipelines systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring pipelines
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Pipelines+System+YAML
+## Note: This will override existing (default) .Values.pipelines.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section for an example. Have to be set for both vault and pipelines
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+## Note: From chart version 2.2.0 and above .Values.existingSecret is changed to .Values.systemYaml.existingSecret and .Values.systemYaml.dataKey
+## Note: From chart version 2.3.7 and above `.Values.systemYaml` is changed to `.Values.systemYamlOverride`.
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
 
 ## String to partially override pipelines.fullname template (will maintain the release name)
 # nameOverride:
@@ -99,11 +115,17 @@ pipelines:
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  ## Note: This feature is available on pipelines app version 1.9.x and later
+  # joinKeySecretName:
 
   ## Pipelines requires a unique master key
   ## You can generate one with the command: "openssl rand -hex 32"
   ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName.
+  ## Note: This feature is available on pipelines app version 1.9.x and later
+  # masterKeySecretName:
 
   ## Installer Authentication Token
   ## The unique token can be generated with: uuidgen | tr '[:upper:]' '[:lower:]'
@@ -121,8 +143,6 @@ pipelines:
   ##
   licenseId: "FFFFFFFFF"
 
-  ## A name must be unique if the same Artifactory is shared between different Pipelines
-  ## Repository type `Generic` with layout `maven-2-default` must be precreated in advance
   rootBucket: jfrogpipelines
 
   mountPath: /opt/jfrog/pipelines/var/etc
@@ -143,6 +163,8 @@ pipelines:
   dbHealthCheckIntervalInMins: 1
   # PostgressDB health check timeout in seconds
   dbHealthCheckTimeoutInSeconds: 2
+  # BuildPlane polling interval
+  nodePollerIntervalMS: 15000
 
   updateStrategy: RollingUpdate
 
@@ -157,6 +179,12 @@ pipelines:
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 70
+
+  ## Extra environment variables that can be used to tune pipelines services to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: MY_ENV_VAR
+  #   value: "example_value"
 
   api:
     image:
@@ -189,7 +217,7 @@ pipelines:
       failureThreshold: 10
       successThreshold: 1
       path: /
-      port: api
+      port: http-api
 
     readinessProbe:
       enabled: true
@@ -199,7 +227,7 @@ pipelines:
       failureThreshold: 10
       successThreshold: 1
       path: /
-      port: api
+      port: http-api
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -220,11 +248,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: "2"
+      #   memory: 4Gi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 50m
+      #   memory: 100Mi
   router:
     image:
       # registry:
@@ -236,14 +264,15 @@ pipelines:
     externalPort: 8082
 
     mountPath: "/opt/jfrog/router/var/etc"
+    logPath: "/opt/jfrog/router/var/log"
 
     resources: {}
     #  requests:
-    #    memory: "2Gi"
-    #    cpu: "500m"
+    #    memory: "50Mi"
+    #    cpu: "10m"
     #  limits:
-    #    memory: "4Gi"
-    #    cpu: "2"
+    #    memory: "1Gi"
+    #    cpu: "1"
 
   www:
     image:
@@ -276,7 +305,7 @@ pipelines:
       periodSeconds: 10
       successThreshold: 1
       path: /
-      port: www
+      port: http-www
 
 
     readinessProbe:
@@ -287,7 +316,7 @@ pipelines:
       periodSeconds: 10
       successThreshold: 1
       path: /
-      port: www
+      port: http-www
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -308,11 +337,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 800m
+      #   memory: 900Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 10m
+      #   memory: 40Mi
 
   msg:
     uiUser: monitor
@@ -328,11 +357,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: "2"
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 25m
+      #   memory: 40Mi
 
   runTrigger:
     image:
@@ -343,11 +372,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 40Mi
 
   stepTrigger:
     image:
@@ -358,11 +387,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 40Mi
 
   cron:
     image:
@@ -373,11 +402,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 40Mi
 
   nexec:
     image:
@@ -388,11 +417,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 40Mi
 
   hookHandler:
     image:
@@ -403,11 +432,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 25m
+      #   memory: 40Mi
 
   marshaller:
     image:
@@ -418,11 +447,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 60Mi
 
   logup:
     image:
@@ -433,11 +462,11 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 40Mi
 
   extensionSync:
     image:
@@ -448,11 +477,24 @@ pipelines:
 
     resources: {}
       # limits:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 500m
+      #   memory: 500Mi
       # requests:
-      #   cpu: 100m
-      #   memory: 128Mi
+      #   cpu: 5m
+      #   memory: 40Mi
+
+  templateSync:
+    image:
+      repository: jfrog/pipelines-micro
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 500m
+      #   memory: 500Mi
+      # requests:
+      #   cpu: 5m
+      #   memory: 40Mi
 
   ## Pipelines installer
   pipelinesInit:
@@ -473,6 +515,8 @@ pipelines:
   ## Cluster Role Based Access
   ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
   rbac:
+    ## Sets ClusterRole if enabled, otherwise Role
+    clusterRole: false
     role:
       ## Rules to create. It follows the role specification
       rules:
@@ -484,6 +528,7 @@ pipelines:
         - pods
         - deployments/scale
         - secrets
+        - configmaps
         verbs: ["*"]
 
   # Add any list of configmaps to Pipelines
@@ -520,13 +565,13 @@ pipelines:
 
   ## Add custom init containers - last init container to run
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.pipelines.mountPath }}/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
   #        name: jfrog-pipelines-folder
@@ -607,8 +652,10 @@ pipelines:
         dataPort: {{ .Values.pipelines.router.externalPort }}
         joinKey: {{ include "pipelines.joinKey" . }}
 
+      {{- if or .Values.pipelines.masterKey .Values.global.masterKey }}
       security:
         masterKey: {{ include "pipelines.masterKey" . }}
+      {{- end }}
 
       ## Database configuration
       ##
@@ -672,6 +719,7 @@ pipelines:
           - "core.nexec"
           - "core.hookHandler"
           - "core.extensionSync"
+          - "core.templateSync"
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
@@ -747,8 +795,8 @@ pipelines:
       group: ""
       noVerifySsl: false
       ignoreTLSErrors: false
-      controlplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.version }}"
-      buildplaneVersion: "{{ default .Chart.AppVersion .Values.pipelines.version }}"
+      controlplaneVersion: {{ include "pipelines.app.version" . }}
+      buildplaneVersion: {{ include "pipelines.app.version" . }}
       accessControlAllowOrigins:
         - {{ .Values.pipelines.accessControlAllowOrigins_0 }}
         - {{ .Values.pipelines.accessControlAllowOrigins_1 }}
@@ -833,6 +881,8 @@ pipelines:
           name: marshaller
         extensionSync:
           name: extensionSync
+        templateSync:
+          name: templateSync
 
     ## Runtime configuration
     ##
@@ -847,6 +897,7 @@ pipelines:
       nodeStopDayOfWeek: 0
       nodeStopIntervalDays: 30
       maxNodeCheckInDelayMin: 15
+      nodePollerIntervalMS: {{ .Values.pipelines.nodePollerIntervalMS }}
       defaultMinionInstanceSize: "c4.large"
       allowDynamicNodes: true
       allowCustomNodes: true
@@ -1015,7 +1066,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 12.3.0-debian-10-r71
+    tag: 12.5.0-debian-10-r25
 
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
@@ -1060,7 +1111,7 @@ rabbitmq:
   image:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
-    tag: 3.8.7-debian-10-r3
+    tag: 3.8.9-debian-10-r58
   auth:
     username: admin
 
@@ -1156,7 +1207,7 @@ redis:
   image:
     registry: docker.bintray.io
     repository: bitnami/redis
-    tag: 6.0.6-debian-10-r12
+    tag: 6.0.9-debian-10-r39
   redisPort: 6379
 
   cluster:
@@ -1172,20 +1223,22 @@ redis:
 
     resources: {}
     #  requests:
-    #    memory: 200Mi
-    #    cpu: 100m
+    #    memory: 100Mi
+    #    cpu: 25m
     #  limits:
-    #    memory: 700Mi
+    #    memory: 4Gi
+    #    cpu: "1"
 
     affinity: {}
 
   slave:
     resources: {}
     #  requests:
-    #    memory: 200Mi
-    #    cpu: 100m
+    #    memory: 100Mi
+    #    cpu: 25m
     #  limits:
-    #    memory: 200Mi
+    #    memory: 4Gi
+    #    cpu: "1"
 
     affinity: {}
 
@@ -1207,6 +1260,13 @@ vault:
       # tag:
 
       pullPolicy: IfNotPresent
+    resources:
+      requests:
+        memory: 10Mi
+        cpu: 10m
+      limits:
+        memory: 50Mi
+        cpu: 50m
 
   service:
     # Supported service types: ClusterIP and NodePort
@@ -1218,11 +1278,11 @@ vault:
 
   resources: {}
   #  requests:
-  #    memory: 256Mi
-  #    cpu: 200m
+  #    memory: 15Mi
+  #    cpu: 5m
   #  limits:
-  #    memory: 1Gi
-  #    cpu: 600m
+  #    memory: 2Gi
+  #    cpu: 500m
 
   affinity: {}
   nodeSelector: {}
@@ -1275,13 +1335,13 @@ vault:
 
   ## Add custom init containers - last init container to run
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.pipelines.mountPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.pipelines.mountPath }}/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
   #        name: jfrog-pipelines-folder
@@ -1355,6 +1415,27 @@ filebeat:
 rbac:
   create: true
 
+networkpolicy:
+  # Allows all ingress and egress
+  - name: pipelines
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: pipelines
+    egress:
+    - {}
+    ingress:
+    - {}
+  # #Uncomment to allow only pipelines pods to communicate with rabbitmq (if rabbitmq.enabled is true)
+  # - name: rabbitmq
+  #   podSelector:
+  #     matchLabels:
+  #       app.kubernetes.io/name: rabbitmq
+  #   ingress:
+  #   - from:
+  #     - podSelector:
+  #         matchLabels:
+  #           app.kubernetes.io/name: pipelines
+
 ## The Build Plane is where the actual builds will run
 buildPlane:
   ## Dynamic Build Plane integration for the initial bootstrapping of the build planes.
@@ -1397,3 +1478,7 @@ buildPlane:
         kubeconfig: ""
         ## Existing secret with kubeconfig
         existingSecret:
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+additionalResources: |

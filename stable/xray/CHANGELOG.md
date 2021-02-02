@@ -1,6 +1,62 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [6.10.0] - Jan 25, 2021
+* Update Xray to version `3.16.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.16)
+* Added support for passing additionalSpec to xray service resource
+* Removed unused variables in values.yaml
+
+## [6.9.3] - Jan 25, 2021
+* Add support for hostAliases
+
+## [6.9.2] - Jan 13, 2021
+* Update Xray to version `3.15.3` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.15.3)
+
+## [6.9.1] - Jan 5, 2021
+* Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/xray-values.yaml)
+* Update router version to `7.12.4`
+
+## [6.9.0] - Dec 31, 2020
+* Update Xray to version `3.15.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.15.1)
+
+## [6.8.3] - Dec 29, 2020
+* Update Xray to version `3.14.3` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.14.3)
+
+## [6.8.2] - Dec 28, 2020
+* Updated Xray application sizing yamls (values-small.yaml, values-medium.yaml, values-large.yaml)
+
+## [6.8.1] - Dec 24, 2020
+* Update Xray to version `3.14.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.14.1)
+
+## [6.8.0] - Dec 18, 2020
+* Update Xray to version `3.14.0`
+
+## [6.7.2] - Dec 14, 2020
+* Added support for passing actualUsername in secrets
+
+## [6.7.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.xray` in values.yaml
+
+## [6.7.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Update rabbitmq tag version to `3.8.9-debian-10-r58`
+* Update rabbitmq-ha tag version to `3.8.9-alpine`
+
+## [6.6.0] - Dec 8, 2020
+* Update Xray to version `3.13.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.13)
+* Updated chart maintainers email
+
+## [6.5.2] - Dec 4, 2020
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
+## [6.5.1] - Nov 30, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
+## [6.5.0] - Nov 30, 2020
+* Update Xray to version `3.12.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.12)
+* Update router version to `7.11.2`
+* Update alpine tag version to `3.12.1`
+
 ## [6.4.4] - Nov 20, 2020
 * Support external rabbitmq credentials to come from existing secret
 

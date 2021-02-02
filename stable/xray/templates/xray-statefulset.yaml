@@ -79,8 +79,8 @@ spec:
         - >
           echo "Copy system.yaml to {{ .Values.xray.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc;
-          {{- if .Values.systemYaml.existingSecret }}
-          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.xray.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
@@ -114,11 +114,11 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.xray.persistence.mountPath | quote }}
-      {{- if or .Values.systemYaml.existingSecret .Values.xray.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
         - name: systemyaml
-          {{- if .Values.systemYaml.existingSecret }}
-          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
-          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
           {{- else if .Values.xray.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
@@ -140,9 +140,13 @@ spec:
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "xray.customInitContainers" .) . | indent 6 }}
     {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.router.name }}
-        image: {{ include "router.getImageInfoByValue" (list . "router") }}
+        image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
         command:
           - '/bin/sh'
@@ -155,7 +159,7 @@ spec:
           {{- end }}
             /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
-          - name: router
+          - name: http-router
             containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -224,6 +228,18 @@ spec:
               key: db-user
         {{- end }}
       {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
@@ -264,6 +280,7 @@ spec:
       {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
+          name: http-server
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -331,6 +348,18 @@ spec:
               key: db-user
         {{- end }}
       {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
@@ -377,6 +406,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
+          name: http-analysis
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -444,6 +474,18 @@ spec:
               key: db-user
         {{- end }}
       {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
@@ -490,6 +532,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
+          name: http-indexer
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -557,6 +600,18 @@ spec:
               key: db-user
         {{- end }}
       {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
       {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
         - name: JF_SHARED_DATABASE_PASSWORD
           valueFrom:
@@ -599,6 +654,7 @@ spec:
           value: "true"
         ports:
         - containerPort: {{ .Values.persist.internalPort }}
+          name: http-persist
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
@@ -661,10 +717,10 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      {{- if or .Values.systemYaml.existingSecret .Values.xray.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ default (printf "%s-%s" (include "xray.fullname" .) "system-yaml") .Values.systemYaml.existingSecret }}
+          secretName: {{ default (printf "%s-%s" (include "xray.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
       {{- end }}
       {{- if not .Values.common.persistence.enabled }}
       - name: data-volume

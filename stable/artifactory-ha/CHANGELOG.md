@@ -1,5 +1,47 @@
 # JFrog Artifactory-ha Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
+
+## [4.7.6] - Jan 11, 2020
+* Updated Artifactory version to 7.12.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.6)
+
+## [4.7.5] - Jan 07, 2020
+* Added support for optional tracker dedicated ingress `.Values.artifactory.replicator.trackerIngress.enabled` (defaults to false)
+
+## [4.7.4] - Jan 04, 2020
+* Fixed gid support for statefulset
+
+## [4.7.3] - Dec 31, 2020
+* Added gid support for statefulset
+* Add setSecurityContext flag to allow securityContext block to be removed from artifactory statefulset
+
+## [4.7.2] - Dec 29, 2020
+* **Important:** Removed `.Values.metrics` and `.Values.fluentd` (Fluentd and Prometheus integrations)
+* Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-ha-values.yaml)
+* Updated Artifactory version to 7.12.5
+
+## [4.7.1] - Dec 21, 2020
+* Updated Artifactory version to 7.12.3
+
+## [4.7.0] - Dec 18, 2020
+* Updated Artifactory version to 7.12.2
+* Added `.Values.artifactory.openMetrics.enabled`
+
+## [4.6.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.artifactory` in values.yaml
+
+## [4.6.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Fixed `artifactory.persistence.googleStorage.endpoint` from `storage.googleapis.com` to `commondatastorage.googleapis.com`
+* Updated chart maintainers email
+
+## [4.5.5] - Dec 4, 2020
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
+## [4.5.4] - Dec 1, 2020
+* Improve error message returned when attempting helm upgrade command
+
+## [4.5.3] - Nov 30, 2020
+* Updated Artifactory version to 7.11.5 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)
 
 # [4.5.3] - December 15, 2020
 * Updated Artifactory-HA readme.md file and moved content to Confluence page.

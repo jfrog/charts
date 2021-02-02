@@ -1,8 +1,50 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.5.3] - Oct 27, 2020
+## [11.7.7] - Oct 27, 2021
 * Helm Chart docs have moved to our main documentation site. For JFrog Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory#InstallingArtifactory-HelmInstallation).
+
+## [11.7.6] - Jan 11, 2021
+* Updated Artifactory version to 7.12.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.6)
+
+## [11.7.5] - Jan 07, 2021
+* Added support for optional tracker dedicated ingress `.Values.artifactory.replicator.trackerIngress.enabled` (defaults to false)
+
+## [11.7.4] - Jan 04, 2021
+* Fixed gid support for statefulset
+
+## [11.7.3] - Dec 31, 2020
+* Added gid support for statefulset
+* Add setSecurityContext flag to allow securityContext block to be removed from artifactory statefulset
+
+## [11.7.2] - Dec 29, 2020
+* **Important:** Removed `.Values.metrics` and `.Values.fluentd` (Fluentd and Prometheus integrations)
+* Add support for creating additional kubernetes resources - [refer here](https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-values.yaml)
+* Updated Artifactory version to 7.12.5
+
+## [11.7.1] - Dec 21, 2020
+* Updated Artifactory version to 7.12.3
+
+## [11.7.0] - Dec 18, 2020
+* Updated Artifactory version to 7.12.2
+* Added `.Values.artifactory.openMetrics.enabled`
+
+## [11.6.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.artifactory` in values.yaml
+
+## [11.6.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Fixed `artifactory.persistence.googleStorage.endpoint` from `storage.googleapis.com` to `commondatastorage.googleapis.com`
+* Updated chart maintainers email
+
+## [11.5.5] - Dec 4, 2020
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
+## [11.5.4] - Dec 1, 2020
+* Improve error message returned when attempting helm upgrade command
+
+## [11.5.3] - Nov 30, 2020
+* Updated Artifactory version to 7.11.5 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)
 
 ## [11.5.2] - Nov 23, 2020
 * Updated Artifactory version to 7.11.2 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.11)

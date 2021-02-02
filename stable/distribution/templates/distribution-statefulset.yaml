@@ -58,8 +58,8 @@ spec:
           sleep 30;
           echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc;
-          {{- if .Values.systemYaml.existingSecret }}
-          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
@@ -93,11 +93,11 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
-      {{- if or .Values.systemYaml.existingSecret .Values.distribution.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
         - name: systemyaml
-          {{- if .Values.systemYaml.existingSecret }}
-          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
-          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
           {{- else if .Values.distribution.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
@@ -147,6 +147,10 @@ spec:
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "distribution.customInitContainers" .)  . | indent 6 }}
     {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
@@ -154,7 +158,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         ports:
-        - name: distribution
+        - name: http-distro
           containerPort: {{ .Values.distribution.internalPort }}
         command:
           - '/bin/sh'
@@ -318,7 +322,7 @@ spec:
           - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
             value: 'jfds'
         ports:
-          - name: router
+          - name: http-router
             containerPort: {{ .Values.router.internalPort }}
         securityContext:
           allowPrivilegeEscalation: false
@@ -457,10 +461,10 @@ spec:
           sizeLimit: {{ .Values.distribution.persistence.size }}
       - name: redis-data
         emptyDir: {}
-      {{- if or .Values.systemYaml.existingSecret .Values.distribution.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ default (printf "%s-%s" (include "distribution.fullname" .) "systemyaml") .Values.systemYaml.existingSecret }}
+          secretName: {{ default (printf "%s-%s" (include "distribution.fullname" .) "systemyaml") .Values.systemYamlOverride.existingSecret }}
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config

@@ -89,7 +89,7 @@ Common labels
 helm.sh/chart: {{ include "pipelines.chart" . }}
 {{ include "pipelines.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/version: {{ include "pipelines.app.version" . | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
@@ -149,6 +149,19 @@ Resolve joinKey value
 {{- end -}}
 
 {{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "pipelines.joinKeySecretName" -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.pipelines.joinKeySecretName -}}
+{{- .Values.pipelines.joinKeySecretName -}}
+{{- else -}}
+{{ include "pipelines.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve masterKey value
 */}}
 {{- define "pipelines.masterKey" -}}
@@ -156,6 +169,19 @@ Resolve masterKey value
 {{- .Values.global.masterKey -}}
 {{- else if .Values.pipelines.masterKey -}}
 {{- .Values.pipelines.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "pipelines.masterKeySecretName" -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.pipelines.masterKeySecretName -}}
+{{- .Values.pipelines.masterKeySecretName -}}
+{{- else -}}
+{{ include "pipelines.fullname" . }}
 {{- end -}}
 {{- end -}}
 
@@ -241,13 +267,11 @@ Return the proper pipelines chart image names
 {{- $indexReference2 := index . 2 }}
 {{- $registryName := default $dot.Values.imageRegistry (index $dot.Values $indexReference1 $indexReference2 "image" "registry") -}}
 {{- $repositoryName := index $dot.Values $indexReference1 $indexReference2 "image" "repository" -}}
-{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.pipelines.version (index $dot.Values $indexReference1 $indexReference2 "image" "tag"))  | toString -}}
-{{/*
-Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
-but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
-Also, we can't use a single if because lazy evaluation is not an option
-*/}}
+{{- $tag := default (default $dot.Chart.AppVersion $dot.Values.pipelines.version) (index $dot.Values $indexReference1 $indexReference2 "image" "tag")  | toString -}}
 {{- if $dot.Values.global }}
+    {{- if $dot.Values.global.versions.pipelines }}
+    {{- $tag = $dot.Values.global.versions.pipelines | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
     {{- else -}}
@@ -267,11 +291,6 @@ Return the proper vault image name
 {{- $registryName := default $dot.Values.imageRegistry (index $dot.Values $indexReference "image" "registry") -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{/*
-Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
-but Helm 2.9 and 2.10 doesn't support it, so we need to implement this if-else logic.
-Also, we can't use a single if because lazy evaluation is not an option
-*/}}
 {{- if $dot.Values.global }}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
@@ -281,4 +300,13 @@ Also, we can't use a single if because lazy evaluation is not an option
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper pipelines app version
+*/}}
+{{- define "pipelines.app.version" -}}
+{{- $image := split ":" ((include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" )) | toString) -}}
+{{- $tag := $image._1 -}}
+{{- printf "%s" $tag -}}
 {{- end -}}

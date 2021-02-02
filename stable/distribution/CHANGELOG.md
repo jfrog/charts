@@ -1,6 +1,39 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.3.2] - Jan 27, 2021
+* Update router version to `7.12.4`
+
+## [7.3.1] - Jan 25, 2021
+* Add support for hostAliases
+
+## [7.3.0] - Jan 13, 2021
+* Update Distribution to version `2.6.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6)
+
+## [7.2.3] - Jan 8, 2021
+* Add support for creating additional kubernetes resources
+
+## [7.2.2] - Dec 22, 2020
+* Update Distribution to version `2.5.4` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+
+## [7.2.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.distribution` in values.yaml
+
+## [7.2.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Update redis tag version to `6.0.9-debian-10-r39`
+* Update alpine tag version to `3.12.1`
+
+## [7.1.7] - Dec 8, 2020
+* Update Distribution to version `2.5.3` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+* Updated chart maintainers email
+
+## [7.1.6] - Dec 4, 2020
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
+## [7.1.5] - Dec 3, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
 ## [7.1.4] - Nov 16, 2020
 * Update Distribution to version `2.5.2` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.2)
 

@@ -6,14 +6,14 @@ metadata:
     app: {{ template "artifactory-ha.name" . }}
     chart: {{ template "artifactory-ha.chart" . }}
     component: {{ .Values.artifactory.name }}
-    version: {{ default .Chart.AppVersion .Values.artifactory.image.tag }}
+    version: {{ include "artifactory-ha.app.version" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 {{- with .Values.artifactory.primary.labels }}
 {{ toYaml . | indent 4 }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version (< 4.x) that has postgresql.image.tag of 9.x or 10.x, make sure to pass the current postgresql.image.tag and set databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 4.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.primary.name" . }}
@@ -66,9 +66,11 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
     {{- end }}
+      {{- if .Values.artifactory.setSecurityContext }}
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
-        fsGroup: {{ .Values.artifactory.uid }}
+        fsGroup: {{ .Values.artifactory.gid }}
+      {{- end }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
@@ -167,8 +169,8 @@ spec:
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
-          {{- if .Values.systemYaml.existingSecret }}
-          cp -fv /tmp/etc/{{ .Values.systemYaml.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
@@ -218,11 +220,11 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}  
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.artifactory.systemYaml }}  
         - name: systemyaml
-          {{- if .Values.systemYaml.existingSecret }}
-          mountPath: "/tmp/etc/{{.Values.systemYaml.dataKey}}"
-          subPath: {{ .Values.systemYaml.dataKey }}
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
           {{- else if .Values.artifactory.systemYaml }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
@@ -250,7 +252,7 @@ spec:
           - 'sh'
           - '-c'
           - >
-            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.uid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
+            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.gid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
         securityContext:
           capabilities:
             add:
@@ -302,7 +304,7 @@ spec:
           cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
           cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
-          bash $scriptsPath/migrationStatus.sh {{ default .Chart.AppVersion .Values.artifactory.image.tag }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+          bash $scriptsPath/migrationStatus.sh {{ include "artifactory-ha.app.version" . }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
         env:
       {{- if and (not .Values.waitForDatabase)  (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
@@ -661,20 +663,6 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-      {{- if .Values.fluentd.enabled }}
-      - name: fluentd
-        image: "{{ .Values.fluentd.image.repository }}:{{ .Values.fluentd.image.tag }}"
-        volumeMounts:
-          - mountPath: /opt/bitnami/fluentd/conf/
-            name: fluentd-config
-          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-            name: volume
-        env:
-          - name: JF_PRODUCT_DATA_INTERNAL
-            value: {{ .Values.artifactory.persistence.mountPath }}
-          - name: FLUENTD_CONF
-            value: fluentd.conf
-      {{- end }}
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
@@ -801,10 +789,10 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
       {{- end }}
-      {{- if or .Values.systemYaml.existingSecret .Values.artifactory.systemYaml }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.artifactory.systemYaml }}
       - name: systemyaml
         secret:
-          secretName: {{ default (printf "%s-%s" (include "artifactory-ha.primary.name" .) "system-yaml") .Values.systemYaml.existingSecret }}
+          secretName: {{ default (printf "%s-%s" (include "artifactory-ha.primary.name" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
       {{- end }}
       {{- if .Values.access.accessConfig }}
       - name: access-config
@@ -834,11 +822,6 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
-      {{- if .Values.fluentd.enabled }}
-      - name: fluentd-config
-        configMap:
-          name: {{ template "artifactory-ha.fullname" . }}-fluentd-config
-      {{- end }}
   volumeClaimTemplates:
   {{- if .Values.artifactory.persistence.enabled }}
   - metadata:

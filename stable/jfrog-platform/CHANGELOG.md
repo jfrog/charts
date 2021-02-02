@@ -1,5 +1,43 @@
 # JFrog Platform Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
+
+## [0.0.14] - Jan 27, 2021
+* Update dependency artifactory chart version to 11.7.6 (Artifactory 7.12.6)
+* Update dependency artifactory-ha chart version to 4.7.6 (Artifactory 7.12.6)
+* Update dependency xray chart version to 6.10.0 (Xray 3.16.0)
+* Update dependency distribution chart version to 7.3.2 (Distribution 2.6.0)
+* Update dependency pipelines chart version to 2.5.5 (Pipelines 1.10.0)
+
+## [0.0.13] - Jan 4, 2020
+* Update dependency artifactory chart version to 11.7.4 (Artifactory 7.12.5)
+* Update dependency artifactory-ha chart version to 4.7.4 (Artifactory 7.12.5)
+* Update dependency xray chart version to 6.9.0 (Xray 3.15.1)
+* Update dependency distribution chart version to 7.2.2 (Distribution 2.5.4)
+* Update dependency mission-control chart version to 5.4.2 (MissionControl 4.6.2)
+* Update dependency pipelines chart version to 2.3.8 (Pipelines 1.9.8)
+
+## [0.0.12] - Dec 8, 2020
+* Update dependency artifactory chart version to 11.5.5 (Artifactory 7.11.5)
+* Update dependency artifactory-ha chart version to 4.5.5 (Artifactory 7.11.5)
+* Update dependency xray chart version to 6.6.0 (Xray 3.13.0)
+* Update dependency distribution chart version to 7.1.7 (Distribution 2.5.3)
+* Update dependency mission-control chart version to 5.3.4 (MissionControl 4.6.1)
+* Update dependency pipelines chart version to 2.3.7 (Pipelines 1.9.8)
+
+## [0.0.11] - Dec 3, 2020
+* Update dependency distribution chart version to 7.1.5 (Distribution 2.5.2)
+
+## [0.0.10] - Dec 3, 2020
+* Update dependency mission-control chart version to 5.3.3 (MissionControl 4.6.1)
+* Update dependency pipelines chart version to 2.3.6 (Pipelines 1.9.8)
+
+## [0.0.9] - Dec 3, 2020
+* Update dependency artifactory chart version to 11.5.4 (Artifactory 7.11.5)
+* Update dependency artifactory-ha chart version to 4.5.4 (Artifactory 7.11.5)
+* Update dependency xray chart version to 6.5.0 (Xray 3.12.0)
+* Update dependency distribution chart version to 7.1.4 (Distribution 2.5.2)
+* Update dependency mission-control chart version to 5.3.2 (MissionControl 4.6.1)
+* Update dependency pipelines chart version to 2.3.5 (Pipelines 1.9.8)
 
 ## [0.0.8] - Nov 23, 2020
 * Update dependency artifactory chart version to 11.5.2 (Artifactory 7.11.2)

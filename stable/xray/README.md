@@ -48,7 +48,7 @@ Retrieve the connection details of your Artifactory installation, from the UI - 
 Provide join key and jfrog url as a parameter to the Xray chart installation:
 
 ```bash
-helm upgrade --install --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
+helm upgrade --install xray --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
              --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  --namespace xray center/jfrog/xray
 ```
 
@@ -165,7 +165,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm upgrade --install --set xray.masterKey=${MASTER_KEY} --namespace xray center/jfrog/xray
+helm upgrade --install xray --set xray.masterKey=${MASTER_KEY} --namespace xray center/jfrog/xray
 
 ```
 
@@ -342,6 +342,16 @@ server:
   customVolumes: |
     ## Custom volume comes here ##
 ```
+
+### Log Analytics
+
+#### FluentD, Prometheus and Grafana
+
+To configure Prometheus and Grafana to gather metrics from Xray through the use of FluentD, please refer to the log analytics repo:
+
+https://github.com/jfrog/log-analytics-prometheus
+
+That repo contains a file `xray-values.yaml` that can be used to deploy Prometheus, Service Monitor, and Grafana with this chart.
 
 ## Useful links
 - https://www.jfrog.com/confluence/display/XRAY/Xray+High+Availability

@@ -31,7 +31,7 @@ run_ct_container() {
 
 connect_to_cluster() {
     docker_exec gcloud auth activate-service-account --key-file /gcloud-service-key.json
-    docker_exec gcloud container clusters get-credentials "$CLUSTER_NAME" --project "$PROJECT_NAME" --zone "$CLOUDSDK_COMPUTE_ZONE"
+    docker_exec gcloud container clusters get-credentials "$CLUSTER_NAME" --project "$PROJECT_NAME" --region "$CLOUDSDK_COMPUTE_REGION"
 }
 
 main() {

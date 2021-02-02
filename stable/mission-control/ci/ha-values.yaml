@@ -1,0 +1,17 @@
+# CI values for Mission-control
+
+# If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+missionControl:
+  jfrogUrl: http://artifactory-artifactory.rt:8082
+
+postgresql:
+  image:
+    tag: 12.3.0-debian-10-r71
+  postgresqlPassword: password
+  db:
+    password: password
+
+# For HA
+replicaCount: 2

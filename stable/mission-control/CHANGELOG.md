@@ -1,5 +1,64 @@
 # JFrog Mission-Control Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
+
+## [5.4.6] - Jan 27, 2021
+* Update router version to `7.12.4`
+
+## [5.4.5] - Jan 25, 2021
+* Add support for hostAliases
+
+## [5.4.4] - Jan 18, 2021
+* Update Mission Control version to 4.6.3
+* Upgrade Elasticsearch version to 7.8.1 with Searchguard
+* Added support for `.Values.elasticsearch.username`
+* Added support for custom tls certificates for elastic searchguard
+* **IMPORTANT**
+* If the certificates are changed, rolling update is not possible. Scale down to one replica and do an helm upgrade
+
+## [5.4.3] - Jan 8, 2021
+* Add support for creating additional kubernetes resources
+
+## [5.4.2] - Dec 17, 2020
+* Update Mission Control version to 4.6.2
+
+## [5.4.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.missionControl` in values.yaml
+
+## [5.4.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Updated chart maintainers email
+
+## [5.3.4] - Dec 4, 2020
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
+## [5.3.3] - Dec 3, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
+## [5.3.2] - Nov 30, 2020
+* Update router version to `7.11.5`
+* Added special notes in readme for upgrading to 5.2.x and above chart versions
+
+## [5.3.1] - Nov 30, 2020
+* Update Mission Control version to 4.6.1
+* Update router version to `7.11.2`
+
+## [5.3.0] - Nov 16, 2020
+* Update Mission Control version to 4.6.0
+* Update alpine tag version to `3.12.1`
+
+## [5.2.2] - Nov 10, 2020
+* Pass system.yaml via external secret for advanced usecases
+* Added configurable `insightServer.clients.elasticsearch.searchguard.connectionWaitTimeoutSecs` in values.yaml
+* Bugfix - stateful set not picking up changes to database secrets
+
+## [5.2.1] - Nov 9, 2020
+* Expose router port 8082 for inter pod communication
+
+## [5.2.0] - Oct 27, 2020
+* Upgrade Elasticsearch version to 7.8.0 with Searchguard
+* Added configurable `insightServer.clients.elasticsearch.connectionWaitTimeoutSecs` in values.yaml 
+* **IMPORTANT**
+* Enable Elasticsearch request via router
 
 ## [5.1.1] - Oct 24, 2020
 * Update router version to `1.4.4`

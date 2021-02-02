@@ -64,6 +64,10 @@ helm upgrade --install mission-control --set missionControl.joinKeySecretName=my
 ### Special Upgrade Notes
 Mission-control 3.x to 4.x (App Version) upgrade is not currently supported. For manual upgrade, please refer [here](https://github.com/jfrog/charts/blob/master/stable/mission-control/UPGRADE_NOTES.md). If this is an upgrade over an existing Mission Control 4.x, explicitly pass `--set unifiedUpgradeAllowed=true` to upgrade.
 
+#### Upgrading mission-control to 5.2.x and above chart versions in HA setup (replicaCount > 1)
+From 5.2.x chart version and above, elasticsearch was updated with serach guard plugin. Due to this change, rolling updates would break for elastic search.
+Please set `replicaCount: 1` and do an helm upgrade. (Downtime is required)
+
 ### System Configuration
 Mission Control uses a common system configuration file - `system.yaml`. See [official documentation](https://www.jfrog.com/confluence/display/JFROG/System+YAML+Configuration+File) on its usage.
 
@@ -238,6 +242,23 @@ This can be done with the following parameters
 --set elasticsearch.password=${ES_PASSWORD} \
 ...
 ```
+
+#### Elasticsearch with custom tls-certificates
+
+By default the internal elasticsearch uses the bundled tls-certificates for configuring searchguard. For production deployments it is recommended to use you own certificates.
+Custom certificates can be added by using kubernetes secret. The secret should be created outside of this chart and provided using the tag `.Values.elasticsearch.certificatesSecretName`. Please refer the example below.
+
+```bash
+kubectl create secret generic elastic-certs --from-file=localhost.key=localhost.key --from-file=localhost.pem=localhost.pem --from-file=sgadmin.key=sgadmin.key --from-file=sgadmin.pem=sgadmin.pem --from-file=root-ca.pem=root-ca.pem
+```
+Refer- https://docs.search-guard.com/latest/offline-tls-tool for creating certificates
+
+And then pass it to the helm installation
+```yaml
+elasticsearch:
+  certificatesSecretName: elastic-certs
+```
+**NOTE:** If the certificates are changed, rolling update is not possible. Scale down the deployment to one replica and do an helm upgrade
 
 ### Logger sidecars
 This chart provides the option to add sidecars to tail various logs from Mission Control containers. See the available values in `values.yaml`

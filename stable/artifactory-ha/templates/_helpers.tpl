@@ -69,6 +69,19 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a default fully qualified replicator tracker ingress name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "artifactory-ha.replicator.tracker.fullname" -}}
+{{- if .Values.artifactory.replicator.trackerIngress.name -}}
+{{- .Values.artifactory.replicator.trackerIngress.name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-replication-tracker" .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -256,6 +269,9 @@ Return the proper artifactory chart image names
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- if $dot.Values.global }}
+    {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
+    {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
     {{- else -}}
@@ -264,4 +280,13 @@ Return the proper artifactory chart image names
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper artifactory app version
+*/}}
+{{- define "artifactory-ha.app.version" -}}
+{{- $image := split ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory")) | toString) -}}
+{{- $tag := $image._1 -}}
+{{- printf "%s" $tag -}}
 {{- end -}}

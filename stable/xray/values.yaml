@@ -3,9 +3,14 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-global: {}
+global:
+  # imageRegistry: docker.bintray.io
   # imagePullSecrets:
   #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.xray, common.xrayVersion or image tags
+  ## Note: Order of preference is 1) global.versions 2) common.xrayVersion 3) image tags 4) Chart.AppVersion
+  versions: {}
+  #   xray:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -22,7 +27,7 @@ global: {}
   # customSidecarContainers: |
 
 
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: docker.bintray.io/alpine:3.12.1
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -42,10 +47,10 @@ imagePullSecrets:
 ## Xray systemYaml override
 ## This is for advanced usecases where users wants to provide their own systemYaml for configuring xray
 ## Refer - https://www.jfrog.com/confluence/display/JFROG/Xray+System+YAML
-## Note: This will override existing systemYaml in values.yaml
+## Note: This will override existing (default) .Values.xray.systemYaml in values.yaml
 ## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
-## Note: Order of preference is 1) customInitContainers 2) systemYaml existingSecret 3) default systemYaml in values.yaml
-systemYaml:
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
 ## You can use a pre-existing secret by specifying existingSecret
   existingSecret:
 ## The dataKey should be the name of the secret data key created.
@@ -98,9 +103,6 @@ xray:
       {{- else }}
         type: {{ .Values.database.type }}
         driver: {{ .Values.database.driver }}
-        {{- if .Values.database.actualUsername }}
-        actualUsername: {{ .Values.database.actualUsername }}
-        {{- end }}
       {{- end }}
       {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
       rabbitMq:
@@ -212,7 +214,7 @@ postgresql:
   image:
     registry: docker.bintray.io
     repository: bitnami/postgresql
-    tag: 12.3.0-debian-10-r71
+    tag: 12.5.0-debian-10-r25
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -263,6 +265,9 @@ database:
   #  url:
   #    name: "xray-database-creds"
   #    key: "db-url"
+  #  actualUsername:
+  #    name: "xray-database-creds"
+  #    key: "db-actualUsername"
 
 # RabbitMQ HA
 ## Configuration values for the rabbitmq-ha dependency
@@ -273,7 +278,7 @@ rabbitmq-ha:
   replicaCount: 1
   image:
     repository: docker.bintray.io/rabbitmq
-    tag: 3.8.7-alpine
+    tag: 3.8.9-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
   ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
@@ -324,7 +329,7 @@ rabbitmq:
   image:
     registry: docker.bintray.io
     repository: bitnami/rabbitmq
-    tag: 3.8.7-debian-10-r3
+    tag: 3.8.9-debian-10-r58
   auth:
     username: guest
     password: ""
@@ -549,10 +554,6 @@ analysis:
       failureThreshold: 10
       successThreshold: 1
 
-  ## Container storage limit
-  persistence:
-    size: 10Gi
-
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -657,10 +658,6 @@ persist:
       failureThreshold: 10
       successThreshold: 1
 
-  ## Container storage limit
-  persistence:
-    size: 10Gi
-
   ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -693,6 +690,12 @@ server:
     type: ClusterIP
     name: xray
     annotations: {}
+    ## Provide additional spec to xray service
+    ## Example:
+    ## additionalSpec: |
+    ##   customKey: customVal
+    ##
+    additionalSpec: |
 
   livenessProbe:
     enabled: true
@@ -734,7 +737,7 @@ router:
   image:
     registry: docker.bintray.io
     repository: jfrog/router
-    tag: 1.4.4
+    tag: 7.12.4
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -782,9 +785,7 @@ router:
       successThreshold: 1
 
   persistence:
-    accessMode: ReadWriteOnce
     mountPath: "/var/opt/jfrog/router"
-    size: 5Gi
 
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
@@ -854,3 +855,20 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/xray-values.yaml
+additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"
