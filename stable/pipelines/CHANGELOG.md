@@ -1,7 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
-## [2.5.5] - Jan 8, 2020
+## [2.6.0] - Feb 4, 2021
+* Pipelines v1.11.3
+
+## [2.5.5] - Jan 8, 2021
 * Add support for creating additional kubernetes resources
 
 ## [2.5.4] - Dec 23, 2020
