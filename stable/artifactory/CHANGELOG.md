@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.7.6] - Feb 5, 2021
+## [11.7.7] - Feb 5, 2021
 * Add option to specify update strategy for Artifactory statefulset
 
 ## [11.7.6] - Jan 11, 2020
