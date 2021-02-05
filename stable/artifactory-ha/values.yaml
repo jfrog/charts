@@ -1183,6 +1183,9 @@ artifactory:
     replicaCount: 1
     # minAvailable: 1
 
+    updateStrategy:
+      type: RollingUpdate
+
     ## Resources for the primary node
     resources: {}
     #  requests:
@@ -1228,6 +1231,8 @@ artifactory:
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-member-0`
       existingClaim: false
     replicaCount: 2
+    updateStrategy:
+      type: RollingUpdate
     minAvailable: 1
     ## Resources for the member nodes
     resources: {}

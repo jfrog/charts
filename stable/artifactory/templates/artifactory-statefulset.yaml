@@ -17,8 +17,7 @@ metadata:
 spec:
   serviceName: {{ template "artifactory.name" . }}
   replicas: 1
-  updateStrategy:
-    type: RollingUpdate
+  updateStrategy: {{- toYaml .Values.artifactory.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
       app: {{ template "artifactory.name" . }}

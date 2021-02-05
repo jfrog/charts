@@ -159,6 +159,8 @@ artifactory:
     # tag:
     pullPolicy: IfNotPresent
   labels: {}
+  updateStrategy:
+    type: RollingUpdate
 
   # Create a priority class for the Artifactory pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
