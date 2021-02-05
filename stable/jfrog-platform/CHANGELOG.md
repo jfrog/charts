@@ -8,7 +8,7 @@ All changes to this chart will be documented in this file
 * Update dependency distribution chart version to 7.3.2 (Distribution 2.6.0)
 * Update dependency pipelines chart version to 2.5.5 (Pipelines 1.10.0)
 
-## [0.0.13] - Jan 4, 2020
+## [0.0.13] - Jan 4, 2021
 * Update dependency artifactory chart version to 11.7.4 (Artifactory 7.12.5)
 * Update dependency artifactory-ha chart version to 4.7.4 (Artifactory 7.12.5)
 * Update dependency xray chart version to 6.9.0 (Xray 3.15.1)

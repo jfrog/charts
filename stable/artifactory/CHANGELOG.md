@@ -1,13 +1,13 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.7.6] - Jan 11, 2020
+## [11.7.6] - Jan 11, 2021
 * Updated Artifactory version to 7.12.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.6)
 
-## [11.7.5] - Jan 07, 2020
+## [11.7.5] - Jan 07, 2021
 * Added support for optional tracker dedicated ingress `.Values.artifactory.replicator.trackerIngress.enabled` (defaults to false)
 
-## [11.7.4] - Jan 04, 2020
+## [11.7.4] - Jan 04, 2021
 * Fixed gid support for statefulset
 
 ## [11.7.3] - Dec 31, 2020
