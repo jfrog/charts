@@ -1,6 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [6.11.0] - Feb 08, 2021
+* Support for custom certificates using secrets
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+* Update Xray to version `3.17.2`
+* Update router version to `7.12.6`
+
 ## [6.10.0] - Jan 25, 2021
 * Update Xray to version `3.16.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.16)
 * Added support for passing additionalSpec to xray service resource

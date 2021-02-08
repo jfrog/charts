@@ -185,6 +185,22 @@ spec:
           - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
     {{- end }}
+      {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'sh'
+        - '-c'
+        - >
+{{ include "artifactory-ha.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: volume
+            mountPath: {{ .Values.artifactory.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
     {{- if .Values.waitForDatabase }}
       {{- if or .Values.postgresql.enabled }}
       - name: "wait-for-db"
@@ -321,6 +337,10 @@ spec:
           subPath: gcp.credentials.json
   {{- end }}
 {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
@@ -332,6 +352,12 @@ spec:
         - '-c'
         - >
           set -e;
+        {{- range .Values.artifactory.copyOnEveryStartup }}
+          {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
+          {{- $baseDirectory := regexFind ".*/" $targetPath }}
+          mkdir -p {{ $baseDirectory }};
+          cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
+        {{- end }}
         {{- if .Values.artifactory.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ tpl .Values.artifactory.preStartCommand . }};
@@ -603,6 +629,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.artifactory.customCertificates.certificateSecretName }}
+      {{- end }}
       {{- if .Values.artifactory.binarystore.enabled }}
       - name: binarystore-xml
         secret:

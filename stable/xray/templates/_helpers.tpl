@@ -348,3 +348,12 @@ Return the proper xray chart image names
 {{- end -}}
 {{- end -}}
 
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "xray.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted \;;
+find {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}

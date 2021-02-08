@@ -26,7 +26,11 @@ global:
 
   # customSidecarContainers: |
 
-initContainerImage: docker.bintray.io/alpine:3.12.1
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 
 # Init containers
 initContainers:
@@ -121,7 +125,7 @@ serviceAccount:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 12.5.0-debian-10-r25
   postgresqlUsername: distribution
@@ -175,7 +179,7 @@ database:
 ##
 redis:
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/redis
     tag: 6.0.9-debian-10-r39
     pullPolicy: IfNotPresent
@@ -285,7 +289,7 @@ common:
 
 logger:
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: busybox
     tag: 1.31.1
 
@@ -293,7 +297,7 @@ distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/distribution-distribution
     # tag:
     imagePullPolicy: IfNotPresent
@@ -311,6 +315,10 @@ distribution:
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
@@ -469,7 +477,7 @@ distributor:
   name: distributor
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/distribution-distributor
     # tag:
     imagePullPolicy: IfNotPresent
@@ -548,9 +556,9 @@ distributor:
 router:
   name: router
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.12.4
+    tag: 7.12.6
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

@@ -1,7 +1,31 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
-## [2.5.5] - Jan 8, 2020
+## [2.7.1] - Feb 05, 2021
+* Corrected helpers.tpl variable names
+
+## [2.7.0] - Feb 03, 2021
+* Establishing TLS between Pipelines & Artifactory, and Adding certificates
+* Pipelines v1.11.3
+* Changed `docker.bintray.io` to `releases-docker.jfrog.io`
+
+## [2.6.4] - Feb 1, 2021
+* Adds settings for retention policies
+
+## [2.6.3] - Jan 25, 2021
+* Add support for hostAliases
+
+## [2.6.2] - Jan 19, 2021
+* Protect against yaml invalidating special characters in passwords
+
+## [2.6.1] - Jan 19, 2021
+* Adds default settings for metrics event logging
+
+## [2.6.0] - Jan 12, 2021
+* update system yaml to include buildImages for all supported OSs
+* update default buildImages
+
+## [2.5.5] - Jan 8, 2021
 * Add support for creating additional kubernetes resources
 
 ## [2.5.4] - Dec 23, 2020
