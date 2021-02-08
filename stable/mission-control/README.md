@@ -287,36 +287,26 @@ common:
 ### Establishing TLS and Adding certificates
 Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
 
+Note: Support for custom certificates using secrets was added from 5.5.x chart versions 
 
-To add this certificate to mission control, Create a configmaps.yaml file with the following content:
+Tls certificates can be added by using kubernetes secret. The secret should be created outside of this chart and provided using the tag `.Values.missionControl.customCertificates.certificateSecretName`. Please refer the example below.
+
+```bash
+kubectl create secret generic ca-cert --from-file=ca.crt=ca.crt
+```
+
+And then pass it to the helm installation
 
 ```yaml
-common:
-  configMaps: |
-    ca.crt: |
-      -----BEGIN CERTIFICATE-----
-        <certificate content>
-      -----END CERTIFICATE-----
-  customVolumeMounts: |
-    - name: mission-control-configmaps
-      mountPath: /tmp/ca.crt
-      subPath: ca.crt
 missionControl:
-  preStartCommand: "mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+  customCertificates:
+    enabled: true
+    certificateSecretName: ca-cert
 router:
   tlsEnabled: true  
 ```
 
-and use it with your helm install/upgrade:
-```bash
-helm upgrade --install mission-control -f configmaps.yaml --namespace mission-control center/jfrog/xray
-```
-
-This will, in turn:
-* Create a configMap with the files you specified above
-* Create a volume pointing to the configMap with the name `mission-control-configmaps`
-* Mount said configMap onto `/tmp` using a `customVolumeMounts`
-* Using preStartCommand copy the `ca.crt` file to distribution trusted keys folder `/etc/security/keys/trusted/ca.crt`
+Note:
 * `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
 
 ### Custom volumes

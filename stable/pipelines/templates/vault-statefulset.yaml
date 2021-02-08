@@ -120,6 +120,10 @@ spec:
           {{- if or .Values.vault.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "pipelines.vault.customInitContainers" .)  . | indent 8 }}
           {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
         - name: vault-init
           image: {{ include "pipelines.getImageInfoByValue" (list . "vault" "init" ) }}

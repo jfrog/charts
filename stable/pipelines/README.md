@@ -327,6 +327,33 @@ To start using Pipelines you need to setup a Build Plane:
 
 - For Kubernetes Node-pool setup, please read [Managing Dynamic Node Pools](https://www.jfrog.com/confluence/display/JFROG/Managing+Pipelines+Node+Pools#ManagingPipelinesNodePools-dynamic-node-poolsAdministeringDynamicNodePools).
 
+### Establishing TLS and Adding certificates
+Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
+
+# We can have more than one certificates to be present in the trusted directory
+# For example pipelines api url can be configured behind a load balancer which
+# is setup with custom certificates. We will need those certificates as well in
+# the trusted folder. As build nodes will be talking to pipelines API over load
+# balancer end point.
+# NODE_EXTRA_CA_CERTS env is added when the customer is using custom certifactes
+# Pipelines looks through all the certificates present in the trusted folder and
+# concat those into a single file called pipeline_custom_certs.crt which is then
+# passed as an env
+
+Tls certificates can be added by using kubernetes secret. The secret should be created outside of this chart and provided using the tag `.Values.pipelines.customCertificates.certificateSecretName`. Please refer the example below.
+
+```bash
+kubectl create secret generic ca-cert --from-file=ca.crt=ca.crt
+```
+
+And then pass it to the helm installation
+
+```yaml
+pipelines:
+  customCertificates:
+    enabled: true
+    certificateSecretName: ca-cert
+```
 
 ## Useful links
 

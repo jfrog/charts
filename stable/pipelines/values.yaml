@@ -2,9 +2,12 @@
 
 ## For setting up external services
 global:
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
   ## Image Registry to pull images for Pipelines components from
   ## You can override it with your private Artifactory registry
-  # imageRegistry: docker.bintray.io
+  # imageRegistry: releases-docker.jfrog.io
   ## Internal Postgres must be set to false
   postgresql:
     host:
@@ -47,7 +50,7 @@ global:
 
 ## Common
 initContainer:
-  image: "docker.bintray.io/alpine:3.12.1"
+  image: "releases-docker.jfrog.io/alpine:3.12.1"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -66,7 +69,7 @@ runMode: production
 
 ## Image Registry to pull images for Pipelines components from
 ## You can override it with your private Artifactory registry
-imageRegistry: docker.bintray.io
+imageRegistry: releases-docker.jfrog.io
 
 ## For supporting pulling from private registries
 ## Secret type: kubernetes.io/dockerconfigjson
@@ -127,6 +130,10 @@ pipelines:
   ## Note: This feature is available on pipelines app version 1.9.x and later
   # masterKeySecretName:
 
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
   ## Installer Authentication Token
   ## The unique token can be generated with: uuidgen | tr '[:upper:]' '[:lower:]'
   authToken: "c7595edd-b63d-4fd6-9e1e-13924d6637f0"
@@ -171,6 +178,33 @@ pipelines:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+  ## retention policy settings
+  retentionPolicy:
+    enabled: false
+    # how many days to keep pipelines state data
+    maxAgeDays: 90
+    # the minimum number of runs to keep data on per pipeline
+    minRuns: 10
+
+  ## metrics settings
+  metrics:
+    ## if enabled, metrics will be logged
+    enabled: false
+  ## Logging settings
+  logging:
+    metrics:
+      ## where metrics logs are written
+      filePath: /opt/jfrog/pipelines/var/log/api-metrics_events.log
+      ## if true, metrics will be logged to the console as well as the filePath
+      console: false
+      ## metrics logs rotation settings
+      rotation:
+        maxSizeMb: 25
+        maxFiles: 10
+        maxAgeDays: 365
+        compress: true
+        intervalMs: 900000
 
   ## Apply horizontal pod auto scaling on Pipelines pods
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
@@ -666,13 +700,13 @@ pipelines:
         port: "{{ .Values.postgresql.service.port }}"
         name: {{ .Values.postgresql.postgresqlDatabase }}
         username: {{ .Values.postgresql.postgresqlUsername }}
-        password: {{ .Values.postgresql.postgresqlPassword }}
+        password: "{{ .Values.postgresql.postgresqlPassword }}"
         {{- else }}
         ip: {{ tpl .Values.global.postgresql.host . }}
         port: "{{ .Values.global.postgresql.port }}"
         name: {{ .Values.global.postgresql.database }}
         username: {{ .Values.global.postgresql.user }}
-        password: {{ .Values.global.postgresql.password }}
+        password: "{{ .Values.global.postgresql.password }}"
         {{- end }}
         externalUrl: ""
         {{- if .Values.postgresql.enabled }}
@@ -692,7 +726,7 @@ pipelines:
         adminPort: {{ .Values.rabbitmq.service.managerPort }}
         erlangCookie: {{ .Values.rabbitmq.auth.erlangCookie }}
         username: {{ .Values.rabbitmq.auth.username }}
-        password: {{ .Values.rabbitmq.auth.password }}
+        password: "{{ .Values.rabbitmq.auth.password }}"
         defaultExchange: pipelinesEx
         amqpVhost: pipelines
         amqpRootVhost: pipelinesRoot
@@ -702,7 +736,7 @@ pipelines:
         adminPort: {{ .Values.rabbitmq.manager_port }}
         erlangCookie: {{ .Values.rabbitmq.erlang_cookie }}
         username: {{ .Values.rabbitmq.ms_username }}
-        password: {{ .Values.rabbitmq.ms_password }}
+        password: "{{ .Values.rabbitmq.ms_password }}"
         defaultExchange: {{ .Values.rabbitmq.root_vhost_exchange_name }}
         amqpVhost: {{ .Values.rabbitmq.build_vhost_name}}
         amqpRootVhost: {{ .Values.rabbitmq.root_vhost_name }}
@@ -723,11 +757,11 @@ pipelines:
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
-          password: {{ .Values.pipelines.msg.uiUserPassword }}
+          password: "{{ .Values.pipelines.msg.uiUserPassword }}"
           {{- else }}
           protocol: http
           username: {{ .Values.rabbitmq.cp_username }}
-          password: {{ .Values.rabbitmq.cp_password }}
+          password: "{{ .Values.rabbitmq.cp_password }}"
           {{- end }}
         external:
           ## URL for build plane VMs to access RabbitMQ
@@ -745,7 +779,7 @@ pipelines:
         {{- if not .Values.rabbitmq.enabled }}
         build:
           username: {{ .Values.rabbitmq.build_username }}
-          password: {{ .Values.rabbitmq.build_password }}
+          password: "{{ .Values.rabbitmq.build_password }}"
         {{- end }}
 
       ## Vault configuration
@@ -773,6 +807,20 @@ pipelines:
         ip: {{ .Release.Name }}-redis-master
         port: 6379
         clusterEnabled: false
+
+      ## Metrics logging
+      metrics:
+        enabled: {{ .Values.pipelines.metrics.enabled }}
+      logging:
+        metrics:
+          filePath: {{ .Values.pipelines.logging.metrics.filePath }}
+          console: {{ .Values.pipelines.logging.metrics.console }}
+          rotation:
+            maxSizeMb: {{ .Values.pipelines.logging.metrics.rotation.maxSizeMb }}
+            maxFiles: {{ .Values.pipelines.logging.metrics.rotation.maxFiles }}
+            maxAgeDays: {{ .Values.pipelines.logging.metrics.rotation.maxAgeDays }}
+            compress: {{ .Values.pipelines.logging.metrics.rotation.compress }}
+            intervalMs: {{ .Values.pipelines.logging.metrics.rotation.intervalMs }}
 
     ## This section is used for bringing up the core services and setting up
     ## configurations required by the installer & the services
@@ -832,6 +880,16 @@ pipelines:
       allowCallHome: true
       serviceInstanceHealthCheckIntervalInMins: 1
       serviceInstanceStatsCutOffIntervalInHours: 24
+      {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      customCACertsPath: "{{ .Values.pipelines.mountPath }}/security/keys/trusted"
+      {{- else }}
+      customCACertsPath: ""
+      {{- end }}
+
+      retentionPolicy:
+        enabled: {{ .Values.pipelines.retentionPolicy.enabled }}
+        maxAgeDays: {{ .Values.pipelines.retentionPolicy.maxAgeDays }}
+        minRuns: {{ .Values.pipelines.retentionPolicy.minRuns }}
 
       ## Service configuration
       ##
@@ -908,134 +966,209 @@ pipelines:
         - architecture: x86_64
           os: Ubuntu_16.04
           language: node
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u16node
           isDefault: true
-          defaultVersion: 10.18.0
+          defaultVersion: 12.18.2
         - architecture: x86_64
           os: Ubuntu_16.04
           language: java
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u16java
-          defaultVersion: 13
+          defaultVersion: 14
         - architecture: x86_64
           os: Ubuntu_16.04
           language: cpp
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u16cpp
           defaultVersion: 9.0.0
         - architecture: x86_64
           os: Ubuntu_16.04
           language: go
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u16go
-          defaultVersion: 1.12.14
+          defaultVersion: 1.14.4
         - architecture: x86_64
           os: Ubuntu_18.04
           language: node
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18node
           isDefault: true
-          defaultVersion: 10.18.0
+          defaultVersion: 12.18.2
         - architecture: x86_64
           os: Ubuntu_18.04
           language: java
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18java
-          defaultVersion: 13
+          defaultVersion: 14
         - architecture: x86_64
           os: Ubuntu_18.04
           language: cpp
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18cpp
-          defaultVersion: 9.0.0
+          defaultVersion: 10.0.0
         - architecture: x86_64
           os: Ubuntu_18.04
           language: go
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18go
-          defaultVersion: 1.12.14
+          defaultVersion: 1.14.4
+        - architecture: x86_64
+          os: Ubuntu_20.04
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-u20node
+          isDefault: true
+          defaultVersion: 12.18.2
+        - architecture: x86_64
+          os: Ubuntu_20.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-u20java
+          defaultVersion: 15
+        - architecture: x86_64
+          os: Ubuntu_20.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-u20cpp
+          defaultVersion: 10.0.0
+        - architecture: x86_64
+          os: Ubuntu_20.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-u20go
+          defaultVersion: 1.14.4
         - architecture: x86_64
           os: CentOS_7
           language: node
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7node
           isDefault: true
-          defaultVersion: 10.18.0
+          defaultVersion: 12.18.2
         - architecture: x86_64
           os: CentOS_7
           language: java
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7java
-          defaultVersion: 11
+          defaultVersion: 14
         - architecture: x86_64
           os: CentOS_7
           language: cpp
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7cpp
           defaultVersion: 3.4.2
         - architecture: x86_64
           os: CentOS_7
           language: go
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.12.14
+          defaultVersion: 1.14.4
+        - architecture: x86_64
+          os: CentOS_8
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8node
+          isDefault: true
+          defaultVersion: 12.19.0
+        - architecture: x86_64
+          os: CentOS_8
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8java
+          defaultVersion: 14
+        - architecture: x86_64
+          os: CentOS_8
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8cpp
+          defaultVersion: 9.0.1
+        - architecture: x86_64
+          os: CentOS_8
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8go
+          defaultVersion: 1.14.4
         - architecture: x86_64
           os: WindowsServer_2019
           language: node
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19node
-          defaultVersion: 10.18.0
+          defaultVersion: 12.18.2
         - architecture: x86_64
           os: WindowsServer_2019
           language: java
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19java
-          defaultVersion: 11
+          defaultVersion: 14
         - architecture: x86_64
           os: WindowsServer_2019
           language: cpp
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19cpp
-          defaultVersion: 9.0.0
+          defaultVersion: 10.0.0
         - architecture: x86_64
           os: WindowsServer_2019
           language: go
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19go
-          defaultVersion: 1.12.14
+          defaultVersion: 1.14.4
         - architecture: x86_64
           os: WindowsServer_2019
           language: dotnetcore
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19dotnetcore
           isDefault: true
           defaultVersion: 3.1
         - architecture: x86_64
           os: RHEL_7
           language: node
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7node
           isDefault: true
-          defaultVersion: 10.18.0
+          defaultVersion: 12.18.2
         - architecture: x86_64
           os: RHEL_7
           language: java
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7java
-          defaultVersion: 11
+          defaultVersion: 14
         - architecture: x86_64
           os: RHEL_7
           language: cpp
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7cpp
           defaultVersion: 3.4.2
         - architecture: x86_64
           os: RHEL_7
           language: go
-          registryUrl: docker.bintray.io
+          registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.12.14
+          defaultVersion: 1.14.4
+        - architecture: x86_64
+          os: RHEL_8
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8node
+          isDefault: true
+          defaultVersion: 12.19.0
+        - architecture: x86_64
+          os: RHEL_8
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8java
+          defaultVersion: 14
+        - architecture: x86_64
+          os: RHEL_8
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8cpp
+          defaultVersion: 9.0.1
+        - architecture: x86_64
+          os: RHEL_8
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8go
+          defaultVersion: 1.14.4
 
 ## Runtime Override Properties Section
 runtimeOverride: {}
@@ -1064,7 +1197,7 @@ postgresql:
   enabled: true
 
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 12.5.0-debian-10-r25
 
@@ -1109,7 +1242,7 @@ rabbitmq:
   protocol: amqps
   replicaCount: 1
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
     tag: 3.8.9-debian-10-r58
   auth:
@@ -1205,7 +1338,7 @@ rabbitmq:
 redis:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/redis
     tag: 6.0.9-debian-10-r39
   redisPort: 6379
@@ -1482,3 +1615,15 @@ buildPlane:
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
 additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"
