@@ -1,6 +1,9 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
+## [3.4.1] - Feb 08, 2021
+* Update dependency Artifactory chart version to 11.8.0 (Artifactory 7.12.8)
+
 ## [3.4.0] - Jan 4, 2020
 * Update dependency Artifactory chart version to 11.7.4 (Artifactory 7.12.5)
 
