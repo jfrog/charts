@@ -1,13 +1,15 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
-## [2.7.1] - Feb 05, 2021
+## [2.7.1] - Feb 08, 2021
 * Corrected helpers.tpl variable names
 
 ## [2.7.0] - Feb 03, 2021
-* Establishing TLS between Pipelines & Artifactory, and Adding certificates
 * Pipelines v1.11.3
-* Changed `docker.bintray.io` to `releases-docker.jfrog.io`
+* Establishing TLS between Pipelines & Artifactory, and Adding certificates
+* Support for custom certificates using secrets
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
 
 ## [2.6.4] - Feb 1, 2021
 * Adds settings for retention policies
