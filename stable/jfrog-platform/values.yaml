@@ -27,6 +27,10 @@ global:
     initContainerSetupDBImage: docker.bintray.io/postgres:12.3-alpine
     initContainerImagePullPolicy: Always
     initDBCreation: true
+  ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   customInitContainersBegin: |
     {{ template "initdb" . }}
