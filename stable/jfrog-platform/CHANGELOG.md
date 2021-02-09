@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file
 
+## [0.0.16] - Feb 09, 2020
+* Added support to resolve jfrog url automatically
+
 ## [0.0.15] - Feb 08, 2021
 * Update dependency artifactory chart version to 11.8.0 (Artifactory 7.12.8)
 * Update dependency artifactory-ha chart version to 4.8.0 (Artifactory 7.12.8)

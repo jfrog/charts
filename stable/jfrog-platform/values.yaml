@@ -7,8 +7,10 @@ global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   imageRegistry: docker.bintray.io
-  jfrogUrl: "http://{{ .Release.Name }}-artifactory-ha:8082"
-  jfrogUrlUI: "http://{{ .Release.Name }}-artifactory-ha:8082"
+  ## Set this flag to false, if you are using artifactory chart.
+  haEnabled: true
+  jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   database:
@@ -116,6 +118,7 @@ redis:
   usePassword: false
 
 artifactory:
+  ## Note: Set haEnabled flag(global section) to false, if you are using artifactory chart.
   enabled: false
   postgresql:
     enabled: false
@@ -136,6 +139,7 @@ artifactory:
     #   dataKey:
 
 artifactory-ha:
+  ## Note: Set haEnabled flag(global section) to true, if you are using artifactory-ha chart.
   enabled: true
   postgresql:
     enabled: false

@@ -219,3 +219,14 @@ Define database name
 {{- define "database.name" -}}
 {{- printf "%s" (.Chart.Name | replace "-" "_") -}}
 {{- end }}
+
+{{/*
+Resolve jfrog url
+*/}}
+{{- define "jfrog-platform.jfrogUrl" -}}
+{{- if .Values.global.haEnabled -}}
+{{- printf "http://%s-artifactory-ha:8082" .Release.Name -}}
+{{- else -}}
+{{- printf "http://%s-artifactory:8082" .Release.Name -}}
+{{- end -}}
+{{- end -}}
