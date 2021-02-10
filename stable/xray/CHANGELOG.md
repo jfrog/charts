@@ -1,6 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [7.0.0] - Feb 10, 2021
+* **Breaking changes:**
+* Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
+* Added RABBITMQ_MIGRATION_NOTES.md - Steps for migration of data from rabbitmq-ha to rabbitmq bitnami
+* **Important:** Migration to bitnami rabbitmq should be done before upgrading to 7.x chart versions
+
 ## [6.11.0] - Feb 08, 2021
 * Support for custom certificates using secrets
 * **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
