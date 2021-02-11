@@ -1006,6 +1006,8 @@ artifactory:
               <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
               <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
               <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
+              <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit }}</multiPartLimit>
+              <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize }}</multipartElementSize>
               <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
           </provider>
       </config>
@@ -1123,6 +1125,8 @@ artifactory:
       accountKey:
       endpoint:
       containerName:
+      multiPartLimit: 100000000
+      multipartElementSize: 50000000
       testConnection: false
   service:
     name: artifactory

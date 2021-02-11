@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [4.8.1] - Feb 11, 2021
+* Exposed "multiPartLimit" and "multipartElementSize" for the Azure Blob Storage Binary Provider
+
 ## [4.8.0] - Feb 08, 2021
 * Updated Artifactory version to 7.12.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.8)
 * Support for custom certificates using secrets
