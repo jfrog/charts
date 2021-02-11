@@ -2,9 +2,10 @@ replicaCount: 7
 common:
   persistence:
     size: 500Gi
-rabbitmq-ha:
+rabbitmq:
   replicaCount: 3
-  rabbitmqMemoryHighWatermark: 2500MB
+  schedulers: "4"
+  vm_memory_high_watermark_absolute: 2500MB
   resources:
     requests:
       memory: "512Mi"
