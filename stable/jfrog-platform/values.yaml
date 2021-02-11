@@ -13,6 +13,15 @@ global:
   jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## Chart.AppVersion for each product can be overidden using global.versions.<product>
+  ## For example : For artifactory, using global.versions.artifactory
+  ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
+  # versions:
+  #   artifactory:
+  #   xray:
+  #   distribution:
+  #   missionControl:
+  #   pipelines:
   database:
     host: "{{ .Release.Name }}-postgresql"
     port: 5432
@@ -26,7 +35,7 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: docker.bintray.io/postgres:12.3-alpine
+    initContainerSetupDBImage: docker.bintray.io/postgres:12.5-alpine
     initContainerImagePullPolicy: Always
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
@@ -176,8 +185,6 @@ xray:
       size: 200Gi
     rabbitmq:
       connectionConfigFromEnvironment: false
-  rabbitmq-ha:
-    enabled: false
   rabbitmq:
     enabled: false
     external:
@@ -195,7 +202,6 @@ distribution:
     url: '{{ include "database.url" . }}'
     user: distribution
     password: distribution
-
 
 mission-control:
   enabled: true
