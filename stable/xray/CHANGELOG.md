@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [7.0.1] - Feb 18, 2021
+* Update Xray to version `3.17.4` - - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.17.4)
+
 ## [7.0.0] - Feb 10, 2021
 * **Breaking changes:**
 * Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
