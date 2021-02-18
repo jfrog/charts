@@ -1,6 +1,12 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.4.0] - Feb 08, 2021
+* Support for custom certificates using secrets 
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+* Update router version to `7.12.6`
+
 ## [7.3.2] - Jan 27, 2021
 * Update router version to `7.12.4`
 

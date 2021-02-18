@@ -26,13 +26,17 @@ global:
 
   # customSidecarContainers: |
 
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
 ## Partially override mission-control.fullname template (eg: <releaseName>-<nameOverride>)
 # nameOverride:
 
 ## Fully override mission-control.fullname template
 # fullnameOverride:
 
-initContainerImage: docker.bintray.io/alpine:3.12.1
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -209,7 +213,7 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: docker.bintray.io/postgres
+      repository: releases-docker.jfrog.io/postgres
       tag: 12.5-alpine
       pullPolicy: IfNotPresent
 
@@ -220,7 +224,7 @@ dbSetup:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 12.5.0-debian-10-r25
   postgresqlUsername: postgres
@@ -294,10 +298,10 @@ elasticsearch:
   enabled: true
   ## certificatesSecretName:
   name: elasticsearch
-  initContainerImage: docker.bintray.io/alpine:3.12.1
+  initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
   configureDockerHost: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-oss-sg
     tag: 7.8.1
     pullPolicy: IfNotPresent
@@ -376,7 +380,7 @@ applicationConfigs: {}
 
 logger:
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: busybox
     tag: 1.31.1
 
@@ -384,7 +388,7 @@ missionControl:
   name: mission-control
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/mission-control
     # tag:
   appContext: mc
@@ -435,6 +439,10 @@ missionControl:
   consoleLog: false
   ## Artifactory URL . Mandatory
   jfrogUrl:
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   podRestartTime:
   repository: jfrog-mission-control
@@ -599,7 +607,7 @@ insightServer:
   name: insight-server
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/insight-server
     # tag:
   appContext: insight
@@ -685,7 +693,7 @@ insightScheduler:
   name: insight-scheduler
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/insight-scheduler
     # tag:
   appContext: insight-scheduler
@@ -769,9 +777,9 @@ insightScheduler:
 router:
   name: router
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.12.4
+    tag: 7.12.6
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

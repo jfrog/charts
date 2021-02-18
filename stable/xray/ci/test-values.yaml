@@ -8,11 +8,10 @@ xray:
 postgresql:
   postgresqlPassword: xray
 
-rabbitmq-ha:
-  rabbitmqUsername: guest
-  rabbitmqPassword: guest
-  persistentVolume:
-    enabled: false
+rabbitmq:
+  auth:
+    username: guest
+    password: password
 
 initContainers:
   resources:

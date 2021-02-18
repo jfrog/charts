@@ -1,6 +1,12 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.5.0] - Feb 08, 2021
+* Support for custom certificates using secrets
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+* Update router version to `7.12.6`
+
 ## [5.4.6] - Jan 27, 2021
 * Update router version to `7.12.4`
 

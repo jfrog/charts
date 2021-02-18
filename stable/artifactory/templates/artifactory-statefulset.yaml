@@ -42,6 +42,9 @@ spec:
       {{- if .Values.access.accessConfig }}
         checksum/access-config: {{ include (print $.Template.BasePath "/artifactory-access-config.yaml") . | sha256sum }}
       {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        checksum/gcpcredentials: {{ include (print $.Template.BasePath "/artifactory-gcp-credentials-secret.yaml") . | sha256sum }}
+      {{- end }}
       {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
         checksum/admin-creds: {{ include (print $.Template.BasePath "/admin-bootstrap-creds.yaml") . | sha256sum }}
       {{- end }}
@@ -225,6 +228,22 @@ spec:
           - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
             mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
     {{- end }}
+      {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'sh'
+        - '-c'
+        - >
+{{ include "artifactory.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: artifactory-volume
+            mountPath: {{ .Values.artifactory.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
     {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
@@ -333,11 +352,20 @@ spec:
         - name: binarystore-xml
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        - name: gcpcreds-json
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
       {{- end }}
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
 {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.artifactory.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
@@ -467,6 +495,11 @@ spec:
         - name: binarystore-xml
           mountPath: "/artifactory_bootstrap/binarystore.xml"
           subPath: binarystore.xml
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        - name: gcpcreds-json
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
       {{- end }}
       {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
         - name: artifactory-license
@@ -585,6 +618,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.artifactory.customCertificates.certificateSecretName }}
+      {{- end }}   
       - name: binarystore-xml
         secret:
           {{- if .Values.artifactory.persistence.customBinarystoreXmlSecret }}
@@ -628,6 +666,15 @@ spec:
       - name: artifactory-configmaps
         configMap:
           name: {{ template "artifactory.fullname" . }}-configmaps
+      {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+      - name: gcpcreds-json
+        secret:
+          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+          secretName: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+          {{- else }}
+          secretName: {{ template "artifactory.fullname" . }}-gcpcreds
+          {{- end }}
       {{- end }}
       {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
       - name: artifactory-license

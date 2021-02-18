@@ -2,9 +2,10 @@ unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 postgresql:
   postgresqlPassword: xray
-rabbitmq-ha:
-  rabbitmqUsername: guest
-  rabbitmqPassword: guest
+rabbitmq:
+  auth:
+    username: guest
+    password: password
 
 global:
   versions:

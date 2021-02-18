@@ -1,6 +1,22 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [7.0.1] - Feb 18, 2021
+* Update Xray to version `3.17.4` - - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.17.4)
+
+## [7.0.0] - Feb 10, 2021
+* **Breaking changes:**
+* Deprecation of  rabbitmq-ha chart - [Notes](https://github.com/helm/charts/tree/master/stable/rabbitmq-ha#%EF%B8%8F-deprecated---rabbitmq-high-available)
+* Added RABBITMQ_MIGRATION_NOTES.md - Steps for migration of data from rabbitmq-ha to rabbitmq bitnami
+* **Important:** Migration to bitnami rabbitmq should be done before upgrading to 7.x chart versions
+
+## [6.11.0] - Feb 08, 2021
+* Support for custom certificates using secrets
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+* Update Xray to version `3.17.2`
+* Update router version to `7.12.6`
+
 ## [6.10.0] - Jan 25, 2021
 * Update Xray to version `3.16.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.16)
 * Added support for passing additionalSpec to xray service resource

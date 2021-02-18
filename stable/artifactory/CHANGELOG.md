@@ -1,16 +1,29 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [11.7.7] - Feb 5, 2021
+## [11.9.0] - Feb 18, 2021
+* Updated Artifactory version to 7.15.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.15.3)
 * Add option to specify update strategy for Artifactory statefulset
 
-## [11.7.6] - Jan 11, 2020
+## [11.8.0] - Feb 08, 2021
+* Updated Artifactory version to 7.12.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.8)
+* Support for custom certificates using secrets
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+
+## [11.7.8] - Jan 25, 2021
+* Add support for hostAliases
+
+## [11.7.7] - Jan 11, 2021
+* Fix failures when using creds file for configurating google storage
+
+## [11.7.6] - Jan 11, 2021
 * Updated Artifactory version to 7.12.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.6)
 
-## [11.7.5] - Jan 07, 2020
+## [11.7.5] - Jan 07, 2021
 * Added support for optional tracker dedicated ingress `.Values.artifactory.replicator.trackerIngress.enabled` (defaults to false)
 
-## [11.7.4] - Jan 04, 2020
+## [11.7.4] - Jan 04, 2021
 * Fixed gid support for statefulset
 
 ## [11.7.3] - Dec 31, 2020

@@ -7,10 +7,21 @@ global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   imageRegistry: docker.bintray.io
-  jfrogUrl: "http://{{ .Release.Name }}-artifactory-ha:8082"
-  jfrogUrlUI: "http://{{ .Release.Name }}-artifactory-ha:8082"
+  ## Set this flag to false, if you are using artifactory chart.
+  haEnabled: true
+  jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## Chart.AppVersion for each product can be overidden using global.versions.<product>
+  ## For example : For artifactory, using global.versions.artifactory
+  ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
+  # versions:
+  #   artifactory:
+  #   xray:
+  #   distribution:
+  #   missionControl:
+  #   pipelines:
   database:
     host: "{{ .Release.Name }}-postgresql"
     port: 5432
@@ -24,9 +35,13 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: docker.bintray.io/postgres:12.3-alpine
+    initContainerSetupDBImage: docker.bintray.io/postgres:12.5-alpine
     initContainerImagePullPolicy: Always
     initDBCreation: true
+  ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   customInitContainersBegin: |
     {{ template "initdb" . }}
@@ -112,6 +127,7 @@ redis:
   usePassword: false
 
 artifactory:
+  ## Note: Set haEnabled flag(global section) to false, if you are using artifactory chart.
   enabled: false
   postgresql:
     enabled: false
@@ -132,6 +148,7 @@ artifactory:
     #   dataKey:
 
 artifactory-ha:
+  ## Note: Set haEnabled flag(global section) to true, if you are using artifactory-ha chart.
   enabled: true
   postgresql:
     enabled: false
@@ -168,8 +185,6 @@ xray:
       size: 200Gi
     rabbitmq:
       connectionConfigFromEnvironment: false
-  rabbitmq-ha:
-    enabled: false
   rabbitmq:
     enabled: false
     external:
@@ -187,7 +202,6 @@ distribution:
     url: '{{ include "database.url" . }}'
     user: distribution
     password: distribution
-
 
 mission-control:
   enabled: true

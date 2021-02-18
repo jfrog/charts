@@ -5,10 +5,10 @@ pipelines:
         readOnly:
           PIPELINES_BRANCH: charts-public-pipelines
           CHART_TESTING_IMAGE: quay.io/rimusz/charts-ci
-          CHART_TESTING_TAG: v0.0.14
+          CHART_TESTING_TAG: v0.0.23
           CHARTS_REPO: https://github.com/jfrog/charts
           KUBEVAL_VERSION: 0.15.0
-          HELM_VERSION: v3.5.1
+          HELM_VERSION: v3.5.2
           CHART_TESTING_ARGS: ""
           GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
           GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}

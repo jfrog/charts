@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 global:
-  # imageRegistry: docker.bintray.io
+  # imageRegistry: releases-docker.jfrog.io
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   ## Chart.AppVersion can be overidden using global.versions.xray, common.xrayVersion or image tags
@@ -26,8 +26,12 @@ global:
 
   # customSidecarContainers: |
 
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
-initContainerImage: docker.bintray.io/alpine:3.12.1
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -63,6 +67,10 @@ xray:
   labels: {}
   persistence:
     mountPath: /var/opt/jfrog/xray
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   ## Xray requires a unique master key
   ## You can generate one with the command:
@@ -172,16 +180,6 @@ networkpolicy:
   #     - podSelector:
   #         matchLabels:
   #           app: xray
-  # Uncomment to allow only xray pods to communicate with rabbitmq-ha (if rabbitmq-ha.enabled is true)
-  # - name: rabbitmq-ha
-  #   podSelector:
-  #     matchLabels:
-  #       app: rabbitmq-ha
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: xray
 
 ## Affinity rules
 nodeSelector: {}
@@ -212,7 +210,7 @@ serviceAccount:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 12.5.0-debian-10-r25
   postgresqlUsername: xray
@@ -269,65 +267,17 @@ database:
   #    name: "xray-database-creds"
   #    key: "db-actualUsername"
 
-# RabbitMQ HA
-## Configuration values for the rabbitmq-ha dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq-ha/README.md
-##
-rabbitmq-ha:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: docker.bintray.io/rabbitmq
-    tag: 3.8.9-alpine
-  rabbitmqUsername: guest
-  rabbitmqPassword: ""
-  ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingSecret
-  # existingSecret: <name-of-existing-secret>
-  rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
-  rabbitmqMemoryHighWatermark: 500MB
-  rabbitmqNodePort: 5672
-  definitions:
-    policies: |-
-      {
-        "name": "ha-all",
-        "apply-to": "all",
-        "pattern": ".*",
-        "vhost": "/",
-        "definition": {
-          "ha-mode": "all",
-          "ha-sync-mode": "automatic",
-        }
-      }
-  resources: {}
-  #  requests:
-  #    memory: "250Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "550Mi"
-  #    cpu: "200m"
-  persistentVolume:
-    enabled: true
-    size: 20Gi
-  rbac:
-    create: true
-  nodeSelector: {}
-  tolerations: []
-  ## Configuration values for the prometheus
-  prometheus:
-    operator:
-      enabled: false
-
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/README.md
 ##
 rabbitmq:
-  enabled: false
+  enabled: true
   replicaCount: 1
   rbac:
     create: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
     tag: 3.8.9-debian-10-r58
   auth:
@@ -517,7 +467,7 @@ analysis:
   name: xray-analysis
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/xray-analysis
     # tag:
   internalPort: 7000
@@ -569,7 +519,7 @@ indexer:
   name: xray-indexer
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/xray-indexer
     # tag:
   internalPort: 7002
@@ -621,7 +571,7 @@ persist:
   name: xray-persist
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/xray-persist
     # tag:
   internalPort: 7003
@@ -673,7 +623,7 @@ server:
   name: xray-server
   ## Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/xray-server
     # tag:
   internalPort: 8000
@@ -735,9 +685,9 @@ server:
 router:
   name: router
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.12.4
+    tag: 7.12.6
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

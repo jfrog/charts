@@ -138,6 +138,22 @@ spec:
           subPath: application.yaml
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
+      {{- if or .Values.missionControl.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'sh'
+        - '-c'
+        - >
+{{ include "mission-control.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: mission-control-data
+            mountPath: {{ .Values.missionControl.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
       {{- if or .Values.postgresql.enabled ( and .Values.database.host .Values.database.port ) }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
@@ -654,6 +670,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if or .Values.missionControl.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.missionControl.customCertificates.certificateSecretName }}
+      {{- end }}
       {{- if .Values.elasticsearch.enabled }}
       - name: elastic-certs
         secret:

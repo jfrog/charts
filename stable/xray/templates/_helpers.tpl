@@ -149,9 +149,6 @@ Create rabbitmq URL
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- $rabbitmqPort := .Values.rabbitmq.service.port -}}
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name "rabbitmq" $rabbitmqPort -}}
-{{- else if index .Values "rabbitmq-ha" "enabled" -}}
-{{- $rabbitmqHaPort := index .Values "rabbitmq-ha" "rabbitmqNodePort" -}}
-{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name "rabbitmq-ha" $rabbitmqHaPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -162,8 +159,6 @@ Create rabbitmq username
 {{- define "rabbitmq.user" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- .Values.rabbitmq.auth.username -}}
-{{- else if index .Values "rabbitmq-ha" "enabled" -}}
-{{- index .Values "rabbitmq-ha" "rabbitmqUsername" -}}
 {{- end -}} 
 {{- end -}}
 
@@ -174,8 +169,6 @@ Create rabbitmq password secret name
 {{- define "rabbitmq.passwordSecretName" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- .Values.rabbitmq.auth.existingPasswordSecret | default (printf "%s-%s" .Release.Name "rabbitmq") -}}
-{{- else if index .Values "rabbitmq-ha" "enabled" -}}
-{{- index .Values "rabbitmq-ha" "existingSecret" | default (printf "%s-%s" .Release.Name "rabbitmq-ha") -}}
 {{- end -}} 
 {{- end -}}
 
@@ -348,3 +341,12 @@ Return the proper xray chart image names
 {{- end -}}
 {{- end -}}
 
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "xray.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted \;;
+find {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}
