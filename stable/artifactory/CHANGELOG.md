@@ -5,6 +5,9 @@ All changes to this chart will be documented in this file.
 * Updated Artifactory version to 7.15.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.15.3)
 * Add option to specify update strategy for Artifactory statefulset
 
+## [11.8.1] - Feb 11, 2021
+* Exposed "multiPartLimit" and "multipartElementSize" for the Azure Blob Storage Binary Provider
+
 ## [11.8.0] - Feb 08, 2021
 * Updated Artifactory version to 7.12.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.8)
 * Support for custom certificates using secrets
