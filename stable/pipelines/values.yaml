@@ -1351,8 +1351,9 @@ redis:
 
   master:
     configmap: |-
-      appendonly yes
+      appendonly no
       loglevel notice
+      save ""
 
     resources: {}
     #  requests:
