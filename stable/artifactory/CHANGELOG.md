@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.9.1] - Feb 19, 2021
+* Update busybox tag version to `1.32.1`
+
 ## [11.9.0] - Feb 18, 2021
 * Updated Artifactory version to 7.15.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.15.3)
 * Add option to specify update strategy for Artifactory statefulset
