@@ -224,7 +224,7 @@ Define database name
 Resolve jfrog url
 */}}
 {{- define "jfrog-platform.jfrogUrl" -}}
-{{- if .Values.global.haEnabled -}}
+{{- if .Values.global.artifactoryHaEnabled -}}
 {{- printf "http://%s-artifactory-ha:8082" .Release.Name -}}
 {{- else -}}
 {{- printf "http://%s-artifactory:8082" .Release.Name -}}
