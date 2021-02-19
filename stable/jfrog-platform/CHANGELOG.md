@@ -1,7 +1,7 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file
 
-## [0.0.15] - Feb 08, 2021
+## [0.1.0] - Feb 19, 2021
 * Update dependency artifactory chart version to 11.9.1 (Artifactory 7.15.3)
 * Update dependency artifactory-ha chart version to 4.9.1 (Artifactory 7.15.3)
 * Update dependency xray chart version to 7.0.2 (Xray 3.17.4)
