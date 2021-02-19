@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.5.1] - Feb 19, 2021
+* Update router version to `7.15.2`
+* Update busybox tag version to `1.32.1`
+
 ## [5.5.0] - Feb 08, 2021
 * Support for custom certificates using secrets
 * **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
