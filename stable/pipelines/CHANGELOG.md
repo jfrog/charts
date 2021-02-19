@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.8.0] - Feb 16, 2021
+* Pipelines v1.12.2
+
 ## [2.7.1] - Feb 08, 2021
 * Corrected helpers.tpl variable names
 
