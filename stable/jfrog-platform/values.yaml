@@ -6,7 +6,7 @@
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
-  imageRegistry: docker.bintray.io
+  imageRegistry: releases-docker.bintray.io
   ## Set this flag to false, if you are using artifactory chart.
   haEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
@@ -35,7 +35,7 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: docker.bintray.io/postgres:12.5-alpine
+    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:12.5-alpine
     initContainerImagePullPolicy: Always
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
@@ -53,7 +53,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
+    tag: 13.2.0-debian-10-r7
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -67,7 +67,7 @@ rabbitmq:
   enabled: true
   image:
     repository: bitnami/rabbitmq
-    tag: 3.8.9-debian-10-r58
+    tag: 3.8.12-debian-10-r2
   auth:
     username: admin
     password: password
@@ -121,7 +121,7 @@ redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 6.0.9-debian-10-r39
+    tag: 6.0.10-debian-10-r32
   cluster:
     enabled: false
   usePassword: false

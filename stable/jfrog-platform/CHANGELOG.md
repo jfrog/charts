@@ -1,6 +1,18 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file
 
+## [0.0.15] - Feb 08, 2021
+* Update dependency artifactory chart version to 11.9.1 (Artifactory 7.15.3)
+* Update dependency artifactory-ha chart version to 4.9.1 (Artifactory 7.15.3)
+* Update dependency xray chart version to 7.0.2 (Xray 3.17.4)
+* Update dependency distribution chart version to 7.4.1 (Distribution 2.6.0)
+* Update dependency pipelines chart version to 2.8.0 (Pipelines 1.12.2)
+* Update dependency mission-control chart version to 5.5.1 (MissionControl 4.6.3)
+* Update postgresql version tag to `13.2.0-debian-10-r7`
+* Update rabbitmq version tag to `3.8.12-debian-10-r2`
+* Update redis version tag to `6.0.10-debian-10-r32`
+* Added support to resolve jfrog url based on `global.artifactoryHaEnabled` flag
+
 ## [0.0.17] - Feb 11, 2021
 * Update dependency xray chart version to 7.0.0 (Xray 3.17.2)
 * Added support for global.versions.<product>
