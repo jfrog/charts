@@ -6,7 +6,7 @@
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
-  imageRegistry: releases-docker.bintray.io
+  imageRegistry: releases-docker.jfrog.io
   ## Set this flag to false, if you are using artifactory chart.
   artifactoryHaEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
@@ -35,7 +35,7 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:12.5-alpine
+    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.2-alpine
     initContainerImagePullPolicy: Always
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
