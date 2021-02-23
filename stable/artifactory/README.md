@@ -780,7 +780,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `artifactory.name`        | Artifactory name                  | `artifactory`                                            |
 | `artifactory.replicaCount`            | Replica count for Artifactory deployment| `1`                                    |
 | `artifactory.image.pullPolicy`        | Container pull policy             | `IfNotPresent`                               |
-| `artifactory.image.repository`        | Container image                   | `docker.bintray.io/jfrog/artifactory-pro`    |
+| `artifactory.image.repository`        | Container image                   | `releases-docker.jfrog.io/jfrog/artifactory-pro`    |
 | `artifactory.image.version`           | Container tag                     |  `.Chart.AppVersion`                         |
 | `artifactory.labels`                  | Artifactory labels                | `{}`                                         |
 | `artifactory.priorityClass.create`    | Create a PriorityClass object     | `false`                                      |
@@ -931,7 +931,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.replicaCount` | Nginx replica count | `1`                                                                         |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.gid`                 | Nginx Group Id                    | `107`                                                  |
-| `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
+| `nginx.image.repository`    | Container image                   | `releases-docker.jfrog.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container tag                     | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy                   | `IfNotPresent`                                   |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
@@ -989,7 +989,7 @@ NOTE: This key is generated only once and cannot be updated once created | `` |
 | `nginx.resources.limits.cpu`      | Nginx cpu limit               |                                                      |
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       |
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
-| `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
+| `postgresql.image.registry`       | PostgreSQL image registry                  | `releases-docker.jfrog.io`                     |
 | `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
 | `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.18-debian-10-r7`                   |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
