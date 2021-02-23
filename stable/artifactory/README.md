@@ -30,7 +30,7 @@ helm repo update
 To install the chart with the release name `artifactory`:
 
 ```bash
-helm upgrade --install artifactory --namespace artifactory center/jfrog/artifactory --verison 8.10.2
+helm upgrade --install artifactory --namespace artifactory center/jfrog/artifactory --verison 8.10.3
 ```
 
 ### Deploying Artifactory with embedded Derby database
