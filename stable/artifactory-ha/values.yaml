@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 
 installer:
   type:
@@ -96,7 +96,7 @@ waitForDatabase: true
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 9.6.18-debian-10-r7
   postgresqlUsername: artifactory
@@ -146,15 +146,15 @@ database:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
-    tag: 1.31.1
+    repository: releases-docker.jfrog.io/busybox
+    tag: 1.32.1
 
 # Artifactory
 artifactory:
   name: artifactory-ha
   # Note that by default we use appVersion to get image version/tag
   image:
-    repository: docker.bintray.io/jfrog/artifactory-pro
+    repository: releases-docker.jfrog.io/jfrog/artifactory-pro
     # version:
     pullPolicy: IfNotPresent
 
@@ -965,7 +965,7 @@ nginx:
   gid: 107
   # Note that by default we use appVersion to get image version/tag
   image:
-    repository: docker.bintray.io/jfrog/nginx-artifactory-pro
+    repository: releases-docker.jfrog.io/jfrog/nginx-artifactory-pro
     # version:
     pullPolicy: IfNotPresent
 

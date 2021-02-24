@@ -35,7 +35,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-ha`:
 ```bash
-helm upgrade --install artifactory-ha --namespace artifactory-ha center/jfrog/artifactory-ha --version 1.10.2
+helm upgrade --install artifactory-ha --namespace artifactory-ha center/jfrog/artifactory-ha --version 1.10.3
 ```
 
 ### Deploying Artifactory with replicator
@@ -713,7 +713,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `logger.image.tag`        | tag for logger image              | `1.30`                                                   |
 | `artifactory.name`                   | Artifactory name                     | `artifactory`                              |
 | `artifactory.image.pullPolicy`       | Container pull policy                | `IfNotPresent`                             |
-| `artifactory.image.repository`       | Container image                      | `docker.bintray.io/jfrog/artifactory-pro`  |
+| `artifactory.image.repository`       | Container image                      | `releases-docker.jfrog.io/jfrog/artifactory-pro`  |
 | `artifactory.image.version`          | Container image tag                  | `.Chart.AppVersion`                        |
 | `artifactory.priorityClass.create`   | Create a PriorityClass object        | `false`                                    |
 | `artifactory.priorityClass.value`    | Priority Class value                 | `1000000000`                               |
@@ -892,7 +892,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.replicaCount`        | Nginx replica count               | `1`                                                    |
 | `nginx.uid`                 | Nginx User Id                     | `104`                                                  |
 | `nginx.gid`                 | Nginx Group Id                    | `107`                                                  |
-| `nginx.image.repository`    | Container image                   | `docker.bintray.io/jfrog/nginx-artifactory-pro`        |
+| `nginx.image.repository`    | Container image                   | `releases-docker.jfrog.io/jfrog/nginx-artifactory-pro`        |
 | `nginx.image.version`       | Container version                 | `.Chart.AppVersion`                                    |
 | `nginx.image.pullPolicy`    | Container pull policy             | `IfNotPresent`                                         |
 | `nginx.labels`              | Nginx deployment labels           | `{}`                                                   |
@@ -954,7 +954,7 @@ The following table lists the configurable parameters of the artifactory chart a
 | `nginx.persistence.size` | Nginx persistence volume size | `5Gi`                                                         |
 | `waitForDatabase`                 | Wait for database (using wait-for-db init container)  | `true`                       | 
 | `postgresql.enabled`              | Use enclosed PostgreSQL as database        | `true`                                  |
-| `postgresql.image.registry`       | PostgreSQL image registry                  | `docker.bintray.io`                     |
+| `postgresql.image.registry`       | PostgreSQL image registry                  | `releases-docker.jfrog.io`                     |
 | `postgresql.image.repository`     | PostgreSQL image repository                | `bitnami/postgresql`                    |
 | `postgresql.image.tag`            | PostgreSQL image tag                       | `9.6.18-debian-10-r7`                   |
 | `postgresql.postgresqlDatabase`   | PostgreSQL database name                   | `artifactory`                           |
