@@ -28,7 +28,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-oss`:
 ```bash
-helm upgrade --install artifactory-oss --namespace artifactory-oss center/jfrog/artifactory-oss --version 1.6.1
+helm upgrade --install artifactory-oss --namespace artifactory-oss center/jfrog/artifactory-oss --version 1.6.2
 ```
 
 ### Accessing Artifactory OSS
@@ -62,7 +62,7 @@ The following table lists the **basic** configurable parameters of the Artifacto
 
 |         Parameter                              |           Description             |                         Default                   |
 |------------------------------------------------|-----------------------------------|---------------------------------------------------|
-| `artifactory.artifactory.image.repository`     | Container image                   | `docker.bintray.io/jfrog/artifactory-oss`         |
+| `artifactory.artifactory.image.repository`     | Container image                   | `releases-docker.jfrog.io/jfrog/artifactory-oss`         |
 | `artifactory.artifactory.image.version`        | Container tag                     | `.Chart.AppVersion`                               |
 | `artifactory.artifactory.resources`            | Artifactory container resources   | `{}`                                              |
 | `artifactory.artifactory.javaOpts`             | Artifactory Java options          | `{}`                                              |

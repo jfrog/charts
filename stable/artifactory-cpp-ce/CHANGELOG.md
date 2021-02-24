@@ -1,6 +1,10 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.6.2] - Feb 23, 2021
+* Update dependency Artifactory chart version to 8.10.3 (Artifactory 6.23.13)
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+
 ## [1.6.1] - Nov 30, 2020
 * Update dependency Artifactory chart version to 8.10.1 (Artifactory 6.23.3)
 * Updated chart maintainers email

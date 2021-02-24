@@ -28,7 +28,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry center/jfrog/artifactory-jcr  --version 1.6.1
+helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry center/jfrog/artifactory-jcr  --version 1.6.2
 ```
 
 ### Accessing JFrog Container Registry
@@ -62,7 +62,7 @@ The following table lists the **basic** configurable parameters of the JFrog Con
 
 |         Parameter                              |           Description             |                         Default                   |
 |------------------------------------------------|-----------------------------------|---------------------------------------------------|
-| `artifactory.artifactory.image.repository`     | Container image                   | `docker.bintray.io/jfrog/artifactory-jcr`         |
+| `artifactory.artifactory.image.repository`     | Container image                   | `releases-docker.jfrog.io/jfrog/artifactory-jcr`         |
 | `artifactory.artifactory.image.version`        | Container tag                     | `.Chart.AppVersion`                               |
 | `artifactory.artifactory.resources`            | Artifactory container resources   | `{}`                                              |
 | `artifactory.artifactory.javaOpts`             | Artifactory Java options          | `{}`                                              |
