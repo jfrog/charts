@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.9.2] - Mar 04, 2021
+* Fixed creation of nginx-certificate-secret when Nginx is disabled
+
 ## [4.9.1] - Feb 19, 2021
 * Update busybox tag version to `1.32.1`
 
