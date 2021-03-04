@@ -1,6 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.9.3] - Mar 04, 2021
+* Updated Artifactory version to 7.15.4 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.15.4)
 
 ## [11.9.2] - Mar 04, 2021
 * Fixed creation of nginx-certificate-secret when Nginx is disabled
