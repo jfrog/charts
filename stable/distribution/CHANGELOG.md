@@ -1,10 +1,29 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [7.3.0] - Jan 13, 2020
+## [7.4.2] - Feb 25, 2021
+* Update Distribution to version `2.6.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6.1)
+
+## [7.4.1] - Feb 19, 2021
+* Update router version to `7.15.2`
+* Update busybox tag version to `1.32.1`
+
+## [7.4.0] - Feb 08, 2021
+* Support for custom certificates using secrets 
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+* Update router version to `7.12.6`
+
+## [7.3.2] - Jan 27, 2021
+* Update router version to `7.12.4`
+
+## [7.3.1] - Jan 25, 2021
+* Add support for hostAliases
+
+## [7.3.0] - Jan 13, 2021
 * Update Distribution to version `2.6.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6)
 
-## [7.2.3] - Jan 8, 2020
+## [7.2.3] - Jan 8, 2021
 * Add support for creating additional kubernetes resources
 
 ## [7.2.2] - Dec 22, 2020

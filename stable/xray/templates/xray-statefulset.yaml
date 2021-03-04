@@ -124,6 +124,22 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
+      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'sh'
+        - '-c'
+        - >
+{{ include "xray.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: data-volume
+            mountPath: {{ .Values.xray.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
@@ -140,6 +156,10 @@ spec:
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "xray.customInitContainers" .) . | indent 6 }}
     {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.router.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "router") }}
@@ -713,6 +733,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.xray.customCertificates.certificateSecretName }}
+      {{- end }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
       - name: systemyaml
         secret:

@@ -6,11 +6,22 @@
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
-  imageRegistry: docker.bintray.io
-  jfrogUrl: "http://{{ .Release.Name }}-artifactory-ha:8082"
-  jfrogUrlUI: "http://{{ .Release.Name }}-artifactory-ha:8082"
+  imageRegistry: releases-docker.jfrog.io
+  ## Set this flag to false, if you are using artifactory chart.
+  artifactoryHaEnabled: true
+  jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## Chart.AppVersion for each product can be overidden using global.versions.<product>
+  ## For example : For artifactory, using global.versions.artifactory
+  ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
+  # versions:
+  #   artifactory:
+  #   xray:
+  #   distribution:
+  #   missionControl:
+  #   pipelines:
   database:
     host: "{{ .Release.Name }}-postgresql"
     port: 5432
@@ -24,9 +35,13 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: docker.bintray.io/postgres:12.3-alpine
+    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.2-alpine
     initContainerImagePullPolicy: Always
     initDBCreation: true
+  ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   customInitContainersBegin: |
     {{ template "initdb" . }}
@@ -38,7 +53,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 12.3.0-debian-10-r71
+    tag: 13.2.0-debian-10-r7
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -52,7 +67,7 @@ rabbitmq:
   enabled: true
   image:
     repository: bitnami/rabbitmq
-    tag: 3.8.7-debian-10-r3
+    tag: 3.8.12-debian-10-r2
   auth:
     username: admin
     password: password
@@ -106,12 +121,13 @@ redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 6.0.6-debian-10-r12
+    tag: 6.0.10-debian-10-r32
   cluster:
     enabled: false
   usePassword: false
 
 artifactory:
+  ## Note: Set artifactoryHaEnabled flag(global section) to false, if you are using artifactory chart.
   enabled: false
   postgresql:
     enabled: false
@@ -132,6 +148,7 @@ artifactory:
     #   dataKey:
 
 artifactory-ha:
+  ## Note: Set artifactoryHaEnabled flag(global section) to true, if you are using artifactory-ha chart.
   enabled: true
   postgresql:
     enabled: false
@@ -168,8 +185,6 @@ xray:
       size: 200Gi
     rabbitmq:
       connectionConfigFromEnvironment: false
-  rabbitmq-ha:
-    enabled: false
   rabbitmq:
     enabled: false
     external:
@@ -187,7 +202,6 @@ distribution:
     url: '{{ include "database.url" . }}'
     user: distribution
     password: distribution
-
 
 mission-control:
   enabled: true

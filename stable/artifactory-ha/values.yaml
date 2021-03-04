@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 global:
-  # imageRegistry: docker.bintray.io
+  # imageRegistry: releases-docker.jfrog.io
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   ## Chart.AppVersion can be overidden using global.versions.artifactory or .Values.artifactory.image.tag
@@ -26,7 +26,12 @@ global:
 
   # customSidecarContainers: |
 
-initContainerImage: docker.bintray.io/alpine:3.12.1
+  ## certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 
 installer:
   type:
@@ -137,7 +142,7 @@ waitForDatabase: true
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 12.5.0-debian-10-r25
   postgresqlUsername: artifactory
@@ -193,16 +198,16 @@ database:
 
 logger:
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: busybox
-    tag: 1.31.1
+    tag: 1.32.1
 
 # Artifactory
 artifactory:
   name: artifactory-ha
   # Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-pro
     # tag:
     pullPolicy: IfNotPresent
@@ -226,6 +231,11 @@ artifactory:
       maxThreads: 200
       extraConfig: 'acceptCount="100"'
 
+  # certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
   # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
   # To enable set `.Values.artifactory.openMetrics.enabled` to `true`
   # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
@@ -247,7 +257,7 @@ artifactory:
   #    # Relative to ARTIFACTORY_HOME/
   #    target: etc/artifactory/
   #  # Absolute path
-  #  - source: /artifactory_bootstrap/artifactory.lic
+  #  - source: /artifactory_bootstrap/artifactory.cluster.license
   #    # Relative to ARTIFACTORY_HOME/
   #    target: etc/artifactory/
 
@@ -443,7 +453,7 @@ artifactory:
     ## licenseKey is the license key in plain text. Use either this or the license.secret setting
     licenseKey:
     ## If artifactory.license.secret is passed, it will be mounted as
-    ## ARTIFACTORY_HOME/etc/artifactory.lic and loaded at run time.
+    ## ARTIFACTORY_HOME/etc/artifactory.cluster.license and loaded at run time.
     secret:
     ## The dataKey should be the name of the secret data key created.
     dataKey:
@@ -746,7 +756,11 @@ artifactory:
                       <minSpareUploaderExecutor>2</minSpareUploaderExecutor>
                       <sub-provider id="eventual-cluster" type="eventual-cluster">
                           <provider id="retry" type="retry">
+                              {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+                              <provider id="google-storage-v2" type="google-storage-v2"/>
+                              {{- else }}
                               <provider id="google-storage" type="google-storage"/>
+                              {{- end }}
                           </provider>
                       </sub-provider>
                       <dynamic-provider id="remote" type="remote"/>
@@ -776,13 +790,18 @@ artifactory:
               <tempDir>/tmp</tempDir>
           </provider>
 
+          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+          <provider id="google-storage-v2" type="google-storage-v2">
+              <useInstanceCredentials>false</useInstanceCredentials>
+          {{- else }}
           <provider id="google-storage" type="google-storage">
+              <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
+              <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
+          {{- end }}
               <providerId>google-cloud-storage</providerId>
               <endpoint>{{ .Values.artifactory.persistence.googleStorage.endpoint }}</endpoint>
               <httpsOnly>{{ .Values.artifactory.persistence.googleStorage.httpsOnly }}</httpsOnly>
               <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
-              <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
-              <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
               <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
               <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
           </provider>
@@ -987,6 +1006,8 @@ artifactory:
               <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
               <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
               <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
+              <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit }}</multiPartLimit>
+              <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize }}</multipartElementSize>
               <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
           </provider>
       </config>
@@ -1104,6 +1125,8 @@ artifactory:
       accountKey:
       endpoint:
       containerName:
+      multiPartLimit: 100000000
+      multipartElementSize: 50000000
       testConnection: false
   service:
     name: artifactory
@@ -1183,6 +1206,9 @@ artifactory:
     replicaCount: 1
     # minAvailable: 1
 
+    updateStrategy:
+      type: RollingUpdate
+
     ## Resources for the primary node
     resources: {}
     #  requests:
@@ -1228,6 +1254,8 @@ artifactory:
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-member-0`
       existingClaim: false
     replicaCount: 2
+    updateStrategy:
+      type: RollingUpdate
     minAvailable: 1
     ## Resources for the member nodes
     resources: {}
@@ -1332,7 +1360,7 @@ nginx:
   gid: 107
   # Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/nginx-artifactory-pro
     # tag:
     pullPolicy: IfNotPresent
@@ -1651,3 +1679,15 @@ filebeat:
 ## Use --- as a separator between multiple resources
 ## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-ha-values.yaml
 additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"

@@ -1,0 +1,23 @@
+{{- if and .Values.elasticsearch.enabled (not .Values.elasticsearch.certificatesSecretName) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "mission-control.fullname" . }}-elasticsearch-certs
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+data:
+  root-ca.pem: |
+{{ .Files.Get "files/example-root-ca.pem" | b64enc | indent 4 }}
+  localhost.key: |
+{{ .Files.Get "files/example-localhost.key" | b64enc | indent 4 }}
+  localhost.pem: |
+{{ .Files.Get "files/example-localhost.pem" | b64enc | indent 4 }}
+  sgadmin.key: |
+{{ .Files.Get "files/example-sgadmin.key" | b64enc | indent 4 }}
+  sgadmin.pem: |
+{{ .Files.Get "files/example-sgadmin.pem" | b64enc | indent 4 }}
+{{- end }}

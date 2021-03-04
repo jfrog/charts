@@ -103,6 +103,22 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
+      {{- if or .Values.distribution.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'sh'
+        - '-c'
+        - >
+{{ include "distribution.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: distribution-data
+            mountPath: {{ .Values.distribution.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
       {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
@@ -147,6 +163,10 @@ spec:
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "distribution.customInitContainers" .)  . | indent 6 }}
     {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
@@ -449,6 +469,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      {{- if or .Values.distribution.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.distribution.customCertificates.certificateSecretName }}
+      {{- end }}
       {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
 {{ tpl (include "distribution.customVolumes" .) . | indent 6 }}
       {{- end }}

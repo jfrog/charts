@@ -8,14 +8,19 @@ metadata:
     component: {{ .Values.xray.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-{{- if .Values.server.service.annotations }}
+{{- with .Values.server.service }}
+{{- if .annotations }}
   annotations:
-    {{- range $key, $value := .Values.server.service.annotations }}
+    {{- range $key, $value := .annotations }}
       {{ $key }}: {{ $value | quote }}
     {{- end }}
 {{- end }}
 spec:
-  type: {{ .Values.server.service.type }}
+  type: {{ .type }}
+  {{- if .additionalSpec }}
+{{ tpl .additionalSpec $ | indent 2 }}
+  {{- end }}
+{{- end }}
   ports:
   - port: {{ .Values.server.externalPort }}
     protocol: TCP

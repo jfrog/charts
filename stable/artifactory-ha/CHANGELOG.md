@@ -1,8 +1,33 @@
 # JFrog Artifactory-ha Chart Changelog
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
 
-## [4.7.7] - Jan 13, 2021
+## [4.9.2] - Mar 04, 2021
 * Fixed creation of nginx-certificate-secret when Nginx is disabled
+
+## [4.9.1] - Feb 19, 2021
+* Update busybox tag version to `1.32.1`
+
+## [4.9.0] - Feb 18, 2021
+* Updated Artifactory version to 7.15.3 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.15.3)
+* Add option to specify update strategy for Artifactory statefulset
+
+## [4.8.1] - Feb 11, 2021
+* Exposed "multiPartLimit" and "multipartElementSize" for the Azure Blob Storage Binary Provider
+
+## [4.8.0] - Feb 08, 2021
+* Updated Artifactory version to 7.12.8 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.8)
+* Support for custom certificates using secrets
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+
+## [4.7.9] - Feb 3, 2021
+* Fix copyOnEveryStartup for HA cluster license
+
+## [4.7.8] - Jan 25, 2021
+* Add support for hostAliases
+
+## [4.7.7] - Jan 11, 2021
+* Fix failures when using creds file for configurating google storage
 
 ## [4.7.6] - Jan 11, 2021
 * Updated Artifactory version to 7.12.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.12.6)

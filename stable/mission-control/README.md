@@ -243,6 +243,23 @@ This can be done with the following parameters
 ...
 ```
 
+#### Elasticsearch with custom tls-certificates
+
+By default the internal elasticsearch uses the bundled tls-certificates for configuring searchguard. For production deployments it is recommended to use you own certificates.
+Custom certificates can be added by using kubernetes secret. The secret should be created outside of this chart and provided using the tag `.Values.elasticsearch.certificatesSecretName`. Please refer the example below.
+
+```bash
+kubectl create secret generic elastic-certs --from-file=localhost.key=localhost.key --from-file=localhost.pem=localhost.pem --from-file=sgadmin.key=sgadmin.key --from-file=sgadmin.pem=sgadmin.pem --from-file=root-ca.pem=root-ca.pem
+```
+Refer- https://docs.search-guard.com/latest/offline-tls-tool for creating certificates
+
+And then pass it to the helm installation
+```yaml
+elasticsearch:
+  certificatesSecretName: elastic-certs
+```
+**NOTE:** If the certificates are changed, rolling update is not possible. Scale down the deployment to one replica and do an helm upgrade
+
 ### Logger sidecars
 This chart provides the option to add sidecars to tail various logs from Mission Control containers. See the available values in `values.yaml`
 
@@ -270,36 +287,26 @@ common:
 ### Establishing TLS and Adding certificates
 Create trust between the nodes by copying the ca.crt from the Artifactory server under $JFROG_HOME/artifactory/var/etc/access/keys to of the nodes you would like to set trust with under $JFROG_HOME/<product>/var/etc/security/keys/trusted. For more details, Please refer [here](https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates).
 
+Note: Support for custom certificates using secrets was added from 5.5.x chart versions 
 
-To add this certificate to mission control, Create a configmaps.yaml file with the following content:
+Tls certificates can be added by using kubernetes secret. The secret should be created outside of this chart and provided using the tag `.Values.missionControl.customCertificates.certificateSecretName`. Please refer the example below.
+
+```bash
+kubectl create secret generic ca-cert --from-file=ca.crt=ca.crt
+```
+
+And then pass it to the helm installation
 
 ```yaml
-common:
-  configMaps: |
-    ca.crt: |
-      -----BEGIN CERTIFICATE-----
-        <certificate content>
-      -----END CERTIFICATE-----
-  customVolumeMounts: |
-    - name: mission-control-configmaps
-      mountPath: /tmp/ca.crt
-      subPath: ca.crt
 missionControl:
-  preStartCommand: "mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted && cp -fv /tmp/ca.crt {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted/ca.crt"
+  customCertificates:
+    enabled: true
+    certificateSecretName: ca-cert
 router:
   tlsEnabled: true  
 ```
 
-and use it with your helm install/upgrade:
-```bash
-helm upgrade --install mission-control -f configmaps.yaml --namespace mission-control center/jfrog/xray
-```
-
-This will, in turn:
-* Create a configMap with the files you specified above
-* Create a volume pointing to the configMap with the name `mission-control-configmaps`
-* Mount said configMap onto `/tmp` using a `customVolumeMounts`
-* Using preStartCommand copy the `ca.crt` file to distribution trusted keys folder `/etc/security/keys/trusted/ca.crt`
+Note:
 * `router.tlsEnabled` is set to true to add HTTPS scheme in liveness and readiness probes.
 
 ### Custom volumes

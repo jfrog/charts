@@ -1,7 +1,41 @@
 # JFrog Platform Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
-## [0.0.13] - Jan 4, 2020
+## [0.1.0] - Feb 19, 2021
+* Update dependency artifactory chart version to 11.9.1 (Artifactory 7.15.3)
+* Update dependency artifactory-ha chart version to 4.9.1 (Artifactory 7.15.3)
+* Update dependency xray chart version to 7.0.2 (Xray 3.17.4)
+* Update dependency distribution chart version to 7.4.1 (Distribution 2.6.0)
+* Update dependency pipelines chart version to 2.8.0 (Pipelines 1.12.2)
+* Update dependency mission-control chart version to 5.5.1 (MissionControl 4.6.3)
+* Update postgresql version tag to `13.2.0-debian-10-r7`
+* Update rabbitmq version tag to `3.8.12-debian-10-r2`
+* Update redis version tag to `6.0.10-debian-10-r32`
+* Added support to resolve jfrog url based on `global.artifactoryHaEnabled` flag
+
+## [0.0.17] - Feb 11, 2021
+* Update dependency xray chart version to 7.0.0 (Xray 3.17.2)
+* Added support for global.versions.<product>
+
+## [0.0.16] - Feb 09, 2021
+* Added support to resolve jfrog url automatically
+
+## [0.0.15] - Feb 08, 2021
+* Update dependency artifactory chart version to 11.8.0 (Artifactory 7.12.8)
+* Update dependency artifactory-ha chart version to 4.8.0 (Artifactory 7.12.8)
+* Update dependency xray chart version to 6.11.0 (Xray 3.17.2)
+* Update dependency distribution chart version to 7.4.0 (Distribution 2.6.0)
+* Update dependency pipelines chart version to 2.7.1 (Pipelines 1.11.3)
+* Update dependency mission-control chart version to 5.5.0 (MissionControl 4.6.3)
+
+## [0.0.14] - Jan 27, 2021
+* Update dependency artifactory chart version to 11.7.6 (Artifactory 7.12.6)
+* Update dependency artifactory-ha chart version to 4.7.6 (Artifactory 7.12.6)
+* Update dependency xray chart version to 6.10.0 (Xray 3.16.0)
+* Update dependency distribution chart version to 7.3.2 (Distribution 2.6.0)
+* Update dependency pipelines chart version to 2.5.5 (Pipelines 1.10.0)
+
+## [0.0.13] - Jan 4, 2021
 * Update dependency artifactory chart version to 11.7.4 (Artifactory 7.12.5)
 * Update dependency artifactory-ha chart version to 4.7.4 (Artifactory 7.12.5)
 * Update dependency xray chart version to 6.9.0 (Xray 3.15.1)

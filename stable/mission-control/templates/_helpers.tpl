@@ -230,3 +230,13 @@ Resolve elastic search url
 {{- printf "http://localhost:%d" (int .Values.router.internalPort) -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "mission-control.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted \;;
+find {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.missionControl.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}

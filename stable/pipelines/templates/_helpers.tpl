@@ -310,3 +310,14 @@ Return the proper pipelines app version
 {{- $tag := $image._1 -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
+
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "pipelines.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.pipelines.mountPath }}/security/keys/trusted";
+mkdir -p {{ .Values.pipelines.mountPath }}/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.pipelines.mountPath }}/security/keys/trusted \;;
+find {{ .Values.pipelines.mountPath }}/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.pipelines.mountPath }}/security/keys/trusted/ca.crt \;;
+chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
+{{- end -}}

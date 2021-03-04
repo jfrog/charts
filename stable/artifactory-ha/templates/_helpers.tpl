@@ -290,3 +290,13 @@ Return the proper artifactory app version
 {{- $tag := $image._1 -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
+
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "artifactory-ha.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted \;;
+find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}

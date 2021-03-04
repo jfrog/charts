@@ -6,7 +6,7 @@
 
 
 global:
-  # imageRegistry: docker.bintray.io
+  # imageRegistry: releases-docker.jfrog.io
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   ## Chart.AppVersion can be overidden using global.versions.artifactory or .Values.artifactory.image.tag
@@ -28,8 +28,13 @@ global:
 
   # customSidecarContainers: |
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
-initContainerImage: docker.bintray.io/alpine:3.12.1
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 
 # Init containers
 initContainers:
@@ -145,20 +150,22 @@ networkpolicy:
 
 logger:
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: busybox
-    tag: 1.31.1
+    tag: 1.32.1
 
 # Artifactory
 artifactory:
   name: artifactory
   # Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-pro
     # tag:
     pullPolicy: IfNotPresent
   labels: {}
+  updateStrategy:
+    type: RollingUpdate
 
   # Create a priority class for the Artifactory pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
@@ -172,6 +179,11 @@ artifactory:
 
   # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
   deleteDBPropertiesOnStartup: true
+
+  # certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
 
   database:
     maxOpenConnections: 80
@@ -656,7 +668,11 @@ artifactory:
               <provider id="cache-fs" type="cache-fs">
                   <provider id="eventual" type="eventual">
                       <provider id="retry" type="retry">
+                          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+                          <provider id="google-storage-v2" type="google-storage-v2"/>
+                          {{- else }}
                           <provider id="google-storage" type="google-storage"/>
+                          {{- end }}
                       </provider>
                   </provider>
               </provider>
@@ -673,13 +689,18 @@ artifactory:
               <tempDir>/tmp</tempDir>
           </provider>
 
+          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+          <provider id="google-storage-v2" type="google-storage-v2">
+              <useInstanceCredentials>false</useInstanceCredentials>
+          {{- else }}
           <provider id="google-storage" type="google-storage">
+              <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
+              <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
+          {{- end }}
               <providerId>google-cloud-storage</providerId>
               <endpoint>{{ .Values.artifactory.persistence.googleStorage.endpoint }}</endpoint>
               <httpsOnly>{{ .Values.artifactory.persistence.googleStorage.httpsOnly }}</httpsOnly>
               <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
-              <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
-              <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
               <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
               <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
           </provider>
@@ -825,6 +846,8 @@ artifactory:
               <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
               <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
               <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
+              <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit }}</multiPartLimit>
+              <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize }}</multipartElementSize>
               <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
           </provider>
       </config>
@@ -850,6 +873,25 @@ artifactory:
 
     ## For artifactory.persistence.type google-storage
     googleStorage:
+      ## When using GCP buckets as your binary store (Available with enterprise license only)
+      gcpServiceAccount:
+        enabled: false
+        ## Use either an existing secret prepared in advance or put the config (replace the content) in the values
+        ## ref: https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/README.md#google-storage
+        # customSecretName:
+        # config: |
+        #   {
+        #      "type": "service_account",
+        #      "project_id": "<project_id>",
+        #      "private_key_id": "?????",
+        #      "private_key": "-----BEGIN PRIVATE KEY-----\n????????==\n-----END PRIVATE KEY-----\n",
+        #      "client_email": "???@j<project_id>.iam.gserviceaccount.com",
+        #      "client_id": "???????",
+        #      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        #      "token_uri": "https://oauth2.googleapis.com/token",
+        #      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        #      "client_x509_cert_url": "https://www.googleapis.com/robot/v1....."
+        #   }
       endpoint: commondatastorage.googleapis.com
       httpsOnly: false
       # Set a unique bucket name
@@ -905,6 +947,8 @@ artifactory:
       accountKey:
       endpoint:
       containerName:
+      multiPartLimit: 100000000
+      multipartElementSize: 50000000
       testConnection: false
     ## artifactory data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -996,7 +1040,7 @@ nginx:
   gid: 107
   # Note that by default we use appVersion to get image tag/version
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: jfrog/nginx-artifactory-pro
     # tag:
     pullPolicy: IfNotPresent
@@ -1270,7 +1314,7 @@ waitForDatabase: true
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 12.5.0-debian-10-r25
   postgresqlUsername: artifactory
@@ -1390,3 +1434,15 @@ filebeat:
 ## Use --- as a separator between multiple resources
 ## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-values.yaml
 additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"
