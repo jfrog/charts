@@ -576,6 +576,10 @@ spec:
           subPath: filebeat.yml
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        env:
+{{- with .Values.filebeat.EnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
         livenessProbe:
 {{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
         readinessProbe:
