@@ -1,6 +1,6 @@
 {{- if .Values.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
-{{- if .Values.pipelines.rbac.clusterRole }}
+{{- if .Values.rbac.clusterRole }}
 kind: ClusterRoleBinding
 {{- else }}
 kind: RoleBinding
@@ -14,7 +14,7 @@ subjects:
   name: {{ include "pipelines.fullname" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
-  {{- if .Values.pipelines.rbac.clusterRole }}
+  {{- if .Values.rbac.clusterRole }}
   kind: ClusterRole
   {{- else }}
   kind: Role

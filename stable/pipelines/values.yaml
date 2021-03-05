@@ -565,25 +565,6 @@ pipelines:
       #   cpu: 100m
       #   memory: 128Mi
 
-  ## Cluster Role Based Access
-  ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
-  rbac:
-    ## Sets ClusterRole if enabled, otherwise Role
-    clusterRole: false
-    role:
-      ## Rules to create. It follows the role specification
-      rules:
-      - apiGroups: ["", "extensions", "apps"]
-        resources:
-        - deployments
-        - persistentvolumes
-        - persistentvolumeclaims
-        - pods
-        - deployments/scale
-        - secrets
-        - configmaps
-        verbs: ["*"]
-
   # Add any list of configmaps to Pipelines
   configMaps: |
   #  posthook-start.sh: |-
@@ -1589,9 +1570,23 @@ filebeat:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
 
-##
+## Role Based Access Control
+## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
   create: true
+  role:
+    ## Rules to create. It follows the role specification
+    rules:
+    - apiGroups:
+      - ''
+      resources:
+      - services
+      - endpoints
+      - pods
+      verbs:
+      - get
+      - watch
+      - list
 
 networkpolicy:
   # Allows all ingress and egress
