@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [2.8.1] - Feb 16, 2021
+* Update RBAC rules for Pipelines
+
 ## [2.8.0] - Feb 16, 2021
 * Pipelines v1.12.2
 
