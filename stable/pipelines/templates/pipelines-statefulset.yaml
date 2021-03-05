@@ -198,6 +198,8 @@ spec:
           {{- end }}
             sleep 20;
             ./pipelines-k8s;
+            echo "Changing the owner of the system.yaml to pipelines user"
+            chown 1066:1066 /opt/jfrog/pipelines/var/etc/system.yaml
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
