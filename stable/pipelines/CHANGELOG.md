@@ -1,5 +1,5 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file
+All changes to this chart to be documented in this file.
 
 ## [2.8.4] - Feb 28, 2021
 * Run router container as default user
