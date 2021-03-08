@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.13.1] - Apr 9, 2021
+* Explicitly set ServiceAccount `automountServiceAccountToken` to 'true'
+
 ## [4.13.0] - April 5, 2021
 * **IMPORTANT**
 * Added `charts.jfrog.io` as default JFrog Helm repository

@@ -82,6 +82,8 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
   annotations: {}
+  ## Explicitly mounts the  API token for the service account to the pods
+  automountServiceAccountToken: true
 
 ingress:
   enabled: false
