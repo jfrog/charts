@@ -8,7 +8,7 @@ All changes to this chart to be documented in this file
 * Add liveness and readiness probes to router
 
 ## [2.8.1] - Feb 22, 2021
-* Adds ability to disable nexec microservice for saas customers
+* Adds ability to disable nexec microservice
 
 ## [2.8.0] - Feb 16, 2021
 * Pipelines v1.12.2
