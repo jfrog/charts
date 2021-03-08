@@ -1,5 +1,14 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file.
+All changes to this chart to be documented in this file
+
+## [2.8.3] - Feb 28, 2021
+* Add custom secret and custom pvc
+
+## [2.8.2] - Feb 22, 2021
+* Add liveness and readiness probes to router
+
+## [2.8.1] - Feb 22, 2021
+* Adds ability to disable nexec microservice
 
 ## [2.8.0] - Feb 16, 2021
 * Pipelines v1.12.2
