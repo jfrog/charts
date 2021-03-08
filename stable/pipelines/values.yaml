@@ -307,6 +307,24 @@ pipelines:
     #  limits:
     #    memory: "1Gi"
     #    cpu: "1"
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+      path: /router/api/v1/system/health
+
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      timeoutSeconds: 10
+      periodSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+      path: /router/api/v1/system/health
+
 
   www:
     image:
@@ -443,6 +461,7 @@ pipelines:
       #   memory: 40Mi
 
   nexec:
+    enabled: true
     image:
       # registry:
       repository: jfrog/pipelines-micro
@@ -565,6 +584,15 @@ pipelines:
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
+  customPersistentVolumeClaim: {}
+  #  name:
+  #  mountPath:
+  #  accessModes:
+  #   - "-"
+  #  size:
+  #  storageClassName:
+
+
   ## Add custom init begin containers - first init container to run
   customInitContainersBegin: |
   #  - name: "custom-begin-setup"
@@ -616,6 +644,19 @@ pipelines:
   #      limits:
   #        memory: "128Mi"
   #        cpu: "100m"
+
+  # Add custom secrets - secret per file
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
 
   systemYaml: |
     {{- if .Values.router.routerConfiguration }}
@@ -731,7 +772,9 @@ pipelines:
           - "cluster.init"
           - "core.logup"
           - "www.signals"
+          {{- if .Values.pipelines.nexec.enabled }}
           - "core.nexec"
+          {{- end}}
           - "core.hookHandler"
           - "core.extensionSync"
           - "core.templateSync"
@@ -912,8 +955,10 @@ pipelines:
           name: stepTrigger
         cron:
           name: cron
+        {{- if .Values.pipelines.nexec.enabled }}
         nexec:
           name: nexec
+        {{- end }}
         hookHandler:
           name: hookHandler
         marshaller:

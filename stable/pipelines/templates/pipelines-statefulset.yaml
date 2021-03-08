@@ -283,9 +283,6 @@ spec:
           ports:
             - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsUser: 0
           resources:
             {{ toYaml .Values.pipelines.router.resources | nindent 12 }}
           volumeMounts:
@@ -293,6 +290,28 @@ spec:
             mountPath: {{ .Values.pipelines.router.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.router.logPath }}
+          {{- if .Values.pipelines.router.livenessProbe.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.pipelines.router.livenessProbe.path}}
+              port: {{  .Values.pipelines.router.externalPort}}
+            initialDelaySeconds: {{  .Values.pipelines.router.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{  .Values.pipelines.router.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.router.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.router.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.router.livenessProbe.successThreshold }}
+          {{- end }}
+          {{- if .Values.pipelines.router.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.pipelines.router.readinessProbe.path}}
+              port: {{ .Values.pipelines.router.externalPort }}
+            initialDelaySeconds: {{ .Values.pipelines.router.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.pipelines.router.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.pipelines.router.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.router.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.pipelines.router.readinessProbe.successThreshold }}
+        {{- end }}
         - name: api
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
           imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
@@ -344,9 +363,13 @@ spec:
           {{- with .Values.pipelines.customVolumeMounts }}
 {{ tpl . $ | nindent 10 }}
           {{- end }}
+          {{- if .Values.pipelines.customPersistentVolumeClaim }}
+          - name: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
+            mountPath: {{ .Values.pipelines.customPersistentVolumeClaim.mountPath }}
+          {{- end }}
         - name: www
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
-          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}        
+          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -405,7 +428,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
           volumeMounts:
@@ -426,7 +449,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -447,7 +470,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -468,7 +491,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.cron.resources | nindent 12 }}
           volumeMounts:
@@ -476,6 +499,7 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+        {{- if .Values.pipelines.nexec.enabled }}
         - name: nexec
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nexec" ) }}
           imagePullPolicy: {{ .Values.pipelines.nexec.image.pullPolicy }}
@@ -489,7 +513,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
           volumeMounts:
@@ -497,6 +521,7 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+        {{- end }}
         - name: hookhandler
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "hookHandler" ) }}
           imagePullPolicy: {{ .Values.pipelines.hookHandler.image.pullPolicy }}
@@ -510,7 +535,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
           volumeMounts:
@@ -531,7 +556,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
           volumeMounts:
@@ -552,7 +577,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
           volumeMounts:
@@ -573,7 +598,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.extensionSync.resources | nindent 12 }}
           volumeMounts:
@@ -660,4 +685,9 @@ spec:
       - name: filebeat-config
         configMap:
           name: {{ include "pipelines.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if .Values.pipelines.customPersistentVolumeClaim }}
+      - name: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
       {{- end }}
