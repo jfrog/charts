@@ -215,6 +215,8 @@ pipelines:
         compress: true
         intervalMs: 900000
 
+  signedPipelines:
+    enabled: false
   ## Apply horizontal pod auto scaling on Pipelines pods
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
   autoscaling:
@@ -558,6 +560,21 @@ pipelines:
       #   cpu: 5m
       #   memory: 40Mi
 
+  reqSealer:
+    image:
+      # registry:
+      repository: jfrog/pipelines-micro
+      # tag:
+      pullPolicy: IfNotPresent
+
+    resources: {}
+      # limits:
+      #   cpu: 500m
+      #   memory: 500Mi
+      # requests:
+      #   cpu: 5m
+      #   memory: 40Mi
+
   ## Pipelines installer
   pipelinesInit:
     image:
@@ -787,6 +804,9 @@ pipelines:
           - "core.hookHandler"
           - "core.extensionSync"
           - "core.templateSync"
+          {{- if .Values.pipelines.signedPipelines.enabled }}
+          - "core.reqSealer"
+          {{- end }}
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
@@ -927,6 +947,7 @@ pipelines:
       {{- else }}
       customCACertsPath: ""
       {{- end }}
+      signedPipelinesEnabled: {{ .Values.pipelines.signedPipelines.enabled }}
 
       retentionPolicy:
         enabled: {{ .Values.pipelines.retentionPolicy.enabled }}
@@ -985,6 +1006,10 @@ pipelines:
           name: extensionSync
         templateSync:
           name: templateSync
+        {{- if .Values.pipelines.signedPipelines.enabled }}
+        reqSealer:
+          name: reqSealer
+        {{- end }}
 
     ## Runtime configuration
     ##

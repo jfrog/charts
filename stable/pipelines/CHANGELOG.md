@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.8.7] - Mar 10, 2021
+* Adds reqSealer microservice
+
 ## [2.8.6] - Mar 9, 2021
 * Adding parameter for enabling livelog in the chart
 
