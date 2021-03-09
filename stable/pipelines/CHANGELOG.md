@@ -7,9 +7,6 @@ All changes to this chart to be documented in this file
 ## [2.8.4] - Mar 8, 2021
 * Update RBAC rules for Pipelines
 
-## [2.8.4] - Mar 8, 2021
-* Update RBAC rules for Pipelines
-
 ## [2.8.3] - Feb 28, 2021
 * Add custom secret and custom pvc
 
