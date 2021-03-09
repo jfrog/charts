@@ -4,10 +4,7 @@ kind: NetworkPolicy
 metadata:
   name: {{ template "pipelines.fullname" $ }}-{{ .name }}-networkpolicy
   labels:
-    app: {{ template "pipelines.name" $ }}
-    chart: {{ template "pipelines.chart" $ }}
-    release: {{ $.Release.Name }}
-    heritage: {{ $.Release.Service }}  
+    {{- include "pipelines.labels" . | nindent 4 }}
 spec:
 {{- if .podSelector }}
   podSelector:

@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.8.6] - Mar 9, 2021
+* Fix network policy and custom secrets labels
+
 ## [2.8.5] - Mar 9, 2021
 * Removed bintray URL references in the chart
 
