@@ -283,9 +283,6 @@ spec:
           ports:
             - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsUser: 0
           resources:
             {{ toYaml .Values.pipelines.router.resources | nindent 12 }}
           volumeMounts:
@@ -372,7 +369,7 @@ spec:
           {{- end }}
         - name: www
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
-          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}        
+          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -431,7 +428,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
           volumeMounts:
@@ -452,7 +449,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -473,7 +470,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -494,7 +491,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.cron.resources | nindent 12 }}
           volumeMounts:
@@ -516,7 +513,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
           volumeMounts:
@@ -538,7 +535,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
           volumeMounts:
@@ -559,7 +556,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
           volumeMounts:
@@ -580,7 +577,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
           volumeMounts:
@@ -601,7 +598,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.extensionSync.resources | nindent 12 }}
           volumeMounts:
