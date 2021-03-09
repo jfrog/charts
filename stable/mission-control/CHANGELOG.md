@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.5.2] - Mar 9, 2021
+* Removed bintray URL references in the chart
+* Update router version to `7.15.3`
+
 ## [5.5.1] - Feb 19, 2021
 * Update router version to `7.15.2`
 * Update busybox tag version to `1.32.1`
