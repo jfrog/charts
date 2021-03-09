@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.8.5] - Mar 9, 2021
+* Removed bintray URL references in the chart
+
 ## [2.8.4] - Mar 8, 2021
 * Update RBAC rules for Pipelines
 

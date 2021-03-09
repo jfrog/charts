@@ -1,6 +1,10 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.4.3] - Mar 9, 2021
+* Removed bintray URL references in the chart
+* Update router version to `7.15.3`
+
 ## [7.4.2] - Feb 25, 2021
 * Update Distribution to version `2.6.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6.1)
 

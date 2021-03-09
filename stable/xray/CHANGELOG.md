@@ -1,6 +1,11 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [7.1.1] - Mar 9, 2021
+* Update Xray to version `3.18.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.18.1)
+* Removed bintray URL references in the chart
+* Update router version to `7.15.3`
+
 ## [7.1.0] - Mar 03, 2021
 * Update Xray to version `3.18.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.18)
 
