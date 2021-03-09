@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.8.6] - Mar 9, 2021
+* Adding parameter for enabling livelog in the chart
+
 ## [2.8.5] - Mar 9, 2021
 * Removed bintray URL references in the chart
 
