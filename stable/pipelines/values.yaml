@@ -193,12 +193,14 @@ pipelines:
     enabled: false
   ## Logging settings
   logging:
-    ## livelog settings
+    ## Livelog settings
     view:
-      ## if enabled, livelogs will be enabled
+      ## If enabled, livelogs will be enabled
       enabled: false
       refreshRate: 10s
       concurrentSessionsPerUser: 10
+      ## Provide the list of files for live logs
+      # files:
 
     metrics:
       ## where metrics logs are written
