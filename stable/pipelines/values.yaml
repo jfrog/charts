@@ -193,6 +193,15 @@ pipelines:
     enabled: false
   ## Logging settings
   logging:
+    ## Livelog settings
+    view:
+      ## If enabled, livelogs will be enabled
+      enabled: false
+      refreshRate: 10s
+      concurrentSessionsPerUser: 10
+      ## Provide the list of files for live logs
+      # files:
+
     metrics:
       ## where metrics logs are written
       filePath: /opt/jfrog/pipelines/var/log/api-metrics_events.log
@@ -836,6 +845,15 @@ pipelines:
       metrics:
         enabled: {{ .Values.pipelines.metrics.enabled }}
       logging:
+
+        view:
+          enabled: {{ .Values.pipelines.logging.view.enabled }}
+          refreshRate: {{ .Values.pipelines.logging.view.refreshRate }}
+          concurrentSessionsPerUser: {{ .Values.pipelines.logging.view.concurrentSessionsPerUser }}
+          {{- if .Values.pipelines.logging.view.files }}
+          files: "{{ .Values.pipelines.logging.view.files }}"
+          {{- end }}
+
         metrics:
           filePath: {{ .Values.pipelines.logging.metrics.filePath }}
           console: {{ .Values.pipelines.logging.metrics.console }}
