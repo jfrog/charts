@@ -1,5 +1,5 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file
+All changes to this chart to be documented in this file.
 
 ## [2.8.7] - Mar 10, 2021
 * Adds reqSealer microservice
