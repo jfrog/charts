@@ -1,6 +1,9 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file
 
+## [5.5.3] - Mar 12, 2021
+* Update mission-Control to version `4.6.5` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.6.5)
+
 ## [5.5.2] - Mar 9, 2021
 * Removed bintray URL references in the chart
 * Update router version to `7.15.3`
