@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.2.0] - Mar 15, 2021
+* Update dependency artifactory chart version to 11.10.0 (Artifactory 7.16.3)
+* Update dependency artifactory-ha chart version to 4.10.0 (Artifactory 7.16.3)
+
 ## [0.1.2] - Mar 12, 2021
 * Update dependency mission-control chart version to 5.5.3 (MissionControl 4.6.5)
 * Update postgresql version tag to `13.2.0-debian-10-r30`
