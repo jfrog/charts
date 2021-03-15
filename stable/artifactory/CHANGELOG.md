@@ -1,6 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [11.10.0] - Mar 15, 2021
+* Updated Artifactory version to 7.16.3
+
+## [11.9.5] - Mar 09, 2021
+* Added HSTS header to nginx conf
+
 ## [11.9.4] - Mar 9, 2021
 * Removed bintray URL references in the chart
 
