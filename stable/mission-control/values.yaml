@@ -303,7 +303,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-oss-sg
-    tag: 7.8.1
+    tag: 7.10.2
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -356,7 +356,7 @@ elasticsearch:
       httpGet:
         path: /_cluster/health
         port: 9200
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 3
@@ -368,11 +368,21 @@ elasticsearch:
       httpGet:
         path: /_cluster/health
         port: 9200
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cluster/health
+        port: 9200
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
 
 podRestartTime:
 
@@ -579,7 +589,7 @@ missionControl:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -592,11 +602,23 @@ missionControl:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   ## Extra pre start command to run extra commands before container starts
   # preStartCommand:
@@ -670,7 +692,7 @@ insightServer:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -683,11 +705,23 @@ insightServer:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
 insightScheduler:
   name: insight-scheduler
@@ -755,7 +789,7 @@ insightScheduler:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -768,18 +802,30 @@ insightScheduler:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.15.3
+    tag: 7.17.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -799,7 +845,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 3
@@ -812,11 +858,23 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   persistence:
     accessMode: ReadWriteOnce

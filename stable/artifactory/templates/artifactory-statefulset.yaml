@@ -518,6 +518,17 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.artifactory.resources | indent 10 }}
+      {{- if .Values.artifactory.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.artifactory.startupProbe.path }}
+            scheme: {{ include "artifactory.scheme" . | upper }}
+            port: {{ .Values.artifactory.internalPort }}
+          initialDelaySeconds: {{ .Values.artifactory.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.artifactory.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.artifactory.startupProbe.failureThreshold }}
+          timeoutSeconds: {{ .Values.artifactory.startupProbe.timeoutSeconds }}
+      {{- end }}
       {{- if .Values.artifactory.readinessProbe.enabled }}
         readinessProbe:
           httpGet:

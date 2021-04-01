@@ -108,6 +108,22 @@ spec:
         {{- end }}  
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
+        {{- if .Values.nginx.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.nginx.startupProbe.path }}
+            {{- if .Values.nginx.http.enabled }}
+            port: {{ .Values.nginx.http.internalPort }}
+            scheme: HTTP
+            {{- else }}
+            port: {{ .Values.nginx.https.internalPort }}
+            scheme: HTTPS
+            {{- end }}
+          initialDelaySeconds: {{ .Values.nginx.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.nginx.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.nginx.startupProbe.failureThreshold }}
+          timeoutSeconds: {{ .Values.nginx.startupProbe.timeoutSeconds }}
+        {{- end }}
         {{- if .Values.nginx.readinessProbe.enabled }}
         readinessProbe:
           httpGet:

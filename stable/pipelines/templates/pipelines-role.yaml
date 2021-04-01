@@ -1,14 +1,10 @@
-{{- if .Values.rbac.create }}
+{{- if .Values.rbac.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
-{{- if .Values.rbac.clusterRole }}
-kind: ClusterRole
-{{- else }}
 kind: Role
-{{- end }}
 metadata:
   name: {{ include "pipelines.fullname" . }}
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
 rules:
 {{ toYaml .Values.rbac.role.rules }}
-{{- end }}
+{{- end -}}

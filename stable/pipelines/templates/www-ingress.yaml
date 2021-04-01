@@ -1,4 +1,4 @@
-{{- if .Values.pipelines.www.ingress.enabled }}
+{{- if .Values.pipelines.www.ingress.enabled -}}
 {{- $fullName := include "pipelines.www.name" . -}}
 {{- $ingressPath := .Values.pipelines.www.ingress.path -}}
 {{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
@@ -37,4 +37,4 @@ spec:
               serviceName: {{ $fullName }}
               servicePort: http-www
   {{- end }}
-{{- end }}
+{{- end -}}

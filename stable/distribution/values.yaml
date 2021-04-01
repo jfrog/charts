@@ -404,7 +404,7 @@ distribution:
         path: /api/v1/system/ping
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -417,11 +417,23 @@ distribution:
         path: /api/v1/system/ping
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        scheme: HTTP
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
@@ -558,7 +570,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.15.3
+    tag: 7.17.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
