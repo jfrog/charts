@@ -322,6 +322,10 @@ spec:
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
+{{- if .Values.elasticsearch.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.elasticsearch.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.elasticsearch.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.elasticsearch.livenessProbe.config . | indent 10 }}
@@ -354,6 +358,10 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.router.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}
@@ -366,14 +374,14 @@ spec:
         image: {{ include "mission-control.getImageInfoByValue" (list . "missionControl") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
         {{- with .Values.missionControl.preStartCommand }}
           echo "Running custom preStartCommand command";
           {{ tpl . $ }};
         {{- end }}
-          /opt/jfrog/mc/app/bin/entrypoint-mc.sh;
+          exec /opt/jfrog/mc/app/bin/entrypoint-mc.sh;
         env:
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -423,6 +431,10 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.missionControl.resources | indent 10 }}
+{{- if .Values.missionControl.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.missionControl.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.missionControl.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.missionControl.livenessProbe.config . | indent 10 }}
@@ -510,6 +522,10 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.insightServer.resources | indent 10 }}
+{{- if .Values.insightServer.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.insightServer.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.insightServer.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.insightServer.livenessProbe.config . | indent 10 }}
@@ -583,6 +599,10 @@ spec:
       {{- end }}
         resources:
 {{ toYaml .Values.insightScheduler.resources | indent 10 }}
+{{- if .Values.insightScheduler.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.insightScheduler.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.insightScheduler.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.insightScheduler.livenessProbe.config . | indent 10 }}

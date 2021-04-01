@@ -1,5 +1,22 @@
 # JFrog Mission-Control Chart Changelog
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
+
+## [5.7.2] - Mar 31, 2021
+* Update mission-Control to version `4.7.2` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.2)
+
+## [5.7.1] - Mar 30, 2021
+* Update router version to `7.17.2`
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [5.7.0] - Mar 22, 2021
+* Update mission-Control to version `4.7.1`
+* Update router version to `7.17.1`
+* Update Elasticsearch version to `7.10.2` with Searchguard
+* Add support for graceful shutdown
+* Optimized startupProbe time
+
+## [5.6.0] - Mar 18, 2021
+* Add support to startupProbe
 
 ## [5.5.3] - Mar 12, 2021
 * Update mission-Control to version `4.6.5` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.6.5)
