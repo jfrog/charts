@@ -593,20 +593,28 @@ artifactory:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 180
+    initialDelaySeconds: 0
     failureThreshold: 10
-    timeoutSeconds: 10
+    timeoutSeconds: 5
     periodSeconds: 10
     successThreshold: 1
 
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 90
+    initialDelaySeconds: 0
     failureThreshold: 10
-    timeoutSeconds: 10
+    timeoutSeconds: 5
     periodSeconds: 10
     successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    path: /router/api/v1/system/health
+    initialDelaySeconds: 30
+    failureThreshold: 60
+    periodSeconds: 5
+    timeoutSeconds: 5
 
   persistence:
     mountPath: "/var/opt/jfrog/artifactory"
@@ -1254,20 +1262,28 @@ nginx:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 180
+    initialDelaySeconds: 0
     failureThreshold: 10
-    timeoutSeconds: 10
+    timeoutSeconds: 5
     periodSeconds: 10
     successThreshold: 1
 
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 120
+    initialDelaySeconds: 0
     failureThreshold: 10
-    timeoutSeconds: 10
+    timeoutSeconds: 5
     periodSeconds: 10
     successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    path: /router/api/v1/system/health
+    initialDelaySeconds: 30
+    failureThreshold: 60
+    periodSeconds: 5
+    timeoutSeconds: 5
 
   ## The SSL secret that will be used by the Nginx pod
   # tlsSecretName: chart-example-tls

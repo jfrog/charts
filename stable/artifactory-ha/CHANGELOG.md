@@ -1,6 +1,20 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [4.12.2] - Mar 31, 2021
+* Updated Artifactory version to 7.17.4 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.4)
+
+## [4.12.1] - Mar 30, 2021
+* Updated Artifactory version to 7.17.3
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [4.12.0] - Mar 24, 2021
+* Updated Artifactory version to 7.17.2
+* Optimized startupProbe time
+
+## [4.11.0] - Mar 18, 2021
+* Add support to startupProbe
+
 ## [4.10.0] - Mar 15, 2021
 * Updated Artifactory version to 7.16.3
 
