@@ -1,6 +1,19 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.6.1] - Mar 30, 2021
+* Update router version to `7.17.2`
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [7.6.0] - Mar 22, 2021
+* Update Distribution to version `2.7.1`
+* Update router version to `7.17.1`
+* Add support for graceful shutdown
+* Optimized startupProbe time
+
+## [7.5.0] - Mar 18, 2021
+* Add support to startupProbe
+
 ## [7.4.3] - Mar 9, 2021
 * Removed bintray URL references in the chart
 * Update router version to `7.15.3`

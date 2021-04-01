@@ -177,14 +177,14 @@ spec:
         - name: http-distro
           containerPort: {{ .Values.distribution.internalPort }}
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.distribution.preStartCommand }}
             echo "Running custom Distribution preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/distribution/app/bin/wrapper.sh;
+            exec /opt/jfrog/distribution/app/bin/wrapper.sh;
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -247,6 +247,10 @@ spec:
         {{- end }}
         resources:
 {{ toYaml .Values.distribution.resources | indent 10 }}
+      {{- if .Values.distribution.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+      {{- end }}
       {{- if .Values.distribution.readinessProbe.enabled }}
         readinessProbe:
 {{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
@@ -261,14 +265,14 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.distributor.preStartCommand }}
             echo "Running Distributor custom preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/distribution/app/bin/wrapper.sh;
+            exec /opt/jfrog/distribution/app/bin/wrapper.sh;
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -381,12 +385,14 @@ spec:
           containerPort: {{ .Values.redis.port }}
         readinessProbe:
           initialDelaySeconds: 10
+          timeoutSeconds: 1
           exec:
             command:
             - redis-cli
             - ping
         livenessProbe:
           initialDelaySeconds: 30
+          timeoutSeconds: 1
           exec:
             command:
             - redis-cli
