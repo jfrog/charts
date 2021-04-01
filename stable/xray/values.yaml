@@ -486,7 +486,7 @@ analysis:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -498,11 +498,22 @@ analysis:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.analysis.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -538,7 +549,7 @@ indexer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -550,11 +561,22 @@ indexer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.indexer.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -590,7 +612,7 @@ persist:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -602,11 +624,22 @@ persist:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.persist.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -653,7 +686,7 @@ server:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -665,11 +698,22 @@ server:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.server.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -687,7 +731,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.15.3
+    tag: 7.17.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -715,7 +759,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -728,11 +772,23 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "xray.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
 
   persistence:
     mountPath: "/var/opt/jfrog/router"

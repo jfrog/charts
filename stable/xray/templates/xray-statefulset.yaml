@@ -190,6 +190,10 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.router.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}
@@ -202,7 +206,7 @@ spec:
         image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.common.preStartCommand }}
@@ -213,7 +217,7 @@ spec:
             echo "Running custom Server preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/xray/app/bin/wrapper.sh;
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -310,6 +314,10 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.server.resources | indent 10 }}
+{{- if .Values.server.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.server.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.server.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.server.livenessProbe.config . | indent 10 }}
@@ -322,7 +330,7 @@ spec:
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.common.preStartCommand }}
@@ -333,7 +341,7 @@ spec:
             echo "Running custom Analysis preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/xray/app/bin/wrapper.sh;
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -436,6 +444,10 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.analysis.resources | indent 10 }}
+{{- if .Values.analysis.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.analysis.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.analysis.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.analysis.livenessProbe.config . | indent 10 }}
@@ -448,7 +460,7 @@ spec:
         image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.common.preStartCommand }}
@@ -459,7 +471,7 @@ spec:
             echo "Running custom Indexer preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/xray/app/bin/wrapper.sh;
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -562,6 +574,10 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.indexer.resources | indent 10 }}
+{{- if .Values.indexer.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.indexer.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.indexer.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.indexer.livenessProbe.config . | indent 10 }}
@@ -574,7 +590,7 @@ spec:
         image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.common.preStartCommand }}
@@ -585,7 +601,7 @@ spec:
             echo "Running custom Persist preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/xray/app/bin/wrapper.sh;
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -684,6 +700,10 @@ spec:
           allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.persist.resources | indent 10 }}
+{{- if .Values.persist.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.persist.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.persist.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.persist.livenessProbe.config . | indent 10 }}
