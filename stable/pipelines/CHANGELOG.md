@@ -1,6 +1,29 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.11.2] - Mar 30, 2021
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [2.11.1] - Mar 24, 2021
+* Pipelines v1.14.1
+* Optimized startupProbe time
+
+## [2.11.0] - Mar 19, 2021
+* Pipelines v1.14.0
+* Run router container as default user
+
+## [2.10.1] - Mar 19, 2021
+* Fix Network Policy and custom secrets labels
+
+## [2.10.0] - Mar 18, 2021
+* Add support to startupProbe
+
+## [2.9.1] - Mar 16, 2021
+* Removed refernces to ClusterRole
+
+## [2.9.0] - Mar 10, 2021
+* Adds reqSealer microservice
+
 ## [2.8.6] - Mar 9, 2021
 * Adding parameter for enabling livelog in the chart
 

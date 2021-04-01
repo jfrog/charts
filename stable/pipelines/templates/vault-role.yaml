@@ -1,4 +1,4 @@
-{{- if and .Values.vault.enabled .Values.rbac.create }}
+{{- if and .Values.vault.enabled .Values.rbac.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -8,4 +8,4 @@ metadata:
     component: {{ include "pipelines.vault.name" . }}
 rules:
 {{ toYaml .Values.vault.rbac.role.rules }}
-{{- end }}
+{{- end -}}

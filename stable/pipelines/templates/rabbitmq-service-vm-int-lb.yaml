@@ -1,4 +1,4 @@
-{{- if and (.Values.rabbitmq.serviceVmLb.enabled) (.Values.rabbitmq.serviceVmLb.loadBalancerIP) }}
+{{- if and (.Values.rabbitmq.serviceVmLb.enabled) (.Values.rabbitmq.serviceVmLb.loadBalancerIP) -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -31,4 +31,4 @@ spec:
   selector:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/name: rabbitmq
-{{- end }}
+{{- end -}}

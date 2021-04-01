@@ -1,6 +1,26 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [7.5.1] - Mar 31, 2021
+* Update Xray to version `3.21.2` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.21.2)
+
+## [7.5.0] - Mar 30, 2021
+* Update Xray to version `3.21.0`
+* Update router version to `7.17.2`
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [7.4.0] - Mar 24, 2021
+* Update Xray to version `3.20.1`
+* Update router version to `7.17.1`
+* Optimized startupProbe time
+* Add support for graceful shutdown
+
+## [7.3.0] - Mar 18, 2021
+* Add support to startupProbe
+
+## [7.2.0] - Mar 12, 2021
+* Update Xray to version `3.19.1`
+
 ## [7.1.1] - Mar 9, 2021
 * Update Xray to version `3.18.1` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.18.1)
 * Removed bintray URL references in the chart

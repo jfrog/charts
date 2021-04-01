@@ -1,4 +1,4 @@
-{{- if not .Values.systemYamlOverride.existingSecret }}
+{{- if not .Values.systemYamlOverride.existingSecret -}}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -10,4 +10,4 @@ data:
 stringData:
   system.yaml: |
 {{ tpl .Values.pipelines.systemYaml . | indent 4 }}
-{{- end }}
+{{- end -}}

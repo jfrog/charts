@@ -1,4 +1,4 @@
-{{- if .Values.vault.enabled }}
+{{- if .Values.vault.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -20,4 +20,4 @@ spec:
   selector:
     {{- include "pipelines.selectorLabels" . | nindent 4 }}
     component: {{ include "pipelines.vault.name" . }}
-{{- end }}
+{{- end -}}

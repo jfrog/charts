@@ -283,9 +283,6 @@ spec:
           ports:
             - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsUser: 0
           resources:
             {{ toYaml .Values.pipelines.router.resources | nindent 12 }}
           volumeMounts:
@@ -293,6 +290,16 @@ spec:
             mountPath: {{ .Values.pipelines.router.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.router.logPath }}
+          {{- if .Values.pipelines.router.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.pipelines.router.startupProbe.path}}
+              port: {{  .Values.pipelines.router.externalPort}}
+            initialDelaySeconds: {{ .Values.pipelines.router.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.pipelines.router.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.router.startupProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.pipelines.router.startupProbe.timeoutSeconds }}
+          {{- end }}
           {{- if .Values.pipelines.router.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
@@ -356,6 +363,16 @@ spec:
             failureThreshold: {{ .Values.pipelines.api.readinessProbe.failureThreshold }}
             successThreshold: {{ .Values.pipelines.api.readinessProbe.successThreshold }}
           {{- end }}
+          {{- if .Values.pipelines.api.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.pipelines.api.startupProbe.path}}
+              port: {{  .Values.pipelines.api.startupProbe.port}}
+            initialDelaySeconds: {{ .Values.pipelines.api.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.pipelines.api.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.pipelines.api.startupProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.pipelines.api.startupProbe.timeoutSeconds }}
+          {{- end }}
           resources:
             {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
           volumeMounts:
@@ -372,7 +389,7 @@ spec:
           {{- end }}
         - name: www
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
-          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}        
+          imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -431,7 +448,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
           volumeMounts:
@@ -452,7 +469,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -473,7 +490,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
           volumeMounts:
@@ -494,7 +511,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.cron.resources | nindent 12 }}
           volumeMounts:
@@ -516,7 +533,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
           volumeMounts:
@@ -538,7 +555,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
           volumeMounts:
@@ -559,7 +576,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
           volumeMounts:
@@ -580,7 +597,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
           volumeMounts:
@@ -601,7 +618,7 @@ spec:
             {{- end }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}              
+{{- end }}
           resources:
             {{- toYaml .Values.pipelines.extensionSync.resources | nindent 12 }}
           volumeMounts:
@@ -609,6 +626,29 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
+        {{- if .Values.pipelines.signedPipelines.enabled }}
+        - name: reqsealer
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "reqSealer" ) }}
+          imagePullPolicy: {{ .Values.pipelines.reqSealer.image.pullPolicy }}
+          workingDir: /opt/jfrog/pipelines/app/micro/reqSealer
+          env:
+            - name: COMPONENT
+              value: reqsealer
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.reqSealer.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        {{- end }}
         - name: templatesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "templateSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.templateSync.image.pullPolicy }}

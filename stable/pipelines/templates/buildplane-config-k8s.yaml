@@ -1,4 +1,4 @@
-{{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+{{- if .Values.buildPlane.dynamic.provider.k8s.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,4 +16,4 @@ data:
   namespace: {{ .Values.buildPlane.dynamic.provider.k8s.namespace | quote }}
   labels: {{ .Values.buildPlane.dynamic.provider.k8s.labels | quote }}
   storageClass: {{ .Values.buildPlane.dynamic.provider.k8s.storageClass | quote }}
-{{- end }}
+{{- end -}}
