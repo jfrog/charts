@@ -16,19 +16,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry center/jfrog/artifactory-jcr  --version 1.6.2
+helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry jfrog/artifactory-jcr  --version 1.7.0
 ```
 
 ### Accessing JFrog Container Registry
@@ -37,7 +37,7 @@ helm upgrade --install jfrog-container-registry --namespace jfrog-container-regi
 ### Updating JFrog Container Registry
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry center/jfrog/artifactory-jcr
+helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry jfrog/artifactory-jcr
 ```
 
 ### Deleting JFrog Container Registry
