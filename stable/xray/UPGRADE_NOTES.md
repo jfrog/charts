@@ -45,7 +45,7 @@ This file describes special upgrade notes needed at specific versions
       2. Run the `helm install`  with the `new version` say `xray-new` with Xray scale down replicas to 0, Both new Postgresql and MongoDB pods starts
           Example:
           ```bash
-          helm install xray-new --set server.replicaCount=0,indexer.replicaCount=0,persist.replicaCount=0,analysis.replicaCount=0,rabbitmq-ha.enabled=false center/jfrog/xray
+          helm install xray-new --set server.replicaCount=0,indexer.replicaCount=0,persist.replicaCount=0,analysis.replicaCount=0,rabbitmq-ha.enabled=false jfrog/xray
           ```
       3. To Migrate MongoDB data between old and new pods\
           a. Connect to the new MongoDB pod (you can obtain the name by running kubectl get pods)
@@ -80,7 +80,7 @@ This file describes special upgrade notes needed at specific versions
       5. Run the Upgrade final time which would start xray with `databaseUpgradeReady=true` \
          Example :
          ```bash
-         helm upgrade --install xray-new --set server.replicaCount=1,indexer.replicaCount=1,persist.replicaCount=1,analysis.replicaCount=1,rabbitmq-ha.enabled=true,databaseUpgradeReady=true center/jfrog/xray
+         helm upgrade --install xray-new --set server.replicaCount=1,indexer.replicaCount=1,persist.replicaCount=1,analysis.replicaCount=1,rabbitmq-ha.enabled=true,databaseUpgradeReady=true jfrog/xray
          ```
       6. Restore access to new Xray
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Xray deployment and Helm release.
