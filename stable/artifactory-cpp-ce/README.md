@@ -18,19 +18,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client.
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ```
 
 ### Accessing Artifactory CE for C++
@@ -39,7 +39,7 @@ helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresq
 ### Updating Artifactory CE for C++
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade artifactory-cpp-ce --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
+helm upgrade artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ```
 
 ### Special Upgrade Notes
@@ -91,7 +91,7 @@ helm upgrade --install artifactory-cpp-ce \
   --set artifactory.ingress.enabled=true \
   --set artifactory.ingress.hosts[0]="artifactory.company.com" \
   --set artifactory.artifactory.service.type=NodePort \
-  --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
+  --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ```
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:
