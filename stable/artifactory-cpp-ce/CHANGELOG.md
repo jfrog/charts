@@ -1,6 +1,11 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
+## [1.7.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+* Update dependency Artifactory chart version to 8.11.0 (Artifactory 6.23.15)
+
 ## [1.6.2] - Feb 23, 2021
 * Update dependency Artifactory chart version to 8.10.3 (Artifactory 6.23.13)
 * **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`

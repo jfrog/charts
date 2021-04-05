@@ -16,19 +16,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce --version 1.6.1
+helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce --version 1.7.0
 ```
 
 ### Accessing Artifactory CE for C++
@@ -37,7 +37,7 @@ helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce center/
 ### Updating Artifactory CE for C++
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce center/jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
 ```
 
 ### Deleting Artifactory CE for C++
