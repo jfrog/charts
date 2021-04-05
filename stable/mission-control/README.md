@@ -17,21 +17,21 @@ This chart will do the following:
 - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory Enterprise
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) v2 or v3 installed
+- [Helm](https://helm.sh/) v3 installed
 
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
 ### Installing the Chart
 ```bash
-helm upgrade --install mission-control --namespace mission-control center/jfrog/mission-control --version 2.0.3
+helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.1.0
 ```
 ### Auto generated passwords
 
@@ -73,7 +73,7 @@ export MC_KEY=$(openssl rand -hex 16)
 echo ${MC_KEY}
 
 # Pass the created master key to helm
-helm upgrade --install mission-control --namespace mission-control --set missionControl.mcKey=${MC_KEY} center/jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.mcKey=${MC_KEY} jfrog/mission-control
 ```
 
 **NOTE:** Make sure to pass the same mc key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.mcKey=${MC_KEY}`.
@@ -85,7 +85,7 @@ helm upgrade --install mission-control --namespace mission-control \
   --set ingress.enabled=true \
   --set ingress.hosts[0]="mission-control.company.com" \
   --set server.service.type=NodePort \
-  center/jfrog/mission-control
+  jfrog/mission-control
 ```
 
 If your cluster allows automatic creation/retrieval of TLS certificates (e.g. [cert-manager](https://github.com/jetstack/cert-manager)), please refer to the documentation for that mechanism.
@@ -156,7 +156,7 @@ ingress:
 
 * Set mission-control by running helm upgrade command:
 ```
-helm upgrade --install mission-control --namespace mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL center/jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.missionControlUrl=$MISSION_CONTROL_URL jfrog/mission-control
 ```
 
 ### Accessing Mission Control
@@ -166,7 +166,7 @@ Follow the instructions outputted by the install command to get the Mission Cont
 ## Upgrade
 Once you have a new chart version, you can update your deployment with
 ```
-helm upgrade mission-control center/jfrog/mission-control
+helm upgrade mission-control jfrog/mission-control
 ```
 
 **NOTE:** Check for any version specific upgrade nodes in [CHANGELOG.md]

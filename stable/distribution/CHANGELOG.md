@@ -1,6 +1,10 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [4.1.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+
 ## [4.0.3] - Jul 13, 2020
 * README fixes
 
