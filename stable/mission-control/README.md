@@ -23,12 +23,12 @@ This chart will do the following:
 
 ### Install Chart
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client.
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client.
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
@@ -48,7 +48,7 @@ Provide join key and jfrog url as a parameter to the Mission Control chart insta
 
 ```bash
 helm upgrade --install mission-control --set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace mission-control center/jfrog/mission-control
+             --set missionControl.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace mission-control jfrog/mission-control
 ```
 Alternatively, you can create a secret containing the join key manually and pass it to the template at install/upgrade time.
 ```bash
@@ -57,7 +57,7 @@ Alternatively, you can create a secret containing the join key manually and pass
 kubectl create secret generic my-secret --from-literal=join-key=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>
 
 # Pass the created secret to helm
-helm upgrade --install mission-control --set missionControl.joinKeySecretName=my-secret --namespace mission-control center/jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.joinKeySecretName=my-secret --namespace mission-control jfrog/mission-control
 ```
 **NOTE:** In either case, make sure to pass the same join key on all future calls to `helm install` and `helm upgrade`! This means always passing `--set missionControl.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY>`. In the second, this means always passing `--set missionControl.joinKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -111,7 +111,7 @@ export MASTER_KEY=$(openssl rand -hex 32)
 echo ${MASTER_KEY}
 
 # Pass the created master key to helm
-helm upgrade --install mission-control --set missionControl.masterKey=${MASTER_KEY} --namespace mission-control center/jfrog/mission-control
+helm upgrade --install mission-control --set missionControl.masterKey=${MASTER_KEY} --namespace mission-control jfrog/mission-control
 ```
 
 Alternatively, you can create a secret containing the master key manually and pass it to the template at install/upgrade time.
@@ -121,7 +121,7 @@ Alternatively, you can create a secret containing the master key manually and pa
 kubectl create secret generic my-secret --from-literal=master-key=${MASTER_KEY}
 
 # Pass the created secret to helm
-helm upgrade --install mission-control --namespace mission-control --set missionControl.masterKeySecretName=my-secret center/jfrog/mission-control
+helm upgrade --install mission-control --namespace mission-control --set missionControl.masterKeySecretName=my-secret jfrog/mission-control
 ```
 **NOTE:** In either case, make sure to pass the same master key on all future calls to `helm install` and `helm upgrade`! In the first case, this means always passing `--set missionControl.masterKey=${MASTER_KEY}`. In the second, this means always passing `--set missionControl.masterKeySecretName=my-secret` and ensuring the contents of the secret remain unchanged.
 
@@ -129,7 +129,7 @@ helm upgrade --install mission-control --namespace mission-control --set mission
 ## Upgrade
 Once you have a new chart version, you can update your deployment with
 ```
-helm upgrade mission-control center/jfrog/mission-control
+helm upgrade mission-control jfrog/mission-control
 ```
 
 **NOTE:** Check for any version specific upgrade notes in [CHANGELOG.md]

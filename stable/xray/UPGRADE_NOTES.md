@@ -113,7 +113,7 @@ This file describes special upgrade notes needed at specific versions
             ```
             ```bash
             # Apply the values file during install
-            helm upgrade --install xray-new center/jfrog/xray -f customvalues.yaml
+            helm upgrade --install xray-new jfrog/xray -f customvalues.yaml
             ```
       3. Stop new Xray pods (scale down replicas to 0). Both Postgresql pods still exists
             ```yaml
@@ -136,7 +136,7 @@ This file describes special upgrade notes needed at specific versions
             ```
             ```bash
             # Apply the values file during install
-            helm upgrade --install xray-new center/jfrog/xray -f customvalues.yaml
+            helm upgrade --install xray-new jfrog/xray -f customvalues.yaml
             ```
       4. To Migrate Postgresql data between old and new pods\
           a. Connect to the new PostgreSQL pod (you can obtain the name by running kubectl get pods)
@@ -174,7 +174,7 @@ This file describes special upgrade notes needed at specific versions
           ```
           ```bash
           # Apply the values file during install
-          helm upgrade --install xray-new center/jfrog/xray -f customvalues.yaml
+          helm upgrade --install xray-new jfrog/xray -f customvalues.yaml
           ```
       6. Restore access to new Xray
       7. Run `helm delete <OLD_RELEASE_NAME>` which will remove remove old Xray deployment and Helm release.

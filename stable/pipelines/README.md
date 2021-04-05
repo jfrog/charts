@@ -28,12 +28,12 @@ This chart will do the following:
 
 ## Install JFrog Pipelines
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
@@ -85,7 +85,7 @@ Before deploying Pipelines you need to have the following
 Fetch the JFrog Pipelines helm chart to get the needed configuration files
 
 ```bash
-helm fetch center/jfrog/pipelines --untar
+helm fetch jfrog/pipelines --untar
 ```
 
 Edit local copies of `values-ingress.yaml`, `values-ingress-passwords.yaml` and `values-ingress-external-secret.yaml` with the needed configuration values 
@@ -102,7 +102,7 @@ Install JFrog Pipelines
 
 ```bash
 kubectl create ns pipelines
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
+helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f pipelines/values-ingress.yaml -f pipelines/values-ingress-passwords.yaml
 ```
 
 ### Special Upgrade Notes
@@ -121,7 +121,7 @@ kubectl --namespace <namespace> delete statefulsets <release_name>-pipelines-vau
 kubectl --namespace <namespace> delete statefulsets <release_name>-postgresql
 kubectl --namespace <namespace> delete statefulsets <release_name>-rabbitmq
 kubectl --namespace <namespace> delete pvc data-<release_name>-rabbitmq-0
-helm upgrade --install pipelines --namespace <namespace> center/jfrog/pipelines
+helm upgrade --install pipelines --namespace <namespace> jfrog/pipelines
 ```
 
 ### Use external secret
@@ -169,7 +169,7 @@ helm template --name-template pipelines pipelines/ -s templates/rabbitmq-secret.
 Install JFrog Pipelines:
 
 ```bash
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-ingress-external-secret.yaml
+helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values-ingress-external-secret.yaml
 ```
 
 ### Using external Rabbitmq
@@ -197,7 +197,7 @@ rabbitmq:
 ```
 
 ```bash
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-rabbitmq.yaml
+helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values-external-rabbitmq.yaml
 ```
 
 ### Using external Postgresql
@@ -220,7 +220,7 @@ postgresql:
 Make sure User `db_username` and database `db_name` exists before running helm install / upgrade
 
 ```bash
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-postgresql.yaml
+helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values-external-postgresql.yaml
 ```
 
 ### Using external Vault
@@ -250,7 +250,7 @@ kubectl create secret generic vault-secret --from-literal=token=${VAULT_TOKEN}
 ```
 
 ```
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-vault.yaml
+helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values-external-vault.yaml
 ```
 
 ### Using an external systemYaml with existingSecret
@@ -269,7 +269,7 @@ Note: From chart version 2.2.0 and above `.Values.existingSecret` is changed to 
 Note: From chart version 2.3.7 and above `.Values.systemYaml` is changed to `.Values.systemYamlOverride`.
 
 ```bash
-helm upgrade --install pipelines --namespace pipelines center/jfrog/pipelines -f values-external-systemyaml.yaml
+helm upgrade --install pipelines --namespace pipelines jfrog/pipelines -f values-external-systemyaml.yaml
 ```
 
 ### Using Vault in Production environments
