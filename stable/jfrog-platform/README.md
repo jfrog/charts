@@ -18,19 +18,19 @@ This chart will do the following:
 
 ## Installing the Chart
 
-### Add ChartCenter Helm repository
+### Add JFrog Helm repository
 
-Before installing JFrog helm charts, you need to add the [ChartCenter helm repository](https://chartcenter.io) to your helm client
+Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client
 
 ```bash
-helm repo add center https://repo.chartcenter.io
+helm repo add jfrog https://charts.jfrog.io
 helm repo update
 ```
 
 ### Install Chart
 To install the chart with the release name `jfrog-platform`
 ```bash
-helm upgrade --install jfrog-platform --namespace jfrog-platform center/jfrog/jfrog-platform
+helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform
 ```
 
 ### Install Artifactory license
@@ -65,7 +65,7 @@ artifactory-ha:
 ```
 ```bash
 # Apply the values file during install
-helm upgrade --install jfrog-platform --namespace jfrog-platform center/jfrog/jfrog-platform -f customvalues.yaml
+helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform -f customvalues.yaml
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
@@ -88,7 +88,7 @@ artifactory-ha:
 ```
 
 ```bash
-helm upgrade --install jfrog-platform --namespace jfrog-platform center/jfrog/jfrog-platform -f customvalues.yaml
+helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform -f customvalues.yaml
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
@@ -111,7 +111,7 @@ mission-control:
   enabled: true
 ````
 ```bash
-helm upgrade --install jfrog-platform --namespace jfrog-platform center/jfrog/jfrog-platform -f customvalues.yaml
+helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform -f customvalues.yaml
 ```
 
 ### Uninstalling Jfrog Platform chart.

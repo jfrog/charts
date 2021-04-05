@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [5.8.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+
 ## [5.7.2] - Mar 31, 2021
 * Update mission-Control to version `4.7.2` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.2)
 

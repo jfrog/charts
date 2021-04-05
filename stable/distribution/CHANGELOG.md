@@ -1,6 +1,10 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.7.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+
 ## [7.6.1] - Mar 30, 2021
 * Update router version to `7.17.2`
 * Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)

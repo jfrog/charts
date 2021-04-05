@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.4.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+
 ## [0.3.0] - Mar 31, 2021
 * Update dependency artifactory chart version to 11.12.2 (Artifactory 7.17.4)
 * Update dependency artifactory-ha chart version to 4.12.2 (Artifactory 7.17.4)
