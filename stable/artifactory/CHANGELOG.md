@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [4.13.3] - April 15, 2021
+## [11.13.3] - April 15, 2021
 * Fixed filebeat-configmap naming
 
 ## [11.13.2] - April 15, 2021
