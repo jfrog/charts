@@ -36,7 +36,7 @@ global:
 ## Fully override mission-control.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -298,7 +298,7 @@ elasticsearch:
   enabled: true
   ## certificatesSecretName:
   name: elasticsearch
-  initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+  initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
   configureDockerHost: true
   image:
     registry: releases-docker.jfrog.io
