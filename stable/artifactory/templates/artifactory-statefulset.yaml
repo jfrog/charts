@@ -741,7 +741,7 @@ spec:
   {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
-          name: {{ template "artifactory.name" . }}-filebeat-config
+          name: {{ template "artifactory.fullname" . }}-filebeat-config
   {{- end }}
     {{- if or .Values.artifactory.customVolumes .Values.global.customVolumes }}
 {{ tpl (include "artifactory.customVolumes" .) . | indent 6 }}
