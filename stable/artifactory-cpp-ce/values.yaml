@@ -13,11 +13,11 @@ artifactory:
   ## Artifactory
   ## See full list of supported Artifactory options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
   artifactory:
+    ## Default tag is from the artifactory sub-chart in the requirements.yaml
     image:
-      repository: docker.bintray.io/jfrog/artifactory-cpp-ce
-
-      ## Default version is from the artifactory sub-chart in the requirements.yaml
-      # version:
+      registry: releases-docker.jfrog.io
+      repository: jfrog/artifactory-cpp-ce
+      # tag:
 
     ## Uncomment the following resources definitions or pass them from command line
     ## to control the cpu and memory resources allocated by the Kubernetes cluster
@@ -39,6 +39,8 @@ artifactory:
   installer:
     platform: art-cpp-ce-helm
 
+  installerInfo: '{"productId": "Helm_artifactory-cpp/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
+
   ## Nginx
   ## See full list of supported Nginx options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
   nginx:
@@ -56,7 +58,7 @@ artifactory:
   ## PostgreSQL
   ## See list of supported postgresql options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
   ## Configuration values for the PostgreSQL dependency sub-chart
-  ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+  ## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
   postgresql:
     enabled: true
 
@@ -66,7 +68,7 @@ artifactory:
   ## If NOT using the PostgreSQL in this chart (artifactory.postgresql.enabled=false),
   ## specify custom database details here or leave empty and Artifactory will use embedded derby.
   ## See full list of database options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
-  database:
+  # database:
 
 
 ## Enable the PostgreSQL sub chart

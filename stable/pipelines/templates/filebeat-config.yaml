@@ -1,0 +1,11 @@
+{{- if .Values.filebeat.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipelines.fullname" . }}-filebeat-config
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+data:
+  filebeat.yml: |
+{{ tpl .Values.filebeat.filebeatYml . | indent 4 }}
+{{- end -}}

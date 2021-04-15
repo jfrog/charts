@@ -1,0 +1,16 @@
+{{- if not .Values.systemYamlOverride.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "mission-control.fullname" . }}-systemyaml
+  labels:
+    app: {{ template "mission-control.name" . }}
+    chart: {{ template "mission-control.chart" . }}
+    component: {{ .Values.missionControl.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  system.yaml: |
+{{ tpl .Values.missionControl.systemYaml . | indent 4 }}
+{{- end }}

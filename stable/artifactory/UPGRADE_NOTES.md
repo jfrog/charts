@@ -1,7 +1,16 @@
 # JFrog Artifactory Chart Upgrade Notes
 This file describes special upgrade notes needed at specific versions
 
-## Upgrade from 7.X to 8.X
+## Upgrade from 8.X to 9.X and above (Chart Versions)
+
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you!**
+* To upgrade from a version prior to 8.x, you first need to upgrade to latest version of 8.x as described in https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md.
+* Note: If you are upgrading from 8.x to 11.x and above chart versions, please delete the existing statefulset of postgresql before upgrading the chart due to breaking changes in postgresql subchart.
+```bash
+kubectl delete statefulsets <OLD_RELEASE_NAME>-postgresql
+```
+
+## Upgrade from 7.X to 8.X (Chart Versions)
 **DOWNTIME IS REQUIRED FOR AN UPGRADE!**
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you!**
 * PostgreSQL sub chart was upgraded to version `6.5.x`. This version is not backward compatible with the old version (`0.9.5`)!

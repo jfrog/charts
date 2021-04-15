@@ -1,3 +1,4 @@
+{{- if .Values.artifactory.node.minAvailable -}}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -13,8 +14,7 @@ spec:
     matchLabels:
       component: {{ .Values.artifactory.name }}
       app: {{ template "artifactory-ha.name" . }}
-      {{- if eq .Values.artifactory.service.pool "members" }}
       role: {{ template "artifactory-ha.node.name" . }}
-      {{- end }}
       release: {{ .Release.Name }}
   minAvailable: {{ .Values.artifactory.node.minAvailable }}
+{{- end }}

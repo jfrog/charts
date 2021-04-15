@@ -1,0 +1,161 @@
+pipelines:
+  - name: charts_public_pr
+    configuration:
+      environmentVariables:
+        readOnly:
+          PIPELINES_BRANCH: charts-public-pipelines
+          CHART_TESTING_IMAGE: releases-docker.jfrog.io/charts-ci
+          CHART_TESTING_TAG: v0.0.23
+          CHARTS_REPO: https://github.com/jfrog/charts
+          KUBEVAL_VERSION: 0.15.0
+          HELM_VERSION: v3.5.3
+          CHART_TESTING_ARGS: ""
+          GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
+          GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
+          LOGS_URL: https://chartstesting.jfrog.io/artifactory/chartlogs
+    steps:
+      - name: stpPrepCi
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_internal_pr_public
+            - name: charts_repo_public_pr
+          integrations:
+            - name: chartstesting_pipeline_slack
+        execution:
+          onStart:
+            - add_run_variables RUN_URL_LINK=${step_url##*30001}
+          onExecute:
+            - pullRequest=$(find_resource_variable "charts_repo_public_pr" commitUrl)
+            - add_run_variables pullRequest=$pullRequest
+          onSuccess:
+            - send_notification chartstesting_pipeline_slack --text "Charts Testing CI started for PR=${pullRequest}. Link=${RUN_URL_LINK}"
+          onFailure:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Scripts linting canceled." --url "${LOGS_URL}/${run_number}"
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Charts linting canceled." --url "${LOGS_URL}/${run_number}"
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Charts install canceled." --url "${LOGS_URL}/${run_number}"
+            - send_notification chartstesting_pipeline_slack --text "Charts Testing CI failed in PrepCi step for PR=${pullRequest}. Link=${RUN_URL_LINK}"
+      - name: lint_scripts
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_internal_pr_public
+            - name: charts_repo_public_pr
+          inputSteps:
+            - name: stpPrepCi
+          integrations:
+            - name: charts_rt
+            - name: chartstesting_pipeline_slack
+        execution:
+          onStart:
+            - add_run_variables RUN_URL_LINK=${step_url##*30001}
+            - cd ${res_charts_repo_internal_pr_public_resourcePath}
+            - git checkout ${PIPELINES_BRANCH}
+            - pushd ${res_charts_repo_public_pr_resourcePath}
+          onExecute:
+            - rm -fr ${res_charts_repo_public_pr_resourcePath}/test/*.*
+            - cp -frv ${res_charts_repo_internal_pr_public_resourcePath}/test/* ${res_charts_repo_public_pr_resourcePath}/test/
+            - source ${res_charts_repo_public_pr_resourcePath}/test/custom.sh
+            - echo "Run shell scripts linting!"
+            - mkdir -p tmp
+            - ${res_charts_repo_public_pr_resourcePath}/test/lint-scripts.sh 2>&1 | tee tmp/lint-scripts.log
+          onComplete:
+            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/lint-scripts.log chartlogs/${run_number}/lint-scripts.log --server-id chartstesting --url ${int_charts_rt_url} --user ${int_charts_rt_user} --password ${int_charts_rt_apikey}
+            - popd
+          onSuccess:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Scripts linting successful." --url "${LOGS_URL}/${run_number}/lint-scripts.log"
+          onFailure:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Scripts linting failed!." --url "${LOGS_URL}/${run_number}/lint-scripts.log"
+            - send_notification chartstesting_pipeline_slack --text "Charts Testing CI failed in lint_scripts step for PR=${pullRequest}. Link=${RUN_URL_LINK}"
+      - name: lint_charts
+        type: Bash
+        configuration:
+          environmentVariables:
+            STEP_STATUS_MESSAGE: "'Charts linting successful.'"
+          inputResources:
+            - name: charts_repo_internal_pr_public
+            - name: charts_repo_public_pr
+          inputSteps:
+            - name: lint_scripts
+          integrations:
+            - name: charts_rt
+            - name: chartstesting_pipeline_slack
+        execution:
+          onStart:
+            - add_run_variables RUN_URL_LINK=${step_url##*30001}
+            - cd ${res_charts_repo_internal_pr_public_resourcePath}
+            - git checkout ${PIPELINES_BRANCH}
+            - pushd ${res_charts_repo_public_pr_resourcePath}
+          onExecute:
+            - rm -fr ${res_charts_repo_public_pr_resourcePath}/test/*.*
+            - cp -frv ${res_charts_repo_internal_pr_public_resourcePath}/test/* ${res_charts_repo_public_pr_resourcePath}/test/
+            - source ${res_charts_repo_public_pr_resourcePath}/test/custom.sh
+            - echo "Run charts linting!"
+            - ${res_charts_repo_public_pr_resourcePath}/test/lint-charts.sh || echo "Failed!"
+            - |
+              if cat tmp/lint.log | grep -e "Error linting charts" -e "No CHANGELOG entry for chart" -e "ERR" > /dev/null; then
+                  echo "Charts linting failed!"
+                  exit 1
+              fi
+            - |
+              if cat tmp/lint.log | grep "No chart changes detected" > /dev/null; then
+                echo "No chart changes detected!"
+                export STEP_STATUS_MESSAGE="Charts linting is not needed."
+                add_run_variables do_not_install=true
+              fi
+          onComplete:
+            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/lint.log chartlogs/${run_number}/lint.log --server-id chartstesting --url ${int_charts_rt_url} --user ${int_charts_rt_user} --password ${int_charts_rt_apikey}
+            - popd
+          onSuccess:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "${STEP_STATUS_MESSAGE}" --url "${LOGS_URL}/${run_number}/lint.log"
+          onFailure:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Charts linting failed!." --url "${LOGS_URL}/${run_number}/lint.log"
+            - update_commit_status_custom charts_repo_public_pr --context "install_charts" --message "Charts install canceled!." --url "${LOGS_URL}/${run_number}/lint.log"
+            - send_notification chartstesting_pipeline_slack --text "Charts Testing CI failed in lint_scripts step for PR=${pullRequest}. Link=${RUN_URL_LINK}"
+      - name: install_charts
+        type: Bash
+        configuration:
+          environmentVariables:
+            STEP_STATUS_MESSAGE: "'Charts install successful.'"
+          inputResources:
+            - name: charts_repo_internal_pr_public
+            - name: charts_repo_public_pr
+          integrations:
+            - name: charts_testing_cluster
+            - name: charts_rt
+            - name: chartstesting_pipeline_slack
+          inputSteps:
+            - name: lint_charts
+        execution:
+          onStart:
+            - add_run_variables RUN_URL_LINK=${step_url##*30001}
+            - cd ${res_charts_repo_internal_pr_public_resourcePath}
+            - git checkout ${PIPELINES_BRANCH}
+            - source ${res_charts_repo_internal_pr_public_resourcePath}/test/custom.sh
+            - pushd ${res_charts_repo_public_pr_resourcePath}
+            - |
+              if [[ "${do_not_install}" == "true" ]]; then 
+                mkdir tmp 
+                echo "No chart changes detected." > tmp/install.log
+                export STEP_STATUS_MESSAGE="Charts install is not needed."
+                exit 0
+              fi
+          onExecute:
+            - rm -fr ${res_charts_repo_public_pr_resourcePath}/test/*.*
+            - cp -frv ${res_charts_repo_internal_pr_public_resourcePath}/test/* ${res_charts_repo_public_pr_resourcePath}/test/
+            - echo "Run charts install!"
+            - ${res_charts_repo_public_pr_resourcePath}/test/e2e-gke.sh
+            - |
+              if cat tmp/install.log | grep "Error installing charts" > /dev/null; then
+                  echo "Charts install failed!"
+                  exit 1
+              fi
+          onComplete:
+            - export JFROG_CLI_OFFER_CONFIG=false; jfrog rt u tmp/install.log chartlogs/${run_number}/install.log --server-id chartstesting --url ${int_charts_rt_url} --user ${int_charts_rt_user} --password ${int_charts_rt_apikey}
+            - popd
+          onSuccess:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "${STEP_STATUS_MESSAGE}" --url "${LOGS_URL}/${run_number}/install.log"
+            - send_notification chartstesting_pipeline_slack --text "Charts Testing CI successful in install_scripts step for PR=${pullRequest}. Link=${RUN_URL_LINK}"
+          onFailure:
+            - update_commit_status_custom charts_repo_public_pr --context "${step_name}" --message "Charts install failed!" --url "${LOGS_URL}/${run_number}/install.log"
+            - send_notification chartstesting_pipeline_slack --text "Charts Testing CI failed in install_scripts step for PR=${pullRequest}. Link=${RUN_URL_LINK}"

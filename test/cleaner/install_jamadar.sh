@@ -1,3 +1,4 @@
 #/bin/bash
 
-helm tiller run -- helm upgrade --install jamadar --namespace jamadar jamadar/ -f override-values.yaml
+kubectl create ns jamadar || true
+helm3 upgrade --install jamadar --namespace jamadar jamadar/ -f override-values.yaml

@@ -1,0 +1,11 @@
+{{- if and .Values.vault.enabled .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "pipelines.vault.name" . }}
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+    component: {{ include "pipelines.vault.name" . }}
+rules:
+{{ toYaml .Values.vault.rbac.role.rules }}
+{{- end -}}

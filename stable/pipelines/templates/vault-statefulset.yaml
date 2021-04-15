@@ -1,0 +1,211 @@
+{{- if .Values.vault.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "pipelines.vault.name" . }}
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+    component: {{ include "pipelines.vault.name" . }}
+  {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/pipelines/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x" .Values.databaseUpgradeReady | quote }}
+  {{- end }}
+spec:
+  serviceName: {{ include "pipelines.vault.name" . }}-headless
+  replicas: 1
+  updateStrategy:
+    type: {{ .Values.vault.updateStrategy }}
+  selector:
+    matchLabels:
+      {{- include "pipelines.selectorLabels" . | nindent 6 }}
+      component: {{ include "pipelines.vault.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "pipelines.selectorLabels" . | nindent 8 }}
+        component: {{ include "pipelines.vault.name" . }}
+    spec:
+      serviceAccountName: {{ include "pipelines.vault.name" . }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "pipelines.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+      initContainers:
+          {{- if or .Values.vault.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "pipelines.vault.customInitContainersBegin" .)  . | indent 8 }}
+          {{- end }}
+        - name: config
+          image: '{{ .Values.initContainer.image }}'
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          env:
+            - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
+                  key: postgresql-url
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              cat > /etc/vault/config/vault.hcl <<EOF
+              listener "tcp" {
+                address = "0.0.0.0:30100"
+                tls_disable = 1
+              }
+
+              storage "postgresql" {
+                connection_url = "${PIPELINES_SHARED_DB_CONNECTIONSTRING}"
+              }
+
+              max_lease_ttl = "768h"
+              disable_mlock = {{ .Values.vault.disablemlock }}
+
+              EOF
+          volumeMounts:
+            - name: vault-config
+              mountPath: /etc/vault/config
+        - name: wait-for-db
+          image: '{{ .Values.initContainer.image }}'
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Waiting for Postgres to come up...";
+            {{- if .Values.postgresql.enabled }}
+            until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
+            {{- else }}
+            until nc -z -w 2 {{ tpl .Values.global.postgresql.host . }} {{ .Values.global.postgresql.port }} && echo database ok; do
+            {{- end }}
+              sleep 2;
+            done;
+            sleep 10;
+        - name: create-vault-table
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
+          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          env:
+            - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
+                  key: postgresql-url
+          command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Copy system.yaml to {{ .Values.pipelines.mountPath }}";
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- else }}
+            cp -fv /tmp/etc/system.yaml {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- end }}
+            echo "Creating Vault Table...";
+            ./pipelines-k8s initVault;
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+        {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
+          - name: systemyaml
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+            subPath: {{ .Values.systemYamlOverride.dataKey }}
+            {{- else if .Values.pipelines.systemYaml }}
+            mountPath: "/tmp/etc/system.yaml"
+            subPath: system.yaml
+            {{- end }}
+        {{- end }}
+          {{- if or .Values.vault.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "pipelines.vault.customInitContainers" .)  . | indent 8 }}
+          {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
+      containers:
+        - name: vault-init
+          image: {{ include "pipelines.getImageInfoByValue" (list . "vault" "init" ) }}
+          imagePullPolicy: {{ .Values.vault.init.image.pullPolicy }}
+          env:
+            - name: CHECK_INTERVAL
+              value: "10s"
+            - name: VAULT_NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: VAULT_ADDRESS
+              value: "http://localhost:30100"
+          resources:
+            {{- toYaml .Values.vault.init.resources | nindent 12 }}
+        - name: vault
+          image: {{ include "vault.getImageInfoByValue" (list . "vault" ) }}
+          imagePullPolicy: {{ .Values.vault.image.pullPolicy }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: "status.podIP"
+            - name: "VAULT_API_ADDR"
+              value: "http://$(POD_IP):30100"
+            - name: "VAULT_CLUSTER_ADDR"
+              value: "http://$(POD_IP):30101"
+          args:
+            - "server"
+            - "-config=/etc/vault/config/vault.hcl"
+          ports:
+            - name: http
+              containerPort: 30100
+              protocol: "TCP"
+            - name: http-server
+              containerPort: 30101
+              protocol: "TCP"
+          readinessProbe:
+            httpGet:
+              path: "/v1/sys/health?standbyok=true"
+              port: 30100
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.vault.resources | nindent 12 }}
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+          volumeMounts:
+            - name: vault-config
+              mountPath: /etc/vault/config
+            {{- if or .Values.vault.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "pipelines.vault.customVolumeMounts" .) . | indent 12 }}
+            {{- end }}
+    {{- with .Values.vault.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.vault.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.vault.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        {{- if or .Values.vault.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "pipelines.vault.customVolumes" .) . | indent 8 }}
+        {{- end }}
+        - name: vault-config
+          emptyDir: {}
+        - name: jfrog-pipelines-folder
+          emptyDir: {}
+        {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
+        - name: systemyaml
+          secret:
+            secretName: {{ default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
+        {{- end }}
+        {{- if .Values.vault.configMaps }}
+        - name: vault-configmaps
+          configMap:
+            name: {{ include "pipelines.vault.name" . }}-configmaps
+        {{- end }}
+{{- end -}}

@@ -1,9 +1,10 @@
-remote: k8s
+remote: origin
 target-branch: master
 chart-dirs:
   - stable
-excluded-charts:
-  - common
 chart-repos:
   - jfrog=https://charts.jfrog.io
-helm-extra-args: --timeout 18000
+  - bitnami=https://charts.bitnami.com/bitnami
+  - stable=https://charts.helm.sh/stable
+helm-extra-args: 
+  --timeout 30m

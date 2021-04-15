@@ -1,0 +1,34 @@
+{{- if and (.Values.rabbitmq.serviceVmLb.enabled) (.Values.rabbitmq.serviceVmLb.loadBalancerIP) -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipelines.name" . }}-rabbitmq-vm-int-lb
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+    component: rabbitmq-vm-int-lb
+{{- if (.Values.rabbitmq.serviceVmLb.annotations) }}
+  annotations:
+    {{- range $key, $value := .Values.rabbitmq.serviceVmLb.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+spec:
+  type: LoadBalancer 
+  loadBalancerIP: {{ .Values.rabbitmq.serviceVmLb.loadBalancerIP }}
+{{- if (.Values.rabbitmq.serviceVmLb.loadBalancerSourceRanges) }}
+  loadBalancerSourceRanges:
+{{ toYaml (.Values.rabbitmq.serviceVmLb.loadBalancerSourceRanges) | indent 4 }}
+{{- end }}
+  ports:
+  - name: stats
+    port: 15672
+    protocol: TCP
+    targetPort: stats
+  - name: amqp
+    port: 5672
+    protocol: TCP
+    targetPort: amqp
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: rabbitmq
+{{- end -}}

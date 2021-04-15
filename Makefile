@@ -1,11 +1,9 @@
 # Lint charts locally
 MAC_ARGS ?=
 CHARTS_REPO ?= https://github.com/jfrog/charts
-CHART_TESTING_IMAGE ?= quay.io/helmpack/chart-testing
-CHART_TESTING_TAG ?= v2.3.3
-TEST_IMAGE_TAG ?= v3.3.2
-K8S_VERSION ?= v1.15.3
-KIND_VERSION ?= v0.6.0
+CHART_TESTING_IMAGE ?= releases-docker.jfrog.io/charts-ci
+CHART_TESTING_TAG ?= v0.0.23
+HELM_VERSION ?= v3.5.3
 
 # If the first argument is "lint" or "mac" or "gke" or "kind"
 ifneq ( $(filter wordlist 1,lint mac gke kind), $(firstword $(MAKECMDGOALS)))
@@ -19,7 +17,6 @@ endif
 HELM_CMD := $(shell command -v helm 2> /dev/null)
 KUBECTL_CMD := $(shell command -v kubectl 2> /dev/null)
 KUBEVAL_CMD := $(shell command -v kubeval 2> /dev/null)
-KIND_CMD := $(shell command -v kind 2> /dev/null)
 GCLOUD_CMD := $(shell command -v gcloud 2> /dev/null)
 
 .PHONY: check-cli
@@ -41,12 +38,6 @@ endif
 check-kubeval:
 ifndef KUBEVAL_CMD
 	$(error "$n$nNo kubeval command found! $n$nPlease install: brew tap instrumenta/instrumenta && brew install kubeval $n$n")
-endif
-
-.PHONY: check-kind
-check-kind:
-ifndef KIND_CMD
-	$(error "$n$nNo kind command found! $n$nPlease download required kind binary.$n$n")
 endif
 
 .PHONY: check-gcloud
@@ -74,19 +65,8 @@ mac:
 
 .PHONY: gke
 gke: check-gcloud
-	$(eval export TEST_IMAGE_TAG)
+	$(eval export CHART_TESTING_TAG)
 	$(eval export CHARTS_REPO)
 	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
 	$(eval export LOCAL_RUN=true)
 	test/e2e-local-gke.sh
-
-.PHONY: kind
-kind: check-kind
-	$(eval export CHART_TESTING_IMAGE)
-	$(eval export CHART_TESTING_TAG)
-	$(eval export CHARTS_REPO)
-	$(eval export K8S_VERSION)
-	$(eval export KIND_VERSION)
-	$(eval export CHART_TESTING_ARGS=${MAC_ARGS})
-	$(eval export LOCAL_RUN=true)
-	test/e2e-kind.sh

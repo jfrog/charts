@@ -1,0 +1,33 @@
+pipelines:
+  - name: ci_rt
+    configuration:
+      environmentVariables:
+        readOnly:
+          HELM_VERSION: v3.5.3
+    steps:
+      - name: install_rt
+        type: Bash
+        configuration:
+          inputResources:
+            - name: charts_repo_public
+          integrations:
+            - name: charts_testing_cluster
+            - name: rt_license
+          environmentVariables:
+            GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
+            GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
+            RT_LICENSE: ${int_rt_license_key}
+            REPO_ROOT: ${res_charts_repo_public_resourcePath}
+        execution:
+          onStart:
+            - cd ${res_charts_repo_public_resourcePath} && git checkout master
+            - pushd ${res_charts_repo_public_resourcePath}
+          onExecute:
+            - echo "Run CI Artfactory install!"
+            - ${res_charts_repo_public_resourcePath}/test/e2e-rt.sh
+          onComplete:
+            - popd
+          onSuccess:
+            - add_pipeline_variables step_status_${step_name}="success"
+          onFailure:
+            - add_pipeline_variables step_status_${step_name}="failure"

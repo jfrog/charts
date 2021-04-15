@@ -1,0 +1,36 @@
+resources:
+  - name: charts_repo_public
+    type: GitRepo
+    configuration:
+      gitProvider: github_public
+      path: jfrog/charts
+      files:
+        exclude: pipelines/.*.yml$
+      branches:
+        include: master
+      buildOn:
+        commit: false
+        pullRequestCreate: false
+        tagCreate: false
+  - name: charts_repo_public_pr
+    type: GitRepo
+    configuration:
+      gitProvider: github_public
+      path: jfrog/charts
+      files:
+        exclude: pipelines/.*.yml$
+      buildOn:
+        commit: false
+        pullRequestCreate: true
+        tagCreate: false
+  - name: charts_repo_internal_pr_public
+    type: GitRepo
+    configuration:
+      gitProvider: github_private
+      path: jfrog/charts-internal
+      branches:
+        include: charts-public-pipelines
+      buildOn:
+        commit: false
+        pullRequestCreate: false
+        tagCreate: false

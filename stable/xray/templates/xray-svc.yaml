@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "xray.fullname" . }}
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    component: {{ .Values.xray.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+{{- with .Values.server.service }}
+{{- if .annotations }}
+  annotations:
+    {{- range $key, $value := .annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+spec:
+  type: {{ .type }}
+  {{- if .additionalSpec }}
+{{ tpl .additionalSpec $ | indent 2 }}
+  {{- end }}
+{{- end }}
+  ports:
+  - port: {{ .Values.server.externalPort }}
+    protocol: TCP
+    name: http
+    targetPort: {{ .Values.server.internalPort }}
+  - port: {{ .Values.router.externalPort }}
+    protocol: TCP
+    name: http-router
+    targetPort: {{ .Values.router.internalPort }}
+  selector:
+    app: {{ template "xray.name" . }}
+    component: {{ .Values.xray.name }}
+    release: {{ .Release.Name }}

@@ -1,0 +1,15 @@
+{{- if .Values.access.accessConfig }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "artifactory-ha.fullname" . }}-access-config
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  access.config.patch.yml: |
+{{ tpl (toYaml .Values.access.accessConfig) . | indent 4 }}
+{{- end }}

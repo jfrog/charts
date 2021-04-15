@@ -18,20 +18,7 @@ elasticsearch:
   javaOpts:
     xms: "3g"
     xmx: "3g"
-mongodb:
-  resources:
-    requests:
-      memory: "2Gi"
-      cpu: "500m"
-    limits:
-      memory: "2Gi"
-      cpu: "1"
-  ## Make sure the --wiredTigerCacheSizeGB is
-  ## no more than half the memory limit!
-  ## This is critical to protect against
-  ## OOMKill by Kubernetes!
-  mongodbExtraFlags:
-    - "--wiredTigerCacheSizeGB=1"
+
 missionControl:
   resources:
     requests:
@@ -43,6 +30,7 @@ missionControl:
   javaOpts:
     xms: "2g"
     xmx: "4g"
+
 insightServer:
   resources:
     requests:
@@ -51,17 +39,7 @@ insightServer:
     limits:
       memory: "2Gi"
       cpu: "1"
-insightExecutor:
-  resources:
-    requests:
-      memory: "2Gi"
-      cpu: "500m"
-    limits:
-      memory: "4Gi"
-      cpu: "1"
-  javaOpts:
-    xms: "2g"
-    xmx: "4g"
+
 insightScheduler:
   resources:
     requests:

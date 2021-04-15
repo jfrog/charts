@@ -14,14 +14,10 @@ metadata:
 {{- end }}
 spec:
   type: {{ .Values.distribution.service.type }}
-{{- if .Values.distribution.service.loadBalancerSourceRanges }}
-  loadBalancerSourceRanges:
-{{ toYaml .Values.distribution.service.loadBalancerSourceRanges | indent 4 }}
-{{- end }}
   ports:
-  - name: distribution
+  - name: http-distro
     port: {{ .Values.distribution.externalPort }}
-    targetPort: distribution
+    targetPort: http-distro
   selector:
     app: {{ template "distribution.name" . }}
     release: {{ .Release.Name }}

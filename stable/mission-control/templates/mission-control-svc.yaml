@@ -8,6 +8,9 @@ metadata:
     component: {{ .Values.missionControl.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    {{- with .Values.missionControl.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- if .Values.missionControl.service.annotations }}
   annotations:
 {{ toYaml .Values.missionControl.service.annotations | indent 4 }}
@@ -19,11 +22,16 @@ spec:
     port: {{ .Values.missionControl.externalPort }}
     targetPort: {{ .Values.missionControl.internalPort }}
     protocol: TCP
+  - name: http-router
+    port: {{ .Values.router.externalPort }}
+    targetPort: {{ .Values.router.internalPort }}
+    protocol: TCP    
 {{- if .Values.elasticsearch.enabled }}
-  - name: estransport
+  - name: tcp-estransport
     port: {{ .Values.elasticsearch.transportPort }}
-    targetPort: estransport
+    targetPort: {{ .Values.elasticsearch.transportPort }}
 {{- end }}
+  publishNotReadyAddresses: true
   selector:
     app: {{ template "mission-control.name" . }}
     component: {{ .Values.missionControl.name }}

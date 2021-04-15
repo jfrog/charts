@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
-readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
+readonly IMAGE_REPOSITORY="releases-docker.jfrog.io/charts-ci"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 # shellcheck disable=SC2034  # This variable is used by the script get_helm.sh
 readonly DESIRED_VERSION=${HELM_VERSION}
@@ -51,7 +51,8 @@ validate_manifests() {
         echo "Validating chart ${chart_name}"
         rm -rf stable
         mkdir stable
-        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable > /dev/null 2>&1
+        pwd
+        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable --set distribution.jfrogUrl=http://artifactory-artifactory.rt:8082,missionControl.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrlUI=http://artifactory-artifactory.rt:8082,xray.jfrogUrl=http://artifactory-artifactory.rt:8082,postgresql.postgresqlPassword=password > /dev/null 2>&1
         TEMPLATE_FILES="${chart_name}/templates"
         if [ -d "${TEMPLATE_FILES}" ] 
         then
@@ -87,18 +88,19 @@ main() {
     mkdir -p tmp
     install_kubeval
     install_helm
-    git_fetch
+    ## git_fetch
     # Lint helm charts
+    docker rm -f ct || true
     # shellcheck disable=SC2086
-    docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml | tee tmp/lint.log
+    docker run --rm -v "$(pwd):/workdir" --workdir /workdir "$IMAGE_REPOSITORY:$IMAGE_TAG" ct lint ${CHART_TESTING_ARGS} --config /workdir/test/ct.yaml --validate-maintainers=false | tee tmp/lint.log
     echo "Done Charts Linting!"
     echo
     if [[ -z "${CHART_TESTING_ARGS}" ]]
     then
         # Check for changelog version
-        check_changelog_version
+        check_changelog_version | tee -a tmp/lint.log
         # Validate Kubernetes manifests
-        validate_manifests
+        validate_manifests | tee -a tmp/lint.log
     fi
 }
 

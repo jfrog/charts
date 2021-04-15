@@ -10,16 +10,24 @@ Expand the name of the chart.
 The primary node name
 */}}
 {{- define "artifactory-ha.primary.name" -}}
+{{- if .Values.nameOverride -}}
+{{- printf "%s-primary" .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- $name := .Release.Name | trunc 29 -}}
 {{- printf "%s-%s-primary" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
 The member node name
 */}}
 {{- define "artifactory-ha.node.name" -}}
+{{- if .Values.nameOverride -}}
+{{- printf "%s-member" .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- $name := .Release.Name | trunc 29 -}}
 {{- printf "%s-%s-member" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -44,6 +52,32 @@ If release name contains chart name it will be used as a full name.
 {{- else -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified Replicator app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "artifactory-ha.replicator.fullname" -}}
+{{- if .Values.artifactory.replicator.ingress.name -}}
+{{- .Values.artifactory.replicator.ingress.name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-replication" .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified replicator tracker ingress name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "artifactory-ha.replicator.tracker.fullname" -}}
+{{- if .Values.artifactory.replicator.trackerIngress.name -}}
+{{- .Values.artifactory.replicator.trackerIngress.name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-replication-tracker" .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
@@ -92,4 +126,177 @@ Generate SSL certificates
 {{- $cert := genSignedCert ( include "artifactory-ha.name" . ) nil $altNames 365 $ca -}}
 tls.crt: {{ $cert.Cert | b64enc }}
 tls.key: {{ $cert.Key | b64enc }}
+{{- end -}}
+
+{{/*
+Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "artifactory-ha.scheme" -}}
+{{- if .Values.access.accessConfig.security.tls -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKey value
+*/}}
+{{- define "artifactory-ha.joinKey" -}}
+{{- if .Values.global.joinKey -}}
+{{- .Values.global.joinKey -}}
+{{- else if .Values.artifactory.joinKey -}}
+{{- .Values.artifactory.joinKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKey value
+*/}}
+{{- define "artifactory-ha.masterKey" -}}
+{{- if .Values.global.masterKey -}}
+{{- .Values.global.masterKey -}}
+{{- else if .Values.artifactory.masterKey -}}
+{{- .Values.artifactory.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve joinKeySecretName value
+*/}}
+{{- define "artifactory-ha.joinKeySecretName" -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.artifactory.joinKeySecretName -}}
+{{- .Values.artifactory.joinKeySecretName -}}
+{{- else -}}
+{{ include "artifactory-ha.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve masterKeySecretName value
+*/}}
+{{- define "artifactory-ha.masterKeySecretName" -}}
+{{- if .Values.global.masterKeySecretName -}}
+{{- .Values.global.masterKeySecretName -}}
+{{- else if .Values.artifactory.masterKeySecretName -}}
+{{- .Values.artifactory.masterKeySecretName -}}
+{{- else -}}
+{{ include "artifactory-ha.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "artifactory-ha.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainersBegin value
+*/}}
+{{- define "artifactory-ha.customInitContainersBegin" -}}
+{{- if .Values.global.customInitContainersBegin -}}
+{{- .Values.global.customInitContainersBegin -}}
+{{- else if .Values.artifactory.customInitContainersBegin -}}
+{{- .Values.artifactory.customInitContainersBegin -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "artifactory-ha.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- else if .Values.artifactory.customInitContainers -}}
+{{- .Values.artifactory.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory-ha.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- else if .Values.artifactory.customVolumes -}}
+{{- .Values.artifactory.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "artifactory-ha.customVolumeMounts" -}}
+{{- if .Values.global.customVolumeMounts -}}
+{{- .Values.global.customVolumeMounts -}}
+{{- else if .Values.artifactory.customVolumeMounts -}}
+{{- .Values.artifactory.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "artifactory-ha.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- else if .Values.artifactory.customSidecarContainers -}}
+{{- .Values.artifactory.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper artifactory chart image names
+*/}}
+{{- define "artifactory-ha.getImageInfoByValue" -}}
+{{- $dot := index . 0 }}
+{{- $indexReference := index . 1 }}
+{{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
+{{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
+{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- if $dot.Values.global }}
+    {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
+    {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
+    {{- end -}}
+    {{- if $dot.Values.global.imageRegistry }}
+        {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+    {{- else -}}
+        {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+    {{- end -}}
+{{- else -}}
+    {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper artifactory app version
+*/}}
+{{- define "artifactory-ha.app.version" -}}
+{{- $image := split ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory")) | toString) -}}
+{{- $tag := $image._1 -}}
+{{- printf "%s" $tag -}}
+{{- end -}}
+
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "artifactory-ha.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted \;;
+find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
 {{- end -}}

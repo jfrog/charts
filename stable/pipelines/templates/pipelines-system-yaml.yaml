@@ -1,0 +1,13 @@
+{{- if not .Values.systemYamlOverride.existingSecret -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "pipelines.fullname" . }}-system-yaml
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+type: Opaque
+data:
+stringData:
+  system.yaml: |
+{{ tpl .Values.pipelines.systemYaml . | indent 4 }}
+{{- end -}}

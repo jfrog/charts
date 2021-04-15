@@ -11,7 +11,6 @@ data:
   setProperties.sh: |
     #!/bin/bash
     # Setup script to set properties in mission-control.properties on install
-    # Setup script to set properties in mission-control.properties on install
     addProperty() {
         local propertyName=$1
         local propertyValue=$2
@@ -46,12 +45,8 @@ data:
         touch  ${JFMC_PROPERTIES} || (  echo "unable to create ${JFMC_PROPERTIES} file" && exit 1 )
     fi
 
-    addProperty "elastic.username" "${ELASTIC_SEARCH_USERNAME}" ${JFMC_PROPERTIES} && \
-    addProperty "elastic.password" "${ELASTIC_SEARCH_PASSWORD}" ${JFMC_PROPERTIES} && \
     addProperty "jfmc.db.username" "${JFMC_DB_USERNAME}" ${JFMC_PROPERTIES} && \
     addProperty "jfmc.db.password" "${JFMC_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
-    addProperty "jfex.db.username" "${JFEX_DB_USERNAME}" ${JFMC_PROPERTIES} && \
-    addProperty "jfex.db.password" "${JFEX_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
     addProperty "jfsc.db.username" "${JFSC_DB_USERNAME}" ${JFMC_PROPERTIES} && \
     addProperty "jfsc.db.password" "${JFSC_DB_PASSWORD}" ${JFMC_PROPERTIES} && \
     addProperty "jfis.db.username" "${JFIS_DB_USERNAME}" ${JFMC_PROPERTIES} && \

@@ -1,0 +1,20 @@
+{{- if .Values.buildPlane.dynamic.provider.aws.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+data:
+  provider: aws
+  accountId: {{ default "userId" .Values.buildPlane.dynamic.customer.accountId | quote }}
+  nodePoolName: {{ default .Values.buildPlane.dynamic.provider.aws.nodePoolName .Values.buildPlane.dynamic.customer.nodePoolName | quote }}
+  nodelimit: {{ default .Values.buildPlane.dynamic.provider.aws.nodelimit .Values.buildPlane.dynamic.customer.nodelimit | quote }}
+  setAsDefault: '"true"'
+  instanceType: {{ .Values.buildPlane.dynamic.provider.aws.instanceType | quote }}
+  securityGroupId: {{ .Values.buildPlane.dynamic.provider.aws.securityGroupId | quote }}
+  subnetId: {{ .Values.buildPlane.dynamic.provider.aws.subnetId | quote }}
+  keyPairName: {{ .Values.buildPlane.dynamic.provider.aws.keyPairName | quote }}
+  vpcId: {{ .Values.buildPlane.dynamic.provider.aws.vpcId | quote }}
+  region: {{ .Values.buildPlane.dynamic.provider.aws.region | quote }}
+{{- end -}}

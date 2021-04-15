@@ -31,7 +31,6 @@ spec:
       annotations:
         checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
         checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
-        checksum/replicator-conf: {{ include (print $.Template.BasePath "/replicator-configmap.yaml") . | sha256sum }}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
@@ -40,10 +39,12 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
-    {{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-      - name: {{ .Values.imagePullSecrets }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "artifactory.imagePullSecrets" . | indent 6 }}
     {{- end }}
+      {{- if .Values.nginx.priorityClassName }}
+      priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
+      {{- end }}
       initContainers:
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
@@ -62,7 +63,7 @@ spec:
         fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
-        image: '{{ .Values.nginx.image.repository }}:{{ default .Chart.AppVersion .Values.nginx.image.version }}'
+        image: {{ include "artifactory.getImageInfoByValue" (list . "nginx") }}
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
         command:
           - 'nginx'
@@ -74,26 +75,24 @@ spec:
         {{- if .Values.nginx.http }}
         {{- if .Values.nginx.http.enabled }}
         - containerPort: {{ .Values.nginx.http.internalPort }}
+          name: http
         {{- end }}
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttp }}
+          name: http-internal
         {{- end }}
         {{- if .Values.nginx.https }}
         {{- if .Values.nginx.https.enabled }}
         - containerPort: {{ .Values.nginx.https.internalPort }}
+          name: https
         {{- end }}
         {{- else }} # DEPRECATED
         - containerPort: {{ .Values.nginx.internalPortHttps }}
-        {{- end }}
-        {{- if .Values.nginx.replicator }}
-        {{- if .Values.artifactory.replicator.enabled }}
-        - containerPort: {{ .Values.nginx.replicator.internalPort }}
-        {{- end }}
-        {{- else }} # DEPRECATED
-        - containerPort: {{ .Values.nginx.internalPortReplicator }}
+          name: https-internal
         {{- end }}
         {{- if .Values.artifactory.ssh.enabled }}
         - containerPort: {{ .Values.nginx.ssh.internalPort }}
+          name: tcp-ssh
         {{- end }}
         volumeMounts:
         - name: nginx-conf
@@ -101,16 +100,30 @@ spec:
           subPath: nginx.conf
         - name: nginx-artifactory-conf
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
-        {{- if .Values.artifactory.replicator.enabled }}
-        - name: nginx-replicator-conf
-          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/replicator/"
-        {{- end }}
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
+        {{- if .Values.nginx.https.enabled }}  
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
+        {{- end }}  
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
+        {{- if .Values.nginx.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.nginx.startupProbe.path }}
+            {{- if .Values.nginx.http.enabled }}
+            port: {{ .Values.nginx.http.internalPort }}
+            scheme: HTTP
+            {{- else }}
+            port: {{ .Values.nginx.https.internalPort }}
+            scheme: HTTPS
+            {{- end }}
+          initialDelaySeconds: {{ .Values.nginx.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.nginx.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.nginx.startupProbe.failureThreshold }}
+          timeoutSeconds: {{ .Values.nginx.startupProbe.timeoutSeconds }}
+        {{- end }}
         {{- if .Values.nginx.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
@@ -145,12 +158,10 @@ spec:
           failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.nginx.livenessProbe.successThreshold }}
         {{- end }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: '{{ $image }}:{{ $tag }}'
+        image: {{ include "artifactory.getImageInfoByValue" (list $ "logger") }}
         command:
         - tail
         args:
@@ -189,11 +200,6 @@ spec:
       {{- else }}
           name: {{ template "artifactory.fullname" . }}-nginx-artifactory-conf
       {{- end }}
-      {{- if .Values.artifactory.replicator.enabled }}
-      - name: nginx-replicator-conf
-        configMap:
-          name: {{ template "artifactory.fullname" . }}-replicator-config
-      {{- end }}
       - name: nginx-volume
       {{- if .Values.nginx.persistence.enabled }}
         persistentVolumeClaim:
@@ -201,11 +207,13 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
+      {{- if .Values.nginx.https.enabled }}
       - name: ssl-certificates
         secret:
       {{- if .Values.nginx.tlsSecretName }}
           secretName: {{ .Values.nginx.tlsSecretName }}
       {{- else }}
           secretName: {{ template "artifactory.fullname" . }}-nginx-certificate
+      {{- end }}
       {{- end }}
 {{- end }}

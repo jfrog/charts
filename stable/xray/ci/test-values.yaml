@@ -1,44 +1,23 @@
 # CI values for Xray
-
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
-
-analysis:
-  loggers:
-    - xray_analysis.log
-
-indexer:
-  loggers:
-    - xray_indexer.log
-
-persist:
-  loggers:
-    - xray_persist.log
-
-server:
-  loggers:
-    - xray_server.log
+# If this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+xray:
+  jfrogUrl: http://artifactory-artifactory.rt:8082
 
 postgresql:
-  postgresDatabase: xraydb
-  postgresUser: xray
-  postgresPassword: xray
-  persistence:
-    enabled: false
+  postgresqlPassword: xray
 
-mongodb:
-  mongodbRootPassword: password
-  mongodbUsername: xray
-  mongodbPassword: password
-  mongodbDatabase: xray
-  persistence:
-    enabled: false
+rabbitmq:
+  auth:
+    username: guest
+    password: password
 
-rabbitmq-ha:
-  rabbitmqUsername: guest
-  rabbitmqPassword: guest
-  persistentVolume:
-    enabled: false
+initContainers:
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "10m"
+    limits:
+      memory: "128Mi"
+      cpu: "250m"

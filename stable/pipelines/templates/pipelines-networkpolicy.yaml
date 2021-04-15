@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "pipelines.fullname" $ }}-{{ .name }}-networkpolicy
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+spec:
+{{- range .Values.networkpolicy }}
+{{- if .podSelector }}
+  podSelector:
+{{ .podSelector | toYaml | trimSuffix "\n" | indent 4 -}}
+{{ else }}
+  podSelector: {}
+{{- end }}
+  policyTypes:
+  {{- if .ingress }}
+  - Ingress
+  {{- end }}
+  {{- if .egress }}
+  - Egress
+  {{- end }}
+{{- if .ingress }}
+  ingress:
+{{ .ingress | toYaml | trimSuffix "\n" | indent 2 -}}
+{{- end }}
+{{- if .egress }}
+  egress:
+{{ .egress | toYaml | trimSuffix "\n" | indent 2 -}}
+{{- end }}
+---
+{{- end }}

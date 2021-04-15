@@ -1,0 +1,23 @@
+{{- if .Values.pipelines.customPersistentVolumeClaim -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+spec:
+  accessModes:
+  {{- range .Values.pipelines.customPersistentVolumeClaim.accessModes }}
+  - {{ . | quote }}
+  {{- end }}
+  {{- if .Values.pipelines.customPersistentVolumeClaim.storageClassName }}
+  {{- if (eq "-" .Values.pipelines.customPersistentVolumeClaim.storageClassName) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.pipelines.customPersistentVolumeClaim.storageClassName }}"
+  {{- end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.pipelines.customPersistentVolumeClaim.size | quote }}
+{{- end -}}

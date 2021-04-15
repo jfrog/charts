@@ -1,6 +1,208 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [7.7.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+
+## [7.6.1] - Mar 30, 2021
+* Update router version to `7.17.2`
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [7.6.0] - Mar 22, 2021
+* Update Distribution to version `2.7.1`
+* Update router version to `7.17.1`
+* Add support for graceful shutdown
+* Optimized startupProbe time
+
+## [7.5.0] - Mar 18, 2021
+* Add support to startupProbe
+
+## [7.4.3] - Mar 9, 2021
+* Removed bintray URL references in the chart
+* Update router version to `7.15.3`
+
+## [7.4.2] - Feb 25, 2021
+* Update Distribution to version `2.6.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6.1)
+
+## [7.4.1] - Feb 19, 2021
+* Update router version to `7.15.2`
+* Update busybox tag version to `1.32.1`
+
+## [7.4.0] - Feb 08, 2021
+* Support for custom certificates using secrets 
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.1`
+* Update router version to `7.12.6`
+
+## [7.3.2] - Jan 27, 2021
+* Update router version to `7.12.4`
+
+## [7.3.1] - Jan 25, 2021
+* Add support for hostAliases
+
+## [7.3.0] - Jan 13, 2021
+* Update Distribution to version `2.6.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6)
+
+## [7.2.3] - Jan 8, 2021
+* Add support for creating additional kubernetes resources
+
+## [7.2.2] - Dec 22, 2020
+* Update Distribution to version `2.5.4` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+
+## [7.2.1] - Dec 11, 2020
+* Added configurable `.Values.global.versions.distribution` in values.yaml
+
+## [7.2.0] - Dec 10, 2020
+* Update postgresql tag version to `12.5.0-debian-10-r25`
+* Update redis tag version to `6.0.9-debian-10-r39`
+* Update alpine tag version to `3.12.1`
+
+## [7.1.7] - Dec 8, 2020
+* Update Distribution to version `2.5.3` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+* Updated chart maintainers email
+
+## [7.1.6] - Dec 4, 2020
+* **Important:** Renamed `.Values.systemYaml` to `.Values.systemYamlOverride`
+
+## [7.1.5] - Dec 3, 2020
+* Updated port namings on services and pods to allow for istio protocol discovery
+
+## [7.1.4] - Nov 16, 2020
+* Update Distribution to version `2.5.2` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.2)
+
+## [7.1.3] - Oct 29, 2020
+* Pass system.yaml via external secret for advanced usecases
+* Bugfix - stateful set not picking up changes to database secrets
+
+## [7.1.2] - Oct 23, 2020
+* Update router version to `1.4.4`
+
+## [7.1.1] - Oct 9, 2020
+* Update Distribution to version `2.5.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5.1)
+* Add support for customInitContainersBegin
+
+## [7.1.0] - Sep 30, 2020
+* Update Distribution to version `2.5.0` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.5)
+* Added support for resources in init containers
+* Added upgrade notes for 4.x to 5.x and above chart versions
+
+## [7.0.2] - Sep 25, 2020
+* Update filebeat version to 7.9.2
+
+## [7.0.1] - Sep 22, 2020
+* Readme updates
+
+## [7.0.0] - Aug 28, 2020
+* **Breaking change:** Changed `imagePullSecrets` from string to list.
+* **Breaking change:** Added `image.registry` and changed `image.version` to `image.tag` for docker images
+* Added support for global values
+* Updated maintainers in chart.yaml
+* Update postgresql tag version to `12.3.0-debian-10-r71`
+* Update redis tag version to `6.0.6-debian-10-r12`
+* Update router version to `1.4.3`
+* Update postgresql chart version to `9.3.4` in requirements.yaml - [9.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#900)
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x or 10.x's postgresql.image.tag and databaseUpgradeReady=true
+
+## [6.1.4] - Jul 29, 2020
+* Added tpl support for resolving jfrogUrl
+
+## [6.1.3] - Jul 27, 2020
+* Update Distribution to version `2.4.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.4.1)
+
+## [6.1.2] - Jul 20, 2020
+* Added support for `common.customSidecarContainers` to create custom sidecar containers
+* Added support for `common.configMaps` to create custom configMaps
+* Moved customInitContainers under `common`
+* Added README for Establishing TLS and Adding certificates. Please refer [here](https://github.com/jfrog/charts/blob/master/stable/distribution/README.md#establishing-tls-and-adding-certificates)
+* Update router version to `1.4.2`
+
+## [6.1.1] - Jul 13, 2020
+* Added migration step for distribution 1.x to 2.x Appverison
+
+## [6.1.0] - Jul 7, 2020
+* Update Distribution version 2.4.0
+* **IMPORTANT**
+* Added ChartCenter Helm repository in README.
+
+## [6.0.0] - Jun 26, 2020
+* Update postgresql tag version to `10.13.0-debian-10-r38`
+* Update alpine tag version to `3.12`
+* Update busybox tag version to `1.31.1`
+* **IMPORTANT**
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true
+
+## [5.2.4] -  Jun 21, 2020
+* Make the readiness and liveness probes configurable
+
+## [5.2.3] -  Jun 12, 2020
+* Added support for javaopts for distrubutor and distribution via systemyaml
+
+## [5.2.2] -  Jun 11, 2020
+* Added Upgrade Notes in README for 2.x upgrades - https://github.com/jfrog/charts/blob/master/stable/distribution/README.md#special-upgrade-notes
+
+## [5.2.1] -  Jun 1, 2020
+* Fixes Broken upgrades of charts - use `kubectl delete statefulsets <old_statefulset_distribution_name>` and run helm upgrade
+* Readme fixes
+
+## [5.2.0] -  May 27, 2020
+* Update Distribution version 2.3.0
+* Update router version to `1.4.0`
+* Update redis tag version to `5.0.9-debian-10-r31`
+* Update postgresql tag version to `9.6.18-debian-10-r7`
+* Update alpine version to `3.11`
+
+## [5.1.3] - April 24, 2020
+* Add support to db existing secrets
+* Fix broken support if `postgresql.postgresqlPassword` not explicitly set
+
+## [5.1.2] - April 20, 2020
+* Bump router version to `1.3.0`
+* Fix broken support if `redis.password` not explicitly set
+* Bump postgresql tag version to `9.6.17-debian-10-r72` in values.yaml
+* Add support for existingSecret for redis-password
+
+## [5.1.1] - April 10, 2020
+* Update README with helm v3 commands 
+
+## [5.1.0] - April 10, 2020
+* Use dependency charts from `https://charts.bitnami.com/bitnami`
+* Bump postgresql chart version to `8.7.3` in requirements.yaml
+* Bump postgresql tag version to `9.6.17-debian-10-r21` in values.yaml
+
+## [5.0.20] - April 2, 2020
+* Support masterKey and joinKey as secrets
+
+## [5.0.19] - Mar 30, 2020
+* Readme fixes
+
+## [5.0.18] - Mar 23, 2020
+* Use `postgresqlExtendedConf` for setting custom PostgreSQL configuration (instead of `postgresqlConfiguration`)
+
+## [5.0.17] - Mar 17, 2020
+* Changed all single quotes to double quotes in values files
+
+## [5.0.16] - Mar 11, 2020
+* Unified charts public release
+
+## [5.0.15] - Mar 9, 2020
+* Removed unused `ingress` code + fixes
+
+## [5.0.14] - Mar 4, 2020
+* Add support for  disabling `consoleLog`  in `system.yaml` file
+
+## [5.0.13] - Feb 27, 2020
+* Add an annotation with the checksum of the `system.yaml` file to make sure the pods restart after a configuration change
+
+## [5.0.12] - Feb 26, 2020
+* Update Distribution to version `2.2.0` 
+
+## [5.0.11] - Feb 24, 2020
+* Update Distribution to version `2.0.3` 
+
 ## [3.6.0] - Feb 16, 2020
 * Add support for distributor `customVolumeMounts` and move `customVolumes` to `common`
 

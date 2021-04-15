@@ -14,7 +14,7 @@ main() {
         ${SHELLCHECK_CMD} "${f}"
     done
 
-    echo "Done Scripts Linting!"
+    echo "Done Scripts Linting."
 }
 
 main

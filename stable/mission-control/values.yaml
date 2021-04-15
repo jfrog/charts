@@ -3,8 +3,57 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
-initContainerImage: "alpine:3.8"
+global:
+  # imageRegistry:
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.missionControl or image tags
+  ## Note: Order of preference is 1) global.versions 2) image tags 3) Chart.AppVersion
+  versions: {}
+  #   missionControl:
+  # jfrogUrl:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customInitContainersBegin: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+## Partially override mission-control.fullname template (eg: <releaseName>-<nameOverride>)
+# nameOverride:
+
+## Fully override mission-control.fullname template
+# fullnameOverride:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+
+# For supporting pulling from private registries
+imagePullSecrets:
+  # - myRegistryKeySecretName
+
+## Mission-control systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring mission-control
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Mission+Control+System+YAML
+## Note: This will override existing (default) .Values.missionControl.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
+
 # Init containers
 initContainers:
   resources: {}
@@ -17,13 +66,100 @@ initContainers:
 
 imagePullPolicy: IfNotPresent
 
-uid: 1050
-uname: jfmc
-
-imagePullSecrets:
-
 # For HA
 replicaCount: 1
+
+shared:
+  node:
+    id:
+
+common:
+  uid: 1050
+  gid: 1050
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: data-volume
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: |
+  #  - name: "custom-systemyaml-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'wget -O {{ .Values.missionControl.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+  #        name: data-volume
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
+  # Add custom secrets - secret per file
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
 
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -77,43 +213,51 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: postgres
-      tag: 9.6.11-alpine
+      repository: releases-docker.jfrog.io/postgres
+      tag: 12.5-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
-## Configuration values for the postgresql dependency
+
+## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
-##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresUsername: postgres
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/postgresql
+    tag: 12.5.0-debian-10-r25
+  postgresqlUsername: postgres
+  postgresqlPassword: ""
+  postgresqlDatabase: mission_control
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "1500"
+
   db:
     name: mission_control
     sslmode: "false"
     tablespace: "pg_default"
-    jfmcUsername: jfmc
-    jfisUsername: jfis
-    jfscUsername: jfsc
-    jfexUsername: jfex
-    jfmcPassword:
-    jfisPassword:
-    jfscPassword:
-    jfexPassword:
+    ## Use single user and password for all the services
+    user: mc
+    password: ""
     jfmcSchema: jfmc_server
     jfisSchema: insight_server
     jfscSchema: insight_scheduler
-    jfexSchema: insight_executor
   service:
     port: 5432
   persistence:
     enabled: true
     size: 50Gi
     existingClaim:
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -121,59 +265,50 @@ postgresql:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
 
 ### If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty
 database:
   type: postgresql
-  host:
-  port:
+  driver: org.postgresql.Driver
   ## Please make sure these are created under the provided database
   name: mission_control
   jfisSchema: insight_server
   jfmcSchema: jfmc_server
   jfscSchema: insight_scheduler
-  jfexSchema: insight_executor
-  ## If you would like to use single user and password for all the services
+  ## Use single user and password for all the services
   user:
   password:
+  url:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
   #  user:
-  #    name: "database-creds"
+  #    name: "mc-database-creds"
   #    key: "db-user"
   #  password:
-  #    name: "database-creds"
+  #    name: "mc-database-creds"
   #    key: "db-password"
-  ## If you want to use different credentials for each service
-  ## Mission-Control
-  jfmcUsername: jfmc
-  jfmcPassword:
-  ## Insight-Server
-  jfisUsername: jfis
-  jfisPassword:
-  ## Insight-Scheduler
-  jfscUsername: jfsc
-  jfscPassword:
-  ## Insight-Executor
-  jfexUsername: jfex
-  jfexPassword:
+  #  url:
+  #    name: "mc-database-creds"
+  #    key: "db-url"
+
 
 elasticsearch:
   enabled: true
+  ## certificatesSecretName:
   name: elasticsearch
-  initContainerImage: "alpine:3.6"
+  initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+  configureDockerHost: true
   image:
-    repository: docker.bintray.io/jfrog/elasticsearch-oss-sg
-    tag: 6.6.0
+    registry: releases-docker.jfrog.io
+    repository: jfrog/elasticsearch-oss-sg
+    tag: 7.10.2
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
-  url: http://localhost:9200
-  httpPort: 9200
+  ## By default url is set to localhost:8082 (router)
+  ## If external elasticsearch is used, provide external elasticsearch url and set elasticsearch.enabled=false
+  url: '{{ include "elasticsearch.url" . }}'
   transportPort: 9300
   username: "admin"
   password: "admin"
@@ -182,7 +317,6 @@ elasticsearch:
     networkHost: "0.0.0.0"
     transportHost: "0.0.0.0"
     maxMapCount: 262144
-    minimumMasterNodes: 1
 
   persistence:
     enabled: true
@@ -216,63 +350,66 @@ elasticsearch:
   #    memory: "2.5Gi"
   #    cpu: "500m"
 
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cluster/health
+        port: 9200
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cluster/health
+        port: 9200
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /_cluster/health
+        port: 9200
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+
 podRestartTime:
 
-ingress:
-  enabled: false
-  defaultBackend:
-    enabled: true
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts: []
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-  additionalRules: []
+applicationConfigs: {}
 
 logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    registry: releases-docker.jfrog.io
+    repository: busybox
+    tag: 1.32.1
 
 missionControl:
   name: mission-control
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/mission-control
+    # tag:
+  appContext: mc
   appName: jfmc-server
-  home: /var/opt/jfrog/mission-control
-  image: docker.bintray.io/jfrog/mission-control
+  home: /var/opt/jfrog/mc
+  labels: {}
+
+  # env:
+
   # Set this to true if you want to override credentials in mission-control.properties on startup
   propertyOverride: true
-  ## Note that by default we use appVersion to get image tag
-  # version:
-
-  ## Add custom init containers
-  customInitContainers: |
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
-  #        name: mission-control-data
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
 
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
@@ -281,9 +418,9 @@ missionControl:
   # - init-debug.log
   # - init-err.log
   # - init.log
-  # - jfmc-server-debug.log
-  # - jfmc-server-err.log
-  # - jfmc-server.log
+  # - mc-debug.log
+  # - mc-err.log
+  # - mc.log
   # - monitoring.log
 
   # Loggers containers resources
@@ -295,15 +432,28 @@ missionControl:
   #    memory: "128Mi"
   #    cpu: "50m"
 
-  ## Mission Control requires a unique mc.key
+  ## Mission Control requires a unique master.key
   # This will be used to encript sensitive data to be stored in database
   ## You can generate one with the command:
-  ## 'openssl rand -hex 16'
-  ## Pass it to helm with '--set missionControl.mcKey=${MC_KEY}'
-  ## IMPORTANT: You should NOT use the example mcKey for a production deployment!
-  mcKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## 'openssl rand -hex 32'
+  ## Pass it to helm with '--set missionControl.masterKey=${MASTER_KEY}'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
 
-  missionControlUrl:
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
+  ## If false, all service console logs will not redirect to a common console.log
+  consoleLog: false
+  ## Artifactory URL . Mandatory
+  jfrogUrl:
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
   podRestartTime:
   repository: jfrog-mission-control
   package: mc-docker-installer
@@ -312,6 +462,82 @@ missionControl:
   osType: "NA"
   osDist: "NA"
 
+  systemYaml: |
+    shared:
+      logging:
+        consoleLog:
+          enabled: {{ .Values.missionControl.consoleLog }}
+      jfrogUrl: "{{ tpl (required "\n\nmissionControl.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "mission-control.jfrogUrl" .)) . }}"
+      elasticsearch:
+        username: {{ .Values.elasticsearch.username }}
+        password: {{ .Values.elasticsearch.password }}
+      {{- if and .Values.elasticsearch.enabled  (gt (int .Values.replicaCount) 1)  }}
+        clusterSetup: "yes"
+      {{- end }}
+      {{- if not .Values.elasticsearch.enabled }}
+        external: true
+        url: {{ tpl .Values.elasticsearch.url . }}
+      {{- end }}
+      database:
+      {{- if .Values.postgresql.enabled }}
+        type: postgresql
+        driver: org.postgresql.Driver
+        url: jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.db.name }}?sslmode=disable
+      {{ else }}
+        type: "{{ .Values.database.type }}"
+        driver: "{{ .Values.database.driver }}"
+      {{- end }}
+
+    mc:
+    {{- if .Values.postgresql.enabled }}
+      database:
+        username: {{ .Values.postgresql.db.user }}
+        schema: {{ .Values.postgresql.db.jfmcSchema }}
+    {{- end }}
+      extraJavaOpts: >
+      {{- with .Values.missionControl.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+
+    insight-scheduler:
+    {{- if .Values.postgresql.enabled }}
+      database:
+        username: {{ .Values.postgresql.db.user }}
+        schema: {{ .Values.postgresql.db.jfscSchema }}
+    {{- end }}
+      extraJavaOpts: >
+      {{- with .Values.insightScheduler.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+
+    insight-server:
+    {{- if .Values.postgresql.enabled }}
+      database:
+        username: {{ .Values.postgresql.db.user }}
+        schema: {{ .Values.postgresql.db.jfisSchema }}
+    {{- end }}
+      clients:
+        elasticsearch:
+          connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.connectionWaitTimeoutSecs }}
+          searchguard:
+            connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.searchguard.connectionWaitTimeoutSecs }}
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -319,7 +545,7 @@ missionControl:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
 
-    mountPath: "/var/opt/jfrog/mission-control"
+    mountPath: "/var/opt/jfrog/mc"
     accessMode: ReadWriteOnce
     size: 100Gi
     ## Mission Control data Persistent Volume Storage Class
@@ -333,8 +559,8 @@ missionControl:
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts:
-    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
+  javaOpts: {}
+  #  other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
   #  xms: "2g"
   #  xmx: "3g"
   resources: {}
@@ -351,23 +577,70 @@ missionControl:
   affinity: {}
 
   service:
-    type: LoadBalancer
+    type: ClusterIP
     annotations: {}
   internalPort: 8080
   externalPort: 80
 
-  ## Extra post-start command to run extra commands after container starts
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  ## Extra pre start command to run extra commands before container starts
   # preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
   # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
 
 insightServer:
   name: insight-server
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/insight-server
+    # tag:
+  appContext: insight
   home: /opt/jfrog
-  image: docker.bintray.io/jfrog/insight-server
-  ## Note that by default we use appVersion to get image tag
-  # version:
-  internalHttpPort: 8082
+  internalPort: 8087
+  ## Timeout in seconds (default 60 seconds) for which insightServer waits for elasticsearch to comeup.
+  clients:
+    elasticsearch:
+      connectionWaitTimeoutSecs: 180
+      searchguard:
+        connectionWaitTimeoutSecs: 1800
   ## This can be used to whitelist the range of IPs allowed to be served by Insight Server service
   ## The value must follow CIDR format
   allowIP: "0.0.0.0/0"
@@ -387,7 +660,7 @@ insightServer:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
 
-    mountPath: "/opt/jfrog/insight-server/logs"
+    mountPath: "/var/opt/jfrog/mc"
     accessMode: ReadWriteOnce
     size: 10Gi
     ## Insight Server logs Persistent Volume Storage Class
@@ -412,12 +685,53 @@ insightServer:
   #    memory: "128Mi"
   #    cpu: "50m"
 
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
 insightScheduler:
   name: insight-scheduler
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/insight-scheduler
+    # tag:
+  appContext: insight-scheduler
   home: /opt/jfrog
-  image: docker.bintray.io/jfrog/insight-scheduler
-  ## Note that by default we use appVersion to get image tag
-  # version:
   internalPort: 8085
 
   ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
@@ -442,7 +756,7 @@ insightScheduler:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
 
-    mountPath: "/opt/jfrog/insight-scheduler/logs"
+    mountPath: "/var/opt/jfrog/mc"
     accessMode: ReadWriteOnce
     size: 10Gi
     ## Insight Scheduler logs Persistent Volume Storage Class
@@ -468,58 +782,188 @@ insightScheduler:
   #    memory: "128Mi"
   #    cpu: "50m"
 
-insightExecutor:
-  name: insight-executor
-  home: /opt/jfrog
-  image: docker.bintray.io/jfrog/insight-executor
-  ## Note that by default we use appVersion to get image tag
-  # version:
-  internalPort: 8087
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
 
-  ## Control Java options (JFMC_EXTRA_JAVA_OPTS)
-  ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts: {}
-  #  other:
-  #  xms: "500m"
-  #  xmx: "2g"
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+        - curl
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    tag: 7.17.2
+    imagePullPolicy: IfNotPresent
+  internalPort: 8082
+  externalPort: 8082
+  tlsEnabled: false
   resources: {}
   #  requests:
-  #    memory: "500Mi"
+  #    memory: "100Mi"
   #    cpu: "100m"
   #  limits:
-  #    memory: "2.5Gi"
+  #    memory: "1Gi"
   #    cpu: "1"
 
-  # Persistence for the logs
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 10
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "mission-control.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
   persistence:
-    enabled: false
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    mountPath: "/opt/jfrog/insight-executor/logs"
     accessMode: ReadWriteOnce
-    size: 10Gi
-    ## Insight Executor logs Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
+    mountPath: "/var/opt/jfrog/router"
+    size: 5Gi
 
-  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
-  # - insight-executor.log
-  # - access.log
 
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Filebeat Sidecar container
+## The provided filebeat configuration is for Mission-Control logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: false
+  name: mission-control-filebeat
+  image:
+    repository: "docker.elastic.co/beats/filebeat"
+    version: 7.9.2
+  logstashUrl: "logstash:5044"
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources: {}
+#    requests:
+#      memory: "100Mi"
+#      cpu: "100m"
+#    limits:
+#      memory: "100Mi"
+#      cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.missionControl.persistence.mountPath }}/log/filebeat
+    name: missionControl-filebeat
+    queue.spool: ~
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.missionControl.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfmc"
+        log_type: "missionControl"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"

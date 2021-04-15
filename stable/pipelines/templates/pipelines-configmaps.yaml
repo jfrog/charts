@@ -1,0 +1,10 @@
+{{- if .Values.pipelines.configMaps -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipelines.fullname" . }}-configmaps
+  labels:
+    {{- include "pipelines.labels" . | nindent 4 }}
+data:
+{{ tpl .Values.pipelines.configMaps . | nindent 2 }}
+{{- end -}}

@@ -1,32 +1,28 @@
 # CI values for Mission-control.
 
-# rbac:
-#   create: false
-#
-# serviceAccount:
-#   create: false
-
+# If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
 missionControl:
-  loggers:
-    - jfmc-server.log
-    - http.log
+  jfrogUrl: http://artifactory-artifactory.rt:8082
+  javaOpts:
+    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
+    xms: "500m"
+    xmx: "1000m"
 
 insightServer:
-  loggers:
-    - insight-server.log
+  javaOpts:
+    xms: "500m"
+    xmx: "1000m"
 
 insightScheduler:
-  loggers:
-    - insight-scheduler.log
-
-insightExecutor:
-  loggers:
-    - insight-executor.log
+  javaOpts:
+    xms: "500m"
+    xmx: "1000m"
 
 postgresql:
-  postgresPassword: postgres
+  image:
+    tag: 9.6.15-debian-9-r91
+  postgresqlPassword: password
   db:
-    jfisPassword: password
-    jfscPassword: password
-    jfexPassword: password
-    jfmcPassword: password
+    password: password

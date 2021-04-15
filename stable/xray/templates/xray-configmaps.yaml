@@ -1,0 +1,13 @@
+{{- if .Values.common.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "xray.fullname" . }}-configmaps
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+{{ tpl .Values.common.configMaps . | indent 2 }}
+{{- end }}

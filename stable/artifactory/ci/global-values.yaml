@@ -1,0 +1,47 @@
+databaseUpgradeReady: true
+# To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
+postgresql:
+  postgresqlPassword: password
+global:
+  versions:
+    artifactory: 7.12.8
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  customInitContainers: |
+   - name: "custom-setup"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: artifactory-volume
+  # Add custom volumes
+  customVolumes: |
+   - name: custom-script
+     emptyDir:
+       sizeLimit: 100Mi
+  # Add custom volumesMounts
+  customVolumeMounts: |
+   - name: custom-script
+     mountPath: "/scripts"
+  # Add custom sidecar containers
+  customSidecarContainers: |
+   - name: "sidecar-list-etc"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     securityContext:
+       allowPrivilegeEscalation: false
+     command: ["sh","-c","echo 'Sidecar is running' >> /scripts/sidecar.txt; cat /scripts/sidecar.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scripts"
+         name: custom-script
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"

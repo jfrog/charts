@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
-readonly IMAGE_REPOSITORY="quay.io/helmpack/chart-testing"
+readonly IMAGE_REPOSITORY="releases-docker.jfrog.io/charts-ci"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 # shellcheck source=test/common.sh
@@ -70,7 +70,6 @@ main() {
     trap cleanup EXIT
 
     connect_to_cluster
-    install_tiller
     install_charts
 }
 

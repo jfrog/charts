@@ -1,70 +1,62 @@
-rabbitmq-ha:
-  replicaCount: 4
-  rabbitmqMemoryHighWatermark: 2000MB
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "2Gi"
-      cpu: "2"
-mongodb:
-  resources:
-    requests:
-      memory: "12Gi"
-      cpu: "1"
-    limits:
-      memory: "12Gi"
-      cpu: "3"
-  ## Make sure the --wiredTigerCacheSizeGB is
-  ## no more than half the memory limit!
-  ## This is critical to protect against
-  ## OOMKill by Kubernetes!
-  mongodbExtraFlags:
-    - "--wiredTigerCacheSizeGB=6"
-postgresql:
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "3Gi"
-      cpu: "2"
-server:
-  replicaCount: 4
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "2Gi"
-      cpu: "2"
-analysis:
-  replicaCount: 4
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "2Gi"
-      cpu: "2"
-persist:
-  replicaCount: 4
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "2Gi"
-      cpu: "2"
-indexer:
-  replicaCount: 4
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "2Gi"
-      cpu: "2"
+replicaCount: 7
+common:
   persistence:
     size: 500Gi
+rabbitmq:
+  replicaCount: 3
+  schedulers: "4"
+  vm_memory_high_watermark_absolute: 2500MB
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "3Gi"
+      cpu: "3"
+
+postgresql:
+  postgresqlExtendedConf:
+    maxConnections: "600"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1"
+    limits:
+      memory: "6Gi"
+      cpu: "6"
+
+server:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "100m"
+    limits:
+      memory: "10Gi"
+      cpu: "10"
+
+analysis:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "10Gi"
+      cpu: "10"
+
+persist:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "10Gi"
+      cpu: "10"
+
+indexer:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "10Gi"
+      cpu: "10"

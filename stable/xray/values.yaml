@@ -3,10 +3,134 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# General
+global:
+  # imageRegistry: releases-docker.jfrog.io
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.xray, common.xrayVersion or image tags
+  ## Note: Order of preference is 1) global.versions 2) common.xrayVersion 3) image tags 4) Chart.AppVersion
+  versions: {}
+  #   xray:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+
+  # customInitContainersBegin: |
+
+  # customInitContainers: |
+
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customSidecarContainers: |
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
 imagePullPolicy: IfNotPresent
-initContainerImage: "alpine:3.10"
+
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
+
+# For supporting pulling from private registries
 imagePullSecrets:
+  # - myRegistryKeySecretName
+
+## Xray systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring xray
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Xray+System+YAML
+## Note: This will override existing (default) .Values.xray.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
+
+replicaCount: 1
+
+xray:
+  name: xray
+  labels: {}
+  persistence:
+    mountPath: /var/opt/jfrog/xray
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+  ## Xray requires a unique master key
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 32'
+  ## Pass it to helm with '--set xray.masterKey=${MASTER_KEY}'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
+
+  ## Join Key to connect to main Artifactory. Mandatory
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
+  ## If false, all service console logs will not redirect to a common console.log
+  consoleLog: false
+  ## Artifactory URL . Mandatory
+  jfrogUrl:
+
+  ## Mongo details are used only for Manual migration of data from Mongo to Postgres in Xray 2.x to 3.x
+  # mongoUrl:
+  # mongoUsername:
+  # mongoPassword:
+
+  systemYaml: |
+    configVersion: 1
+    shared:
+      logging:
+        consoleLog:
+          enabled: {{ .Values.xray.consoleLog }}
+      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "xray.jfrogUrl" .)) . }}"
+      database:
+      {{- if .Values.postgresql.enabled }}
+        type: "postgresql"
+        driver: "org.postgresql.Driver"
+        username: "{{ .Values.postgresql.postgresqlUsername }}"
+        url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
+      {{- else }}
+        type: {{ .Values.database.type }}
+        driver: {{ .Values.database.driver }}
+      {{- end }}
+      {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+      rabbitMq:
+        erlangCookie:
+          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+      {{- if not .Values.rabbitmq.external.secrets }}
+        url: "{{ tpl .Values.rabbitmq.external.url . }}"
+        username: "{{ .Values.rabbitmq.external.username }}"
+        password: "{{ .Values.rabbitmq.external.password }}"
+      {{- end }}
+      {{- end }}
+      {{- if .Values.xray.mongoUrl }}
+      mongo:
+        url: "{{ .Values.xray.mongoUrl }}"
+        username: "{{ .Values.xray.mongoUsername }}"
+        password: "{{ .Values.xray.mongoPassword }}"
+      {{- end }}
+    server:
+      mailServer: "{{ .Values.server.mailServer }}"
+      indexAllBuilds: "{{ .Values.server.indexAllBuilds }}"
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -46,16 +170,6 @@ networkpolicy:
   #     - podSelector:
   #         matchLabels:
   #           app: xray
-  # Uncomment to allow only xray pods to communicate with mongo (if mongodb.enabled is true)
-  # - name: mongo
-  #   podSelector:
-  #     matchLabels:
-  #       app: mongodb
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: xray
   # Uncomment to allow only xray pods to communicate with rabbitmq (if rabbitmq.enabled is true)
   # - name: rabbitmq
   #   podSelector:
@@ -66,36 +180,19 @@ networkpolicy:
   #     - podSelector:
   #         matchLabels:
   #           app: xray
-  # Uncomment to allow only xray pods to communicate with rabbitmq-ha (if rabbitmq-ha.enabled is true)
-  # - name: rabbitmq-ha
-  #   podSelector:
-  #     matchLabels:
-  #       app: rabbitmq-ha
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: xray
 
-ingress:
+## Affinity rules
+nodeSelector: {}
+affinity: {}
+tolerations: []
+
+## Apply horizontal pod auto scaling on Xray pods
+## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
   enabled: false
-  defaultBackend:
-    enabled: true
-  # Used to create an Ingress record.
-  hosts: []
-  annotations: {}
-  # kubernetes.io/ingress.class: nginx
-  # kubernetes.io/tls-acme: "true"
-  tls: []
-  # Secrets must be manually created in the namespace.
-  # - secretName: chart-example-tls
-  #   hosts:
-  #     - xray.domain.example
-# labels:
-  # traffic-type: external
-  # traffic-type: internal
-
-  additionalRules: []
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -112,11 +209,15 @@ serviceAccount:
 ##
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "xraydb"
-  postgresUser: "xray"
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/postgresql
+    tag: 12.5.0-debian-10-r25
+  postgresqlUsername: xray
+  postgresqlPassword: ""
+  postgresqlDatabase: xraydb
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "500"
   service:
     port: 5432
@@ -124,6 +225,14 @@ postgresql:
     enabled: true
     size: 50Gi
     existingClaim:
+  master:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  slave:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
   #    memory: "1Gi"
@@ -131,131 +240,154 @@ postgresql:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
 
-## Configuration values for the mongodb dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/mongodb/README.md
-##
-mongodb:
-  enabled: true
-  image:
-    tag: 3.6.3
-    pullPolicy: IfNotPresent
-  persistence:
-    size: 50Gi
-  resources: {}
-  # The following values are suggested to be used when working with mongoDB and Xray. The DB sync in Xray needs more resources than the defaults in mongoDB.
-  #  requests:
-  #    memory: "6Gi"
-  #    cpu: "2"
-  #  limits:
-  #    memory: "6Gi"
-  #    cpu: "2"
-  ## Make sure the limits.memory value is the same as the requests.memory value!
-  ## Make sure the --wiredTigerCacheSizeGB is no more than half the memory limit!
-  ## This is critical to protect against OOMKill by Kubernetes!
-  mongodbExtraFlags:
-  # The wiredTiger is suggested to be set to 3GB.
-  - "--wiredTigerCacheSizeGB=1"
-  mongodbRootPassword:
-  mongodbUsername: xray
-  mongodbPassword:
-  mongodbDatabase: xray
-#  livenessProbe:
-#    initialDelaySeconds: 60
-#    periodSeconds: 10
-#  readinessProbe:
-#    initialDelaySeconds: 30
-#    periodSeconds: 30
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
-
-# RabbitMQ HA
-## Configuration values for the rabbitmq-ha dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq-ha/README.md
-##
-rabbitmq-ha:
-  enabled: true
-  replicaCount: 1
-  rabbitmqUsername: guest
-  rabbitmqPassword:
-  rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
-  rabbitmqMemoryHighWatermark: 500MB
-  rabbitmqNodePort: 5672
-  definitions:
-    policies: |-
-      {
-        "name": "ha-all",
-        "apply-to": "all",
-        "pattern": ".*",
-        "vhost": "/",
-        "definition": {
-          "ha-mode": "all",
-          "ha-sync-mode": "automatic",
-        }
-      }
-  resources: {}
-  #  requests:
-  #    memory: "250Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "550Mi"
-  #    cpu: "200m"
-  persistentVolume:
-    enabled: true
-    size: 20Gi
-  rbac:
-    create: true
-  nodeSelector: {}
-  tolerations: []
+## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
+database:
+  type: "postgresql"
+  driver: "org.postgresql.Driver"
+  ## If you would like this chart to create the secret containing the database url, user, password - use these below values
+  url:
+  user:
+  password:
+  ## When working with Azure managed PG you have to provide the actualUsername. The application will pick actualUsername and will use it in some cases where it is needed
+  actualUsername:
+  ## If you have existing Kubernetes secrets containing db credentials, use
+  ## these values
+  secrets: {}
+  #  user:
+  #    name: "xray-database-creds"
+  #    key: "db-user"
+  #  password:
+  #    name: "xray-database-creds"
+  #    key: "db-password"
+  #  url:
+  #    name: "xray-database-creds"
+  #    key: "db-url"
+  #  actualUsername:
+  #    name: "xray-database-creds"
+  #    key: "db-actualUsername"
 
 # RabbitMQ
 ## Configuration values for the rabbitmq dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/rabbitmq/README.md
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/rabbitmq/README.md
 ##
 rabbitmq:
-  enabled: false
-  rabbitmqErlangCookie: XRAYRABBITMQCLUSTER
-  rabbitmqMemoryHighWatermark: 500MB
-  rabbitmqNodePort: 5672
-  rabbitmqUsername: user
-  rabbitmqPassword:
-  persistentVolume:
-    enabled: true
-    size: 20Gi
+  enabled: true
+  replicaCount: 1
   rbac:
     create: true
-
-# Logger containers
-logger:
   image:
-    repository: 'busybox'
-    tag: '1.30'
+    registry: releases-docker.jfrog.io
+    repository: bitnami/rabbitmq
+    tag: 3.8.9-debian-10-r58
+  auth:
+    username: guest
+    password: ""
+    ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
+    # existingPasswordSecret: <name-of-existing-secret>
+    erlangCookie: XRAYRABBITMQCLUSTER
+    # existingErlangSecret: <name-of-existing-secret>
+  maxAvailableSchedulers: null
+  onlineSchedulers: null
+  ## Additional environment variables to set
+  ## ref: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#adding-extra-environment-variables
+  extraEnvVars:
+    - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+      value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
+  service:
+    port: 5672
+  external:
+    username:
+    password:
+    url:
+    erlangCookie:
+    secrets: {}
+    #  username:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "username"
+    #  password:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "password"
+    #  url:
+    #    name: "xray-rabbitmq-creds"
+    #    key: "url"
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 20Gi
+  ## Load Definitions - https://www.rabbitmq.com/management.html#load-definitions
+  # ref : https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions
+  extraSecrets:
+    load-definition:
+      load_definition.json: |
+        {
+          "vhosts": [
+            {
+              "name": "/"
+            }
+          ],
+          "policies": [
+            {
+              "name": "ha-all",
+              "apply-to": "all",
+              "pattern": ".*",
+              "vhost": "/",
+              "definition": {
+                "ha-mode": "all",
+                "ha-sync-mode": "automatic",
+              }
+            }
+          ]
+        }
+  loadDefinition:
+    enabled: true
+    existingSecret: load-definition
+  extraConfiguration: |
+    management.load_definitions = /app/load_definition.json
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 # Common Xray settings
 common:
   ## Note that by default we use appVersion to get image tag
   # xrayVersion:
-  xrayConfigPath: /var/opt/jfrog/xray/data
   xrayUserId: 1035
   xrayGroupId: 1035
-  ## Xray requires a unique master key
-  ## You can generate one with the command:
-  ## 'openssl rand -hex 32'
-  ## Pass it to helm with '--set common.masterKey=${MASTER_KEY}'
-  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
-  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-  # masterKeySecretName:
+
   # Xray configuration to be written to xray_config.yaml
   xrayConfig:
     stdOutEnabled: true
     indexAllBuilds: false
+    support-router: true
+
+  # Use rabbitmq connection config from environment variables.
+  # If false, then connection details should be set directly in system.yaml (systemYaml section).
+  # When using external rabbitmq, set this to false
+  rabbitmq:
+    connectionConfigFromEnvironment: true
 
   ## Custom command to run before Xray startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
+
+  ## Add custom volumes
+  customVolumes: |
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps to Xray
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
 
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
@@ -272,288 +404,43 @@ common:
 
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |
-  #  - name: "custom-setup"
+  #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.common.xrayConfigPath }}/example-custom-setup'
+  #      - 'wget -O {{ .Values.xray.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
-  #      - mountPath: "{{ .Values.common.xrayConfigPath }}"
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
   #        name: data-volume
 
-# For setting up external services, must pass the connection URL for them
-global:
-  mongoUrl:
-  postgresqlUrl:
-  # Kubernetes secret with Postgres TLS certificates
-  postgresqlTlsSecret:
-
-analysis:
-  name: xray-analysis
-  image: docker.bintray.io/jfrog/xray-analysis
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
-  replicaCount: 1
-  internalPort: 7000
-  externalPort: 7000
-  service:
-    type: ClusterIP
-
-  annotations: {}
-
-  livenessProbe:
-    enabled: true
-    path: /debug/pprof/
-    initialDelaySeconds: 90
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    path: /debug/pprof/
-    initialDelaySeconds: 60
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 10
-    successThreshold: 1
-
-  ## Container storage limit
-  persistence:
-    size: 10Gi
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-
-  ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
-  preStartCommand:
-
-  loggers: []
-  # - xray_analysis.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
-
-  resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
-
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
-
-indexer:
-  name: xray-indexer
-  image: docker.bintray.io/jfrog/xray-indexer
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
-  replicaCount: 1
-  internalPort: 7002
-  externalPort: 7002
-  service:
-    type: ClusterIP
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-  ## Add custom volumesMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-
-  annotations: {}
-
-  livenessProbe:
-    enabled: true
-    path: /debug/pprof/
-    initialDelaySeconds: 90
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    path: /debug/pprof/
-    initialDelaySeconds: 60
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 10
-    successThreshold: 1
-
-  persistence:
-    enabled: true
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    accessMode: ReadWriteOnce
-    ## Container storage limit if persistence.enabled: false
-    ## Otherwise PVC size
-    size: 50Gi
-    ## indexer data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-
-  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
-  preStartCommand:
-
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
-  # - xray_indexer.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
-
-  resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
-
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
-
-persist:
-  name: xray-persist
-  image: docker.bintray.io/jfrog/xray-persist
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
-  replicaCount: 1
-  internalPort: 7003
-  externalPort: 7003
-  service:
-    type: ClusterIP
-
-  annotations: {}
-
-  livenessProbe:
-    enabled: true
-    path: /debug/pprof/
-    initialDelaySeconds: 90
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    path: /debug/pprof/
-    initialDelaySeconds: 60
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 10
-    successThreshold: 1
-
-  ## Container storage limit
-  persistence:
-    size: 10Gi
-
-  ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
-  preStartCommand:
-
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
-  # - xray_persist.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
-
-  resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
-
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
-
-server:
-  name: xray-server
-  image: docker.bintray.io/jfrog/xray-server
-  updateStrategy: RollingUpdate
-  podManagementPolicy: Parallel
-  replicaCount: 1
-  internalPort: 8000
-  externalPort: 80
-  annotations: {}
-
-  ## Add custom volumes
-  customVolumes: |
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
-  ## Add custom volumesMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-
-  service:
-    type: LoadBalancer
-    name: xray
-    annotations: {}
-    # external-dns.alpha.kubernetes.io/hostname:  example.org
-    # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
-    # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
-
-  livenessProbe:
-    enabled: true
-    path: /web/
-    initialDelaySeconds: 90
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 3
-    successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    path: /web/
-    initialDelaySeconds: 60
-    periodSeconds: 10
-    timeoutSeconds: 1
-    failureThreshold: 10
-    successThreshold: 1
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  # - The provided example shows running container as root (id 0)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
 
   persistence:
     enabled: true
@@ -575,24 +462,61 @@ server:
     ##
     # storageClass: "-"
 
-  ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
+
+analysis:
+  name: xray-analysis
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-analysis
+    # tag:
+  internalPort: 7000
+  externalPort: 7000
+  annotations: {}
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.analysis.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.analysis.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.analysis.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
   preStartCommand:
-
-  # Whitelist IPs allowed to LoadBalancer type services
-  # Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
-  loadBalancerSourceRanges: []
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
-  # - xray_server.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
 
   resources: {}
   #  requests:
@@ -602,6 +526,355 @@ server:
   #    memory: "2Gi"
   #    cpu: "1"
 
-  nodeSelector: {}
-  affinity: {}
-  tolerations: []
+indexer:
+  name: xray-indexer
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-indexer
+    # tag:
+  internalPort: 7002
+  externalPort: 7002
+  annotations: {}
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.indexer.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.indexer.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.indexer.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+
+persist:
+  name: xray-persist
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-persist
+    # tag:
+  internalPort: 7003
+  externalPort: 7003
+  annotations: {}
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.persist.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.persist.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.persist.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+
+server:
+  name: xray-server
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-server
+    # tag:
+  internalPort: 8000
+  externalPort: 80
+  annotations: {}
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  service:
+    type: ClusterIP
+    name: xray
+    annotations: {}
+    ## Provide additional spec to xray service
+    ## Example:
+    ## additionalSpec: |
+    ##   customKey: customVal
+    ##
+    additionalSpec: |
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.server.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.server.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        port: {{ .Values.server.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    tag: 7.17.2
+    imagePullPolicy: IfNotPresent
+  internalPort: 8082
+  externalPort: 8082
+  tlsEnabled: false
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  annotations: {}
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "xray.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "xray.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "xray.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
+
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+
+# Filebeat Sidecar container
+## The provided filebeat configuration is for Xray logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: false
+  name: xray-filebeat
+  image:
+    repository: "docker.elastic.co/beats/filebeat"
+    version: 7.9.2
+  logstashUrl: "logstash:5044"
+
+  annotations: {}
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.xray.persistence.mountPath }}/log/filebeat
+    name: xray-filebeat
+    queue.spool: ~
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.xray.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfxr"
+        log_type: "xray"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/xray-values.yaml
+additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"

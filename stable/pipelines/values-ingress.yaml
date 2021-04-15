@@ -1,0 +1,93 @@
+# Override values for pipelines.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+pipelines:
+
+  jfrogUrl: https://artifactory.example.com
+  jfrogUrlUI: https://artifactory.example.com
+
+  replicaCount: 1
+
+  ## JFrog Pipelines API server
+  api:
+
+    ingress:
+      enabled: true
+      annotations:
+        ## If NOT using letsencrypt, you can omit these two lines
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        kubernetes.io/tls-acme: "true"
+        ## If NOT using letsencrypt, you can omit two lines above
+
+        ingress.kubernetes.io/force-ssl-redirect: "true"
+        ingress.kubernetes.io/proxy-body-size: "0"
+        ingress.kubernetes.io/proxy-read-timeout: "600"
+        ingress.kubernetes.io/proxy-send-timeout: "600"
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+        ## Set a custom whitelist IP CIDRs. Comma delimited.
+        # nginx.ingress.kubernetes.io/whitelist-source-range: "1.2.3.4/32,2.3.4.5/32"
+      path: /
+      hosts:
+        - pipelines-api.example.com    
+      tls:
+        - secretName: pipelines-api.example.com
+          hosts:
+            - pipelines-api.example.com
+
+  ## JFrog Pipelines web server
+  www:
+
+    ingress:
+      enabled: true
+      annotations:
+        ## If NOT using letsencrypt, you can omit these two lines
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        kubernetes.io/tls-acme: "true"
+        ## If NOT using letsencrypt, you can omit two lines above
+
+        ingress.kubernetes.io/force-ssl-redirect: "true"
+        ingress.kubernetes.io/proxy-body-size: "0"
+        ingress.kubernetes.io/proxy-read-timeout: "600"
+        ingress.kubernetes.io/proxy-send-timeout: "600"
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+        ## Set a custom whitelist IP CIDRs. Comma delimited.
+        # nginx.ingress.kubernetes.io/whitelist-source-range: "1.2.3.4/32,2.3.4.5/32"
+      path: /
+      hosts:
+        - pipelines.example.com    
+      tls:
+        - secretName: pipelines.example.com
+          hosts:
+            - pipelines.example.com
+
+## RabbitMQ server
+rabbitmq:
+
+  ingress:
+    enabled: true
+    
+    hostname: pipelines-msg.example.com
+    path: /
+    tls: true
+    existingSecret: pipelines-msg.example.com
+
+    annotations:
+      ## If NOT using letsencrypt, you can omit these two lines
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      kubernetes.io/tls-acme: "true"
+      ## If NOT using letsencrypt, you can omit two lines above
+      
+      ingress.kubernetes.io/force-ssl-redirect: "true"
+      ingress.kubernetes.io/proxy-body-size: "0"
+      ingress.kubernetes.io/proxy-read-timeout: "600"
+      ingress.kubernetes.io/proxy-send-timeout: "600"
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+
+      ## Set a custom whitelist IP CIDRs. Comma delimited.
+      # nginx.ingress.kubernetes.io/whitelist-source-range: "1.2.3.4/32,2.3.4.5/32"

@@ -3,11 +3,60 @@
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
 
-# Common
-initContainerImage: "alpine:3.8"
+global:
+  # imageRegistry:
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.distribution or image tags
+  ## Note: Order of preference is 1) global.versions 2) image tags 3) Chart.AppVersion
+  versions: {}
+  #   distribution:
+  # jfrogUrl:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customInitContainers: |
+
+  # customInitContainersBegin: |
+
+  # customSidecarContainers: |
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+
+# Init containers
+initContainers:
+  resources: {}
+#    requests:
+#      memory: "64Mi"
+#      cpu: "10m"
+#    limits:
+#      memory: "128Mi"
+#      cpu: "250m"
 
 # For supporting pulling from private registries
 imagePullSecrets:
+  # - myRegistryKeySecretName
+
+## Distribution systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring distribution
+## Refer - https://www.jfrog.com/confluence/display/JFROG/Distribution+System+YAML
+## Note: This will override existing (default) .Values.distribution.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+## The dataKey should be the name of the secret data key created.
+  dataKey:
 
 # For HA
 replicaCount: 1
@@ -70,83 +119,74 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
 
-ingress:
-  enabled: false
-  defaultBackend:
-    enabled: true
-  annotations: {}
-  # kubernetes.io/ingress.class: nginx
-  # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts: []
-  tls: []
-  # Secrets must be manually created in the namespace.
-  # - secretName: chart-example-tls
-  #   hosts:
-  #     - distribution.domain.example
-
-  additionalRules: []
-
 # PostgreSQL
-## Configuration values for the postgresql dependency
-## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
-##
+## Configuration values for the PostgreSQL dependency sub-chart
+## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
 postgresql:
   enabled: true
-  imageTag: "9.6.11"
-  postgresDatabase: "distribution"
-  postgresUser: "distribution"
-  postgresPassword:
-  postgresConfig:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/postgresql
+    tag: 12.5.0-debian-10-r25
+  postgresqlUsername: distribution
+  postgresqlPassword: ""
+  postgresqlDatabase: distribution
+  postgresqlExtendedConf:
+    listenAddresses: "'*'"
     maxConnections: "1500"
-  service:
-    port: 5432
   persistence:
     enabled: true
     size: 50Gi
-    existingClaim:
+  service:
+    port: 5432
   resources: {}
-#    requests:
-#      memory: "1Gi"
-#      cpu: "250m"
-#    limits:
-#      memory: "2Gi"
-#      cpu: "1"
+  #  requests:
+  #    memory: "512Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
   nodeSelector: {}
   tolerations: []
   affinity: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
-## specify custom database details here or leave empty and Artifactory will use embedded derby
+## specify custom/external database details here
 database:
-  host:
-  port:
-  database:
+  type: postgresql
+  driver: org.postgresql.Driver
   ## If you would like this chart to create the secret containing the db
   ## password, use these values
+  url:
   user:
   password:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
   #  user:
-  #    name: "database-creds"
+  #    name: "dis-database-creds"
   #    key: "db-user"
   #  password:
-  #    name: "database-creds"
+  #    name: "dis-database-creds"
   #    key: "db-password"
+  #  url:
+  #    name: "dis-database-creds"
+  #    key: "db-url"
+
 
 ## Configuration values for the redis dependency
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
 redis:
-  name: redis
   image:
-    repository: docker.io/bitnami/redis
-    tag: 4.0.11-debian-9
+    registry: releases-docker.jfrog.io
+    repository: bitnami/redis
+    tag: 6.0.9-debian-10-r39
     pullPolicy: IfNotPresent
   port: 6379
-  password:
+  password: ""
+  ## Alternatively, you can use a pre-existing secret with a key called redis-password by specifying existingSecret
+  # existingSecret: <name-of-existing-secret>
   uid: 1001
   serviceAccount:
     create: true
@@ -182,42 +222,21 @@ common:
   #    configMap:
   #      name: custom-script
 
-logger:
-  image:
-    repository: 'busybox'
-    tag: '1.30'
+    ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
 
-distribution:
-  name: distribution
-  image:
-    repository: "docker.bintray.io/jfrog/distribution-distribution"
-    ## Note that by default we use appVersion to get image tag
-    # version:
-    imagePullPolicy: IfNotPresent
-  internalPort: 8080
-  externalPort: 80
-  ## Distribution requires a unique master key
-  ## You can generate one with the command:
-  ## 'openssl rand -hex 32'
-  ## Pass it to helm with '--set distribution.masterKey=${MASTER_KEY}'
-  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
-  masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
-  serviceId:
-  env:
-    artifactoryUrl:
-    btServerUrl:
-    artifactoryCi1Url:
-    artifactoryEdge1Url:
-    artifactoryEdge2Url:
-    artifactoryEdge3Url:
-  service:
-    type: LoadBalancer
-    # Whitelist IPs allowed to LoadBalancer type services
-    # Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
-    loadBalancerSourceRanges: []
+  # Add any list of configmaps to distribution
+  configMaps: |
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
 
-  ## Add custom init containers
-  customInitContainers: |
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: |
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
@@ -228,6 +247,141 @@ distribution:
   #    volumeMounts:
   #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
   #        name: distribution-data
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: |
+  #  - name: "custom-systemyaml-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'wget -O {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: distribution-data
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      allowPrivilegeEscalation: false
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
+logger:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: busybox
+    tag: 1.32.1
+
+distribution:
+  name: distribution
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/distribution-distribution
+    # tag:
+    imagePullPolicy: IfNotPresent
+  internalPort: 8080
+  externalPort: 80
+  ## Distribution requires a unique master key
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 32'
+  ## Pass it to helm with '--set distribution.masterKey=${MASTER_KEY}'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
+
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
+
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
+  ## If false, all service console logs will not redirect to a common console.log
+  consoleLog: false
+  ## Artifactory URL . Mandatory
+  jfrogUrl:
+
+  ## Migration support from 1.x to 2.x app versions
+  migration:
+    enabled: false
+
+  serviceId:
+
+  ## Extra environment variables that can be used to tune Distribution to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: JF_DISTRIBUTION_DATABASE_URL
+  #   value: "jdbc:postgresql://localhost:5432/distribution"
+
+  systemYaml: |
+    shared:
+      logging:
+        consoleLog:
+          enabled: {{ .Values.distribution.consoleLog }}
+      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "distribution.jfrogUrl" .)) . }}"
+      database:
+      {{- if .Values.postgresql.enabled }}
+        type: "postgresql"
+        driver: "org.postgresql.Driver"
+        username: "{{ .Values.postgresql.postgresqlUsername }}"
+        url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+      {{ else }}
+        type: "{{ .Values.database.type }}"
+        driver: "{{ .Values.database.driver }}"
+      {{- end }}
+    distribution:
+      extraJavaOpts: >
+      {{- with .Values.distribution.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+    distributor:
+      extraJavaOpts: >
+      {{- with .Values.distributor.javaOpts }}
+      {{- if .xms }}
+        -Xms{{ .xms }}
+      {{- end }}
+      {{- if .xmx }}
+        -Xmx{{ .xmx }}
+      {{- end }}
+      {{- if .other }}
+        {{ .other }}
+      {{- end }}
+      {{- end }}
+
+  service:
+    type: ClusterIP
 
   ## Add custom volumeMounts
   customVolumeMounts: |
@@ -242,11 +396,52 @@ distribution:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        scheme: HTTP
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        scheme: HTTP
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/ping
+        scheme: HTTP
+        port: {{ .Values.distribution.internalPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
-    xms:
-    xmx:
+  javaOpts: {}
+    # xms: "1g"
+    # xmx: "2g"
+    # other: ""
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -292,11 +487,19 @@ distribution:
 
 distributor:
   name: distributor
+  ## Note that by default we use appVersion to get image tag/version
   image:
-    repository: "docker.bintray.io/jfrog/distribution-distributor"
-    ## Note that by default we use appVersion to get image tag
-    # version:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/distribution-distributor
+    # tag:
     imagePullPolicy: IfNotPresent
+
+  ## Extra environment variables that can be used to tune Distributor to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: JF_DISTRIBUTION_FOREMAN_INACTIVITYTHRESHOLDSECS
+  #   value: "300"
+
   resources: {}
   #  requests:
   #    memory: "2Gi"
@@ -304,11 +507,14 @@ distributor:
   #  limits:
   #    memory: "4Gi"
   #    cpu: "2"
+
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts:
-    xms:
-    xmx:
+  javaOpts: {}
+    # xms: "1g"
+    # xmx: "2g"
+    # other: ""
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -317,7 +523,7 @@ distributor:
     # existingClaim:
 
     accessMode: ReadWriteOnce
-    mountPath: "/var/opt/jfrog/distributor"
+    mountPath: "/var/opt/jfrog/distribution"
     size: 50Gi
     ## distribution data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -356,3 +562,151 @@ distributor:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  foreman:
+    inactivityThresholdSecs:
+
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    tag: 7.17.2
+    imagePullPolicy: IfNotPresent
+  internalPort: 8082
+  externalPort: 8082
+  tlsEnabled: false
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  persistence:
+    accessMode: ReadWriteOnce
+    mountPath: "/var/opt/jfrog/router"
+    size: 5Gi
+
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+shared:
+  node:
+    id:
+
+# Filebeat Sidecar container
+## The provided filebeat configuration is for Distribution logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: false
+  name: distribution-filebeat
+  image:
+    repository: docker.elastic.co/beats/filebeat
+    version: 7.9.2
+  logstashUrl: "logstash:5044"
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources: {}
+#    requests:
+#      memory: "100Mi"
+#      cpu: "100m"
+#    limits:
+#      memory: "100Mi"
+#      cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.distribution.persistence.mountPath }}/log/filebeat
+    name: artifactory-filebeat
+    queue.spool: ~
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.distribution.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfds"
+        log_type: "distribution"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+additionalResources: |
+
+# Adding entries to a Pod's /etc/hosts file
+# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+#  - ip: "127.0.0.1"
+#    hostnames:
+#      - "foo.local"
+#      - "bar.local"
+#  - ip: "10.1.2.3"
+#    hostnames:
+#      - "foo.remote"
+#      - "bar.remote"
