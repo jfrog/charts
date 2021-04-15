@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "artifactory-ha.name" . }}-filebeat-config
+  name: {{ template "artifactory-ha.fullname" . }}-filebeat-config
   labels:
-    app: {{ template "artifactory-ha.name" . }}
+    app: {{ template "artifactory-ha.fullname" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
