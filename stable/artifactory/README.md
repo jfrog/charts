@@ -379,11 +379,6 @@ You can customise other parameters in the same way, by passing them on `helm ins
 
 ### Deleting Artifactory
 
-On helm v2:
-```bash
-helm delete --purge artifactory
-```
-
 On helm v3:
 ```bash
 helm delete artifactory --namespace artifactory
@@ -674,11 +669,6 @@ kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-li
 
 ### Deleting Artifactory
 To delete the Artifactory.
-
-On helm v2:
-```bash
-helm delete --purge artifactory
-```
 
 On helm v3:
 ```bash

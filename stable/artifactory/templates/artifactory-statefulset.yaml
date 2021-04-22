@@ -12,11 +12,11 @@ metadata:
 {{ toYaml . | indent 4 }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version (< 11.x) that has postgresql.image.tag of 9.x or 10.x, make sure to pass the current postgresql.image.tag and set databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 11.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version (< 11.x.x) that has postgresql.image.tag of 9.x or 10.x or 12.x, make sure to pass the current postgresql.image.tag and set databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 12.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory.name" . }}
-  replicas: 1
+  replicas: {{ .Values.artifactory.replicaCount }}
   updateStrategy: {{- toYaml .Values.artifactory.updateStrategy | nindent 4 }}
   selector:
     matchLabels:
@@ -741,7 +741,7 @@ spec:
   {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:
-          name: {{ template "artifactory.name" . }}-filebeat-config
+          name: {{ template "artifactory.fullname" . }}-filebeat-config
   {{- end }}
     {{- if or .Values.artifactory.customVolumes .Values.global.customVolumes }}
 {{ tpl (include "artifactory.customVolumes" .) . | indent 6 }}

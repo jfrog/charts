@@ -790,11 +790,6 @@ kubectl create secret generic my-secret --from-literal=user=${DB_USER} --from-li
 ### Deleting Artifactory
 To delete the Artifactory HA cluster
 
-On helm v2:
-```bash
-helm delete --purge artifactory-ha
-```
-
 On helm v3:
 ```bash
 helm delete artifactory-ha --namespace artifactory-ha

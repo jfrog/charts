@@ -31,6 +31,14 @@ global:
     enabled: false
     # certificateSecretName:
 
+## String to partially override rabbitmq.fullname template (will maintain the release name)
+##
+# nameOverride:
+
+## String to fully override rabbitmq.fullname template
+##
+# fullnameOverride:
+
 initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
 
 installer:
@@ -82,6 +90,8 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
   annotations: {}
+  ## Explicitly mounts the  API token for the service account to the pods
+  automountServiceAccountToken: true
 
 ingress:
   enabled: false
@@ -144,23 +154,24 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
+    tag: 13.2.0-debian-10-r55
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
   postgresqlExtendedConf:
-    listenAddresses: "'*'"
+    listenAddresses: "*"
     maxConnections: "1500"
   persistence:
     enabled: true
-    size: 50Gi
+    size: 200Gi
+    # existingClaim:
   service:
     port: 5432
-  master:
+  primary:
     nodeSelector: {}
     affinity: {}
     tolerations: []
-  slave:
+  readReplicas:
     nodeSelector: {}
     affinity: {}
     tolerations: []

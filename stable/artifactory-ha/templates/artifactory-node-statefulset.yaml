@@ -286,8 +286,6 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
-        - name: JF_SHARED_NODE_PRIMARY
-          value: "false"
         - name: JF_SHARED_NODE_HAENABLED
           value: "true"
 {{- with .Values.artifactory.extraEnvironmentVariables }}
