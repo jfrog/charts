@@ -62,12 +62,6 @@ kubectl delete statefulsets <OLD_RELEASE_NAME>-postgresql
 
 ### Deleting Artifactory CE for C++
 
-On helm v2:
-```bash
-helm delete --purge artifactory-cpp-ce
-```
-
-On helm v3:
 ```bash                                                                                                                                                                 
 helm delete artifactory-cpp-ce --namespace artifactory-cpp-ce                                                                                                                                 
 ``` 
