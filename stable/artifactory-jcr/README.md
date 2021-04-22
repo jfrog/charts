@@ -62,12 +62,6 @@ kubectl delete statefulsets <OLD_RELEASE_NAME>-postgresql
 
 ### Deleting JFrog Container Registry
 
-On helm v2:
-```bash
-helm delete --purge jfrog-container-registry
-```
-
-On helm v3:
 ```bash                                                                                                                                                                 
 helm delete jfrog-container-registry --namespace artifactory-jcr                                                                                                                       
 ```  

@@ -62,12 +62,6 @@ kubectl delete statefulsets <OLD_RELEASE_NAME>-postgresql
 
 ### Deleting Artifactory OSS
 
-On helm v2:
-```bash
-helm delete --purge artifactory-oss
-```
-
-On helm v3:
 ```bash                                                                                                                                                                 
 helm delete artifactory-oss --namespace artifactory-oss                                                                                                                                     
 ``` 

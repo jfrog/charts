@@ -1,8 +1,13 @@
-apiVersion: v1
+apiVersion: v2
+type: application
 name: artifactory-oss
 home: https://www.jfrog.com/artifactory/
-version: 3.8.0
-appVersion: 7.17.5
+version: 4.0.0
+appVersion: 7.18.3
+dependencies:
+  - name: artifactory
+    version: 12.0.0
+    repository: https://charts.jfrog.io/
 description: JFrog Artifactory OSS
 sources:
 - https://github.com/jfrog/charts
