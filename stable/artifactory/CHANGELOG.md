@@ -12,6 +12,7 @@ All changes to this chart will be documented in this file.
 * This chart is only helm v3 compatible.
 * Fixed filebeat-configmap naming
 * Explicitly set ServiceAccount `automountServiceAccountToken` to 'true'
+* Update alpine tag version to `3.13.5`
 
 ## [11.13.2] - April 15, 2021
 * Updated Artifactory version to 7.17.9 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.9)

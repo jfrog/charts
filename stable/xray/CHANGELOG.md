@@ -13,6 +13,7 @@ All changes to this chart will be documented in this file
 * Update Xray to version `3.23.0` - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Xray+Release+Notes#XrayReleaseNotes-Xray3.23)
 * Update rabbitmq tag version to `3.8.14-debian-10-r32`
 * Update router version to `7.17.5`
+* Update alpine tag version to `3.13.5`
 
 ## [7.7.0] - April 6, 2021
 * Update Xray to version `3.22.1`

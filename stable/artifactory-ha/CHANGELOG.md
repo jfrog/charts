@@ -13,6 +13,7 @@ All changes to this chart will be documented in this file.
 * Fix support for Cloud Native HA
 * Fixed filebeat-configmap naming
 * Explicitly set ServiceAccount `automountServiceAccountToken` to 'true'
+* Update alpine tag version to `3.13.5`
 
 ## [4.13.2] - April 15, 2021
 * Updated Artifactory version to 7.17.9 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.9)
