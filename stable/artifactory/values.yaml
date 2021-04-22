@@ -33,8 +33,15 @@ global:
     enabled: false
     # certificateSecretName:
 
+## String to partially override rabbitmq.fullname template (will maintain the release name)
+##
+# nameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
+## String to fully override rabbitmq.fullname template
+##
+# fullnameOverride:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
 
 # Init containers
 initContainers:
@@ -96,6 +103,8 @@ serviceAccount:
   name:
   ## Service Account annotations
   annotations: {}
+  ## Explicitly mounts the API credentials for the Service Account
+  automountServiceAccountToken: true
 
 ingress:
   enabled: false
@@ -157,6 +166,8 @@ logger:
 # Artifactory
 artifactory:
   name: artifactory
+  # For HA installation, set this value > 1.
+  replicaCount: 1
   # Note that by default we use appVersion to get image tag/version
   image:
     registry: releases-docker.jfrog.io
@@ -1333,23 +1344,24 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
+    tag: 13.2.0-debian-10-r55
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
   postgresqlExtendedConf:
-    listenAddresses: "'*'"
+    listenAddresses: "*"
     maxConnections: "1500"
   persistence:
     enabled: true
-    size: 50Gi
+    size: 200Gi
+    # existingClaim:
   service:
     port: 5432
-  master:
+  primary:
     nodeSelector: {}
     affinity: {}
     tolerations: []
-  slave:
+  readReplicas:
     nodeSelector: {}
     affinity: {}
     tolerations: []
