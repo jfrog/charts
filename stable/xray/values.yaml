@@ -30,8 +30,15 @@ global:
     enabled: false
     # certificateSecretName:
 
+## String to partially override rabbitmq.fullname template (will maintain the release name)
+##
+# nameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+## String to fully override rabbitmq.fullname template
+##
+# fullnameOverride:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -212,24 +219,24 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
+    tag: 13.2.0-debian-10-r55
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
   postgresqlExtendedConf:
-    listenAddresses: "'*'"
-    maxConnections: "500"
+    listenAddresses: "*"
+    maxConnections: "1500"
   service:
     port: 5432
   persistence:
     enabled: true
-    size: 50Gi
-    existingClaim:
-  master:
+    size: 300Gi
+    # existingClaim:
+  primary:
     nodeSelector: {}
     affinity: {}
     tolerations: []
-  slave:
+  readReplicas:
     nodeSelector: {}
     affinity: {}
     tolerations: []
@@ -279,7 +286,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.8.9-debian-10-r58
+    tag: 3.8.14-debian-10-r32
   auth:
     username: guest
     password: ""
@@ -731,7 +738,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.17.2
+    tag: 7.17.5
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082

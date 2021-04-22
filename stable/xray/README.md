@@ -138,9 +138,6 @@ Removing a **helm** release is done with
 ```bash
 # Remove the Xray services and data tools
 
-#On helm v2:
-helm delete --purge xray
-
 #On helm v3:
 helm delete xray --namespace xray
 
