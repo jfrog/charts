@@ -1,9 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [12.0.1] - April 23, 2021
+* Add `securityContext` option on nginx container.
+
 ## [12.0.0] - April 22, 2021
 * **Breaking change:**
-* Increased default postgresql persistence  size to `200Gi` 
+* Increased default postgresql persistence  size to `200Gi`
 * Update postgresql tag version to `13.2.0-debian-10-r55`
 * Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
