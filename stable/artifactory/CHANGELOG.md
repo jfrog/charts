@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.18.6] - April 29, 2021
+* Bumping chart version to align with app version
+* Add `securityContext` option on nginx container
+
 ## [12.0.0] - April 22, 2021
 * **Breaking change:**
 * Increased default postgresql persistence  size to `200Gi` 

@@ -62,6 +62,10 @@ spec:
       - name: {{ .Values.nginx.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "nginx") }}
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        {{- with .Values.nginx.securityContext }}
+        securityContext:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         command:
           - 'nginx'
           - '-g'
