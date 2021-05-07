@@ -41,6 +41,9 @@ spec:
       imagePullSecrets:
       - name: {{ .Values.imagePullSecrets }}
     {{- end }}
+      {{- if .Values.nginx.priorityClassName }}
+      priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
+      {{- end }}
       initContainers:
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
