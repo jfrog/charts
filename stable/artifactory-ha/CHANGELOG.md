@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## Unreleased
+* Allow overriding the webhook urlStrictPolicy setting for private networks
+
 ## [107.18.6] - May 4, 2021
 * Removed `JF_SHARED_NODE_PRIMARY` env to support for Cloud Native HA
 * Bumping chart version to align with app version
