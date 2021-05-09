@@ -253,6 +253,11 @@ artifactory:
   openMetrics:
     enabled: false
 
+  webhooks:
+    ## when true private networks (loopback, RFC1918, RFC3927, and IPV6 unique local addresses) will not be allowed as
+    ## webhook targets
+    urlStrictPolicy: true
+
   # This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
     enabled: false
@@ -610,6 +615,9 @@ artifactory:
     replicator:
       enabled: true
     {{- end }}
+    event:
+      webhooks:
+        urlStrictPolicy: {{ .Values.artifactory.webhooks.urlStrictPolicy }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!

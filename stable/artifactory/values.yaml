@@ -209,6 +209,11 @@ artifactory:
   openMetrics:
     enabled: false
 
+  webhooks:
+    ## when true private networks (loopback, RFC1918, RFC3927, and IPV6 unique local addresses) will not be allowed as
+    ## webhook targets
+    urlStrictPolicy: true
+
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
   #  # Absolute path
@@ -539,6 +544,9 @@ artifactory:
     replicator:
       enabled: true
     {{- end }}
+    event:
+      webhooks:
+        urlStrictPolicy: {{ .Values.artifactory.webhooks.urlStrictPolicy }}
 
   annotations: {}
 
