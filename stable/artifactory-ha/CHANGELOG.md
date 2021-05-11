@@ -1,6 +1,11 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.18.6] - May 4, 2021
+* Removed `JF_SHARED_NODE_PRIMARY` env to support for Cloud Native HA
+* Bumping chart version to align with app version
+* Add `securityContext` option on nginx container
+
 ## [5.0.0] - April 22, 2021
 * **Breaking change:** 
 * Increased default postgresql persistence  size to `200Gi` 
