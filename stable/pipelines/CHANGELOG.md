@@ -1,8 +1,30 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file
+All changes to this chart to be documented in this file.
 
 ## [2.13.2] - May 10, 2021
+* Pipelines v1.14.7
 * Allow configuration of docker registry secret to pull kubernetes build node images (dind and reqKick)
+
+## [2.13.1] - Apr 28, 2021
+* Fix the reqSealer microservice wrong ending.
+
+## [2.13.0] - Apr 19, 2021
+* Always bring up reqSealer microservice
+
+## [2.12.4] - Apr 22, 2021
+* Configure router to see pipelines as a required service
+* add volume mount to router state
+* Disable router probes by default
+
+## [2.12.3] - Apr 6, 2021
+* Fix custom secrets range
+
+## [2.12.2] - Apr 6, 2021
+* Pipelines v1.14.2
+* Fix custom secrets name and labels
+
+## [2.12.1] - April 6, 2021
+* Update alpine tag version to `3.13.4`
 
 ## [2.12.0] - Apr 5, 2021
 * **IMPORTANT**
