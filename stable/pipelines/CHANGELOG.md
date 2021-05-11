@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file
 
+## [2.13.2] - May 10, 2021
+* Allow configuration of docker registry secret to pull kubernetes build node images (dind and reqKick)
+
 ## [2.12.0] - Apr 5, 2021
 * **IMPORTANT**
 * Added `charts.jfrog.io` as default JFrog Helm repository
