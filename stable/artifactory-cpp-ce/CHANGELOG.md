@@ -1,6 +1,9 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.18.6] - May 10, 2021
+* Bumping chart version to align with app version
+
 ## [4.0.0] - Apr 22, 2021
 * **Breaking change:**
 * Increased default postgresql persistence  size to `200Gi` 
