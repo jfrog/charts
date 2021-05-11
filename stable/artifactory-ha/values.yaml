@@ -253,7 +253,7 @@ artifactory:
   openMetrics:
     enabled: false
 
-  events:
+  event:
     webhooks:
       ## when true private networks (loopback, RFC1918, RFC3927, and IPV6 unique local addresses) will not be allowed as
       ## webhook targets
@@ -618,7 +618,7 @@ artifactory:
     {{- end }}
     event:
       webhooks:
-        urlStrictPolicy: {{ .Values.artifactory.events.webhooks.urlStrictPolicy }}
+        urlStrictPolicy: {{ .Values.artifactory.event.webhooks.urlStrictPolicy }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!

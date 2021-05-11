@@ -209,7 +209,7 @@ artifactory:
   openMetrics:
     enabled: false
 
-  events:
+  event:
     webhooks:
       ## when true private networks (loopback, RFC1918, RFC3927, and IPV6 unique local addresses) will not be allowed as
       ## webhook targets
@@ -547,7 +547,7 @@ artifactory:
     {{- end }}
     event:
       webhooks:
-        urlStrictPolicy: {{ .Values.artifactory.events.webhooks.urlStrictPolicy }}
+        urlStrictPolicy: {{ .Values.artifactory.event.webhooks.urlStrictPolicy }}
 
   annotations: {}
 
