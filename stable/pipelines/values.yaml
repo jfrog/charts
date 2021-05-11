@@ -50,7 +50,7 @@ global:
 
 ## Common
 initContainer:
-  image: "releases-docker.jfrog.io/alpine:3.13.1"
+  image: "releases-docker.jfrog.io/alpine:3.13.4"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -76,6 +76,10 @@ imageRegistry: releases-docker.jfrog.io
 ## Note: This is a breaking change from 1.x to 2.x (chart versions) of Pipelines chart
 imagePullSecrets:
   # - myRegistryKeySecretName
+
+## For supporting pulling k8s buildplane images (dind and reqKick) from private registries
+## Secret type: kubernetes.io/dockerconfigjson
+k8sImagePullSecret:
 
 ## Pipelines systemYaml override
 ## This is for advanced usecases where users wants to provide their own systemYaml for configuring pipelines
@@ -319,6 +323,7 @@ pipelines:
 
     mountPath: "/opt/jfrog/router/var/etc"
     logPath: "/opt/jfrog/router/var/log"
+    appStatePath: "/var/opt/jfrog/router/data"
 
     resources: {}
     #  requests:
@@ -328,7 +333,7 @@ pipelines:
     #    memory: "1Gi"
     #    cpu: "1"
     livenessProbe:
-      enabled: true
+      enabled: false
       initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 5
@@ -337,7 +342,7 @@ pipelines:
       path: /router/api/v1/system/health
 
     readinessProbe:
-      enabled: true
+      enabled: false
       initialDelaySeconds: 0
       timeoutSeconds: 5
       periodSeconds: 10
@@ -346,7 +351,7 @@ pipelines:
       path: /router/api/v1/system/health
 
     startupProbe:
-      enabled: true
+      enabled: false
       initialDelaySeconds: 20
       failureThreshold: 60
       periodSeconds: 5
@@ -821,9 +826,7 @@ pipelines:
           - "core.hookHandler"
           - "core.extensionSync"
           - "core.templateSync"
-          {{- if .Values.pipelines.signedPipelines.enabled }}
           - "core.reqSealer"
-          {{- end }}
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
@@ -913,6 +916,7 @@ pipelines:
       installerAuthToken: "{{ .Values.pipelines.authToken }}"
       installerImage: "jfrog/pipelines-installer"
       registryUrl: "{{ .Values.imageRegistry }}"
+      imageRegistrySecret: "{{ .Values.k8sImagePullSecret }}"
       os: "Ubuntu_16.04"
       osDistribution: "xenial"
       architecture: "x86_64"
@@ -1023,10 +1027,8 @@ pipelines:
           name: extensionSync
         templateSync:
           name: templateSync
-        {{- if .Values.pipelines.signedPipelines.enabled }}
         reqSealer:
           name: reqSealer
-        {{- end }}
 
     ## Runtime configuration
     ##
