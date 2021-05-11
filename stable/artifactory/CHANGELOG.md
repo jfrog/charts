@@ -3,6 +3,7 @@ All changes to this chart will be documented in this file.
 
 ## [8.11.1] - May 7, 2021
 * Add support to specify priorityClassName for nginx deployment
+* Updated Artifactory version to 6.23.16 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.23.16)
 
 ## [8.11.0] - Apr 5, 2021
 * **IMPORTANT**
