@@ -1,5 +1,5 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file.
+All changes to this chart to be documented in this file
 
 ## [2.13.2] - May 10, 2021
 * Pipelines v1.14.7
