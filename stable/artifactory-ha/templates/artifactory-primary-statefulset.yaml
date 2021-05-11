@@ -245,8 +245,6 @@ spec:
     {{- if and .Values.artifactory.customPersistentPodVolumeClaim (not .Values.artifactory.customPersistentPodVolumeClaim.skipPrepareContainer) }}
       - name: "prepare-custom-persistent-volume"
         image: "{{ .Values.initContainerImage }}"
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
           - 'sh'
           - '-c'
