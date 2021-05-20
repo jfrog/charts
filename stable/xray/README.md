@@ -33,7 +33,7 @@ helm repo update
 ### Install Chart
 Install JFrog Xray
 ```bash
-helm upgrade --install xray --namespace xray jfrog/xray --version 2.6.0
+helm upgrade --install xray --namespace xray jfrog/xray --version 2.6.1
 ```
 
 ## Status
@@ -335,7 +335,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
 | `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
 | `logger.image.repository`                      | Repository for logger image                  | `busybox`            |
-| `logger.image.tag`                             | Tag for logger image                         | `1.30`               |
+| `logger.image.tag`                             | Tag for logger image                         | `1.32.1`               |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
 | `common.xrayConfigPath`                        | Xray config path                             | `/var/opt/jfrog/xray/data`     |
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |
@@ -350,7 +350,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `global.postgresqlUrl`                         | Xray external PostgreSQL URL                 | ` `                  |
 | `global.postgresqlTlsSecret`                   | Xray external PostgreSQL TLS files secret    | ` `                  |
 | `analysis.name`                                | Xray Analysis name                           | `xray-analysis`      |
-| `analysis.image`                               | Xray Analysis container image                | `docker.bintray.io/jfrog/xray-analysis` |
+| `analysis.image`                               | Xray Analysis container image                | `releases-docker.jfrog.io/jfrog/xray-analysis` |
 | `analysis.replicaCount`                        | Xray Analysis replica count                  | `1`                  |
 | `analysis.updateStrategy`                      | Xray Analysis update strategy                | `RollingUpdate`      |
 | `analysis.podManagementPolicy`                 | Xray Analysis pod management policy          | `Parallel`           |
@@ -384,7 +384,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `analysis.tolerations`                         | Xray Analysis node tolerations               | `[]`                 |
 | `analysis.annotations`                          | Xray Analysis annotations                     | `{}`                               |
 | `indexer.name`                                 | Xray Indexer name                            | `xray-indexer`       |
-| `indexer.image`                                | Xray Indexer container image                 | `docker.bintray.io/jfrog/xray-indexer`  |
+| `indexer.image`                                | Xray Indexer container image                 | `releases-docker.jfrog.io/jfrog/xray-indexer`  |
 | `indexer.replicaCount`                         | Xray Indexer replica count                   | `1`                  |
 | `indexer.annotations`                          | Xray Indexer annotations                     | `{}`                               |
 | `indexer.updateStrategy`                       | Xray Indexer update strategy                 | `RollingUpdate`      |
@@ -424,7 +424,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `indexer.affinity`                             | Xray Indexer node affinity                   | `{}`                 |
 | `indexer.tolerations`                          | Xray Indexer node tolerations                | `[]`                 |
 | `persist.name`                                 | Xray Persist name                            | `xray-persist`       |
-| `persist.image`                                | Xray Persist container image                 | `docker.bintray.io/jfrog/xray-persist`  |
+| `persist.image`                                | Xray Persist container image                 | `releases-docker.jfrog.io/jfrog/xray-persist`  |
 | `persist.annotations`                          | Xray Persist annotations                     | `{}`                               |
 | `persist.replicaCount`                         | Xray Persist replica count                   | `1`                  |
 | `persist.updateStrategy`                       | Xray Persist update strategy                 | `RollingUpdate`      |
@@ -458,7 +458,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `persist.affinity`                             | Xray Persist node affinity                   | `{}`                 |
 | `persist.tolerations`                          | Xray Persist node tolerations                | `[]`                 |
 | `server.name`                                  | Xray server name                             | `xray-server`        |
-| `server.image`                                 | Xray server container image                  | `docker.bintray.io/jfrog/xray-server`   |
+| `server.image`                                 | Xray server container image                  | `releases-docker.jfrog.io/jfrog/xray-server`   |
 | `server.annotations`                           | Xray server annotations                      | `{}`                               |
 | `server.customVolumes`                         | Custom volumes                               |                                                  |
 | `server.customVolumeMounts`                    | Custom Server volumeMounts                   |                                                  |

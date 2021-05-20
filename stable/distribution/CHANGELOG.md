@@ -1,6 +1,11 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [4.1.1] - May 20, 2021
+* **Important:** Switched docker images download from `docker.bintray.io` to `releases-docker.jfrog.io`
+* Update alpine tag version to `3.13.5`
+* Updated busybox version to `1.32.1`
+
 ## [4.1.0] - Apr 5, 2021
 * **IMPORTANT**
 * Added `charts.jfrog.io` as default JFrog Helm repository

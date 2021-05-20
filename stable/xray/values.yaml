@@ -5,7 +5,7 @@
 
 # General
 imagePullPolicy: IfNotPresent
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
 imagePullSecrets:
 
 ## Role Based Access
@@ -113,7 +113,7 @@ serviceAccount:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 9.6.18-debian-10-r7
   postgresqlUsername: xray
@@ -186,7 +186,7 @@ rabbitmq-ha:
   enabled: true
   replicaCount: 1
   image:
-    repository: docker.bintray.io/rabbitmq
+    repository: releases-docker.jfrog.io/rabbitmq
     tag: 3.8.7-alpine
   rabbitmqUsername: guest
   rabbitmqPassword: ""
@@ -234,7 +234,7 @@ rabbitmq:
   rbac:
     create: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
     tag: 3.8.7-debian-10-r3
   auth:
@@ -286,8 +286,8 @@ rabbitmq:
 # Logger containers
 logger:
   image:
-    repository: docker.bintray.io/busybox
-    tag: 1.31.1
+    repository: releases-docker.jfrog.io/busybox
+    tag: 1.32.1
 
 # Common Xray settings
 common:
@@ -346,7 +346,7 @@ global:
 
 analysis:
   name: xray-analysis
-  image: docker.bintray.io/jfrog/xray-analysis
+  image: releases-docker.jfrog.io/jfrog/xray-analysis
   updateStrategy: RollingUpdate
   podManagementPolicy: Parallel
   replicaCount: 1
@@ -409,7 +409,7 @@ analysis:
 
 indexer:
   name: xray-indexer
-  image: docker.bintray.io/jfrog/xray-indexer
+  image: releases-docker.jfrog.io/jfrog/xray-indexer
   updateStrategy: RollingUpdate
   podManagementPolicy: Parallel
   replicaCount: 1
@@ -500,7 +500,7 @@ indexer:
 
 persist:
   name: xray-persist
-  image: docker.bintray.io/jfrog/xray-persist
+  image: releases-docker.jfrog.io/jfrog/xray-persist
   updateStrategy: RollingUpdate
   podManagementPolicy: Parallel
   replicaCount: 1
@@ -563,7 +563,7 @@ persist:
 
 server:
   name: xray-server
-  image: docker.bintray.io/jfrog/xray-server
+  image: releases-docker.jfrog.io/jfrog/xray-server
   updateStrategy: RollingUpdate
   podManagementPolicy: Parallel
   replicaCount: 1

@@ -31,7 +31,7 @@ helm repo update
 
 ### Installing the Chart
 ```bash
-helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.1.0
+helm upgrade --install mission-control --namespace mission-control jfrog/mission-control --version 2.1.1
 ```
 ### Auto generated passwords
 
@@ -327,7 +327,7 @@ The following table lists the configurable parameters of the mission-control cha
 
 |         Parameter                            |           Description                           |          Default                      |
 |----------------------------------------------|-------------------------------------------------|---------------------------------------|
-| `initContainerImage`                         | Init Container Image                            | `docker.bintray.io/alpine:3.12`                          |
+| `initContainerImage`                         | Init Container Image                            | `releases-docker.jfrog.io/alpine:3.13.5`                          |
 | `initContainers.resources.requests.memory`   | Init containers initial memory request          |                                       |
 | `initContainers.resources.requests.cpu`      | Init containers initial cpu request             |                                       |
 | `initContainers.resources.limits.memory`     | Init containers memory limit                    |                                       |
@@ -346,7 +346,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `ingress.defaultBackend.enabled`             | If true, the default `backend` will be added using serviceName and servicePort | `true` |
 | `ingress.additionalRules`                    | Mission Control Ingress additional rules        | `{}`                                  |
 | `postgresql.enabled`                         | Enable PostgreSQL                               | `true`                                |
-| `postgresql.image.registry`                  | PostgreSQL Docker registry                      | `docker.bintray.io`                   |
+| `postgresql.image.registry`                  | PostgreSQL Docker registry                      | `releases-docker.jfrog.io`                   |
 | `postgresql.image.repository`                | PostgreSQL Repository name                      | `bitnami/postgresql`                  |
 | `postgresql.image.tag`                       | PostgreSQL docker image tag                     | `9.6.18-debian-10-r7`                              | 
 | `postgresql.image.pullPolicy`                | PostgreSQL Container pull policy                | `IfNotPresent`                        |
@@ -410,8 +410,8 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.resources.limits.cpu`         | Elasticsearch cpu limit                         |                                       |
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
 | `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1 | `1` |
-| `logger.image.repository`                    | repository for logger image                     | `docker.bintray.io/busybox`                             |
-| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                                |
+| `logger.image.repository`                    | repository for logger image                     | `releases-docker.jfrog.io/busybox`                             |
+| `logger.image.tag`                           | tag for logger image                            | `1.32.1`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image`                       | Container image                                 | `docker.jfrog.io/jfrog/mission-control`     |
 | `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |
