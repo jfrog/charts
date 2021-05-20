@@ -223,7 +223,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `ingress.defaultBackend.enabled`                | If true, the default `backend` will be added using serviceName and servicePort | `true`                                                             |
 | `ingress.additionalRules`                       | distribution Ingress additional rules                                          | `{}`                                                               |
 | `postgresql.enabled`                            | Enable PostgreSQL                                                      | `true`                                                             |
-| `postgresql.image.registry`                     | PostgreSQL Docker registry                                             | `docker.bintray.io`                   |
+| `postgresql.image.registry`                     | PostgreSQL Docker registry                                             | `releases-docker.jfrog.io`                   |
 | `postgresql.image.repository`                   | PostgreSQL Repository name                                             | `bitnami/postgresql`                  |
 | `postgresql.image.tag`                          | PostgreSQL docker image tag                                            | `9.6.18-debian-10-r7`                              |                                                          |
 | `postgresql.postgresqlDatabase`                 | PostgreSQL database name                                               | `distribution`                           |
@@ -250,14 +250,14 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.nodeSelector`                            | Redis node selector                                                    | `{}`                                                               |
 | `redis.affinity`                                | Redis node affinity                                                    | `{}`                                                               |
 | `redis.tolerations`                             | Redis node tolerations                                                 | `[]`                                                               |
-| `logger.image.repository`                       | Repository for logger image                                            | `docker.bintray.io/busybox`                                                          |
+| `logger.image.repository`                       | Repository for logger image                                            | `releases-docker.jfrog.io/busybox`                                                          |
 | `logger.image.tag`                              | Tag for logger image                                                   | `1.31.1`                                                             |
 | `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
 | `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
 | `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
 | `distribution.name`                             | Distribution name                                                      | `distribution`                                                     |
 | `distribution.image.pullPolicy`                 | Container pull policy                                                  | `IfNotPresent`                                                     |
-| `distribution.image.repository`                 | Container image                                                        | `docker.bintray.io/jfrog/distribution-distribution`                                  |
+| `distribution.image.repository`                 | Container image                                                        | `releases-docker.jfrog.io/jfrog/distribution-distribution`                                  |
 | `distribution.image.version`                    | Container image tag                                                    | `.Chart.AppVersion`                                                |
 | `distribution.service.type`                     | Distribution service type                                              | `LoadBalancer`                                                     |
 | `distribution.service.loadBalancerSourceRanges` | Distribution service whitelist                                         | `[]`                                                               |
@@ -285,7 +285,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `distribution.loggersResources.limits.cpu`      | Distribution loggers cpu limit                                         |                                                                    |
 | `distributor.name`                              | Distribution name                                                      | `distribution`                                                     |
 | `distributor.image.pullPolicy`                  | Container pull policy                                                  | `IfNotPresent`                                                     |
-| `distributor.image.repository`                  | Container image                                                        | `docker.bintray.io/jfrog/distribution-distributor`                                  |
+| `distributor.image.repository`                  | Container image                                                        | `releases-docker.jfrog.io/jfrog/distribution-distributor`                                  |
 | `distributor.image.version`                     | Container image tag                                                    | `.Chart.AppVersion`                                                |
 | `distributor.persistence.mountPath`             | Distributor persistence volume mount path                              | `"/var/opt/jfrog/distributor"`                                                |
 | `distributor.persistence.existingClaim`         | Provide an existing PersistentVolumeClaim                              | `nil`                                                              |
