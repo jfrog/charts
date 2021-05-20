@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -94,7 +94,7 @@ ingress:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 9.6.18-debian-10-r7
   postgresqlUsername: distribution
@@ -146,7 +146,7 @@ database:
 redis:
   name: redis
   image:
-    repository: docker.bintray.io/bitnami/redis
+    repository: releases-docker.jfrog.io/bitnami/redis
     tag: 5.0.9-debian-10-r31
     pullPolicy: IfNotPresent
   port: 6379
@@ -188,14 +188,14 @@ common:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
-    tag: 1.31.1
+    repository: releases-docker.jfrog.io/busybox
+    tag: 1.32.1
 
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image version/tag
   image:
-    repository: docker.bintray.io/jfrog/distribution-distribution
+    repository: releases-docker.jfrog.io/jfrog/distribution-distribution
     # version:
     imagePullPolicy: IfNotPresent
   internalPort: 8080
@@ -298,7 +298,7 @@ distributor:
   name: distributor
   ## Note that by default we use appVersion to get image version/tag
   image:
-    repository: docker.bintray.io/jfrog/distribution-distributor
+    repository: releases-docker.jfrog.io/jfrog/distribution-distributor
     # version:
     imagePullPolicy: IfNotPresent
   resources: {}

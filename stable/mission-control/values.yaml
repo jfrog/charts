@@ -4,7 +4,7 @@
 # Access the values with {{ .Values.key.subkey }}
 
 # Common
-initContainerImage: docker.bintray.io/alpine:3.12
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
 # Init containers
 initContainers:
   resources: {}
@@ -77,7 +77,7 @@ serviceAccount:
 dbSetup:
   postgresql:
     image:
-      repository: docker.bintray.io/postgres
+      repository: releases-docker.jfrog.io/postgres
       tag: 9.6.18-alpine
       pullPolicy: IfNotPresent
 
@@ -88,7 +88,7 @@ dbSetup:
 postgresql:
   enabled: true
   image:
-    registry: docker.bintray.io
+    registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
     tag: 9.6.18-debian-10-r7
   postgresqlUsername: postgres
@@ -171,9 +171,9 @@ database:
 elasticsearch:
   enabled: true
   name: elasticsearch
-  initContainerImage: docker.bintray.io/alpine:3.12
+  initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
   image:
-    repository: docker.bintray.io/jfrog/elasticsearch-oss-sg
+    repository: releases-docker.jfrog.io/jfrog/elasticsearch-oss-sg
     tag: 6.8.9
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
@@ -241,14 +241,14 @@ ingress:
 
 logger:
   image:
-    repository: docker.bintray.io/busybox
-    tag: 1.31.1
+    repository: releases-docker.jfrog.io/busybox
+    tag: 1.32.1
 
 missionControl:
   name: mission-control
   appName: jfmc-server
   home: /var/opt/jfrog/mission-control
-  image: docker.bintray.io/jfrog/mission-control
+  image: releases-docker.jfrog.io/jfrog/mission-control
   ## Note that by default we use appVersion to get image tag
   # version:
   # Set this to true if you want to override credentials in mission-control.properties on startup
@@ -369,7 +369,7 @@ missionControl:
 insightServer:
   name: insight-server
   home: /opt/jfrog
-  image: docker.bintray.io/jfrog/insight-server
+  image: releases-docker.jfrog.io/jfrog/insight-server
   ## Note that by default we use appVersion to get image tag
   # version:
   internalHttpPort: 8082
@@ -420,7 +420,7 @@ insightServer:
 insightScheduler:
   name: insight-scheduler
   home: /opt/jfrog
-  image: docker.bintray.io/jfrog/insight-scheduler
+  image: releases-docker.jfrog.io/jfrog/insight-scheduler
   ## Note that by default we use appVersion to get image tag
   # version:
   internalPort: 8085
@@ -476,7 +476,7 @@ insightScheduler:
 insightExecutor:
   name: insight-executor
   home: /opt/jfrog
-  image: docker.bintray.io/jfrog/insight-executor
+  image: releases-docker.jfrog.io/jfrog/insight-executor
   ## Note that by default we use appVersion to get image tag
   # version:
   internalPort: 8087
