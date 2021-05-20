@@ -335,7 +335,7 @@ The following table lists the configurable parameters of the xray chart and thei
 | `rabbitmq-ha.nodeSelector`                     | RabbitMQ node selector                       | `{}`                 |
 | `rabbitmq-ha.tolerations`                      | RabbitMQ node tolerations                    | `[]`                 |
 | `logger.image.repository`                      | Repository for logger image                  | `busybox`            |
-| `logger.image.tag`                             | Tag for logger image                         | `1.30`               |
+| `logger.image.tag`                             | Tag for logger image                         | `1.32.1`               |
 | `common.xrayVersion`                           | Xray image tag                               | `.Chart.AppVersion`  |
 | `common.xrayConfigPath`                        | Xray config path                             | `/var/opt/jfrog/xray/data`     |
 | `common.preStartCommand`                       | Xray Custom command to run before startup. Runs BEFORE any microservice-specific preStartCommand |     |

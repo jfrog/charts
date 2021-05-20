@@ -411,7 +411,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `elasticsearch.env.clusterName`              | Elasticsearch Cluster Name                      | `es-cluster`                          |
 | `elasticsearch.env.minimumMasterNodes`       | The value for discovery.zen.minimum_master_nodes. Should be set to (replicaCount / 2) + 1 | `1` |
 | `logger.image.repository`                    | repository for logger image                     | `releases-docker.jfrog.io/busybox`                             |
-| `logger.image.tag`                           | tag for logger image                            | `1.31.1`                                |
+| `logger.image.tag`                           | tag for logger image                            | `1.32.1`                                |
 | `missionControl.name`                        | Mission Control name                            | `mission-control`                     |
 | `missionControl.image`                       | Container image                                 | `docker.jfrog.io/jfrog/mission-control`     |
 | `missionControl.version`                     | Container image tag                             | `.Chart.AppVersion`                   |

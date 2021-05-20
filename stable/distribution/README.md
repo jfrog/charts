@@ -251,7 +251,7 @@ The following table lists the configurable parameters of the distribution chart 
 | `redis.affinity`                                | Redis node affinity                                                    | `{}`                                                               |
 | `redis.tolerations`                             | Redis node tolerations                                                 | `[]`                                                               |
 | `logger.image.repository`                       | Repository for logger image                                            | `releases-docker.jfrog.io/busybox`                                                          |
-| `logger.image.tag`                              | Tag for logger image                                                   | `1.31.1`                                                             |
+| `logger.image.tag`                              | Tag for logger image                                                   | `1.32.1`                                                             |
 | `common.uid`                                    | Distribution and Distributor process user ID                           | `1020`                                                             |
 | `common.gid`                                    | Distribution and Distributor process group ID                          | `1020`                                                             |
 | `common.customVolumes`                          | Custom Volumes for Distribution                                        | see [values.yaml](values.yaml)                                     |
