@@ -136,7 +136,9 @@ spec:
             port: {{ .Values.nginx.https.internalPort }}
             scheme: HTTPS
             {{- end }}
+          {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
           initialDelaySeconds: {{ .Values.nginx.readinessProbe.initialDelaySeconds }}
+          {{- end }}
           periodSeconds: {{ .Values.nginx.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.nginx.readinessProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.nginx.readinessProbe.failureThreshold }}
@@ -153,7 +155,9 @@ spec:
             port: {{ .Values.nginx.https.internalPort }}
             scheme: HTTPS
             {{- end }}
+          {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
           initialDelaySeconds: {{ .Values.nginx.livenessProbe.initialDelaySeconds }}
+          {{- end }}
           periodSeconds: {{ .Values.nginx.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.nginx.livenessProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
