@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.18.7] - May 11, 2021
+* Added `nodePort` to artifactory-service and nginx-service templates
+
 ## [107.18.6] - April 29, 2021
 * Bumping chart version to align with app version
 * Add `securityContext` option on nginx container

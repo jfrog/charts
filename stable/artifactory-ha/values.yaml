@@ -1162,6 +1162,8 @@ artifactory:
     ## members
     ## all
     pool: members
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
 
   ## The following Java options are passed to the java process running Artifactory.
   ## This will be passed to all cluster members. Primary and member nodes.
@@ -1557,6 +1559,8 @@ nginx:
     externalTrafficPolicy: Cluster
     labels: {}
     #  label-key: label-value
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
   http:
     enabled: true
     externalPort: 80

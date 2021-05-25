@@ -24,8 +24,8 @@ spec:
   ports:
   - port: {{ .Values.artifactory.externalPort }}
     targetPort: {{ .Values.artifactory.internalPort }}
-  {{- if .Values.artifactory.nodePort }}
-    nodePort: {{ .Values.artifactory.nodePort }}
+  {{- if .Values.artifactory.service.nodePort }}
+    nodePort: {{ .Values.artifactory.service.nodePort }}
   {{- end }}
     protocol: TCP
     name: http-router

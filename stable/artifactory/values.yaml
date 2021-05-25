@@ -552,6 +552,8 @@ artifactory:
     ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
     loadBalancerSourceRanges: []
     annotations: {}
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
 
   ## The following setting are to configure a dedicated Ingress object for Replicator service
   replicator:
@@ -1250,6 +1252,8 @@ nginx:
     loadBalancerIP:
     ## There are two available options: “Cluster” (default) and “Local”.
     externalTrafficPolicy: Cluster
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
 
   http:
     enabled: true

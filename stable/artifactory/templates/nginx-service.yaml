@@ -34,6 +34,9 @@ spec:
   {{- if .Values.nginx.http.enabled }}
   - port: {{ .Values.nginx.http.externalPort }}
     targetPort: {{ .Values.nginx.http.internalPort }}
+    {{- if .Values.nginx.service.nodePort }}
+    nodePort: {{ .Values.nginx.service.nodePort }}
+    {{- end }}
     protocol: TCP
     name: http
   {{- end }}
@@ -50,6 +53,9 @@ spec:
     targetPort: {{ .Values.nginx.http.internalPort }}
     {{- else }}
     targetPort: {{ .Values.nginx.https.internalPort}}
+    {{- end }}
+    {{- if .Values.nginx.service.nodePort }}
+    nodePort: {{ .Values.nginx.service.nodePort }}
     {{- end }}
     protocol: TCP
     name: https
