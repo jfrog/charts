@@ -1,8 +1,15 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.18.7] - May 11, 2021
+
+## [107.19.5] - May 25, 2021
 * Added `nodePort` to artifactory-service and nginx-service templates
+
+## [107.19.4] - May 20, 2021
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Removed an extraneous resources block from the prepare-custom-persistent-volume container in the primary statefulset
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+
 
 ## [107.18.6] - May 4, 2021
 * Removed `JF_SHARED_NODE_PRIMARY` env to support for Cloud Native HA

@@ -6,7 +6,7 @@ For older version please refer to https://github.com/jfrog/charts/tree/pre-unifi
 
 ## Install Helm
 
-Get the latest [Helm release](https://github.com/kubernetes/helm#install).
+Get the latest [Helm release](https://github.com/helm/helm#install).
 
 ## Install Charts
 

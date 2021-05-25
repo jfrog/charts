@@ -3,7 +3,7 @@
 {{- $servicePort := .Values.artifactory.externalPort -}}
 {{- $artifactoryServicePort := .Values.artifactory.externalArtifactoryPort -}}
 {{- $ingressName := default ( include "artifactory-ha.fullname" . ) .Values.ingress.name -}}
-{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
+{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: networking.k8s.io/v1beta1
 {{- else }}
 apiVersion: extensions/v1beta1
@@ -55,11 +55,11 @@ spec:
 {{- if .Values.artifactory.replicator.enabled }}
 ---
 {{- $replicationIngressName := default ( include "artifactory-ha.replicator.fullname" . ) .Values.artifactory.replicator.ingress.name -}}
-{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
+  {{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: networking.k8s.io/v1beta1
-{{- else }}
+  {{- else }}
 apiVersion: extensions/v1beta1
-{{- end }}
+  {{- end }}
 kind: Ingress
 metadata:
   name: {{ $replicationIngressName }}
@@ -102,7 +102,7 @@ spec:
 {{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.trackerIngress.enabled }}
 ---
 {{- $replicatorTrackerIngressName := default ( include "artifactory-ha.replicator.tracker.fullname" . ) .Values.artifactory.replicator.trackerIngress.name -}}
-  {{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.GitVersion }}
+  {{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: networking.k8s.io/v1beta1
   {{- else }}
 apiVersion: extensions/v1beta1

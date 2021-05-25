@@ -253,6 +253,8 @@ spec:
             - name: JF_ROUTER_SERVICEREGISTRY_URL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}/access"
           {{- end }}
+            - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: 'jfpip'
             - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
               value: "{{ include "pipelines.grpc.url" . }}"
             - name: JF_ROUTER_ENTRYPOINTS_INTERNALPORT
@@ -290,6 +292,8 @@ spec:
             mountPath: {{ .Values.pipelines.router.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.router.logPath }}
+          - name: data-volume
+            mountPath: {{ .Values.pipelines.router.appStatePath | quote }}
           {{- if .Values.pipelines.router.startupProbe.enabled }}
           startupProbe:
             httpGet:
@@ -626,7 +630,6 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
-        {{- if .Values.pipelines.signedPipelines.enabled }}
         - name: reqsealer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "reqSealer" ) }}
           imagePullPolicy: {{ .Values.pipelines.reqSealer.image.pullPolicy }}
@@ -648,7 +651,6 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
-        {{- end }}
         - name: templatesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "templateSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.templateSync.image.pullPolicy }}
@@ -697,6 +699,8 @@ spec:
       - name: jfrog-pipelines-folder
         emptyDir: {}
       - name: jfrog-pipelines-logs
+        emptyDir: {}
+      - name: data-volume
         emptyDir: {}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
       - name: systemyaml

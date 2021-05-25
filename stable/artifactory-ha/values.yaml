@@ -31,11 +31,11 @@ global:
     enabled: false
     # certificateSecretName:
 
-## String to partially override rabbitmq.fullname template (will maintain the release name)
+## String to partially override artifactory-ha.fullname template (will maintain the release name)
 ##
 # nameOverride:
 
-## String to fully override rabbitmq.fullname template
+## String to fully override artifactory-ha.fullname template
 ##
 # fullnameOverride:
 
@@ -629,7 +629,7 @@ artifactory:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 0
+    initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
@@ -638,7 +638,7 @@ artifactory:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 0
+    initialDelaySeconds: 90
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
@@ -1583,7 +1583,7 @@ nginx:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 0
+    initialDelaySeconds: 180
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
@@ -1592,7 +1592,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 0
+    initialDelaySeconds: 90
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
