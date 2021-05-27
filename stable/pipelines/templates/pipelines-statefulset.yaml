@@ -309,7 +309,9 @@ spec:
             httpGet:
               path: {{ .Values.pipelines.router.livenessProbe.path}}
               port: {{  .Values.pipelines.router.externalPort}}
-            initialDelaySeconds: {{  .Values.pipelines.router.livenessProbe.initialDelaySeconds }}
+            {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
+            initialDelaySeconds: {{ .Values.pipelines.router.livenessProbe.initialDelaySeconds  }}
+            {{- end }}
             timeoutSeconds: {{  .Values.pipelines.router.livenessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.pipelines.router.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.pipelines.router.livenessProbe.failureThreshold }}
@@ -320,7 +322,9 @@ spec:
             httpGet:
               path: {{ .Values.pipelines.router.readinessProbe.path}}
               port: {{ .Values.pipelines.router.externalPort }}
-            initialDelaySeconds: {{ .Values.pipelines.router.readinessProbe.initialDelaySeconds }}
+            {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
+            initialDelaySeconds: {{ .Values.pipelines.router.readinessProbe.initialDelaySeconds  }}
+            {{- end }}
             timeoutSeconds: {{ .Values.pipelines.router.readinessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.pipelines.router.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.pipelines.router.readinessProbe.failureThreshold }}
@@ -350,7 +354,9 @@ spec:
             httpGet:
               path: {{ .Values.pipelines.api.livenessProbe.path}}
               port: {{  .Values.pipelines.api.livenessProbe.port}}
-            initialDelaySeconds: {{  .Values.pipelines.api.livenessProbe.initialDelaySeconds }}
+            {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
+            initialDelaySeconds: {{ .Values.pipelines.api.livenessProbe.initialDelaySeconds  }}
+            {{- end }}
             timeoutSeconds: {{  .Values.pipelines.api.livenessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.pipelines.api.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.pipelines.api.livenessProbe.failureThreshold }}
@@ -361,7 +367,9 @@ spec:
             httpGet:
               path: {{ .Values.pipelines.api.readinessProbe.path}}
               port: {{ .Values.pipelines.api.readinessProbe.port}}
-            initialDelaySeconds: {{ .Values.pipelines.api.readinessProbe.initialDelaySeconds }}
+            {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
+            initialDelaySeconds: {{ .Values.pipelines.api.readinessProbe.initialDelaySeconds  }}
+            {{- end }}
             timeoutSeconds: {{ .Values.pipelines.api.readinessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.pipelines.api.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.pipelines.api.readinessProbe.failureThreshold }}
@@ -412,7 +420,9 @@ spec:
             httpGet:
               path: {{ .Values.pipelines.www.livenessProbe.path}}
               port: {{ .Values.pipelines.www.livenessProbe.port}}
-            initialDelaySeconds: {{ .Values.pipelines.www.livenessProbe.initialDelaySeconds }}
+            {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
+            initialDelaySeconds: {{ .Values.pipelines.www.livenessProbe.initialDelaySeconds  }}
+            {{- end }}
             timeoutSeconds: {{ .Values.pipelines.www.livenessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.pipelines.www.livenessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.pipelines.www.livenessProbe.failureThreshold }}
@@ -423,7 +433,9 @@ spec:
             httpGet:
               path: {{ .Values.pipelines.www.readinessProbe.path}}
               port: {{ .Values.pipelines.www.readinessProbe.port}}
-            initialDelaySeconds: {{ .Values.pipelines.www.readinessProbe.initialDelaySeconds }}
+            {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
+            initialDelaySeconds: {{ .Values.pipelines.www.readinessProbe.initialDelaySeconds  }}
+            {{- end }}
             timeoutSeconds: {{ .Values.pipelines.www.readinessProbe.timeoutSeconds }}
             periodSeconds: {{ .Values.pipelines.www.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.pipelines.www.readinessProbe.failureThreshold }}
