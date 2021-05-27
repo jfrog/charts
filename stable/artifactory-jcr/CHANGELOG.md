@@ -1,6 +1,10 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.19.4] - May 27, 2021
+* Bumping chart version to align with app version
+* Update dependency Artifactory chart version to 107.19.4
+
 ## [4.0.0] - Apr 22, 2021
 * **Breaking change:**
 * Increased default postgresql persistence  size to `200Gi` 
