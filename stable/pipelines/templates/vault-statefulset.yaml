@@ -7,7 +7,7 @@ metadata:
     {{- include "pipelines.labels" . | nindent 4 }}
     component: {{ include "pipelines.vault.name" . }}
   {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/pipelines/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/pipelines/CHANGELOG.md), pass postgresql.image.tag=9.6.18-debian-10-r7 or '12.5.0-debian-10-r25' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 12.5.x" .Values.databaseUpgradeReady | quote }}
   {{- end }}
 spec:
   serviceName: {{ include "pipelines.vault.name" . }}-headless
