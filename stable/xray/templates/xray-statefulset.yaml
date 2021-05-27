@@ -19,7 +19,9 @@ metadata:
 {{- end }}
 spec:
   serviceName: "{{ template "xray.fullname" . }}"
+{{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+{{- end }}
   updateStrategy:
     type: RollingUpdate
   selector:
