@@ -48,9 +48,17 @@ global:
   # customInitContainers: |
   # customSidecarContainers: |
 
+## String to partially override pipelines.fullname template (will maintain the release name)
+##
+# nameOverride:
+
+## String to fully override pipelines.fullname template
+##
+# fullnameOverride:
+
 ## Common
 initContainer:
-  image: "releases-docker.jfrog.io/alpine:3.13.4"
+  image: "releases-docker.jfrog.io/alpine:3.13.5"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -176,6 +184,8 @@ pipelines:
   dbHealthCheckTimeoutInSeconds: 2
   # BuildPlane polling interval
   nodePollerIntervalMS: 15000
+  # Auto sync pipelineSource when resource is outdated
+  autoSyncResourceIfOutdated: false
 
   updateStrategy: RollingUpdate
 
@@ -220,7 +230,7 @@ pipelines:
         intervalMs: 900000
 
   signedPipelines:
-    enabled: false
+    enabled: true
   ## Apply horizontal pod auto scaling on Pipelines pods
   ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
   autoscaling:
@@ -260,7 +270,7 @@ pipelines:
       loadBalancerSourceRanges: []
     livenessProbe:
       enabled: true
-      initialDelaySeconds: 0
+      initialDelaySeconds: 20
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -270,7 +280,7 @@ pipelines:
 
     readinessProbe:
       enabled: true
-      initialDelaySeconds: 0
+      initialDelaySeconds: 20
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -334,7 +344,7 @@ pipelines:
     #    cpu: "1"
     livenessProbe:
       enabled: false
-      initialDelaySeconds: 0
+      initialDelaySeconds: 90
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -343,7 +353,7 @@ pipelines:
 
     readinessProbe:
       enabled: false
-      initialDelaySeconds: 0
+      initialDelaySeconds: 60
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -935,7 +945,7 @@ pipelines:
       artifactoryHealthCheckIntervalInMins: {{ .Values.pipelines.artifactoryHealthCheckIntervalInMins}}
       dbHealthCheckIntervalInMins: {{ .Values.pipelines.dbHealthCheckIntervalInMins }}
       dbHealthCheckTimeoutInSeconds: {{ .Values.pipelines.dbHealthCheckTimeoutInSeconds }}
-
+      autoSyncResourceIfOutdated: {{ .Values.pipelines.autoSyncResourceIfOutdated}}
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
@@ -1283,41 +1293,42 @@ router:
 ##
 postgresql:
   enabled: true
-
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
-
+    tag: 13.2.0-debian-10-r55
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
   # Password must be set
   postgresqlPassword: ""
-
   ## PostgreSQL password using existing secret
   # existingSecret: secret
   ## Mount PostgreSQL secret as a file instead of passing environment variable
   # usePasswordFile: false
-
+  postgresqlExtendedConf:
+    listenAddresses: "*"
+    maxConnections: "1500"
   service:
     port: 5432
-
   persistence:
     enabled: true
-    size: 50Gi
-    existingClaim:
-
-  master:
-    resources: {}
-    #  requests:
-    #    memory: "1Gi"
-    #    cpu: "250m"
-    #  limits:
-    #    memory: "2Gi"
-    #    cpu: "1"
+    size: 100Gi
+    # existingClaim:
+  primary:
     nodeSelector: {}
     affinity: {}
     tolerations: []
+  readReplicas:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "250m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
 
 ## RabbitMQ HA
 ## https://hub.helm.sh/charts/bitnami/rabbitmq
@@ -1332,7 +1343,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.8.9-debian-10-r58
+    tag: 3.8.14-debian-10-r32
   auth:
     username: admin
 
@@ -1428,7 +1439,7 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 6.0.9-debian-10-r39
+    tag: 6.2.1-debian-10-r9
   redisPort: 6379
 
   cluster:
@@ -1441,7 +1452,6 @@ redis:
     configmap: |-
       appendonly yes
       loglevel notice
-
     resources: {}
     #  requests:
     #    memory: 100Mi
