@@ -1,6 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [103.25.1] - May 21, 2021
+* Bumping chart version to align with app version
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Update router version to `7.18.2`
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+* Fix STS name in hpa
+
 ## [8.0.0] - April 22, 2021
 * **Breaking change:** 
 * Increased default postgresql persistence  size to `300Gi` 

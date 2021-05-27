@@ -30,11 +30,11 @@ global:
     enabled: false
     # certificateSecretName:
 
-## String to partially override rabbitmq.fullname template (will maintain the release name)
+## String to partially override xray.fullname template (will maintain the release name)
 ##
 # nameOverride:
 
-## String to fully override rabbitmq.fullname template
+## String to fully override xray.fullname template
 ##
 # fullnameOverride:
 
@@ -493,7 +493,7 @@ analysis:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -505,7 +505,7 @@ analysis:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -556,7 +556,7 @@ indexer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -568,7 +568,7 @@ indexer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -619,7 +619,7 @@ persist:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -631,7 +631,7 @@ persist:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -693,7 +693,7 @@ server:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -705,7 +705,7 @@ server:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -738,7 +738,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.17.5
+    tag: 7.18.2
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -766,7 +766,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -779,7 +779,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
