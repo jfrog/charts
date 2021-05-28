@@ -5,10 +5,10 @@ pipelines:
         readOnly:
           PIPELINES_BRANCH: charts-public-pipelines
           CHART_TESTING_IMAGE: releases-docker.jfrog.io/charts-ci
-          CHART_TESTING_TAG: v0.0.23
+          CHART_TESTING_TAG: v0.0.26
           CHARTS_REPO: https://github.com/jfrog/charts
           KUBEVAL_VERSION: v0.16.1
-          HELM_VERSION: v3.5.4
+          HELM_VERSION: v3.6.0
           CHART_TESTING_ARGS: ""
           GCLOUD_GKE_CLUSTER: ${int_charts_testing_cluster_cluster}
           GCLOUD_SERVICE_KEY_CHARTS_CI: ${int_charts_testing_cluster_gcp_service_key}
