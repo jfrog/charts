@@ -1441,13 +1441,10 @@ redis:
     repository: bitnami/redis
     tag: 6.2.1-debian-10-r9
   redisPort: 6379
-
   cluster:
     enabled: false
     slaveCount: 2
-
   usePassword: false
-
   master:
     configmap: |-
       appendonly yes
@@ -1459,9 +1456,7 @@ redis:
     #  limits:
     #    memory: 4Gi
     #    cpu: "1"
-
     affinity: {}
-
   slave:
     resources: {}
     #  requests:
@@ -1470,7 +1465,6 @@ redis:
     #  limits:
     #    memory: 4Gi
     #    cpu: "1"
-
     affinity: {}
 
 ## Vault
