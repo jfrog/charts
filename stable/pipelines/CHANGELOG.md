@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.15.2] - May 20, 2021
+## [101.15.3] - May 20, 2021
 * Added support for `nameOverride` and `fullnameOverride` in values.yaml
 
 ## [101.15.1] - May 12, 2021
