@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.19.4] - May 20, 2021
+## [107.19.8] - May 20, 2021
 * Fix broken support for startupProbe for k8s < 1.18.x
 * Removed an extraneous resources block from the prepare-custom-persistent-volume container in the primary statefulset
 * Added support for `nameOverride` and `fullnameOverride` in values.yaml
