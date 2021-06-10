@@ -4,9 +4,6 @@ All changes to this chart will be documented in this file
 ## [103.26.1] - June 3, 2021
 * Added rabbitmq.nameOverride support for rabbitmq password and url
 
-## [103.25.2] - May 26, 2021
-* Update router version to `7.19.4`
-
 ## [103.25.1] - May 21, 2021
 * Bumping chart version to align with app version
 * Fix broken support for startupProbe for k8s < 1.18.x
