@@ -10,7 +10,8 @@ global:
   ## Chart.AppVersion can be overidden using global.versions.missionControl or image tags
   ## Note: Order of preference is 1) global.versions 2) image tags 3) Chart.AppVersion
   versions: {}
-  #   missionControl:
+    # missionControl:
+    # router:
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -36,7 +37,7 @@ global:
 ## Fully override mission-control.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -214,7 +215,7 @@ dbSetup:
   postgresql:
     image:
       repository: releases-docker.jfrog.io/postgres
-      tag: 12.5-alpine
+      tag: 13.2-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -226,14 +227,13 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
+    tag: 13.2.0-debian-10-r55
   postgresqlUsername: postgres
   postgresqlPassword: ""
   postgresqlDatabase: mission_control
   postgresqlExtendedConf:
-    listenAddresses: "'*'"
+    listenAddresses: "*"
     maxConnections: "1500"
-
   db:
     name: mission_control
     sslmode: "false"
@@ -248,13 +248,13 @@ postgresql:
     port: 5432
   persistence:
     enabled: true
-    size: 50Gi
-    existingClaim:
-  master:
+    size: 100Gi
+    # existingClaim:
+  primary:
     nodeSelector: {}
     affinity: {}
     tolerations: []
-  slave:
+  readReplicas:
     nodeSelector: {}
     affinity: {}
     tolerations: []
@@ -298,7 +298,7 @@ elasticsearch:
   enabled: true
   ## certificatesSecretName:
   name: elasticsearch
-  initContainerImage: releases-docker.jfrog.io/alpine:3.13.4
+  initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
   configureDockerHost: true
   image:
     registry: releases-docker.jfrog.io
@@ -356,7 +356,7 @@ elasticsearch:
       httpGet:
         path: /_cluster/health
         port: 9200
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 3
@@ -368,7 +368,7 @@ elasticsearch:
       httpGet:
         path: /_cluster/health
         port: 9200
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 10
@@ -589,7 +589,7 @@ missionControl:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -602,7 +602,7 @@ missionControl:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -692,7 +692,7 @@ insightServer:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -705,11 +705,12 @@ insightServer:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
 
   startupProbe:
     enabled: true
@@ -789,7 +790,7 @@ insightScheduler:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -802,11 +803,12 @@ insightScheduler:
         command:
         - curl
         - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
 
   startupProbe:
     enabled: true
@@ -825,7 +827,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.17.2
+    tag: 7.19.8
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -845,7 +847,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 3
@@ -858,7 +860,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 10
