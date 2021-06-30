@@ -11,7 +11,6 @@ This chart does the following:
 
 * Deploy PostgreSQL database.
 * Deploy Redis.
-* Deploy distributor.
 * Deploy distribution.
 
 ## Requirements
@@ -246,7 +245,7 @@ distribution:
 There are cases where you'd like custom files mounted onto your container's file system.
 
 For this, there is a section for defining custom volumes in the [vaules.yaml](values.yaml).  By default they are left empty.
-You can mount custom volumes onto both distribution and distributor pods like so:
+You can mount custom volumes onto both distribution pods like so:
 ```
 common:
   ## Add custom volumes
@@ -256,13 +255,6 @@ common:
   #      name: custom-script
 
 distribution:
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-
-distributor:
   ## Add custom volumeMounts
   customVolumeMounts: |
   #  - name: custom-script

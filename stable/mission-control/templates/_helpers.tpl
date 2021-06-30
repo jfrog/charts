@@ -207,6 +207,9 @@ Return the proper mission-control chart image names
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- if $dot.Values.global }}
+    {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
+    {{- $tag = $dot.Values.global.versions.router | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.missionControl (or (eq $indexReference "insightScheduler") (eq $indexReference "missionControl") (eq $indexReference "insightServer") ) }}
     {{- $tag = $dot.Values.global.versions.missionControl | toString -}}
     {{- end -}}
