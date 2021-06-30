@@ -46,7 +46,7 @@ spec:
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "distribution.customInitContainersBegin" .)  . | indent 6 }}
-    {{- end }}      
+    {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
         resources:
@@ -259,82 +259,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
       {{- end }}
-      - name: {{ .Values.distributor.name }}
-        image: {{ include "distribution.getImageInfoByValue" (list $ "distributor") }}
-        imagePullPolicy: {{ .Values.distributor.image.imagePullPolicy }}
-        securityContext:
-          allowPrivilegeEscalation: false
-        command:
-          - '/bin/bash'
-          - '-c'
-          - >
-          {{- with .Values.distributor.preStartCommand }}
-            echo "Running Distributor custom preStartCommand command";
-            {{ tpl . $ }};
-          {{- end }}
-            exec /opt/jfrog/distribution/app/bin/wrapper.sh;
-        env:
-        {{- if or .Values.database.secrets.user .Values.database.user }}
-        - name: JF_SHARED_DATABASE_USERNAME
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.user }}
-              name: {{ tpl .Values.database.secrets.user.name .}}
-              key: {{ tpl .Values.database.secrets.user.key .}}
-        {{- else if .Values.database.user }}
-              name: {{ template "distribution.fullname" . }}-database-creds
-              key: db-user
-        {{- end }}
-      {{- end }}
-      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
-        - name: JF_SHARED_DATABASE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.password }}
-              name: {{ tpl .Values.database.secrets.password.name . }}
-              key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
-              name: {{ template "distribution.fullname" . }}-database-creds
-              key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
-        {{- end }}
-      {{- end }}
-      {{- if or .Values.database.secrets.url .Values.database.url }}
-        - name: JF_SHARED_DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.url }}
-              name: {{ tpl .Values.database.secrets.url.name .}}
-              key: {{ tpl .Values.database.secrets.url.key .}}
-        {{- else if .Values.database.url }}
-              name: {{ template "distribution.fullname" . }}-database-creds
-              key: db-url
-        {{- end }}
-      {{- end }}
-        - name: JF_SHARED_REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: "{{ .Values.redis.existingSecret | default (include "distribution.fullname" .) }}"
-              key: redis-password
-        - name: JF_SHARED_REDIS_CONNECTIONSTRING
-          value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
-        {{- range .Values.distributor.extraEnvironmentVariables }}
-        - name: {{ .name }}
-          value: '{{ tpl .value $ }}'
-        {{- end }}
-        volumeMounts:
-        - name: distribution-data
-          mountPath: {{ .Values.distributor.persistence.mountPath | quote }}
-        {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "distribution.customVolumeMounts" .) . | indent 8 }}
-        {{- end }}
-        {{- with .Values.distributor.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
-        {{- end }}
-        resources:
-{{ toYaml .Values.distributor.resources | indent 10 }}
       - name: {{ .Values.router.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
@@ -417,22 +341,6 @@ spec:
             mountPath: {{ $mountPath }}
         resources:
 {{ toYaml $.Values.distribution.loggersResources | indent 10 }}
-      {{- end }}
-      {{- $name := .Values.distributor.name }}
-      {{- $mountPath := .Values.distributor.persistence.mountPath }}
-      {{- range .Values.distributor.loggers }}
-      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
-        command:
-          - tail
-        args:
-          - '-F'
-          - '{{ $mountPath }}/logs/{{ . }}'
-        volumeMounts:
-          - name: distribution-data
-            mountPath: {{ $mountPath }}
-        resources:
-{{ toYaml $.Values.distributor.loggersResources | indent 10 }}
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
