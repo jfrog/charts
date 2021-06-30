@@ -1,15 +1,21 @@
-apiVersion: v1
-name: distribution
-home: https://jfrog.com/distribution/
+apiVersion: v2
+appVersion: 2.8.1
+dependencies:
+- condition: postgresql.enabled
+  name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.3.18
 description: A Helm chart for JFrog Distribution
-version: 7.7.0
-appVersion: 2.7.1
-sources:
-- https://github.com/jfrog/charts
+home: https://jfrog.com/distribution/
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/distribution/logo/distribution-logo.png
 keywords:
 - distribution
 - jfrog
 maintainers:
-- name: Chart Maintainers at JFrog
-  email: installers@jfrog.com
-icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/distribution/logo/distribution-logo.png
+- email: installers@jfrog.com
+  name: Chart Maintainers at JFrog
+name: distribution
+sources:
+- https://github.com/jfrog/charts
+type: application
+version: 102.8.1
