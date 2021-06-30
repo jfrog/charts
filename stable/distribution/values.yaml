@@ -10,7 +10,8 @@ global:
   ## Chart.AppVersion can be overidden using global.versions.distribution or image tags
   ## Note: Order of preference is 1) global.versions 2) image tags 3) Chart.AppVersion
   versions: {}
-  #   distribution:
+    # distribution:
+    # router:
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -30,7 +31,15 @@ global:
     enabled: false
     # certificateSecretName:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.1
+## String to partially override distribution.fullname template (will maintain the release name)
+##
+# nameOverride:
+
+## String to fully override distribution.fullname template
+##
+# fullnameOverride:
+
+initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
 
 # Init containers
 initContainers:
@@ -127,28 +136,34 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 12.5.0-debian-10-r25
+    tag: 13.2.0-debian-10-r55
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
   postgresqlExtendedConf:
-    listenAddresses: "'*'"
+    listenAddresses: "*"
     maxConnections: "1500"
+  service:
+    port: 5432
   persistence:
     enabled: true
     size: 50Gi
-  service:
-    port: 5432
+    # existingClaim:
+  primary:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  readReplicas:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
   resources: {}
   #  requests:
-  #    memory: "512Mi"
-  #    cpu: "100m"
-  #  limits:
   #    memory: "1Gi"
+  #    cpu: "250m"
+  #  limits:
+  #    memory: "2Gi"
   #    cpu: "1"
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
 
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom/external database details here
@@ -181,7 +196,7 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 6.0.9-debian-10-r39
+    tag: 6.2.1-debian-10-r9
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
@@ -366,19 +381,6 @@ distribution:
         {{ .other }}
       {{- end }}
       {{- end }}
-    distributor:
-      extraJavaOpts: >
-      {{- with .Values.distributor.javaOpts }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
 
   service:
     type: ClusterIP
@@ -390,12 +392,12 @@ distribution:
   #    subPath: script.sh
 
   resources: {}
-  #  requests:
-  #    memory: "2Gi"
-  #    cpu: "500m"
-  #  limits:
-  #    memory: "4Gi"
-  #    cpu: "2"
+    # requests:
+    #   memory: "2Gi"
+    #   cpu: "1"
+    # limits:
+    #   memory: "4Gi"
+    #   cpu: "2"
 
   livenessProbe:
     enabled: true
@@ -404,10 +406,10 @@ distribution:
         path: /api/v1/system/ping
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
-      failureThreshold: 3
+      failureThreshold: 10
       successThreshold: 1
 
   readinessProbe:
@@ -417,7 +419,7 @@ distribution:
         path: /api/v1/system/ping
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 0
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -430,7 +432,7 @@ distribution:
         path: /api/v1/system/ping
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: 30
+      initialDelaySeconds: 60
       failureThreshold: 60
       periodSeconds: 5
       timeoutSeconds: 1
@@ -485,92 +487,12 @@ distribution:
   tolerations: []
   affinity: {}
 
-distributor:
-  name: distributor
-  ## Note that by default we use appVersion to get image tag/version
-  image:
-    registry: releases-docker.jfrog.io
-    repository: jfrog/distribution-distributor
-    # tag:
-    imagePullPolicy: IfNotPresent
-
-  ## Extra environment variables that can be used to tune Distributor to your needs.
-  ## Uncomment and set value as needed
-  extraEnvironmentVariables:
-  # - name: JF_DISTRIBUTION_FOREMAN_INACTIVITYTHRESHOLDSECS
-  #   value: "300"
-
-  resources: {}
-  #  requests:
-  #    memory: "2Gi"
-  #    cpu: "500m"
-  #  limits:
-  #    memory: "4Gi"
-  #    cpu: "2"
-
-  ## Control Java options (JAVA_OPTIONS)
-  ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
-  javaOpts: {}
-    # xms: "1g"
-    # xmx: "2g"
-    # other: ""
-
-  persistence:
-    enabled: true
-    ## A manually managed Persistent Volume and Claim
-    ## Requires persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-
-    accessMode: ReadWriteOnce
-    mountPath: "/var/opt/jfrog/distribution"
-    size: 50Gi
-    ## distribution data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-
-  ## Add custom volumeMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-
-  ## Custom command to run before Distribution startup.
-  preStartCommand:
-  ## For example, to import trusted keystore ( Need to mount the certificates first )
-  # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
-
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
-  # - distributor.log
-  # - foreman.log
-
-  # Loggers containers resources
-  loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
-
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
-  foreman:
-    inactivityThresholdSecs:
-
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.17.2
+    tag: 7.19.8
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
@@ -596,10 +518,10 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
-      failureThreshold: 3
+      failureThreshold: 10
       successThreshold: 1
 
   readinessProbe:
@@ -609,11 +531,24 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "distribution.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 60
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
 
   persistence:
     accessMode: ReadWriteOnce

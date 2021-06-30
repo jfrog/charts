@@ -8,13 +8,6 @@ Expand the name of the chart.
 {{- end -}}
 
 {{/*
-The distributor name
-*/}}
-{{- define "distributor.name" -}}
-{{- default .Chart.Name .Values.distributor.name .Values.distributorNameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
 Create a default fully qualified distribution name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -24,25 +17,6 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.distribution.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.distribution.name -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-
-{{/*
-Create a default fully qualified distributor name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "distributor.fullname" -}}
-{{- if .Values.distributor.fullnameOverride -}}
-{{- .Values.distributor.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.distributor.name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -222,7 +196,10 @@ Return the proper distribution chart image names
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- if $dot.Values.global }}
-    {{- if and $dot.Values.global.versions.distribution (or (eq $indexReference "distribution") (eq $indexReference "distributor") ) }}
+    {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
+    {{- $tag = $dot.Values.global.versions.router | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.distribution (eq $indexReference "distribution") }}
     {{- $tag = $dot.Values.global.versions.distribution | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
