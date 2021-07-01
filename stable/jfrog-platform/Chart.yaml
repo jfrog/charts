@@ -1,17 +1,55 @@
-apiVersion: v1
-name: jfrog-platform
+apiVersion: v2
+appVersion: 7.19.9
+dependencies:
+  - name: postgresql
+    version: 10.3.18
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: rabbitmq
+    version: 8.11.4
+    repository: https://charts.bitnami.com/bitnami
+    condition: rabbitmq.enabled
+  - name: redis
+    version: 12.10.1
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: artifactory
+    version: 107.19.9
+    repository: https://charts.jfrog.io/
+    condition: artifactory.enabled
+  - name: artifactory-ha
+    version: 107.19.9
+    repository: https://charts.jfrog.io/
+    condition: artifactory-ha.enabled
+  - name: xray
+    version: 103.26.1
+    repository: https://charts.jfrog.io/
+    condition: xray.enabled
+  - name: distribution
+    version: 102.8.1
+    repository: https://charts.jfrog.io/
+    condition: distribution.enabled
+  - name: mission-control
+    version: 104.7.7
+    repository: https://charts.jfrog.io/
+    condition: mission-control.enabled
+  - name: pipelines
+    version: 101.15.3
+    repository: https://charts.jfrog.io/
+    condition: pipelines.enabled
+description: The Helm chart for JFrog Platform (Universal, hybrid, end-to-end DevOps automation)
 home: https://jfrog.com/platform/
-version: 0.4.1
-appVersion: 7.17.5
-description: Universal, hybrid, end-to-end DevOps automation.
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/jfrog-platform/logo/jfrog-platform-logo.png
 keywords:
 - platform
 - artifactory
 - jfrog
 - devops
+maintainers:
+- email: installers@jfrog.com
+  name: Chart Maintainers at JFrog
+name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
-maintainers:
-- name: Chart Maintainers at JFrog
-  email: installers@jfrog.com
-icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/jfrog-platform/logo/jfrog-platform-logo.png
+type: application
+version: 0.5.0
