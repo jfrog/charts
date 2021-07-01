@@ -76,7 +76,7 @@ customvalues.yaml
 artifactory-ha:
   enabled: true
   artifactory:
-  license:
+    license:
       licenseKey: |-
       <LICENSE_KEY1>
 
