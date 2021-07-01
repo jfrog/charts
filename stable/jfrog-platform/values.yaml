@@ -6,7 +6,7 @@
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
-  # imageRegistry: releases-docker.jfrog.io
+  imageRegistry: releases-docker.jfrog.io
   ## Set this flag to false, if you are using artifactory chart.
   artifactoryHaEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
@@ -53,7 +53,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r30
+    tag: 13.2.0-debian-10-r55
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -67,7 +67,7 @@ rabbitmq:
   enabled: true
   image:
     repository: bitnami/rabbitmq
-    tag: 3.8.14-debian-10-r7
+    tag: 3.8.14-debian-10-r32
   auth:
     username: admin
     password: password
