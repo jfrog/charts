@@ -240,7 +240,6 @@ artifactory:
   tomcat:
     connector:
       maxThreads: 200
-      sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
 
   # certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
@@ -586,7 +585,6 @@ artifactory:
       tomcat:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
-          sendReasonPhrase: {{ .Values.artifactory.tomcat.connector.sendReasonPhrase }}
           extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
     frontend:
       session:
@@ -597,7 +595,6 @@ artifactory:
       tomcat:
         connector:
           maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
-          sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
           extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
       {{- if .Values.access.database.enabled }}
         type: "{{ .Values.access.database.type }}"
@@ -1352,7 +1349,6 @@ access:
   tomcat:
     connector:
       maxThreads: 50
-      sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
 
 metadata:
