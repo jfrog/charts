@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.6.0] - July 2, 2021
+* Update dependency artifactory chart version to 107.21.3 (Artifactory 7.21.3)
+* Update dependency artifactory-ha chart version to 107.21.3 (Artifactory 7.21.3)
+
 ## [0.5.0] - June 30, 2021
 * **IMPORTANT**
 * This chart is only helm v3 compatible
