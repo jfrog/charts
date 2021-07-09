@@ -2,6 +2,7 @@
 All changes to this chart will be documented in this file.
 
 ## [0.7.0] - July 9, 2021
+* Added support for `global.versions.router` override tag
 * Update dependency artifactory chart version to 107.21.5 (Artifactory 7.21.5)
 * Update dependency artifactory-ha chart version to 107.21.5 (Artifactory 7.21.5)
 * Update dependency pipelines chart version to 101.16.1 (Pipelines 1.16.1)
