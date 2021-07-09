@@ -1,0 +1,23 @@
+# CI values for Pipelines
+databaseUpgradeReady: true
+pipelines:
+  jfrogUrl: http://artifactory.rt:8082
+  jfrogUrlUI: http://artifactory.rt:8082
+  replicaCount: 2
+
+  api:
+    externalUrl: http://pipelines.test.com
+
+  www:
+    externalUrl: http://pipelines.test.com
+
+  msg:
+    uiUserPassword: password
+
+postgresql:
+  postgresqlPassword: password
+
+rabbitmq:
+  replicaCount: 3
+  auth:
+    password: password
