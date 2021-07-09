@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
+## [103.27.3] - July 9, 2021
+* Added required services for router container in systemYaml
+* Added configurable `.Values.global.versions.router` in values.yaml
+
 ## [103.27.2] - June 30, 2021
 * Bumping chart version to align with app version
 

@@ -186,6 +186,10 @@ pipelines:
   nodePollerIntervalMS: 15000
   # Auto sync pipelineSource when resource is outdated
   autoSyncResourceIfOutdated: false
+  # Allow static nodes
+  allowCustomNodes: true
+  # maximum step timeout value
+  stepTimeoutMS: 21600000
 
   updateStrategy: RollingUpdate
 
@@ -1049,14 +1053,14 @@ pipelines:
       jobConsoleBatchSize: 10
       jobConsoleBufferIntervalMs: 3
       maxDiskUsagePercentage: 90
-      stepTimeoutMS: 3600000
+      stepTimeoutMS: {{ .Values.pipelines.stepTimeoutMS }}
       nodeStopDayOfWeek: 0
       nodeStopIntervalDays: 30
       maxNodeCheckInDelayMin: 15
       nodePollerIntervalMS: {{ .Values.pipelines.nodePollerIntervalMS }}
       defaultMinionInstanceSize: "c4.large"
       allowDynamicNodes: true
-      allowCustomNodes: true
+      allowCustomNodes: {{ .Values.pipelines.allowCustomNodes }}
       {{- range $key, $value := .Values.runtimeOverride }}
       {{ $key }}: {{ $value | quote }}
       {{- end }}
@@ -1444,7 +1448,9 @@ redis:
   cluster:
     enabled: false
     slaveCount: 2
+
   usePassword: false
+
   master:
     configmap: |-
       appendonly yes
@@ -1456,7 +1462,9 @@ redis:
     #  limits:
     #    memory: 4Gi
     #    cpu: "1"
+
     affinity: {}
+
   slave:
     resources: {}
     #  requests:
@@ -1465,6 +1473,7 @@ redis:
     #  limits:
     #    memory: 4Gi
     #    cpu: "1"
+
     affinity: {}
 
 ## Vault

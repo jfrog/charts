@@ -21,3 +21,9 @@ initContainers:
     limits:
       memory: "128Mi"
       cpu: "250m"
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
