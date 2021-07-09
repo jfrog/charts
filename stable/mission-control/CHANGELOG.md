@@ -1,6 +1,10 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [104.7.8] - July 9, 2021
+* Update router version to `7.19.4`
+* Update elasticsearch version to `7.12.1`
+
 ## [104.7.7] - June 24, 2021
 * Bumping chart version to align with app version
 * **Breaking change:** 
