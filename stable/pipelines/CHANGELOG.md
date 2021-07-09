@@ -1,5 +1,25 @@
 # JFrog Pipelines Chart Changelog
-All changes to this chart to be documented in this file
+All changes to this chart to be documented in this file.
+
+## [101.15.3] - May 20, 2021
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+
+## [101.15.1] - May 12, 2021
+* Bumping chart version to align with app version
+* **Breaking change:**
+* Increased default postgresql persistence  size to `100Gi`
+* Update postgresql tag version to `13.2.0-debian-10-r55`
+* Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* **IMPORTANT**
+* This chart is only helm v3 compatible
+* Update rabbitmq tag version to `3.8.14-debian-10-r32`
+* Update redis version tag to `6.2.1-debian-10-r9`
+* Update alpine tag version to `3.13.5`
+* Enable signedPipelines flag
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Add support for autoSyncResourceIfOutdated flag
 
 ## [2.13.2] - May 10, 2021
 * Pipelines v1.14.7

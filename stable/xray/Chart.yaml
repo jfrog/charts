@@ -1,25 +1,26 @@
 apiVersion: v2
-type: application
-name: xray
-home: https://www.jfrog.com/xray/
-version: 8.0.0
-appVersion: 3.23.0
+appVersion: 3.27.2
 dependencies:
-  - name: postgresql
-    version: 10.3.18
-    repository: https://charts.bitnami.com/bitnami
-    condition: postgresql.enabled
-  - name: rabbitmq
-    version: 8.11.4
-    repository: https://charts.bitnami.com/bitnami
-    condition: rabbitmq.enabled
-description: Universal component scan for security and license inventory and impact analysis
-sources:
-- https://github.com/jfrog/charts
+- condition: postgresql.enabled
+  name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.3.18
+- condition: rabbitmq.enabled
+  name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.11.4
+description: Universal component scan for security and license inventory and impact
+  analysis
+home: https://www.jfrog.com/xray/
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/xray/logo/xray-logo.png
 keywords:
 - xray
 - jfrog
 maintainers:
-- name: Chart Maintainers at JFrog
-  email: installers@jfrog.com
-icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/xray/logo/xray-logo.png
+- email: installers@jfrog.com
+  name: Chart Maintainers at JFrog
+name: xray
+sources:
+- https://github.com/jfrog/charts
+type: application
+version: 103.27.2

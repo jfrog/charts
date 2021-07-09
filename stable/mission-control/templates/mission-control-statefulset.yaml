@@ -231,19 +231,6 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- end }}
-      - name: prepare-storage
-        image: "{{ .Values.initContainerImage }}"
-        command:
-        - 'sh'
-        - '-c'
-        - >
-          mkdir -p {{ .Values.missionControl.persistence.mountPath }};
-          chown -R {{ .Values.common.uid }}:{{ .Values.common.gid }} {{ .Values.missionControl.persistence.mountPath }}
-        volumeMounts:
-        - name: mission-control-data
-          mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "mission-control.customInitContainers" .)  . | indent 6 }}
     {{- end }}

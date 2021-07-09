@@ -148,7 +148,8 @@ Create rabbitmq URL
 {{- define "rabbitmq.url" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- $rabbitmqPort := .Values.rabbitmq.service.port -}}
-{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name "rabbitmq" $rabbitmqPort -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -168,7 +169,8 @@ Create rabbitmq password secret name
 */}}
 {{- define "rabbitmq.passwordSecretName" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- .Values.rabbitmq.auth.existingPasswordSecret | default (printf "%s-%s" .Release.Name "rabbitmq") -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- .Values.rabbitmq.auth.existingPasswordSecret | default (printf "%s-%s" .Release.Name $name) -}}
 {{- end -}} 
 {{- end -}}
 

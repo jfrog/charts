@@ -201,6 +201,7 @@ artifactory:
   tomcat:
     connector:
       maxThreads: 200
+      sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
 
   # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
@@ -521,6 +522,7 @@ artifactory:
       tomcat:
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
+          sendReasonPhrase: {{ .Values.artifactory.tomcat.connector.sendReasonPhrase }}
           extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
     frontend:
       session:
@@ -531,6 +533,7 @@ artifactory:
       tomcat:
         connector:
           maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
+          sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
           extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
     metadata:
       database:
@@ -1044,6 +1047,7 @@ access:
   tomcat:
     connector:
       maxThreads: 50
+      sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
 
 metadata:

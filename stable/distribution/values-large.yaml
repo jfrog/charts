@@ -12,23 +12,11 @@ redis:
 distribution:
   resources:
     requests:
-      memory: "2Gi"
-      cpu: "1"
+      memory: "3Gi"
+      cpu: "2"
     limits:
-      memory: "6Gi"
-      cpu: "4"
+      memory: "9Gi"
+      cpu: "6"
   javaOpts:
-    xms: "2g"
-    xmx: "6g"
-
-distributor:
-  resources:
-    requests:
-      memory: "2Gi"
-      cpu: "1"
-    limits:
-      memory: "6Gi"
-      cpu: "4"
-  javaOpts:
-    xms: "2g"
-    xmx: "6g"
+    xms: "3g"
+    xmx: "9g"

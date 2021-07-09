@@ -1,6 +1,29 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [104.7.7] - June 24, 2021
+* Bumping chart version to align with app version
+* **Breaking change:** 
+* Increased default postgresql persistence  size to `100Gi` 
+* Update postgresql tag version to `13.2.0-debian-10-r55`
+* Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* **IMPORTANT**
+* This chart is only helm v3 compatible
+* Update router version to `7.19.8`
+* Update alpine tag version to `3.13.5`
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Remove `prepare-storage` init container fixes openShift issue
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+* Added configurable `.Values.global.versions.router` in values.yaml
+
+## [5.8.4] - June 3, 2021
+* Update mission-Control to version `4.7.5` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.5)
+
+## [5.8.3] - May 26, 2021
+* Update mission-Control to version `4.7.4` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.4)
+
 ## [5.8.2] - April 15, 2021
 * Update mission-Control to version `4.7.3` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.3)
 

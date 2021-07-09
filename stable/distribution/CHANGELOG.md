@@ -1,6 +1,26 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.8.1] - June 22, 2021
+* Bumping chart version to align with app version
+* **Breaking change:**
+* Update postgresql tag version to `13.2.0-debian-10-r55`
+* Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag and databaseUpgradeReady=true
+* **IMPORTANT**
+* This chart is only helm v3 compatible
+* Removed distributor service
+* Increased CPU and memory limits for the Distribution service
+* Update redis version tag to `6.2.1-debian-10-r9`
+* Update router version to `7.19.8`
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+* Added configurable `.Values.global.versions.router` in values.yaml
+
+## [7.7.1] - April 6, 2021
+* Update alpine tag version to `3.13.4`
+
 ## [7.7.0] - Apr 5, 2021
 * **IMPORTANT**
 * Added `charts.jfrog.io` as default JFrog Helm repository
