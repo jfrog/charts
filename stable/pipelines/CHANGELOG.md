@@ -1,6 +1,13 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.16.1] - July 1, 2021
+* Increase stepTimeoutMS limit
+*
+## [101.16.0] - May 25, 2021
+* Added support for allowCustomNodes to allow static nodes
+* Move stepTimeoutMS to align with other configurations
+
 ## [101.15.3] - May 20, 2021
 * Added support for `nameOverride` and `fullnameOverride` in values.yaml
 

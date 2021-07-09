@@ -330,6 +330,9 @@ Return the proper xray chart image names
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
+    {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
+    {{- $tag = $dot.Values.global.versions.router | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}

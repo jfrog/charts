@@ -10,7 +10,8 @@ global:
   ## Chart.AppVersion can be overidden using global.versions.xray, common.xrayVersion or image tags
   ## Note: Order of preference is 1) global.versions 2) common.xrayVersion 3) image tags 4) Chart.AppVersion
   versions: {}
-  #   xray:
+    # xray:
+    # router:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -104,6 +105,10 @@ xray:
 
   systemYaml: |
     configVersion: 1
+    router:
+      topology:
+        local:
+          requiredServiceTypes: 'jfxr,jfxana,jfxidx,jfxpst'
     shared:
       logging:
         consoleLog:
