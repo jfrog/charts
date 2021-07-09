@@ -1,0 +1,27 @@
+# CI values for Pipelines
+databaseUpgradeReady: true
+pipelines:
+  jfrogUrl: http://artifactory.rt:8082
+  jfrogUrlUI: http://artifactory.rt:8082
+
+  api:
+    externalUrl: http://pipelines.test.com
+
+  www:
+    externalUrl: http://pipelines.test.com
+
+  msg:
+    uiUserPassword: password
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+
+postgresql:
+  postgresqlPassword: password
+
+rabbitmq:
+  auth:
+    password: password
