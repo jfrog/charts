@@ -1,6 +1,12 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.0] - July 9, 2021
+* Update dependency artifactory chart version to 107.21.5 (Artifactory 7.21.5)
+* Update dependency artifactory-ha chart version to 107.21.5 (Artifactory 7.21.5)
+* Update dependency pipelines chart version to 101.16.1 (Pipelines 1.16.1)
+* Update dependency xray chart version to 103.27.3 (Xray 3.27.3)
+
 ## [0.6.0] - July 2, 2021
 * Update dependency artifactory chart version to 107.21.3 (Artifactory 7.21.3)
 * Update dependency artifactory-ha chart version to 107.21.3 (Artifactory 7.21.3)
