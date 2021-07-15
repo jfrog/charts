@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.7.1] - July 15, 2021
+* Update dependency artifactory/ha charts version to 107.21.7
+* Update dependency distribution chart version to 102.8.2
+* Update dependency xray chart version to 103.27.4
+
 ## [0.7.0] - July 9, 2021
 * Added support for `global.versions.router` override tag
 * Update dependency artifactory chart version to 107.21.5 (Artifactory 7.21.5)
