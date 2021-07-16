@@ -1,12 +1,11 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file
 
-## [103.27.3] - July 9, 2021
+## [103.27.4] - July 7, 2021
 * Added required services for router container in systemYaml
-* Added configurable `.Values.global.versions.router` in values.yaml
 
-## [103.27.2] - June 30, 2021
-* Bumping chart version to align with app version
+## [103.27.2] - June 15, 2021
+* Added configurable `.Values.global.versions.router` in values.yaml
 
 ## [103.26.1] - June 3, 2021
 * Added rabbitmq.nameOverride support for rabbitmq password and url
