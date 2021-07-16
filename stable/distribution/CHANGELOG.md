@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.8.2] - July 12, 2021
+* Bumping chart version to align with app version
+
 ## [102.8.1] - June 22, 2021
 * Bumping chart version to align with app version
 * **Breaking change:**
