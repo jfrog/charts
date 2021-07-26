@@ -28,7 +28,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry jfrog/artifactory-jcr  --version 1.7.2
+helm upgrade --install jfrog-container-registry --namespace jfrog-container-registry jfrog/artifactory-jcr  --version 1.7.3
 ```
 
 ### Accessing JFrog Container Registry
