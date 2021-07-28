@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 7.21.7
+appVersion: 7.21.12
 dependencies:
   - name: postgresql
     version: 10.3.18
@@ -14,15 +14,15 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: artifactory
-    version: 107.21.7
+    version: 107.21.12
     repository: https://charts.jfrog.io/
     condition: artifactory.enabled
   - name: artifactory-ha
-    version: 107.21.7
+    version: 107.21.12
     repository: https://charts.jfrog.io/
     condition: artifactory-ha.enabled
   - name: xray
-    version: 103.27.4
+    version: 103.29.0
     repository: https://charts.jfrog.io/
     condition: xray.enabled
   - name: distribution
@@ -52,4 +52,4 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 0.7.1
+version: 0.7.2
