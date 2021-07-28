@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.21.12] - July 28, 2021
+* Updated Artifactory version to 7.21.12
+
 ## [107.21.8] - July 21, 2021
 * Updated Artifactory version to 7.21.8
 
@@ -12,9 +15,6 @@ All changes to this chart will be documented in this file.
 
 ## [107.21.3] - July 1, 2021
 * Added ability to change sendreasonphrase value in server.xml via system yaml
-
-## [107.19.9] - June 23, 2021
-* Bumping chart version to align with app version
 
 ## [107.19.3] - May 20, 2021
 * Fix broken support for startupProbe for k8s < 1.18.x

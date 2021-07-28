@@ -1,13 +1,15 @@
 # JFrog Xray Chart Changelog
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
 
-## [103.27.4] - July 7, 2021
-* Added required services for router container in systemYaml
+## [103.29.0] - July 6, 2021
+* Update router version to `7.21.3`
+* Update alpine tag version to `3.14.0`
+* Add required services for router container in systemYaml
 
-## [103.27.2] - June 15, 2021
+## [103.27.0] - June 15, 2021
 * Added configurable `.Values.global.versions.router` in values.yaml
 
-## [103.26.1] - June 3, 2021
+## [103.26.0] - June 3, 2021
 * Added rabbitmq.nameOverride support for rabbitmq password and url
 
 ## [103.25.2] - May 26, 2021
