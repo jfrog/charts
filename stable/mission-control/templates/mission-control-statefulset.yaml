@@ -39,6 +39,9 @@ spec:
       annotations:
         checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/mission-control-system-yaml.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.missionControl.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ template "mission-control.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
@@ -304,6 +307,10 @@ spec:
         ports:
         - name: tcp-estransprt
           containerPort: {{ .Values.elasticsearch.transportPort }}
+        {{- if .Values.elasticsearch.image.uid }}
+        securityContext:
+          runAsUser: {{ .Values.elasticsearch.image.uid }}
+        {{- end }}
         volumeMounts:
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
@@ -410,6 +417,10 @@ spec:
         - containerPort: {{ .Values.missionControl.internalPort }}
           protocol: TCP
           name: http-mc
+        {{- if .Values.missionControl.image.uid }}
+        securityContext:
+          runAsUser: {{ .Values.missionControl.image.uid }}
+        {{- end }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -501,6 +512,10 @@ spec:
         - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
           name: http-inserver
+        {{- if .Values.insightServer.image.uid }}
+        securityContext:
+          runAsUser: {{ .Values.insightServer.image.uid }}
+        {{- end }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}
@@ -578,6 +593,10 @@ spec:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
           name: http-insched
+        {{- if .Values.insightScheduler.image.uid }}
+        securityContext:
+          runAsUser: {{ .Values.insightScheduler.image.uid }}
+        {{- end }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.missionControl.persistence.mountPath | quote }}

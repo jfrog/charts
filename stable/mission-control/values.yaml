@@ -305,6 +305,7 @@ elasticsearch:
     repository: jfrog/elasticsearch-oss-sg
     tag: 7.10.2
     pullPolicy: IfNotPresent
+    uid:
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
   ## If external elasticsearch is used, provide external elasticsearch url and set elasticsearch.enabled=false
@@ -401,10 +402,12 @@ missionControl:
     registry: releases-docker.jfrog.io
     repository: jfrog/mission-control
     # tag:
+    uid:
   appContext: mc
   appName: jfmc-server
   home: /var/opt/jfrog/mc
   labels: {}
+  annotations: {}
 
   # env:
 
@@ -632,6 +635,7 @@ insightServer:
     registry: releases-docker.jfrog.io
     repository: jfrog/insight-server
     # tag:
+    uid:
   appContext: insight
   home: /opt/jfrog
   internalPort: 8087
@@ -731,6 +735,7 @@ insightScheduler:
     registry: releases-docker.jfrog.io
     repository: jfrog/insight-scheduler
     # tag:
+    uid:
   appContext: insight-scheduler
   home: /opt/jfrog
   internalPort: 8085

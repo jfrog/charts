@@ -386,6 +386,26 @@ common:
       readOnly: true
 ```
 
+### Configure runAsUser explicitly
+The images used by the `mission-control`, `insight-scheduler`, `insight-server`, and `elasticsearch` containers all have named users.
+If your cluster applies a `MustRunAsNonRoot` pod security policy, you must specify the `uid`s as below.
+Reference the [kubernetes documentation](https://kubernetes.io/docs/concepts/policy/pod-security-policy/#users-and-groups) for further explanation.
+
+```yaml
+missionControl:
+  image:
+    uid: 1050
+insightScheduler:
+  image:
+    uid: 1050
+insightServer:
+  image:
+    uid: 1050
+elasticsearch:
+  image:
+    uid: 1000
+```
+
 ## Useful links
 - https://www.jfrog.com/confluence/display/JFROG/JFrog+Mission+Control
 - https://www.jfrog.com/confluence/
