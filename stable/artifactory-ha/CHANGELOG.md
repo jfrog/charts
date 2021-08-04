@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.22.1] - August 4, 2021
+* Fix usage of depricated Ingress Apigroup.
+
 ## [107.21.12] - July 28, 2021
 * Updated Artifactory version to 7.21.12
 

@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.17.1] - August 4, 2021
+* Fix usage of depricated Ingress Apigroup.
+
 ## [101.16.1] - July 1, 2021
 * Increase stepTimeoutMS limit
 *
