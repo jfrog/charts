@@ -1,7 +1,9 @@
 {{- if .Values.pipelines.api.ingress.enabled -}}
 {{- $fullName := include "pipelines.api.name" . -}}
 {{- $ingressPath := .Values.pipelines.api.ingress.path -}}
-{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.Version }}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+apiVersion: networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
 apiVersion: networking.k8s.io/v1beta1
 {{- else }}
 apiVersion: extensions/v1beta1
@@ -28,7 +30,21 @@ spec:
   {{- end }}
 {{- end }}
   rules:
-  {{- range .Values.pipelines.api.ingress.hosts }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+    {{- range .Values.pipelines.api.ingress.hosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          - path: {{ $ingressPath }}
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: http-api
+    {{- end }}
+  {{- else }}
+    {{- range .Values.pipelines.api.ingress.hosts }}
     - host: {{ . | quote }}
       http:
         paths:
@@ -36,5 +52,6 @@ spec:
             backend:
               serviceName: {{ $fullName }}
               servicePort: http-api
+    {{- end }}
   {{- end }}
 {{- end -}}
