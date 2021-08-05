@@ -1,6 +1,14 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.23.3] - Aug 5, 2021
+* Bug fix - logger sideCar picks up Wrong File in helm
+* Allow filebeat metrics configuration in values.yaml
+* Update alpine tag version to `3.14.0`
+* Added `nodePort` support to artifactory-service and nginx-service templates
+* Removed redundant `terminationGracePeriodSeconds` in statefulset
+* Increased `startupProbe.failureThreshold` time
+
 ## [107.21.12] - July 28, 2021
 * Updated Artifactory version to 7.21.12
 
