@@ -1,6 +1,9 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.23.3] - Aug 5, 2021
+* Bumping chart version to align with app version
+
 ## [107.21.12] - July 28, 2021
 * Bumping chart version to align with app version
 

@@ -151,6 +151,13 @@ Resolve joinKey value
 {{- end -}}
 
 {{/*
+Resolve jfConnectToken value
+*/}}
+{{- define "artifactory-ha.jfConnectToken" -}}
+{{- .Values.artifactory.jfConnectToken -}}
+{{- end -}}
+
+{{/*
 Resolve masterKey value
 */}}
 {{- define "artifactory-ha.masterKey" -}}
@@ -169,6 +176,17 @@ Resolve joinKeySecretName value
 {{- .Values.global.joinKeySecretName -}}
 {{- else if .Values.artifactory.joinKeySecretName -}}
 {{- .Values.artifactory.joinKeySecretName -}}
+{{- else -}}
+{{ include "artifactory-ha.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve jfConnectTokenSecretName value
+*/}}
+{{- define "artifactory-ha.jfConnectTokenSecretName" -}}
+{{- if .Values.artifactory.jfConnectTokenSecretName -}}
+{{- .Values.artifactory.jfConnectTokenSecretName -}}
 {{- else -}}
 {{ include "artifactory-ha.fullname" . }}
 {{- end -}}

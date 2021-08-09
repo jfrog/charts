@@ -41,7 +41,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
+initContainerImage: releases-docker.jfrog.io/alpine:3.14.0
 
 # Init containers
 initContainers:
@@ -209,6 +209,18 @@ artifactory:
   # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
   openMetrics:
     enabled: false
+    ## Settings for pushing metrics to Insight - enable filebeat to true
+    filebeat:
+      enabled: false
+      log:
+        enabled: false
+        ## Log level for filebeat. Possible values: debug, info, warning, or error.
+        level: "info"
+      ## Elasticsearch details for filebeat to connect
+      elasticsearch:
+        url: "Elasticsearch url where JFrog Mission Control is installed For example, http://<ip_address>:8082"
+        username: ""
+        password: ""
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
@@ -405,6 +417,11 @@ artifactory:
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
 
+  ## Registration Token for JFConnect
+  # jfConnectToken:
+  ## Alternatively, you can use a pre-existing secret with a key called jfconnect-token by specifying jfConnectTokenSecretName
+  # jfConnectTokenSecretName:
+
   # Add custom secrets - secret per file
   customSecrets:
   #  - name: custom-secret
@@ -465,6 +482,13 @@ artifactory:
 
   systemYaml: |
     shared:
+    {{- if  .Values.artifactory.openMetrics.enabled }}
+      metrics:
+        enabled: true
+      {{- if .Values.artifactory.openMetrics.filebeat.enabled }}
+        filebeat: {{ toYaml .Values.artifactory.openMetrics.filebeat | nindent 6 }}
+      {{- end }}
+    {{- end }}
       logging:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
@@ -513,10 +537,6 @@ artifactory:
         {{- end }}
       {{- end }}
     artifactory:
-    {{- if .Values.artifactory.openMetrics }}
-      metrics:
-        enabled: {{ .Values.artifactory.openMetrics.enabled }}
-    {{- end }}
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
       tomcat:
@@ -555,6 +575,8 @@ artifactory:
     ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
     loadBalancerSourceRanges: []
     annotations: {}
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
 
   ## The following setting are to configure a dedicated Ingress object for Replicator service
   replicator:
@@ -626,7 +648,7 @@ artifactory:
     enabled: true
     path: /router/api/v1/system/health
     initialDelaySeconds: 30
-    failureThreshold: 60
+    failureThreshold: 90
     periodSeconds: 5
     timeoutSeconds: 5
 
@@ -1254,6 +1276,8 @@ nginx:
     loadBalancerIP:
     ## There are two available options: “Cluster” (default) and “Local”.
     externalTrafficPolicy: Cluster
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
 
   http:
     enabled: true
@@ -1297,7 +1321,7 @@ nginx:
     enabled: true
     path: /router/api/v1/system/health
     initialDelaySeconds: 30
-    failureThreshold: 60
+    failureThreshold: 90
     periodSeconds: 5
     timeoutSeconds: 5
 
