@@ -1,10 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.8.2] - July 12, 2021
-* Bumping chart version to align with app version
-
-## [102.8.1] - June 22, 2021
+## [102.9.0] - June 22, 2021
 * Bumping chart version to align with app version
 * **Breaking change:**
 * Update postgresql tag version to `13.2.0-debian-10-r55`
