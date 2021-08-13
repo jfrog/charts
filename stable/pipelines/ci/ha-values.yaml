@@ -16,8 +16,12 @@ pipelines:
 
 postgresql:
   postgresqlPassword: password
+  persistence:
+    enabled: false
 
 rabbitmq:
   replicaCount: 3
   auth:
     password: password
+  persistence:
+    enabled: false
