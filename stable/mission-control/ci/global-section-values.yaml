@@ -1,9 +1,22 @@
 unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
+missionControl:
+  persistence:
+    enabled: false
 postgresql:
   postgresqlPassword: password
   db:
     password: password
+  persistence:
+    enabled: false
+
+elasticsearch:
+  persistence:
+    enabled: false
+  javaOpts:
+    xms: "2g"
+    xmx: "2g"
+
 global:
   jfrogUrl: http://artifactory.rt:8082
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
