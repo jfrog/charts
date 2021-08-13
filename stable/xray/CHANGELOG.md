@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.29.0] - July 6, 2021
+## [103.29.2] - July 6, 2021
 * Update router version to `7.21.3`
 * Update alpine tag version to `3.14.0`
 * Add required services for router container in systemYaml
