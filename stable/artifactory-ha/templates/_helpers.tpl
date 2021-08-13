@@ -228,7 +228,8 @@ Resolve customInitContainersBegin value
 {{- define "artifactory-ha.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.artifactory.customInitContainersBegin -}}
+{{- end -}}
+{{- if .Values.artifactory.customInitContainersBegin -}}
 {{- .Values.artifactory.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
@@ -239,7 +240,8 @@ Resolve customInitContainers value
 {{- define "artifactory-ha.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.artifactory.customInitContainers -}}
+{{- end -}}
+{{- if .Values.artifactory.customInitContainers -}}
 {{- .Values.artifactory.customInitContainers -}}
 {{- end -}}
 {{- end -}}
@@ -250,7 +252,8 @@ Resolve customVolumes value
 {{- define "artifactory-ha.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- else if .Values.artifactory.customVolumes -}}
+{{- end -}}
+{{- if .Values.artifactory.customVolumes -}}
 {{- .Values.artifactory.customVolumes -}}
 {{- end -}}
 {{- end -}}
@@ -261,7 +264,8 @@ Resolve customVolumeMounts value
 {{- define "artifactory-ha.customVolumeMounts" -}}
 {{- if .Values.global.customVolumeMounts -}}
 {{- .Values.global.customVolumeMounts -}}
-{{- else if .Values.artifactory.customVolumeMounts -}}
+{{- end -}}
+{{- if .Values.artifactory.customVolumeMounts -}}
 {{- .Values.artifactory.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
@@ -272,7 +276,8 @@ Resolve customSidecarContainers value
 {{- define "artifactory-ha.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
-{{- else if .Values.artifactory.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.artifactory.customSidecarContainers -}}
 {{- .Values.artifactory.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}

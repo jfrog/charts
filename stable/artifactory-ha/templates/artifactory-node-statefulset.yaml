@@ -376,6 +376,18 @@ spec:
                 {{ tpl . $ }}
         {{- end }}
         env:
+      {{- if .Values.splitServicesToContainers }}
+        - name : JF_ROUTER_ENABLED
+          value: "true"
+        - name : JF_ROUTER_SERVICE_ENABLED
+          value: "false"
+        - name : JF_EVENT_ENABLED
+          value: "false"
+        - name : JF_METADATA_ENABLED
+          value: "false"
+        - name : JF_FRONTEND_ENABLED
+          value: "false"
+      {{- end }}
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
           value: "true"
@@ -535,6 +547,146 @@ spec:
           failureThreshold: {{ .Values.artifactory.livenessProbe.failureThreshold }}
           successThreshold: {{ .Values.artifactory.livenessProbe.successThreshold }}
         {{- end }}
+    {{- if .Values.splitServicesToContainers }}
+      - name: {{ .Values.router.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+        ports:
+          - name: http
+            containerPort: {{ .Values.router.internalPort }}
+        securityContext:
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.router.persistence.mountPath | quote }}
+{{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+{{- end }}
+      - name: {{ .Values.frontend.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/startup.js /opt/jfrog/artifactory/app/frontend start
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      - name: {{ .Values.metadata.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              key: db-url
+        {{- end }}
+      {{- end }}        
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      - name: {{ .Values.event.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            /opt/jfrog/artifactory/app/event/bin/jf-event start
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if .Values.artifactory.replicator.enabled }}
+      - name: {{ .Values.artifactory.replicator.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            /opt/jfrog/artifactory/app/replicator/bin/jf-replicator start
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- end }}
+    {{- end }}
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}

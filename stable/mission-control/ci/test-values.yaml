@@ -9,6 +9,8 @@ missionControl:
     other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
     xms: "500m"
     xmx: "1000m"
+  persistence:
+    enabled: false
 
 insightServer:
   javaOpts:
@@ -26,3 +28,12 @@ postgresql:
   postgresqlPassword: password
   db:
     password: password
+  persistence:
+    enabled: false
+
+elasticsearch:
+  persistence:
+    enabled: false
+  javaOpts:
+    xms: "2g"
+    xmx: "2g"

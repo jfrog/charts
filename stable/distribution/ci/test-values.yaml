@@ -1,4 +1,12 @@
 # CI values for Distribution
+
+# replicaCount: 2
+# rbac:
+#   create: false
+#
+# serviceAccount:
+#   create: false
+
 # If this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
 unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
@@ -16,6 +24,9 @@ distribution:
   jfrogUrl: http://artifactory.rt:8082
   persistence:
     enabled: false
+  # loggers:
+  #   - access.log
+  #   - request.log
 
 # Init containers
 initContainers:

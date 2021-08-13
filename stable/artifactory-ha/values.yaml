@@ -16,6 +16,8 @@ global:
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
+
+  ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customInitContainersBegin: |
 
   # customInitContainers: |
@@ -212,6 +214,73 @@ logger:
     registry: releases-docker.jfrog.io
     repository: busybox
     tag: 1.32.1
+
+## The following router settings are to configure only when splitServicesToContainers set to true
+## splitServicesToContainers (by default it is false)
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    tag: 7.21.3
+    imagePullPolicy: IfNotPresent
+  internalPort: 8082
+  externalPort: 8082
+  tlsEnabled: false
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "artifactory-ha.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "artifactory-ha.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 1
+      failureThreshold: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/health
+        scheme: {{ include "artifactory-ha.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 10
+      failureThreshold: 60
+      periodSeconds: 5
+      timeoutSeconds: 1
+
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
 
 # Artifactory
 artifactory:
@@ -537,6 +606,14 @@ artifactory:
 
   # TODO: Fix javaOpts for member nodes (currently uses primary settings for all nodes)
   systemYaml: |
+    router:
+      topology:
+        local:
+          {{- if .Values.artifactory.replicator.enabled }}
+          requiredServiceTypes: 'jfrt,jfac,jfmd,jffe,jfevt,jfxfer'
+          {{ else }}
+          requiredServiceTypes: 'jfrt,jfac,jfmd,jffe,jfevt'
+          {{- end }}
     shared:
     {{- if  .Values.artifactory.openMetrics.enabled }}
       metrics:
@@ -1195,6 +1272,7 @@ artifactory:
 
   ## The following setting are to configure a dedicated Ingress object for Replicator service
   replicator:
+    name: replicator
     enabled: false
     ingress:
       name:
@@ -1349,6 +1427,7 @@ artifactory:
       topologyKey: "kubernetes.io/hostname"
 
 frontend:
+  name: frontend
   ## Session settings
   session:
     ## Time in minutes after which the frontend token will need to be refreshed
@@ -1378,8 +1457,12 @@ access:
       extraConfig: 'acceptCount="100"'
 
 metadata:
+  name: metadata
   database:
     maxOpenConnections: 80
+
+event:
+  name: event
 
 # Init containers
 initContainers:
@@ -1748,3 +1831,7 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
+
+## This is an experimental feature (not ready for production yet )  that will become default in one of the future releases
+## Toggling this feature will enable all microservices to run in different containers in a single pod (by default it is false)
+splitServicesToContainers: false
