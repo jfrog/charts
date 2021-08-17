@@ -1,17 +1,17 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.17.1] - August 4, 2021
+## [101.17.4] - August 17, 2021
 * Fix usage of depricated Ingress Apigroup.
 
-## [101.16.1] - July 1, 2021
+## [101.17.3] - July 1, 2021
 * Increase stepTimeoutMS limit
 *
 ## [101.16.0] - May 25, 2021
 * Added support for allowCustomNodes to allow static nodes
 * Move stepTimeoutMS to align with other configurations
 
-## [101.15.3] - May 20, 2021
+## [101.15.2] - May 20, 2021
 * Added support for `nameOverride` and `fullnameOverride` in values.yaml
 
 ## [101.15.1] - May 12, 2021

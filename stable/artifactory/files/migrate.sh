@@ -1083,7 +1083,7 @@ testDirectoryPermissions () {
 ## Exits if unable to create a directory
 # Parameters:
 ## $1: Root directory from where the path can be created
-## $2: List of recursive child directories seperated by space
+## $2: List of recursive child directories separated by space
 ## $3: user who should own the directory. Optional
 ## $4: group who should own the directory. Optional
 # Depends on global: none
@@ -1831,7 +1831,7 @@ addLine() {
     fi    
 }
 
-# Utility method to check if a value (first paramter) exists in an array (2nd parameter)
+# Utility method to check if a value (first parameter) exists in an array (2nd parameter)
 # 1st parameter "value to find"
 # 2nd parameter "The array to search in. Please pass a string with each value separated by space"
 # Example: containsElement "y" "y Y n N"

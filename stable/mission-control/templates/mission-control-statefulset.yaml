@@ -329,8 +329,7 @@ spec:
         - '/bin/sh'
         - '-c'
         - >
-          sleep 10;
-          /opt/jfrog/router/app/bin/entrypoint-router.sh;
+          exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
         - name: http-router
           containerPort: {{ .Values.router.internalPort }}

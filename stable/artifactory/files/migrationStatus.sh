@@ -20,7 +20,7 @@ do
 done
 
 sleep 20
-echo "Artifactory started sucessfully...in Init Container"
+echo "Artifactory started successfully...in Init Container"
 echo "Stopping artifactory in Init Container..."
 ${scriptsPath}/artifactory.sh stop
 echo "Exiting Init Container..."

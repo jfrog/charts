@@ -3,27 +3,22 @@ All changes to this chart will be documented in this file.
 ## [107.22.1] - August 4, 2021
 * Fix usage of depricated Ingress Apigroup.
 
-## [107.23.3] - Aug 5, 2021
+## [107.24.3] - Aug 2, 2021
+* Support global and product specific tags at the same time
+* Added support for artifactory containers split
+* Updated readme of chart to point to wiki. Refer [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory)
+
+## [107.23.0] - July 8, 2021
 * Bug fix - logger sideCar picks up Wrong File in helm
 * Allow filebeat metrics configuration in values.yaml
+
+## [107.22.0] - July 6, 2021
 * Update alpine tag version to `3.14.0`
 * Added `nodePort` support to artifactory-service and nginx-service templates
 * Removed redundant `terminationGracePeriodSeconds` in statefulset
 * Increased `startupProbe.failureThreshold` time
 
-## [107.21.12] - July 28, 2021
-* Updated Artifactory version to 7.21.12
-
-## [107.21.8] - July 21, 2021
-* Updated Artifactory version to 7.21.8
-
-## [107.21.7] - July 15, 2021
-* Updated Artifactory version to 7.21.7
-
-## [107.21.5] - July 9, 2021
-* Updated Artifactory version to 7.21.5
-
-## [107.21.3] - July 1, 2021
+## [107.21.3] - July 2, 2021
 * Added ability to change sendreasonphrase value in server.xml via system yaml
 
 ## [107.19.3] - May 20, 2021

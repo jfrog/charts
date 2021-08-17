@@ -1,7 +1,18 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [104.7.7] - June 24, 2021
+## [104.7.11] - July 22, 2021
+* Added support for graceful shutdown of router container on SIGTERM
+* Update router version to `7.21.5`
+* Added elasticsearch.app.version to system.yaml
+* Update elasticsearch version to `7.13.2`
+
+## [104.7.8] - July 6, 2021
+* Update router version to `7.21.3`
+* Update alpine tag version to `3.14.0`
+* Add required services for router container in systemYaml
+
+## [104.7.7] - June 17, 2021
 * Bumping chart version to align with app version
 * **Breaking change:** 
 * Increased default postgresql persistence  size to `100Gi` 
@@ -11,15 +22,13 @@ All changes to this chart will be documented in this file.
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
 * **IMPORTANT**
 * This chart is only helm v3 compatible
-* Update router version to `7.19.8`
+* Update router version to `7.19.4`
 * Update alpine tag version to `3.13.5`
 * Fix broken support for startupProbe for k8s < 1.18.x
 * Remove `prepare-storage` init container fixes openShift issue
 * Added support for `nameOverride` and `fullnameOverride` in values.yaml
 * Added configurable `.Values.global.versions.router` in values.yaml
-
-## [5.8.4] - June 3, 2021
-* Update mission-Control to version `4.7.5` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.5)
+* Update elasticsearch version to `7.12.1`
 
 ## [5.8.3] - May 26, 2021
 * Update mission-Control to version `4.7.4` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Mission+Control+Release+Notes#MissionControlReleaseNotes-MissionControl4.7.4)
