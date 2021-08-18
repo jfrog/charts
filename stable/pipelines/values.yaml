@@ -17,6 +17,9 @@ global:
     # Password must be set
     password: ""
     ssl: false
+    maxOpenConnections: 5
+    minOpenConnections: 0
+    idleTimeoutInSeconds: 10
     ## PostgreSQL password using existing secret
     # existingSecret: secret
 
@@ -40,6 +43,8 @@ global:
   # jfrogUrlUi:
   # joinKey:
   # masterKey:
+
+  ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customVolumes: |
   # customVolumeMounts: |
   ## Add custom init begin containers - first init container to run
@@ -735,6 +740,7 @@ pipelines:
           unhealthyThreshold: "{{ .Values.router.healthCheck.unhealthyThreshold }}"
       serviceRegistry:
         url: "{{ .Values.router.serviceRegistry.url }}"
+        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
     {{- end }}
     shared:
       ## Artifactory configuration
@@ -779,6 +785,9 @@ pipelines:
       ##
       db:
         type: "postgres"
+        maxOpenConnections: {{ .Values.global.postgresql.maxOpenConnections }}
+        minOpenConnections: {{ .Values.global.postgresql.minOpenConnections }}
+        idleTimeoutInSeconds: {{ .Values.global.postgresql.idleTimeoutInSeconds }}
         {{- if .Values.postgresql.enabled }}
         ip: {{ tpl .Release.Name . }}-postgresql
         port: "{{ .Values.postgresql.service.port }}"
@@ -1289,6 +1298,7 @@ router:
     unhealthyThreshold: 5
   serviceRegistry:
     url:
+    insecure: false
 
 # PostgreSQL
 ## https://hub.helm.sh/charts/bitnami/postgresql

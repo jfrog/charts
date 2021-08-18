@@ -1,9 +1,15 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.17.3] - July 1, 2021
+## [101.17.6] - Aug 11, 2021
+* Support global and product specific tags at the same time
+* Updated readme of chart to point to wiki. Refer [Installing Pipelines](https://www.jfrog.com/confluence/display/JFROG/Installing+Pipelines#InstallingPipelines-HelmInstallation)
+* Added support for configuring postgresql connection pool
+* Added support for insecure registry url for router
+
+## [101.16.1] - July 1, 2021
 * Increase stepTimeoutMS limit
-*
+
 ## [101.16.0] - May 25, 2021
 * Added support for allowCustomNodes to allow static nodes
 * Move stepTimeoutMS to align with other configurations
