@@ -214,6 +214,10 @@ mission-control:
     user: mc
     password: mc
     name: '{{ include "database.name" . }}'
+  elasticsearch:
+    javaOpts:
+      xms: "2g"
+      xmx: "2g"
 
 pipelines:
   enabled: true

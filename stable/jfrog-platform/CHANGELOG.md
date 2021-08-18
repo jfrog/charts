@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.1] - Aug 18, 2021
+* Elasticsearch max heap (xmx) is set to `2g`
+
 ## [0.9.0] - Aug 13, 2021
 * Update dependency artifactory/ha charts version to 107.24.3
 * Update dependency xray chart version to 103.29.2
