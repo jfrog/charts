@@ -2,10 +2,18 @@ unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 postgresql:
   postgresqlPassword: xray
+  persistence:
+    enabled: false
 rabbitmq:
   auth:
     username: guest
     password: password
+  persistence:
+    enabled: false
+
+common:
+  persistence:
+    enabled: false
 
 global:
   jfrogUrl: http://artifactory.rt:8082

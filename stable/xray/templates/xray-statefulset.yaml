@@ -170,12 +170,11 @@ spec:
           - '/bin/sh'
           - '-c'
           - >
-            sleep 10;
           {{- with .Values.common.preStartCommand }}
             echo "Running custom common preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-            /opt/jfrog/router/app/bin/entrypoint-router.sh;
+            exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}

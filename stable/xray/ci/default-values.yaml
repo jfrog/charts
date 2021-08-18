@@ -4,11 +4,18 @@ unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 xray:
   jfrogUrl: http://artifactory.rt:8082
+common:
+  persistence:
+    enabled: false
 # To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
 postgresql:
   postgresqlPassword: password
+  persistence:
+    enabled: false
 
 rabbitmq:
   auth:
     username: guest
     password: password
+  persistence:
+    enabled: false
