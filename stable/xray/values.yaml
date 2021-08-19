@@ -454,6 +454,18 @@ common:
   #        memory: "128Mi"
   #        cpu: "100m"
 
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
+
   persistence:
     enabled: true
     ## A manually managed Persistent Volume and Claim
@@ -743,7 +755,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.21.3
+    tag: 7.21.5
     imagePullPolicy: IfNotPresent
   internalPort: 8082
   externalPort: 8082
