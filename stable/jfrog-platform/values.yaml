@@ -17,7 +17,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.21.7
+    router: 7.24.1
   #   artifactory:
   #   xray:
   #   distribution:
@@ -54,7 +54,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r6
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -68,7 +68,7 @@ rabbitmq:
   enabled: true
   image:
     repository: bitnami/rabbitmq
-    tag: 3.8.14-debian-10-r32
+    tag: 3.8.21-debian-10-r6
   auth:
     username: admin
     password: password
@@ -122,7 +122,7 @@ redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 6.2.1-debian-10-r9
+    tag: 6.2.5-debian-10-r25
   cluster:
     enabled: false
   usePassword: false
