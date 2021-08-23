@@ -1,12 +1,10 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [0.10.0] - Aug 19, 2021
-* Update dependency xray chart version to 103.30.2
+## [0.9.2] - Aug 23, 2021
+* Update dependency xray chart version to 103.31.1
+* Update dependency distribution chart version to 102.9.2
 * Updated global.versions.router to `7.24.1`
-* Update postgresql version tag to `13.4.0-debian-10-r6`
-* Update rabbitmq version tag to `3.8.21-debian-10-r6`
-* Update redis version tag to `6.2.5-debian-10-r25`
 
 ## [0.9.1] - Aug 18, 2021
 * Update dependency xray chart version to 103.30.1
