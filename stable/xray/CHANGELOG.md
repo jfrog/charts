@@ -1,9 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.30.1] - July 19, 2021
+## [103.31.1] - Aug 2, 2021
 * Added support for graceful shutdown of router container on SIGTERM
 * Update router version to `7.21.5`
+* Updated readme of chart to point to wiki. Refer [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray)
 
 ## [103.28.1] - July 13, 2021
 * Add support for custom secrets
