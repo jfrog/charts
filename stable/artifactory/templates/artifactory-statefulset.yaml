@@ -277,6 +277,8 @@ spec:
 {{- if .Values.artifactory.migration.enabled }}
       - name: 'migration-artifactory'
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
