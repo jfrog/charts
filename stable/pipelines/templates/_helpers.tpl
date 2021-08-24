@@ -208,7 +208,8 @@ Resolve customInitContainersBegin value
 {{- define "pipelines.vault.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.vault.customInitContainersBegin -}}
+{{- end -}}
+{{- if .Values.vault.customInitContainersBegin -}}
 {{- .Values.vault.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
@@ -219,7 +220,8 @@ Resolve customInitContainers value
 {{- define "pipelines.vault.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.vault.customInitContainers -}}
+{{- end -}}
+{{- if .Values.vault.customInitContainers -}}
 {{- .Values.vault.customInitContainers -}}
 {{- end -}}
 {{- end -}}
@@ -230,7 +232,8 @@ Resolve customVolumes value
 {{- define "pipelines.vault.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- else if .Values.vault.customVolumes -}}
+{{- end -}}
+{{- if .Values.vault.customVolumes -}}
 {{- .Values.vault.customVolumes -}}
 {{- end -}}
 {{- end -}}
@@ -242,7 +245,8 @@ Resolve customVolumeMounts value
 {{- define "pipelines.vault.customVolumeMounts" -}}
 {{- if .Values.global.customVolumeMounts -}}
 {{- .Values.global.customVolumeMounts -}}
-{{- else if .Values.vault.customVolumeMounts -}}
+{{- end -}}
+{{- if .Values.vault.customVolumeMounts -}}
 {{- .Values.vault.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
@@ -253,7 +257,8 @@ Resolve customSidecarContainers value
 {{- define "pipelines.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
-{{- else if .Values.pipelines.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.pipelines.customSidecarContainers -}}
 {{- .Values.pipelines.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
