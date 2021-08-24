@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.9.2] - Aug 23, 2021
+* Update dependency xray chart version to 103.31.1
+* Update dependency distribution chart version to 102.9.2
+* Updated global.versions.router to `7.24.1`
+
 ## [0.9.1] - Aug 18, 2021
 * Update dependency xray chart version to 103.30.1
 * Update dependency pipelines chart version to 101.17.6
