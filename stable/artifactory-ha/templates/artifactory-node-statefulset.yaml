@@ -70,6 +70,9 @@ spec:
       - name: "create-artifactory-data-dir"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
         - 'sh'
         - '-c'
@@ -101,6 +104,9 @@ spec:
       - name: "wait-for-primary"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
         - 'sh'
         - '-c'
@@ -120,6 +126,9 @@ spec:
         {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
         - '/bin/sh'
         - '-c'
@@ -168,25 +177,12 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
-    {{- if and .Values.artifactory.customPersistentPodVolumeClaim (not .Values.artifactory.customPersistentPodVolumeClaim.skipPrepareContainer) }}
-      - name: "prepare-custom-persistent-volume"
-        image: "{{ .Values.initContainerImage }}"
-        command:
-          - 'sh'
-          - '-c'
-          - >
-            chown -Rv {{ .Values.artifactory.uid }}:{{ .Values.artifactory.gid }} {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
-        securityContext:
-          runAsUser: 0
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
-        volumeMounts:
-          - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
-            mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
-    {{- end }}
       {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -223,6 +219,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
         command:
         - '/bin/bash'
@@ -343,6 +340,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
         securityContext:
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
         command:
         - '/bin/bash'
@@ -525,9 +523,7 @@ spec:
             path: {{ .Values.artifactory.readinessProbe.path }}
             scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
-          {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
-          initialDelaySeconds: {{ .Values.artifactory.readinessProbe.initialDelaySeconds }}
-          {{- end }}
+          initialDelaySeconds: {{ tpl (.Values.artifactory.readinessProbe.initialDelaySeconds | toString) . }}
           periodSeconds: {{ .Values.artifactory.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.artifactory.readinessProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.artifactory.readinessProbe.failureThreshold }}
@@ -539,9 +535,7 @@ spec:
             path: {{ .Values.artifactory.livenessProbe.path }}
             scheme: {{ include "artifactory-ha.scheme" . | upper }}
             port: {{ .Values.artifactory.internalPort }}
-          {{- if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}
-          initialDelaySeconds: {{ .Values.artifactory.livenessProbe.initialDelaySeconds }}
-          {{- end }}
+          initialDelaySeconds: {{ tpl (.Values.artifactory.livenessProbe.initialDelaySeconds | toString) . }}
           periodSeconds: {{ .Values.artifactory.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.artifactory.livenessProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.artifactory.livenessProbe.failureThreshold }}
@@ -551,6 +545,9 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
           - '/bin/sh'
           - '-c'
@@ -559,8 +556,6 @@ spec:
         ports:
           - name: http
             containerPort: {{ .Values.router.internalPort }}
-        securityContext:
-          allowPrivilegeEscalation: false
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -569,26 +564,29 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
-{{- if .Values.router.startupProbe.enabled }}
+      {{- if .Values.router.startupProbe.enabled }}
         startupProbe:
 {{ tpl .Values.router.startupProbe.config . | indent 10 }}
-{{- end }}
-{{- if .Values.router.livenessProbe.enabled }}
-        livenessProbe:
-{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
-{{- end }}
+      {{- end }}
 {{- if .Values.router.readinessProbe.enabled }}
         readinessProbe:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
-{{- end }}
+      {{- end }}
+      {{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: {{ .Values.frontend.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
           - >
-            /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/startup.js /opt/jfrog/artifactory/app/frontend start
+            exec /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/startup.js /opt/jfrog/artifactory/app/frontend start
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -597,14 +595,25 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if .Values.frontend.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.frontend.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.frontend.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.frontend.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: {{ .Values.metadata.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
           - >
-            /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
+            exec /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -652,14 +661,25 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if .Values.metadata.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.metadata.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.metadata.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.metadata.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: {{ .Values.event.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
           - >
-            /opt/jfrog/artifactory/app/event/bin/jf-event start
+            exec /opt/jfrog/artifactory/app/event/bin/jf-event start
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -668,15 +688,26 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if .Values.event.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.event.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.event.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.event.livenessProbe.config . | indent 10 }}
+      {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: {{ .Values.artifactory.replicator.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
           - >
-            /opt/jfrog/artifactory/app/replicator/bin/jf-replicator start
+            exec /opt/jfrog/artifactory/app/replicator/bin/jf-replicator start
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -686,11 +717,43 @@ spec:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
       {{- end }}
+      {{- if .Values.jfconnect.enabled }}
+      - name: {{ .Values.jfconnect.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/jfconnect/bin/jf-connect start
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if .Values.jfconnect.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.jfconnect.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.jfconnect.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.jfconnect.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
     {{- end }}
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         command:
           - 'sh'
           - '-c'
@@ -726,12 +789,13 @@ spec:
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         args:
         - "-e"
         - "-E"
         - "http.enabled=true"
-        securityContext:
-          runAsUser: 0
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml

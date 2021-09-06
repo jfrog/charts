@@ -1,10 +1,18 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.31.1] - Aug 2, 2021
+## [103.32.2] - Aug 13, 2021
+* Update router version to `7.24.1`
+* Support global and product specific tags at the same time
+* Updated readme of chart to point to wiki. Refer [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray)
+* Added security hardening fixes
+* Enabled startup probes for k8s >= 1.20.x
+* Changed network policy to allow all ingress and egress traffic
+* Added support for serviceRegistry insecure flag in router
+
+## [103.29.0] - July 19, 2021
 * Added support for graceful shutdown of router container on SIGTERM
 * Update router version to `7.21.5`
-* Updated readme of chart to point to wiki. Refer [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray)
 
 ## [103.28.1] - July 13, 2021
 * Add support for custom secrets

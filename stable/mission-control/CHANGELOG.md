@@ -1,11 +1,29 @@
 # JFrog Mission-Control Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [104.7.13] - Aug 25, 2021
+* Added security hardening fixes
+* Update router version to `7.24.1`
+* Update elasticsearch version to `7.13.4`
+* Enabled startup probes for k8s >= 1.20.x
+* Changed network policy to allow all ingress and egress traffic
+* Added support for serviceRegistry insecure flag in router
+* Fixed duplicate resources Key violates YAML spec
+* Added elasticsearch default java opts to `2g`
+
 ## [104.7.11] - July 22, 2021
 * Added support for graceful shutdown of router container on SIGTERM
 * Update router version to `7.21.5`
 * Added elasticsearch.app.version to system.yaml
 * Update elasticsearch version to `7.13.2`
+
+## [104.7.10] - Aug 9, 2021
+* Added support for graceful shutdown of router container on SIGTERM
+* Update router version to `7.21.5`
+* Added elasticsearch.app.version to system.yaml
+* Update elasticsearch version to `7.13.2`
+* Support global and product specific tags at the same time
+* Updated readme of chart to point to wiki. Refer [Installing Mission Control](https://www.jfrog.com/confluence/display/JFROG/Installing+Mission+Control)
 
 ## [104.7.8] - July 6, 2021
 * Update router version to `7.21.3`
@@ -22,7 +40,7 @@ All changes to this chart will be documented in this file.
 * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
 * **IMPORTANT**
 * This chart is only helm v3 compatible
-* Update router version to `7.19.4`
+* Update router version to `7.19.8`
 * Update alpine tag version to `3.13.5`
 * Fix broken support for startupProbe for k8s < 1.18.x
 * Remove `prepare-storage` init container fixes openShift issue

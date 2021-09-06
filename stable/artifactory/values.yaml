@@ -138,16 +138,16 @@ ingress:
 ## Allows to add custom ingress
 customIngress: |
 
-networkpolicy:
+networkpolicy: []
   # Allows all ingress and egress
-  - name: artifactory
-    podSelector:
-      matchLabels:
-        app: artifactory
-    egress:
-    - {}
-    ingress:
-    - {}
+  # - name: artifactory
+  #   podSelector:
+  #     matchLabels:
+  #       app: artifactory
+  #   egress:
+  #   - {}
+  #   ingress:
+  #   - {}
   # Uncomment to allow only artifactory pods to communicate with postgresql (if postgresql.enabled is true)
   # - name: postgresql
   #   podSelector:
@@ -172,8 +172,11 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.21.3
+    tag: 7.24.1
     imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: false
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
@@ -195,23 +198,23 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: /router/api/v1/system/liveness
         scheme: {{ include "artifactory.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 90
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
-      failureThreshold: 3
+      failureThreshold: 10
       successThreshold: 1
 
   readinessProbe:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: /router/api/v1/system/readiness
         scheme: {{ include "artifactory.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -221,7 +224,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: /router/api/v1/system/readiness
         scheme: {{ include "artifactory.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 10
@@ -357,6 +360,9 @@ artifactory:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -370,6 +376,9 @@ artifactory:
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -380,14 +389,13 @@ artifactory:
 
   ## Add custom sidecar containers
   # - The provided example uses a custom volume (customVolumes)
-  # - The provided example shows running container as root (id 0)
   customSidecarContainers: |
   #  - name: "sidecar-list-etc"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
   #    securityContext:
-  #      runAsUser: 0
-  #      fsGroup: 0
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -423,17 +431,6 @@ artifactory:
   #  - name: prehook-start
   #    mountPath: "/scripts/prehook-start.sh"
   #    subPath: prehook-start.sh
-
-  # Add custom persistent volume mounts - Available for the pod
-  # If skipPrepareContainer is set to true , this will skip the prepare-custom-persistent-volume init container
-  customPersistentPodVolumeClaim: {}
-  #  name:
-  #  mountPath:
-  #  accessModes:
-  #   - "-"
-  #  size:
-  #  storageClassName:
-  #  skipPrepareContainer: false
 
   # Add custom persistent volume mounts - Available to the entire namespace
   customPersistentVolumeClaim: {}
@@ -553,11 +550,9 @@ artifactory:
     router:
       topology:
         local:
-          {{- if .Values.artifactory.replicator.enabled }}
-          requiredServiceTypes: 'jfrt,jfac,jfmd,jffe,jfevt,jfxfer'
-          {{ else }}
-          requiredServiceTypes: 'jfrt,jfac,jfmd,jffe,jfevt'
-          {{- end }}
+          requiredServiceTypes: {{ include "router.requiredServiceTypes" . }}
+      serviceRegistry:
+        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
     shared:
     {{- if  .Values.artifactory.openMetrics.enabled }}
       metrics:
@@ -707,7 +702,7 @@ artifactory:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 180
+    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}'
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
@@ -716,7 +711,7 @@ artifactory:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 90
+    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}'
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
@@ -1125,6 +1120,33 @@ frontend:
   session:
     ## Time in minutes after which the frontend token will need to be refreshed
     timeoutMinutes: '30'
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8070/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8070/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
 
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
@@ -1153,9 +1175,94 @@ metadata:
   name: metadata
   database:
     maxOpenConnections: 80
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8086/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8086/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
 
 event:
   name: event
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8061/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8061/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
+
+jfconnect:
+  name: jfconnect
+  enabled: false
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8030/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8030/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
 
 # Nginx
 nginx:
@@ -1385,7 +1492,7 @@ nginx:
   livenessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 180
+    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}'
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
@@ -1394,7 +1501,7 @@ nginx:
   readinessProbe:
     enabled: true
     path: /router/api/v1/system/health
-    initialDelaySeconds: 90
+    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}'
     failureThreshold: 10
     timeoutSeconds: 5
     periodSeconds: 10
