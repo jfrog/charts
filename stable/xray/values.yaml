@@ -17,6 +17,7 @@ global:
   # joinKeySecretName:
   # masterKeySecretName:
 
+  ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customInitContainersBegin: |
 
   # customInitContainers: |
@@ -109,6 +110,8 @@ xray:
       topology:
         local:
           requiredServiceTypes: 'jfxr,jfxana,jfxidx,jfxpst'
+      serviceRegistry:
+        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
     shared:
       logging:
         consoleLog:
@@ -162,16 +165,16 @@ rbac:
       - watch
       - list
 
-networkpolicy:
+networkpolicy: []
   # Allows all ingress and egress
-  - name: xray
-    podSelector:
-      matchLabels:
-        app: xray
-    egress:
-      - {}
-    ingress:
-      - {}
+  # - name: xray
+  #   podSelector:
+  #     matchLabels:
+  #       app: xray
+  #   egress:
+  #     - {}
+  #   ingress:
+  #     - {}
   # Uncomment to allow only xray pods to communicate with postgresql (if postgresql.enabled is true)
   # - name: postgres
   #   podSelector:
@@ -406,6 +409,9 @@ common:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -419,6 +425,9 @@ common:
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -435,6 +444,7 @@ common:
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    securityContext:
+  #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
@@ -510,7 +520,7 @@ analysis:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -522,7 +532,7 @@ analysis:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -573,7 +583,7 @@ indexer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -585,7 +595,7 @@ indexer:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -636,7 +646,7 @@ persist:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -648,7 +658,7 @@ persist:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -710,7 +720,7 @@ server:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -722,7 +732,7 @@ server:
       httpGet:
         path: /api/v1/system/ping
         port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -755,8 +765,11 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.21.5
+    tag: 7.24.1
     imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: false
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
@@ -783,10 +796,10 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
-      failureThreshold: 3
+      failureThreshold: 10
       successThreshold: 1
 
   readinessProbe:
@@ -796,7 +809,7 @@ router:
         path: /router/api/v1/system/health
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
