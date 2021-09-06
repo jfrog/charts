@@ -21,34 +21,93 @@ global:
   jfrogUrl: http://artifactory.rt:8082
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  customVolumes: |
-   - name: custom-script2
-     emptyDir:
-       sizeLimit: 100Mi
-  customVolumeMounts: |
-   - name: custom-script2
-     mountPath: "/scripts"
-  customInitContainers: |
-   - name: "custom-setup2"
+  customInitContainersBegin: |
+   - name: "custom-init-begin-global"
      image: "{{ .Values.initContainerImage }}"
      imagePullPolicy: "{{ .Values.imagePullPolicy }}"
      command:
        - 'sh'
        - '-c'
-       - 'touch {{ .Values.missionControl.persistence.mountPath }}/example-custom-setup'
+       - 'touch {{ .Values.missionControl.persistence.mountPath }}/init-begin-global'
+     volumeMounts:
+       - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+         name: mission-control-data
+  customVolumes: |
+   - name: custom-volume-global
+     emptyDir:
+       sizeLimit: 100Mi
+  customVolumeMounts: |
+   - name: custom-volume-global
+     mountPath: "/scriptsglobal"
+  customInitContainers: |
+   - name: "custom-init-global"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch {{ .Values.missionControl.persistence.mountPath }}/init-global'
      volumeMounts:
        - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
          name: mission-control-data
   customSidecarContainers: |
-   - name: "sidecar-list-etc2"
+   - name: "sidecar-list-global"
      image: "{{ .Values.initContainerImage }}"
      imagePullPolicy: "{{ .Values.imagePullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
-     command: ["sh","-c","echo 'Sidecar is running' >> /scripts/sidecar.txt; cat /scripts/sidecar.txt; while true; do sleep 30; done"]
+     command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
-       - mountPath: "/scripts"
-         name: custom-script2
+       - mountPath: "/scriptsglobal"
+         name: custom-volume-global
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+
+common:
+  customInitContainersBegin: |
+   - name: "custom-init-begin-local"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch {{ .Values.missionControl.persistence.mountPath }}/init-begin-local'
+     volumeMounts:
+       - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+         name: mission-control-data
+  customVolumes: |
+   - name: custom-volume-local
+     emptyDir:
+       sizeLimit: 100Mi
+  customVolumeMounts: |
+   - name: custom-volume-local
+     mountPath: "/scriptslocal"
+  customInitContainers: |
+   - name: "custom-init-local"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch {{ .Values.missionControl.persistence.mountPath }}/init-local'
+     volumeMounts:
+       - mountPath: "{{ .Values.missionControl.persistence.mountPath }}"
+         name: mission-control-data
+  customSidecarContainers: |
+   - name: "sidecar-list-local"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     securityContext:
+       allowPrivilegeEscalation: false
+     command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecar.txt; cat /scriptslocal/sidecar.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scriptslocal"
+         name: custom-volume-local
      resources:
        requests:
          memory: "32Mi"
