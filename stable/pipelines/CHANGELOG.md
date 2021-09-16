@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.17.8] - Aug 11, 2021
+## [101.17.9] - Aug 11, 2021
 * Support global and product specific tags at the same time
 * Updated readme of chart to point to wiki. Refer [Installing Pipelines](https://www.jfrog.com/confluence/display/JFROG/Installing+Pipelines#InstallingPipelines-HelmInstallation)
 * Added support for configuring postgresql connection pool

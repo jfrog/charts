@@ -84,6 +84,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/sh'
         - '-c'
@@ -150,6 +153,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -170,6 +176,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - 'sh'
         - '-c'
@@ -193,6 +202,9 @@ spec:
         image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         - name: DB_PORT
           value: '{{ .Values.postgresql.service.port }}'
@@ -262,6 +274,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.elasticsearch.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/sh'
         - '-c'
@@ -348,6 +363,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/sh'
         - '-c'
@@ -383,6 +401,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/bash'
         - '-c'
@@ -460,6 +481,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         args:
         - "-e"
         - "-E"
@@ -486,6 +510,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -554,6 +581,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         - name: JFMC_EXTRA_JAVA_OPTS
           value: "
@@ -641,6 +671,9 @@ spec:
           runAsUser: {{ $uid }}
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - tail
         args:
@@ -662,6 +695,9 @@ spec:
           runAsUser: {{ $uid }}
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - tail
         args:
@@ -683,6 +719,9 @@ spec:
           runAsUser: {{ $uid }}
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - tail
         args:
