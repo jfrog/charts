@@ -107,6 +107,9 @@ common:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -123,6 +126,9 @@ common:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -140,6 +146,9 @@ common:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -313,7 +322,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.13.4
+    tag: 7.14.0
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -614,7 +623,7 @@ missionControl:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}{{ include "mission-control.livenessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -627,7 +636,7 @@ missionControl:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -640,7 +649,7 @@ missionControl:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -717,7 +726,7 @@ insightServer:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "mission-control.livenessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -730,7 +739,7 @@ insightServer:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -744,7 +753,7 @@ insightServer:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -815,7 +824,7 @@ insightScheduler:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "mission-control.livenessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -828,7 +837,7 @@ insightScheduler:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -842,7 +851,7 @@ insightScheduler:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -873,7 +882,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "mission-control.router.livenessProbe" .}}
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
@@ -886,7 +895,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "mission-control.router.readinessProbe" .}}
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
@@ -899,7 +908,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "mission-control.router.readinessProbe" .}}
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 30
@@ -998,3 +1007,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
+
+## To enable new probes that will become default in one of the future releases
+newProbes: false

@@ -56,6 +56,9 @@ global:
      imagePullPolicy: "{{ .Values.imagePullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
      command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "/scriptsglobal"
@@ -104,6 +107,9 @@ common:
      imagePullPolicy: "{{ .Values.imagePullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
      command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecar.txt; cat /scriptslocal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "/scriptslocal"
