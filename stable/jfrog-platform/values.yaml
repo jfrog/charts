@@ -10,6 +10,9 @@ global:
   ## Set this flag to false, if you are using artifactory chart.
   artifactoryHaEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  ## Artifactory UI URL - Mandatory
+  ## Update jfrogUrlUI before running builds on Pipelines
+  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
   jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
