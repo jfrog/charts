@@ -10,7 +10,9 @@ global:
   ## Set this flag to false, if you are using artifactory chart.
   artifactoryHaEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
-  jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  ## Artifactory UI URL - Mandatory
+  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
+  jfrogUrlUI:
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   ## Chart.AppVersion for each product can be overidden using global.versions.<product>

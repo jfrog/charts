@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [0.10.2] - Sept 22, 2021
+* Correct global.jfrogUrlUI to show that it must be set to the external url
+
 ## [0.10.1] - Sep 16, 2021
 * Update dependency artifactory/ha charts version to 107.25.7
 * Update dependency mission-control chart version to 104.7.14
