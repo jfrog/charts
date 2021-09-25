@@ -3,10 +3,20 @@ All changes to this chart will be documented in this file.
 ## [107.22.1] - August 4, 2021
 * Fix usage of depricated Ingress Apigroup.
 
-## [107.24.3] - Aug 2, 2021
+## [107.25.6] - Aug 23, 2021
+* Updated readme of chart to point to wiki. Refer [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory)
+* Added startupProbe and livenessProbe for RT-split containers
+* Updated router version to 7.24.1
+* Added security hardening fixes
+* Enabled startup probes for k8s >= 1.20.x
+* Changed network policy to allow all ingress and egress traffic
+* Added Observability changes
+* Added support for global.versions.router (only when `splitServicesToContainers` is enabled)
+* Added min kubeVersion ">= 1.12.0-0"
+
+## [107.24.0] - July 27, 2021
 * Support global and product specific tags at the same time
 * Added support for artifactory containers split
-* Updated readme of chart to point to wiki. Refer [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory)
 
 ## [107.23.0] - July 8, 2021
 * Bug fix - logger sideCar picks up Wrong File in helm

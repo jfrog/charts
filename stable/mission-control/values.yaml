@@ -17,6 +17,8 @@ global:
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
+
+  ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customVolumes: |
 
   # customVolumeMounts: |
@@ -102,6 +104,12 @@ common:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -115,6 +123,12 @@ common:
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -130,7 +144,11 @@ common:
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    securityContext:
+  #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -180,16 +198,16 @@ rbac:
       - watch
       - list
 
-networkpolicy:
+networkpolicy: []
   # Allows all ingress and egress
-  - name: mission-control
-    podSelector:
-      matchLabels:
-        app: mission-control
-    egress:
-      - {}
-    ingress:
-      - {}
+  # - name: mission-control
+  #   podSelector:
+  #     matchLabels:
+  #       app: mission-control
+  #   egress:
+  #     - {}
+  #   ingress:
+  #     - {}
   # Uncomment to allow only mission-control pods to communicate with postgresql (if postgresql.enabled is true)
   # - name: postgres
   #   podSelector:
@@ -296,6 +314,7 @@ database:
 
 elasticsearch:
   enabled: true
+  uid: 1000
   ## certificatesSecretName:
   name: elasticsearch
   initContainerImage: releases-docker.jfrog.io/alpine:3.14.0
@@ -303,7 +322,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.13.2
+    tag: 7.14.0
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -338,9 +357,9 @@ elasticsearch:
     # storageClass: "-"
 
   ## ElasticSearch xms and xmx should be same!
-  javaOpts: {}
-  #  xms: "2g"
-  #  xmx: "2g"
+  javaOpts:
+    xms: "2g"
+    xmx: "2g"
 
   resources: {}
   #  requests:
@@ -356,7 +375,7 @@ elasticsearch:
       httpGet:
         path: /_cluster/health
         port: 9200
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 3
@@ -368,7 +387,7 @@ elasticsearch:
       httpGet:
         path: /_cluster/health
         port: 9200
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
       failureThreshold: 10
@@ -405,6 +424,7 @@ missionControl:
   appName: jfmc-server
   home: /var/opt/jfrog/mc
   labels: {}
+  annotations: {}
 
   # env:
 
@@ -471,6 +491,8 @@ missionControl:
           {{ else }}
           requiredServiceTypes: 'jfisc,jfisv,jfmc'
           {{- end }}
+      serviceRegistry:
+        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
     {{- if .Values.elasticsearch.enabled }}
     elasticsearch:
       app:
@@ -601,8 +623,8 @@ missionControl:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}{{ include "mission-control.livenessProbe" .}}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -614,8 +636,8 @@ missionControl:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}{{ include "mission-control.readinessProbe" .}}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -627,7 +649,7 @@ missionControl:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.missionControl.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -704,8 +726,8 @@ insightServer:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "mission-control.livenessProbe" .}}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -717,8 +739,8 @@ insightServer:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "mission-control.readinessProbe" .}}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -731,7 +753,7 @@ insightServer:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -802,8 +824,8 @@ insightScheduler:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "mission-control.livenessProbe" .}}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
@@ -815,8 +837,8 @@ insightScheduler:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "mission-control.readinessProbe" .}}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -829,7 +851,7 @@ insightScheduler:
       exec:
         command:
         - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}/api/v1/system/ping
+        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "mission-control.readinessProbe" .}}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -840,8 +862,11 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.21.5
+    tag: 7.24.1
     imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: false
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
@@ -857,25 +882,25 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "mission-control.router.livenessProbe" .}}
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 3
+      timeoutSeconds: 1
+      failureThreshold: 10
       successThreshold: 1
 
   readinessProbe:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "mission-control.router.readinessProbe" .}}
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 10
+      timeoutSeconds: 1
       failureThreshold: 10
       successThreshold: 1
 
@@ -883,7 +908,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "mission-control.router.readinessProbe" .}}
         scheme: {{ include "mission-control.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 30
@@ -982,3 +1007,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
+
+## To enable new probes that will become default in one of the future releases
+newProbes: false

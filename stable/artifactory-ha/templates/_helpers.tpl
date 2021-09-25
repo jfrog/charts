@@ -292,6 +292,9 @@ Return the proper artifactory chart image names
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- if $dot.Values.global }}
+    {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.versions.router (eq $indexReference "router") }}
+    {{- $tag = $dot.Values.global.versions.router | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
     {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
     {{- end -}}
@@ -322,4 +325,20 @@ echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }
 mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted;
 find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted \;;
 find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}
+
+{{/*
+Resolve requiredServiceTypes value
+*/}}
+{{- define "router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob" -}}
+{{- if .Values.jfconnect -}}
+  {{- if .Values.jfconnect.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
+  {{- end -}}
+{{- end -}}
+{{- if .Values.artifactory.replicator.enabled -}}
+{{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
+{{- end -}}
+{{- $requiredTypes -}}
 {{- end -}}

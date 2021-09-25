@@ -39,6 +39,9 @@ spec:
       annotations:
         checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/mission-control-system-yaml.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.missionControl.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ template "mission-control.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
@@ -78,7 +81,12 @@ spec:
       - name: copy-system-yaml
         image: '{{ .Values.initContainerImage }}'
         securityContext:
+          runAsNonRoot: true
           runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/sh'
         - '-c'
@@ -141,6 +149,13 @@ spec:
       {{- if or .Values.missionControl.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -157,6 +172,13 @@ spec:
       {{- if or .Values.postgresql.enabled ( and .Values.database.host .Values.database.port ) }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - 'sh'
         - '-c'
@@ -178,6 +200,11 @@ spec:
     {{- if .Values.postgresql.enabled }}
       - name: postgresql-setup
         image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         - name: DB_PORT
           value: '{{ .Values.postgresql.service.port }}'
@@ -243,6 +270,13 @@ spec:
       - name: {{ .Values.elasticsearch.name }}
         image: {{ include "mission-control.getImageInfoByValue" (list . "elasticsearch") }}
         imagePullPolicy: {{ .Values.elasticsearch.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.elasticsearch.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/sh'
         - '-c'
@@ -325,6 +359,13 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "mission-control.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/sh'
         - '-c'
@@ -333,9 +374,6 @@ spec:
         ports:
         - name: http-router
           containerPort: {{ .Values.router.internalPort }}
-        securityContext:
-          allowPrivilegeEscalation: false
-          runAsUser: {{ .Values.common.uid }}
         volumeMounts:
         - name: mission-control-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -359,6 +397,13 @@ spec:
       - name: {{ .Values.missionControl.name }}
         image: {{ include "mission-control.getImageInfoByValue" (list . "missionControl") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
         - '/bin/bash'
         - '-c'
@@ -433,12 +478,16 @@ spec:
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         args:
         - "-e"
         - "-E"
         - "http.enabled=true"
-        securityContext:
-          runAsUser: 0
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
@@ -454,11 +503,16 @@ spec:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
         terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
-        resources:
-{{ toYaml .Values.missionControl.resources | indent 10 }}
       - name: {{ .Values.insightServer.name }}
         image: {{ include "mission-control.getImageInfoByValue" (list . "insightServer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -523,6 +577,13 @@ spec:
       - name: {{ .Values.insightScheduler.name }}
         image: {{ include "mission-control.getImageInfoByValue" (list . "insightScheduler") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         - name: JFMC_EXTRA_JAVA_OPTS
           value: "
@@ -608,7 +669,11 @@ spec:
         image: {{ include "mission-control.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsUser: {{ $uid }}
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - tail
         args:
@@ -628,7 +693,11 @@ spec:
         image: {{ include "mission-control.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsUser: {{ $uid }}
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - tail
         args:
@@ -648,7 +717,11 @@ spec:
         image: {{ include "mission-control.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsUser: {{ $uid }}
+          runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - tail
         args:

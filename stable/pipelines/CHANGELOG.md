@@ -1,10 +1,11 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.17.7] - August 24, 2021
+
+## [101.17.10] - Sept 25, 2021
 * Fix usage of depricated Ingress Apigroup.
 
-## [101.17.6] - Aug 11, 2021
+## [101.17.9] - Aug 11, 2021
 * Support global and product specific tags at the same time
 * Updated readme of chart to point to wiki. Refer [Installing Pipelines](https://www.jfrog.com/confluence/display/JFROG/Installing+Pipelines#InstallingPipelines-HelmInstallation)
 * Added support for configuring postgresql connection pool

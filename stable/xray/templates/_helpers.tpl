@@ -267,7 +267,8 @@ Resolve customInitContainersBegin value
 {{- define "xray.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.common.customInitContainersBegin -}}
+{{- end -}}
+{{- if .Values.common.customInitContainersBegin -}}
 {{- .Values.common.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
@@ -278,7 +279,8 @@ Resolve customInitContainers value
 {{- define "xray.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.common.customInitContainers -}}
+{{- end -}}
+{{- if .Values.common.customInitContainers -}}
 {{- .Values.common.customInitContainers -}}
 {{- end -}}
 {{- end -}}
@@ -289,7 +291,8 @@ Resolve customVolumes value
 {{- define "xray.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- else if .Values.common.customVolumes -}}
+{{- end -}}
+{{- if .Values.common.customVolumes -}}
 {{- .Values.common.customVolumes -}}
 {{- end -}}
 {{- end -}}
@@ -301,7 +304,8 @@ Resolve customVolumeMounts value
 {{- define "xray.customVolumeMounts" -}}
 {{- if .Values.global.customVolumeMounts -}}
 {{- .Values.global.customVolumeMounts -}}
-{{- else if .Values.common.customVolumeMounts -}}
+{{- end -}}
+{{- if .Values.common.customVolumeMounts -}}
 {{- .Values.common.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
@@ -312,7 +316,8 @@ Resolve customSidecarContainers value
 {{- define "xray.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
-{{- else if .Values.common.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.common.customSidecarContainers -}}
 {{- .Values.common.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}

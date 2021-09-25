@@ -1,6 +1,12 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.25.7] - Sep 17, 2021
+* Bumping chart version to align with app version
+
+## [107.25.6] - Sep 6, 2021
+* Bumping chart version to align with app version
+
 ## [107.24.3] - Aug 13, 2021
 * Bumping chart version to align with app version
 

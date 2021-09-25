@@ -73,6 +73,9 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -129,6 +132,9 @@ spec:
       {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -145,6 +151,9 @@ spec:
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -166,6 +175,10 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.xrayUserId }}
+          allowPrivilegeEscalation: false
         command:
           - '/bin/sh'
           - '-c'
@@ -178,8 +191,6 @@ spec:
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
-        securityContext:
-          allowPrivilegeEscalation: false
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -206,6 +217,10 @@ spec:
       - name: {{ .Values.server.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.xrayUserId }}
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
@@ -311,8 +326,6 @@ spec:
 {{- with .Values.server.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
-        securityContext:
-          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.server.resources | indent 10 }}
 {{- if .Values.server.startupProbe.enabled }}
@@ -330,6 +343,10 @@ spec:
       - name: {{ .Values.analysis.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.xrayUserId }}
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
@@ -441,8 +458,6 @@ spec:
 {{- with .Values.analysis.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
-        securityContext:
-          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.analysis.resources | indent 10 }}
 {{- if .Values.analysis.startupProbe.enabled }}
@@ -460,6 +475,10 @@ spec:
       - name: {{ .Values.indexer.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.xrayUserId }}
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
@@ -571,8 +590,6 @@ spec:
 {{- with .Values.indexer.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
-        securityContext:
-          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.indexer.resources | indent 10 }}
 {{- if .Values.indexer.startupProbe.enabled }}
@@ -590,6 +607,10 @@ spec:
       - name: {{ .Values.persist.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.xrayUserId }}
+          allowPrivilegeEscalation: false
         command:
           - '/bin/bash'
           - '-c'
@@ -697,8 +718,6 @@ spec:
 {{- with .Values.persist.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
-        securityContext:
-          allowPrivilegeEscalation: false
         resources:
 {{ toYaml .Values.persist.resources | indent 10 }}
 {{- if .Values.persist.startupProbe.enabled }}
@@ -722,7 +741,8 @@ spec:
         - "-E"
         - "http.enabled=true"
         securityContext:
-          runAsUser: 0
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
