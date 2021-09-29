@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [1.11.6] - Sep 29, 2021
+* Updated Artifactory version to 6.23.28 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.23.28)
+
 ## [1.11.5] - July 26, 2021
 * Updated Artifactory version to 6.23.25 - [Release Notes](https://www.jfrog.com/confluence/display/RTF6X/Release+Notes#ReleaseNotes-Artifactory6.23.25)
 
