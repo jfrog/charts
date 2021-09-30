@@ -1,0 +1,13 @@
+{{- if .Values.common.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "insight.fullname" . }}-configmaps
+  labels:
+    app: {{ template "insight.name" . }}
+    chart: {{ template "insight-server.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+{{ tpl .Values.common.configMaps . | indent 2 }}
+{{- end }}
