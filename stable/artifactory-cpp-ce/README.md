@@ -28,7 +28,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce --version 1.7.3
+helm upgrade --install artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce --version 1.7.4
 ```
 
 ### Accessing Artifactory CE for C++
