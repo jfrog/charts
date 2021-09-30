@@ -1,6 +1,9 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.27.3] - Sep 22, 2021
+* Bumping chart version to align with app version
+
 ## [107.25.7] - Sep 17, 2021
 * Bumping chart version to align with app version
 

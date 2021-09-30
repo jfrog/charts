@@ -40,6 +40,9 @@ artifactory:
      imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
      command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecarlocal.txt; cat /scriptslocal/sidecarlocal.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "/scriptslocal"
@@ -98,6 +101,9 @@ global:
      imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
      command: ["sh","-c","echo 'Sidecar is running in global' >> /scripts/sidecarglobal.txt; cat /scripts/sidecarglobal.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "/scripts"

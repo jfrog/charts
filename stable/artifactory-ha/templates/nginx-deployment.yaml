@@ -111,53 +111,15 @@ spec:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.startupProbe.enabled }}
         startupProbe:
-          httpGet:
-            path: {{ .Values.nginx.startupProbe.path }}
-            {{- if .Values.nginx.http.enabled }}
-            port: {{ .Values.nginx.http.internalPort }}
-            scheme: HTTP
-            {{- else }}
-            port: {{ .Values.nginx.https.internalPort }}
-            scheme: HTTPS
-            {{- end }}
-          initialDelaySeconds: {{ .Values.nginx.startupProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.nginx.startupProbe.periodSeconds }}
-          failureThreshold: {{ .Values.nginx.startupProbe.failureThreshold }}
-          timeoutSeconds: {{ .Values.nginx.startupProbe.timeoutSeconds }}
+{{ tpl .Values.nginx.startupProbe.config . | indent 10 }}
         {{- end }}
         {{- if .Values.nginx.readinessProbe.enabled }}
         readinessProbe:
-          httpGet:
-            path: {{ .Values.nginx.readinessProbe.path }}
-            {{- if .Values.nginx.http.enabled }}
-            port: {{ .Values.nginx.http.internalPort }}
-            scheme: HTTP
-            {{- else }}
-            port: {{ .Values.nginx.https.internalPort }}
-            scheme: HTTPS
-            {{- end }}
-          initialDelaySeconds: {{ tpl (.Values.nginx.readinessProbe.initialDelaySeconds | toString) . }}
-          periodSeconds: {{ .Values.nginx.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.nginx.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.nginx.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.nginx.readinessProbe.successThreshold }}
+{{ tpl .Values.nginx.readinessProbe.config . | indent 10 }}
         {{- end }}
         {{- if .Values.nginx.livenessProbe.enabled }}
         livenessProbe:
-          httpGet:
-            path: {{ .Values.nginx.livenessProbe.path }}
-            {{- if .Values.nginx.http.enabled }}
-            port: {{ .Values.nginx.http.internalPort }}
-            scheme: HTTP
-            {{- else }}
-            port: {{ .Values.nginx.https.internalPort }}
-            scheme: HTTPS
-            {{- end }}
-          initialDelaySeconds: {{ tpl (.Values.nginx.livenessProbe.initialDelaySeconds | toString) . }}
-          periodSeconds: {{ .Values.nginx.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.nginx.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.nginx.livenessProbe.successThreshold }}
+{{ tpl .Values.nginx.livenessProbe.config . | indent 10 }}
         {{- end }}
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
