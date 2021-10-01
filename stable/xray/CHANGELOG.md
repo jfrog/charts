@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.33.4] - Oct 1, 2021
+* Fixed incorrect data type in default values.yaml
+
 ## [103.33.3] - Aug 13, 2021
 * Update router version to `7.24.1`
 * Support global and product specific tags at the same time
