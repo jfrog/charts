@@ -1,0 +1,16 @@
+{{- if not .Values.systemYamlOverride.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "insight.fullname" . }}-systemyaml
+  labels:
+    app: {{ template "insight.name" . }}
+    chart: {{ template "insight-server.chart" . }}
+    component: {{ .Values.insightServer.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  system.yaml: |
+{{ tpl .Values.insightServer.systemYaml . | indent 4 }}
+{{- end }}

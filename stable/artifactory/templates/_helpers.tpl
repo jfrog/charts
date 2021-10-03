@@ -305,7 +305,78 @@ Resolve requiredServiceTypes value
   {{- end -}}
 {{- end -}}
 {{- if .Values.artifactory.replicator.enabled -}}
-{{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
+    {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
+{{- end -}}
+{{- if .Values.mc -}}
+  {{- if .Values.mc.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
+  {{- end -}}
 {{- end -}}
 {{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Check if the image is artifactory pro or not
+*/}}
+{{- define "artifactory.isImageProType" -}}
+{{- if not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository) -}}
+{{ true }}
+{{- else -}}
+{{ false }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if the artifactory is using derby database
+*/}}
+{{- define "artifactory.isUsingDerby" -}}
+{{- if and (eq (default "derby" .Values.database.type) "derby") (not .Values.postgresql.enabled) -}}
+{{ true }}
+{{- else -}}
+{{ false }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+nginx scheme (http/https)
+*/}}
+{{- define "nginx.scheme" -}}
+{{- if .Values.nginx.http.enabled -}}
+{{- printf "%s" "http" -}}
+{{- else -}}
+{{- printf "%s" "https" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+nginx port (80/443) based on http/https enabled
+*/}}
+{{- define "nginx.port" -}}
+{{- if .Values.nginx.http.enabled -}}
+{{- .Values.nginx.http.internalPort -}}
+{{- else -}}
+{{- .Values.nginx.https.internalPort -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+artifactory liveness probe
+*/}}
+{{- define "artifactory.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+artifactory readiness probe
+*/}}
+{{- define "artifactory.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
 {{- end -}}

@@ -1,16 +1,12 @@
 apiVersion: v2
-type: application
-name: artifactory-oss
-home: https://www.jfrog.com/artifactory/
-version: 107.25.7
-appVersion: 7.25.7
+appVersion: 7.27.3
 dependencies:
-  - name: artifactory
-    version: 107.25.7
-    repository: https://charts.jfrog.io/
+- name: artifactory
+  repository: file://charts/artifactory
+  version: 107.27.3
 description: JFrog Artifactory OSS
-sources:
-- https://github.com/jfrog/charts
+home: https://www.jfrog.com/artifactory/
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/artifactory/logo/artifactory-logo.png
 keywords:
 - artifactory
 - jfrog
@@ -18,6 +14,10 @@ keywords:
 - registry
 - devops
 maintainers:
-- name: Chart Maintainers at JFrog
-  email: helm@jfrog.com
-icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/artifactory/logo/artifactory-logo.png
+- email: helm@jfrog.com
+  name: Chart Maintainers at JFrog
+name: artifactory-oss
+sources:
+- https://github.com/jfrog/charts
+type: application
+version: 107.27.3

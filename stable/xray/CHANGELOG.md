@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.32.2] - Aug 13, 2021
+## [103.33.3] - Aug 13, 2021
 * Update router version to `7.24.1`
 * Support global and product specific tags at the same time
 * Updated readme of chart to point to wiki. Refer [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray)

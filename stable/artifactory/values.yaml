@@ -43,7 +43,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.14.0
+initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
 
 # Init containers
 initContainers:
@@ -159,11 +159,19 @@ networkpolicy: []
   #         matchLabels:
   #           app: artifactory
 
+## Apply horizontal pod auto scaling on artifactory pods
+## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+
 logger:
   image:
     registry: releases-docker.jfrog.io
     repository: busybox
-    tag: 1.32.1
+    tag: 1.33.1
 
 ## The following router settings are to configure only when splitServicesToContainers set to true
 ## splitServicesToContainers (by default it is false)
@@ -172,7 +180,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.24.1
+    tag: 7.25.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -238,7 +246,7 @@ router:
 # Artifactory
 artifactory:
   name: artifactory
-  # For HA installation, set this value > 1.
+  # For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
   replicaCount: 1
   # Note that by default we use appVersion to get image tag/version
   image:
@@ -363,6 +371,9 @@ artifactory:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -379,6 +390,9 @@ artifactory:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -396,6 +410,9 @@ artifactory:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -627,6 +644,19 @@ artifactory:
           maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
           sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
           extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
+    {{- if .Values.mc.enabled }}
+    mc:
+      enabled: true
+      database:
+        maxOpenConnections: {{ .Values.mc.database.maxOpenConnections }}
+      idgenerator:
+        maxOpenConnections: {{ .Values.mc.idgenerator.maxOpenConnections }}
+      tomcat:
+        connector:
+          maxThreads: {{ .Values.mc.tomcat.connector.maxThreads }}
+          sendReasonPhrase: {{ .Values.mc.tomcat.connector.sendReasonPhrase }}
+          extraConfig: {{ .Values.mc.tomcat.connector.extraConfig }}
+    {{- end }}
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
@@ -654,6 +684,13 @@ artifactory:
   replicator:
     name: replicator
     enabled: false
+    resources: {}
+    #  requests:
+    #    memory: "100Mi"
+    #    cpu: "100m"
+    #  limits:
+    #    memory: "1Gi"
+    #    cpu: "1"
     ingress:
       name:
       hosts: []
@@ -698,32 +735,44 @@ artifactory:
   ## If you want to disable the securityContext for the Artifactory StatefulSet, set this tag to false
   setSecurityContext: true
 
-  ## The following settings are to configure the frequency of the liveness and readiness probes
+  ## To use newProbes set .Values.newProbes to true
   livenessProbe:
     enabled: true
-    path: /router/api/v1/system/health
-    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}'
-    failureThreshold: 10
-    timeoutSeconds: 5
-    periodSeconds: 10
-    successThreshold: 1
+    config: |
+      httpGet:
+        path: {{ include "artifactory.livenessProbe" . }}
+        scheme: {{ include "artifactory.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 10
+      successThreshold: 1
 
   readinessProbe:
     enabled: true
-    path: /router/api/v1/system/health
-    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}'
-    failureThreshold: 10
-    timeoutSeconds: 5
-    periodSeconds: 10
-    successThreshold: 1
+    config: |
+      httpGet:
+        path: {{ include "artifactory.readinessProbe" . }}
+        scheme: {{ include "artifactory.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 10
+      successThreshold: 1
 
   startupProbe:
     enabled: true
-    path: /router/api/v1/system/health
-    initialDelaySeconds: 10
-    failureThreshold: 90
-    periodSeconds: 5
-    timeoutSeconds: 5
+    config: |
+      httpGet:
+        path: {{ include "artifactory.readinessProbe" . }}
+        scheme: {{ include "artifactory.scheme" . | upper }}
+        port: {{ .Values.router.internalPort }}
+      initialDelaySeconds: 10
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
 
   persistence:
     mountPath: "/var/opt/jfrog/artifactory"
@@ -772,7 +821,7 @@ artifactory:
 
         {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
           <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
         {{- end }}
@@ -797,7 +846,7 @@ artifactory:
 
           <!-- Set max cache-fs size -->
           <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
 
@@ -838,7 +887,7 @@ artifactory:
 
           <!-- Set max cache-fs size -->
           <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64}}</maxCacheSize>
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
 
@@ -909,7 +958,7 @@ artifactory:
 
           <!-- Set max cache-fs size -->
           <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
 
@@ -954,7 +1003,7 @@ artifactory:
 
           <!-- Set max cache-fs size -->
           <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize }}</maxCacheSize>
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
 
@@ -963,8 +1012,8 @@ artifactory:
               <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
               <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
               <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
-              <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit }}</multiPartLimit>
-              <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize }}</multipartElementSize>
+              <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>
+              <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize | int64 }}</multipartElementSize>
               <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
           </provider>
       </config>
@@ -1116,6 +1165,13 @@ artifactory:
 
 frontend:
   name: frontend
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
   ## Session settings
   session:
     ## Time in minutes after which the frontend token will need to be refreshed
@@ -1175,6 +1231,14 @@ metadata:
   name: metadata
   database:
     maxOpenConnections: 80
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1205,6 +1269,13 @@ metadata:
 
 event:
   name: event
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1236,6 +1307,13 @@ event:
 jfconnect:
   name: jfconnect
   enabled: false
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1263,6 +1341,59 @@ jfconnect:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: 5
+
+observability:
+  name: observability
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
+
+# MISSION_CONTROL
+mc:
+  enabled: false
+
+  database:
+    maxOpenConnections: 10
+
+  idgenerator:
+    maxOpenConnections: 2
+
+  tomcat:
+    connector:
+      maxThreads: 50
+      sendReasonPhrase: false
+      extraConfig: 'acceptCount="100"'
 
 # Nginx
 nginx:
@@ -1488,32 +1619,45 @@ nginx:
   # externalPortHttps: 443
   # internalPortHttps: 443
 
-  ## The following settings are to configure the frequency of the liveness and readiness probes
+  ## The following settings are to configure the frequency of the liveness and readiness probes.
+  ## To use newProbes please set .Values.newProbes to true
   livenessProbe:
     enabled: true
-    path: /router/api/v1/system/health
-    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}'
-    failureThreshold: 10
-    timeoutSeconds: 5
-    periodSeconds: 10
-    successThreshold: 1
+    config: |
+      httpGet:
+        path: {{ include "artifactory.livenessProbe" . }}
+        scheme: {{ include "nginx.scheme" . | upper }}
+        port: {{ include "nginx.port" . }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 10
+      successThreshold: 1
 
   readinessProbe:
     enabled: true
-    path: /router/api/v1/system/health
-    initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}'
-    failureThreshold: 10
-    timeoutSeconds: 5
-    periodSeconds: 10
-    successThreshold: 1
+    config: |
+      httpGet:
+        path: {{ include "artifactory.readinessProbe" . }}
+        scheme: {{ include "nginx.scheme" . | upper }}
+        port: {{ include "nginx.port" . }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 10
+      successThreshold: 1
 
   startupProbe:
     enabled: true
-    path: /router/api/v1/system/health
-    initialDelaySeconds: 30
-    failureThreshold: 90
-    periodSeconds: 5
-    timeoutSeconds: 5
+    config: |
+      httpGet:
+        path: {{ include "artifactory.readinessProbe" . }}
+        scheme: {{ include "nginx.scheme" . | upper }}
+        port: {{ include "nginx.port" . }}
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
 
   ## The SSL secret that will be used by the Nginx pod
   # tlsSecretName: chart-example-tls
@@ -1698,3 +1842,6 @@ hostAliases: []
 ## This is an experimental feature (not ready for production yet )  that will become default in one of the future releases
 ## Toggling this feature will enable all microservices to run in different containers in a single pod (by default it is false)
 splitServicesToContainers: false
+
+## To enable new probes that will become default in one of the future releases
+newProbes: false

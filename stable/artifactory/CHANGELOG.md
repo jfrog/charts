@@ -1,7 +1,27 @@
 # JFrog Artifactory Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
-## [107.25.6] - Aug 23, 2021
+## [107.27.3] - Sep 20, 2021
+* **Breaking change**
+* Aligned probe structure (moved probes variables under config block)
+* Added support for new probes(set to false by default)
+* Bugfix - Invalid format for `multiPartLimit,multipartElementSize,maxCacheSize` in binarystore.xml
+* Added missioncontrol container in artifactory
+* Dropped NET_RAW capability for the containers
+* Added resources to migration-artifactory init container
+* Added resources to all rt split containers
+* Updated router version to `7.25.1`
+* Added support for Ingress networking.k8s.io/v1/Ingress for k8s >=1.22
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+* Update busybox tag version to `1.33.1`
+
+## [107.26.0] - Aug 23, 2021
+* Added Observability container (only when `splitServicesToContainers` is enabled)
+* Support for high availability (when replicaCount > 1)
+* Added min kubeVersion ">= 1.12.0-0" in chart.yaml
+
+## [107.25.0] - Aug 13, 2021
 * Updated readme of chart to point to wiki. Refer [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory)
 * Added startupProbe and livenessProbe for RT-split containers
 * Updated router version to 7.24.1
@@ -10,7 +30,6 @@ All changes to this chart will be documented in this file.
 * Changed network policy to allow all ingress and egress traffic
 * Added Observability changes
 * Added support for global.versions.router (only when `splitServicesToContainers` is enabled)
-* Added min kubeVersion ">= 1.12.0-0"
 
 ## [107.24.0] - July 27, 2021
 * Support global and product specific tags at the same time
