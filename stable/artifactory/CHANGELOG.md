@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.28.0] - Oct 5, 2021
+* Add support for Ingress Class Name in Ingress Spec
+
 ## [107.27.3] - Sep 20, 2021
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
