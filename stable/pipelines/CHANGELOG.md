@@ -1,11 +1,17 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.17.9] - Aug 11, 2021
-* Support global and product specific tags at the same time
-* Updated readme of chart to point to wiki. Refer [Installing Pipelines](https://www.jfrog.com/confluence/display/JFROG/Installing+Pipelines#InstallingPipelines-HelmInstallation)
+## [101.18.6] - Sept 7, 2021
+* Added security hardening fixes
 * Added support for configuring postgresql connection pool
 * Added support for insecure registry url for router
+* Added support for newRelic
+* Enabled startup probes for k8s >= 1.20.x
+* Passing PIPELINES_NODE_ID to each pipelines microservice
+
+## [101.17.0] - July 27, 2021
+* Support global and product specific tags at the same time
+* Updated readme of chart to point to wiki. Refer [Installing Pipelines](https://www.jfrog.com/confluence/display/JFROG/Installing+Pipelines#InstallingPipelines-HelmInstallation)
 
 ## [101.16.1] - July 1, 2021
 * Increase stepTimeoutMS limit
