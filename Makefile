@@ -3,7 +3,7 @@ MAC_ARGS ?=
 CHARTS_REPO ?= https://github.com/jfrog/charts
 CHART_TESTING_IMAGE ?= releases-docker.jfrog.io/charts-ci
 CHART_TESTING_TAG ?= v0.0.26
-HELM_VERSION ?= v3.6.0
+HELM_VERSION ?= v3.7.0
 
 # If the first argument is "lint" or "mac" or "gke" or "kind"
 ifneq ( $(filter wordlist 1,lint mac gke kind), $(firstword $(MAKECMDGOALS)))
