@@ -1,5 +1,4 @@
-# Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
-# If this is an upgrade over an existing platform chart, explicitly pass 'gaUpgradeReady=true' to upgrade
+# If this is an upgrade over an existing platform chart , explicitly pass 'gaUpgradeReady=true' to upgrade
 gaUpgradeReady: true
 
 postgresql:
@@ -7,8 +6,9 @@ postgresql:
     enabled: false
 artifactory:
   artifactory:
+    replicaCount: 3
     persistence:
-    enabled: false
+      enabled: false
 xray:
   common:
     persistence:

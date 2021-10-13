@@ -1,15 +1,19 @@
-# Default values for jfrog-platform.
+# Default values for jfrog-platform
 
 # nameOverride:
 # fullnameOverride:
+
+# Upgrade is not supported if you are on a chart version (< 10.0.0), otherwise just set gaUpgradeReady=true
+gaUpgradeReady: false
 
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   imageRegistry: releases-docker.jfrog.io
-  ## Set this flag to false, if you are using artifactory chart.
-  artifactoryHaEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  ## Artifactory UI URL - Mandatory
+  ## Update jfrogUrlUI before running builds on Pipelines
+  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
   jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -17,7 +21,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.24.1
+    router: 7.26.0
   #   artifactory:
   #   xray:
   #   distribution:
@@ -36,8 +40,9 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.2-alpine
+    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.4-alpine
     initContainerImagePullPolicy: Always
+    # If you are using external postgresql, set initDBCreation: false
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
   customCertificates:
@@ -54,7 +59,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r39
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -128,8 +133,8 @@ redis:
   usePassword: false
 
 artifactory:
-  ## Note: Set artifactoryHaEnabled flag(global section) to false, if you are using artifactory chart.
-  enabled: false
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.0.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  enabled: true
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -139,31 +144,12 @@ artifactory:
     url: '{{ include "database.url" . }}'
     user: artifactory
     password: artifactory
+  # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
+  mc:
+    enabled: true
   artifactory:
-    migration:
-      enabled: false
-    persistence:
-      size: 200Gi
-    # license:
-    #   secret:
-    #   dataKey:
-
-artifactory-ha:
-  ## Note: Set artifactoryHaEnabled flag(global section) to true, if you are using artifactory-ha chart.
-  enabled: true
-  postgresql:
-    enabled: false
-  waitForDatabase: false
-  database:
-    type: postgresql
-    driver: org.postgresql.Driver
-    url: '{{ include "database.url" . }}'
-    user: artifactoryha
-    password: artifactoryha
-  artifactory:
-    ## For artifactory pro license (supports single node only), enable node replicaCount=0
-    # node:
-    #   replicaCount: 0
+    # Note: For HA deployments, set replicaCount >1 (recommended 3)
+    replicaCount: 1
     migration:
       enabled: false
     persistence:
@@ -204,15 +190,15 @@ distribution:
     user: distribution
     password: distribution
 
-mission-control:
+insight:
   enabled: true
   unifiedUpgradeAllowed: true
   postgresql:
     enabled: false
   database:
     url: '{{ include "database.url" . }}'
-    user: mc
-    password: mc
+    user: insight
+    password: insight
     name: '{{ include "database.name" . }}'
   elasticsearch:
     javaOpts:

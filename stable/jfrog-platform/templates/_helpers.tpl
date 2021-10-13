@@ -76,8 +76,8 @@ Custom init container for Postgres setup
     - '/bin/bash'
     - '-c'
     - >
-      {{- if and (ne .Chart.Name "artifactory-ha") (ne .Chart.Name "artifactory") }}
-      until nc -z -w 5 {{ .Release.Name }}-artifactory-ha 8082 || nc -z -w 5 {{ .Release.Name }}-artifactory 8082; do echo "Waiting for artifactory to start"; sleep 10; done;
+      {{- if (ne .Chart.Name "artifactory") }}
+      until nc -z -w 5 {{ .Release.Name }}-artifactory 8082; do echo "Waiting for artifactory to start"; sleep 10; done;
       {{- end }}
       echo "Running init db scripts";
       su postgres -c "bash /scripts/setupPostgres.sh"
@@ -224,9 +224,5 @@ Define database name
 Resolve jfrog url
 */}}
 {{- define "jfrog-platform.jfrogUrl" -}}
-{{- if .Values.global.artifactoryHaEnabled -}}
-{{- printf "http://%s-artifactory-ha:8082" .Release.Name -}}
-{{- else -}}
 {{- printf "http://%s-artifactory:8082" .Release.Name -}}
-{{- end -}}
 {{- end -}}

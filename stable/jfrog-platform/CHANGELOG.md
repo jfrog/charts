@@ -1,6 +1,16 @@
 # JFrog Platform Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.0.0] - Oct 12, 2021
+* **IMPORTANT**
+* First GA release of the platform chart
+* Version bump to align with all jfrog platform installers
+* Added insight (new product) chart
+* Missioncontrol is now part of artifactory chart (>= 107.27.x)
+* **Breaking change**
+* Removed `artifactory-ha` chart implies `artifactory` chart (>= 107.27.x) can be used for both single and HA modes
+* If this is an upgrade over an existing platform chart, explicitly pass 'gaUpgradeReady=true' to upgrade
+
 ## [0.10.1] - Sep 16, 2021
 * Update dependency artifactory/ha charts version to 107.25.7
 * Update dependency mission-control chart version to 104.7.14
