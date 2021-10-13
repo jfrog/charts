@@ -2,16 +2,14 @@ Congratulations. You have just deployed JFrog Platform Chart with following prod
 
 {{- if .Values.artifactory.enabled }}
 - artifactory
-{{- else if index .Values "artifactory-ha" "enabled" }}
-- artifactory-ha
 {{- end }}
 
 {{- if .Values.xray.enabled }}
 - xray
 {{- end }}
 
-{{- if index .Values "mission-control" "enabled" }}
-- mission-control
+{{- if index .Values "insight" "enabled" }}
+- insight
 {{- end }}
 
 {{- if .Values.distribution.enabled }}
@@ -53,56 +51,14 @@ Congratulations. You have just deployed JFrog Platform Chart with following prod
    user: admin
    password: password
 
-
-{{- else if index .Values "artifactory-ha" "enabled" }}
-
-1. Get the Artifactory-HA IP and URL
-
-   {{- $type := index .Values "artifactory-ha" "nginx" "service" "type" }}
-   {{- if contains "NodePort" $type }}
-   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "call-nested" (list . "artifactory-ha" "artifactory-ha.nginx.fullname") }})
-   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-   echo http://$NODE_IP:$NODE_PORT/
-
-   {{- else if contains "LoadBalancer" $type }}
-   NOTE: It may take a few minutes for the LoadBalancer public IP to be available!
-
-   You can watch the status of the service by running 'kubectl get svc -w {{ include "call-nested" (list . "artifactory-ha" "artifactory-ha.nginx.fullname") }}'
-   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "call-nested" (list . "artifactory-ha" "artifactory-ha.nginx.fullname") }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-   echo http://$SERVICE_IP/
-
-   {{- else if contains "ClusterIP" $type }}
-   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "component={{ index .Values "artifactory-ha" "nginx" "name" }}" -o jsonpath="{.items[0].metadata.name}")
-   kubectl port-forward --namespace {{ .Release.Namespace }} $POD_NAME 8080:80
-   echo http://127.0.0.1:8080
-
-   {{- end }}
-
-2. Open Artifactory in your browser
-   Default credential for Artifactory:
-   user:     admin
-   password: password
-
-   {{- if index .Values "artifactory-ha" "artifactory" "license" "secret" }}
-
-3. Artifactory license(s) is deployed as a Kubernetes secret. This method is relevant for initial deployment only!
-   Updating the license should be done via Artifactory UI or REST API. If you want to keep managing the artifactory license using the same method, you can use artifactory.copyOnEveryStartup in values.yaml.
-
-   {{- else }}
-
-3. Add HA licenses to activate Artifactory HA through the Artifactory UI
-   NOTE: Each Artifactory node requires a valid license. See https://www.jfrog.com/confluence/display/RTF/HA+Installation+and+Setup for more details.
-{{- end }}
+Open Artifactory URL in your browser.
 {{- end }}
 
 {{- if .Values.postgresql.enabled }}
-
-Using the buldled postgresql database:
 To extract the database password, run the following
 export DB_PASSWORD=$(kubectl get --namespace {{ .Release.Namespace }} $(kubectl get secret --namespace {{ .Release.Namespace }} -o name | grep postgresql) -o jsonpath="{.data.postgresql-password}" | base64 --decode)
 echo ${DB_PASSWORD}
+-----------------------------------------------------------------------------------------------------------------------------
+***WARNING*** You are using buldled postgresql database from the chart. For production deployments, use external postgresql !
+-----------------------------------------------------------------------------------------------------------------------------
 {{- end }}
-
-Open Artifactory URL in your browser.
-
-Note : This is the Initial Beta release of the JFrog Platform chart (Backward compatibility is not guaranteed)
