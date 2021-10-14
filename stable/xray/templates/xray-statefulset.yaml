@@ -76,6 +76,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -135,6 +138,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -154,6 +160,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -179,6 +188,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/sh'
           - '-c'
@@ -221,6 +233,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -347,6 +362,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -479,6 +497,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -611,6 +632,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -743,6 +767,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml

@@ -360,3 +360,47 @@ mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted;
 find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted \;;
 find {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
 {{- end -}}
+
+{{/*
+xray liveness probe
+*/}}
+{{- define "xray.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/api/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/api/v1/system/ping" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+xray readiness probe
+*/}}
+{{- define "xray.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/api/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/api/v1/system/ping" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+router liveness probe
+*/}}
+{{- define "xray.router.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+router readiness probe
+*/}}
+{{- define "xray.router.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
+{{- end -}}
