@@ -720,7 +720,7 @@ spec:
                 {{ tpl . $ }}
         {{- end }}
         env:
-      {{- if and (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false")  }}
+      {{- if and (gt (.Values.artifactory.replicaCount | int64) 1) (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false") }}
         - name : JF_SHARED_NODE_HAENABLED
           value: "true"
       {{- end }}
@@ -833,7 +833,7 @@ spec:
       {{- end }}
       {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
         - name: artifactory-license
-          mountPath: "/artifactory_bootstrap/artifactory.lic"
+          mountPath: "/artifactory_bootstrap/artifactory.cluster.license"
           {{- if .Values.artifactory.license.secret }}
           subPath: {{ .Values.artifactory.license.dataKey }}
           {{- else if .Values.artifactory.license.licenseKey }}

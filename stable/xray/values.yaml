@@ -40,7 +40,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.14.0
+initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -412,6 +412,9 @@ common:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -428,6 +431,9 @@ common:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -446,6 +452,9 @@ common:
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -518,7 +527,7 @@ analysis:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.livenessProbe" .}}
         port: {{ .Values.analysis.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
@@ -530,7 +539,7 @@ analysis:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.analysis.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
@@ -542,7 +551,7 @@ analysis:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.analysis.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 60
@@ -581,7 +590,7 @@ indexer:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.livenessProbe" .}}
         port: {{ .Values.indexer.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
@@ -593,7 +602,7 @@ indexer:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.indexer.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
@@ -605,7 +614,7 @@ indexer:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.indexer.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 60
@@ -644,7 +653,7 @@ persist:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.livenessProbe" .}}
         port: {{ .Values.persist.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
@@ -656,7 +665,7 @@ persist:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.persist.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
@@ -668,7 +677,7 @@ persist:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.persist.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 60
@@ -718,7 +727,7 @@ server:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.livenessProbe" .}}
         port: {{ .Values.server.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
@@ -730,7 +739,7 @@ server:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.server.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
@@ -742,7 +751,7 @@ server:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "xray.readinessProbe" .}}
         port: {{ .Values.server.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 60
@@ -765,7 +774,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.24.1
+    tag: 7.25.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -793,7 +802,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "xray.router.readinessProbe" .}}
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
@@ -806,7 +815,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "xray.router.readinessProbe" .}}
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
@@ -819,7 +828,7 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "xray.router.readinessProbe" .}}
         scheme: {{ include "xray.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
       initialDelaySeconds: 30
@@ -915,3 +924,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
+
+## To enable new probes that will become default in one of the future releases
+newProbes: false

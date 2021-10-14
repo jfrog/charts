@@ -1,7 +1,16 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.33.5] - Aug 13, 2021
+## [103.34.1] - Sep 20, 2021
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+
+## [103.32.3] - Sep 08, 2021
+* Dropped NET_RAW capability for the containers
+* Added support for new probes(set to false by default)
+* Updated router version to `7.25.1`
+
+## [103.30.0] - Aug 13, 2021
 * Update router version to `7.24.1`
 * Support global and product specific tags at the same time
 * Updated readme of chart to point to wiki. Refer [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray)
