@@ -1,17 +1,17 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.27.3] - Sep 20, 2021
+## [107.27.6] - Oct 6, 2021
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
 * Added support for new probes(set to false by default)
-* Bugfix - Invalid format for `multiPartLimit,multipartElementSize,maxCacheSize` in binarystore.xml
+* Bugfix - Invalid format for `multiPartLimit,multipartElementSize,maxCacheSize` in binarystore.xml [GH-1466](https://github.com/jfrog/charts/issues/1466)
 * Added missioncontrol container in artifactory
 * Dropped NET_RAW capability for the containers
 * Added resources to migration-artifactory init container
 * Added resources to all rt split containers
 * Updated router version to `7.25.1`
-* Added support for Ingress networking.k8s.io/v1/Ingress for k8s >=1.22
+* Added support for Ingress networking.k8s.io/v1/Ingress for k8s >=1.22 [GH-1487](https://github.com/jfrog/charts/pull/1487)
 * Added min kubeVersion ">= 1.14.0-0" in chart.yaml
 * Update alpine tag version to `3.14.2`
 * Update busybox tag version to `1.33.1`
