@@ -138,6 +138,9 @@ Then store the `CLUSTER` file in the root folder of the repo. It is also ignored
 
 In such setup your local default cluster can be different from the charts testing one.
 
+## Examples
+
+For more detailed examples of each chart values, please refer [examples](https://github.com/jfrog/charts/tree/master/examples).
 
 ## Docs
 
