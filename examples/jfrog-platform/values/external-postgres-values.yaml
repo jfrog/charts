@@ -1,0 +1,49 @@
+artifactory:
+  enabled: true
+  postgresql:
+    enabled: false
+  waitForDatabase: false
+  database:
+    type: postgresql
+    driver: org.postgresql.Driver
+    url: jdbc:postgresql://POSTGRESQL_HOST:5432/artifactory?sslmode=
+    user: artifactory
+    password: password
+xray:
+  enabled: true
+  unifiedUpgradeAllowed: true
+  postgresql:
+    enabled: false
+  database:
+    url: postgres://POSTGRESQL_HOST:5432/xray?sslmode=
+    user: xray
+    password: password
+distribution:
+  enabled: true
+  unifiedUpgradeAllowed: true
+  postgresql:
+    enabled: false
+  database:
+    url: jdbc:postgresql://POSTGRESQL_HOST:5432/distribution?sslmode=
+    user: distribution
+    password: password
+insight:
+  enabled: true
+  unifiedUpgradeAllowed: true
+  postgresql:
+    enabled: false
+  database:
+    url: jdbc:postgresql://POSTGRESQL_HOST:5432/insight?sslmode=
+    user: insight
+    password: password
+pipelines:
+  postgresql:
+    enabled: false
+  global:
+    postgresql:
+      user: pipelines
+      password: password
+      host: <POSTGRESQL_HOST>
+      port: 5432
+      database: pipelinesdb
+      ssl: false
