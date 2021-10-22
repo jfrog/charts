@@ -58,7 +58,8 @@ Open Artifactory URL in your browser.
 To extract the database password, run the following
 export DB_PASSWORD=$(kubectl get --namespace {{ .Release.Namespace }} $(kubectl get secret --namespace {{ .Release.Namespace }} -o name | grep postgresql) -o jsonpath="{.data.postgresql-password}" | base64 --decode)
 echo ${DB_PASSWORD}
------------------------------------------------------------------------------------------------------------------------------
-***WARNING*** You are using buldled postgresql database from the chart. For production deployments, use external postgresql !
------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------
+***WARNING*** You are using the bundled postgresql database from the chart. Bundled postgresql database is not supported for production use cases. 
+Use an external postgresql database for production deployments.
+---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}
