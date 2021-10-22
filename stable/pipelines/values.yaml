@@ -63,7 +63,7 @@ global:
 
 ## Common
 initContainer:
-  image: "releases-docker.jfrog.io/alpine:3.13.5"
+  image: "releases-docker.jfrog.io/alpine:3.14.0"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -279,7 +279,7 @@ pipelines:
       loadBalancerSourceRanges: []
     livenessProbe:
       enabled: true
-      initialDelaySeconds: 20
+      initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}'
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -289,7 +289,7 @@ pipelines:
 
     readinessProbe:
       enabled: true
-      initialDelaySeconds: 20
+      initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}'
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -353,7 +353,7 @@ pipelines:
     #    cpu: "1"
     livenessProbe:
       enabled: false
-      initialDelaySeconds: 90
+      initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}'
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
@@ -362,7 +362,7 @@ pipelines:
 
     readinessProbe:
       enabled: false
-      initialDelaySeconds: 60
+      initialDelaySeconds: '{{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}'
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 10
@@ -665,6 +665,9 @@ pipelines:
   #  - name: "custom-begin-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -678,6 +681,9 @@ pipelines:
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy}}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -693,6 +699,7 @@ pipelines:
   #    image: "{{ .Values.initContainer.image }}"
   #    imagePullPolicy: "{{ .Values.initContainer.pullPolicy }}"
   #    securityContext:
+  #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
   #    command:
   #      - 'sh'
@@ -724,6 +731,16 @@ pipelines:
   #    key: custom-secret2.config
   #    data: |
   #      here the custom secret 2 config
+
+  # newRelic configuration
+  newRelic:
+    enabled: false
+    license: ""
+    appName: ""
+    logging:
+      debug: false
+    distributedTracer:
+      enabled: false
 
   systemYaml: |
     {{- if .Values.router.routerConfiguration }}
@@ -810,6 +827,16 @@ pipelines:
         connectionString: "{{ tpl (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) . }}"
         {{- end }}
 
+      ## newRelic configuration
+      ##
+      newRelic:
+        enabled: {{ .Values.pipelines.newRelic.enabled }}
+        license: {{ .Values.pipelines.newRelic.license }}
+        appName: {{ .Values.pipelines.newRelic.appName }}
+        logging:
+          debug: {{ .Values.pipelines.newRelic.logging.debug }}
+        distributedTracer:
+          enabled: {{ .Values.pipelines.newRelic.distributedTracer.enabled }}
       ## RabbitMQ configuration
       ##
       msg:
