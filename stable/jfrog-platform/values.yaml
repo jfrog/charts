@@ -3,7 +3,7 @@
 # nameOverride:
 # fullnameOverride:
 
-# Upgrade is not supported if you are on a chart version (< 10.0.0), otherwise just set gaUpgradeReady=true
+# If this is an upgrade over an existing platform chart(>= 10.0.0), explicitly pass 'gaUpgradeReady=true' to upgrade
 gaUpgradeReady: false
 
 global:
@@ -25,7 +25,7 @@ global:
   #   artifactory:
   #   xray:
   #   distribution:
-  #   missionControl:
+  #   insight:
   #   pipelines:
   database:
     host: "{{ .Release.Name }}-postgresql"
@@ -133,7 +133,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.0.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.0.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
