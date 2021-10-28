@@ -111,7 +111,7 @@ xray:
         local:
           requiredServiceTypes: 'jfxr,jfxana,jfxidx,jfxpst'
       serviceRegistry:
-        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
+        insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
       logging:
         consoleLog:

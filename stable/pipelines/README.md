@@ -5,7 +5,7 @@
 **IMPORTANT!** Our Helm Chart docs have moved to our main documentation site. Below you will find the basic instructions for installing Pipelines. For all other information, refer to [[Installing Pipelines - Helm Installation](https://www.jfrog.com/confluence/display/JFROG/Installing+Pipelines#InstallingPipelines-HelmInstallation).
 
 ## Prerequisites
-* Kubernetes 1.12+
+* Kubernetes 1.14+
 
 ## Chart Details
 This chart will do the following:
@@ -19,10 +19,9 @@ This chart will do the following:
 - A running Kubernetes cluster
   - Dynamic storage provisioning enabled
   - Default StorageClass set to allow services using the default StorageClass for persistent storage
-- A running Artifactory 7.11.x with Enterprise+ License
+- A running Artifactory 7.19.x with Enterprise+ License
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) v2 or v3 installed
-
+- [Helm](https://helm.sh/) v3 installed
 
 ## Installing JFrog Pipelines
 

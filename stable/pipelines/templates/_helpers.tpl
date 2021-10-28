@@ -205,36 +205,33 @@ imagePullSecrets:
 {{/*
 Resolve customInitContainersBegin value
 */}}
-{{- define "pipelines.vault.customInitContainersBegin" -}}
+{{- define "pipelines.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- end -}}
-{{- if .Values.vault.customInitContainersBegin -}}
-{{- .Values.vault.customInitContainersBegin -}}
+{{- else if .Values.pipelines.customInitContainersBegin -}}
+{{- .Values.pipelines.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customInitContainers value
 */}}
-{{- define "pipelines.vault.customInitContainers" -}}
+{{- define "pipelines.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- end -}}
-{{- if .Values.vault.customInitContainers -}}
-{{- .Values.vault.customInitContainers -}}
+{{- else if .Values.pipelines.customInitContainers -}}
+{{- .Values.pipelines.customInitContainers -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
 Resolve customVolumes value
 */}}
-{{- define "pipelines.vault.customVolumes" -}}
+{{- define "pipelines.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- end -}}
-{{- if .Values.vault.customVolumes -}}
-{{- .Values.vault.customVolumes -}}
+{{- else if .Values.pipelines.customVolumes -}}
+{{- .Values.pipelines.customVolumes -}}
 {{- end -}}
 {{- end -}}
 
@@ -325,4 +322,48 @@ mkdir -p {{ .Values.pipelines.mountPath }}/security/keys/trusted;
 find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.pipelines.mountPath }}/security/keys/trusted \;;
 find {{ .Values.pipelines.mountPath }}/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.pipelines.mountPath }}/security/keys/trusted/ca.crt \;;
 chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
+{{- end -}}
+
+{{/*
+pipelines liveness probe
+*/}}
+{{- define "pipelines.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+pipelines readiness probe
+*/}}
+{{- define "pipelines.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+router liveness probe
+*/}}
+{{- define "pipelines.router.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+router readiness probe
+*/}}
+{{- define "pipelines.router.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
 {{- end -}}
