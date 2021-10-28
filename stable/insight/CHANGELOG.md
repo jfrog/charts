@@ -1,7 +1,16 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.0.1] - Sep 20, 2021
+## [101.1.1] - Oct 11, 2021
+* Added default values cpu and memeory in initContainers
+* Updated router version to `7.26.0`
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed duplicate resource spec in insight-statefulset [GH-1507](https://github.com/jfrog/charts/issues/1507)
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+
+## [101.0.0] - Sep 20, 2021
 * Bumping chart version to align with app version
 * Added security hardening fixes
 * Update elasticsearch version to `7.14.1`

@@ -165,7 +165,7 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
-      {{- if or .Values.postgresql.enabled ( and .Values.database.host .Values.database.port ) }}
+    {{- if .Values.postgresql.enabled }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
         securityContext:
@@ -174,24 +174,19 @@ spec:
           capabilities:
             drop:
               - NET_RAW
-        command:
-        - 'sh'
-        - '-c'
-        - >
-      {{- if .Values.postgresql.enabled }}
-          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
-      {{- else }}
-        {{- if and .Values.database.host .Values.database.port }}
-          until nc -z -w 2 {{ .Values.database.host }} {{ .Values.database.port }} && echo database ok; do
-        {{- else }}
-          until true; do
-        {{- end }}
-      {{- end }}
-            sleep 2;
-          done;
-    {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for postgresql to come up"
+          ready=false;
+          while ! $ready; do echo waiting;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
+          done
+    {{- end }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "insight-server.customInitContainers" .)  . | indent 6 }}
     {{- end }}

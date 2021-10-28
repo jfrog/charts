@@ -29,6 +29,7 @@ global:
 
   # customSidecarContainers: |
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/insight/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -39,7 +40,7 @@ global:
 ## Fully override insight.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
+initContainerImage: releases-docker.jfrog.io/ubi-minimal:8.4-210
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -59,13 +60,13 @@ systemYamlOverride:
 
 # Init containers
 initContainers:
-  resources: {}
-#    requests:
-#      memory: "64Mi"
-#      cpu: "10m"
-#    limits:
-#      memory: "128Mi"
-#      cpu: "250m"
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "10m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 imagePullPolicy: IfNotPresent
 
@@ -183,7 +184,7 @@ common:
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
-  create: true
+  create: false
   role:
     ## Rules to create. It follows the role specification
     rules:
@@ -223,10 +224,12 @@ networkpolicy: []
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
 serviceAccount:
-  create: true
+  create: false
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name:
+  ## Explicitly mounts the API credentials for the Service Account
+  automountServiceAccountToken: false
 
 ## Details required for initialization/setup of database
 dbSetup:
@@ -397,8 +400,8 @@ applicationConfigs: {}
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: busybox
-    tag: 1.33.1
+    repository: ubi-minimal
+    tag: 8.4-210
 
 insightServer:
   name: insight-server
@@ -463,6 +466,7 @@ insightServer:
   ## Artifactory URL . Mandatory
   jfrogUrl:
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/insight/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -485,7 +489,7 @@ insightServer:
           requiredServiceTypes: 'jfisc,jfisv'
           {{- end }}
       serviceRegistry:
-        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
+        insecure: {{ .Values.router.serviceRegistry.insecure }}
     {{- if .Values.elasticsearch.enabled }}
     elasticsearch:
       app:
@@ -739,7 +743,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.25.1
+    tag: 7.26.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
