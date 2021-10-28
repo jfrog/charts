@@ -7,9 +7,6 @@ pipelines:
   api:
     externalUrl: http://pipelines.test.com
 
-  www:
-    externalUrl: http://pipelines.test.com
-
   msg:
     uiUserPassword: password
 
@@ -23,3 +20,8 @@ rabbitmq:
     password: password
   persistence:
     enabled: false
+
+redis:
+  master:
+    persistence:
+      enabled: false

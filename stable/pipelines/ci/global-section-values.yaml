@@ -3,7 +3,7 @@ databaseUpgradeReady: true
 global:
   customInitContainersBegin: |
    - name: "custom-init-begin-global"
-     image: "releases-docker.jfrog.io/alpine:3.14.0"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
      imagePullPolicy: "IfNotPresent"
      command:
        - 'sh'
@@ -14,7 +14,7 @@ global:
          name: jfrog-pipelines-folder
   customInitContainers: |
    - name: "custom-init-global"
-     image: "releases-docker.jfrog.io/alpine:3.14.0"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
      imagePullPolicy: "IfNotPresent"
      command:
        - 'sh'
@@ -29,10 +29,13 @@ global:
        sizeLimit: 100Mi
   customSidecarContainers: |
    - name: "sidecar-list-global"
-     image: "releases-docker.jfrog.io/alpine:3.14.0"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
      imagePullPolicy: "IfNotPresent"
      securityContext:
        allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
      command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "{{ .Values.pipelines.mountPath }}"
@@ -49,16 +52,17 @@ pipelines:
   jfrogUrlUI: http://artifactory.rt:8082
   api:
     externalUrl: http://pipelines.test.com
-  www:
-    externalUrl: http://pipelines.test.com
   msg:
     uiUserPassword: password
   customSidecarContainers: |
    - name: "sidecar-list-local"
-     image: "releases-docker.jfrog.io/alpine:3.14.0"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
      imagePullPolicy: "IfNotPresent"
      securityContext:
        allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
      command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "{{ .Values.pipelines.mountPath }}"
@@ -70,37 +74,6 @@ pipelines:
        limits:
          memory: "128Mi"
          cpu: "100m"
-vault:
-  customInitContainersBegin: |
-   - name: "custom-init-begin-local"
-     image: "releases-docker.jfrog.io/alpine:3.14.0"
-     imagePullPolicy: "IfNotPresent"
-     command:
-       - 'sh'
-       - '-c'
-       - 'touch {{ .Values.pipelines.mountPath }}/init-begin-local'
-     volumeMounts:
-       - mountPath: "{{ .Values.pipelines.mountPath }}"
-         name: jfrog-pipelines-folder
-  customVolumes: |
-   - name: custom-volume-local
-     emptyDir:
-       sizeLimit: 100Mi
-  customVolumeMounts: |
-   - name: custom-volume-local
-     mountPath: "/scriptslocal"
-  customInitContainers: |
-   - name: "custom-init-local"
-     image: "releases-docker.jfrog.io/alpine:3.14.0"
-     imagePullPolicy: "IfNotPresent"
-     command:
-       - 'sh'
-       - '-c'
-       - 'touch {{ .Values.pipelines.mountPath }}/init-local'
-     volumeMounts:
-       - mountPath: "{{ .Values.pipelines.mountPath }}"
-         name: jfrog-pipelines-folder
-
 postgresql:
   postgresqlPassword: password
   persistence:
@@ -111,3 +84,8 @@ rabbitmq:
     password: password
   persistence:
     enabled: false
+
+redis:
+  master:
+    persistence:
+      enabled: false

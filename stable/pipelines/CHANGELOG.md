@@ -1,13 +1,33 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.18.8] - Sept 7, 2021
+## [101.19.3] - Oct 19, 2021
+* update system yaml with newer LTS build images 
+* **Breaking change**
+* Aligned probe structure (moved probes variables under config block)
+* Added support for new probes(set to false by default)
+* Aligned the redis pod to use explicit service account
+* Dropped NET_RAW capability for pipelines-installer
+* Removing www ingress which has to be aligned with pipelines > 1.18.0
+* **IMPORTANT**
+* Hashicorp Vault chart replaces internal Vault
+* Passing PIPELINES_NODE_ID to each pipelines microservice
+* Added support for Ingress networking.k8s.io/v1/Ingress for k8s >=1.22 [GH-1487](https://github.com/jfrog/charts/pull/1487)
+* Added support for postgresql external url
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+* Moving required local services config from env to systemyaml
+* Added jfconnect feature flag(set to false by default)
+* Remove rabbitmq ingress support.
+* Perform base64 encoding for postgreqsql external url
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+
+## [101.18.0] - Aug 10, 2021
 * Added security hardening fixes
 * Added support for configuring postgresql connection pool
 * Added support for insecure registry url for router
 * Added support for newRelic
 * Enabled startup probes for k8s >= 1.20.x
-* Passing PIPELINES_NODE_ID to each pipelines microservice
 
 ## [101.17.0] - July 27, 2021
 * Support global and product specific tags at the same time

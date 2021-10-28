@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.18.8
+appVersion: 1.19.3
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -13,6 +13,10 @@ dependencies:
   name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 12.10.1
+- condition: vault.enabled
+  name: vault
+  repository: https://helm.releases.hashicorp.com
+  version: 0.16.1
 description: A Helm chart for JFrog Pipelines
 home: https://jfrog.com/pipelines/
 icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/pipelines/icon/pipelines-logo.png
@@ -20,6 +24,7 @@ keywords:
 - pipelines
 - jfrog
 - devops
+kubeVersion: '>= 1.14.0-0'
 maintainers:
 - email: installers@jfrog.com
   name: Chart Maintainers at JFrog
@@ -27,4 +32,4 @@ name: pipelines
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 101.18.8
+version: 101.19.3

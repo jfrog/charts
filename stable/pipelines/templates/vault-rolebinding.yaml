@@ -1,4 +1,4 @@
-{{- if and .Values.vault.enabled .Values.rbac.create -}}
+{{- if .Values.vault.enabled -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -8,7 +8,7 @@ metadata:
     component: {{ include "pipelines.vault.name" . }}
 subjects:
 - kind: ServiceAccount
-  name: {{ include "pipelines.vault.name" . }}
+  name: {{ .Values.vault.server.serviceAccount.name }}
 roleRef:
   kind: Role
   apiGroup: rbac.authorization.k8s.io
