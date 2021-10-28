@@ -1,9 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.34.1] - Sep 20, 2021
+## [103.35.0] - Oct 8, 2021
 * Added min kubeVersion ">= 1.14.0-0" in chart.yaml
 * Update alpine tag version to `3.14.2`
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
 
 ## [103.32.3] - Sep 08, 2021
 * Dropped NET_RAW capability for the containers
