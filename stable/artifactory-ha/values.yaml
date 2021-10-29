@@ -621,7 +621,7 @@ artifactory:
         local:
           requiredServiceTypes: {{ include "router.requiredServiceTypes" . }}
       serviceRegistry:
-        insecure: "{{ .Values.router.serviceRegistry.insecure }}"
+        insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
     {{- if  .Values.artifactory.openMetrics.enabled }}
       metrics:

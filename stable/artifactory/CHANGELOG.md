@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.27.6] - Oct 6, 2021
+## [107.27.9] - Oct 8, 2021
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
 * Added support for new probes(set to false by default)
@@ -16,6 +16,7 @@ All changes to this chart will be documented in this file.
 * Update alpine tag version to `3.14.2`
 * Update busybox tag version to `1.33.1`
 * Artifactory chart support for cluster license
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
 
 ## [107.26.0] - Aug 23, 2021
 * Added Observability container (only when `splitServicesToContainers` is enabled)
