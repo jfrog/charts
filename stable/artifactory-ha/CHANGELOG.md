@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.27.9] - Oct 8, 2021
+## [107.27.10] - Oct 8, 2021
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
 * Added support for new probes(set to false by default)
