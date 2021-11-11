@@ -136,7 +136,8 @@ Resolve customInitContainersBegin value
 {{- define "distribution.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.common.customInitContainersBegin -}}
+{{- end -}}
+{{- if .Values.common.customInitContainersBegin -}}
 {{- .Values.common.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
@@ -147,7 +148,8 @@ Resolve customInitContainers value
 {{- define "distribution.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.common.customInitContainers -}}
+{{- end -}}
+{{- if .Values.common.customInitContainers -}}
 {{- .Values.common.customInitContainers -}}
 {{- end -}}
 {{- end -}}
@@ -158,7 +160,8 @@ Resolve customVolumes value
 {{- define "distribution.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- else if .Values.common.customVolumes -}}
+{{- end -}}
+{{- if .Values.common.customVolumes -}}
 {{- .Values.common.customVolumes -}}
 {{- end -}}
 {{- end -}}
@@ -170,7 +173,8 @@ Resolve customVolumeMounts value
 {{- define "distribution.customVolumeMounts" -}}
 {{- if .Values.global.customVolumeMounts -}}
 {{- .Values.global.customVolumeMounts -}}
-{{- else if .Values.common.customVolumeMounts -}}
+{{- end -}}
+{{- if .Values.common.customVolumeMounts -}}
 {{- .Values.common.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
@@ -181,7 +185,8 @@ Resolve customSidecarContainers value
 {{- define "distribution.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
-{{- else if .Values.common.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.common.customSidecarContainers -}}
 {{- .Values.common.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
@@ -220,4 +225,48 @@ echo "Copy custom certificates to {{ .Values.distribution.persistence.mountPath 
 mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted;
 find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted \;;
 find {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}
+
+{{/*
+distribution liveness probe
+*/}}
+{{- define "distribution.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/api/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/api/v1/system/ping" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+distribution readiness probe
+*/}}
+{{- define "distribution.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/api/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/api/v1/system/ping" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+router liveness probe
+*/}}
+{{- define "distribution.router.livenessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/liveness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+router readiness probe
+*/}}
+{{- define "distribution.router.readinessProbe" -}}
+{{- if .Values.newProbes -}}
+{{- printf "%s" "/router/api/v1/system/readiness" -}}
+{{- else -}}
+{{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
 {{- end -}}

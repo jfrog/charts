@@ -1,7 +1,42 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.9.3] - June 22, 2021
+## [102.10.3] - Oct 11, 2021
+* Updated router version to `7.26.0`
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+
+## [102.10.0] - Sep 24, 2021
+* Updated readme of chart to point to wiki. Refer [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution)
+* Added security hardening fixes
+* Enabled startup probes for k8s >= 1.20.x
+* Changed network policy to allow all ingress and egress traffic
+* Added support for serviceRegistry insecure flag in router
+* Dropped NET_RAW capability for the containers
+* Added support for new probes(set to false by default)
+* Updated router version to `7.25.1`
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+* Update busybox tag version to `1.33.1`
+* Added default values cpu and memeory in initContainers
+
+## [102.9.0] - Aug 2, 2021
+* Added support for `common.preStartCommand`
+* Added support for graceful shutdown of router container on SIGTERM
+* Update router version to `7.21.5`
+* Support global and product specific tags at the same time
+
+## [102.8.3] - July 13, 2021
+* Add support for custom secrets
+
+## [102.8.2] - July 6, 2021
+* Update router version to `7.21.3`
+* Update alpine tag version to `3.14.0`
+* Add required services for router container in systemYaml
+
+## [102.8.1] - June 22, 2021
 * Bumping chart version to align with app version
 * **Breaking change:**
 * Update postgresql tag version to `13.2.0-debian-10-r55`

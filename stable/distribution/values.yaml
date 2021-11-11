@@ -17,6 +17,8 @@ global:
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
+
+  ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customVolumes: |
 
   # customVolumeMounts: |
@@ -27,6 +29,7 @@ global:
 
   # customSidecarContainers: |
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/distribution/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -39,17 +42,17 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.13.5
+initContainerImage: releases-docker.jfrog.io/ubi-minimal:8.4-210
 
 # Init containers
 initContainers:
-  resources: {}
-#    requests:
-#      memory: "64Mi"
-#      cpu: "10m"
-#    limits:
-#      memory: "128Mi"
-#      cpu: "250m"
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "10m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -73,7 +76,7 @@ replicaCount: 1
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
-  create: true
+  create: false
   role:
     ## Rules to create. It follows the role specification
     rules:
@@ -88,16 +91,16 @@ rbac:
       - watch
       - list
 
-networkpolicy:
+networkpolicy: []
   # Allows all ingress and egress
-  - name: distribution
-    podSelector:
-      matchLabels:
-        app: distribution
-    egress:
-      - {}
-    ingress:
-      - {}
+  # - name: distribution
+  #   podSelector:
+  #     matchLabels:
+  #       app: distribution
+  #   egress:
+  #     - {}
+  #   ingress:
+  #     - {}
   # Uncomment to allow only distribution pods to communicate with postgresql (if postgresql.enabled is true)
   # - name: postgres
   #   podSelector:
@@ -123,10 +126,12 @@ networkpolicy:
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
 serviceAccount:
-  create: true
+  create: false
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name:
+  ## Explicitly mounts the API credentials for the Service Account
+  automountServiceAccountToken: false
 
 # PostgreSQL
 ## Configuration values for the PostgreSQL dependency sub-chart
@@ -203,8 +208,6 @@ redis:
   ## Alternatively, you can use a pre-existing secret with a key called redis-password by specifying existingSecret
   # existingSecret: <name-of-existing-secret>
   uid: 1001
-  serviceAccount:
-    create: true
   disableCommands: "FLUSHDB,FLUSHALL"
   persistence:
     enabled: true
@@ -231,6 +234,9 @@ common:
   uid: 1020
   gid: 1020
 
+  ## Custom command to run before distribution startup. Runs BEFORE any microservice-specific preStartCommand
+  preStartCommand:
+
   ## Add custom volumes
   customVolumes: |
   #  - name: custom-script
@@ -255,6 +261,12 @@ common:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -268,6 +280,12 @@ common:
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -283,7 +301,11 @@ common:
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
   #    securityContext:
+  #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -305,8 +327,8 @@ common:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: busybox
-    tag: 1.32.1
+    repository: ubi-minimal
+    tag: 8.4-210
 
 distribution:
   name: distribution
@@ -331,6 +353,7 @@ distribution:
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/distribution/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -353,6 +376,12 @@ distribution:
   #   value: "jdbc:postgresql://localhost:5432/distribution"
 
   systemYaml: |
+    router:
+      topology:
+        local:
+          requiredServiceTypes: 'jfds'
+      serviceRegistry:
+        insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
       logging:
         consoleLog:
@@ -391,6 +420,19 @@ distribution:
   #    mountPath: "/scripts/script.sh"
   #    subPath: script.sh
 
+  # Add custom secrets - secret per file
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
+
   resources: {}
     # requests:
     #   memory: "2Gi"
@@ -403,10 +445,10 @@ distribution:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "distribution.livenessProbe" .}}
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -416,10 +458,10 @@ distribution:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "distribution.readinessProbe" .}}
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -429,7 +471,7 @@ distribution:
     enabled: true
     config: |
       httpGet:
-        path: /api/v1/system/ping
+        path: {{ include "distribution.readinessProbe" .}}
         scheme: HTTP
         port: {{ .Values.distribution.internalPort }}
       initialDelaySeconds: 60
@@ -492,8 +534,11 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.19.8
+    tag: 7.26.0
     imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: false
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
@@ -515,10 +560,10 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "distribution.router.livenessProbe" .}}
         scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -528,10 +573,10 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "distribution.router.readinessProbe" .}}
         scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.18.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -541,10 +586,10 @@ router:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/health
+        path: {{ include "distribution.router.readinessProbe" .}}
         scheme: {{ include "distribution.scheme" . | upper }}
         port: {{ .Values.router.internalPort }}
-      initialDelaySeconds: 60
+      initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
       timeoutSeconds: 1
@@ -645,3 +690,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
+
+## To enable new probes that will become default in one of the future releases
+newProbes: false
