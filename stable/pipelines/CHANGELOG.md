@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.19.3] - Oct 19, 2021
+## [101.19.4] - Oct 19, 2021
 * update system yaml with newer LTS build images 
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
