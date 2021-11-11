@@ -37,3 +37,8 @@ initContainers:
     limits:
       memory: "128Mi"
       cpu: "250m"
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true

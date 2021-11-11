@@ -49,6 +49,12 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -106,6 +112,12 @@ spec:
       {{- if or .Values.distribution.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -122,23 +134,38 @@ spec:
       {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - '/bin/sh'
-        - '-c'
-        - >
-          echo "Waiting for database to be ready...";
-          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo {{ .Release.Name }}-postgresql ok; do sleep 2; done;
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for postgresql to come up"
+          ready=false;
+          while ! $ready; do echo waiting;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
+          done
       {{- end }}
       {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
-        securityContext:
-          allowPrivilegeEscalation: false
         command:
         - '/bin/bash'
         - '-c'
@@ -172,7 +199,12 @@ spec:
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
         imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
         securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         ports:
         - name: http-distro
           containerPort: {{ .Values.distribution.internalPort }}
@@ -180,6 +212,10 @@ spec:
           - '/bin/bash'
           - '-c'
           - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
           {{- with .Values.distribution.preStartCommand }}
             echo "Running custom Distribution preStartCommand command";
             {{ tpl . $ }};
@@ -249,11 +285,11 @@ spec:
 {{ toYaml .Values.distribution.resources | indent 10 }}
       {{- if .Values.distribution.startupProbe.enabled }}
         startupProbe:
-{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+{{ tpl .Values.distribution.startupProbe.config . | indent 10 }}
       {{- end }}
       {{- if .Values.distribution.readinessProbe.enabled }}
         readinessProbe:
-{{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
+{{ tpl .Values.distribution.readinessProbe.config . | indent 10 }}
       {{- end }}
       {{- if .Values.distribution.livenessProbe.enabled }}
         livenessProbe:
@@ -262,14 +298,24 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-        env:
-          - name: ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-            value: 'jfds'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
-        securityContext:
-          allowPrivilegeEscalation: false
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -281,6 +327,10 @@ spec:
         {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.router.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}
@@ -292,6 +342,12 @@ spec:
       - name: redis
         image: {{ include "distribution.getImageInfoByValue" (list $ "redis") }}
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         env:
         - name: REDIS_REPLICATION_MODE
           value: master
@@ -346,12 +402,16 @@ spec:
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         args:
         - "-e"
         - "-E"
         - "http.enabled=true"
-        securityContext:
-          runAsUser: 0
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
