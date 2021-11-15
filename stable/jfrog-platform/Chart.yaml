@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 7.27.9
+appVersion: 7.27.10
 dependencies:
   - name: postgresql
     version: 10.3.18
@@ -14,23 +14,23 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: artifactory
-    version: 107.27.9
+    version: 107.27.10
     repository: https://charts.jfrog.io/
     condition: artifactory.enabled
   - name: xray
-    version: 103.35.0
+    version: 103.36.2
     repository: https://charts.jfrog.io/
     condition: xray.enabled
   - name: distribution
-    version: 102.9.3
+    version: 102.10.3
     repository: https://charts.jfrog.io/
     condition: distribution.enabled
   - name: insight
-    version: 101.1.1
+    version: 101.1.3
     repository: https://charts.jfrog.io/
     condition: insight.enabled
   - name: pipelines
-    version: 101.19.3
+    version: 101.19.4
     repository: https://charts.jfrog.io/
     condition: pipelines.enabled
 description: The Helm chart for JFrog Platform (Universal, hybrid, end-to-end DevOps automation)
@@ -48,5 +48,5 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 10.0.2
+version: 10.0.3
 kubeVersion: ">= 1.14.0-0"
