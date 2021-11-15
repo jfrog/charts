@@ -1,10 +1,19 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.35.0] - Oct 8, 2021
+## [103.36.2] - Oct 14, 2021
+* Added default values cpu and memeory in initContainers
+* Updated router version to `7.26.0`
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* Added Observability service
+
+## [103.34.0] - Sep 20, 2021
 * Added min kubeVersion ">= 1.14.0-0" in chart.yaml
 * Update alpine tag version to `3.14.2`
-* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
 
 ## [103.32.3] - Sep 08, 2021
 * Dropped NET_RAW capability for the containers

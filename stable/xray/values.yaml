@@ -28,6 +28,7 @@ global:
 
   # customSidecarContainers: |
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/xray/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -40,18 +41,18 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
+initContainerImage: releases-docker.jfrog.io/ubi-minimal:8.4-210
 imagePullPolicy: IfNotPresent
 
 # Init containers
 initContainers:
-  resources: {}
-#    requests:
-#      memory: "64Mi"
-#      cpu: "10m"
-#    limits:
-#      memory: "128Mi"
-#      cpu: "250m"
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "10m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -77,6 +78,7 @@ xray:
   persistence:
     mountPath: /var/opt/jfrog/xray
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/xray/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -109,7 +111,7 @@ xray:
     router:
       topology:
         local:
-          requiredServiceTypes: 'jfxr,jfxana,jfxidx,jfxpst'
+          requiredServiceTypes: 'jfxr,jfxana,jfxidx,jfxpst,jfob'
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
@@ -150,7 +152,7 @@ xray:
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
-  create: true
+  create: false
   role:
     ## Rules to create. It follows the role specification
     rules:
@@ -213,10 +215,12 @@ autoscaling:
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
 serviceAccount:
-  create: true
+  create: false
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name:
+  ## Explicitly mounts the API credentials for the Service Account
+  automountServiceAccountToken: false
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
@@ -774,7 +778,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.25.1
+    tag: 7.26.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -841,6 +845,51 @@ router:
 
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
+
+observability:
+  name: observability
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/observability
+    tag: 1.1.3
+    imagePullPolicy: IfNotPresent
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
+
+  persistence:
+    mountPath: "/var/opt/jfrog/observability"
 
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Xray logs. It assumes you have a logstash installed and configured properly.
