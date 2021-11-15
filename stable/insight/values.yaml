@@ -40,7 +40,7 @@ global:
 ## Fully override insight.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi-minimal:8.4-210
+initContainerImage: releases-docker.jfrog.io/jfrog/ubi-micro/base/insight:1
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -114,9 +114,9 @@ common:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.insight.persistence.mountPath }}/example-custom-setup'
+  #      - 'touch {{ .Values.insightServer.persistence.mountPath }}/example-custom-setup'
   #    volumeMounts:
-  #      - mountPath: "{{ .Values.insight.persistence.mountPath }}"
+  #      - mountPath: "{{ .Values.insightServer.persistence.mountPath }}"
   #        name: data-volume
 
   ## Add custom init containers execution after predefined init containers
@@ -133,9 +133,9 @@ common:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'wget -O {{ .Values.insight.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #      - 'wget -O {{ .Values.insightServer.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
-  #      - mountPath: "{{ .Values.insight.persistence.mountPath }}"
+  #      - mountPath: "{{ .Values.insightServer.persistence.mountPath }}"
   #        name: data-volume
 
   ## Add custom sidecar containers
@@ -155,7 +155,7 @@ common:
   #      - '-c'
   #      - 'sh /scripts/script.sh'
   #    volumeMounts:
-  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
+  #      - mountPath: "{{ .Values.insightServer.persistence.mountPath }}"
   #        name: volume
   #      - mountPath: "/scripts/script.sh"
   #        name: custom-script
