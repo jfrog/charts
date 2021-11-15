@@ -243,10 +243,10 @@ Resolve elastic search url
 Custom certificate copy command
 */}}
 {{- define "insight-server.copyCustomCerts" -}}
-echo "Copy custom certificates to {{ .Values.insight.persistence.mountPath }}/etc/security/keys/trusted";
-mkdir -p {{ .Values.insight.persistence.mountPath }}/etc/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.insight.persistence.mountPath }}/etc/security/keys/trusted \;;
-find {{ .Values.insight.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.insight.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+echo "Copy custom certificates to {{ .Values.insightServer.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.insightServer.persistence.mountPath }}/etc/security/keys/trusted;
+find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.insightServer.persistence.mountPath }}/etc/security/keys/trusted \;;
+find {{ .Values.insightServer.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.insightServer.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
 {{- end -}}
 
 {{/*

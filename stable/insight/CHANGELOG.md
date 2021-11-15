@@ -1,7 +1,13 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.1.1] - Oct 11, 2021
+## [101.1.3] - Nov 13, 2021
+* Change initcontainer image from ubi-minimal to ubi-micro insight base
+
+## [101.1.3] - Nov 13, 2021
+* Fixed insight persistence.mountPath in Custom certificate copy commands
+
+## [101.1.0] - Oct 11, 2021
 * Added default values cpu and memeory in initContainers
 * Updated router version to `7.26.0`
 * Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
