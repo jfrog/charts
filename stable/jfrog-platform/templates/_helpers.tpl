@@ -70,8 +70,10 @@ Custom init container for Postgres setup
 - name: postgres-setup-init
   image: {{ .Values.global.database.initContainerSetupDBImage }}
   imagePullPolicy: {{ .Values.global.database.initContainerImagePullPolicy }}
+  {{- with .Values.global.database.initContainerSetupDBUser }}
   securityContext:
-    runAsUser: 0
+    runAsUser: {{ . }}
+  {{- end }}
   command:
     - '/bin/bash'
     - '-c'
@@ -80,7 +82,7 @@ Custom init container for Postgres setup
       until nc -z -w 5 {{ .Release.Name }}-artifactory 8082; do echo "Waiting for artifactory to start"; sleep 10; done;
       {{- end }}
       echo "Running init db scripts";
-      su postgres -c "bash /scripts/setupPostgres.sh"
+      bash /scripts/setupPostgres.sh
   {{- if eq .Chart.Name "pipelines" }}
   env:
     - name: PGUSERNAME

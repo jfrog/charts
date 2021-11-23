@@ -41,6 +41,8 @@ global:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
     initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.4-alpine
+    # Run the postgres init container as a non-default uid
+    initContainerSetupDBUser:
     initContainerImagePullPolicy: Always
     # If you are using external postgresql, set initDBCreation: false
     initDBCreation: true

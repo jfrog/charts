@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file
 
+## [10.0.4] - TBD
+* Allow running the init DB container as a non-root user
+
 ## [10.0.3] - Nov 15, 2021
 * Update dependency artifactory chart version to 107.27.10
 * Update dependency xray chart version to 103.36.2
