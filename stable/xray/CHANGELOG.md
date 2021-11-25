@@ -1,7 +1,16 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.36.2] - Oct 14, 2021
+## [103.37.1] - Nov 16, 2021
+* Fixed incorrect permission for filebeat.yaml [GH-1521](https://github.com/jfrog/charts/issues/1521)
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable 
+* Updated router version to `7.28.1`
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+
+## [103.36.0] - Nov 11, 2021
+* Added Observability service
+
+## [103.35.0] - Oct 14, 2021
 * Added default values cpu and memeory in initContainers
 * Updated router version to `7.26.0`
 * Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
@@ -9,7 +18,6 @@ All changes to this chart will be documented in this file.
 * **IMPORTANT**
 * Changed init-container images from `alpine` to `ubi8/ubi-minimal`
 * Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
-* Added Observability service
 
 ## [103.34.0] - Sep 20, 2021
 * Added min kubeVersion ">= 1.14.0-0" in chart.yaml
