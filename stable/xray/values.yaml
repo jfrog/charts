@@ -41,7 +41,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi-minimal:8.4-210
+initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -109,9 +109,6 @@ xray:
   systemYaml: |
     configVersion: 1
     router:
-      topology:
-        local:
-          requiredServiceTypes: 'jfxr,jfxana,jfxidx,jfxpst,jfob'
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
@@ -778,7 +775,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.26.0
+    tag: 7.28.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
