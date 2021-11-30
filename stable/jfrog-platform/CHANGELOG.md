@@ -1,5 +1,5 @@
 # JFrog Platform Chart Changelog (GA releases only)
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
 ## [10.0.4] - Nov 30, 2021
 * Update dependency xray chart version to 103.37.2
