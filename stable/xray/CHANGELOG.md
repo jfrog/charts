@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.37.1] - Nov 16, 2021
+## [103.37.2] - Nov 16, 2021
 * Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable 
 * Updated router version to `7.28.1`
 * Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
