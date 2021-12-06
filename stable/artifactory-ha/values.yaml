@@ -41,13 +41,17 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
+initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
 
 installer:
   type:
   platform:
 
 installerInfo: '{"productId": "Helm_artifactory-ha/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
+
+# This needs to be set to true when artifactory is connected with pipelines application and Nginx instances in front of artifactory need to allow websocket traffic
+pipelines:
+  enabled: false
 
 # For supporting pulling from private registries
 # imagePullSecrets:
@@ -68,7 +72,7 @@ systemYamlOverride:
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
-  create: true
+  create: false
   role:
     ## Rules to create. It follows the role specification
     rules:
@@ -87,13 +91,13 @@ rbac:
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
 serviceAccount:
-  create: true
+  create: false
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name:
   annotations: {}
   ## Explicitly mounts the  API token for the service account to the pods
-  automountServiceAccountToken: true
+  automountServiceAccountToken: false
 
 ingress:
   enabled: false
@@ -103,6 +107,7 @@ ingress:
   hosts: []
   routerPath: /
   artifactoryPath: /artifactory/
+  className: ""
   annotations: {}
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
@@ -212,8 +217,16 @@ database:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: busybox
-    tag: 1.33.1
+    repository: ubi-minimal
+    tag: 8.4-210
+
+## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
+## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
+aws:
+  license:
+    enabled: false
+  licenseConfigSecretName:
+  region: us-east-1
 
 ## The following router settings are to configure only when splitServicesToContainers set to true
 ## splitServicesToContainers (by default it is false)
@@ -222,7 +235,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.25.1
+    tag: 7.28.2
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -405,7 +418,7 @@ artifactory:
     enabled: true
     timeoutSeconds: 3600
     ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
-    # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+    # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
 
 
   ## Add custom init containers execution before predefined init containers
@@ -442,7 +455,7 @@ artifactory:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'wget -O {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #      - 'curl -o {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
   #        name: volume
@@ -585,7 +598,7 @@ artifactory:
   #  - '{{ template "my-chart.fullname" . }}'
 
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
-  # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && wget -O /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+  # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
   ## Extra post-start command to run extra commands after container starts
   # postStartCommand:
 
@@ -617,9 +630,6 @@ artifactory:
   # TODO: Fix javaOpts for member nodes (currently uses primary settings for all nodes)
   systemYaml: |
     router:
-      topology:
-        local:
-          requiredServiceTypes: {{ include "router.requiredServiceTypes" . }}
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
@@ -731,6 +741,14 @@ artifactory:
     replicator:
       enabled: true
     {{- end }}
+    {{- if .Values.jfconnect.enabled }}
+    jfconnect:
+      enabled: true
+    {{- end }}
+    {{- if .Values.integration.enabled }}
+    integration:
+      enabled: true
+    {{- end }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -754,7 +772,7 @@ artifactory:
       httpGet:
         path: {{ include "artifactory-ha.livenessProbe" . }}
         scheme: {{ include "artifactory-ha.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+        port: {{ include "artifactory-ha.port" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -767,7 +785,7 @@ artifactory:
       httpGet:
         path: {{ include "artifactory-ha.readinessProbe" . }}
         scheme: {{ include "artifactory-ha.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+        port: {{ include "artifactory-ha.port" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -780,7 +798,7 @@ artifactory:
       httpGet:
         path: {{ include "artifactory-ha.readinessProbe" . }}
         scheme: {{ include "artifactory-ha.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+        port: {{ include "artifactory-ha.port" . }}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1318,6 +1336,7 @@ artifactory:
     ingress:
       name:
       hosts: []
+      className: ""
       annotations: {}
         # kubernetes.io/ingress.class: nginx
         # nginx.ingress.kubernetes.io/proxy-buffering: "off"
@@ -1334,6 +1353,7 @@ artifactory:
       enabled: false
       name:
       hosts: []
+      className: ""
       annotations: {}
        # kubernetes.io/ingress.class: nginx
        # nginx.ingress.kubernetes.io/proxy-buffering: "off"
@@ -1609,6 +1629,7 @@ event:
 
 jfconnect:
   name: jfconnect
+  ## Set to true if using an Enterprise Plus license
   enabled: false
   resources: {}
   #  requests:
@@ -1640,6 +1661,44 @@ jfconnect:
           - sh
           - -c
           - curl --fail --max-time 1 http://localhost:8030/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
+
+integration:
+  name: integration
+  enabled: false
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/ping
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/ping
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1700,14 +1759,13 @@ mc:
 
 # Init containers
 initContainers:
-  resources: {}
-#    requests:
-#      memory: "64Mi"
-#      cpu: "10m"
-#    limits:
-#      memory: "128Mi"
-#      cpu: "250m"
-
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "10m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 # Nginx
 nginx:
@@ -1824,6 +1882,13 @@ nginx:
     ssl_session_cache shared:SSL:1m;
     ssl_prefer_server_ciphers   on;
     {{- end }}
+    {{- if .Values.pipelines.enabled }}
+    http {
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''  close;
+    }
+    {{- end }}
     ## server configuration
     server {
       {{- if .Values.nginx.internalPortHttps }}
@@ -1874,6 +1939,11 @@ nginx:
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
         add_header Strict-Transport-Security always;
+        {{- if .Values.pipelines.enabled }}
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        {{- end }}
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
