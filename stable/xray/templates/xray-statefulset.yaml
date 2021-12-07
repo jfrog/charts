@@ -82,7 +82,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - '/bin/sh'
+        - 'bash'
         - '-c'
         - >
           echo "Copy system.yaml to {{ .Values.xray.persistence.mountPath }}/etc";
@@ -144,7 +144,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
         - >
 {{ include "xray.copyCustomCerts" . | indent 10 }}
@@ -166,8 +166,8 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - /bin/bash
-        - -c
+        - 'bash'
+        - '-c'
         - |
           echo "Waiting for postgresql to come up"
           ready=false;
@@ -203,6 +203,9 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: "jfxr,jfxana,jfxidx,jfxpst,jfob"
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}

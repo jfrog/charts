@@ -345,6 +345,11 @@ Resolve requiredServiceTypes value
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
   {{- end -}}
 {{- end -}}
+{{- if .Values.integration -}}
+  {{- if .Values.integration.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfint" -}}
+  {{- end -}}
+{{- end -}}
 {{- $requiredTypes -}}
 {{- end -}}
 
@@ -374,8 +379,8 @@ nginx port (80/443) based on http/https enabled
 artifactory liveness probe
 */}}
 {{- define "artifactory-ha.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/liveness" -}}
+{{- if or .Values.newProbes .Values.splitServicesToContainers -}}
+{{- printf "%s" "/artifactory/api/v1/system/liveness" -}}
 {{- else -}}
 {{- printf "%s" "/router/api/v1/system/health" -}}
 {{- end -}}
@@ -385,9 +390,20 @@ artifactory liveness probe
 artifactory readiness probe
 */}}
 {{- define "artifactory-ha.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/readiness" -}}
+{{- if or .Values.newProbes .Values.splitServicesToContainers -}}
+{{- printf "%s" "/artifactory/api/v1/system/readiness" -}}
 {{- else -}}
 {{- printf "%s" "/router/api/v1/system/health" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+artifactory port
+*/}}
+{{- define "artifactory-ha.port" -}}
+{{- if or .Values.newProbes .Values.splitServicesToContainers -}}
+{{- .Values.artifactory.internalArtifactoryPort -}}
+{{- else -}}
+{{- .Values.router.internalPort  -}}
 {{- end -}}
 {{- end -}}

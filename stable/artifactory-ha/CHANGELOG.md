@@ -1,7 +1,29 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.27.10] - Oct 8, 2021
+## [107.29.7] - Nov 30, 2021
+* Added integration service container in artifactory
+* Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
+* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+* Updated nginx config to allow websockets when pipelines is enabled
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable
+* Added jfconnect in system.yaml
+* Updated artifactory container’s health probes to use artifactory api on rt-split
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+* Updated router version to `7.28.2`
+* Set Jfconnect enabled to `false` in the artifactory container when running in the container split mode
+
+## [107.28.0] - Nov 11, 2021
+* Added default values cpu and memeory in initContainers
+* Updated router version to `7.26.0`
+* Bug fix - jmx port not exposed in artifactory service
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+* Added support for AWS License Manager using `.Values.aws.licenseConfigSecretName`
+
+## [107.27.0] - Oct 6, 2021
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
 * Added support for new probes(set to false by default)
@@ -15,7 +37,6 @@ All changes to this chart will be documented in this file.
 * Added min kubeVersion ">= 1.14.0-0" in chart.yaml
 * Update alpine tag version to `3.14.2`
 * Update busybox tag version to `1.33.1`
-* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
 
 ## [107.26.0] - Aug 20, 2021
 * Added Observability container (only when `splitServicesToContainers` is enabled)

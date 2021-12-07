@@ -8,7 +8,7 @@ Below you will find the basic instructions for installing, uninstalling, and del
 
 ## Prerequisites Details
 
-* Kubernetes 1.12+
+* Kubernetes 1.14+
 * Artifactory HA license
 
 ## Chart Details
