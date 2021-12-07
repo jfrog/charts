@@ -1,0 +1,35 @@
+{{- if .Values.route.enabled -}}
+{{- $serviceName := include "artifactory.fullname" . -}}
+{{- $servicePort := .Values.artifactory.externalPort -}}
+{{- $artifactoryServicePort := .Values.artifactory.externalArtifactoryPort -}}
+{{- $routeName := default ( include "artifactory.fullname" . ) .Values.route.name -}}
+{{- if semverCompare ">=v1.14.0-0" .Capabilities.KubeVersion.Version }}
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ $routeName }}
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.route.labels }}
+{{ .Values.route.labels | toYaml | trimSuffix "\n"| indent 4 -}}
+{{- end}}
+{{- if .Values.route.annotations }}
+  annotations:
+{{ .Values.route.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
+{{- end }}
+spec:
+  host: {{ .Values.route.host }}
+  to:
+    kind: Service
+    name: {{ $serviceName }}
+    weight: 100
+  port:
+    targetPort: {{ $servicePort }}
+  tls:
+    termination: {{ .Values.route.tls.termination }}
+    insecureEdgeTerminationPolicy: {{ .Values.route.tls.insecureEdgeTerminationPolicy }}
+{{- end }}
+{{- end }}
