@@ -37,6 +37,7 @@ install_charts() {
         ct_args=${CHART_TESTING_ARGS}
     fi
     mkdir -p tmp
+    echo "charts install"
     # shellcheck disable=SC2086
     docker_exec ct install ${ct_args} --upgrade --config /workdir/test/ct.yaml --debug | tee tmp/install.log
     echo

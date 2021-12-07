@@ -90,7 +90,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-          - 'sh'
+          - 'bash'
           - '-c'
           - 'rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/db.properties'
         volumeMounts:
@@ -109,7 +109,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
         - 'rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found {{ .Values.artifactory.persistence.mountPath }}/data/.lock'
         volumeMounts:
@@ -129,7 +129,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-          - 'sh'
+          - 'bash'
           - '-c'
           - >
             echo "Preparing {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds";
@@ -262,7 +262,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
         - >
 {{ include "artifactory.copyCustomCerts" . | indent 10 }}
@@ -285,12 +285,15 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
-        - '-c'
-        - >
-          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
-            sleep 2;
-          done;
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for postgresql to come up"
+          ready=false;
+          while ! $ready; do echo waiting;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
+          done
       {{- end }}
     {{- end }}
     {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
@@ -396,6 +399,10 @@ spec:
           subPath: gcp.credentials.json
       {{- end }}
       {{- end }}
+      {{- if .Values.artifactory.resources }}
+        resources:
+{{ toYaml .Values.artifactory.resources | indent 10 }}
+      {{- end }}
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
@@ -416,10 +423,13 @@ spec:
             drop:
               - NET_RAW
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: {{ include "router.requiredServiceTypes" . }}
         ports:
           - name: http
             containerPort: {{ .Values.router.internalPort }}
@@ -638,6 +648,40 @@ spec:
 {{ tpl .Values.jfconnect.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
+      {{- if .Values.integration.enabled }}
+      - name: {{ .Values.integration.name }}
+        image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/integration/bin/jf-integration start
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        volumeMounts:
+        - name: artifactory-volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.integration.resources | indent 10 }}
+      {{- if .Values.integration.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.integration.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.integration.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.integration.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
       - name: {{ .Values.observability.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -724,6 +768,21 @@ spec:
         - name : JF_SHARED_NODE_HAENABLED
           value: "true"
       {{- end }}
+      {{- if .Values.aws.license.enabled }}
+        - name: IS_AWS_LICENSE
+          value: "true"
+        - name: AWS_REGION
+          value: {{ .Values.aws.region | quote }}
+      {{- if .Values.aws.licenseConfigSecretName }}
+        - name: AWS_WEB_IDENTITY_REFRESH_TOKEN_FILE
+          value: "/var/run/secrets/product-license/license_token"
+        - name: AWS_ROLE_ARN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.aws.licenseConfigSecretName }}
+              key: iam_role
+      {{- end }}
+      {{- end }}
       {{- if .Values.splitServicesToContainers }}
         - name : JF_ROUTER_ENABLED
           value: "true"
@@ -740,6 +799,10 @@ spec:
         - name: JF_REPLICATOR_SERVICE_ENABLED
           value: "false"
         - name : JF_OBSERVABILITY_ENABLED
+          value: "false"
+        - name : JF_JFCONNECT_ENABLED
+          value: "false"
+        - name : JF_INTEGRATION_ENABLED
           value: "false"
       {{- end}}
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
@@ -802,6 +865,10 @@ spec:
           name: tcp-ssh
         {{- end }}
         volumeMounts:
+      {{- if .Values.aws.licenseConfigSecretName }}
+        - name: awsmp-product-license
+          mountPath: "/var/run/secrets/product-license"
+      {{- end }}
       {{- if .Values.artifactory.userPluginSecrets }}
         - name: bootstrap-plugins
           mountPath: "/artifactory_bootstrap/plugins/"
@@ -955,7 +1022,12 @@ spec:
       - name: ca-certs
         secret:
           secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.artifactory.customCertificates.certificateSecretName }}
-      {{- end }}   
+      {{- end }}
+      {{- if .Values.aws.licenseConfigSecretName }}
+      - name: awsmp-product-license
+        secret:
+          secretName: {{ .Values.aws.licenseConfigSecretName }}
+      {{- end }}
       - name: binarystore-xml
         secret:
           {{- if .Values.artifactory.persistence.customBinarystoreXmlSecret }}
@@ -963,11 +1035,11 @@ spec:
           {{- else }}
           secretName: {{ template "artifactory.fullname" . }}-binarystore
           {{- end }}
-{{- if .Values.artifactory.migration.enabled }}
+      {{- if .Values.artifactory.migration.enabled }}
       - name: migration-scripts
         configMap:
           name: {{ template "artifactory.fullname" . }}-migration-scripts
-{{- end }}
+      {{- end }}
       - name: installer-info
         configMap:
           name: {{ template "artifactory.fullname" . }}-installer-info

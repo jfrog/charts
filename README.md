@@ -4,7 +4,7 @@ This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** f
 
 For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
-## Install Helm
+## Install Helm (only V3 is supported)
 
 Get the latest [Helm release](https://github.com/helm/helm#install).
 

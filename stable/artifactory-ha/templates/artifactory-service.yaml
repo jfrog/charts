@@ -44,8 +44,8 @@ spec:
   {{- if .enabled }}
   - port: {{ .port }}
     targetPort: {{ .port }}
-  {{- if .Values.artifactory.service.nodePort }}
-    nodePort: {{ .Values.artifactory.service.nodePort }}
+  {{- if $.Values.artifactory.service.nodePort }}
+    nodePort: {{ $.Values.artifactory.service.nodePort }}
   {{- end }}
     protocol: TCP
     name: tcp-jmx

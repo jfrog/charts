@@ -26,6 +26,9 @@ metadata:
 {{ .Values.ingress.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
 {{- end }}
 spec:
+  {{- if and .Values.ingress.className (semverCompare ">=1.18.0-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- end }}
   {{- if .Values.ingress.defaultBackend.enabled }}
     {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
   defaultBackend:
@@ -108,6 +111,9 @@ metadata:
 {{ .Values.artifactory.replicator.ingress.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
   {{- end }}
 spec:
+  {{- if and (or .Values.ingress.className .Values.artifactory.replicator.ingress.className) (semverCompare ">=1.18.0-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ default .Values.ingress.className .Values.artifactory.replicator.ingress.className }}
+  {{- end }}
   {{- if .Values.ingress.defaultBackend.enabled }}
     {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
   defaultBackend:
@@ -187,6 +193,9 @@ metadata:
 {{ .Values.artifactory.replicator.trackerIngress.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
   {{- end }}
 spec:
+  {{- if and (or .Values.ingress.className .Values.artifactory.replicator.trackerIngress.className) (semverCompare ">=1.18.0-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ default .Values.ingress.className .Values.artifactory.replicator.trackerIngress.className }}
+  {{- end }}
   {{- if .Values.ingress.defaultBackend.enabled }}
     {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
   defaultBackend:
