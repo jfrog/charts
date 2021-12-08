@@ -1,5 +1,10 @@
 # JFrog Platform Chart Changelog (GA releases only)
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
+
+## [10.1.0] - Dec 7, 2021
+* Added `artifactory.pipelines.enabled` flag to allow nginx instances in front of artifactory to allow websocket traffic
+* Update dependency artifactory chart version to 107.29.7
+* Update dependency distribution chart version to 102.10.5
 
 ## [10.0.4] - Nov 30, 2021
 * Update dependency xray chart version to 103.37.2

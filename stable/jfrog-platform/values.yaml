@@ -133,7 +133,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.0.4-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.1.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
@@ -147,6 +147,9 @@ artifactory:
   # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
   mc:
     enabled: true
+  ## Note: This needs to be set to true when artifactory is connected with pipelines and Nginx instances in front of artifactory need to allow websocket traffic. Only applicable on E+ license.
+  pipelines:
+    enabled: false
   artifactory:
     # Note: For HA deployments, set replicaCount >1 (recommended 3)
     replicaCount: 1
