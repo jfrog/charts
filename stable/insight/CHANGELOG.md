@@ -1,9 +1,19 @@
 # JFrog Insights Chart Changelog
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
 
-## [101.1.3] - Nov 13, 2021
-* Change initcontainer image from ubi-minimal to ubi-micro insight base
-* Fixed insight persistence.mountPath in Custom certificate copy commands
+## [101.2.3] - Nov 26, 2021
+* Fixed incorrect permission for filebeat.yaml
+* Updated logger image to `jfrog/ubi-minimal:8.5-204`
+
+## [101.2.0] - Nov 26, 2021
+* Enabled persistence for elasticsearch logs and change location to `insight/var/log`
+* Update elasticsearch version to `7.15.1`
+* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+* Updated router version to `7.28.2`
+* ** IMPORTANT **
+* Added support for insightServer and insightScheduler `extraEnvironmentVariables` in values.yaml
 
 ## [101.1.0] - Oct 11, 2021
 * Added default values cpu and memeory in initContainers
