@@ -292,3 +292,14 @@ router readiness probe
 {{- printf "%s" "/router/api/v1/system/health" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve requiredServiceTypes value
+*/}}
+{{- define "router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfisc,jfisv" -}}
+{{- if .Values.elasticsearch.enabled }}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfesc" -}}
+{{- end -}}
+{{- $requiredTypes -}}
+{{- end -}}

@@ -5,17 +5,16 @@ unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 insightServer:
   jfrogUrl: http://artifactory.rt:8082
-  javaOpts:
-    other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
-    xms: "500m"
-    xmx: "1000m"
+  extraEnvironmentVariables:
+  - name: JF_INSIGHT_SERVER_EXTRAJAVAOPTS
+    value: '-Xms2g -Xmx3g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
   persistence:
     enabled: false
 
 insightScheduler:
-  javaOpts:
-    xms: "500m"
-    xmx: "1000m"
+  extraEnvironmentVariables:
+  - name: JF_INSIGHT_SCHEDULER_EXTRAJAVAOPTS
+    value: '-Xms512m -Xmx1g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
 
 postgresql:
   image:
