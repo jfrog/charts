@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.29.7] - Nov 30, 2021
+## [107.29.8] - Nov 30, 2021
 * Added integration service container in artifactory
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
 * Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
