@@ -407,3 +407,39 @@ artifactory port
 {{- .Values.router.internalPort  -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "nginx.customInitContainers" -}}
+{{- if .Values.global.customInitContainers -}}
+{{- .Values.global.customInitContainers -}}
+{{- end -}}
+{{- if .Values.nginx.customInitContainers -}}
+{{- .Values.nginx.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "nginx.customVolumes" -}}
+{{- if .Values.global.customVolumes -}}
+{{- .Values.global.customVolumes -}}
+{{- end -}}
+{{- if .Values.nginx.customVolumes -}}
+{{- .Values.nginx.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "nginx.customSidecarContainers" -}}
+{{- if .Values.global.customSidecarContainers -}}
+{{- .Values.global.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.nginx.customSidecarContainers -}}
+{{- .Values.nginx.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
