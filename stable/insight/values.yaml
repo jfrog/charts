@@ -40,7 +40,7 @@ global:
 ## Fully override insight.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/jfrog/ubi-micro/base/insight:1
+initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -133,7 +133,7 @@ common:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'wget -O {{ .Values.insightServer.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #      - 'curl -o {{ .Values.insightServer.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.insightServer.persistence.mountPath }}"
   #        name: data-volume
@@ -312,7 +312,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.14.1
+    tag: 7.15.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -400,8 +400,8 @@ applicationConfigs: {}
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi-minimal
-    tag: 8.4-210
+    repository: jfrog/ubi-minimal
+    tag: 8.5.204
 
 insightServer:
   name: insight-server
@@ -481,13 +481,6 @@ insightServer:
 
   systemYaml: |
     router:
-      topology:
-        local:
-          {{- if .Values.elasticsearch.enabled }}
-          requiredServiceTypes: 'jfesc,jfisc,jfisv'
-          {{ else }}
-          requiredServiceTypes: 'jfisc,jfisv'
-          {{- end }}
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     {{- if .Values.elasticsearch.enabled }}
@@ -522,37 +515,11 @@ insightServer:
       {{- end }}
 
     insight-server:
-      extraJavaOpts: >
-      {{- with .Values.insightServer.javaOpts }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
       clients:
         elasticsearch:
           connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.connectionWaitTimeoutSecs }}
           searchguard:
             connectionWaitTimeoutSecs: {{ .Values.insightServer.clients.elasticsearch.searchguard.connectionWaitTimeoutSecs }}
-
-    insight-scheduler:
-      extraJavaOpts: >
-      {{- with .Values.insightScheduler.javaOpts }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
 
   persistence:
     enabled: true
@@ -573,12 +540,12 @@ insightServer:
     ##
     # storageClass: "-"
 
-  ## Control Java options (JAVA_OPTIONS)
+  ## Extra environment variables that can be used to tune to your needs.
+  ## Uncomment and set value as needed, For example : Control Java options
+  # - name: JF_INSIGHT_SERVER_EXTRAJAVAOPTS
+  #   value: '-Xms2g -Xmx3g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
+
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts: {}
-  #  other: "-server -XX:+UseG1GC -Dfile.encoding=UTF8"
-  #  xms: "2g"
-  #  xmx: "3g"
   resources: {}
   #  requests:
   #    memory: "2Gi"
@@ -652,12 +619,13 @@ insightScheduler:
   home: /opt/jfrog
   internalPort: 8085
 
-  ## Control Java options (JFIS_EXTRA_JAVA_OPTS)
+  ## Extra environment variables that can be used to tune to your needs.
+  ## Uncomment and set value as needed, For example : Control Java options
+  # extraEnvironmentVariables:
+  # - name: JF_INSIGHT_SCHEDULER_EXTRAJAVAOPTS
+  #   value: '-Xms512m -Xmx1g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
+
   ## IMPORTANT: keep resources.limits.memory higher than javaOpts.xmx by 0.5G
-  javaOpts: {}
-  #  other:
-  #  xms: "500m"
-  #  xmx: "1g"
   resources: {}
   #  requests:
   #    memory: "500Mi"
@@ -743,7 +711,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.26.0
+    tag: 7.28.2
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled

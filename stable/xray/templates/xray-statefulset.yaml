@@ -85,6 +85,7 @@ spec:
         - 'bash'
         - '-c'
         - >
+          if [[ -e "{{ .Values.xray.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.xray.persistence.mountPath }}/etc/filebeat.yaml; fi;
           echo "Copy system.yaml to {{ .Values.xray.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc;
           {{- if .Values.systemYamlOverride.existingSecret }}
