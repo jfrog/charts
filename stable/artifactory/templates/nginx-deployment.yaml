@@ -46,6 +46,9 @@ spec:
       priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
       {{- end }}
       initContainers:
+        {{- if or .Values.nginx.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
+        {{- end }}
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
@@ -62,6 +65,9 @@ spec:
         runAsUser: {{ .Values.nginx.uid }}
         fsGroup: {{ .Values.nginx.gid }}
       containers:
+        {{- if or .Values.nginx.customSidecarContainers }}
+{{ tpl (include "artifactory.nginx.customSidecarContainers" .)  . | indent 6 }}
+        {{- end }}
       - name: {{ .Values.nginx.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "nginx") }}
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
@@ -152,6 +158,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+        {{- if or .Values.nginx.customVolumes }}
+{{ tpl (include "artifactory.nginx.customVolumes" .)  . | indent 6 }}
+        {{- end }}
       - name: nginx-conf
         configMap:
         {{- if .Values.nginx.customConfigMap }}
