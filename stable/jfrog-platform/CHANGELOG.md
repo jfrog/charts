@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.1.1] - Dec 17, 2021
+* Update dependency artifactory chart version to 107.29.8
+* Update dependency xray chart version to 103.38.2
+* Added distribution.initContainerImage to `releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204`
+
 ## [10.1.0] - Dec 7, 2021
 * Added `artifactory.pipelines.enabled` flag to allow nginx instances in front of artifactory to allow websocket traffic
 * Update dependency artifactory chart version to 107.29.7
