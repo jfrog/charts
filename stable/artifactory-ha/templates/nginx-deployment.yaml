@@ -44,7 +44,7 @@ spec:
       {{- end }}
       initContainers:
         {{- if or .Values.nginx.customInitContainers .Values.global.customInitContainers }}
-{{ tpl (include "nginx.customInitContainers" .)  . | indent 6 }}
+{{ tpl (include "artifactory-ha.nginx.customInitContainers" .)  . | indent 6 }}
         {{- end }}
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
@@ -63,7 +63,7 @@ spec:
         fsGroup: {{ .Values.nginx.gid }}
       containers:
         {{- if or .Values.nginx.customSidecarContainers }}
-{{ tpl (include "nginx.customSidecarContainers" .)  . | indent 6 }}
+{{ tpl (include "artifactory-ha.nginx.customSidecarContainers" .)  . | indent 6 }}
         {{- end }}
       - name: {{ .Values.nginx.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "nginx") }}
@@ -156,7 +156,7 @@ spec:
     {{- end }}
       volumes:
         {{- if or .Values.nginx.customVolumes }}
-{{ tpl (include "nginx.customVolumes" .)  . | indent 6 }}
+{{ tpl (include "artifactory-ha.nginx.customVolumes" .)  . | indent 6 }}
         {{- end }}
       - name: nginx-conf
         configMap:

@@ -411,7 +411,7 @@ artifactory port
 {{/*
 Resolve customInitContainers value
 */}}
-{{- define "nginx.customInitContainers" -}}
+{{- define "artifactory-ha.nginx.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
 {{- end -}}
@@ -423,7 +423,7 @@ Resolve customInitContainers value
 {{/*
 Resolve customVolumes value
 */}}
-{{- define "nginx.customVolumes" -}}
+{{- define "artifactory-ha.nginx.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
 {{- end -}}
@@ -435,7 +435,7 @@ Resolve customVolumes value
 {{/*
 Resolve customSidecarContainers value
 */}}
-{{- define "nginx.customSidecarContainers" -}}
+{{- define "artifactory-ha.nginx.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
 {{- end -}}
