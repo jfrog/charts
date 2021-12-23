@@ -1,6 +1,11 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [101.3.0] - Dec 17, 2021
+* Removed obsolete secret `applicationyaml`
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Refactored `router.requiredServiceTypes` to support platform chart
+
 ## [101.2.3] - Nov 26, 2021
 * Fixed incorrect permission for filebeat.yaml
 * Updated logger image to `jfrog/ubi-minimal:8.5-204`
