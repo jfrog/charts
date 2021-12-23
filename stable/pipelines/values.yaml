@@ -2,6 +2,7 @@
 
 ## For setting up external services
 global:
+  ## certificates added to this secret will be copied to $JFROG_HOME/pipelines/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -69,13 +70,13 @@ initContainer:
 
 # Init containers
 initContainers:
-  resources: {}
-#    requests:
-#      memory: "64Mi"
-#      cpu: "10m"
-#    limits:
-#      memory: "128Mi"
-#      cpu: "250m"
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "10m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 
 ## Available modes: devmode (enable it for debuging) and production
@@ -148,6 +149,7 @@ pipelines:
   ## Note: This feature is available on pipelines app version 1.9.x and later
   # masterKeySecretName:
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/pipelines/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -238,6 +240,17 @@ pipelines:
         compress: true
         intervalMs: 900000
 
+    application:
+      level: warn
+      rotation:
+        maxSizeMb: 10
+        maxFiles: 10
+
+    request:
+      rotation:
+        maxSizeMb: 10
+        maxFiles: 10
+
   signedPipelines:
     enabled: true
   ## Apply horizontal pod auto scaling on Pipelines pods
@@ -325,6 +338,7 @@ pipelines:
         # kubernetes.io/ingress.class: nginx
         # kubernetes.io/tls-acme: "true"
       path: /
+      className: ""
       hosts:
         - chart-example.local
 
@@ -699,7 +713,7 @@ pipelines:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'wget -O {{ .Values.pipelines.mountPath }}/system.yaml https://<repo-url>/systemyaml'
+  #      - 'curl -o {{ .Values.pipelines.mountPath }}/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.pipelines.mountPath}}"
   #        name: jfrog-pipelines-folder
@@ -762,16 +776,15 @@ pipelines:
     router:
       ## Router configuration
       topology:
-        local:
-          requiredServiceTypes: 'jfpip'
         external:
           refresh:
             interval: "{{ .Values.router.topology.external.refresh.interval }}"
-        healthCheck:
-          interval: "{{ .Values.router.healthCheck.interval }}"
-          requestTimeout: "{{ .Values.router.healthCheck.requestTimeout }}"
-          healthyThreshold: "{{ .Values.router.healthCheck.healthyThreshold }}"
-          unhealthyThreshold: "{{ .Values.router.healthCheck.unhealthyThreshold }}"
+        local:
+          healthCheck:
+            interval: "{{ .Values.router.healthCheck.interval }}"
+            requestTimeout: "{{ .Values.router.healthCheck.requestTimeout }}"
+            healthyThreshold: "{{ .Values.router.healthCheck.healthyThreshold }}"
+            unhealthyThreshold: "{{ .Values.router.healthCheck.unhealthyThreshold }}"
       serviceRegistry:
         url: "{{ .Values.router.serviceRegistry.url }}"
         insecure: {{ .Values.router.serviceRegistry.insecure }}
@@ -981,6 +994,17 @@ pipelines:
             maxAgeDays: {{ .Values.pipelines.logging.metrics.rotation.maxAgeDays }}
             compress: {{ .Values.pipelines.logging.metrics.rotation.compress }}
             intervalMs: {{ .Values.pipelines.logging.metrics.rotation.intervalMs }}
+
+        application:
+          level: {{ .Values.pipelines.logging.application.level }}
+          rotation:
+            maxSizeMb: {{ .Values.pipelines.logging.application.rotation.maxSizeMb }}
+            maxFiles: {{ .Values.pipelines.logging.application.rotation.maxFiles }}
+
+        request:
+          rotation:
+            maxSizeMb: {{ .Values.pipelines.logging.request.rotation.maxSizeMb }}
+            maxFiles: {{ .Values.pipelines.logging.request.rotation.maxFiles }}
 
     ## This section is used for bringing up the core services and setting up
     ## configurations required by the installer & the services
@@ -1445,7 +1469,7 @@ rabbitmq:
 redis:
   enabled: true
   serviceAccount:
-    create: true
+    create: false
     name: ""
   image:
     registry: releases-docker.jfrog.io
@@ -1499,7 +1523,7 @@ vault:
   server:
     image:
       repository: "releases-docker.jfrog.io/hashicorp/vault"
-      tag: 1.8.3
+      tag: 1.8.6
 
     # resources: {}
     #  requests:
@@ -1692,7 +1716,7 @@ filebeat:
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
-  create: true
+  create: false
   role:
     ## Rules to create. It follows the role specification
     rules:
@@ -1706,6 +1730,16 @@ rbac:
       - get
       - watch
       - list
+
+serviceAccount:
+  create: false
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  name:
+  ## Service Account annotations
+  annotations: {}
+  ## Explicitly mounts the API credentials for the Service Account
+  automountServiceAccountToken: false
 
 networkpolicy:
   # Allows all ingress and egress

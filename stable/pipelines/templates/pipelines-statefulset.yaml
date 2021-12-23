@@ -29,7 +29,7 @@ spec:
         checksum/configk8s: {{ include (print $.Template.BasePath "/buildplane-config-k8s.yaml") . | sha256sum }}
         checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
     spec:
-      serviceAccountName: {{ include "pipelines.fullname" . }}
+      serviceAccountName: {{ template "pipelines.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
@@ -258,7 +258,7 @@ spec:
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_MASTER_KEY} > {{ .Values.pipelines.mountPath }}/security/master.key;
           {{- end }}
-          {{- if or .Values.pipelines.joinKeySecretName .Values.global.masterKeySecretName }}
+          {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
             echo "Copy joinKey to {{ .Values.pipelines.mountPath }}/security";
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
@@ -324,6 +324,8 @@ spec:
               drop:
                 - NET_RAW
           env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: "jfpip,jfpipwww"
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_ROUTER_SERVICEREGISTRY_URL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}/access"
