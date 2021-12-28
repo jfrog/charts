@@ -296,7 +296,7 @@ router readiness probe
 {{/*
 Resolve requiredServiceTypes value
 */}}
-{{- define "router.requiredServiceTypes" -}}
+{{- define "insight.router.requiredServiceTypes" -}}
 {{- $requiredTypes := "jfisc,jfisv" -}}
 {{- if .Values.elasticsearch.enabled }}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfesc" -}}

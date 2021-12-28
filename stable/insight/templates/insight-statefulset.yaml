@@ -141,9 +141,6 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
-        - name: applicationyaml
-          mountPath: "/tmp/etc/application.yaml"
-          subPath: application.yaml
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- if or .Values.insightServer.customCertificates.enabled .Values.global.customCertificates.enabled }}
@@ -318,7 +315,7 @@ spec:
           exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-          value: {{ include "router.requiredServiceTypes" . }}
+          value: {{ include "insight.router.requiredServiceTypes" . }}
         ports:
         - name: http-router
           containerPort: {{ .Values.router.internalPort }}
@@ -629,9 +626,6 @@ spec:
         secret:
           secretName: {{  .Values.elasticsearch.certificatesSecretName }}
       {{- end }}
-      - name: applicationyaml
-        secret:
-          secretName: {{ template "insight.fullname" . }}-applicationyaml
       {{- if or .Values.systemYamlOverride.existingSecret .Values.insightServer.systemYaml }}
       - name: systemyaml
         secret:

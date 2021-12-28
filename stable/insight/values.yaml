@@ -236,7 +236,7 @@ dbSetup:
   postgresql:
     image:
       repository: releases-docker.jfrog.io/postgres
-      tag: 13.2-alpine
+      tag: 13.4-alpine
       pullPolicy: IfNotPresent
 
 # PostgreSQL
@@ -247,7 +247,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r39
   postgresqlUsername: insight
   postgresqlPassword: ""
   postgresqlDatabase: insight
@@ -394,8 +394,6 @@ elasticsearch:
       periodSeconds: 5
 
 podRestartTime:
-
-applicationConfigs: {}
 
 logger:
   image:
