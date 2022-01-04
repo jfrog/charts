@@ -399,13 +399,14 @@ spec:
           subPath: gcp.credentials.json
       {{- end }}
       {{- end }}
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
       {{- if .Values.artifactory.resources }}
         resources:
 {{ toYaml .Values.artifactory.resources | indent 10 }}
       {{- end }}
-      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
-      {{- end }}
+
 {{- end }}
       {{- if .Values.hostAliases }}
       hostAliases:
