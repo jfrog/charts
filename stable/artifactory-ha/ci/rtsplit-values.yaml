@@ -6,11 +6,7 @@ artifactory:
   persistence:
     enabled: false
   replicator:
-    name: replicator
     enabled: true
-    pdn:
-      tracker:
-        enabled: false
     ingress:
       name:
       hosts: []
@@ -18,18 +14,11 @@ artifactory:
     trackerIngress:
       enabled: true
       className: "testclass2"
-  resources:
-    requests:
-      memory: "4Gi"
-      cpu: "2"
-    limits:
-      memory: "6Gi"
-      cpu: "4"
 
 postgresql:
   postgresqlPassword: password
   postgresqlExtendedConf:
-    maxConnections: 100
+    maxConnections: 102
   persistence:
     enabled: false
 
@@ -46,9 +35,8 @@ ingress:
     - demonow.xyz
 nginx:
   enabled: false
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 3
-  targetCPUUtilizationPercentage: 70
+jfconnect:
+  enabled: true
+mc:
+  enabled: true
+splitServicesToContainers: true

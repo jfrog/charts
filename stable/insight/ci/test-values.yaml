@@ -10,11 +10,43 @@ insightServer:
     value: '-Xms2g -Xmx3g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
   persistence:
     enabled: false
+  annotations:
+    key1: "value1"
+    key2: "value2"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
 
 insightScheduler:
   extraEnvironmentVariables:
   - name: JF_INSIGHT_SCHEDULER_EXTRAJAVAOPTS
     value: '-Xms512m -Xmx1g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 postgresql:
   image:
@@ -36,3 +68,44 @@ rbac:
 serviceAccount:
   create: true
   automountServiceAccountToken: true
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.insightServer.persistence.mountPath }}/log/filebeat
+    name: insight-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.insightServer.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfisv"
+        log_type: "insightServer"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+
+common:
+  fsGroupChangePolicy: "OnRootMismatch"

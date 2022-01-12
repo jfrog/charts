@@ -87,7 +87,7 @@ spec:
   tls:
 {{ toYaml .Values.ingress.tls | indent 4 }}
   {{- end -}}
-{{- if .Values.artifactory.replicator.enabled }}
+{{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled }}
 ---
 {{- $replicationIngressName := default ( include "artifactory-ha.replicator.fullname" . ) .Values.artifactory.replicator.ingress.name -}}
   {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
@@ -169,7 +169,7 @@ spec:
 {{ toYaml .Values.artifactory.replicator.ingress.tls | indent 4 }}
   {{- end -}}
 {{- end -}}
-{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.trackerIngress.enabled }}
+{{- if and (or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled) .Values.artifactory.replicator.trackerIngress.enabled }}
 ---
 {{- $replicatorTrackerIngressName := default ( include "artifactory-ha.replicator.tracker.fullname" . ) .Values.artifactory.replicator.trackerIngress.name -}}
   {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}

@@ -206,7 +206,7 @@ spec:
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-          value: "jfxr,jfxana,jfxidx,jfxpst,jfob"
+          value: {{ include "xray.router.requiredServiceTypes" . }}
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
@@ -389,10 +389,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.server.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.server.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.server.readinessProbe.config . | indent 10 }}
-{{- end }}
       - name: {{ .Values.analysis.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -523,10 +519,6 @@ spec:
 {{- if .Values.analysis.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.analysis.livenessProbe.config . | indent 10 }}
-{{- end }}
-{{- if .Values.analysis.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.analysis.readinessProbe.config . | indent 10 }}
 {{- end }}
       - name: {{ .Values.indexer.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
@@ -659,10 +651,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.indexer.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.indexer.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
-{{- end }}
       - name: {{ .Values.persist.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -789,10 +777,6 @@ spec:
 {{- if .Values.persist.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.persist.livenessProbe.config . | indent 10 }}
-{{- end }}
-{{- if .Values.persist.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.persist.readinessProbe.config . | indent 10 }}
 {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}

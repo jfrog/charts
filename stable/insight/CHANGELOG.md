@@ -1,6 +1,20 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [101.5.0] - Jan 11, 2022
+* Add more user friendly support for pod affinity and anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Added support for setting `fsGroupChangePolicy`
+* Updated router version to `7.30.0`
+* Refactored `database-creds` secret to create only when database values are passed
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Update elasticsearch version to `7.16.2`
+* Fix filebeat sidecar spool file permissions
+* Updated filebeat sidecar container to `7.16.2`
+* Change psql client check condition
+
 ## [101.3.0] - Dec 17, 2021
 * Removed obsolete secret `applicationyaml`
 * Update postgresql tag version to `13.4.0-debian-10-r39`

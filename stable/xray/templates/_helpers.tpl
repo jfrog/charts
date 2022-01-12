@@ -404,3 +404,11 @@ router readiness probe
 {{- printf "%s" "/router/api/v1/system/health" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve xray requiredServiceTypes value
+*/}}
+{{- define "xray.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfxr,jfxana,jfxidx,jfxpst,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}

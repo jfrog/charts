@@ -40,3 +40,34 @@ rbac:
 serviceAccount:
   create: true
   automountServiceAccountToken: true
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.xray.persistence.mountPath }}/log/filebeat
+    name: xray-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.xray.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfxr"
+        log_type: "xray"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066

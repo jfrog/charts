@@ -161,7 +161,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r39
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
@@ -737,18 +737,13 @@ artifactory:
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
-    {{- if .Values.artifactory.replicator.enabled }}
-    replicator:
-      enabled: true
-    {{- end }}
     {{- if .Values.jfconnect.enabled }}
     jfconnect:
       enabled: true
     {{- end }}
-    {{- if .Values.integration.enabled }}
     integration:
       enabled: true
-    {{- end }}
+    {{ include "artifactory-ha.replicator" . }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -1364,6 +1359,9 @@ artifactory:
        # - hosts:
        #   - artifactory.domain.example
        #   secretName: chart-example-tls-secret
+    pdn:
+      tracker:
+        enabled: false
 
   ssh:
     enabled: false
@@ -1668,7 +1666,6 @@ jfconnect:
 
 integration:
   name: integration
-  enabled: false
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1684,7 +1681,7 @@ integration:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/ping
+          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1698,7 +1695,7 @@ integration:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/ping
+          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
