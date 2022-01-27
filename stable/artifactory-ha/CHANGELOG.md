@@ -1,16 +1,18 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.31.10] - Dec 17, 2021
+## [107.31.13] - Dec 17, 2021
 * Remove integration service feature flag to make it mandatory service
 * Update postgresql tag version to `13.4.0-debian-10-r39`
 * Refactored `router.requiredServiceTypes` to support platform chart
+
+## [107.30.0] - Nov 30, 2021
 * Fixed incorrect permission for filebeat.yaml
 * Updated healthcheck (liveness/readiness) api for integration service
 * Disable readiness health check for the artifactory container when running in the container split mode
 * Ability to start replicator on enabling pdn tracker
 
-## [107.29.8] - Nov 30, 2021
+## [107.29.0] - Nov 30, 2021
 * Added integration service container in artifactory
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
 * Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
