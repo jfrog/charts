@@ -83,6 +83,9 @@ xray:
     enabled: false
     # certificateSecretName:
 
+  ## Add custom annotations for pipelines pods
+  annotations: {}
+
   ## Xray requires a unique master key
   ## You can generate one with the command:
   ## 'openssl rand -hex 32'
@@ -105,6 +108,13 @@ xray:
   # mongoUrl:
   # mongoUsername:
   # mongoPassword:
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
 
   systemYaml: |
     configVersion: 1
@@ -152,6 +162,7 @@ xray:
       {{- end }}
     {{- end }}
 
+
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
@@ -169,6 +180,16 @@ rbac:
       - get
       - watch
       - list
+    - apiGroups:
+      - 'batch'
+      resources:
+      - jobs
+      verbs:
+      - get
+      - watch
+      - list
+      - create
+      - delete
 
 networkpolicy: []
   # Allows all ingress and egress
@@ -223,7 +244,7 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
   ## Explicitly mounts the API credentials for the Service Account
-  automountServiceAccountToken: false
+  automountServiceAccountToken: true
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
@@ -377,6 +398,7 @@ common:
   # xrayVersion:
   xrayUserId: 1035
   xrayGroupId: 1035
+  # fsGroupChangePolicy: "Always"
 
   # Xray configuration to be written to xray_config.yaml
   xrayConfig:
@@ -753,7 +775,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.28.2
+    tag: 7.30.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -829,7 +851,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.2.0
+    tag: 1.2.2
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -957,3 +979,8 @@ hostAliases: []
 
 ## To enable new probes
 newProbes: true
+
+## To limit the amount of jobs created by xray execution service
+quota:
+  enabled: true
+  jobCount: 100

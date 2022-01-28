@@ -1,7 +1,17 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.40.4] - Dec 23, 2021
+## [103.41.4] - Jan 11, 2022
+* Add more user friendly support for pod affinity and anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Added `ResourceQuota` and permissions for xray execution service
+* Added support for custom pod annotations using `xray.annotations`
+* Added support for setting `fsGroupChangePolicy`
+* Add job permissions to use by execution service
+* Updated Observability version to `1.2.2`
+* Updated router version to `7.30.0`
+
+## [103.40.0] - Dec 23, 2021
 * Refactored `database-creds` secret to create only when database values are passed
 * Refactored probes to replace httpGet probes with basic exec + curl
 * Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
@@ -10,12 +20,14 @@ All changes to this chart will be documented in this file.
 * Fix filebeat sidecar spool file permissions
 * Added `extraSecretsPrependReleaseName` to load-definitions secret in rabbitmq subchart
 * Updated filebeat sidecar container to `7.16.2`
+
+## [103.39.0] - Dec 17, 2021
 * Added `server.mailServer` and `server.indexAllBuilds` as optional fields
 * Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
 * Update postgresql tag version to `13.4.0-debian-10-r39`
 * Refactored `router.requiredServiceTypes` to support platform chart
 
-## [103.38.2] - Nov 26, 2021
+## [103.37.0] - Nov 26, 2021
 * Fixed incorrect permission for filebeat.yaml [GH-1521](https://github.com/jfrog/charts/issues/1521)
 * Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable 
 * Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`

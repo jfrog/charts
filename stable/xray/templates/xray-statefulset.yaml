@@ -59,6 +59,9 @@ spec:
         {{- with .Values.filebeat.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
+      {{- range $key, $value := .Values.xray.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "xray.imagePullSecrets" . | indent 6 }}
@@ -67,6 +70,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
+        {{- if .Values.common.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
+        {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
@@ -498,6 +504,11 @@ spec:
               fieldPath: metadata.name
         - name: XRAY_K8S_ENV
           value: "true"
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "xray.fullname" . }}
+              key: execution-service-aes-key
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
           name: http-analysis
@@ -814,9 +825,31 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- with .Values.affinity }}
+    {{- if .Values.xray.affinity }}
+    {{- with .Values.xray.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.xray.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.xray.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "xray.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.xray.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.xray.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "xray.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
