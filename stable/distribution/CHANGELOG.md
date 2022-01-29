@@ -1,6 +1,13 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.10.5] - Nov 18, 2021
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+
 ## [102.10.3] - Oct 11, 2021
 * Updated router version to `7.26.0`
 * Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
@@ -21,6 +28,7 @@ All changes to this project chart be documented in this file.
 * Update alpine tag version to `3.14.2`
 * Update busybox tag version to `1.33.1`
 * Added default values cpu and memeory in initContainers
+* Update redis version tag to `6.2.6-debian-10-r43`
 
 ## [102.9.0] - Aug 2, 2021
 * Added support for `common.preStartCommand`

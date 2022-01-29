@@ -7,6 +7,37 @@ insightServer:
   jfrogUrl: http://artifactory.rt:8082
   persistence:
     enabled: false
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+
+insightScheduler:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 postgresql:
   postgresqlPassword: password

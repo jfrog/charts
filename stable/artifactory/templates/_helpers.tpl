@@ -297,24 +297,19 @@ find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ 
 {{/*
 Resolve requiredServiceTypes value
 */}}
-{{- define "router.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob" -}}
+{{- define "artifactory.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob,jfint" -}}
 {{- if .Values.jfconnect -}}
   {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
   {{- end -}}
 {{- end -}}
-{{- if .Values.artifactory.replicator.enabled -}}
+{{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
     {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
 {{- end -}}
 {{- if .Values.mc -}}
   {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
-  {{- end -}}
-{{- end -}}
-{{- if .Values.integration -}}
-  {{- if .Values.integration.enabled -}}
-  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfint" -}}
   {{- end -}}
 {{- end -}}
 {{- $requiredTypes -}}
@@ -394,5 +389,26 @@ artifactory port
 {{- .Values.artifactory.internalArtifactoryPort -}}
 {{- else -}}
 {{- .Values.router.internalPort  -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+replicator/tracker
+*/}}
+{{- define "artifactory.replicator" -}}
+{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
+replicator:
+  pdn:
+    tracker:
+      enabled: true
+  enabled: true
+{{- else if and (not .Values.artifactory.replicator.enabled) .Values.artifactory.replicator.pdn.tracker.enabled -}}
+replicator:
+  pdn:
+    tracker:
+      enabled: true
+{{- else if and (not .Values.artifactory.replicator.pdn.tracker.enabled) .Values.artifactory.replicator.enabled -}}
+replicator:
+  enabled: true
 {{- end -}}
 {{- end -}}

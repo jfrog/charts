@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.20.8] - Dec 14, 2021
+* Updated pipeline version to `1.20.8`
+
 ## [101.20.4] - Dec 14, 2021
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
 * Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)

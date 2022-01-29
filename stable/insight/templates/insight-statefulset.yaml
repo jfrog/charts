@@ -50,6 +50,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.common.uid }}
         fsGroup: {{ .Values.common.gid }}
+        {{- if .Values.common.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
+        {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "insight-server.customInitContainersBegin" .)  . | indent 6 }}
@@ -420,10 +423,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.insightServer.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.insightServer.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.insightServer.readinessProbe.config . | indent 10 }}
-{{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
@@ -525,10 +524,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.insightScheduler.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.insightScheduler.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.insightScheduler.readinessProbe.config . | indent 10 }}
-{{- end }}
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
       {{- $context := .Values.insightServer.appContext }}
@@ -607,9 +602,31 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- if .Values.insightServer.affinity }}
     {{- with .Values.insightServer.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.insightServer.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.insightServer.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "insight.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.insightServer.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.insightServer.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "insight.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.insightServer.tolerations }}
       tolerations:

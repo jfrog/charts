@@ -80,6 +80,7 @@ shared:
 common:
   uid: 1040
   gid: 1040
+  # fsGroupChangePolicy: "Always"
 
   ## Add custom volumes
   customVolumes: |
@@ -312,7 +313,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.15.1
+    tag: 7.16.2
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -556,6 +557,11 @@ insightServer:
   tolerations: []
 
   affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
 
   service:
     type: ClusterIP
@@ -568,25 +574,13 @@ insightServer:
     config: |
       exec:
         command:
-        - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "insight.livenessProbe" .}}
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
-      successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-        - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" .}}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
       successThreshold: 1
 
   startupProbe:
@@ -594,9 +588,10 @@ insightServer:
     config: |
       exec:
         command:
-        - curl
-        - http://127.0.0.1:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" .}}
-      initialDelaySeconds: 30
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" . }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       failureThreshold: 60
       periodSeconds: 5
       timeoutSeconds: 1
@@ -671,25 +666,13 @@ insightScheduler:
     config: |
       exec:
         command:
-        - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "insight.livenessProbe" .}}
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
-      successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-        - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" .}}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
       successThreshold: 1
 
   startupProbe:
@@ -697,8 +680,10 @@ insightScheduler:
     config: |
       exec:
         command:
-        - curl
-        - http://127.0.0.1:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" .}}
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" . }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -709,7 +694,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.28.2
+    tag: 7.30.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -728,10 +713,11 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "insight.router.livenessProbe" .}}
-        scheme: {{ include "insight.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
@@ -741,10 +727,11 @@ router:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "insight.router.readinessProbe" .}}
-        scheme: {{ include "insight.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
@@ -754,10 +741,11 @@ router:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "insight.router.readinessProbe" .}}
-        scheme: {{ include "insight.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -782,7 +770,7 @@ filebeat:
   name: insight-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.9.2
+    version: 7.16.2
   logstashUrl: "logstash:5044"
 
   terminationGracePeriod: 10
@@ -825,7 +813,9 @@ filebeat:
     logging.level: info
     path.data: {{ .Values.insightServer.persistence.mountPath }}/log/filebeat
     name: insight-filebeat
-    queue.spool: ~
+    queue.spool:
+      file:
+        permissions: 0760
     filebeat.inputs:
     - type: log
       enabled: true
@@ -854,3 +844,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
+
+## To enable new probes
+newProbes: true

@@ -83,6 +83,9 @@ xray:
     enabled: false
     # certificateSecretName:
 
+  ## Add custom annotations for pipelines pods
+  annotations: {}
+
   ## Xray requires a unique master key
   ## You can generate one with the command:
   ## 'openssl rand -hex 32'
@@ -105,6 +108,13 @@ xray:
   # mongoUrl:
   # mongoUsername:
   # mongoPassword:
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
 
   systemYaml: |
     configVersion: 1
@@ -142,9 +152,16 @@ xray:
         username: "{{ .Values.xray.mongoUsername }}"
         password: "{{ .Values.xray.mongoPassword }}"
       {{- end }}
+    {{- if or .Values.server.mailServer .Values.server.indexAllBuilds }}
     server:
+      {{- if .Values.server.mailServer }}
       mailServer: "{{ .Values.server.mailServer }}"
-      indexAllBuilds: "{{ .Values.server.indexAllBuilds }}"
+      {{- end }}
+      {{- if .Values.server.indexAllBuilds }}
+      indexAllBuilds: {{ .Values.server.indexAllBuilds }}
+      {{- end }}
+    {{- end }}
+
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -163,6 +180,16 @@ rbac:
       - get
       - watch
       - list
+    - apiGroups:
+      - 'batch'
+      resources:
+      - jobs
+      verbs:
+      - get
+      - watch
+      - list
+      - create
+      - delete
 
 networkpolicy: []
   # Allows all ingress and egress
@@ -217,7 +244,7 @@ serviceAccount:
   ## If not set and create is true, a name is generated using the fullname template
   name:
   ## Explicitly mounts the API credentials for the Service Account
-  automountServiceAccountToken: false
+  automountServiceAccountToken: true
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
@@ -228,7 +255,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r39
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -333,6 +360,7 @@ rabbitmq:
     size: 20Gi
   ## Load Definitions - https://www.rabbitmq.com/management.html#load-definitions
   # ref : https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions
+  extraSecretsPrependReleaseName: true
   extraSecrets:
     load-definition:
       load_definition.json: |
@@ -357,7 +385,7 @@ rabbitmq:
         }
   loadDefinition:
     enabled: true
-    existingSecret: load-definition
+    existingSecret: '{{ .Release.Name }}-load-definition'
   extraConfiguration: |
     management.load_definitions = /app/load_definition.json
   nodeSelector: {}
@@ -370,6 +398,7 @@ common:
   # xrayVersion:
   xrayUserId: 1035
   xrayGroupId: 1035
+  # fsGroupChangePolicy: "Always"
 
   # Xray configuration to be written to xray_config.yaml
   xrayConfig:
@@ -527,33 +556,25 @@ analysis:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.livenessProbe" .}}
-        port: {{ .Values.analysis.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
-  readinessProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.analysis.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
-      successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.analysis.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -590,33 +611,25 @@ indexer:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.livenessProbe" .}}
-        port: {{ .Values.indexer.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
-  readinessProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.indexer.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
-      successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.indexer.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -653,33 +666,25 @@ persist:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.livenessProbe" .}}
-        port: {{ .Values.persist.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
-  readinessProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.persist.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
-      successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.persist.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -707,6 +712,9 @@ server:
   externalPort: 80
   annotations: {}
 
+  # mailServer: ""
+  # indexAllBuilds: false
+
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
@@ -727,33 +735,25 @@ server:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.livenessProbe" .}}
-        port: {{ .Values.server.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 3
       successThreshold: 1
 
-  readinessProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.server.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
-      successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.readinessProbe" .}}
-        port: {{ .Values.server.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -775,7 +775,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.28.2
+    tag: 7.30.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -802,10 +802,11 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.router.readinessProbe" .}}
-        scheme: {{ include "xray.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -815,10 +816,11 @@ router:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.router.readinessProbe" .}}
-        scheme: {{ include "xray.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -828,10 +830,11 @@ router:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "xray.router.readinessProbe" .}}
-        scheme: {{ include "xray.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -848,8 +851,9 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.1.4
+    tag: 1.2.2
     imagePullPolicy: IfNotPresent
+  internalPort: 8036
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -865,7 +869,7 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -879,7 +883,7 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -895,7 +899,7 @@ filebeat:
   name: xray-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.9.2
+    version: 7.16.2
   logstashUrl: "logstash:5044"
 
   annotations: {}
@@ -940,7 +944,9 @@ filebeat:
     logging.level: info
     path.data: {{ .Values.xray.persistence.mountPath }}/log/filebeat
     name: xray-filebeat
-    queue.spool: ~
+    queue.spool:
+      file:
+        permissions: 0760
     filebeat.inputs:
     - type: log
       enabled: true
@@ -971,5 +977,10 @@ hostAliases: []
 #      - "foo.remote"
 #      - "bar.remote"
 
-## To enable new probes that will become default in one of the future releases
-newProbes: false
+## To enable new probes
+newProbes: true
+
+## To limit the amount of jobs created by xray execution service
+quota:
+  enabled: true
+  jobCount: 100
