@@ -1,6 +1,13 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.2.0] - Jan 31, 2022
+* Update dependency artifactory chart version to 107.31.13
+* Update dependency xray chart version to 103.41.5
+* Update dependency insight chart version to 101.5.0
+* Update dependency pipelines chart version to 101.21.1
+* Adding uniqueness for bitnami rabbitmq extraSecrets
+
 ## [10.1.2] - Dec 23, 2021
 * Update dependency insight chart version to 101.3.0
 

@@ -21,7 +21,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.28.2
+    router: 7.30.0
   #   artifactory:
   #   xray:
   #   distribution:
@@ -85,6 +85,7 @@ rabbitmq:
   extraEnvVars:
     - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
       value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
+  extraSecretsPrependReleaseName: true
   extraSecrets:
     load-definition:
       load_definition.json: |
@@ -118,7 +119,7 @@ rabbitmq:
         }
   loadDefinition:
     enabled: true
-    existingSecret: load-definition
+    existingSecret: '{{ .Release.Name }}-load-definition'
   extraConfiguration: |
     management.load_definitions = /app/load_definition.json
 
@@ -133,7 +134,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.1.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.2.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
