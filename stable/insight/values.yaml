@@ -73,6 +73,10 @@ imagePullPolicy: IfNotPresent
 # For HA
 replicaCount: 1
 
+## Database configurations
+## Use the wait-for-db init container. Set to false to skip
+waitForDatabase: true
+
 shared:
   node:
     id:
@@ -409,6 +413,17 @@ insightServer:
     registry: releases-docker.jfrog.io
     repository: jfrog/insight-server
     # tag:
+
+  # Create a priority class for the Insight pod or use an existing one
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    ## Override default name
+    # name:
+    ## Use an existing priority class
+    # existingPriorityClass:
+
   appContext: insight
   appName: insight-server
   home: /opt/jfrog
