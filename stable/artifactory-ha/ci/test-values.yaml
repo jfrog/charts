@@ -1,5 +1,6 @@
 databaseUpgradeReady: true
 artifactory:
+  fsGroupChangePolicy: "OnRootMismatch"
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   persistence:
     enabled: false
@@ -32,6 +33,9 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
 
 postgresql:
   postgresqlPassword: "password"
@@ -51,3 +55,34 @@ ingress:
     - demonow.xyz
 nginx:
   enabled: false
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.artifactory.persistence.mountPath }}/log/filebeat
+    name: artifactory-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.artifactory.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfrt"
+        log_type: "artifactory"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
