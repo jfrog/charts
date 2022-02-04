@@ -397,9 +397,9 @@ artifactory port
 */}}
 {{- define "artifactory-ha.port" -}}
 {{- if or .Values.newProbes .Values.splitServicesToContainers -}}
-{{- .Values.artifactory.internalArtifactoryPort -}}
+{{- .Values.artifactory.tomcat.maintenanceConnector.port -}}
 {{- else -}}
-{{- .Values.router.internalPort  -}}
+{{- .Values.router.internalPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -421,5 +421,32 @@ replicator:
 {{- else if and (not .Values.artifactory.replicator.pdn.tracker.enabled) .Values.artifactory.replicator.enabled -}}
 replicator:
   enabled: true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "artifactory.nginx.customInitContainers" -}}
+{{- if .Values.nginx.customInitContainers -}}
+{{- .Values.nginx.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory.nginx.customVolumes" -}}
+{{- if .Values.nginx.customVolumes -}}
+{{- .Values.nginx.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "artifactory.nginx.customSidecarContainers" -}}
+{{- if .Values.nginx.customSidecarContainers -}}
+{{- .Values.nginx.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}

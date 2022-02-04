@@ -59,6 +59,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.gid }}
+        {{- if .Values.artifactory.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
+        {{- end }}
       {{- end }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
@@ -867,12 +870,6 @@ spec:
         startupProbe:
 {{ tpl .Values.artifactory.startupProbe.config . | indent 10 }}
         {{- end }}
-    {{- if not .Values.splitServicesToContainers }}   
-        {{- if .Values.artifactory.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.artifactory.readinessProbe.config . | indent 10 }}
-        {{- end }}
-    {{- end }}
         {{- if .Values.artifactory.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.artifactory.livenessProbe.config . | indent 10 }}

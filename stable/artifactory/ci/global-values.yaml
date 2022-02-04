@@ -7,6 +7,16 @@ postgresql:
 artifactory:
   persistence:
     enabled: false
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "6Gi"
+      cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
      image: "{{ .Values.initContainerImage }}"
@@ -115,3 +125,41 @@ global:
        limits:
          memory: "128Mi"
          cpu: "100m"
+
+nginx:
+  customInitContainers: |
+   - name: "custom-init-begin-nginx"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - echo "running in nginx"
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: custom-script-local
+  customSidecarContainers: |
+   - name: "sidecar-list-nginx"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecarlocal.txt; cat /scriptslocal/sidecarlocal.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scriptslocal"
+         name: custom-script-local
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+  # Add custom volumes
+  customVolumes: |
+   - name: custom-script-local
+     emptyDir:
+       sizeLimit: 100Mi

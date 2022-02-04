@@ -1,11 +1,17 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [101.6.0] - Jan 20, 2022
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+* Added support for PriorityClass
+
 ## [101.5.0] - Jan 11, 2022
 * Add more user friendly support for pod affinity and anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
 * Added support for setting `fsGroupChangePolicy`
 * Updated router version to `7.30.0`
+
+## [101.4.0] - Dec 23, 2021
 * Refactored `database-creds` secret to create only when database values are passed
 * Refactored probes to replace httpGet probes with basic exec + curl
 * Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
@@ -13,6 +19,8 @@ All changes to this chart will be documented in this file.
 * Update elasticsearch version to `7.16.2`
 * Fix filebeat sidecar spool file permissions
 * Updated filebeat sidecar container to `7.16.2`
+
+## [101.3.1] - Dec 20, 2021
 * Change psql client check condition
 
 ## [101.3.0] - Dec 17, 2021

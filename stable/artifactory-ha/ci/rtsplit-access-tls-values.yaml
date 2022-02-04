@@ -14,21 +14,36 @@ artifactory:
     trackerIngress:
       enabled: true
       className: "testclass2"
-  resources:
-    requests:
-      memory: "4Gi"
-      cpu: "2"
-    limits:
-      memory: "6Gi"
-      cpu: "4"
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  node:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
   javaOpts:
     xms: "4g"
     xmx: "4g"
 
+access:
+  accessConfig:
+    security:
+      tls: true
+  resetAccessCAKeys: true
+
 postgresql:
   postgresqlPassword: password
   postgresqlExtendedConf:
-    maxConnections: 100
+    maxConnections: 102
   persistence:
     enabled: false
 

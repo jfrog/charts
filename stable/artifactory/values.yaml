@@ -174,8 +174,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi-minimal
-    tag: 8.4-210
+    repository: jfrog/ubi-minimal
+    tag: 8.5-204
 
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
@@ -192,7 +192,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.28.2
+    tag: 7.30.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -217,10 +217,11 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /router/api/v1/system/liveness
-        scheme: {{ include "artifactory.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "artifactory.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -230,10 +231,11 @@ router:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /router/api/v1/system/readiness
-        scheme: {{ include "artifactory.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "artifactory.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -243,10 +245,11 @@ router:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: /router/api/v1/system/readiness
-        scheme: {{ include "artifactory.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "artifactory.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 10
       failureThreshold: 60
       periodSeconds: 5
@@ -291,6 +294,8 @@ artifactory:
   database:
     maxOpenConnections: 80
   tomcat:
+    maintenanceConnector:
+      port: 8091
     connector:
       maxThreads: 200
       sendReasonPhrase: false
@@ -638,6 +643,8 @@ artifactory:
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
       tomcat:
+        maintenanceConnector:
+          port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
         connector:
           maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
           sendReasonPhrase: {{ .Values.artifactory.tomcat.connector.sendReasonPhrase }}
@@ -673,8 +680,6 @@ artifactory:
     jfconnect:
       enabled: true
     {{- end }}
-    integration:
-      enabled: true
     {{ include "artifactory.replicator" . }}
 
   annotations: {}
@@ -745,6 +750,7 @@ artifactory:
   internalArtifactoryPort: 8081
   uid: 1030
   gid: 1030
+  # fsGroupChangePolicy: "Always"
   terminationGracePeriodSeconds: 30
 
   ## By default, the Artifactory StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `artifactory.uid` value.
@@ -755,24 +761,12 @@ artifactory:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "artifactory.livenessProbe" . }}
-        scheme: {{ include "artifactory.scheme" . | upper }}
-        port: {{ include "artifactory.port" . }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 10
-      successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: {{ include "artifactory.readinessProbe" . }}
-        scheme: {{ include "artifactory.scheme" . | upper }}
-        port: {{ include "artifactory.port" . }}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 10
@@ -781,10 +775,11 @@ artifactory:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "artifactory.readinessProbe" . }}
-        scheme: {{ include "artifactory.scheme" . | upper }}
-        port: {{ include "artifactory.port" . }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
       initialDelaySeconds: 10
       failureThreshold: 90
       periodSeconds: 5
@@ -1173,6 +1168,11 @@ artifactory:
   tolerations: []
 
   affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
 
   ssh:
     enabled: false
@@ -1181,6 +1181,7 @@ artifactory:
 
 frontend:
   name: frontend
+  internalPort: 8070
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1200,7 +1201,7 @@ frontend:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8070/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1214,7 +1215,7 @@ frontend:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8070/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1245,6 +1246,7 @@ access:
 
 metadata:
   name: metadata
+  internalPort: 8086
   database:
     maxOpenConnections: 80
   resources: {}
@@ -1263,7 +1265,7 @@ metadata:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8086/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1277,7 +1279,7 @@ metadata:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8086/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1285,6 +1287,7 @@ metadata:
 
 event:
   name: event
+  internalPort: 8061
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1300,7 +1303,7 @@ event:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8061/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.event.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1314,7 +1317,7 @@ event:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8061/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.event.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1324,6 +1327,7 @@ jfconnect:
   name: jfconnect
   ## Set to true if using an Enterprise Plus license
   enabled: false
+  internalPort: 8030
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1339,7 +1343,7 @@ jfconnect:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8030/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1353,7 +1357,7 @@ jfconnect:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8030/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1361,6 +1365,7 @@ jfconnect:
 
 integration:
   name: integration
+  internalPort: 8071
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1376,7 +1381,7 @@ integration:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1390,7 +1395,7 @@ integration:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8071/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1398,6 +1403,7 @@ integration:
 
 observability:
   name: observability
+  internalPort: 8036
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1413,7 +1419,7 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/liveness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
       timeoutSeconds: 5
@@ -1427,7 +1433,7 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:8036/api/v1/system/readiness
+          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1648,6 +1654,12 @@ nginx:
       }
     }
 
+  customInitContainers: |
+
+  customSidecarContainers: |
+
+  customVolumes: |
+
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
@@ -1690,10 +1702,11 @@ nginx:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "artifactory.livenessProbe" . }}
-        scheme: {{ include "nginx.scheme" . | upper }}
-        port: {{ include "nginx.port" . }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -1703,10 +1716,11 @@ nginx:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "artifactory.readinessProbe" . }}
-        scheme: {{ include "nginx.scheme" . | upper }}
-        port: {{ include "nginx.port" . }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -1716,10 +1730,11 @@ nginx:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "artifactory.readinessProbe" . }}
-        scheme: {{ include "nginx.scheme" . | upper }}
-        port: {{ include "nginx.port" . }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1833,7 +1848,7 @@ filebeat:
   name: artifactory-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.9.2
+    version: 7.16.2
   logstashUrl: "logstash:5044"
 
   livenessProbe:
@@ -1874,7 +1889,9 @@ filebeat:
     logging.level: info
     path.data: {{ .Values.artifactory.persistence.mountPath }}/log/filebeat
     name: artifactory-filebeat
-    queue.spool: ~
+    queue.spool:
+      file:
+        permissions: 0760
     filebeat.inputs:
     - type: log
       enabled: true
@@ -1909,5 +1926,5 @@ hostAliases: []
 ## Toggling this feature will enable all microservices to run in different containers in a single pod (by default it is false)
 splitServicesToContainers: false
 
-## To enable new probes that will become default in one of the future releases
-newProbes: false
+## To enable new probes
+newProbes: true

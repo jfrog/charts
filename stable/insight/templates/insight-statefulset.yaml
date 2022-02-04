@@ -43,6 +43,13 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.insightServer.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.insightServer.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.insightServer.priorityClass.create }}
+      priorityClassName: {{ default (include "insight.fullname" .) .Values.insightServer.priorityClass.name }}
+      {{- end }}
+    {{- end }}
       serviceAccountName: {{ template "insight-server.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "insight-server.imagePullSecrets" . | indent 6 }}
@@ -168,6 +175,7 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+  {{- if .Values.waitForDatabase }}
     {{- if .Values.postgresql.enabled }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
@@ -190,6 +198,7 @@ spec:
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
     {{- end }}
+  {{- end }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "insight-server.customInitContainers" .)  . | indent 6 }}
     {{- end }}
