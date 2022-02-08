@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.33.8] - Jan 11, 2022
+## [107.33.9] - Jan 11, 2022
 * Make default value of anti-affinity to soft
 * Readme fixes
 * Added support for setting `fsGroupChangePolicy`
