@@ -1,7 +1,7 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.6.0] - Jan 20, 2022
+## [101.6.2] - Jan 20, 2022
 * Option to skip wait-for-db init container with '--set waitForDatabase=false'
 * Added support for PriorityClass
 

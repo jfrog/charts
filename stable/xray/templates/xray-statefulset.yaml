@@ -373,6 +373,11 @@ spec:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
       {{- end }}
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "xray.fullname" . }}
+              key: execution-service-aes-key
         ports:
         - containerPort: {{ .Values.server.internalPort }}
           name: http-server
@@ -825,8 +830,8 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- if .Values.xray.affinity }}
-    {{- with .Values.xray.affinity }}
+    {{- if .Values.affinity }}
+    {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}

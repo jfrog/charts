@@ -197,7 +197,7 @@ pipelines:
   allowCustomNodes: true
   # maximum step timeout value
   stepTimeoutMS: 21600000
-
+  labels: {}
   updateStrategy: RollingUpdate
 
   nodeSelector: {}
@@ -245,8 +245,17 @@ pipelines:
       rotation:
         maxSizeMb: 10
         maxFiles: 10
+      streamToStdout: false
 
     request:
+      rotation:
+        maxSizeMb: 10
+        maxFiles: 10
+      streamToStdout: false
+
+    metricsFramework:
+      customMetricsCronFrequencyInMins: 360
+      predefinedMetricsCronFrequencyInMins: 1
       rotation:
         maxSizeMb: 10
         maxFiles: 10
@@ -270,6 +279,9 @@ pipelines:
   extraEnvironmentVariables:
   # - name: MY_ENV_VAR
   #   value: "example_value"
+
+  ## Add custom annotations for pipelines pods
+  annotations: {}
 
   api:
     image:
@@ -1000,11 +1012,20 @@ pipelines:
           rotation:
             maxSizeMb: {{ .Values.pipelines.logging.application.rotation.maxSizeMb }}
             maxFiles: {{ .Values.pipelines.logging.application.rotation.maxFiles }}
+          streamToStdout: {{ .Values.pipelines.logging.application.streamToStdout }}
 
         request:
           rotation:
             maxSizeMb: {{ .Values.pipelines.logging.request.rotation.maxSizeMb }}
             maxFiles: {{ .Values.pipelines.logging.request.rotation.maxFiles }}
+          streamToStdout: {{ .Values.pipelines.logging.request.streamToStdout }}
+
+        metricsFramework:
+          customMetricsCronFrequencyInMins: {{ .Values.pipelines.logging.metricsFramework.customMetricsCronFrequencyInMins }}
+          predefinedMetricsCronFrequencyInMins: {{ .Values.pipelines.logging.metricsFramework.predefinedMetricsCronFrequencyInMins }}
+          rotation:
+            maxSizeMb: {{ .Values.pipelines.logging.metricsFramework.rotation.maxSizeMb }}
+            maxFiles: {{ .Values.pipelines.logging.metricsFramework.rotation.maxFiles }}
 
     ## This section is used for bringing up the core services and setting up
     ## configurations required by the installer & the services
@@ -1384,7 +1405,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r39
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
   # Password must be set

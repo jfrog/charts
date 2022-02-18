@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.33.9] - Jan 11, 2022
+## [107.33.12] - Jan 11, 2022
 * Add more user friendly support for anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
 * Readme fixes

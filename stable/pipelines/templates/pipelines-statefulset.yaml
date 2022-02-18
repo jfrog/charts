@@ -4,6 +4,9 @@ metadata:
   name: {{ include "pipelines.services.name" . }}
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
+    {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 spec:
   serviceName: {{ include "pipelines.services.name" . }}-headless
 {{- if not .Values.pipelines.autoscaling.enabled }}
@@ -28,6 +31,9 @@ spec:
         checksum/secretk8s: {{ include (print $.Template.BasePath "/buildplane-secret-k8s.yaml") . | sha256sum }}
         checksum/configk8s: {{ include (print $.Template.BasePath "/buildplane-config-k8s.yaml") . | sha256sum }}
         checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.pipelines.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ template "pipelines.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
@@ -268,6 +274,8 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
           {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
           - name: buildplane-creds-aws
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
@@ -325,7 +333,7 @@ spec:
                 - NET_RAW
           env:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-              value: "jfpip"
+              value: {{ include "pipelines.router.requiredServiceTypes" . }}
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_ROUTER_SERVICEREGISTRY_URL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}/access"
