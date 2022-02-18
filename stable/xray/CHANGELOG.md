@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.41.4] - Jan 11, 2022
+## [103.42.5] - Feb 12, 2022
 * Add more user friendly support for pod affinity and anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
 * Added `ResourceQuota` and permissions for xray execution service
@@ -10,6 +10,8 @@ All changes to this chart will be documented in this file.
 * Add job permissions to use by execution service
 * Updated Observability version to `1.2.2`
 * Updated router version to `7.30.0`
+* Sets the AES key used by execution server to the xray server and analysis containers
+* Fix regression in affinity path and revert it to its previous path
 
 ## [103.40.0] - Dec 23, 2021
 * Refactored `database-creds` secret to create only when database values are passed
