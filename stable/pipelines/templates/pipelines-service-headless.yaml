@@ -4,6 +4,9 @@ metadata:
   name: {{ include "pipelines.services.name" . }}-headless
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
+    {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 spec:
   type: ClusterIP
   clusterIP: None

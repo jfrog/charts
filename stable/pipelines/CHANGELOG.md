@@ -1,10 +1,15 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.20.8] - Dec 14, 2021
-* Updated pipeline version to `1.20.8`
+## [101.21.2] - Jan 13, 2022
+* Add support custom labels using `pipelines.labels`
+* Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
+* Added metrics framework logging config and config to stream logs to stdout
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Refactored `router.requiredServiceTypes` to support platform chart
+* Added support for custom pod annotations using `pipelines.annotations`
 
-## [101.20.4] - Dec 14, 2021
+## [101.20.0] - Dec 14, 2021
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
 * Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
 * Add installer logs to shared logs volume
@@ -12,6 +17,7 @@ All changes to this chart to be documented in this file.
 * Aligned router configuration in system.yaml
 * Fixed `global.joinKeySecretName` usage
 * Update Vault tag version to `1.8.6`
+* Removed `jfpipwww` as a router required service
 
 ## [101.19.0] - Nov 18, 2021
 * update system yaml with newer LTS build images 
@@ -37,7 +43,6 @@ All changes to this chart to be documented in this file.
 * Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
 * Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
 * Added piplines logs configuration
-
 
 ## [101.18.0] - Aug 10, 2021
 * Added security hardening fixes
