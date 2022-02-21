@@ -1,0 +1,27 @@
+<!--
+##############################
+Name: S3 STORAGE V3 - Direct Upload
+Authentication: Provider Chain (Ref: https://www.jfrog.com/confluence/display/JFROG/S3+Object+Storage#S3ObjectStorage-AuthenticationMechanism)
+Valid for: Artifactory Single Node + Artifactory High Availability
+Reference: https://www.jfrog.com/confluence/display/JFROG/S3+Object+Storage#S3ObjectStorage-Direct(Eventual-less)versusEventualUploadMechanismdirectversuseventual
+##############################
+-->
+
+<config version="2">
+    <chain template="s3-storage-v3-direct"/>
+   
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>5e+10</maxCacheSize>
+        <cacheProviderDir>cache</cacheProviderDir>
+    </provider>
+   
+    <provider id="s3-storage-v3" type="s3-storage-v3">
+        <endpoint>s3.amazonaws.com</endpoint>
+        <bucketName>bucketName</bucketName>
+        <path>artifactory/filestore</path>
+        <region>s3Region</region>
+        <useInstanceCredentials>true</useInstanceCredentials>
+        <testConnection>false</testConnection>
+    </provider>
+</config>
+

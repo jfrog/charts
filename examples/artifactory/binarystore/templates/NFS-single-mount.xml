@@ -1,0 +1,25 @@
+<!--
+##############################
+Name: Single NFS
+Valid for: Artifactory High Availability
+Reference: https://www.jfrog.com/confluence/display/JFROG/Filestore+Sharding#FilestoreSharding-FileSystemClusterBinaryProvider
+##############################
+-->
+
+<config version="2">
+    <chain>
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="file-system" type="file-system"/>
+        </provider>
+    </chain>
+    
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>5e+10</maxCacheSize>
+        <cacheProviderDir>cache</cacheProviderDir>
+    </provider>
+    
+    <provider id="file-system" type="file-system">
+        <fileStoreDir>/mnt/shared/artifactory/filestore</fileStoreDir>
+    </provider>
+</config>
+
