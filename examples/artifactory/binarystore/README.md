@@ -3,7 +3,7 @@
 
 You can deploy the binaryStore.xml as a Kubernetes Secret. You will need to prepare a XML file with the binaryStore  written in it. 
 
-1. Create a local copy of the binaryStore template sutiable for your environment.
+1. Create a local copy of the binaryStore template suitable for your environment.
 
 2. Modify the values and rename the file name to binarystore.xml
 
