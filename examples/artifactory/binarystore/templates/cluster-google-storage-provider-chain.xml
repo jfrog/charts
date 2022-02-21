@@ -1,0 +1,32 @@
+<!--
+##############################
+Name: Google Storage - Cluster
+Authentication: Provider Chain (Ref: https://www.jfrog.com/confluence/display/JFROG/Google+Cloud+Storage#GoogleCloudStorage-AuthenticationResolutionOrder)
+Valid for: Artifactory High Availability
+Reference: https://www.jfrog.com/confluence/display/JFROG/Google+Cloud+Storage#GoogleCloudStorage-GoogleStorageClusterBinaryProvider
+##############################
+-->
+
+<config version="2">
+    <chain template="cluster-google-storage-v2"/>
+  
+    <provider id="cache-fs-eventual-google-storage" type="cache-fs">
+        <maxCacheSize>5e+10</maxCacheSize>
+        <cacheProviderDir>cache</cacheProviderDir>
+    </provider>
+
+    <provider id="sharding-cluster-eventual-google-storage" type="sharding-cluster">
+        <redundancy>2</redundancy>
+        <lenientLimit>1</lenientLimit>
+    </provider>
+  
+    <provider id="google-storage-v2" type="google-storage-v2">
+        <useInstanceCredentials>false</useInstanceCredentials>
+        <providerId>google-cloud-storage</providerId>
+        <endpoint>commondatastorage.googleapis.com</endpoint>
+        <httpsOnly>false</httpsOnly>
+        <bucketName>artifactory-ha-gcp</bucketName>
+        <path>artifactory-ha/filestore</path>
+        <bucketExists>false</bucketExists>
+    </provider>
+</config>
