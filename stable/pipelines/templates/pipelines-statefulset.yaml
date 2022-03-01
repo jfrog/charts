@@ -229,14 +229,14 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
+            {{- if or .Values.pipelines.masterKey .Values.global.masterKey .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: PIPELINES_MASTER_KEY
               valueFrom:
                 secretKeyRef:
                   name: "{{ include "pipelines.masterKeySecretName" . }}"
                   key: master-key
             {{- end }}
-            {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+            {{- if or .Values.pipelines.joinKey .Values.global.joinKey .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
             - name: PIPELINES_JOIN_KEY
               valueFrom:
                 secretKeyRef:
@@ -259,12 +259,12 @@ spec:
               sleep 2;
             done;
           {{- end }}
-          {{- if or .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
+          {{- if or .Values.pipelines.masterKey .Values.global.masterKey .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
             echo "Copy masterKey to {{ .Values.pipelines.mountPath }}/security";
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_MASTER_KEY} > {{ .Values.pipelines.mountPath }}/security/master.key;
           {{- end }}
-          {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+          {{- if or .Values.pipelines.joinKey .Values.global.joinKey .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
             echo "Copy joinKey to {{ .Values.pipelines.mountPath }}/security";
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;

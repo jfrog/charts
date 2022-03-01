@@ -838,12 +838,6 @@ pipelines:
         ip: ""
         accessPort: {{ .Values.pipelines.router.internalPort }}
         dataPort: {{ .Values.pipelines.router.externalPort }}
-        joinKey: {{ include "pipelines.joinKey" . }}
-
-      {{- if or .Values.pipelines.masterKey .Values.global.masterKey }}
-      security:
-        masterKey: {{ include "pipelines.masterKey" . }}
-      {{- end }}
 
       ## Database configuration
       ##

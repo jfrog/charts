@@ -18,11 +18,11 @@ dependencies:
     repository: https://charts.jfrog.io/
     condition: artifactory.enabled
   - name: xray
-    version: 103.42.5
+    version: 103.43.1
     repository: https://charts.jfrog.io/
     condition: xray.enabled
   - name: distribution
-    version: 102.11.0
+    version: 102.12.0
     repository: https://charts.jfrog.io/
     condition: distribution.enabled
   - name: insight
@@ -30,7 +30,7 @@ dependencies:
     repository: https://charts.jfrog.io/
     condition: insight.enabled
   - name: pipelines
-    version: 101.21.2
+    version: 101.21.5
     repository: https://charts.jfrog.io/
     condition: pipelines.enabled
 description: The Helm chart for JFrog Platform (Universal, hybrid, end-to-end DevOps automation)
@@ -48,5 +48,5 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 10.3.1
+version: 10.3.2
 kubeVersion: ">= 1.14.0-0"
