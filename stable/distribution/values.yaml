@@ -42,7 +42,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi-minimal:8.4-210
+initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
 
 # Init containers
 initContainers:
@@ -72,6 +72,10 @@ systemYamlOverride:
 
 # For HA
 replicaCount: 1
+
+## Database configurations
+## Use the wait-for-db init container. Set to false to skip
+waitForDatabase: true
 
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -141,7 +145,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.4.0-debian-10-r39
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -233,6 +237,7 @@ redis:
 common:
   uid: 1020
   gid: 1020
+  # fsGroupChangePolicy: "Always"
 
   ## Custom command to run before distribution startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
@@ -289,7 +294,7 @@ common:
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'wget -O {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #      - 'curl -o {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
   #    volumeMounts:
   #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
   #        name: distribution-data
@@ -327,8 +332,8 @@ common:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi-minimal
-    tag: 8.4-210
+    repository: jfrog/ubi-minimal
+    tag: 8.5-204
 
 distribution:
   name: distribution
@@ -338,6 +343,18 @@ distribution:
     repository: jfrog/distribution-distribution
     # tag:
     imagePullPolicy: IfNotPresent
+
+  # Create a priority class for the Distribution pod or use an existing one
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    ## Override default name
+    # name:
+    ## Use an existing priority class
+    # existingPriorityClass:
+
+  labels: {}
   internalPort: 8080
   externalPort: 80
   ## Distribution requires a unique master key
@@ -369,6 +386,9 @@ distribution:
 
   serviceId:
 
+  ## Add custom annotations for pipelines pods
+  annotations: {}
+
   ## Extra environment variables that can be used to tune Distribution to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
@@ -377,9 +397,6 @@ distribution:
 
   systemYaml: |
     router:
-      topology:
-        local:
-          requiredServiceTypes: 'jfds'
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
@@ -444,24 +461,12 @@ distribution:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "distribution.livenessProbe" .}}
-        scheme: HTTP
-        port: {{ .Values.distribution.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.livenessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
-      successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: {{ include "distribution.readinessProbe" .}}
-        scheme: HTTP
-        port: {{ .Values.distribution.internalPort }}
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
       failureThreshold: 10
@@ -470,10 +475,11 @@ distribution:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "distribution.readinessProbe" .}}
-        scheme: HTTP
-        port: {{ .Values.distribution.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.readinessProbe" .}}
       initialDelaySeconds: 60
       failureThreshold: 60
       periodSeconds: 5
@@ -528,13 +534,18 @@ distribution:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
 
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.26.0
+    tag: 7.32.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -559,10 +570,11 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "distribution.router.livenessProbe" .}}
-        scheme: {{ include "distribution.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -572,10 +584,11 @@ router:
   readinessProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "distribution.router.readinessProbe" .}}
-        scheme: {{ include "distribution.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -585,15 +598,15 @@ router:
   startupProbe:
     enabled: true
     config: |
-      httpGet:
-        path: {{ include "distribution.router.readinessProbe" .}}
-        scheme: {{ include "distribution.scheme" . | upper }}
-        port: {{ .Values.router.internalPort }}
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -k --fail --max-time 1 {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
       timeoutSeconds: 1
-
 
   persistence:
     accessMode: ReadWriteOnce
@@ -607,6 +620,52 @@ router:
   tolerations: []
   affinity: {}
 
+observability:
+  name: observability
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/observability
+    tag: 1.2.3
+    imagePullPolicy: IfNotPresent
+  internalPort: 8036
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      failureThreshold: 10
+      timeoutSeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: 5
+
+  persistence:
+    mountPath: "/var/opt/jfrog/observability"
+
 shared:
   node:
     id:
@@ -618,7 +677,7 @@ filebeat:
   name: distribution-filebeat
   image:
     repository: docker.elastic.co/beats/filebeat
-    version: 7.9.2
+    version: 7.16.2
   logstashUrl: "logstash:5044"
 
   terminationGracePeriod: 10
@@ -661,7 +720,9 @@ filebeat:
     logging.level: info
     path.data: {{ .Values.distribution.persistence.mountPath }}/log/filebeat
     name: artifactory-filebeat
-    queue.spool: ~
+    queue.spool:
+      file:
+        permissions: 0760
     filebeat.inputs:
     - type: log
       enabled: true
@@ -691,5 +752,5 @@ hostAliases: []
 #      - "foo.remote"
 #      - "bar.remote"
 
-## To enable new probes that will become default in one of the future releases
-newProbes: false
+## To enable new probes
+newProbes: true

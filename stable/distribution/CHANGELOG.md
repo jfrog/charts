@@ -1,19 +1,38 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.10.5] - Nov 18, 2021
-* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
-* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
-* **IMPORTANT**
-* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
-* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+## [102.12.0] - Feb 08, 2022
+* Refactored `database-creds` secret to create only when database values are passed
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Fix filebeat sidecar spool file permissions
+* Updated filebeat sidecar container to `7.16.2`
+* Add more user friendly support for pod affinity and anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Added support for custom pod annotations using `distribution.annotations`
+* Updated NOTES.txt to fix improper warnings
+* Added support for setting `fsGroupChangePolicy`
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+* Added support for PriorityClass
+* Added support to disable persistence for redis data
+* Updated Observability version to `1.2.3`
+* Updated router version to `7.32.1`
 
-## [102.10.3] - Oct 11, 2021
-* Updated router version to `7.26.0`
+## [102.11.0] - Dec 17, 2021
 * Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
 * Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
 * **IMPORTANT**
-* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+* Fixed incorrect permission for filebeat.yaml
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+* Update redis version tag to `6.2.6-debian-10-r43`
+* Added Observability service
+* Add support custom labels using `distribution.labels`
+* Updated router version to `7.28.2`
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Refactored `router.requiredServiceTypes` to support platform chart
 
 ## [102.10.0] - Sep 24, 2021
 * Updated readme of chart to point to wiki. Refer [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution)
@@ -28,7 +47,6 @@ All changes to this project chart be documented in this file.
 * Update alpine tag version to `3.14.2`
 * Update busybox tag version to `1.33.1`
 * Added default values cpu and memeory in initContainers
-* Update redis version tag to `6.2.6-debian-10-r43`
 
 ## [102.9.0] - Aug 2, 2021
 * Added support for `common.preStartCommand`
