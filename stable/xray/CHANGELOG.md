@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.42.5] - Feb 12, 2022
+## [103.43.1] - Feb 12, 2022
 * Add more user friendly support for pod affinity and anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
 * Added `ResourceQuota` and permissions for xray execution service
