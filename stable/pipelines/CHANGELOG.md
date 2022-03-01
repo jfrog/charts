@@ -1,13 +1,14 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.21.2] - Jan 13, 2022
+## [101.21.5] - Feb 21, 2022
 * Add support custom labels using `pipelines.labels`
 * Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
 * Added metrics framework logging config and config to stream logs to stdout
 * Update postgresql tag version to `13.4.0-debian-10-r39`
 * Refactored `router.requiredServiceTypes` to support platform chart
 * Added support for custom pod annotations using `pipelines.annotations`
+* Bugfix - joinkey as a secret with joinKeySecretName
 
 ## [101.20.0] - Dec 14, 2021
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
