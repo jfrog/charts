@@ -811,6 +811,7 @@ artifactory:
     ## google-storage
     ## aws-s3
     ## aws-s3-v3
+    ## cluster-s3-storage-v3
     ## azure-blob
     type: file-system
 
@@ -999,6 +1000,95 @@ artifactory:
           </provider>
       </config>
       {{- end }}
+
+      {{- if eq .Values.artifactory.persistence.type "cluster-s3-storage-v3" }}
+      <!-- AWS S3 V3 -->
+      <config version="2">
+          <chain> <!--template="cluster-s3-storage-v3"-->
+              <provider id="cache-fs-eventual-s3" type="cache-fs">
+                  <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                      <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
+                          <provider id="retry-s3" type="retry">
+                              <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                          </provider>
+                      </sub-provider>
+                      <dynamic-provider id="remote-s3" type="remote"/>
+                  </provider>
+              </provider>
+          </chain>
+          <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+              <readBehavior>crossNetworkStrategy</readBehavior>
+              <writeBehavior>crossNetworkStrategy</writeBehavior>
+            {{- if .Values.artifactory.persistence.redundancy }}
+              <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+            {{ else }}
+              <redundancy>3</redundancy>
+            {{- end }}
+              <property name="zones" value="local,remote"/>
+          </provider>
+          <provider id="remote-s3" type="remote">
+              <zone>remote</zone>
+          </provider>
+          <provider id="eventual-cluster-s3" type="eventual-cluster">
+              <zone>local</zone>
+          </provider>
+          <!-- Set max cache-fs size -->
+          <provider id="cache-fs-eventual-s3" type="cache-fs">
+              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+          </provider>
+        {{- with .Values.artifactory.persistence.awsS3V3 }}
+          <provider id="s3-storage-v3" type="s3-storage-v3">
+              <testConnection>{{ .testConnection }}</testConnection>
+            {{- if .identity }}
+              <identity>{{ .identity }}</identity>
+            {{- end }}
+            {{- if .credential }}
+              <credential>{{ .credential }}</credential>
+            {{- end }}
+              <region>{{ .region }}</region>
+              <bucketName>{{ .bucketName }}</bucketName>
+              <path>{{ .path }}</path>
+              <endpoint>{{ .endpoint }}</endpoint>
+            {{- with .maxConnections }}
+              <maxConnections>{{ . }}</maxConnections>
+            {{- end }}
+            {{- with .kmsServerSideEncryptionKeyId }}
+              <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
+            {{- end }}
+            {{- with .kmsKeyRegion }}
+              <kmsKeyRegion>{{ . }}</kmsKeyRegion>
+            {{- end }}
+            {{- with .kmsCryptoMode }}
+              <kmsCryptoMode>{{ . }}</kmsCryptoMode>
+            {{- end }}
+            {{- if .useInstanceCredentials }}
+              <useInstanceCredentials>true</useInstanceCredentials>
+            {{- else }}
+              <useInstanceCredentials>false</useInstanceCredentials>
+            {{- end }}
+              <usePresigning>{{ .usePresigning }}</usePresigning>
+              <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
+            {{- with .cloudFrontDomainName }}
+              <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
+            {{- end }}
+            {{- with .cloudFrontKeyPairId }}
+              <cloudFrontKeyPairId>{{ .cloudFrontKeyPairId }}</cloudFrontKeyPairId>
+            {{- end }}
+            {{- with .cloudFrontPrivateKey }}
+              <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
+            {{- end }}
+            {{- with .enableSignedUrlRedirect }}
+              <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
+            {{- end }}
+            {{- with .enablePathStyleAccess }}
+              <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
+            {{- end }}
+          </provider>
+        {{- end }}
+      </config>
+      {{- end }}
+
       {{- if eq .Values.artifactory.persistence.type "azure-blob" }}
       <!-- Azure Blob Storage -->
       <config version="2">
