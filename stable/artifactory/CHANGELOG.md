@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.34.0] - Mar 04, 2022
+* Import cluster-s3-storage-v3 binarystore template from artifactory-ha helm chart
+
 ## [107.33.12] - Jan 11, 2022
 * Add more user friendly support for anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
