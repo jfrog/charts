@@ -1366,6 +1366,13 @@ artifactory:
 
   annotations: {}
 
+  # Spread Artifactory pods evenly across your nodes or some other topology
+  # Note this applies to both the primary and replicas
+  topologySpreadConstraints: {}
+    # maxSkew: 1
+    # topologyKey: kubernetes.io/hostname
+    # whenUnsatisfiable: DoNotSchedule
+
   ## Type specific configurations.
   ## There is a difference between the primary and the member nodes.
   ## Customising their resources and java parameters is done here.
@@ -1786,6 +1793,16 @@ nginx:
 
   # Priority Class name to be used in deployment if provided
   priorityClassName:
+
+  # Spread nginx pods evenly across your nodes or some other topology
+  topologySpreadConstraints: {}
+    # maxSkew: 1
+    # topologyKey: kubernetes.io/hostname
+    # whenUnsatisfiable: DoNotSchedule
+
+  # Add lifecycle hooks for the nginx pods
+  # For example, you can add a `preStop` hook that sends a SIGQUIT to nginx and wait for it to terminate gracefully
+  lifecycle: {}
 
   # Sidecar containers for tailing Nginx logs
   loggers: []

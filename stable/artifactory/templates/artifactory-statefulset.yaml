@@ -75,6 +75,17 @@ spec:
         fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
         {{- end }}
       {{- end }}
+      {{- with .Values.artifactory.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        maxSkew: {{ .maxSkew }}
+        topologyKey: {{ .topologyKey }}
+        whenUnsatisfiable: {{ .whenUnsatisfiable }}
+        labelSelector:
+          matchLabels:
+            app: {{ template "artifactory.name" $ }}
+            role: {{ template "artifactory.name" $ }}
+            release: {{ $.Release.Name }}
+      {{- end }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "artifactory.customInitContainersBegin" .)  . | indent 6 }}

@@ -42,6 +42,17 @@ spec:
       {{- if .Values.nginx.priorityClassName }}
       priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
       {{- end }}
+      {{- with .Values.nginx.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        maxSkew: {{ .maxSkew }}
+        topologyKey: {{ .topologyKey }}
+        whenUnsatisfiable: {{ .whenUnsatisfiable }}
+        labelSelector:
+          matchLabels:
+            app: {{ template "artifactory-ha.name" $ }}
+            release: {{ $.Release.Name }}
+            component: {{ $.Values.nginx.name }}
+      {{- end }}
       initContainers:
         {{- if .Values.nginx.customInitContainers }}
 {{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
@@ -97,6 +108,10 @@ spec:
         {{- if .Values.artifactory.ssh.enabled }}
         - containerPort: {{ .Values.nginx.ssh.internalPort }}
           name: tcp-ssh
+        {{- end }}
+        {{- with .Values.nginx.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
         {{- end }}
         volumeMounts:
         - name: nginx-conf
