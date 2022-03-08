@@ -143,7 +143,7 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Create rabbitmq URL 
+Create rabbitmq URL
 */}}
 {{- define "rabbitmq.url" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
@@ -155,12 +155,12 @@ Create rabbitmq URL
 
 
 {{/*
-Create rabbitmq username 
+Create rabbitmq username
 */}}
 {{- define "rabbitmq.user" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- .Values.rabbitmq.auth.username -}}
-{{- end -}} 
+{{- end -}}
 {{- end -}}
 
 
@@ -171,7 +171,7 @@ Create rabbitmq password secret name
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- .Values.rabbitmq.auth.existingPasswordSecret | default (printf "%s-%s" .Release.Name $name) -}}
-{{- end -}} 
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -215,6 +215,17 @@ Resolve masterKey value
 {{- .Values.global.masterKey -}}
 {{- else if .Values.xray.masterKey -}}
 {{- .Values.xray.masterKey -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve executionServiceAesKey value
+*/}}
+{{- define "xray.executionServiceAesKey" -}}
+{{- if .Values.global.executionServiceAesKey -}}
+{{- .Values.global.executionServiceAesKey -}}
+{{- else if .Values.xray.executionServiceAesKey -}}
+{{- .Values.xray.executionServiceAesKey -}}
 {{- end -}}
 {{- end -}}
 
