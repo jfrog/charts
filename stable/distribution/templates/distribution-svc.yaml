@@ -8,6 +8,9 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
+    {{- with .Values.distribution.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- if .Values.distribution.service.annotations }}
   annotations:
 {{ toYaml .Values.distribution.service.annotations | indent 4 }}

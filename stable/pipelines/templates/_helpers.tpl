@@ -367,3 +367,11 @@ router readiness probe
 {{- printf "%s" "/router/api/v1/system/health" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfpip" -}}
+{{- $requiredTypes -}}
+{{- end -}}

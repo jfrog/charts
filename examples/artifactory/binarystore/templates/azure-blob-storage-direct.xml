@@ -1,0 +1,27 @@
+<!--
+##############################
+Name: Azure Blob Storage - Direct Upload
+Authentication: accountName + accountKey
+Valid for: Artifactory Single Node + Artifactory High Availability
+Reference: https://www.jfrog.com/confluence/display/JFROG/Azure+Blob+Storage#AzureBlobStorage-AzureDirectUploadTemplate(Recommended)
+##############################
+-->
+
+<config version="2">
+    <chain template="azure-blob-storage-direct"/>
+
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>5e+10</maxCacheSize>
+        <cacheProviderDir>cache</cacheProviderDir>
+    </provider>
+
+    <provider id="azure-blob-storage" type="azure-blob-storage">
+        <accountName>accountName</accountName>
+        <accountKey>accountKey</accountKey>
+        <endpoint>https://accountName.blob.core.windows.net/</endpoint>
+        <containerName>containerName</containerName>
+        <multiPartLimit>100000000</multiPartLimit>
+        <multipartElementSize>50000000</multipartElementSize>
+        <testConnection>false</testConnection>
+    </provider>
+</config>

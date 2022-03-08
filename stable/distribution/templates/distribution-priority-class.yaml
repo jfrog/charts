@@ -1,0 +1,9 @@
+{{- if .Values.distribution.priorityClass.create }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ default (include "distribution.fullname" .) .Values.distribution.priorityClass.name }}
+value: {{ .Values.distribution.priorityClass.value }}
+globalDefault: false
+description: "Distribution priority class"
+{{- end }}

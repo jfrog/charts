@@ -270,3 +270,12 @@ router readiness probe
 {{- printf "%s" "/router/api/v1/system/health" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve distribution requiredServiceTypes value
+*/}}
+{{- define "distribution.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfds,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+

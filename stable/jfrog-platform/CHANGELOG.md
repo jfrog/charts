@@ -1,5 +1,41 @@
 # JFrog Platform Chart Changelog (GA releases only)
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
+
+## [10.3.2] - Feb 28, 2022
+* Update dependency xray chart version to 103.43.1
+* Update dependency distribution chart version to 102.12.0
+* Update dependency pipelines chart version to 101.21.5
+
+## [10.3.1] - Feb 17, 2022
+* Update dependency artifactory chart version to 107.33.12
+* Update dependency xray chart version to 103.42.5
+* Update dependency insight chart version to 101.6.2
+* Update dependency pipelines chart version to 101.21.2
+
+## [10.3.0] - Feb 8, 2022
+* Update dependency artifactory chart version to 107.33.9
+* Update dependency distribution chart version to 102.11.0
+* Updated global.versions.router version to `7.32.1`
+
+## [10.2.0] - Jan 31, 2022
+* Update dependency artifactory chart version to 107.31.13
+* Update dependency xray chart version to 103.41.5
+* Update dependency insight chart version to 101.5.0
+* Update dependency pipelines chart version to 101.21.1
+* Adding uniqueness for bitnami rabbitmq extraSecrets
+
+## [10.1.2] - Dec 23, 2021
+* Update dependency insight chart version to 101.3.0
+
+## [10.1.1] - Dec 17, 2021
+* Update dependency artifactory chart version to 107.29.8
+* Update dependency xray chart version to 103.38.2
+* Added distribution.initContainerImage to `releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204`
+
+## [10.1.0] - Dec 7, 2021
+* Added `artifactory.pipelines.enabled` flag to allow nginx instances in front of artifactory to allow websocket traffic
+* Update dependency artifactory chart version to 107.29.7
+* Update dependency distribution chart version to 102.10.5
 
 ## [10.0.4] - Nov 30, 2021
 * Update dependency xray chart version to 103.37.2

@@ -1,6 +1,6 @@
 Congratulations. You have just deployed JFrog Distribution!
 
-{{- if eq .Values.distribution.masterKey "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" }}
+{{- if and (eq .Values.distribution.masterKey "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB") (not .Values.distribution.masterKeySecretName) (not .Values.global.masterKeySecretName) (not .Values.global.masterKey) }}
 
 
 ***************************************** WARNING ******************************************

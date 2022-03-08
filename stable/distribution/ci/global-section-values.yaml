@@ -7,9 +7,26 @@ postgresql:
 redis:
   persistence:
     enabled: false
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "1"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 distribution:
   persistence:
     enabled: false
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1"
+    limits:
+      memory: "3Gi"
+      cpu: "2"
+  javaOpts:
+    xms: "1g"
+    xmx: "3g"
 global:
   jfrogUrl: http://artifactory.rt:8082
   masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
@@ -114,3 +131,21 @@ common:
        limits:
          memory: "128Mi"
          cpu: "100m"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+observability:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"

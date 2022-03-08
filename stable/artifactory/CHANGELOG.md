@@ -1,7 +1,38 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.29.7] - Nov 30, 2021
+## [107.33.12] - Jan 11, 2022
+* Add more user friendly support for anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Readme fixes
+* Added support for setting `fsGroupChangePolicy`
+* Added nginx customInitContainers, customVolumes, customSidecarContainers [GH-1565](https://github.com/jfrog/charts/pull/1565)
+* Updated router version to `7.30.0`
+
+## [107.32.0] - Dec 22, 2021
+* Updated logger image to `jfrog/ubi-minimal:8.5-204`
+* Added default `8091` as `artifactory.tomcat.maintenanceConnector.port` for probes check
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Refactored `database-creds` secret to create only when database values are passed
+* Added new endpoints for probes `/artifactory/api/v1/system/liveness` and `/artifactory/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Fix filebeat sidecar spool file permissions
+* Updated filebeat sidecar container to `7.16.2`
+
+## [107.31.0] - Dec 17, 2021
+* Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
+* Remove integration service feature flag to make it mandatory service
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Fixed `artifactory.resources` indentation in `migration-artifactory` init container [GH-1562](https://github.com/jfrog/charts/issues/1562)
+* Refactored `router.requiredServiceTypes` to support platform chart
+
+## [107.30.0] - Nov 30, 2021
+* Fixed incorrect permission for filebeat.yaml
+* Updated healthcheck (liveness/readiness) api for integration service
+* Disable readiness health check for the artifactory container when running in the container split mode
+* Ability to start replicator on enabling pdn tracker
+
+## [107.29.0] - Nov 26, 2021
 * Added integration service container in artifactory
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
 * Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)

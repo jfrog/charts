@@ -297,24 +297,19 @@ find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ 
 {{/*
 Resolve requiredServiceTypes value
 */}}
-{{- define "router.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob" -}}
+{{- define "artifactory.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob,jfint" -}}
 {{- if .Values.jfconnect -}}
   {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
   {{- end -}}
 {{- end -}}
-{{- if .Values.artifactory.replicator.enabled -}}
+{{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
     {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
 {{- end -}}
 {{- if .Values.mc -}}
   {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
-  {{- end -}}
-{{- end -}}
-{{- if .Values.integration -}}
-  {{- if .Values.integration.enabled -}}
-  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfint" -}}
   {{- end -}}
 {{- end -}}
 {{- $requiredTypes -}}
@@ -391,8 +386,56 @@ artifactory port
 */}}
 {{- define "artifactory.port" -}}
 {{- if or .Values.newProbes .Values.splitServicesToContainers -}}
-{{- .Values.artifactory.internalArtifactoryPort -}}
+{{- .Values.artifactory.tomcat.maintenanceConnector.port -}}
 {{- else -}}
-{{- .Values.router.internalPort  -}}
+{{- .Values.router.internalPort -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+replicator/tracker
+*/}}
+{{- define "artifactory.replicator" -}}
+{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
+replicator:
+  pdn:
+    tracker:
+      enabled: true
+  enabled: true
+{{- else if and (not .Values.artifactory.replicator.enabled) .Values.artifactory.replicator.pdn.tracker.enabled -}}
+replicator:
+  pdn:
+    tracker:
+      enabled: true
+{{- else if and (not .Values.artifactory.replicator.pdn.tracker.enabled) .Values.artifactory.replicator.enabled -}}
+replicator:
+  enabled: true
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customInitContainers value
+*/}}
+{{- define "artifactory.nginx.customInitContainers" -}}
+{{- if .Values.nginx.customInitContainers -}}
+{{- .Values.nginx.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory.nginx.customVolumes" -}}
+{{- if .Values.nginx.customVolumes -}}
+{{- .Values.nginx.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customSidecarContainers value
+*/}}
+{{- define "artifactory.nginx.customSidecarContainers" -}}
+{{- if .Values.nginx.customSidecarContainers -}}
+{{- .Values.nginx.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}

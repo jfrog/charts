@@ -8,6 +8,9 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
+    {{- with .Values.distribution.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- if .Release.IsUpgrade }}
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Distribution 1.x currently not supported!\nIf this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
@@ -35,7 +38,17 @@ spec:
       annotations:
         checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/distribution-system-yaml.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.distribution.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
+    {{- if .Values.distribution.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.distribution.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.distribution.priorityClass.create }}
+      priorityClassName: {{ default (include "distribution.fullname" .) .Values.distribution.priorityClass.name }}
+      {{- end }}
+    {{- end }}
       serviceAccountName: {{ template "distribution.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "distribution.imagePullSecrets" . | indent 6 }}
@@ -43,6 +56,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.common.uid }}
         fsGroup: {{ .Values.common.gid }}
+        {{- if .Values.common.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
+        {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "distribution.customInitContainersBegin" .)  . | indent 6 }}
@@ -58,10 +74,11 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
           sleep 30;
+          if [[ -e "{{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml; fi;
           echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc;
           {{- if .Values.systemYamlOverride.existingSecret }}
@@ -121,7 +138,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
         - >
 {{ include "distribution.copyCustomCerts" . | indent 10 }}
@@ -131,6 +148,7 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+  {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
         image: '{{ .Values.initContainerImage }}'
@@ -153,6 +171,7 @@ spec:
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
       {{- end }}
+  {{- end }}
       {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
@@ -287,10 +306,6 @@ spec:
         startupProbe:
 {{ tpl .Values.distribution.startupProbe.config . | indent 10 }}
       {{- end }}
-      {{- if .Values.distribution.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.distribution.readinessProbe.config . | indent 10 }}
-      {{- end }}
       {{- if .Values.distribution.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.distribution.livenessProbe.config . | indent 10 }}
@@ -305,7 +320,7 @@ spec:
             drop:
               - NET_RAW
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.common.preStartCommand }}
@@ -313,6 +328,9 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: {{ include "distribution.router.requiredServiceTypes" . }}
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
@@ -339,6 +357,37 @@ spec:
         readinessProbe:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
+      - name: {{ .Values.observability.name }}
+        image: {{ include "distribution.getImageInfoByValue" (list . "observability") }}
+        imagePullPolicy: {{ .Values.observability.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh;
+        volumeMounts:
+        - name: distribution-data
+          mountPath: "{{ .Values.observability.persistence.mountPath }}"
+        resources:
+{{ toYaml .Values.observability.resources | indent 10 }}
+      {{- if .Values.observability.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.observability.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: redis
         image: {{ include "distribution.getImageInfoByValue" (list $ "redis") }}
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
@@ -434,9 +483,31 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- if .Values.distribution.affinity }}
     {{- with .Values.distribution.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.distribution.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.distribution.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "distribution.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.distribution.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.distribution.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "distribution.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.distribution.tolerations }}
       tolerations:
@@ -454,8 +525,16 @@ spec:
       - name: distribution-data
         emptyDir:
           sizeLimit: {{ .Values.distribution.persistence.size }}
+      {{- if not .Values.redis.persistence.enabled }}
       - name: redis-data
-        emptyDir: {}
+        emptyDir:
+          sizeLimit: {{ .Values.redis.persistence.size }}
+      {{- end }}
+      {{- if and .Values.redis.persistence.enabled .Values.redis.persistence.existingClaim }}
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.redis.persistence.existingClaim }}
+      {{- end }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
       - name: systemyaml
         secret:
@@ -471,15 +550,11 @@ spec:
         configMap:
           name: {{ template "distribution.fullname" . }}-configmaps
       {{- end }}
+  {{- if and .Values.redis.persistence.enabled (not .Values.redis.persistence.existingClaim) }}
   volumeClaimTemplates:
     - metadata:
         name: redis-data
       spec:
-      {{- if .Values.redis.persistence.existingClaim }}
-        selector:
-            matchLabels:
-              app: redis
-      {{- else }}
         {{- if .Values.redis.persistence.storageClass }}
         {{- if (eq "-" .Values.redis.persistence.storageClass) }}
         storageClassName: ''

@@ -71,6 +71,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.gid }}
+        {{- if .Values.artifactory.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
+        {{- end }}
       {{- end }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
@@ -158,9 +161,10 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
+          if [[ -e "{{ .Values.artifactory.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.artifactory.persistence.mountPath }}/etc/filebeat.yaml; fi;
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
@@ -309,6 +313,10 @@ spec:
           capabilities:
             drop:
               - NET_RAW
+      {{- if .Values.artifactory.resources }}
+        resources:
+{{ toYaml .Values.artifactory.resources | indent 10 }}
+      {{- end }}
         command:
         - '/bin/bash'
         - '-c'
@@ -399,10 +407,6 @@ spec:
           subPath: gcp.credentials.json
       {{- end }}
       {{- end }}
-      {{- if .Values.artifactory.resources }}
-        resources:
-{{ toYaml .Values.artifactory.resources | indent 10 }}
-      {{- end }}
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
@@ -429,7 +433,7 @@ spec:
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-          value: {{ include "router.requiredServiceTypes" . }}
+          value: {{ include "artifactory.router.requiredServiceTypes" . }}
         ports:
           - name: http
             containerPort: {{ .Values.router.internalPort }}
@@ -588,7 +592,7 @@ spec:
         livenessProbe:
 {{ tpl .Values.event.livenessProbe.config . | indent 10 }}
       {{- end }}
-      {{- if .Values.artifactory.replicator.enabled }}
+      {{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled }}
       - name: {{ .Values.artifactory.replicator.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -648,7 +652,6 @@ spec:
 {{ tpl .Values.jfconnect.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
-      {{- if .Values.integration.enabled }}
       - name: {{ .Values.integration.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -680,7 +683,6 @@ spec:
       {{- if .Values.integration.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.integration.livenessProbe.config . | indent 10 }}
-      {{- end }}
       {{- end }}
       - name: {{ .Values.observability.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
@@ -724,6 +726,10 @@ spec:
           capabilities:
             drop:
               - NET_RAW
+      {{- if .Values.artifactory.resources }}
+        resources:
+{{ toYaml .Values.artifactory.resources | indent 10 }}
+      {{- end }}
         command:
         - '/bin/bash'
         - '-c'
@@ -795,6 +801,8 @@ spec:
         - name : JF_FRONTEND_ENABLED
           value: "false"
         - name: JF_REPLICATOR_ENABLED
+          value: "true"
+        - name: JF_REPLICATOR_PDN_TRACKER_ENABLED
           value: "true"
         - name: JF_REPLICATOR_SERVICE_ENABLED
           value: "false"
@@ -913,15 +921,9 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
-        resources:
-{{ toYaml .Values.artifactory.resources | indent 10 }}
       {{- if .Values.artifactory.startupProbe.enabled }}
         startupProbe:
 {{ tpl .Values.artifactory.startupProbe.config . | indent 10 }}
-        {{- end }}
-      {{- if .Values.artifactory.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.artifactory.readinessProbe.config . | indent 10 }}
         {{- end }}
       {{- if .Values.artifactory.livenessProbe.enabled }}
         livenessProbe:
@@ -1009,9 +1011,31 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- if .Values.artifactory.affinity }}
     {{- with .Values.artifactory.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.artifactory.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.artifactory.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "artifactory.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.artifactory.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.artifactory.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "artifactory.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.artifactory.tolerations }}
       tolerations:

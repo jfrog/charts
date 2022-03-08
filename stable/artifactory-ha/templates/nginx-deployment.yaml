@@ -43,6 +43,9 @@ spec:
       priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
       {{- end }}
       initContainers:
+        {{- if .Values.nginx.customInitContainers }}
+{{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
+        {{- end }}
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
@@ -136,6 +139,9 @@ spec:
         resources:
 {{ toYaml $.Values.nginx.loggersResources | indent 10 }}
       {{- end }}
+        {{- if .Values.nginx.customSidecarContainers }}
+{{ tpl (include "artifactory.nginx.customSidecarContainers" .)  . | indent 6 }}
+        {{- end }}
     {{- with .Values.nginx.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -149,6 +155,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+        {{- if .Values.nginx.customVolumes }}
+{{ tpl (include "artifactory.nginx.customVolumes" .)  . | indent 6 }}
+        {{- end }}
       - name: nginx-conf
         configMap:
         {{- if .Values.nginx.customConfigMap }}

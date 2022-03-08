@@ -43,6 +43,13 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.insightServer.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.insightServer.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.insightServer.priorityClass.create }}
+      priorityClassName: {{ default (include "insight.fullname" .) .Values.insightServer.priorityClass.name }}
+      {{- end }}
+    {{- end }}
       serviceAccountName: {{ template "insight-server.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "insight-server.imagePullSecrets" . | indent 6 }}
@@ -50,6 +57,9 @@ spec:
       securityContext:
         runAsUser: {{ .Values.common.uid }}
         fsGroup: {{ .Values.common.gid }}
+        {{- if .Values.common.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
+        {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "insight-server.customInitContainersBegin" .)  . | indent 6 }}
@@ -85,11 +95,14 @@ spec:
             drop:
               - NET_RAW
         command:
-        - '/bin/sh'
+        - 'bash'
         - '-c'
         - >
+          if [[ -e "{{ .Values.insightServer.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.insightServer.persistence.mountPath }}/etc/filebeat.yaml; fi;
           echo "Copy system.yaml to {{ .Values.insightServer.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.insightServer.persistence.mountPath }}/etc;
+          mkdir -p {{ .Values.insightServer.persistence.mountPath }}/log/elasticsearch;
+          chmod 776 {{ .Values.insightServer.persistence.mountPath }}/log/elasticsearch;
           {{- if .Values.systemYamlOverride.existingSecret }}
           cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.insightServer.persistence.mountPath }}/etc/system.yaml;
           {{- else }}
@@ -138,9 +151,6 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
-        - name: applicationyaml
-          mountPath: "/tmp/etc/application.yaml"
-          subPath: application.yaml
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
       {{- if or .Values.insightServer.customCertificates.enabled .Values.global.customCertificates.enabled }}
@@ -155,7 +165,7 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
         - >
 {{ include "insight-server.copyCustomCerts" . | indent 10 }}
@@ -165,6 +175,7 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+  {{- if .Values.waitForDatabase }}
     {{- if .Values.postgresql.enabled }}
       - name: wait-for-db
         image: "{{ .Values.initContainerImage }}"
@@ -177,8 +188,8 @@ spec:
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - /bin/bash
-        - -c
+        - 'bash'
+        - '-c'
         - |
           echo "Waiting for postgresql to come up"
           ready=false;
@@ -187,6 +198,7 @@ spec:
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
     {{- end }}
+  {{- end }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "insight-server.customInitContainers" .)  . | indent 6 }}
     {{- end }}
@@ -226,6 +238,8 @@ spec:
           value: '{{ .Values.elasticsearch.env.clusterName }}'
         - name: 'xpack.security.enabled'
           value: 'false'
+        - name: 'path.logs'
+          value: '{{ .Values.insightServer.persistence.mountPath }}/log/elasticsearch'
         - name: 'network.host'
           value: '{{ .Values.elasticsearch.env.networkHost }}'
         - name: 'transport.host'
@@ -280,6 +294,8 @@ spec:
 {{- end }}
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
+        - name: insight-data
+          mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.elasticsearch.resources | indent 10 }}
 {{- if .Values.elasticsearch.startupProbe.enabled }}
@@ -305,10 +321,13 @@ spec:
             drop:
               - NET_RAW
         command:
-        - '/bin/sh'
+        - '/bin/bash'
         - '-c'
         - >
           exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: {{ include "insight.router.requiredServiceTypes" . }}
         ports:
         - name: http-router
           containerPort: {{ .Values.router.internalPort }}
@@ -390,6 +409,9 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+{{- with .Values.insightServer.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         ports:
         - containerPort: {{ .Values.insightServer.internalPort }}
           protocol: TCP
@@ -409,10 +431,6 @@ spec:
 {{- if .Values.insightServer.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.insightServer.livenessProbe.config . | indent 10 }}
-{{- end }}
-{{- if .Values.insightServer.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.insightServer.readinessProbe.config . | indent 10 }}
 {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
@@ -453,19 +471,6 @@ spec:
             drop:
               - NET_RAW
         env:
-        - name: JFIS_EXTRA_JAVA_OPTS
-          value: "
-          {{- if .Values.insightScheduler.javaOpts.other }}
-              {{ .Values.insightScheduler.javaOpts.other }}
-          {{- end}}
-          {{- if .Values.insightScheduler.javaOpts.xms }}
-              -Xms{{ .Values.insightScheduler.javaOpts.xms }}
-          {{- end}}
-          {{- if .Values.insightScheduler.javaOpts.xmx }}
-              -Xmx{{ .Values.insightScheduler.javaOpts.xmx }}
-          {{- end}}
-          -Dserver.port={{ .Values.insightScheduler.internalPort }}
-          "
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -505,6 +510,9 @@ spec:
               key: db-url
         {{- end }}
       {{- end }}
+{{- with .Values.insightScheduler.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         ports:
         - containerPort: {{ .Values.insightScheduler.internalPort }}
           protocol: TCP
@@ -524,10 +532,6 @@ spec:
 {{- if .Values.insightScheduler.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.insightScheduler.livenessProbe.config . | indent 10 }}
-{{- end }}
-{{- if .Values.insightScheduler.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.insightScheduler.readinessProbe.config . | indent 10 }}
 {{- end }}
       {{- $image := .Values.logger.image.repository }}
       {{- $tag := .Values.logger.image.tag }}
@@ -607,9 +611,31 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+    {{- if .Values.insightServer.affinity }}
     {{- with .Values.insightServer.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.insightServer.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.insightServer.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "insight.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.insightServer.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.insightServer.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "insight.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.insightServer.tolerations }}
       tolerations:
@@ -626,9 +652,6 @@ spec:
         secret:
           secretName: {{  .Values.elasticsearch.certificatesSecretName }}
       {{- end }}
-      - name: applicationyaml
-        secret:
-          secretName: {{ template "insight.fullname" . }}-applicationyaml
       {{- if or .Values.systemYamlOverride.existingSecret .Values.insightServer.systemYaml }}
       - name: systemyaml
         secret:

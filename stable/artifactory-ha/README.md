@@ -50,12 +50,6 @@ Uninstall Artifactory using the following command.
 helm uninstall artifactory-ha && sleep 90 && kubectl delete pvc -l app=artifactory-ha
 ```
 
-Next, delete the storage bucket and SQL database.
-
-```bash
-gsutil rm -r gs://artifactory gcloud sql instances delete artifactory
-```
-
 ## Deleting Artifactory
 
 **IMPORTANT:** Deleting Artifactory will also delete your data volumes and you will lose all of your data. You must back up all this information before deletion. You do not need to uninstall Artifactory before deleting it.
