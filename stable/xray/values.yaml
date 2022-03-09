@@ -72,11 +72,25 @@ systemYamlOverride:
 
 replicaCount: 1
 
+## Database configurations
+## Use the wait-for-db init container. Set to false to skip
+waitForDatabase: true
+
 xray:
   name: xray
   labels: {}
   persistence:
     mountPath: /var/opt/jfrog/xray
+
+  # Create a priority class for the Xray pod or use an existing one
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    ## Override default name
+    # name:
+    ## Use an existing priority class
+    # existingPriorityClass:
 
   ## certificates added to this secret will be copied to $JFROG_HOME/xray/var/etc/security/keys/trusted directory
   customCertificates:
@@ -161,6 +175,34 @@ xray:
       {{- end }}
     {{- end }}
 
+  # Sidecar containers for tailing Xray logs
+  loggers: []
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - xray-request.log
+  # - xray-analysis-service.log
+  # - xray-analysis-metrics.log
+  # - xray-server-service.log
+  # - xray-server-metrics.log
+  # - xray-indexer-service.log
+  # - xray-indexer-metrics.log
+  # - xray-analysis-stack.log
+  # - xray-indexer-stack.log
+  # - xray-persist-stack.log
+  # - xray-server-stack.log
+  # - observability-metrics.log
+  # - observability-request.log
+  # - observability-service.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "25m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "50m"
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -204,7 +246,7 @@ networkpolicy: []
   # - name: postgres
   #   podSelector:
   #     matchLabels:
-  #       app: postgresql
+  #       app.kubernetes.io/name: postgresql
   #   ingress:
   #   - from:
   #     - podSelector:
@@ -214,7 +256,7 @@ networkpolicy: []
   # - name: rabbitmq
   #   podSelector:
   #     matchLabels:
-  #       app: rabbitmq
+  #       app.kubernetes.io/name: rabbitmq
   #   ingress:
   #   - from:
   #     - podSelector:
@@ -233,6 +275,12 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
+
+logger:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/ubi-minimal
+    tag: 8.5-204
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -559,7 +607,7 @@ analysis:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -573,7 +621,7 @@ analysis:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -614,7 +662,7 @@ indexer:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -628,7 +676,7 @@ indexer:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -669,7 +717,7 @@ persist:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -683,7 +731,7 @@ persist:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -738,7 +786,7 @@ server:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -752,7 +800,7 @@ server:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -774,7 +822,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.30.0
+    tag: 7.32.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -805,7 +853,7 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -819,7 +867,7 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 1
@@ -833,7 +881,7 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
@@ -850,7 +898,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.2.2
+    tag: 1.3.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

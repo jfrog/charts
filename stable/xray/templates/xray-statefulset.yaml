@@ -66,6 +66,13 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "xray.imagePullSecrets" . | indent 6 }}
     {{- end }}
+    {{- if .Values.xray.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.xray.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.xray.priorityClass.create }}
+      priorityClassName: {{ default (include "xray.fullname" .) .Values.xray.priorityClass.name }}
+      {{- end }}
+    {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
       securityContext:
         runAsUser: {{ .Values.common.xrayUserId }}
@@ -161,6 +168,7 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+  {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
@@ -183,6 +191,7 @@ spec:
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
       {{- end }}
+  {{- end }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "xray.customInitContainers" .) . | indent 6 }}
     {{- end }}
@@ -794,6 +803,29 @@ spec:
         livenessProbe:
 {{ tpl .Values.persist.livenessProbe.config . | indent 10 }}
 {{- end }}
+      {{- $mountPath := .Values.xray.persistence.mountPath }}
+      {{- range .Values.xray.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "xray.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        volumeMounts:
+        - name: data-volume
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.xray.loggersResources | indent 10 }}
+      {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
@@ -870,6 +902,11 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ default (printf "%s-%s" (include "xray.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+      {{- if .Values.xray.loggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "xray.fullname" . }}-logger
       {{- end }}
       {{- if not .Values.common.persistence.enabled }}
       - name: data-volume
