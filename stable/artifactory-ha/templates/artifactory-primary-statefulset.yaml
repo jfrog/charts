@@ -985,6 +985,12 @@ spec:
         startupProbe:
 {{ tpl .Values.artifactory.startupProbe.config . | indent 10 }}
         {{- end }}
+    {{- if and (not .Values.splitServicesToContainers) (semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version) }}
+        {{- if .Values.artifactory.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.artifactory.readinessProbe.config . | indent 10 }}
+        {{- end }}
+    {{- end }}
         {{- if .Values.artifactory.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.artifactory.livenessProbe.config . | indent 10 }}
