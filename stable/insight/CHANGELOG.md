@@ -1,7 +1,13 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.6.2] - Jan 20, 2022
+## [101.7.0] - Feb 15, 2022
+* Updated router version to `7.32.1`
+* Update elasticsearch version to `7.16.3`
+* Fixed loggers sidecars to tail a configured log
+* Added silent option for curl probes
+
+## [101.6.0] - Jan 20, 2022
 * Option to skip wait-for-db init container with '--set waitForDatabase=false'
 * Added support for PriorityClass
 

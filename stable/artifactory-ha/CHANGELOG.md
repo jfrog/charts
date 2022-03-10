@@ -1,14 +1,17 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.33.12] - Jan 11, 2022
+## [107.35.2] - Mar 01, 2022
+* Updated router version to `7.32.1`
+
+## [107.33.0] - Mar 01, 2022
 * Make default value of anti-affinity to soft
 * Readme fixes
 * Added support for setting `fsGroupChangePolicy`
 * Added nginx customInitContainers, customVolumes, customSidecarContainers [GH-1565](https://github.com/jfrog/charts/pull/1565)
 * Updated router version to `7.30.0`
 
-## [107.32.0] - Dec 23, 2021
+## [107.32.0] - Mar 01, 2022
 * Updated logger image to `jfrog/ubi-minimal:8.5-204`
 * Added default `8091` as `artifactory.tomcat.maintenanceConnector.port` for probes check
 * Refactored probes to replace httpGet probes with basic exec + curl
@@ -17,6 +20,7 @@ All changes to this chart will be documented in this file.
 * Enabled `newProbes:true` by default to use these endpoints
 * Fix filebeat sidecar spool file permissions
 * Updated filebeat sidecar container to `7.16.2`
+* Added readiness health check for the artifactory container for k8s version < 1.20
 
 ## [107.31.0] - Dec 17, 2021
 * Remove integration service feature flag to make it mandatory service
