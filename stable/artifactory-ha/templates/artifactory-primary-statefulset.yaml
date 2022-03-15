@@ -556,7 +556,7 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
-              name: {{ template "artifactory.fullname" . }}-database-creds
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               key: db-user
         {{- end }}
       {{- end }}
@@ -568,7 +568,7 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
-              name: {{ template "artifactory.fullname" . }}-database-creds
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -583,7 +583,7 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
-              name: {{ template "artifactory.fullname" . }}-database-creds
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               key: db-url
         {{- end }}
       {{- end }}
