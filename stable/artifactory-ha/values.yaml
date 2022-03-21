@@ -824,6 +824,8 @@ artifactory:
     maxCacheSize: 50000000000
     cacheProviderDir: cache
     eventual:
+      # toggle this to disable the eventual upload mechanism
+      # https://www.jfrog.com/confluence/display/JFROG/S3+Object+Storage#S3ObjectStorage-Direct(Eventual-less)versusEventualUploadMechanismdirectversuseventual
       enabled: true
       numberOfThreads: 10
     ## artifactory data Persistent Volume Storage Class
