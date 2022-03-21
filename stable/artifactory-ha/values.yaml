@@ -824,6 +824,7 @@ artifactory:
     maxCacheSize: 50000000000
     cacheProviderDir: cache
     eventual:
+      enabled: true
       numberOfThreads: 10
     ## artifactory data Persistent Volume Storage Class
     ## If defined, storageClassName: <storageClass>
@@ -930,7 +931,9 @@ artifactory:
                       <writeBehavior>crossNetworkStrategy</writeBehavior>
                       <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
                       <minSpareUploaderExecutor>2</minSpareUploaderExecutor>
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       <sub-provider id="eventual-cluster" type="eventual-cluster">
+                      {{- end }}
                           <provider id="retry" type="retry">
                               {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
                               <provider id="google-storage-v2" type="google-storage-v2"/>
@@ -938,7 +941,9 @@ artifactory:
                               <provider id="google-storage" type="google-storage"/>
                               {{- end }}
                           </provider>
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       </sub-provider>
+                      {{- end }}
                       <dynamic-provider id="remote" type="remote"/>
                       <property name="zones" value="local,remote"/>
                   </provider>
@@ -951,9 +956,11 @@ artifactory:
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
 
+          {{- if .Values.artifactory.persistence.eventual.enabled }}
           <provider id="eventual-cluster" type="eventual-cluster">
               <zone>local</zone>
           </provider>
+          {{- end }}
 
           <provider id="remote" type="remote">
               <checkPeriod>30</checkPeriod>
@@ -989,11 +996,15 @@ artifactory:
           <chain> <!--template="cluster-s3-storage-v3"-->
               <provider id="cache-fs-eventual-s3" type="cache-fs">
                   <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
+                      {{- end }}
                           <provider id="retry-s3" type="retry">
                               <provider id="s3-storage-v3" type="s3-storage-v3"/>
                           </provider>
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       </sub-provider>
+                      {{- end }}
                       <dynamic-provider id="remote-s3" type="remote"/>
                   </provider>
               </provider>
@@ -1010,9 +1021,11 @@ artifactory:
               <zone>remote</zone>
           </provider>
 
+          {{- if .Values.artifactory.persistence.eventual.enabled }}
           <provider id="eventual-cluster-s3" type="eventual-cluster">
               <zone>local</zone>
           </provider>
+          {{- end }}
 
           <!-- Set max cache-fs size -->
           <provider id="cache-fs-eventual-s3" type="cache-fs">
@@ -1078,11 +1091,15 @@ artifactory:
           <chain> <!--template="cluster-s3"-->
               <provider id="cache-fs" type="cache-fs">
                   <provider id="sharding-cluster" type="sharding-cluster">
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       <sub-provider id="eventual-cluster" type="eventual-cluster">
+                      {{- end }}
                           <provider id="retry-s3" type="retry">
                               <provider id="s3" type="s3"/>
                           </provider>
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       </sub-provider>
+                      {{- end }}
                       <dynamic-provider id="remote" type="remote"/>
                   </provider>
               </provider>
@@ -1094,9 +1111,11 @@ artifactory:
               <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
           </provider>
 
+          {{- if .Values.artifactory.persistence.eventual.enabled }}
           <provider id="eventual-cluster" type="eventual-cluster">
               <zone>local</zone>
           </provider>
+          {{- end }}
 
           <provider id="remote" type="remote">
               <checkPeriod>30</checkPeriod>
@@ -1143,11 +1162,15 @@ artifactory:
           <chain> <!--template="cluster-azure-blob-storage"-->
               <provider id="cache-fs" type="cache-fs">
                   <provider id="sharding-cluster" type="sharding-cluster">
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       <sub-provider id="eventual-cluster" type="eventual-cluster">
+                      {{- end }}
                           <provider id="retry-azure-blob-storage" type="retry">
                               <provider id="azure-blob-storage" type="azure-blob-storage"/>
                           </provider>
+                      {{- if .Values.artifactory.persistence.eventual.enabled }}
                       </sub-provider>
+                      {{- end }}
                       <dynamic-provider id="remote" type="remote"/>
                   </provider>
               </provider>
@@ -1172,9 +1195,11 @@ artifactory:
               <zone>remote</zone>
           </provider>
 
+          {{- if .Values.artifactory.persistence.eventual.enabled }}
           <provider id="eventual-cluster" type="eventual-cluster">
               <zone>local</zone>
           </provider>
+          {{- end }}
 
           <!--cluster eventual template-->
           <provider id="azure-blob-storage" type="azure-blob-storage">
