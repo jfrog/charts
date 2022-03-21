@@ -817,6 +817,10 @@ artifactory:
     ## Cache default size. Should be increased for production deployments.
     maxCacheSize: 5000000000
     cacheProviderDir: cache
+    eventual:
+      # toggle this to disable the eventual upload mechanism
+      # https://www.jfrog.com/confluence/display/JFROG/S3+Object+Storage#S3ObjectStorage-Direct(Eventual-less)versusEventualUploadMechanismdirectversuseventual
+      enabled: true
 
     ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
     ## Supported types are:
@@ -857,7 +861,9 @@ artifactory:
       <config version="2">
           <chain>
               <provider id="cache-fs" type="cache-fs">
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   <provider id="eventual" type="eventual">
+                  {{- end }}
                       <provider id="retry" type="retry">
                           {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
                           <provider id="google-storage-v2" type="google-storage-v2"/>
@@ -865,7 +871,9 @@ artifactory:
                           <provider id="google-storage" type="google-storage"/>
                           {{- end }}
                       </provider>
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   </provider>
+                  {{- end }}
               </provider>
           </chain>
 
@@ -902,11 +910,15 @@ artifactory:
       <config version="2">
           <chain>
               <provider id="cache-fs" type="cache-fs">
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   <provider id="eventual" type="eventual">
+                  {{- end }}
                       <provider id="retry" type="retry">
                           <provider id="s3-storage-v3" type="s3-storage-v3"/>
                       </provider>
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   </provider>
+                  {{- end }}
               </provider>
           </chain>
 
@@ -973,11 +985,15 @@ artifactory:
       <config version="2">
           <chain> <!--template="s3"-->
               <provider id="cache-fs" type="cache-fs">
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   <provider id="eventual" type="eventual">
+                  {{- end }}
                       <provider id="retry-s3" type="retry">
                           <provider id="s3" type="s3"/>
                       </provider>
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   </provider>
+                  {{- end }}
               </provider>
           </chain>
 
@@ -1018,11 +1034,15 @@ artifactory:
       <config version="2">
           <chain> <!--template="azure-blob-storage"-->
               <provider id="cache-fs" type="cache-fs">
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   <provider id="eventual" type="eventual">
+                  {{- end }}
                       <provider id="retry-azure-blob-storage" type="retry">
                           <provider id="azure-blob-storage" type="azure-blob-storage"/>
                       </provider>
+                  {{- if .Values.artifactory.persistence.eventual.enabled }}
                   </provider>
+                  {{- end }}
               </provider>
           </chain>
 
