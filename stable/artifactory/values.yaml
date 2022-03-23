@@ -676,6 +676,13 @@ artifactory:
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
+        {{- if .Values.metadata.database.url }}
+        type: {{ .Values.metadata.database.type }}
+        url: {{ .Values.metadata.database.url }}
+        driver: {{ .Values.metadata.database.driver }}
+        username: {{ .Values.metadata.database.username }}
+        password: {{ .Values.metadata.database.password }}
+        {{- end }}
     {{- if .Values.jfconnect.enabled }}
     jfconnect:
       enabled: true
@@ -1261,8 +1268,16 @@ access:
 metadata:
   name: metadata
   internalPort: 8086
-  database:
+  database: 
     maxOpenConnections: 80
+    # The Metadata database connection details only need to be manually configured if using external PostgreSQL HA
+    # Reference: https://www.jfrog.com/confluence/display/JFROG/PostgreSQL#PostgreSQL-ConfiguringArtifactoryHAtoUsePostgreSQLDatabaseinHA
+    # type: postgresql
+    # driver: org.postgresql.Driver
+    # username: 
+    # password: 
+    # url:
+
   resources: {}
   #  requests:
   #    memory: "100Mi"
