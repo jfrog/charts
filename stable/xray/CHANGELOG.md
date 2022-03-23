@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.44.1] - Feb 15, 2022
+## [103.45.1] - Feb 15, 2022
 * Updated router version to `7.32.1`
 * Updated Observability version to `1.3.0`
 * Added support loggers sidecars to tail a configured log

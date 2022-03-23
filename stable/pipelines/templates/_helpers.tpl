@@ -49,6 +49,14 @@ The www name
 {{- end -}}
 
 {{/*
+The frontend name
+*/}}
+{{- define "pipelines.frontend.name" -}}
+{{- $name := .Release.Name | trunc 29 -}}
+{{- printf "%s-%s-frontend" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The msg name
 */}}
 {{- define "pipelines.msg.name" -}}

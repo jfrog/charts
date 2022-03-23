@@ -1,14 +1,33 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.21.5] - Feb 21, 2022
+## [101.22.0] - Feb 11, 2022
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Fix filebeat sidecar spool file permissions
+* Updated filebeat sidecar container to `7.16.2`
+* Added config for liveness and readiness new probes
+* Add more user friendly support for pod affinity and anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Added support for custom pod annotations using `pipelines.annotations`
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+* Added support for PriorityClass
+* Set node 16 as default linux build image and as default node version 
+* Set jdk 17 as default java image
+* Set go 1.17 as default go image
+* Set dotnet 6 as default W19 image and as default dotnet version
+* Added `logup` service under `core.services` section
+* Bugfix - joinkey as a secret with joinKeySecretName
+* Added `frontend` nginx microservice for micro frontends
+
+
+## [101.21.0] - Dec 17, 2021
 * Add support custom labels using `pipelines.labels`
 * Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
 * Added metrics framework logging config and config to stream logs to stdout
 * Update postgresql tag version to `13.4.0-debian-10-r39`
 * Refactored `router.requiredServiceTypes` to support platform chart
-* Added support for custom pod annotations using `pipelines.annotations`
-* Bugfix - joinkey as a secret with joinKeySecretName
 
 ## [101.20.0] - Dec 14, 2021
 * Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
