@@ -35,6 +35,13 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.pipelines.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.pipelines.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.pipelines.priorityClass.create }}
+      priorityClassName: {{ default (include "pipelines.fullname" .) .Values.pipelines.priorityClass.name }}
+      {{- end }}
+    {{- end }}
       serviceAccountName: {{ template "pipelines.serviceAccountName" . }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
@@ -99,6 +106,7 @@ spec:
             mountPath: "/tmp/certs"
       {{- end }}
 {{- if .Values.vault.enabled }}
+  {{- if .Values.waitForDatabase }}
         - name: wait-for-db
           image: '{{ .Values.initContainer.image }}'
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -117,6 +125,7 @@ spec:
               sleep 2;
             done;
             sleep 10;
+  {{- end }}
         - name: create-vault-table
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
@@ -416,10 +425,6 @@ spec:
           livenessProbe:
 {{ tpl .Values.pipelines.api.livenessProbe.config . | indent 12 }}
           {{- end }}
-          {{- if .Values.pipelines.api.readinessProbe.enabled }}
-          readinessProbe:
-{{ tpl .Values.pipelines.api.readinessProbe.config . | indent 12 }}
-          {{- end }}
           {{- if .Values.pipelines.api.startupProbe.enabled }}
           startupProbe:
 {{ tpl .Values.pipelines.api.startupProbe.config . | indent 12 }}
@@ -467,12 +472,51 @@ spec:
           livenessProbe:
 {{ tpl .Values.pipelines.www.livenessProbe.config . | indent 12 }}
           {{- end }}
-          {{- if .Values.pipelines.www.readinessProbe.enabled }}
-          readinessProbe:
-{{ tpl .Values.pipelines.www.readinessProbe.config . | indent 12 }}
+          {{- if .Values.pipelines.www.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.pipelines.www.startupProbe.config . | indent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.pipelines.www.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+          {{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+          {{- end }}
+        - name: frontend
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "frontend" ) }}
+          imagePullPolicy: {{ .Values.pipelines.frontend.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          ports:
+          - containerPort: {{ .Values.pipelines.frontend.internalPort }}
+            name: http-frontend
+          {{- if .Values.pipelines.frontend.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.pipelines.frontend.livenessProbe.config . | indent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.frontend.resources | nindent 12 }}
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
@@ -820,9 +864,31 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+    {{- if .Values.pipelines.affinity }}
     {{- with .Values.pipelines.affinity }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.pipelines.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.pipelines.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "pipelines.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.pipelines.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.pipelines.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "pipelines.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.pipelines.tolerations }}
       tolerations:

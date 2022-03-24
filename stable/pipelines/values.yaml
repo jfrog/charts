@@ -96,6 +96,10 @@ imagePullSecrets:
 ## Secret type: kubernetes.io/dockerconfigjson
 k8sImagePullSecret:
 
+## Database configurations
+## Use the wait-for-db init container. Set to false to skip
+waitForDatabase: true
+
 ## Pipelines systemYaml override
 ## This is for advanced usecases where users wants to provide their own systemYaml for configuring pipelines
 ## Refer - https://www.jfrog.com/confluence/display/JFROG/Pipelines+System+YAML
@@ -203,6 +207,21 @@ pipelines:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  # Create a priority class for the Pipelines pod or use an existing one
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    ## Override default name
+    # name:
+    ## Use an existing priority class
+    # existingPriorityClass:
 
   ## retention policy settings
   retentionPolicy:
@@ -306,24 +325,22 @@ pipelines:
       ## Whitelist IPs allowed to LoadBalancer type services
       ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
       loadBalancerSourceRanges: []
+      newProbes: true
+      healthCheck:
+        intervalSecs: 120
+      probes:
+        liveness:
+          failOnLongFailingReadiness:
+            enabled: true
+            failureDurationSecs: 60
     livenessProbe:
       enabled: true
       config: |
-        httpGet:
-          path: {{ include "pipelines.livenessProbe" .}}
-          port: http-api
-        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
-        periodSeconds: 10
-        timeoutSeconds: 5
-        failureThreshold: 10
-        successThreshold: 1
-
-    readinessProbe:
-      enabled: true
-      config: |
-        httpGet:
-          path: {{ include "pipelines.readinessProbe" .}}
-          port: http-api
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.api.service.port }}{{ include "pipelines.livenessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: 5
@@ -333,10 +350,12 @@ pipelines:
     startupProbe:
       enabled: true
       config: |
-        httpGet:
-          path: {{ include "pipelines.readinessProbe" .}}
-          port: http-api
-        initialDelaySeconds: 20
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.api.service.port }}{{ include "pipelines.readinessProbe" . }}
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: 5
         failureThreshold: 60
@@ -390,9 +409,11 @@ pipelines:
     livenessProbe:
       enabled: false
       config: |
-        httpGet:
-          path: {{ include "pipelines.router.livenessProbe" .}}
-          port: {{  .Values.pipelines.router.externalPort}}
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.router.internalPort }}{{ include "pipelines.router.livenessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: 5
@@ -402,9 +423,11 @@ pipelines:
     readinessProbe:
       enabled: false
       config: |
-        httpGet:
-          path: {{ include "pipelines.router.readinessProbe" .}}
-          port: {{  .Values.pipelines.router.externalPort}}
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.router.internalPort }}{{ include "pipelines.router.readinessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: 5
@@ -414,10 +437,12 @@ pipelines:
     startupProbe:
       enabled: false
       config: |
-        httpGet:
-          path: {{ include "pipelines.router.readinessProbe" .}}
-          port: {{  .Values.pipelines.router.externalPort}}
-        initialDelaySeconds: 20
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.router.externalPort }}{{ include "pipelines.router.readinessProbe" . }}
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: 5
         failureThreshold: 60
@@ -448,23 +473,56 @@ pipelines:
     livenessProbe:
       enabled: true
       config: |
-        httpGet:
-          path: {{ include "pipelines.livenessProbe" .}}
-          port: http-www
-        initialDelaySeconds: 20
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.www.service.port }}{{ include "pipelines.livenessProbe" . }}
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: 10
         failureThreshold: 10
         successThreshold: 1
 
-
-    readinessProbe:
+    startupProbe:
       enabled: true
       config: |
-        httpGet:
-          path: {{ include "pipelines.readinessProbe" .}}
-          port: http-www
-        initialDelaySeconds: 20
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.www.service.port }}{{ include "pipelines.readinessProbe" . }}
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
+        periodSeconds: 10
+        timeoutSeconds: 10
+        failureThreshold: 10
+        successThreshold: 1
+
+    resources: {}
+      # limits:
+      #   cpu: 800m
+      #   memory: 900Mi
+      # requests:
+      #   cpu: 10m
+      #   memory: 40Mi
+
+
+  frontend:
+    image:
+      # registry:
+      repository: jfrog/pipelines-frontend
+      # tag:
+      pullPolicy: IfNotPresent
+    internalPort: 30042
+    livenessProbe:
+      enabled: true
+      config: |
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.frontend.internalPort }}/index.html
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: 10
         failureThreshold: 10
@@ -1109,9 +1167,21 @@ pipelines:
           {{- else }}
           externalUrl: {{ .Values.pipelines.api.externalUrl }}
           {{- end }}
+          newProbes: {{ .Values.pipelines.api.service.newProbes }}
+          healthCheck:
+            intervalSecs: {{ .Values.pipelines.api.service.healthCheck.intervalSecs }}
+          probes:
+            liveness:
+              failOnLongFailingReadiness:
+                enabled: {{ .Values.pipelines.api.service.probes.liveness.failOnLongFailingReadiness.enabled }}
+                failureDurationSecs: {{ .Values.pipelines.api.service.probes.liveness.failOnLongFailingReadiness.failureDurationSecs }}
         www:
           name: {{ include "pipelines.www.name" . }}
           port: {{ .Values.pipelines.www.service.port }}
+          sessionSecret: "{{ .Values.pipelines.authToken }}"
+        frontend:
+          name: {{ include "pipelines.frontend.name" . }}
+          port: {{ .Values.pipelines.frontend.internalPort }}
           sessionSecret: "{{ .Values.pipelines.authToken }}"
         pipelineSync:
           name: pipelineSync
@@ -1135,6 +1205,8 @@ pipelines:
           name: templateSync
         reqSealer:
           name: reqSealer
+        logup:
+          name: logup
 
     ## Runtime configuration
     ##
@@ -1187,26 +1259,20 @@ pipelines:
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18node
-          defaultVersion: 14
-        - architecture: x86_64
-          os: Ubuntu_18.04
-          language: node
-          registryUrl: releases-docker.jfrog.io
-          image: jfrog/pipelines-u18node
           isDefault: true
-          defaultVersion: 14
+          defaultVersion: 16
         - architecture: x86_64
           os: Ubuntu_18.04
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
         - architecture: x86_64
           os: Ubuntu_18.04
           language: java
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18java
-          defaultVersion: 11
+          defaultVersion: 17
         - architecture: x86_64
           os: Ubuntu_18.04
           language: cpp
@@ -1219,13 +1285,13 @@ pipelines:
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20node
           isDefault: true
-          defaultVersion: 12
+          defaultVersion: 16
         - architecture: x86_64
           os: Ubuntu_20.04
           language: java
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20java
-          defaultVersion: 11
+          defaultVersion: 17
         - architecture: x86_64
           os: Ubuntu_20.04
           language: cpp
@@ -1237,20 +1303,20 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
         - architecture: x86_64
           os: CentOS_7
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7node
           isDefault: true
-          defaultVersion: 14
+          defaultVersion: 16
         - architecture: x86_64
           os: CentOS_7
           language: java
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7java
-          defaultVersion: 11
+          defaultVersion: 17
         - architecture: x86_64
           os: CentOS_7
           language: cpp
@@ -1262,20 +1328,20 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
         - architecture: x86_64
           os: CentOS_8
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8node
           isDefault: true
-          defaultVersion: 14
+          defaultVersion: 16
         - architecture: x86_64
           os: CentOS_8
           language: java
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8java
-          defaultVersion: 11
+          defaultVersion: 17
         - architecture: x86_64
           os: CentOS_8
           language: cpp
@@ -1287,13 +1353,13 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
         - architecture: x86_64
           os: WindowsServer_2019
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19node
-          defaultVersion: 14
+          defaultVersion: 16
         - architecture: x86_64
           os: WindowsServer_2019
           language: java
@@ -1311,13 +1377,19 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
+        - architecture: x86_64
+          os: WindowsServer_2019
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-w19dotnet
+          isDefault: true
+          defaultVersion: 6
         - architecture: x86_64
           os: WindowsServer_2019
           language: dotnetcore
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19dotnetcore
-          isDefault: true
           defaultVersion: 3
         - architecture: x86_64
           os: RHEL_7
@@ -1325,13 +1397,13 @@ pipelines:
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7node
           isDefault: true
-          defaultVersion: 14
+          defaultVersion: 16
         - architecture: x86_64
           os: RHEL_7
           language: java
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7java
-          defaultVersion: 11
+          defaultVersion: 17
         - architecture: x86_64
           os: RHEL_7
           language: cpp
@@ -1343,20 +1415,20 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
         - architecture: x86_64
           os: RHEL_8
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8node
           isDefault: true
-          defaultVersion: 14
+          defaultVersion: 16
         - architecture: x86_64
           os: RHEL_8
           language: java
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8java
-          defaultVersion: 11
+          defaultVersion: 17
         - architecture: x86_64
           os: RHEL_8
           language: cpp
@@ -1368,7 +1440,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8go
-          defaultVersion: 1.16
+          defaultVersion: 1.17
 
 ## Runtime Override Properties Section
 runtimeOverride: {}
@@ -1584,7 +1656,7 @@ vault:
     # Set Pipelines vault-init sidecar container
     extraContainers:
       - name: vault-init
-        image: releases-docker.jfrog.io/jfrog/pipelines-vault-init:1.17.9
+        image: releases-docker.jfrog.io/jfrog/pipelines-vault-init:1.20.4
         imagePullPolicy: IfNotPresent
         env:
           - name: CHECK_INTERVAL
@@ -1671,7 +1743,7 @@ filebeat:
   name: pipelines-filebeat
   image:
     repository: "docker.elastic.co/beats/filebeat"
-    version: 7.5.1
+    version: 7.16.2
   logstashUrl: "logstash:5044"
 
   terminationGracePeriod: 10
@@ -1714,7 +1786,9 @@ filebeat:
     logging.level: info
     path.data: {{ .Values.pipelines.logPath }}/filebeat
     name: pipelines-filebeat
-    queue.spool: ~
+    queue.spool:
+      file:
+        permissions: 0760
     filebeat.inputs:
     - type: log
       enabled: true
@@ -1836,5 +1910,5 @@ hostAliases: []
 #      - "foo.remote"
 #      - "bar.remote"
 
-## To enable new probes that will become default in one of the future releases
-newProbes: false
+## To enable new probes
+newProbes: true
