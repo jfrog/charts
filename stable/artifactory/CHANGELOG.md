@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+
+## [107.35.3] - Apr 6, 2022
+* Fixed deprecated version for ingress
+
 ## [107.35.2] - Mar 01, 2022
 * Updated router version to `7.32.1`
 
