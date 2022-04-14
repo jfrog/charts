@@ -412,3 +412,15 @@ Resolve xray requiredServiceTypes value
 {{- $requiredTypes := "jfxr,jfxana,jfxidx,jfxpst,jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}
+
+{{/*
+Resolve Xray pod node selector value
+*/}}
+{{- define "xray.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.xray.nodeSelector }}
+{{ toYaml .Values.xray.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}

@@ -858,9 +858,8 @@ spec:
 {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "xray.customSidecarContainers" .) . | indent 6 }}
 {{- end }}
-    {{- with .Values.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.xray.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "xray.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.affinity }}
     {{- with .Values.affinity }}
