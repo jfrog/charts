@@ -1,7 +1,16 @@
 # JFrog Xray Chart Changelog
-All changes to this chart will be documented in this file
+All changes to this chart will be documented in this file.
 
-## [103.45.1] - Feb 15, 2022
+## [103.46.0] - Mar 23, 2022
+* Updated router version to `7.36.1`
+* Updated Observability version to `1.5.0`
+
+## [103.45.0] - Mar 11, 2022
+* Updated router version to `7.35.0`
+* Changed dependency charts repo to `charts.jfrog.io`
+* Added support for `global.nodeSelector` applies to xray pods
+
+## [103.44.0] - Feb 15, 2022
 * Updated router version to `7.32.1`
 * Updated Observability version to `1.3.0`
 * Added support loggers sidecars to tail a configured log

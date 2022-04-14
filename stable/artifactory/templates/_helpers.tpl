@@ -304,7 +304,7 @@ Resolve requiredServiceTypes value
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
   {{- end -}}
 {{- end -}}
-{{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
+{{- if .Values.artifactory.replicator.enabled -}}
     {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
 {{- end -}}
 {{- if .Values.mc -}}
@@ -389,27 +389,6 @@ artifactory port
 {{- .Values.artifactory.tomcat.maintenanceConnector.port -}}
 {{- else -}}
 {{- .Values.router.internalPort -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-replicator/tracker
-*/}}
-{{- define "artifactory.replicator" -}}
-{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
-replicator:
-  pdn:
-    tracker:
-      enabled: true
-  enabled: true
-{{- else if and (not .Values.artifactory.replicator.enabled) .Values.artifactory.replicator.pdn.tracker.enabled -}}
-replicator:
-  pdn:
-    tracker:
-      enabled: true
-{{- else if and (not .Values.artifactory.replicator.pdn.tracker.enabled) .Values.artifactory.replicator.enabled -}}
-replicator:
-  enabled: true
 {{- end -}}
 {{- end -}}
 

@@ -582,9 +582,8 @@ spec:
     {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "insight-server.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
-    {{- with .Values.insightServer.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.insightServer.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "insight.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.insightServer.affinity }}
     {{- with .Values.insightServer.affinity }}

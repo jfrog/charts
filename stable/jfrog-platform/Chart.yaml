@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 7.35.2
+appVersion: 7.37.13
 dependencies:
   - name: postgresql
     version: 10.3.18
@@ -14,11 +14,11 @@ dependencies:
     repository: https://charts.jfrog.io/
     condition: redis.enabled
   - name: artifactory
-    version: 107.35.2
+    version: 107.37.13
     repository: https://charts.jfrog.io/
     condition: artifactory.enabled
   - name: xray
-    version: 103.45.1
+    version: 103.46.0
     repository: https://charts.jfrog.io/
     condition: xray.enabled
   - name: distribution
@@ -26,7 +26,7 @@ dependencies:
     repository: https://charts.jfrog.io/
     condition: distribution.enabled
   - name: insight
-    version: 101.7.0
+    version: 101.9.0
     repository: https://charts.jfrog.io/
     condition: insight.enabled
   - name: pipelines
@@ -48,5 +48,5 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 10.4.1
+version: 10.5.0
 kubeVersion: ">= 1.14.0-0"
