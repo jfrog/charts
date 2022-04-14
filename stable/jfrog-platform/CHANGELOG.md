@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.5.0] - Apr 14, 2022
+* Update dependency artifactory chart version to 107.37.13
+* Update dependency xray chart version to 103.46.0
+* Update dependency insight chart version to 101.9.0
+
 ## [10.4.1] - Mar 22, 2022
 * Update dependency artifactory chart version to 107.35.2
 * Update dependency xray chart version to 103.45.1
