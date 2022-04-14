@@ -1,10 +1,24 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.35.2] - Mar 01, 2022
+## [107.37.13] - Mar 08, 2022
+* Added support for customPorts in nginx deployment
+* Bugfix - Wrong proxy_pass configurations for /artifactory/ in the default artifactory.conf
+* Added signedUrlExpirySeconds option to artifactory.persistence.type aws-S3-V3
+* Updated router version to `7.35.0`
+* Added useInstanceCredentials,enableSignedUrlRedirect option to google-storage-v2
+* Changed dependency charts repo to `charts.jfrog.io`
+
+## [107.36.0] - Mar 03, 2022
+* Remove pdn tracker which starts replicator service
+* Added silent option for curl probes
+* Added readiness health check for the artifactory container for k8s version < 1.20
+* Fix property file migration issue to system.yaml 6.x to 7.x
+
+## [107.35.0] - Feb 08, 2022
 * Updated router version to `7.32.1`
 
-## [107.33.0] - Mar 01, 2022
+## [107.33.0] - Jan 11, 2022
 * Add more user friendly support for anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
 * Readme fixes
@@ -12,7 +26,7 @@ All changes to this chart will be documented in this file.
 * Added nginx customInitContainers, customVolumes, customSidecarContainers [GH-1565](https://github.com/jfrog/charts/pull/1565)
 * Updated router version to `7.30.0`
 
-## [107.32.0] - Mar 01, 2022
+## [107.32.0] - Dec 22, 2021
 * Updated logger image to `jfrog/ubi-minimal:8.5-204`
 * Added default `8091` as `artifactory.tomcat.maintenanceConnector.port` for probes check
 * Refactored probes to replace httpGet probes with basic exec + curl
@@ -21,7 +35,6 @@ All changes to this chart will be documented in this file.
 * Enabled `newProbes:true` by default to use these endpoints
 * Fix filebeat sidecar spool file permissions
 * Updated filebeat sidecar container to `7.16.2`
-* Added readiness health check for the artifactory container for k8s version < 1.20
 
 ## [107.31.0] - Dec 17, 2021
 * Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`

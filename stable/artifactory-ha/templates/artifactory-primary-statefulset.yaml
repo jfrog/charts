@@ -632,7 +632,7 @@ spec:
         livenessProbe:
 {{ tpl .Values.event.livenessProbe.config . | indent 10 }}
       {{- end }}
-      {{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled }}
+      {{- if .Values.artifactory.replicator.enabled }}
       - name: {{ .Values.artifactory.replicator.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -837,8 +837,6 @@ spec:
         - name : JF_FRONTEND_ENABLED
           value: "false"
         - name: JF_REPLICATOR_ENABLED
-          value: "true"
-        - name: JF_REPLICATOR_PDN_TRACKER_ENABLED
           value: "true"
         - name: JF_REPLICATOR_SERVICE_ENABLED
           value: "false"

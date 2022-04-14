@@ -235,7 +235,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.32.1
+    tag: 7.35.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -265,7 +265,7 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+          - curl -s -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -279,7 +279,7 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -293,7 +293,7 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 10
       failureThreshold: 90
       periodSeconds: 5
@@ -745,11 +745,14 @@ artifactory:
     metadata:
       database:
         maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
+    {{- if .Values.artifactory.replicator.enabled }}
+    replicator:
+      enabled: true
+    {{- end }}
     {{- if .Values.jfconnect.enabled }}
     jfconnect:
       enabled: true
     {{- end }}
-    {{ include "artifactory-ha.replicator" . }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -775,7 +778,7 @@ artifactory:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/liveness
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -803,7 +806,7 @@ artifactory:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
+          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       failureThreshold: 90
       periodSeconds: 5
@@ -968,7 +971,12 @@ artifactory:
 
           {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
           <provider id="google-storage-v2" type="google-storage-v2">
+            {{- if .Values.artifactory.persistence.googleStorage.useInstanceCredentials }}
+              <useInstanceCredentials>true</useInstanceCredentials>
+            {{- else }}
               <useInstanceCredentials>false</useInstanceCredentials>
+            {{- end }}
+              <enableSignedUrlRedirect>{{ .Values.artifactory.persistence.googleStorage.enableSignedUrlRedirect }}</enableSignedUrlRedirect>
           {{- else }}
           <provider id="google-storage" type="google-storage">
               <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
@@ -1052,6 +1060,7 @@ artifactory:
             {{- end }}
               <usePresigning>{{ .usePresigning }}</usePresigning>
               <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
+              <signedUrlExpirySeconds>{{ .signedUrlExpirySeconds }}</signedUrlExpirySeconds>
             {{- with .cloudFrontDomainName }}
               <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
             {{- end }}
@@ -1253,6 +1262,8 @@ artifactory:
       credential:
       path: "artifactory-ha/filestore"
       bucketExists: false
+      useInstanceCredentials: false
+      enableSignedUrlRedirect: false
 
     ## For artifactory.persistence.type aws-s3-v3
     awsS3V3:
@@ -1270,6 +1281,7 @@ artifactory:
       useInstanceCredentials: true
       usePresigning: false
       signatureExpirySeconds: 300
+      signedUrlExpirySeconds: 30
       cloudFrontDomainName:
       cloudFrontKeyPairId:
       cloudFrontPrivateKey:
@@ -1369,9 +1381,6 @@ artifactory:
        # - hosts:
        #   - artifactory.domain.example
        #   secretName: chart-example-tls-secret
-    pdn:
-      tracker:
-        enabled: false
 
   ssh:
     enabled: false
@@ -1820,6 +1829,12 @@ nginx:
     stderr: false
     level: warn
 
+  ## A list of custom ports to expose on the NGINX pod. Follows the conventional Kubernetes yaml syntax for container ports.
+  customPorts: []
+  # customPorts:
+  # - containerPort: 8066
+  #   name: docker
+
   mainConf: |
     # Main Nginx configuration file
     worker_processes  4;
@@ -1960,9 +1975,9 @@ nginx:
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass       {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+            proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
           }
-          proxy_pass          {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+          proxy_pass          http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
         }
       }
     }
@@ -1991,6 +2006,13 @@ nginx:
     #  label-key: label-value
     ## If the type is NodePort you can set a fixed port
     # nodePort: 32082
+    ## A list of custom ports to be exposed on nginx service. Follows the conventional Kubernetes yaml syntax for service ports.
+    customPorts: []
+    # - port: 8066
+    #   targetPort: 8066
+    #   protocol: TCP
+    #   name: docker
+
   http:
     enabled: true
     externalPort: 80
@@ -2018,7 +2040,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
+          - curl -s -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -2032,7 +2054,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 5
@@ -2046,7 +2068,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time 1 {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
