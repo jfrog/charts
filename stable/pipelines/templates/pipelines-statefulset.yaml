@@ -23,6 +23,8 @@ spec:
       labels:
         {{- include "pipelines.selectorLabels" . | nindent 8 }}
         component: {{ include "pipelines.services.name" . }}
+        app: {{ template "pipelines.name" . }}
+        release: {{ .Release.Name }}
       annotations:
         checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
         checksum/secretdb: {{ include (print $.Template.BasePath "/database-secret.yaml") . | sha256sum }}

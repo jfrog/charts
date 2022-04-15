@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.22.0] - Feb 11, 2022
+## [101.22.4] - Mar 31, 2022
 * Refactored probes to replace httpGet probes with basic exec + curl
 * Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
 * Enabled `newProbes:true` by default to use these endpoints
@@ -20,7 +20,7 @@ All changes to this chart to be documented in this file.
 * Added `logup` service under `core.services` section
 * Bugfix - joinkey as a secret with joinKeySecretName
 * Added `frontend` nginx microservice for micro frontends
-
+* Fixed bug where all pipeline pods could run on the same node by adding missing labels for pipelines pods 
 
 ## [101.21.0] - Dec 17, 2021
 * Add support custom labels using `pipelines.labels`
