@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.37.13] - Mar 08, 2022
+## [107.37.14] - Mar 08, 2022
 * Added support for customPorts in nginx deployment
 * Bugfix - Wrong proxy_pass configurations for /artifactory/ in the default artifactory.conf
 * Added signedUrlExpirySeconds option to artifactory.persistence.type aws-S3-V3
