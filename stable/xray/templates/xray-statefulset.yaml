@@ -382,6 +382,8 @@ spec:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
       {{- end }}
+        - name: XRAY_K8S_ENV
+          value: "true"
         - name: EXECUTION_JOB_AES_KEY
           valueFrom:
             secretKeyRef:

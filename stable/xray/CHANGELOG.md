@@ -1,6 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.47.3] - Mar 31, 2022
+* Added support for custom global probes timeout
+* Added env variable `XRAY_K8S_ENV` to xray server container
+
 ## [103.46.0] - Mar 23, 2022
 * Updated router version to `7.36.1`
 * Updated Observability version to `1.5.0`

@@ -610,10 +610,10 @@ analysis:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -624,10 +624,10 @@ analysis:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
-      periodSeconds: 5
+      periodSeconds: {{ .Values.probes.timeoutSeconds }}
       timeoutSeconds: 1
 
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
@@ -665,10 +665,10 @@ indexer:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -679,11 +679,11 @@ indexer:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -720,10 +720,10 @@ persist:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -734,11 +734,11 @@ persist:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -789,10 +789,10 @@ server:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -803,11 +803,11 @@ server:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -856,10 +856,10 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 10
       successThreshold: 1
 
@@ -870,10 +870,10 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 10
       successThreshold: 1
 
@@ -884,11 +884,11 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: 30
       failureThreshold: 60
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/router"
@@ -919,10 +919,10 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       failureThreshold: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -933,11 +933,11 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/observability"
@@ -1029,6 +1029,10 @@ hostAliases: []
 
 ## To enable new probes
 newProbes: true
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 5
 
 ## To limit the amount of jobs created by xray execution service
 quota:
