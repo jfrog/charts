@@ -1,6 +1,12 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.6.0] - May 9, 2022
+* Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
+* Update dependency artifactory chart version to 107.38.7
+* Update dependency xray chart version to 103.48.2
+* Update dependency insight chart version to 101.10.2
+
 ## [10.5.2] - Apr 26, 2022
 * Update dependency artifactory chart version to 107.37.15
 * Update dependency xray chart version to 103.47.3
