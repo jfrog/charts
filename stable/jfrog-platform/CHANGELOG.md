@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.6.1] - May 16, 2022
+* Update dependency artifactory chart version to 107.38.8
+* Update dependency distribution chart version to 102.12.3
+* Allow running the init DB container as a non-root user [GH-1544](https://github.com/jfrog/charts/pull/1544)
+
 ## [10.6.0] - May 9, 2022
 * Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
 * Update dependency artifactory chart version to 107.38.7
