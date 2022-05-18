@@ -33,6 +33,9 @@ global:
     enabled: false
     # certificateSecretName:
 
+  ## Applies to artifactory and nginx pods
+  nodeSelector: {}
+
 ## String to partially override artifactory-ha.fullname template (will maintain the release name)
 ##
 # nameOverride:
@@ -235,7 +238,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.35.0
+    tag: 7.36.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -243,6 +246,11 @@ router:
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
+  ## Extra environment variables that can be used to tune router to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -265,10 +273,10 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 10
       successThreshold: 1
 
@@ -279,10 +287,10 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 10
       successThreshold: 1
 
@@ -293,11 +301,11 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 10
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/router"
@@ -752,6 +760,9 @@ artifactory:
     {{- if .Values.jfconnect.enabled }}
     jfconnect:
       enabled: true
+    {{- else }}
+    jfconnect:
+      enabled: false
     {{- end }}
 
   ## IMPORTANT: If overriding artifactory.internalPort:
@@ -778,10 +789,10 @@ artifactory:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/liveness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 10
       successThreshold: 1
 
@@ -792,10 +803,10 @@ artifactory:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 10
       successThreshold: 1
 
@@ -806,11 +817,11 @@ artifactory:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time 1 http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     enabled: true
@@ -1343,6 +1354,11 @@ artifactory:
   replicator:
     name: replicator
     enabled: false
+    ## Extra environment variables that can be used to tune replicator to your needs.
+    ## Uncomment and set value as needed
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
     resources: {}
     #  requests:
     #    memory: "100Mi"
@@ -1388,6 +1404,18 @@ artifactory:
     externalPort: 1339
 
   annotations: {}
+
+  # Spread Artifactory pods evenly across your nodes or some other topology
+  # Note this applies to both the primary and replicas
+  topologySpreadConstraints: []
+    # - maxSkew: 1
+    #   topologyKey: kubernetes.io/hostname
+    #   whenUnsatisfiable: DoNotSchedule
+    #   labelSelector:
+    #     matchLabels:
+    #       app: '{{ template "artifactory-ha.name" . }}'
+    #       role: '{{ template "artifactory-ha.name" . }}'
+    #       release: "{{ .Release.Name }}"
 
   ## Type specific configurations.
   ## There is a difference between the primary and the member nodes.
@@ -1507,6 +1535,11 @@ artifactory:
 frontend:
   name: frontend
   internalPort: 8070
+  ## Extra environment variables that can be used to tune frontend to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1526,10 +1559,10 @@ frontend:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -1540,11 +1573,11 @@ frontend:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/readiness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
 access:
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
@@ -1572,6 +1605,11 @@ access:
 metadata:
   name: metadata
   internalPort: 8086
+  ## Extra environment variables that can be used to tune metadata to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1589,10 +1627,10 @@ metadata:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -1603,15 +1641,20 @@ metadata:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/readiness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
 event:
   name: event
   internalPort: 8061
+  ## Extra environment variables that can be used to tune event to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1627,10 +1670,10 @@ event:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.event.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.event.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -1641,17 +1684,22 @@ event:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.event.internalPort }}/api/v1/system/readiness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.event.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
 jfconnect:
   name: jfconnect
   ## Set to true if using an Enterprise Plus license
-  enabled: false
+  enabled: true
   internalPort: 8030
+  ## Extra environment variables that can be used to tune jfconnect to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1667,10 +1715,10 @@ jfconnect:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 10
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -1690,6 +1738,11 @@ jfconnect:
 integration:
   name: integration
   internalPort: 8071
+  ## Extra environment variables that can be used to tune integration to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1728,6 +1781,11 @@ integration:
 observability:
   name: observability
   internalPort: 8036
+  ## Extra environment variables that can be used to tune observability to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: ""
   resources: {}
   #  requests:
   #    memory: "100Mi"
@@ -1809,6 +1867,27 @@ nginx:
 
   # Priority Class name to be used in deployment if provided
   priorityClassName:
+
+  # Spread nginx pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+    # - maxSkew: 1
+    #   topologyKey: kubernetes.io/hostname
+    #   whenUnsatisfiable: DoNotSchedule
+    #   labelSelector:
+    #     matchLabels:
+    #       app: '{{ template "artifactory-ha.name" . }}'
+    #       release: '{{ .Release.Name }}'
+    #       component: '{{ .Values.nginx.name }}'
+
+  # Add lifecycle hooks for the nginx pods
+  # For example, you can add a `preStop` hook that sends a SIGQUIT to nginx and wait for it to terminate gracefully
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /var/opt/jfrog/nginx/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","nginx -s quit; while killall -0 nginx; do sleep 1; done"]
 
   # Sidecar containers for tailing Nginx logs
   loggers: []
@@ -2201,3 +2280,7 @@ splitServicesToContainers: false
 
 ## To enable new probes
 newProbes: true
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 5

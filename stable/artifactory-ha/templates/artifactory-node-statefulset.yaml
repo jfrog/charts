@@ -63,6 +63,10 @@ spec:
         fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
         {{- end }}
       {{- end }}
+      {{- if .Values.artifactory.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.artifactory.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
       initContainers:
     {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
@@ -379,6 +383,9 @@ spec:
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "artifactory-ha.router.requiredServiceTypes" . }}
+{{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         ports:
           - name: http
             containerPort: {{ .Values.router.internalPort }}
@@ -415,12 +422,15 @@ spec:
           - '/bin/bash'
           - '-c'
           - >
-            exec /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/startup.js /opt/jfrog/artifactory/app/frontend start
+            exec /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/bundle.js /opt/jfrog/artifactory/app/frontend
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- with .Values.frontend.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -491,7 +501,10 @@ spec:
               name: {{ template "artifactory.fullname" . }}-database-creds
               key: db-url
         {{- end }}
-      {{- end }}        
+      {{- end }}
+{{- with .Values.metadata.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}   
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -524,6 +537,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- with .Values.event.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -557,6 +573,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- with .Values.artifactory.replicator.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -583,6 +602,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- with .Values.jfconnect.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -616,6 +638,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- with .Values.integration.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -648,6 +673,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -950,9 +978,8 @@ spec:
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
-    {{- with .Values.artifactory.node.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.artifactory.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "artifactory.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.artifactory.node.affinity }}
     {{- with .Values.artifactory.node.affinity }}
