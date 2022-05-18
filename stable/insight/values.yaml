@@ -388,7 +388,7 @@ elasticsearch:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -398,7 +398,7 @@ elasticsearch:
         path: /_cluster/health
         port: 9200
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
 
 podRestartTime:
@@ -605,7 +605,7 @@ insightServer:
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
@@ -704,7 +704,7 @@ insightScheduler:
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
@@ -754,7 +754,7 @@ router:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -766,7 +766,7 @@ router:
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 

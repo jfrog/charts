@@ -1,7 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.47.3] - Mar 31, 2022
+## [103.48.0] - Apr 19, 2022
+* Updated Observability version to `1.5.1`
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+
+## [103.48.2] - Apr 14, 2022
 * Added support for custom global probes timeout
 * Added env variable `XRAY_K8S_ENV` to xray server container
 

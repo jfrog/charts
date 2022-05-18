@@ -1,9 +1,11 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.9.0] - Mar 31, 2022
+## [101.10.2] - Apr 14, 2022
 * Updated router version to `7.36.1`
 * Added support for custom global probes timeout
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
 
 ## [101.8.0] - Mar 11, 2022
 * Updated router version to `7.35.0`

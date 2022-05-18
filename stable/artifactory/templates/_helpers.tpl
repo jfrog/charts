@@ -418,3 +418,27 @@ Resolve customSidecarContainers value
 {{- .Values.nginx.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve Artifactory pod node selector value
+*/}}
+{{- define "artifactory.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.artifactory.nodeSelector }}
+{{ toYaml .Values.artifactory.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve Nginx pods node selector value
+*/}}
+{{- define "nginx.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.nginx.nodeSelector }}
+{{ toYaml .Values.nginx.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}

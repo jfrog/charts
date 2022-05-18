@@ -1,7 +1,17 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.37.15] - Mar 08, 2022
+## [107.38.8] - May 04, 2022
+* Added support for `global.nodeSelector` to artifactory and nginx pods
+* Updated router version to `7.36.1`
+* Added support for custom global probes timeout
+* Updated frontend container command
+* Added topologySpreadConstraints to artifactory and nginx, and add lifecycle hooks to nginx [GH-1596](https://github.com/jfrog/charts/pull/1596)
+* Added support of extraEnvironmentVariables for all infra services containers
+* Enabled the consumption (jfconnect) flag by default
+* Fix jfconnect disabling on non-splitcontainers
+
+## [107.37.0] - Mar 08, 2022
 * Added support for customPorts in nginx deployment
 * Bugfix - Wrong proxy_pass configurations for /artifactory/ in the default artifactory.conf
 * Added signedUrlExpirySeconds option to artifactory.persistence.type aws-S3-V3
