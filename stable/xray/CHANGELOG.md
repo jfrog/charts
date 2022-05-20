@@ -6,7 +6,7 @@ All changes to this chart will be documented in this file.
 * Reduce startupProbe `initialDelaySeconds`
 * Align all liveness and readiness probes failureThreshold to `5` seconds
 
-## [103.48.2] - Apr 14, 2022
+## [103.49.0] - Apr 14, 2022
 * Added support for custom global probes timeout
 * Added env variable `XRAY_K8S_ENV` to xray server container
 
