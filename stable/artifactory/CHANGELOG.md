@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.38.8] - May 04, 2022
+## [107.38.10] - May 04, 2022
 * Added support for `global.nodeSelector` to artifactory and nginx pods
 * Updated router version to `7.36.1`
 * Added support for custom global probes timeout
