@@ -1,7 +1,17 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.22.4] - Mar 31, 2022
+## [101.23.6] - Apr 20, 2022
+* Changed dependency charts repo to `charts.jfrog.io`
+* Added support for `global.nodeSelector` applies to pipelines pods
+* Set api external url to jfrogUrlUI when both api ingress is disabled and external api url is empty
+* Added new flag "enforceNonRootNodes" to enforce non root installation
+* Added support for custom global probes timeout
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+* Removed newRelic support
+
+## [101.22.0] - Apr 7, 2022
 * Refactored probes to replace httpGet probes with basic exec + curl
 * Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
 * Enabled `newProbes:true` by default to use these endpoints

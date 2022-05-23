@@ -55,6 +55,9 @@ global:
   # customInitContainers: |
   # customSidecarContainers: |
 
+  ## Applies to pipelines pods
+  nodeSelector: {}
+
 ## String to partially override pipelines.fullname template (will maintain the release name)
 ##
 # nameOverride:
@@ -199,6 +202,8 @@ pipelines:
   autoSyncResourceIfOutdated: false
   # Allow static nodes
   allowCustomNodes: true
+  # Enforce non root node pools
+  enforceNonRootNodes: false
   # maximum step timeout value
   stepTimeoutMS: 21600000
   labels: {}
@@ -340,11 +345,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.api.service.port }}{{ include "pipelines.livenessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}{{ include "pipelines.livenessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
-        timeoutSeconds: 5
-        failureThreshold: 10
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 5
         successThreshold: 1
 
     startupProbe:
@@ -354,11 +359,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.api.service.port }}{{ include "pipelines.readinessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}{{ include "pipelines.readinessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
-        timeoutSeconds: 5
-        failureThreshold: 60
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 30
 
     ## External URL, it is ignored if ingress is enabled
     externalUrl:
@@ -413,10 +418,10 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.router.internalPort }}{{ include "pipelines.router.livenessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}{{ include "pipelines.router.livenessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
         periodSeconds: 10
-        timeoutSeconds: 5
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
         failureThreshold: 3
         successThreshold: 1
 
@@ -427,11 +432,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.router.internalPort }}{{ include "pipelines.router.readinessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}{{ include "pipelines.router.readinessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
         periodSeconds: 10
-        timeoutSeconds: 5
-        failureThreshold: 10
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 5
         successThreshold: 1
 
     startupProbe:
@@ -441,11 +446,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.router.externalPort }}{{ include "pipelines.router.readinessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.externalPort }}{{ include "pipelines.router.readinessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
-        timeoutSeconds: 5
-        failureThreshold: 60
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 30
 
   www:
     image:
@@ -477,11 +482,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.www.service.port }}{{ include "pipelines.livenessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.www.service.port }}{{ include "pipelines.livenessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
-        timeoutSeconds: 10
-        failureThreshold: 10
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 5
         successThreshold: 1
 
     startupProbe:
@@ -491,11 +496,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.www.service.port }}{{ include "pipelines.readinessProbe" . }}
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.www.service.port }}{{ include "pipelines.readinessProbe" . }}
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
-        timeoutSeconds: 10
-        failureThreshold: 10
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 5
         successThreshold: 1
 
     resources: {}
@@ -521,11 +526,11 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time 1 http://localhost:{{ .Values.pipelines.frontend.internalPort }}/index.html
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.frontend.internalPort }}/index.html
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
-        timeoutSeconds: 10
-        failureThreshold: 10
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 5
         successThreshold: 1
 
     resources: {}
@@ -831,15 +836,6 @@ pipelines:
   #    data: |
   #      here the custom secret 2 config
 
-  # newRelic configuration
-  newRelic:
-    enabled: false
-    license: ""
-    appName: ""
-    logging:
-      debug: false
-    distributedTracer:
-      enabled: false
 
   systemYaml: |
     {{- if .Values.router.routerConfiguration }}
@@ -928,16 +924,6 @@ pipelines:
         connectionString: "{{ tpl (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) . }}"
         {{- end }}
 
-      ## newRelic configuration
-      ##
-      newRelic:
-        enabled: {{ .Values.pipelines.newRelic.enabled }}
-        license: {{ .Values.pipelines.newRelic.license }}
-        appName: {{ .Values.pipelines.newRelic.appName }}
-        logging:
-          debug: {{ .Values.pipelines.newRelic.logging.debug }}
-        distributedTracer:
-          enabled: {{ .Values.pipelines.newRelic.distributedTracer.enabled }}
       ## RabbitMQ configuration
       ##
       msg:
@@ -1164,8 +1150,12 @@ pipelines:
           {{- range .Values.pipelines.api.ingress.hosts }}
           externalUrl: http://{{ . }}
           {{- end }}
-          {{- else }}
+          {{- else if .Values.pipelines.api.externalUrl }}
           externalUrl: {{ .Values.pipelines.api.externalUrl }}
+          {{- else if .Values.pipelines.jfrogUrlUI }}
+          externalUrl: {{ .Values.pipelines.jfrogUrlUI }}
+          {{- else }}
+          externalUrl: {{ .Values.global.jfrogUrlUI }}
           {{- end }}
           newProbes: {{ .Values.pipelines.api.service.newProbes }}
           healthCheck:
@@ -1225,6 +1215,7 @@ pipelines:
       defaultMinionInstanceSize: "c4.large"
       allowDynamicNodes: true
       allowCustomNodes: {{ .Values.pipelines.allowCustomNodes }}
+      enforceNonRootNodes: {{ .Values.pipelines.enforceNonRootNodes }}
       {{- range $key, $value := .Values.runtimeOverride }}
       {{ $key }}: {{ $value | quote }}
       {{- end }}
@@ -1713,7 +1704,7 @@ vault:
     livenessProbe:
       enabled: true
       path: "/v1/sys/health?standbyok=true"
-      initialDelaySeconds: 60
+      initialDelaySeconds: 5
 
     serviceAccount:
       create: true
@@ -1912,3 +1903,7 @@ hostAliases: []
 
 ## To enable new probes
 newProbes: true
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 10
