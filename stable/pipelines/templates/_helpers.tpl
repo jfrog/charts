@@ -383,3 +383,15 @@ Resolve pipelines requiredServiceTypes value
 {{- $requiredTypes := "jfpip" -}}
 {{- $requiredTypes -}}
 {{- end -}}
+
+{{/*
+Resolve Pipelines pod node selector value
+*/}}
+{{- define "pipelines.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.pipelines.nodeSelector }}
+{{ toYaml .Values.pipelines.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}

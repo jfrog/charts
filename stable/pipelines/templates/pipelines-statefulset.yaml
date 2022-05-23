@@ -862,9 +862,8 @@ spec:
           {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "pipelines.customSidecarContainers" .) . | nindent 8 }}
           {{- end }}
-    {{- with .Values.pipelines.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
+    {{- if or .Values.pipelines.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "pipelines.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.pipelines.affinity }}
     {{- with .Values.pipelines.affinity }}
