@@ -1024,11 +1024,17 @@ artifactory:
               <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
               <property name="zones" value="local,remote"/>
           </provider>
-
+        {{- with .Values.artifactory.persistence.remote }}
           <provider id="remote-s3" type="remote">
               <zone>remote</zone>
+            {{- with .socketTimeout }}
+              <socketTimeout>{{ . }}</socketTimeout>
+            {{- end }}  
+            {{- with .connectionTimeout }}
+              <connectionTimeout>{{ . }}</connectionTimeout>
+            {{- end }}  
           </provider>
-
+        {{- end }}
           <provider id="eventual-cluster-s3" type="eventual-cluster">
               <zone>local</zone>
           </provider>
@@ -1055,6 +1061,12 @@ artifactory:
             {{- with .maxConnections }}
               <maxConnections>{{ . }}</maxConnections>
             {{- end }}
+            {{- with .connectionTimeout }}
+              <connectionTimeout>{{ . }}</connectionTimeout>
+            {{- end }}
+            {{- with .socketTimeout }}
+              <socketTimeout>{{ . }}</socketTimeout>        
+            {{- end }
             {{- with .kmsServerSideEncryptionKeyId }}
               <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
             {{- end }}
@@ -1275,7 +1287,6 @@ artifactory:
       bucketExists: false
       useInstanceCredentials: false
       enableSignedUrlRedirect: false
-
     ## For artifactory.persistence.type aws-s3-v3
     awsS3V3:
       testConnection: false
@@ -1286,6 +1297,8 @@ artifactory:
       path: artifactory/filestore
       endpoint:
       maxConnections: 50
+      connectionTimeout: 20000
+      socketTimeout: 100000
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
       kmsCryptoMode:
@@ -1298,7 +1311,9 @@ artifactory:
       cloudFrontPrivateKey:
       enableSignedUrlRedirect: false
       enablePathStyleAccess: false
-
+    remote:
+      connectionTimeout: 10000
+      socketTimeout: 30000
     ## For artifactory.persistence.type aws-s3
     ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
     awsS3:
