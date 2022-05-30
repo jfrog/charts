@@ -42,6 +42,10 @@ spec:
       {{- if .Values.nginx.priorityClassName }}
       priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
       {{- end }}
+      {{- if .Values.nginx.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.nginx.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
       initContainers:
         {{- if .Values.nginx.customInitContainers }}
 {{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
@@ -74,6 +78,9 @@ spec:
           - '-g'
           - 'daemon off;'
         ports:
+{{ if .Values.nginx.customPorts }}
+{{ toYaml .Values.nginx.customPorts | indent 8 }}
+{{ end }}
         # DEPRECATION NOTE: The following is to maintain support for values pre 1.3.1 and
         # will be cleaned up in a later version
         {{- if .Values.nginx.http }}
@@ -133,6 +140,10 @@ spec:
         args:
         - '-F'
         - '{{ $mountPath }}/logs/{{ . }}'
+        {{- with .Values.nginx.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: nginx-volume
           mountPath: {{ $mountPath }}
@@ -142,9 +153,8 @@ spec:
         {{- if .Values.nginx.customSidecarContainers }}
 {{ tpl (include "artifactory.nginx.customSidecarContainers" .)  . | indent 6 }}
         {{- end }}
-    {{- with .Values.nginx.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.nginx.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "nginx.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- with .Values.nginx.affinity }}
       affinity:

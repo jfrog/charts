@@ -6,6 +6,139 @@ pipelines:
 
   api:
     externalUrl: http://pipelines.test.com
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: 50m
+        memory: 100Mi
+
+  router:
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "10m"
+      limits:
+        memory: "1Gi"
+        cpu: "1"
+  www:
+    resources:
+      limits:
+        cpu: 800m
+        memory: 900Mi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+
+  pipelineSync:
+    resources:
+      limits:
+        cpu: "2"
+        memory: 500Mi
+      requests:
+        cpu: 25m
+        memory: 40Mi
+
+  runTrigger:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  stepTrigger:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  cron:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  nexec:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  hookHandler:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 25m
+        memory: 40Mi
+
+  marshaller:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 60Mi
+
+  logup:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  extensionSync:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  templateSync:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  reqSealer:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  ## Pipelines installer
+  pipelinesInit:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
   msg:
     uiUserPassword: password

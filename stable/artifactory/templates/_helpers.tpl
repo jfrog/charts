@@ -304,7 +304,7 @@ Resolve requiredServiceTypes value
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
   {{- end -}}
 {{- end -}}
-{{- if or .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
+{{- if .Values.artifactory.replicator.enabled -}}
     {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
 {{- end -}}
 {{- if .Values.mc -}}
@@ -393,27 +393,6 @@ artifactory port
 {{- end -}}
 
 {{/*
-replicator/tracker
-*/}}
-{{- define "artifactory.replicator" -}}
-{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.pdn.tracker.enabled -}}
-replicator:
-  pdn:
-    tracker:
-      enabled: true
-  enabled: true
-{{- else if and (not .Values.artifactory.replicator.enabled) .Values.artifactory.replicator.pdn.tracker.enabled -}}
-replicator:
-  pdn:
-    tracker:
-      enabled: true
-{{- else if and (not .Values.artifactory.replicator.pdn.tracker.enabled) .Values.artifactory.replicator.enabled -}}
-replicator:
-  enabled: true
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve customInitContainers value
 */}}
 {{- define "artifactory.nginx.customInitContainers" -}}
@@ -437,5 +416,29 @@ Resolve customSidecarContainers value
 {{- define "artifactory.nginx.customSidecarContainers" -}}
 {{- if .Values.nginx.customSidecarContainers -}}
 {{- .Values.nginx.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve Artifactory pod node selector value
+*/}}
+{{- define "artifactory.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.artifactory.nodeSelector }}
+{{ toYaml .Values.artifactory.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve Nginx pods node selector value
+*/}}
+{{- define "nginx.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.nginx.nodeSelector }}
+{{ toYaml .Values.nginx.nodeSelector | indent 2 }}
 {{- end -}}
 {{- end -}}

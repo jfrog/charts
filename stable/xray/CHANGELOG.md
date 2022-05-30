@@ -1,7 +1,37 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.43.1] - Feb 12, 2022
+## [103.48.0] - Apr 19, 2022
+* Updated Observability version to `1.5.1`
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+
+## [103.49.0] - Apr 14, 2022
+* Added support for custom global probes timeout
+* Added env variable `XRAY_K8S_ENV` to xray server container
+
+## [103.46.0] - Mar 23, 2022
+* Updated router version to `7.36.1`
+* Updated Observability version to `1.5.0`
+
+## [103.45.0] - Mar 11, 2022
+* Updated router version to `7.35.0`
+* Changed dependency charts repo to `charts.jfrog.io`
+* Added support for `global.nodeSelector` applies to xray pods
+
+## [103.44.0] - Feb 15, 2022
+* Updated router version to `7.32.1`
+* Updated Observability version to `1.3.0`
+* Added support loggers sidecars to tail a configured log
+* Added silent option for curl probes
+
+## [103.42.0] - Feb 12, 2022
+* Corrected the NetworkPolicy podSelector for RabbitMQ and Postgres
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+* Added support for PriorityClass
+* Updated Observability version to `1.2.3`
+
+## [103.41.0] - Feb 12, 2022
 * Add more user friendly support for pod affinity and anti-affinity
 * Pod anti-affinity is now enabled by default (soft rule)
 * Added `ResourceQuota` and permissions for xray execution service

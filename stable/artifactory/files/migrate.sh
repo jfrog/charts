@@ -2398,15 +2398,19 @@ propertyMigrate () {
         warn "yamlPath is empty for [${property}] in [${MIGRATION_SYSTEM_YAML_INFO}]"
         return
     fi
-    while IFS='=' read -r key value || [ -n "${key}" ];
-    do
-        [[ ! "${key}" =~ \#.* && ! -z "${key}" && ! -z "${value}" ]]
-        key="$(io_trim "${key}")"
+    local keyValues=$(cat "${NEW_DATA_DIR}/${filePath}/${fileName}" | grep "^[^#]" | grep "[*=*]")
+    for i in ${keyValues}; do
+        key=$(echo "${i}" | awk -F"=" '{print $1}')
+        value=$(echo "${i}" | cut -f 2- -d '=')
+        [ -z "${key}" ] && continue
+        [ -z "${value}" ] && continue
         if [[ "${key}" == "${property}" ]]; then
             if [[ "${PRODUCT}" == "artifactory" ]]; then
                 value="$(migrateResolveDerbyPath "${key}" "${value}")"
                 value="$(migrateResolveHaDirPath "${key}" "${value}")"
-                value="$(updatePostgresUrlString_Hook "${yamlPath}" "${value}")"
+                if [[ "${INSTALLER}" != "${DOCKER_TYPE}" ]]; then 
+                    value="$(updatePostgresUrlString_Hook "${yamlPath}" "${value}")"
+                fi
             fi
             if [[ "${key}" == "context.url" ]]; then
                 local ip=$(echo "${value}" | awk -F/ '{print $3}' | sed 's/:.*//')
@@ -2415,7 +2419,7 @@ propertyMigrate () {
             fi
             setSystemValue "${yamlPath}" "${value}" "${SYSTEM_YAML_PATH}" && logger "Setting [${yamlPath}] with value of the property [${property}] in system.yaml" && check=true && break || check=false
         fi
-    done < "${NEW_DATA_DIR}/${filePath}/${fileName}"
+    done
     [[ "${check}" == "false" ]] && logger "Property [${property}] not found in file [${fileName}]"
 }
 

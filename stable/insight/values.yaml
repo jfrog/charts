@@ -34,6 +34,9 @@ global:
     enabled: false
     # certificateSecretName:
 
+  ## Applies to insight pods
+  nodeSelector: {}
+
 ## Partially override insight.fullname template (eg: <releaseName>-<nameOverride>)
 # nameOverride:
 
@@ -317,7 +320,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.16.2
+    tag: 7.16.3
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -385,7 +388,7 @@ elasticsearch:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: 10
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -395,7 +398,7 @@ elasticsearch:
         path: /_cluster/health
         port: 9200
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
 
 podRestartTime:
@@ -404,7 +407,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/ubi-minimal
-    tag: 8.5.204
+    tag: 8.5-204
 
 insightServer:
   name: insight-server
@@ -443,24 +446,19 @@ insightServer:
 
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
-  # - audit.log
-  # - http.log
-  # - init-debug.log
-  # - init-err.log
-  # - init.log
-  # - insight-server-debug.log
-  # - insight-server-err.log
-  # - insight-server.log
-  # - monitoring.log
+  # - insight-server-request.log
+  # - insight-server-service.log
+  # - insight-server-metrics_events.log
+  # - insight-server-metrics.log
 
   # Loggers containers resources
   loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
+    # requests:
+    #   memory: "64Mi"
+    #   cpu: "25m"
+    # limits:
+    #   memory: "128Mi"
+    #   cpu: "50m"
 
   ## Insight-server requires a unique master.key
   # This will be used to encript sensitive data to be stored in database
@@ -591,10 +589,10 @@ insightServer:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -605,16 +603,16 @@ insightServer:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Extra pre start command to run extra commands before container starts
   # preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
-  # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
+  # preStartCommand: "/java/jdk-11.0.13+8/bin/keytool -importcert -keystore /java/jdk-11.0.13+8/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
 
 insightScheduler:
   name: insight-scheduler
@@ -664,17 +662,23 @@ insightScheduler:
 
   ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
-  # - insight-scheduler.log
-  # - access.log
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - elasticsearch-request.log
+  # - insight-scheduler-request.log
+  # - insight-scheduler-service.log
+  # - insight-scheduler-metrics_events.log
+  # - insight-scheduler-metrics.log
 
   # Loggers containers resources
   loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
+    # requests:
+    #   memory: "64Mi"
+    #   cpu: "25m"
+    # limits:
+    #   memory: "128Mi"
+    #   cpu: "50m"
 
   livenessProbe:
     enabled: true
@@ -683,10 +687,10 @@ insightScheduler:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -697,19 +701,19 @@ insightScheduler:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.30.0
+    tag: 7.36.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -732,10 +736,10 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -746,11 +750,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 10
-      failureThreshold: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -760,11 +764,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     accessMode: ReadWriteOnce
@@ -774,7 +778,6 @@ router:
   # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
 
-  nodeSelector: {}
   tolerations: []
   affinity: {}
 
@@ -862,3 +865,7 @@ hostAliases: []
 
 ## To enable new probes
 newProbes: true
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 10

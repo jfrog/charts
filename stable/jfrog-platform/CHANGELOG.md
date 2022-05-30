@@ -1,6 +1,53 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.6.3] - May 23, 2022
+* Update dependency pipelines chart version to 101.23.6
+
+## [10.6.2] - May 20, 2022
+* Update dependency artifactory chart version to 107.38.10
+* Update dependency xray chart version to 103.49.0
+
+## [10.6.1] - May 16, 2022
+* Update dependency artifactory chart version to 107.38.8
+* Update dependency distribution chart version to 102.12.3
+* Allow running the init DB container as a non-root user [GH-1544](https://github.com/jfrog/charts/pull/1544)
+
+## [10.6.0] - May 9, 2022
+* Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
+* Update dependency artifactory chart version to 107.38.7
+* Update dependency xray chart version to 103.48.2
+* Update dependency insight chart version to 101.10.2
+
+## [10.5.2] - Apr 26, 2022
+* Update dependency artifactory chart version to 107.37.15
+* Update dependency xray chart version to 103.47.3
+* Update dependency distribution chart version to 102.12.2
+* Updated global.versions.router version to `7.38.0`
+
+## [10.5.1] - Apr 18, 2022
+* Update dependency artifactory chart version to 107.37.14
+* Update dependency pipelines chart version to 101.22.4
+
+## [10.5.0] - Apr 14, 2022
+* Update dependency artifactory chart version to 107.37.13
+* Update dependency xray chart version to 103.46.0
+* Update dependency insight chart version to 101.9.0
+
+## [10.4.1] - Mar 22, 2022
+* Update dependency artifactory chart version to 107.35.2
+* Update dependency xray chart version to 103.45.1
+* Update dependency pipelines chart version to 101.22.0
+* Updated global.versions.router version to `7.36.1`
+
+## [10.4.0] - Mar 9, 2022
+* Update dependency artifactory chart version to 107.35.1
+* Update dependency xray chart version to 103.44.1
+* Update dependency insight chart version to 101.7.0
+* Update dependency distribution chart version to 102.12.1
+* Updated global.versions.router version to `7.35.0`
+* Changed dependency charts repo to `charts.jfrog.io`
+
 ## [10.3.2] - Feb 28, 2022
 * Update dependency xray chart version to 103.43.1
 * Update dependency distribution chart version to 102.12.0

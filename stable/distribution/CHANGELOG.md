@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.12.0] - Feb 08, 2022
+## [102.12.3] - Feb 08, 2022
 * Refactored `database-creds` secret to create only when database values are passed
 * Refactored probes to replace httpGet probes with basic exec + curl
 * Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`

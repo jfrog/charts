@@ -533,13 +533,9 @@ spec:
         livenessProbe:
 {{ tpl .Values.insightScheduler.livenessProbe.config . | indent 10 }}
 {{- end }}
-      {{- $image := .Values.logger.image.repository }}
-      {{- $tag := .Values.logger.image.tag }}
-      {{- $context := .Values.insightServer.appContext }}
-      {{- $name := .Values.insightServer.name }}
       {{- $mountPath := .Values.insightServer.persistence.mountPath }}
       {{- range .Values.insightServer.loggers }}
-      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "insight-server.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsNonRoot: true
@@ -548,44 +544,21 @@ spec:
             drop:
               - NET_RAW
         command:
-          - tail
-        args:
-          - '-F'
-          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
-          - name: insight-data
-            mountPath: {{ $mountPath }}
+        - name: insight-data
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.insightServer.loggersResources | indent 10 }}
       {{- end }}
-      {{- $name := .Values.insightServer.name }}
-      {{- $context := .Values.insightServer.appContext }}
-      {{- $mountPath := .Values.insightServer.persistence.mountPath }}
-      {{- range .Values.insightServer.loggers }}
-      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "insight-server.getImageInfoByValue" (list $ "logger") }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
-        command:
-          - tail
-        args:
-          - '-F'
-          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
-        volumeMounts:
-          - name: insight-data
-            mountPath: {{ $mountPath }}
-        resources:
- {{ toYaml $.Values.insightServer.loggersResources | indent 10 }}
-      {{- end }}
-      {{- $name := .Values.insightScheduler.name }}
-      {{- $context := .Values.insightScheduler.appContext }}
       {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
       {{- range .Values.insightScheduler.loggers }}
-      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "insight-server.getImageInfoByValue" (list $ "logger") }}
         securityContext:
           runAsNonRoot: true
@@ -594,22 +567,23 @@ spec:
             drop:
               - NET_RAW
         command:
-          - tail
-        args:
-          - '-F'
-          - '{{ $mountPath }}/logs/{{ $context }}/{{ . }}'
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
-          - name: insight-data
-            mountPath: {{ $mountPath }}
+        - name: insight-data
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.insightScheduler.loggersResources | indent 10 }}
       {{- end }}
     {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "insight-server.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
-    {{- with .Values.insightServer.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.insightServer.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "insight.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.insightServer.affinity }}
     {{- with .Values.insightServer.affinity }}
@@ -656,6 +630,11 @@ spec:
       - name: systemyaml
         secret:
           secretName: {{ default (printf "%s-%s" (include "insight.fullname" .) "systemyaml") .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+      {{- if or .Values.insightScheduler.loggers .Values.insightServer.loggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "insight.fullname" . }}-logger
       {{- end }}
     {{- if .Values.filebeat.enabled }}
       - name: filebeat-config

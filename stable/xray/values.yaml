@@ -34,6 +34,9 @@ global:
     enabled: false
     # certificateSecretName:
 
+  ## Applies to xray pods
+  nodeSelector: {}
+
 ## String to partially override xray.fullname template (will maintain the release name)
 ##
 # nameOverride:
@@ -73,11 +76,25 @@ systemYamlOverride:
 
 replicaCount: 1
 
+## Database configurations
+## Use the wait-for-db init container. Set to false to skip
+waitForDatabase: true
+
 xray:
   name: xray
   labels: {}
   persistence:
     mountPath: /var/opt/jfrog/xray
+
+  # Create a priority class for the Xray pod or use an existing one
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    ## Override default name
+    # name:
+    ## Use an existing priority class
+    # existingPriorityClass:
 
   ## certificates added to this secret will be copied to $JFROG_HOME/xray/var/etc/security/keys/trusted directory
   customCertificates:
@@ -168,6 +185,34 @@ xray:
       {{- end }}
     {{- end }}
 
+  # Sidecar containers for tailing Xray logs
+  loggers: []
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - xray-request.log
+  # - xray-analysis-service.log
+  # - xray-analysis-metrics.log
+  # - xray-server-service.log
+  # - xray-server-metrics.log
+  # - xray-indexer-service.log
+  # - xray-indexer-metrics.log
+  # - xray-analysis-stack.log
+  # - xray-indexer-stack.log
+  # - xray-persist-stack.log
+  # - xray-server-stack.log
+  # - observability-metrics.log
+  # - observability-request.log
+  # - observability-service.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "25m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "50m"
 
 ## Role Based Access
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
@@ -211,7 +256,7 @@ networkpolicy: []
   # - name: postgres
   #   podSelector:
   #     matchLabels:
-  #       app: postgresql
+  #       app.kubernetes.io/name: postgresql
   #   ingress:
   #   - from:
   #     - podSelector:
@@ -221,7 +266,7 @@ networkpolicy: []
   # - name: rabbitmq
   #   podSelector:
   #     matchLabels:
-  #       app: rabbitmq
+  #       app.kubernetes.io/name: rabbitmq
   #   ingress:
   #   - from:
   #     - podSelector:
@@ -240,6 +285,12 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
+
+logger:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/ubi-minimal
+    tag: 8.5-204
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -566,10 +617,10 @@ analysis:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -580,10 +631,10 @@ analysis:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
-      periodSeconds: 5
+      failureThreshold: 30
+      periodSeconds: {{ .Values.probes.timeoutSeconds }}
       timeoutSeconds: 1
 
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
@@ -621,10 +672,10 @@ indexer:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -635,11 +686,11 @@ indexer:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -676,10 +727,10 @@ persist:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -690,11 +741,11 @@ persist:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -745,10 +796,10 @@ server:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 3
       successThreshold: 1
 
@@ -759,11 +810,11 @@ server:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -781,7 +832,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.30.0
+    tag: 7.36.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -812,11 +863,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
       successThreshold: 1
 
   readinessProbe:
@@ -826,11 +877,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -840,11 +891,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/router"
@@ -857,7 +908,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.2.2
+    tag: 1.5.1
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -875,10 +926,10 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
-      failureThreshold: 10
-      timeoutSeconds: 5
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -889,11 +940,11 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/observability"
@@ -985,6 +1036,10 @@ hostAliases: []
 
 ## To enable new probes
 newProbes: true
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 5
 
 ## To limit the amount of jobs created by xray execution service
 quota:

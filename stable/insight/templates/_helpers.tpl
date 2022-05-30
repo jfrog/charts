@@ -303,3 +303,15 @@ Resolve requiredServiceTypes value
 {{- end -}}
 {{- $requiredTypes -}}
 {{- end -}}
+
+{{/*
+Resolve Insight pod node selector value
+*/}}
+{{- define "insight.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.insightServer.nodeSelector }}
+{{ toYaml .Values.insightServer.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
