@@ -40,7 +40,7 @@ spec:
         checksum/gcpcredentials: {{ include (print $.Template.BasePath "/artifactory-gcp-credentials-secret.yaml") . | sha256sum }}
       {{- end }}
       {{- range $key, $value := .Values.artifactory.annotations }}
-        {{ $key }}: {{ $value | quote }}
+        {{ $key }}: {{ tpl $value $ | quote }}
       {{- end }}
     spec:
     {{- if .Values.artifactory.priorityClass.existingPriorityClass }}
