@@ -1,0 +1,20 @@
+nginx:
+   customVolumes: |
+     - name: scripts
+       configMap:
+         name: {{ template "artifactory-ha.fullname" . }}-nginx-scripts
+         defaultMode: 0550
+   customVolumeMounts: |
+     - name: scripts
+       mountPath: /var/opt/jfrog/nginx/scripts/
+   customCommand:
+   - /bin/sh
+   - -c
+   - |
+     # watch for configmap changes
+     /sbin/inotifyd /var/opt/jfrog/nginx/scripts/configreloader.sh {{ .Values.nginx.persistence.mountPath -}}/conf.d:n &
+     {{ if .Values.nginx.https.enabled -}}
+     # watch for tls secret changes
+     /sbin/inotifyd /var/opt/jfrog/nginx/scripts/configreloader.sh {{ .Values.nginx.persistence.mountPath -}}/ssl:n &
+     {{ end -}}
+     nginx -g 'daemon off;'
