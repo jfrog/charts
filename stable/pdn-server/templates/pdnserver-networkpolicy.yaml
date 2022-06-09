@@ -1,0 +1,35 @@
+{{- range .Values.networkpolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "pdn-server.fullname" $ }}-{{ .name }}-networkpolicy
+  labels:
+    app: {{ template "pdn-server.name" $ }}
+    chart: {{ template "pdn-server.chart" $ }}
+    release: {{ $.Release.Name }}
+    role: {{ template "pdn-server.name" $ }}
+    component: {{ $.Values.pdnServer.name }}
+spec:
+{{- if .podSelector }}
+  podSelector:
+{{ .podSelector | toYaml | trimSuffix "\n" | indent 4 -}}
+{{ else }}
+  podSelector: {}
+{{- end }}
+  policyTypes:
+  {{- if .ingress }}
+  - Ingress
+  {{- end }}
+  {{- if .egress }}
+  - Egress
+  {{- end }}
+{{- if .ingress }}
+  ingress:
+{{ .ingress | toYaml | trimSuffix "\n" | indent 2 -}}
+{{- end }}
+{{- if .egress }}
+  egress:
+{{ .egress | toYaml | trimSuffix "\n" | indent 2 -}}
+{{- end }}
+---
+{{- end -}}

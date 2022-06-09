@@ -1,0 +1,16 @@
+{{- if not .Values.systemYamlOverride.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "pdn-server.fullname" . }}-systemyaml
+  labels:
+    app: {{ template "pdn-server.name" . }}
+    chart: {{ template "pdn-server.chart" . }}
+    component: {{ .Values.pdnServer.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  system.yaml: |
+{{ tpl .Values.pdnServer.systemYaml . | indent 4 }}
+{{- end }}
