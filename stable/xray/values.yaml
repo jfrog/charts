@@ -372,7 +372,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.8.14-debian-10-r32
+    tag: 3.9.15-debian-10-r5
   auth:
     username: guest
     password: ""
@@ -415,6 +415,15 @@ rabbitmq:
     load-definition:
       load_definition.json: |
         {
+          "permissions": [
+            {
+              "user": "{{ .Values.auth.username }}",
+              "vhost": "/",
+              "configure": ".*",
+              "write": ".*",
+              "read": ".*"
+            }
+          ],
           "vhosts": [
             {
               "name": "/"
@@ -436,8 +445,6 @@ rabbitmq:
   loadDefinition:
     enabled: true
     existingSecret: '{{ .Release.Name }}-load-definition'
-  extraConfiguration: |
-    management.load_definitions = /app/load_definition.json
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -825,7 +832,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.36.1
+    tag: 7.38.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -901,7 +908,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.5.1
+    tag: 1.6.1
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
