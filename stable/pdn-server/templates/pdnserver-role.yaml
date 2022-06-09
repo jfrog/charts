@@ -1,0 +1,14 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app: {{ template "pdn-server.name" . }}
+    chart: {{ template "pdn-server.chart" . }}
+    component: {{ .Values.pdnServer.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "pdn-server.fullname" . }}
+rules:
+{{ toYaml .Values.rbac.role.rules }}
+{{- end }}

@@ -1,0 +1,9 @@
+{{- if .Values.pdnServer.priorityClass.create }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ default (include "pdn-server.fullname" .) .Values.pdnServer.priorityClass.name }}
+value: {{ .Values.pdnServer.priorityClass.value }}
+globalDefault: false
+description: "PDN Server priority class"
+{{- end }}

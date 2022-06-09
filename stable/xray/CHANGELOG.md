@@ -1,12 +1,17 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.50.3] - Apr 29, 2022
+* Updated Observability version to `1.6.1`
+* Updated router version to `7.38.0`
+* Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
+
 ## [103.48.0] - Apr 19, 2022
 * Updated Observability version to `1.5.1`
 * Reduce startupProbe `initialDelaySeconds`
 * Align all liveness and readiness probes failureThreshold to `5` seconds
 
-## [103.49.0] - Apr 14, 2022
+## [103.47.0] - Apr 14, 2022
 * Added support for custom global probes timeout
 * Added env variable `XRAY_K8S_ENV` to xray server container
 
