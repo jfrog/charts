@@ -140,7 +140,7 @@ spec:
         args:
         - '-F'
         - '{{ $mountPath }}/logs/{{ . }}'
-        {{- with .Values.nginx.lifecycle }}
+        {{- with $.Values.nginx.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
         {{- end }}
