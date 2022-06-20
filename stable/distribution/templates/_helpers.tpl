@@ -279,3 +279,34 @@ Resolve distribution requiredServiceTypes value
 {{- $requiredTypes -}}
 {{- end -}}
 
+{{/*
+Resolve Distribution pod node selector value
+*/}}
+{{- define "distribution.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.distribution.nodeSelector }}
+{{ toYaml .Values.distribution.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "distribution.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "distribution.name" .) ("unified-secret-volume") -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.
+*/}}
+{{- define "distribution.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.distribution.customVolumes -}}
+{{- $val := (tpl (include "distribution.customVolumes" .) .) | toJson -}}
+{{- contains (include "distribution.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}

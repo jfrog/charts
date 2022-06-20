@@ -1,4 +1,4 @@
-{{- if not .Values.systemYamlOverride.existingSecret }}
+{{- if and (not .Values.systemYamlOverride.existingSecret) (not .Values.distribution.unifiedSecretInstallation) }}
 apiVersion: v1
 kind: Secret
 metadata:

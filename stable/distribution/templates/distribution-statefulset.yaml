@@ -36,8 +36,12 @@ spec:
         role: {{ template "distribution.name" . }}
         component: {{ .Values.distribution.name }}
       annotations:
+      {{- if not .Values.distribution.unifiedSecretInstallation }}
         checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/distribution-system-yaml.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/distribution-unified-secret: {{ include (print $.Template.BasePath "/distribution-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
       {{- range $key, $value := .Values.distribution.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
@@ -103,21 +107,33 @@ spec:
         - name: DISTRIBUTION_JOIN_KEY
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ include "distribution.joinKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: join-key
         {{- end }}
         {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: DISTRIBUTION_MASTER_KEY
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ include "distribution.masterKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: master-key
         {{- end }}
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
+        {{- if not .Values.distribution.unifiedSecretInstallation }}
         - name: systemyaml
+        {{- else }}
+        - name: {{ include "distribution.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
           {{- if .Values.systemYamlOverride.existingSecret }}
           mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
           subPath: {{ .Values.systemYamlOverride.dataKey }}
@@ -249,7 +265,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name .}}
               key: {{ tpl .Values.database.secrets.user.key .}}
         {{- else if .Values.database.user }}
+            {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ template "distribution.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -261,7 +281,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+            {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ template "distribution.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -276,14 +300,24 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name .}}
               key: {{ tpl .Values.database.secrets.url.key .}}
         {{- else if .Values.database.url }}
+            {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ template "distribution.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
         - name: JF_SHARED_REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.redis.existingSecret | default (include "distribution.fullname" .) }}"
+            {{- if .Values.redis.existingSecret }}
+              name: {{ .Values.redis.existingSecret }}
+            {{- else if not .Values.distribution.unifiedSecretInstallation }}
+              name: {{ include "distribution.fullname" . }}
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: redis-password
         - name: JF_SHARED_REDIS_CONNECTIONSTRING
           value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
@@ -403,7 +437,13 @@ spec:
         - name: REDIS_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: "{{ .Values.redis.existingSecret | default (include "distribution.fullname" .) }}"
+            {{- if .Values.redis.existingSecret }}
+              name: {{ .Values.redis.existingSecret }}
+            {{- else if not .Values.distribution.unifiedSecretInstallation }}
+              name: {{ include "distribution.fullname" . }}
+            {{- else }}
+              name: "{{ template "distribution.name" . }}-unified-secret"
+            {{- end }}
               key: redis-password
         - name: REDIS_PORT
           value: {{ .Values.redis.port | quote }}
@@ -431,19 +471,26 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: {{ .Values.redis.persistence.path }}
-      {{- $name := .Values.distribution.name }}
       {{- $mountPath := .Values.distribution.persistence.mountPath }}
       {{- range .Values.distribution.loggers }}
-      - name: {{ $name }}-{{ . | replace "_" "-" | replace "." "-" }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
-          - tail
-        args:
-          - '-F'
-          - '{{ $mountPath }}/logs/{{ . }}'
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
-          - name: distribution-data
-            mountPath: {{ $mountPath }}
+        - name: distribution-data
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.distribution.loggersResources | indent 10 }}
       {{- end }}
@@ -479,9 +526,8 @@ spec:
     {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "distribution.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
-  {{- with .Values.distribution.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.distribution.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "distribution.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.distribution.affinity }}
     {{- with .Values.distribution.affinity }}
@@ -514,11 +560,34 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+
+      ########## External secrets ###########
       {{- if or .Values.distribution.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: ca-certs
         secret:
           secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.distribution.customCertificates.certificateSecretName }}
       {{- end }}
+      {{- if .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+
+      #########  unifiedSecretInstallation ###########
+    {{- if and .Values.distribution.unifiedSecretInstallation (eq (include "distribution.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      - name: {{ include "distribution.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "distribution.name" . }}-unified-secret
+    {{- else if not .Values.distribution.unifiedSecretInstallation }}
+      ############ If single secret installation flag is disable ############
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.distribution.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "distribution.fullname" .) "systemyaml" }}
+      {{- end }}
+    {{- end }}
+
+      ############ Config map, Volumes and Custom Volumes ##############
       {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
 {{ tpl (include "distribution.customVolumes" .) . | indent 6 }}
       {{- end }}
@@ -535,10 +604,10 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.redis.persistence.existingClaim }}
       {{- end }}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
-      - name: systemyaml
-        secret:
-          secretName: {{ default (printf "%s-%s" (include "distribution.fullname" .) "systemyaml") .Values.systemYamlOverride.existingSecret }}
+      {{- if .Values.distribution.loggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "distribution.fullname" . }}-logger
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
