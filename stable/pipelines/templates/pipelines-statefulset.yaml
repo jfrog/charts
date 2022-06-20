@@ -26,11 +26,15 @@ spec:
         app: {{ template "pipelines.name" . }}
         release: {{ .Release.Name }}
       annotations:
+      {{- if not .Values.pipelines.unifiedSecretInstallation }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
         checksum/secretdb: {{ include (print $.Template.BasePath "/database-secret.yaml") . | sha256sum }}
         checksum/secretaws: {{ include (print $.Template.BasePath "/buildplane-secret-aws.yaml") . | sha256sum }}
-        checksum/configaws: {{ include (print $.Template.BasePath "/buildplane-config-aws.yaml") . | sha256sum }}
         checksum/secretk8s: {{ include (print $.Template.BasePath "/buildplane-secret-k8s.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/pipelines-unified-secret: {{ include (print $.Template.BasePath "/pipelines-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
+        checksum/configaws: {{ include (print $.Template.BasePath "/buildplane-config-aws.yaml") . | sha256sum }}
         checksum/configk8s: {{ include (print $.Template.BasePath "/buildplane-config-k8s.yaml") . | sha256sum }}
         checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
       {{- range $key, $value := .Values.pipelines.annotations }}
@@ -76,7 +80,11 @@ spec:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
         {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
           - name: systemyaml
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
             {{- if .Values.systemYamlOverride.existingSecret }}
             mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
             subPath: {{ .Values.systemYamlOverride.dataKey }}
@@ -137,7 +145,15 @@ spec:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  {{- if .Values.global.postgresql.existingSecret }}
+                  name: {{ .Values.global.postgresql.existingSecret }}
+                  {{- else }}
+                  name: {{ printf "%s-%s" (include "pipelines.fullname" .) "database" }}
+                  {{- end }}
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
                   key: postgresql-url
           command:
           - 'sh'
@@ -155,7 +171,11 @@ spec:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
         {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
           - name: systemyaml
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
             {{- if .Values.systemYamlOverride.existingSecret }}
             mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
             subPath: {{ .Values.systemYamlOverride.dataKey }}
@@ -234,7 +254,15 @@ spec:
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.global.postgresql.existingSecret | default (printf "%s-%s" (include "pipelines.fullname" .) "database") }}
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  {{- if .Values.global.postgresql.existingSecret }}
+                  name: {{ .Values.global.postgresql.existingSecret }}
+                  {{- else }}
+                  name: {{ printf "%s-%s" (include "pipelines.fullname" .) "database" }}
+                  {{- end }}
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
                   key: postgresql-url
             - name: PIPELINES_NODE_ID
               valueFrom:
@@ -244,14 +272,22 @@ spec:
             - name: PIPELINES_MASTER_KEY
               valueFrom:
                 secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
                   name: "{{ include "pipelines.masterKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
                   key: master-key
             {{- end }}
             {{- if or .Values.pipelines.joinKey .Values.global.joinKey .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
             - name: PIPELINES_JOIN_KEY
               valueFrom:
                 secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
                   name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
                   key: join-key
             {{- end }}
           command:
@@ -288,7 +324,11 @@ spec:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.logPath }}
           {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
           - name: buildplane-creds-aws
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
             readOnly: true
           - name: buildplane-config-aws
@@ -296,7 +336,11 @@ spec:
             readOnly: true
           {{- end }}
           {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
           - name: buildplane-creds-k8s
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
             readOnly: true
           - name: buildplane-config-k8s
@@ -369,7 +413,11 @@ spec:
               {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
               valueFrom:
                 secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
                   name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
                   key: join-key
               {{- else }}
               value: {{ include "pipelines.joinKey" . }}
@@ -895,46 +943,87 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+
+
       volumes:
-        {{- if or .Values.pipelines.customVolumes .Values.global.customVolumes }}
-{{ tpl (include "pipelines.customVolumes" .) . | indent 6 }}
-        {{- end }}
+
+      ########## External secrets ###########
       {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: ca-certs
         secret:
           secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.pipelines.customCertificates.certificateSecretName }}
       {{- end }}
+
+      # system yaml
+      {{- if .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.aws.enabled .Values.buildPlane.dynamic.provider.aws.existingSecret }}
+      - name: buildplane-creds-aws
+        secret:
+          secretName: {{ .Values.buildPlane.dynamic.provider.aws.existingSecret }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled .Values.buildPlane.dynamic.provider.k8s.existingSecret }}
+      - name: buildplane-creds-k8s
+        secret:
+          secretName: {{ .Values.buildPlane.dynamic.provider.k8s.existingSecret }}
+      {{- end }}
+
+    #########  unifiedSecretInstallation ###########
+    {{- if and .Values.pipelines.unifiedSecretInstallation (eq (include "pipelines.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "pipelines.name" . }}-unified-secret
+    {{- else if not .Values.pipelines.unifiedSecretInstallation }}
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.pipelines.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "pipelines.fullname" .) "system-yaml" }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.aws.enabled (not .Values.buildPlane.dynamic.provider.aws.existingSecret) }}
+      - name: buildplane-creds-aws
+        secret:
+          secretName: {{ printf "%s-dynamic-buildplane-creds-aws" (include "pipelines.fullname" .) }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled (not .Values.buildPlane.dynamic.provider.k8s.existingSecret) }}
+      - name: buildplane-creds-k8s
+        secret:
+          secretName: {{ printf "%s-dynamic-buildplane-creds-k8s" (include "pipelines.fullname" .) }}
+      {{- end }}
+    {{- end }}
+
+      ############ Config map, Volumes and Custom Volumes ##############
+      {{- if or .Values.pipelines.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "pipelines.customVolumes" .) . | indent 6 }}
+      {{- end }}
+      {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+      - name: buildplane-config-aws
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
+      {{- end }}
+
+      {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+      - name: buildplane-config-k8s
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-k8s
+      {{- end }}
+
       - name: jfrog-pipelines-folder
         emptyDir: {}
       - name: jfrog-pipelines-logs
         emptyDir: {}
       - name: data-volume
         emptyDir: {}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
-      - name: systemyaml
-        secret:
-          secretName: {{ default (printf "%s-%s" (include "pipelines.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
-      {{- end }}
       {{- if .Values.pipelines.configMaps }}
       - name: pipelines-configmaps
         configMap:
           name: {{ include "pipelines.fullname" . }}-configmaps
-      {{- end }}
-      {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
-      - name: buildplane-creds-aws
-        secret:
-          secretName: {{ .Values.buildPlane.dynamic.provider.aws.existingSecret | default (printf "%s-dynamic-buildplane-creds-aws" (include "pipelines.fullname" .)) }}
-      - name: buildplane-config-aws
-        configMap:
-          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
-      {{- end }}
-      {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
-      - name: buildplane-creds-k8s
-        secret:
-          secretName: {{ .Values.buildPlane.dynamic.provider.k8s.existingSecret | default (printf "%s-dynamic-buildplane-creds-k8s" (include "pipelines.fullname" .)) }}
-      - name: buildplane-config-k8s
-        configMap:
-          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-k8s
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config

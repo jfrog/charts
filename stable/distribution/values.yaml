@@ -34,6 +34,9 @@ global:
     enabled: false
     # certificateSecretName:
 
+  ## Applies to distribution pods
+  nodeSelector: {}
+
 ## String to partially override distribution.fullname template (will maintain the release name)
 ##
 # nameOverride:
@@ -243,6 +246,7 @@ common:
   preStartCommand:
 
   ## Add custom volumes
+  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
   customVolumes: |
   #  - name: custom-script
   #    configMap:
@@ -344,6 +348,9 @@ distribution:
     # tag:
     imagePullPolicy: IfNotPresent
 
+  # unifiedSecretInstallation flag enables single unified secret holding all the distribution secrets
+  unifiedSecretInstallation: false
+
   # Create a priority class for the Distribution pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -438,6 +445,7 @@ distribution:
   #    subPath: script.sh
 
   # Add custom secrets - secret per file
+  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -465,11 +473,11 @@ distribution:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.livenessProbe" .}}
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.livenessProbe" .}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -479,11 +487,11 @@ distribution:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.readinessProbe" .}}
-      initialDelaySeconds: 60
-      failureThreshold: 60
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.readinessProbe" .}}
+      initialDelaySeconds: 5
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
@@ -514,22 +522,29 @@ distribution:
   ## Custom command to run before Distribution startup.
   preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
-  # preStartCommand: "/java/jdk-11.0.2+9/bin/keytool -importcert -keystore /java/jdk-11.0.2+9/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
+  # preStartCommand: "/java/jdk-17.0.3+7/bin/keytool -importcert -keystore /java/jdk-17.0.3+7/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
 
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  ## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
   loggers: []
-  # - access.log
-  # - distribution.log
-  # - request.log
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - distribution-service.log
+  # - distribution-request.log
+  # - distribution-access.log
+  # - distributor-foreman.log
+  # - observability-metrics.log
+  # - observability-request.log
+  # - observability-service.log
 
   # Loggers containers resources
   loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
+    # requests:
+    #   memory: "64Mi"
+    #   cpu: "25m"
+    # limits:
+    #   memory: "128Mi"
+    #   cpu: "50m"
 
   nodeSelector: {}
   tolerations: []
@@ -545,7 +560,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.32.1
+    tag: 7.38.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -574,11 +589,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
       successThreshold: 1
 
   readinessProbe:
@@ -588,11 +603,11 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
-      timeoutSeconds: 1
-      failureThreshold: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -602,19 +617,16 @@ router:
         command:
           - sh
           - -c
-          - curl -k --fail --max-time 1 {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
       initialDelaySeconds: 30
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
-      timeoutSeconds: 1
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     accessMode: ReadWriteOnce
     mountPath: "/var/opt/jfrog/router"
     size: 5Gi
-
-  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
-  loggers: []
 
   nodeSelector: {}
   tolerations: []
@@ -625,7 +637,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.2.3
+    tag: 1.6.1
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -643,10 +655,10 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
-      failureThreshold: 10
-      timeoutSeconds: 5
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
 
@@ -657,11 +669,11 @@ observability:
         command:
           - sh
           - -c
-          - curl --fail --max-time 1 http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
-      timeoutSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/observability"
@@ -754,3 +766,7 @@ hostAliases: []
 
 ## To enable new probes
 newProbes: true
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 5

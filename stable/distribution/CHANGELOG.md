@@ -1,7 +1,19 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.12.3] - Feb 08, 2022
+## [102.13.3] - Apr 29, 2022
+* Fixed loggers sidecars to tail a configured log
+* Added silent option for curl probes
+* Changed dependency charts repo to `charts.jfrog.io`
+* Added support for `global.nodeSelector` applies to distribution pods
+* Added support for custom global probes timeout
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+* Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the distribution secrets
+* Updated router version to `7.38.0`
+* Updated Observability version to `1.6.1`
+
+## [102.12.0] - Feb 14, 2022
 * Refactored `database-creds` secret to create only when database values are passed
 * Refactored probes to replace httpGet probes with basic exec + curl
 * Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
@@ -16,8 +28,8 @@ All changes to this project chart be documented in this file.
 * Option to skip wait-for-db init container with '--set waitForDatabase=false'
 * Added support for PriorityClass
 * Added support to disable persistence for redis data
-* Updated Observability version to `1.2.3`
 * Updated router version to `7.32.1`
+* Updated Observability version to `1.3.0`
 
 ## [102.11.0] - Dec 17, 2021
 * Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges

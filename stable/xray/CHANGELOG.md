@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.50.3] - Apr 29, 2022
+## [103.51.0] - Apr 29, 2022
 * Updated Observability version to `1.6.1`
 * Updated router version to `7.38.0`
 * Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
