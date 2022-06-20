@@ -395,3 +395,22 @@ nodeSelector:
 {{ toYaml .Values.pipelines.nodeSelector | indent 2 }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "pipelines.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "pipelines.name" .) ("unified-secret-volume") -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "pipelines.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.pipelines.customVolumes -}}
+{{- $val := (tpl (include "pipelines.customVolumes" .) .) | toJson -}}
+{{- contains (include "pipelines.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}

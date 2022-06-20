@@ -1,7 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.23.6] - Apr 20, 2022
+## [101.24.0] - Apr 27, 2022
+* Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
+
+## [101.23.0] - Apr 25, 2022
 * Changed dependency charts repo to `charts.jfrog.io`
 * Added support for `global.nodeSelector` applies to pipelines pods
 * Set api external url to jfrogUrlUI when both api ingress is disabled and external api url is empty
@@ -10,6 +13,7 @@ All changes to this chart to be documented in this file.
 * Reduce startupProbe `initialDelaySeconds`
 * Align all liveness and readiness probes failureThreshold to `5` seconds
 * Removed newRelic support
+* Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the pipelines secrets
 
 ## [101.22.0] - Apr 7, 2022
 * Refactored probes to replace httpGet probes with basic exec + curl

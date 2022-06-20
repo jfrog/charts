@@ -141,6 +141,9 @@ pipelines:
   ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
   jfrogUrlUI: ""
 
+  # unifiedSecretInstallation flag enables single unified secret holding all the pipelines secrets
+  unifiedSecretInstallation: false
+
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
@@ -735,6 +738,7 @@ pipelines:
   #    echo "This is a post end script"
 
   ## Add custom volumes
+  # If .Values.pipelines.unifiedSecretInstallation is true then secret name should be '{{ template "pipelines.name" . }}-unified-secret'
   customVolumes: |
   #  - name: custom-script
   #    configMap:
@@ -824,6 +828,7 @@ pipelines:
   #        cpu: "100m"
 
   # Add custom secrets - secret per file
+  # If .Values.pipelines.unifiedSecretInstallation is true then secret name should be '{{ template "pipelines.name" . }}-unified-secret'
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -1509,7 +1514,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.8.14-debian-10-r32
+    tag: 3.9.15-debian-10-r5
   auth:
     username: admin
 
