@@ -1,6 +1,16 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.7.0] - June 21, 2022
+* **IMPORTANT**
+* Added [Private Distribution Network Server](https://www.jfrog.com/confluence/display/JFROG/Installing+PDN+Server) support
+* Added pdn-server new chart version `101.0.3` and defaults to `false`
+* Update dependency artifactory chart version to 107.39.4
+* Update dependency xray chart version to 103.51.0
+* Update dependency distribution chart version to 102.13.3
+* Update dependency pipelines chart version to 101.24.0
+* Updated global.versions.router version to `7.40.0`
+
 ## [10.6.3] - May 23, 2022
 * Update dependency pipelines chart version to 101.23.6
 

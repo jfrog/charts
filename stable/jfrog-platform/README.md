@@ -109,6 +109,7 @@ This chart would provide flexibility to enable one or more of the jfrog products
 2. Distribution
 3. Insight
 4. Pipelines
+5. PDN server
 
 For example to enable xray and insight with artifactory, you can refer the following yaml and pass it during install.
 customvalues.yaml

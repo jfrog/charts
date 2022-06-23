@@ -16,6 +16,10 @@ Congratulations. You have just deployed JFrog Platform Chart with following prod
 - distribution
 {{- end }}
 
+{{- if .Values.pdnServer.enabled }}
+- pdn-server
+{{- end }}
+
 {{- if .Values.pipelines.enabled }}
 - pipelines
 {{- end }}
