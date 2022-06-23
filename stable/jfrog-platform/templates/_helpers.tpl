@@ -66,7 +66,7 @@ Create the name of the service account to use
 Custom init container for Postgres setup
 */}}
 {{- define "initdb" -}}
-{{- if .Values.global.database.initDBCreation }}
+{{- if and .Values.global.database.initDBCreation (ne .Chart.Name "pdn-server") }}
 - name: postgres-setup-init
   image: {{ .Values.global.database.initContainerSetupDBImage }}
   imagePullPolicy: {{ .Values.global.database.initContainerImagePullPolicy }}
