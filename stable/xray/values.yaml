@@ -156,11 +156,11 @@ xray:
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
-    {{- if  .Values.artifactory.openMetrics.enabled }}
+    {{- if  .Values.xray.openMetrics.enabled }}
       metrics:
         enabled: true
-      {{- if .Values.artifactory.openMetrics.filebeat.enabled }}
-        filebeat: {{ toYaml .Values.artifactory.openMetrics.filebeat | nindent 6 }}
+      {{- if .Values.xray.openMetrics.filebeat.enabled }}
+        filebeat: {{ toYaml .Values.xray.openMetrics.filebeat | nindent 6 }}
       {{- end }}
     {{- end }}
       logging:
