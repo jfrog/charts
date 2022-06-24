@@ -100,6 +100,24 @@ xray:
     enabled: false
     # certificateSecretName:
 
+  # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
+  # To enable set `.Values.xray.openMetrics.enabled` to `true`
+  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  openMetrics:
+    enabled: true
+    ## Settings for pushing metrics to Insight - enable filebeat to true
+    filebeat:
+      enabled: false
+      log:
+        enabled: false
+        ## Log level for filebeat. Possible values: debug, info, warning, or error.
+        level: "info"
+      ## Elasticsearch details for filebeat to connect
+      elasticsearch:
+        url: "Elasticsearch url where JFrog Mission Control is installed For example, http://<ip_address>:8082"
+        username: ""
+        password: ""
+
   ## Add custom annotations for pipelines pods
   annotations: {}
 
@@ -138,6 +156,13 @@ xray:
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
+    {{- if  .Values.artifactory.openMetrics.enabled }}
+      metrics:
+        enabled: true
+      {{- if .Values.artifactory.openMetrics.filebeat.enabled }}
+        filebeat: {{ toYaml .Values.artifactory.openMetrics.filebeat | nindent 6 }}
+      {{- end }}
+    {{- end }}
       logging:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
