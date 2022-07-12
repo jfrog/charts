@@ -1,4 +1,4 @@
-{{- if .Values.access.accessConfig }}
+{{- if and .Values.access.accessConfig (not .Values.artifactory.unifiedSecretInstallation) }}
 apiVersion: v1
 kind: Secret
 metadata:

@@ -31,6 +31,9 @@ spec:
       annotations:
         checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
         checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.nginx.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
@@ -39,6 +42,7 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.nginx.terminationGracePeriodSeconds }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory.imagePullSecrets" . | indent 6 }}
     {{- end }}

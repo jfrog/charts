@@ -61,6 +61,7 @@ spec:
     component: "{{ .Values.artifactory.name }}"
     release: {{ .Release.Name }}
 ---
+{{- if gt (.Values.artifactory.node.replicaCount | int) 0  -}}
 # Internal service for Artifactory primary node only!
 # Used by member nodes to check readiness of primary node before starting up
 apiVersion: v1
@@ -110,3 +111,4 @@ spec:
     app: {{ template "artifactory-ha.name" . }}
     component: "{{ .Values.artifactory.name }}"
     release: {{ .Release.Name }}
+{{- end -}}

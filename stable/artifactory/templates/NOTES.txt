@@ -37,13 +37,20 @@ Congratulations. You have just deployed JFrog Artifactory!
 {{- end }}
 {{- end }}
 
+{{- if and (or (or (or (or (or ( or ( or ( or (or (or ( or (or .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName) .Values.systemYamlOverride.existingSecret) (or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled)) .Values.aws.licenseConfigSecretName) .Values.artifactory.persistence.customBinarystoreXmlSecret) .Values.access.customCertificatesSecretName) .Values.systemYamlOverride.existingSecret) .Values.artifactory.license.secret) .Values.artifactory.userPluginSecrets) (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey)) (and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName)) (or .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName)) .Values.artifactory.unifiedSecretInstallation }}
+****************************************** WARNING **************************************************************************************************
+* The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*
+* Update the values.yaml with the existing secrets to add them to the unified secret.                                                               *
+*****************************************************************************************************************************************************
+{{- end }}
+
 1. Get the Artifactory URL by running these commands:
 
    {{- if .Values.ingress.enabled }}
    {{- range .Values.ingress.hosts }}
      http://{{ . }}
    {{- end }}
-   
+
    {{- else if contains "NodePort" .Values.nginx.service.type }}
    export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "artifactory.nginx.fullname" . }})
    export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")

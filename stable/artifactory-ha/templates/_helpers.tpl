@@ -259,6 +259,25 @@ Resolve customVolumes value
 {{- end -}}
 
 {{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "artifactory-ha.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "artifactory-ha.name" .) ("unified-secret-volume") -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory-ha.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.artifactory.customVolumes -}}
+{{- $val := (tpl (include "artifactory-ha.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory-ha.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customVolumeMounts value
 */}}
 {{- define "artifactory-ha.customVolumeMounts" -}}
@@ -325,6 +344,15 @@ echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }
 mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted;
 find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted \;;
 find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+{{- end -}}
+
+{{/*
+Circle of trust certificates copy command
+*/}}
+{{- define "artifactory.copyCircleOfTrustCertsCerts" -}}
+echo "Copy circle of trust certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted";
+mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
+for file in $(ls -1 /tmp/circleoftrustcerts/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted; fi done;
 {{- end -}}
 
 {{/*

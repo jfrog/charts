@@ -1,5 +1,10 @@
+{{- if gt (.Values.artifactory.node.replicaCount | int) 0  -}}
 {{- if .Values.artifactory.node.minAvailable -}}
+{{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: policy/v1beta1
+{{- else }}
+apiVersion: policy/v1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ template "artifactory-ha.fullname" . }}-node
@@ -18,3 +23,4 @@ spec:
       release: {{ .Release.Name }}
   minAvailable: {{ .Values.artifactory.node.minAvailable }}
 {{- end }}
+{{- end -}}
