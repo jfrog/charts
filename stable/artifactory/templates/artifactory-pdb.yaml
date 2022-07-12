@@ -1,4 +1,4 @@
-{{- if .Values.artifactory.primary.minAvailable -}}
+{{- if .Values.artifactory.minAvailable -}}
 {{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: policy/v1beta1
 {{- else }}
@@ -6,10 +6,10 @@ apiVersion: policy/v1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
-  name: {{ template "artifactory-ha.fullname" . }}-primary
+  name: {{ template "artifactory.fullname" . }}
   labels:
-    app: {{ template "artifactory-ha.name" . }}
-    chart: {{ template "artifactory-ha.chart" . }}
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
@@ -17,8 +17,8 @@ spec:
   selector:
     matchLabels:
       component: {{ .Values.artifactory.name }}
-      app: {{ template "artifactory-ha.name" . }}
-      role: {{ template "artifactory-ha.primary.name" . }}
+      app: {{ template "artifactory.name" . }}
+      role: {{ template "artifactory.name" . }}
       release: {{ .Release.Name }}
-  minAvailable: {{ .Values.artifactory.primary.minAvailable }}
+  minAvailable: {{ .Values.artifactory.minAvailable }}
 {{- end }}

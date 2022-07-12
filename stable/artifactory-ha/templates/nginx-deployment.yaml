@@ -28,6 +28,9 @@ spec:
       annotations:
         checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
         checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.nginx.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
       labels:
         app: {{ template "artifactory-ha.name" . }}
         chart: {{ template "artifactory-ha.chart" . }}
@@ -36,6 +39,7 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.nginx.terminationGracePeriodSeconds }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
     {{- end }}
@@ -105,6 +109,10 @@ spec:
         - containerPort: {{ .Values.nginx.ssh.internalPort }}
           name: tcp-ssh
         {{- end }}
+        {{- with .Values.nginx.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: nginx-conf
           mountPath: /etc/nginx/nginx.conf
@@ -140,10 +148,6 @@ spec:
         args:
         - '-F'
         - '{{ $mountPath }}/logs/{{ . }}'
-        {{- with .Values.nginx.lifecycle }}
-        lifecycle:
-{{ toYaml . | indent 10 }}
-        {{- end }}
         volumeMounts:
         - name: nginx-volume
           mountPath: {{ $mountPath }}

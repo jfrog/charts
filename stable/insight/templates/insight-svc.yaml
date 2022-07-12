@@ -25,7 +25,7 @@ spec:
   - name: http-router
     port: {{ .Values.router.externalPort }}
     targetPort: {{ .Values.router.internalPort }}
-    protocol: TCP    
+    protocol: TCP
 {{- if .Values.elasticsearch.enabled }}
   - name: tcp-estransport
     port: {{ .Values.elasticsearch.transportPort }}

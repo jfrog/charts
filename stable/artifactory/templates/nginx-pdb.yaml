@@ -6,10 +6,10 @@ apiVersion: policy/v1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
-  name: {{ template "artifactory-ha.nginx.fullname" . }}
+  name: {{ template "artifactory.nginx.fullname" . }}
   labels:
-    app: {{ template "artifactory-ha.name" . }}
-    chart: {{ template "artifactory-ha.chart" . }}
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
     component: {{ .Values.nginx.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
@@ -17,7 +17,7 @@ spec:
   selector:
     matchLabels:
       component: {{ .Values.nginx.name }}
-      app: {{ template "artifactory-ha.name" . }}
+      app: {{ template "artifactory.name" . }}
       release: {{ .Release.Name }}
   minAvailable: {{ .Values.nginx.minAvailable }}
 {{- end }}

@@ -295,12 +295,21 @@ find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ 
 {{- end -}}
 
 {{/*
+Circle of trust certificates copy command
+*/}}
+{{- define "artifactory.copyCircleOfTrustCertsCerts" -}}
+echo "Copy circle of trust certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted";
+mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
+for file in $(ls -1 /tmp/circleoftrustcerts/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted; fi done;
+{{- end -}}
+
+{{/*
 Resolve requiredServiceTypes value
 */}}
 {{- define "artifactory.router.requiredServiceTypes" -}}
 {{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob,jfint" -}}
 {{- if .Values.jfconnect -}}
-  {{- if .Values.jfconnect.enabled -}}
+  {{- if and .Values.jfconnect.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
   {{- end -}}
 {{- end -}}
@@ -440,5 +449,25 @@ nodeSelector:
 {{ toYaml .Values.global.nodeSelector | indent 2 }}
 {{- else if .Values.nginx.nodeSelector }}
 {{ toYaml .Values.nginx.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "artifactory.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "artifactory.name" .) ("unified-secret-volume") -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.
+*/}}
+{{- define "artifactory.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.artifactory.customVolumes -}}
+{{- $val := (tpl (include "artifactory.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
 {{- end -}}
 {{- end -}}

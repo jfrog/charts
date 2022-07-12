@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.13.3] - Apr 29, 2022
+## [102.13.4] - Apr 29, 2022
 * Fixed loggers sidecars to tail a configured log
 * Added silent option for curl probes
 * Changed dependency charts repo to `charts.jfrog.io`

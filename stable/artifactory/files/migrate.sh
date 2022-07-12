@@ -169,7 +169,7 @@ PROMPT_CLUSTER_MASTER_KEY="Master Key"
 KEY_CLUSTER_MASTER_KEY="$SYS_KEY_SHARED_SECURITY_MASTERKEY"
 IS_SENSITIVE_CLUSTER_MASTER_KEY="$FLAG_Y"
 
-MESSAGE_JOIN_KEY="The Join key is the secret key used to establish trust between services in the JFrog Platform.\n(You can copy the Join Key from Admin > Security > Settings)"
+MESSAGE_JOIN_KEY="The Join key is the secret key used to establish trust between services in the JFrog Platform.\n(You can copy the Join Key from Admin > User Management > Settings)"
 PROMPT_JOIN_KEY="Join Key"
 KEY_JOIN_KEY="$SYS_KEY_SHARED_SECURITY_JOINKEY"
 IS_SENSITIVE_JOIN_KEY="$FLAG_Y"

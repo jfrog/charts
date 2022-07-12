@@ -1,7 +1,13 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.10.2] - Apr 14, 2022
+## [101.11.3] - May 30, 2022
+* Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the insight secrets
+* Updated router version to `7.38.0`
+* Fixed duplicate entry of `initialDelaySeconds` [GH-1622](https://github.com/jfrog/charts/issues/1622)
+* Update elasticsearch version to `7.17.1`
+
+## [101.9.0] - Apr 14, 2022
 * Updated router version to `7.36.1`
 * Added support for custom global probes timeout
 * Reduce startupProbe `initialDelaySeconds`

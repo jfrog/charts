@@ -315,3 +315,22 @@ nodeSelector:
 {{ toYaml .Values.insightServer.nodeSelector | indent 2 }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "insight.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "insight.name" .) ("unified-secret-volume") -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "insight.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.common.customVolumes -}}
+{{- $val := (tpl (include "insight-server.customVolumes" .) .) | toJson -}}
+{{- contains (include "insight.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}

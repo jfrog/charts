@@ -195,7 +195,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.36.1
+    tag: 7.38.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -233,7 +233,7 @@ router:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   readinessProbe:
@@ -247,7 +247,7 @@ router:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -259,7 +259,7 @@ router:
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 10
-      failureThreshold: 60
+      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
@@ -269,8 +269,18 @@ router:
 # Artifactory
 artifactory:
   name: artifactory
+
+  ## refer - https://www.jfrog.com/confluence/display/JFROG/Access+Federation#AccessFederation-EstablishingtheCircleofTrust
+  ## root certificates added will be copied to $JFROG_HOME/artifactory/var/etc/access/keys/trusted folder.
+  circleOfTrustCertificatesSecret:
+
+  # unifiedSecretInstallation flag enables single unified secret holding all the artifactory secrets
+  unifiedSecretInstallation: false
+
   # For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
   replicaCount: 1
+  # minAvailable: 1
+
   # Note that by default we use appVersion to get image tag/version
   image:
     registry: releases-docker.jfrog.io
@@ -337,6 +347,14 @@ artifactory:
         url: "Elasticsearch url where JFrog Mission Control is installed For example, http://<ip_address>:8082"
         username: ""
         password: ""
+
+  # This directory is intended for use with NFS eventual configuration for HA
+  haDataDir:
+    enabled: false
+    path:
+  haBackupDir:
+    enabled: false
+    path:
 
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
   copyOnEveryStartup:
@@ -468,6 +486,7 @@ artifactory:
   #        cpu: "100m"
 
   ## Add custom volumes
+  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.name" . }}-unified-secret'
   customVolumes: |
   #  - name: custom-script
   #    configMap:
@@ -542,6 +561,7 @@ artifactory:
   # jfConnectTokenSecretName:
 
   # Add custom secrets - secret per file
+  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.name" . }}-unified-secret' common to all secrets
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -617,7 +637,9 @@ artifactory:
       extraJavaOpts: >
         -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.javaOpts }}
+        {{- if .corePoolSize }}
         -Dartifactory.async.corePoolSize={{ .corePoolSize }}
+        {{- end }}
       {{- if .xms }}
         -Xms{{ .xms }}
       {{- end }}
@@ -659,6 +681,15 @@ artifactory:
         {{- end }}
       {{- end }}
     artifactory:
+    {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
+      node:
+      {{- if .Values.artifactory.haDataDir.path }}
+        haDataDir: {{ .Values.artifactory.haDataDir.path }}
+      {{- end }}
+      {{- if .Values.artifactory.haBackupDir.path }}
+        haBackupDir: {{ .Values.artifactory.haBackupDir.path }}
+      {{- end }}
+    {{- end }}
       database:
         maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
       tomcat:
@@ -699,7 +730,7 @@ artifactory:
     replicator:
       enabled: true
     {{- end }}
-    {{- if .Values.jfconnect.enabled }}
+    {{- if and .Values.jfconnect.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
     jfconnect:
       enabled: true
     {{- else }}
@@ -797,7 +828,7 @@ artifactory:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   readinessProbe:
@@ -811,7 +842,7 @@ artifactory:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
@@ -1210,7 +1241,7 @@ artifactory:
       authenticate: false
       accessFile:
       passwordFile:
-    corePoolSize: 8
+    # corePoolSize: 24
    # other: ""
 
   nodeSelector: {}
@@ -1258,7 +1289,7 @@ frontend:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 10
+      failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
@@ -1327,7 +1358,7 @@ metadata:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 10
+      failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
@@ -1370,7 +1401,7 @@ event:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.event.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 10
+      failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
@@ -1415,7 +1446,7 @@ jfconnect:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 10
+      failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
@@ -1458,7 +1489,7 @@ integration:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 10
+      failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
@@ -1501,7 +1532,7 @@ observability:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 10
+      failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
@@ -1542,9 +1573,13 @@ nginx:
   name: nginx
   labels: {}
   replicaCount: 1
+  minAvailable: 0
   uid: 104
   gid: 107
   securityContext: {}
+  annotations: {}
+  terminationGracePeriodSeconds: 30
+
   # Note that by default we use appVersion to get image tag/version
   image:
     registry: releases-docker.jfrog.io
@@ -1823,7 +1858,7 @@ nginx:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   readinessProbe:
@@ -1837,7 +1872,7 @@ nginx:
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 10
+      failureThreshold: 5
       successThreshold: 1
 
   startupProbe:
