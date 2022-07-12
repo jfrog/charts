@@ -37,8 +37,12 @@ spec:
 {{ toYaml . | indent 8 }}
         {{- end }}
       annotations:
+      {{- if not .Values.insightServer.unifiedSecretInstallation }}
         checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/insight-system-yaml.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/insightServer-unified-secret: {{ include (print $.Template.BasePath "/insightServer-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
       {{- range $key, $value := .Values.insightServer.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
@@ -63,7 +67,7 @@ spec:
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "insight-server.customInitContainersBegin" .)  . | indent 6 }}
-    {{- end }}      
+    {{- end }}
     {{- if .Values.elasticsearch.enabled }}
       {{- if .Values.elasticsearch.configureDockerHost }}
       - name: elasticsearch-init
@@ -128,21 +132,33 @@ spec:
         - name: INSIGHT_JOIN_KEY
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ include "insight-server.joinKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: join-key
         {{- end }}
         {{- if or .Values.insightServer.masterKey .Values.insightServer.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: INSIGHT_MASTER_KEY
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ include "insight-server.masterKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: master-key
         {{- end }}
         volumeMounts:
         - name: insight-data
           mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.insightServer.systemYaml }}
+        {{- if not .Values.insightServer.unifiedSecretInstallation }}
         - name: systemyaml
+        {{- else }}
+        - name: {{ include "insight.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
           {{- if .Values.systemYamlOverride.existingSecret }}
           mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
           subPath: {{ .Values.systemYamlOverride.dataKey }}
@@ -195,7 +211,7 @@ spec:
           ready=false;
           while ! $ready; do echo waiting;
             timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
-            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1;
           done
     {{- end }}
   {{- end }}
@@ -228,12 +244,12 @@ spec:
 {{- end }}
           sleep 10;
           if [[ $insight_server_pod_name == *"-0"* ]] ; then echo "Setting clustersetup to no" && export ELASTICSEARCH_CLUSTERSETUP=NO; else echo "Setting clustersetup to yes" && export ELASTICSEARCH_CLUSTERSETUP=YES; fi;
-          (/usr/local/bin/initializeSearchGuard.sh &) && docker-entrypoint.sh 'elasticsearch';        
-        env:  
+          (/usr/local/bin/initializeSearchGuard.sh &) && docker-entrypoint.sh 'elasticsearch';
+        env:
         - name: 'insight_server_pod_name'
           valueFrom:
             fieldRef:
-              fieldPath: metadata.name        
+              fieldPath: metadata.name
         - name: 'cluster.name'
           value: '{{ .Values.elasticsearch.env.clusterName }}'
         - name: 'xpack.security.enabled'
@@ -244,7 +260,7 @@ spec:
           value: '{{ .Values.elasticsearch.env.networkHost }}'
         - name: 'transport.host'
           value: '{{ .Values.elasticsearch.env.transportHost }}'
-        - name: 'transport.port'	
+        - name: 'transport.port'
           value: '{{ .Values.elasticsearch.transportPort }}'
         - name: 'discovery.seed_hosts'
           value: '{{ template "insight.fullname" . }}'
@@ -253,22 +269,38 @@ spec:
         - name: ELASTICSEARCH_PASSWORD
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: password
         - name: ELASTICSEARCH_USERNAME
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: username
         - name: JF_SHARED_ELASTICSEARCH_USERNAME
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: username
         - name: JF_SHARED_ELASTICSEARCH_PASSWORD
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: password
         - name: ES_JAVA_OPTS
           value: "
@@ -282,7 +314,11 @@ spec:
         - name: JF_SHARED_ELASTICSEARCH_URL
           valueFrom:
             secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: url
         ports:
         - name: tcp-estransprt
@@ -378,7 +414,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name .}}
               key: {{ tpl .Values.database.secrets.user.key .}}
         {{- else if .Values.database.user }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -390,7 +430,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -405,7 +449,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name .}}
               key: {{ tpl .Values.database.secrets.url.key .}}
         {{- else if .Values.database.url }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -479,7 +527,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name .}}
               key: {{ tpl .Values.database.secrets.user.key .}}
         {{- else if .Values.database.user }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -491,7 +543,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -506,7 +562,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name .}}
               key: {{ tpl .Values.database.secrets.url.key .}}
         {{- else if .Values.database.url }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
               name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -616,21 +676,28 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+
+      ########## External secrets ###########
+
       {{- if or .Values.insightServer.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: ca-certs
         secret:
           secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.insightServer.customCertificates.certificateSecretName }}
       {{- end }}
+
       {{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
       - name: elastic-certs
         secret:
           secretName: {{  .Values.elasticsearch.certificatesSecretName }}
       {{- end }}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.insightServer.systemYaml }}
+
+      {{- if .Values.systemYamlOverride.existingSecret }}
       - name: systemyaml
         secret:
-          secretName: {{ default (printf "%s-%s" (include "insight.fullname" .) "systemyaml") .Values.systemYamlOverride.existingSecret }}
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
       {{- end }}
+
+      ############ Config map, Volumes and Custom Volumes ##############
       {{- if or .Values.insightScheduler.loggers .Values.insightServer.loggers }}
       - name: tail-logger-script
         configMap:
@@ -666,7 +733,21 @@ spec:
       - name: elasticsearch-data
         persistentVolumeClaim:
           claimName: {{ .Values.elasticsearch.persistence.existingClaim }}
-    {{- end }}    
+    {{- end }}
+
+    #########  unifiedSecretInstallation ###########
+    {{- if and .Values.insightServer.unifiedSecretInstallation (eq (include "insight.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      - name: {{ include "insight.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "insight.name" . }}-unified-secret
+    {{- else if not .Values.insightServer.unifiedSecretInstallation }}
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.insightServer.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "insight.fullname" .) "systemyaml" }}
+      {{- end }}
+    {{- end }}
+
   volumeClaimTemplates:
     {{- if and (.Values.insightServer.persistence.enabled) (not .Values.insightServer.persistence.existingClaim) }}
     - metadata:

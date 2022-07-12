@@ -90,6 +90,7 @@ common:
   # fsGroupChangePolicy: "Always"
 
   ## Add custom volumes
+  # If .Values.insightServer.unifiedSecretInstallation is true then secret name should be '{{ template "insight.name" . }}-unified-secret'.
   customVolumes: |
   #  - name: custom-script
   #    configMap:
@@ -177,6 +178,7 @@ common:
   #        cpu: "100m"
 
   # Add custom secrets - secret per file
+  # If .Values.insightServer.unifiedSecretInstallation is true then secret name should be '{{ template "insight.name" . }}-unified-secret'.
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -320,7 +322,7 @@ elasticsearch:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.16.3
+    tag: 7.17.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -416,6 +418,9 @@ insightServer:
     registry: releases-docker.jfrog.io
     repository: jfrog/insight-server
     # tag:
+
+  # unifiedSecretInstallation flag enables single unified secret holding all the insight-server secrets
+  unifiedSecretInstallation: false
 
   # Create a priority class for the Insight pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
@@ -612,7 +617,7 @@ insightServer:
   ## Extra pre start command to run extra commands before container starts
   # preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
-  # preStartCommand: "/java/jdk-11.0.13+8/bin/keytool -importcert -keystore /java/jdk-11.0.13+8/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
+  # preStartCommand: "/java/jdk-17.0.3+7/bin/keytool -importcert -keystore /java/jdk-17.0.3+7/lib/security/cacerts -storepass changeit -file /tmp/trusted-certificates/root.crt -alias 'newcerts'"
 
 insightScheduler:
   name: insight-scheduler
@@ -703,7 +708,6 @@ insightScheduler:
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
-      initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -713,7 +717,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.36.1
+    tag: 7.38.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
