@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.24.0] - Apr 27, 2022
+## [101.24.4] - Apr 27, 2022
 * Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
 
 ## [101.23.0] - Apr 25, 2022
