@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.41.14] - October 4, 2022
+* Fixed - Duplicate volumes in version 107.39.4 [GH-1650](https://github.com/jfrog/charts/issues/1650)
+
 ## [107.41.13] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Use an alternate command for `find` to copy custom certificates
