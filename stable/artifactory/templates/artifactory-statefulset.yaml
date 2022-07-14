@@ -1235,15 +1235,6 @@ spec:
       - name: installer-info
         configMap:
           name: {{ template "artifactory.fullname" . }}-installer-info
-      {{- if .Values.artifactory.userPluginSecrets }}
-      - name: bootstrap-plugins
-        emptyDir: {}
-      {{- range .Values.artifactory.userPluginSecrets }}
-      - name: {{ tpl . $ }}
-        secret:
-          secretName: {{ tpl . $ }}
-      {{- end }}
-      {{- end }}
       {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
       - name: artifactory-volume
         persistentVolumeClaim:
