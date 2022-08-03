@@ -1,7 +1,7 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.11.3] - May 30, 2022
+## [101.11.5] - May 30, 2022
 * Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the insight secrets
 * Updated router version to `7.38.0`
 * Fixed duplicate entry of `initialDelaySeconds` [GH-1622](https://github.com/jfrog/charts/issues/1622)

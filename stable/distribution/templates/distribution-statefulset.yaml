@@ -454,14 +454,14 @@ spec:
           containerPort: {{ .Values.redis.port }}
         readinessProbe:
           initialDelaySeconds: 10
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           exec:
             command:
             - redis-cli
             - ping
         livenessProbe:
           initialDelaySeconds: 30
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           exec:
             command:
             - redis-cli

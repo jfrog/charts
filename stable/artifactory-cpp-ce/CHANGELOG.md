@@ -1,41 +1,9 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.41.4] - Dec 14, 2021
+## [107.41.7] - Jul 22, 2022
 * Bumping chart version to align with app version
-
-## [107.25.7] - Sep 17, 2021
-* Bumping chart version to align with app version
-
-## [107.25.6] - Sep 6, 2021
-* Bumping chart version to align with app version
-
-## [107.24.3] - Aug 13, 2021
-* Bumping chart version to align with app version
-
-## [107.23.3] - Aug 5, 2021
-* Bumping chart version to align with app version
-
-## [107.21.12] - July 28, 2021
-* Bumping chart version to align with app version
-
-## [107.21.8] - July 21, 2021
-* Bumping chart version to align with app version
-
-## [107.21.7] - July 15, 2021
-* Bumping chart version to align with app version
-
-## [107.21.5] - July 9, 2021
-* Bumping chart version to align with app version
-
-## [107.21.3] - July 2, 2021
-* Bumping chart version to align with app version
-
-## [107.19.9] - June 23, 2021
-* Bumping chart version to align with app version
-
-## [107.19.8] - June 10, 2021
-* Bumping chart version to align with app version
+* Disabled jfconnect and event services when splitServicesToContainers=true
 
 ## [107.19.4] - May 27, 2021
 * Bumping chart version to align with app version

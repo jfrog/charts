@@ -307,19 +307,30 @@ for file in $(ls -1 /tmp/circleoftrustcerts/* | grep -v .key | grep -v ":" | gre
 Resolve requiredServiceTypes value
 */}}
 {{- define "artifactory.router.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfrt,jfac,jfmd,jffe,jfevt,jfob,jfint" -}}
-{{- if .Values.jfconnect -}}
-  {{- if and .Values.jfconnect.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) -}}
+{{- $requiredTypes := "jfrt,jfac" -}}
+{{- if .Values.observability.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfob" -}}
+{{- end -}}
+{{- if .Values.metadata.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmd" -}}
+{{- end -}}
+{{- if .Values.event.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevt" -}}
+{{- end -}}
+{{- if .Values.integration.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfint" -}}
+{{- end -}}
+{{- if .Values.frontend.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jffe" -}}
+{{- end -}}
+{{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
-  {{- end -}}
 {{- end -}}
 {{- if .Values.artifactory.replicator.enabled -}}
     {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
 {{- end -}}
-{{- if .Values.mc -}}
-  {{- if .Values.mc.enabled -}}
+{{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
-  {{- end -}}
 {{- end -}}
 {{- $requiredTypes -}}
 {{- end -}}
