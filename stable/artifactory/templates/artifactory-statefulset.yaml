@@ -524,6 +524,7 @@ spec:
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}
       {{- end }}
+      {{- if .Values.frontend.enabled }}
       - name: {{ .Values.frontend.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -559,6 +560,8 @@ spec:
         livenessProbe:
 {{ tpl .Values.frontend.livenessProbe.config . | indent 10 }}
       {{- end }}
+      {{- end }}
+      {{- if .Values.metadata.enabled }}
       - name: {{ .Values.metadata.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -633,6 +636,8 @@ spec:
         livenessProbe:
 {{ tpl .Values.metadata.livenessProbe.config . | indent 10 }}
       {{- end }}
+      {{- end }}
+      {{- if .Values.event.enabled }}
       - name: {{ .Values.event.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -667,6 +672,7 @@ spec:
       {{- if .Values.event.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.event.livenessProbe.config . | indent 10 }}
+      {{- end }}
       {{- end }}
       {{- if .Values.artifactory.replicator.enabled }}
       - name: {{ .Values.artifactory.replicator.name }}
@@ -734,6 +740,7 @@ spec:
 {{ tpl .Values.jfconnect.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
+      {{- if .Values.integration.enabled }}
       - name: {{ .Values.integration.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -769,6 +776,8 @@ spec:
         livenessProbe:
 {{ tpl .Values.integration.livenessProbe.config . | indent 10 }}
       {{- end }}
+      {{- end }}
+      {{- if .Values.observability.enabled }}
       - name: {{ .Values.observability.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -803,6 +812,7 @@ spec:
       {{- if .Values.observability.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
+      {{- end }}
       {{- end }}
     {{- end }}
       - name: {{ .Values.artifactory.name }}

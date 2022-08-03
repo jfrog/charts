@@ -1,16 +1,17 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.41.4] - June 27, 2022
+## [107.41.7] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Use an alternate command for `find` to copy custom certificates
 * Added support for circle of trust using `circleOfTrustCertificatesSecret` secret name [GH-1623](https://github.com/jfrog/charts/pull/1623)
 
-## [107.40.0] - June 13, 2022
+## [107.40.0] - June 16, 2022
 * Added support for PodDisruptionBudget [GH-1618](https://github.com/jfrog/charts/issues/1618)
 * From artifactory 7.38.x, joinKey can be retrived from Admin > User Management > Settings in UI
 * Allow templating for pod annotations [GH-1634](https://github.com/jfrog/charts/pull/1634)
 * Fixed `customPersistentPodVolumeClaim` name to `customPersistentVolumeClaim`
+* Added flag to control enable/disbable infra services in splitServicesToContainers
 
 ## [107.39.0] - May 31, 2022
 * Fix default `artifactory.async.corePoolSize` [GH-1612](https://github.com/jfrog/charts/issues/1612)
