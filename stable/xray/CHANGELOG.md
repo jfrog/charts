@@ -1,7 +1,22 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.52.4] - Apr 29, 2022
+## [103.54.5] - July 14, 2022
+* Added new flag "unifiedSecretInstallation" to enables single unified secret holding all the secrets
+* Added `executionserviceAWS` key (optional) in values.yaml like joinkey and masterkey [GH-1600](https://github.com/jfrog/charts/pull/1600)
+* Updated Observability version to `1.9.2`
+* Updated router version to `7.42.0`
+
+## [103.53.0] - Jun 22, 2022
+* Use an alternate command for `find` to copy custom certificates
+
+## [103.52.0] - Jun 20, 2022
+* Updated Observability version to `1.9.0`
+
+## [103.51.0] - May 17, 2022
+* Updated Observability version to `1.7.0`
+
+## [103.49.0] - Apr 29, 2022
 * Updated Observability version to `1.6.1`
 * Updated router version to `7.38.0`
 * Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5

@@ -16,6 +16,7 @@ global:
   # masterKey:
   # joinKeySecretName:
   # masterKeySecretName:
+  # executionServiceAesKey:
 
   ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customInitContainersBegin: |
@@ -85,6 +86,9 @@ xray:
   persistence:
     mountPath: /var/opt/jfrog/xray
 
+  # unifiedSecretInstallation flag enables single unified secret holding all xray secrets
+  unifiedSecretInstallation: false
+
   # Create a priority class for the Xray pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -114,6 +118,12 @@ xray:
 
   ## Join Key to connect to main Artifactory. Mandatory
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+  ## Xray AES key used by execution server to the xray server and analysis containers.
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 16'
+  # executionServiceAesKey:
+
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
   ## If false, all service console logs will not redirect to a common console.log
@@ -473,6 +483,7 @@ common:
   preStartCommand:
 
   ## Add custom volumes
+  # If .Values.xray.unifiedSecretInstallation is true then secret name should be '{{ template "xray.name" . }}-unified-secret'.
   customVolumes: |
   #  - name: custom-script
   #    configMap:
@@ -560,6 +571,7 @@ common:
   #        memory: "128Mi"
   #        cpu: "100m"
 
+  # If .Values.xray.unifiedSecretInstallation is true then secret name should be '{{ template "xray.name" . }}-unified-secret'.
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -832,7 +844,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.38.0
+    tag: 7.42.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -908,7 +920,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.6.1
+    tag: 1.9.2
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
