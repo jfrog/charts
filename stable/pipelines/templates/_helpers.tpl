@@ -327,8 +327,7 @@ Custom certificate copy command
 {{- define "pipelines.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.pipelines.mountPath }}/security/keys/trusted";
 mkdir -p {{ .Values.pipelines.mountPath }}/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.pipelines.mountPath }}/security/keys/trusted \;;
-find {{ .Values.pipelines.mountPath }}/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.pipelines.mountPath }}/security/keys/trusted/ca.crt \;;
+if [ -f /tmp/certs/tls.crt ]; then cp -v /tmp/certs/tls.crt {{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt; fi;
 chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
 {{- end -}}
 

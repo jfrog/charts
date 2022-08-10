@@ -1,7 +1,18 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.24.4] - Apr 27, 2022
+## [101.25.0] - July 12, 2022
+* Additional fix for default path for api external url
+* Fixed custom CA init container behavior
+
+## [101.24.2] - June 22, 2022
+* Only set k8sImagePullSecret key if one is configured in values.yaml
+* Use an alternate command for `find` to copy custom certificates
+
+## [101.24.1] - June 16, 2022
+* Fixes default path for api external url
+
+## [101.24.0] - Apr 27, 2022
 * Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
 
 ## [101.23.0] - Apr 25, 2022
@@ -27,14 +38,14 @@ All changes to this chart to be documented in this file.
 * Added support for custom pod annotations using `pipelines.annotations`
 * Option to skip wait-for-db init container with '--set waitForDatabase=false'
 * Added support for PriorityClass
-* Set node 16 as default linux build image and as default node version 
+* Set node 16 as default linux build image and as default node version
 * Set jdk 17 as default java image
 * Set go 1.17 as default go image
 * Set dotnet 6 as default W19 image and as default dotnet version
 * Added `logup` service under `core.services` section
 * Bugfix - joinkey as a secret with joinKeySecretName
 * Added `frontend` nginx microservice for micro frontends
-* Fixed bug where all pipeline pods could run on the same node by adding missing labels for pipelines pods 
+* Fixed bug where all pipeline pods could run on the same node by adding missing labels for pipelines pods
 
 ## [101.21.0] - Dec 17, 2021
 * Add support custom labels using `pipelines.labels`
@@ -54,7 +65,7 @@ All changes to this chart to be documented in this file.
 * Removed `jfpipwww` as a router required service
 
 ## [101.19.0] - Nov 18, 2021
-* update system yaml with newer LTS build images 
+* update system yaml with newer LTS build images
 * **Breaking change**
 * Aligned probe structure (moved probes variables under config block)
 * Added support for new probes(set to false by default)

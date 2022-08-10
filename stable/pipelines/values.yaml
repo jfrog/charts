@@ -385,6 +385,7 @@ pipelines:
       #  - secretName: chart-example-tls
       #    hosts:
       #      - chart-example.local
+      #      - chart-example.local
 
     resources: {}
       # limits:
@@ -1082,7 +1083,9 @@ pipelines:
       installerAuthToken: "{{ .Values.pipelines.authToken }}"
       installerImage: "jfrog/pipelines-installer"
       registryUrl: "{{ .Values.imageRegistry }}"
+      {{- if .Values.k8sImagePullSecret }}
       imageRegistrySecret: "{{ .Values.k8sImagePullSecret }}"
+      {{- end }}
       os: "Ubuntu_16.04"
       osDistribution: "xenial"
       architecture: "x86_64"
@@ -1158,9 +1161,9 @@ pipelines:
           {{- else if .Values.pipelines.api.externalUrl }}
           externalUrl: {{ .Values.pipelines.api.externalUrl }}
           {{- else if .Values.pipelines.jfrogUrlUI }}
-          externalUrl: {{ .Values.pipelines.jfrogUrlUI }}
+          externalUrl: {{ .Values.pipelines.jfrogUrlUI }}/pipelines/api
           {{- else }}
-          externalUrl: {{ .Values.global.jfrogUrlUI }}
+          externalUrl: {{ .Values.global.jfrogUrlUI }}/pipelines/api
           {{- end }}
           newProbes: {{ .Values.pipelines.api.service.newProbes }}
           healthCheck:
