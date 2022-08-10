@@ -246,6 +246,10 @@ spec:
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
             - name: VAULT_TOKEN
               valueFrom:
                 secretKeyRef:
