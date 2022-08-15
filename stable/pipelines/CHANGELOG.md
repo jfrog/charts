@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.25.1] - August 15, 2022
+* Pipelines 1.25.1
+
 ## [101.25.0] - July 12, 2022
 * Additional fix for default path for api external url
 * Fixed custom CA init container behavior
