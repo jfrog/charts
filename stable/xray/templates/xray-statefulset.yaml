@@ -67,6 +67,9 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.xray.schedulerName }}
+      schedulerName: {{ .Values.xray.schedulerName | quote }}
+    {{- end }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "xray.imagePullSecrets" . | indent 6 }}
     {{- end }}
