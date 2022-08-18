@@ -1,7 +1,18 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.54.5] - July 14, 2022
+## [103.55.2] - Aug 2, 2022
+* Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-854`
+* Added `.Values.xray.openMetrics.enabled`  flag to enable metrics (defaults to `false`) [GH-1649](https://github.com/jfrog/charts/pull/1649)
+* Added flag `xray.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+* Updated Observability version to `1.9.3`
+
+## [103.55.0] - Aug 1, 2022
+* Updated initContainerImage to ubi8/ubi-minimal:8.6-854
+* Updated rabbitmq version to `3.9.21-debian-11-r0`
+* Updated router version to `7.45.0`
+
+## [103.54.0] - July 14, 2022
 * Added new flag "unifiedSecretInstallation" to enables single unified secret holding all the secrets
 * Added `executionserviceAWS` key (optional) in values.yaml like joinkey and masterkey [GH-1600](https://github.com/jfrog/charts/pull/1600)
 * Updated Observability version to `1.9.2`

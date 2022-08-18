@@ -45,7 +45,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-854
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -89,6 +89,9 @@ xray:
   # unifiedSecretInstallation flag enables single unified secret holding all xray secrets
   unifiedSecretInstallation: false
 
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  schedulerName:
+
   # Create a priority class for the Xray pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -104,7 +107,7 @@ xray:
     enabled: false
     # certificateSecretName:
 
-  ## Add custom annotations for pipelines pods
+  ## Add custom annotations for xray pods
   annotations: {}
 
   ## Xray requires a unique master key
@@ -142,12 +145,36 @@ xray:
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
 
+  # To enable set `.Values.xray.openMetrics.enabled` to `true`
+  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  openMetrics:
+    enabled: false
+    ## Settings for pushing metrics to Insight - enable filebeat to true
+    filebeat:
+      enabled: false
+      log:
+        enabled: false
+        ## Log level for filebeat. Possible values: debug, info, warning, or error.
+        level: "info"
+      ## Elasticsearch details for filebeat to connect
+      elasticsearch:
+        url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
+        username: ""
+        password: ""
+
   systemYaml: |
     configVersion: 1
     router:
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
+    {{- if .Values.xray.openMetrics.enabled }}
+      metrics:
+        enabled: true
+      {{- if .Values.xray.openMetrics.filebeat.enabled }}
+        filebeat: {{ toYaml .Values.xray.openMetrics.filebeat | nindent 6 }}
+      {{- end }}
+    {{- end }}
       logging:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
@@ -203,6 +230,7 @@ xray:
   # - xray-analysis-stack.log
   # - xray-indexer-stack.log
   # - xray-persist-stack.log
+  # - xray-persist-metrics.log
   # - xray-server-stack.log
   # - observability-metrics.log
   # - observability-request.log
@@ -292,8 +320,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: jfrog/ubi-minimal
-    tag: 8.5-204
+    repository: ubi8/ubi-minimal
+    tag: 8.6-854
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -382,7 +410,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.9.15-debian-10-r5
+    tag: 3.9.21-debian-11-r0
   auth:
     username: guest
     password: ""
@@ -844,7 +872,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.42.0
+    tag: 7.45.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -920,7 +948,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.9.2
+    tag: 1.9.3
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

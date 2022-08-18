@@ -1,9 +1,13 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.25.0] - July 12, 2022
+## [101.25.1] - Aug 2, 2022
+* Added flag `pipelines.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+
+## [101.25.0] - July 21, 2022
 * Additional fix for default path for api external url
 * Fixed custom CA init container behavior
+* Updated rabbitmq version to `3.9.21-debian-11-r0`
 
 ## [101.24.2] - June 22, 2022
 * Only set k8sImagePullSecret key if one is configured in values.yaml
