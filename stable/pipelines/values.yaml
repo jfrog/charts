@@ -221,6 +221,9 @@ pipelines:
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
 
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  schedulerName:
+
   # Create a priority class for the Pipelines pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -1517,7 +1520,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.9.15-debian-10-r5
+    tag: 3.9.21-debian-11-r0
   auth:
     username: admin
 

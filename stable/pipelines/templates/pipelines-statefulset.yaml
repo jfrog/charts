@@ -41,6 +41,9 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.pipelines.schedulerName }}
+      schedulerName: {{ .Values.pipelines.schedulerName | quote }}
+    {{- end }}
     {{- if .Values.pipelines.priorityClass.existingPriorityClass }}
       priorityClassName: {{ .Values.pipelines.priorityClass.existingPriorityClass }}
     {{- else -}}
