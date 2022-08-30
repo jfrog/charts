@@ -1,6 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.15.1] -
+* Added support for annotations on the distribution statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+
 ## [102.15.0] - Aug 25, 2022
 * Updated router version to `7.45.0`
 * Added flag `distribution.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
@@ -9,6 +12,8 @@ All changes to this project chart be documented in this file.
 * Updated logger Image to `ubi8/ubi-minimal:8.6-902`
 
 ## [102.14.0] - Aug 25, 2022
+
+## [102.14.3] - Jul 18, 2022
 * Updated Observability version to `1.9.2`
 * Use an alternate command for `find` to copy custom certificates
 * Updated router version to `7.42.0`
