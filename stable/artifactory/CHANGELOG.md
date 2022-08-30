@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.41.14] - 
+* Added support for annotations on the artifactory statefulset and nginx deployment [GH-1673](https://github.com/jfrog/charts/pull/1673)
+
 ## [107.41.13] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Use an alternate command for `find` to copy custom certificates

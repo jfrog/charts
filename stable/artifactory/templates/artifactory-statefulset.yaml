@@ -14,6 +14,10 @@ metadata:
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version (< 11.x.x) that has postgresql.image.tag of 9.x or 10.x or 12.x, make sure to pass the current postgresql.image.tag and set databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 12.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
 {{- end }}
+{{- with .Values.artifactory.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 {{- if and (eq (include "artifactory.isUsingDerby" .) "true") (gt (.Values.artifactory.replicaCount | int64) 1) }}
     {{- fail "Derby database is not supported in HA mode" }}
 {{- end }}

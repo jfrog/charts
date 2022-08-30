@@ -753,6 +753,9 @@ artifactory:
     ## If the type is NodePort you can set a fixed port
     # nodePort: 32082
 
+  statefulset:
+    annotations: {}
+
   ## The following setting are to configure a dedicated Ingress object for Replicator service
   replicator:
     name: replicator
@@ -1830,6 +1833,9 @@ nginx:
     #   targetPort: 8066
     #   protocol: TCP
     #   name: docker
+
+  deployment:
+    annotations: {}
 
   http:
     enabled: true
