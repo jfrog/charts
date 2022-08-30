@@ -1,6 +1,9 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.27.6] -
+* Added support for annotations on the pipelines statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+
 ## [101.27.5] - Sep 28, 2022
 * Added `observability` service in pipelines
 * Removed `newProbes.enabled`, default to new probes

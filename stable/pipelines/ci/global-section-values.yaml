@@ -210,6 +210,9 @@ pipelines:
        limits:
          memory: "128Mi"
          cpu: "100m"
+  statefulset:
+    annotations:
+      pipelines: test
 postgresql:
   postgresqlPassword: password
   persistence:
