@@ -37,7 +37,7 @@ endif
 .PHONY: check-kubeval
 check-kubeval:
 ifndef KUBEVAL_CMD
-	$(error "$n$nNo kubeval command found! $n$nPlease install: brew tap instrumenta/instrumenta && brew install kubeval $n$n")
+	$(error "$n$nNo kubeval command found! $n$nPlease install: brew install kubeval $n$n")
 endif
 
 .PHONY: check-gcloud
