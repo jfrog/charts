@@ -1,6 +1,9 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [101.12.1] -
+* Added support for annotations on the insight statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+
 ## [101.12.0] - Aug 25, 2022
 * Use an alternate command for `find` to copy custom certificates
 * Updated router version to `7.45.0`
