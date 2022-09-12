@@ -239,8 +239,8 @@ Custom certificate copy command
 {{- define "pdn-server.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted \;;
-find {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.pdnServer.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
 {{/*

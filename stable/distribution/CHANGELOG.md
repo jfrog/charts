@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.14.1] - Jul 18, 2022
+## [102.14.3] - Jul 18, 2022
 * Updated Observability version to `1.9.2`
 * Use an alternate command for `find` to copy custom certificates
 * Updated router version to `7.42.0`
