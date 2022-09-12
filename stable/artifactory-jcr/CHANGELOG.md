@@ -1,7 +1,7 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.41.7] - Jul 22, 2022
+## [107.41.12] - Jul 22, 2022
 * Bumping chart version to align with app version
 * Disabled jfconnect and event services when splitServicesToContainers=true
 

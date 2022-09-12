@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.41.7] - June 27, 2022
+## [107.41.12] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Fix nginx lifecycle values [GH-1646](https://github.com/jfrog/charts/pull/1646)
 * Use an alternate command for `find` to copy custom certificates
