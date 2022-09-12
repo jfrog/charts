@@ -272,6 +272,7 @@ pipelines:
 
     application:
       level: warn
+      loggerConfigResetTimeoutInSeconds: 1800
       rotation:
         maxSizeMb: 10
         maxFiles: 10
@@ -1056,6 +1057,7 @@ pipelines:
 
         application:
           level: {{ .Values.pipelines.logging.application.level }}
+          loggerConfigResetTimeoutInSeconds: {{ .Values.pipelines.logging.application.loggerConfigResetTimeoutInSeconds }}
           rotation:
             maxSizeMb: {{ .Values.pipelines.logging.application.rotation.maxSizeMb }}
             maxFiles: {{ .Values.pipelines.logging.application.rotation.maxFiles }}
