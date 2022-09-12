@@ -29,6 +29,9 @@ spec:
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
     spec:
+    {{- if .Values.pdnServer.schedulerName }}
+      schedulerName: {{ .Values.pdnServer.schedulerName | quote }}
+    {{- end }}
     {{- if .Values.pdnServer.priorityClass.existingPriorityClass }}
       priorityClassName: {{ .Values.pdnServer.priorityClass.existingPriorityClass }}
     {{- else -}}
