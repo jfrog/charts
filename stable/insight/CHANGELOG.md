@@ -1,11 +1,20 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.11.5] - May 30, 2022
+## [101.12.0] - Aug 25, 2022
+* Use an alternate command for `find` to copy custom certificates
+* Updated router version to `7.45.0`
+* Added `.Values.insightServer.openMetrics.enabled` flag to enable metrics (defaults to `false`)
+* Added flag `insightServer.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+* Added support for lifecycle hooks for all containers
+* Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-902`
+
+## [101.11.0] - Aug 25, 2022
 * Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the insight secrets
 * Updated router version to `7.38.0`
 * Fixed duplicate entry of `initialDelaySeconds` [GH-1622](https://github.com/jfrog/charts/issues/1622)
 * Update elasticsearch version to `7.17.1`
+* Added support to truncate (> 63 chars) for unifiedCustomSecretVolumeName
 
 ## [101.9.0] - Apr 14, 2022
 * Updated router version to `7.36.1`
