@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.41.12] - June 27, 2022
+## [107.41.13] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Use an alternate command for `find` to copy custom certificates
 * Added support for circle of trust using `circleOfTrustCertificatesSecret` secret name [GH-1623](https://github.com/jfrog/charts/pull/1623)
