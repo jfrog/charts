@@ -19,7 +19,7 @@ This chart will do the following:
 - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory Enterprise
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) installed and setup to use the cluster (helm init)
+- [Helm](https://helm.sh/) v3 installed
 
 ### Install Chart
 

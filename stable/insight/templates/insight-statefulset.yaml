@@ -47,6 +47,9 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.insightServer.schedulerName }}
+      schedulerName: {{ .Values.insightServer.schedulerName | quote }}
+    {{- end }}
     {{- if .Values.insightServer.priorityClass.existingPriorityClass }}
       priorityClassName: {{ .Values.insightServer.priorityClass.existingPriorityClass }}
     {{- else -}}
@@ -361,6 +364,10 @@ spec:
         - '-c'
         - >
           exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "insight.router.requiredServiceTypes" . }}
@@ -396,6 +403,10 @@ spec:
           capabilities:
             drop:
               - NET_RAW
+        {{- with .Values.insightServer.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         command:
         - '/bin/bash'
         - '-c'
@@ -518,6 +529,10 @@ spec:
           capabilities:
             drop:
               - NET_RAW
+        {{- with .Values.insightScheduler.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME

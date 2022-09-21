@@ -238,6 +238,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "xray.router.requiredServiceTypes" . }}
@@ -285,6 +289,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh;
+        {{- with .Values.observability.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.observability.persistence.mountPath }}"
@@ -321,6 +329,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.server.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -473,6 +485,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.analysis.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -629,6 +645,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.indexer.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -776,6 +796,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.persist.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME

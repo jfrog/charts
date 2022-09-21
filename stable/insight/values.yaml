@@ -43,7 +43,7 @@ global:
 ## Fully override insight.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -408,8 +408,8 @@ podRestartTime:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: jfrog/ubi-minimal
-    tag: 8.5-204
+    repository: ubi8/ubi-minimal
+    tag: 8.6-902
 
 insightServer:
   name: insight-server
@@ -421,6 +421,9 @@ insightServer:
 
   # unifiedSecretInstallation flag enables single unified secret holding all the insight-server secrets
   unifiedSecretInstallation: false
+
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  schedulerName:
 
   # Create a priority class for the Insight pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
@@ -443,6 +446,15 @@ insightServer:
         connectionWaitTimeoutSecs: 1800
   labels: {}
   annotations: {}
+
+  # Add lifecycle hooks for the insight pods
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   # env:
 
@@ -496,6 +508,23 @@ insightServer:
   osType: "NA"
   osDist: "NA"
 
+  # To enable set `.Values.insightServer.openMetrics.enabled` to `true`
+  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  openMetrics:
+    enabled: false
+    ## Settings for pushing metrics to Insight - enable filebeat to true
+    filebeat:
+      enabled: false
+      log:
+        enabled: false
+        ## Log level for filebeat. Possible values: debug, info, warning, or error.
+        level: "info"
+      ## Elasticsearch details for filebeat to connect
+      elasticsearch:
+        url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
+        username: ""
+        password: ""
+
   systemYaml: |
     router:
       serviceRegistry:
@@ -506,6 +535,13 @@ insightServer:
         version: {{ .Values.elasticsearch.image.tag }}
     {{- end}}
     shared:
+    {{- if .Values.insightServer.openMetrics.enabled }}
+      metrics:
+        enabled: true
+      {{- if .Values.insightServer.openMetrics.filebeat.enabled }}
+        filebeat: {{ toYaml .Values.insightServer.openMetrics.filebeat | nindent 6 }}
+      {{- end }}
+    {{- end }}
       logging:
         consoleLog:
           enabled: {{ .Values.insightServer.consoleLog }}
@@ -645,6 +681,15 @@ insightScheduler:
   #    memory: "1.5Gi"
   #    cpu: "1"
 
+  # Add lifecycle hooks for the insightScheduler pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
   # Persistence for the logs
   persistence:
     enabled: false
@@ -717,7 +762,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.38.0
+    tag: 7.45.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -732,6 +777,15 @@ router:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for the router pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   livenessProbe:
     enabled: true

@@ -1,7 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.55.2] - Aug 2, 2022
+## [103.57.6] - Aug 8, 2022
+* Added support for lifecycle hooks for all containers
+
+## [103.56.0] - Aug 2, 2022
 * Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-854`
 * Added `.Values.xray.openMetrics.enabled`  flag to enable metrics (defaults to `false`) [GH-1649](https://github.com/jfrog/charts/pull/1649)
 * Added flag `xray.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
