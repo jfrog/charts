@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.41.14] -
+* Added support for annotations for artifactory statefulsets and nginx deployment [GH-1665](https://github.com/jfrog/charts/pull/1665)
+
 ## [107.41.13] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Fix nginx lifecycle values [GH-1646](https://github.com/jfrog/charts/pull/1646)
