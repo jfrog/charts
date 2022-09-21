@@ -88,6 +88,15 @@ server:
     limits:
       memory: "4Gi"
       cpu: "3"
+  # Add lifecycle hooks for container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the server postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the server postStart handler >> /tmp/message"]
+
 
 analysis:
   resources:
@@ -97,6 +106,15 @@ analysis:
     limits:
       memory: "4Gi"
       cpu: "3"
+  # Add lifecycle hooks for container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the analysis postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the analysis postStart handler >> /tmp/message"]
+
 
 persist:
   resources:
@@ -106,6 +124,15 @@ persist:
     limits:
       memory: "4Gi"
       cpu: "3"
+  # Add lifecycle hooks for container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the persist postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the persist postStart handler >> /tmp/message"]
+
 
 indexer:
   resources:
@@ -115,3 +142,30 @@ indexer:
     limits:
       memory: "4Gi"
       cpu: "4"
+  # Add lifecycle hooks for container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the indexer postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the indexer postStart handler >> /tmp/message"]
+
+router:
+  # Add lifecycle hooks for container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+observability:
+  # Add lifecycle hooks for container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]

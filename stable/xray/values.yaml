@@ -644,6 +644,15 @@ analysis:
   externalPort: 7000
   annotations: {}
 
+  # Add lifecycle hooks for the analysis pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
@@ -698,6 +707,15 @@ indexer:
   internalPort: 7002
   externalPort: 7002
   annotations: {}
+
+  # Add lifecycle hooks for the indexer pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -754,6 +772,15 @@ persist:
   externalPort: 7003
   annotations: {}
 
+  # Add lifecycle hooks for the persist pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
@@ -808,6 +835,15 @@ server:
   internalPort: 8000
   externalPort: 80
   annotations: {}
+
+  # Add lifecycle hooks for the insight pods
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   # mailServer: ""
   # indexAllBuilds: false
@@ -888,6 +924,15 @@ router:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  # Add lifecycle hooks for the router pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
   annotations: {}
 
   ## Add custom volumesMounts
@@ -958,6 +1003,15 @@ observability:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for the observability pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   livenessProbe:
     enabled: true
