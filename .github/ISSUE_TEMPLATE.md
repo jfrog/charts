@@ -28,6 +28,9 @@ explain why.
 **Which chart**:
 
 
+**Which product license** (Enterpise/Pro/oss):
+
+
 **What happened**:
 
 
