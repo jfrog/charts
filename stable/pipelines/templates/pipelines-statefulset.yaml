@@ -455,6 +455,47 @@ spec:
           readinessProbe:
 {{ tpl .Values.pipelines.router.readinessProbe.config . | indent 12 }}
         {{- end }}
+        - name: observability
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "observability" ) }}
+          imagePullPolicy: {{ .Values.pipelines.observability.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.masterKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: master-key
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
+          resources:
+            {{ toYaml .Values.pipelines.observability.resources | indent 12 }}
+          {{- if .Values.pipelines.observability.startupProbe.enabled }}
+          volumeMounts:
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.observability.logPath }}
+          startupProbe:
+{{ tpl .Values.pipelines.observability.startupProbe.config . | indent 12 }}
+        {{- end }}
+        {{- if .Values.pipelines.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.pipelines.observability.livenessProbe.config . | indent 12 }}
+        {{- end }}
         - name: api
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
           imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}

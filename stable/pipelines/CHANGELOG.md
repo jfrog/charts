@@ -1,14 +1,22 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.26.0] - Aug 2, 2022
+## [101.27.5] - Sep 28, 2022
+* Added `observability` service in pipelines
+* Removed `newProbes.enabled`, default to new probes
+* Fixed bug for `unifiedSecretInstallation` support in observability
+* Fixed stringData secret keys value issue, moving data to stringData vault.sql and postgresql-connection keys
+
+## [101.26.0] - Aug 25, 2022
 * Added flag `pipelines.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
 * Added config to reset log level
+* Change default go runtime images to 1.19
 
-## [101.25.0] - July 21, 2022
+## [101.25.0] - Aug 25, 2022
 * Additional fix for default path for api external url
 * Fixed custom CA init container behavior
 * Updated rabbitmq version to `3.9.21-debian-11-r0`
+* Added support to truncate (> 63 chars) for unifiedCustomSecretVolumeName
 
 ## [101.24.2] - June 22, 2022
 * Only set k8sImagePullSecret key if one is configured in values.yaml
