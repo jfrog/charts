@@ -45,7 +45,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-854
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
 
 # Init containers
 initContainers:
@@ -120,7 +120,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi8/ubi-minimal
-    tag: 8.6-854
+    tag: 8.6-902
 
 pdnServer:
   name: pdn-server
@@ -197,6 +197,15 @@ pdnServer:
 
   ## Custom command to run before pdnserver startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
+
+  # Add lifecycle hooks for the pdnServer pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the pdnServer postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the pdnServer preStart handler > /usr/share/message"]
 
   ## Add custom annotations for pipelines pods
   annotations: {}
@@ -421,6 +430,15 @@ router:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  # Add lifecycle hooks for router container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
@@ -495,6 +513,15 @@ observability:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for the observability pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the observability preStart handler > /usr/share/message"]
 
   livenessProbe:
     enabled: true

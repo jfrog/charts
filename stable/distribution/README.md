@@ -3,7 +3,7 @@
 **IMPORTANT!** Our Helm Chart docs have moved to our main documentation site. Below you will find the basic instructions for installing Distribution. For all other information, refer to [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution).
 
 ## Prerequisites Details
-* Kubernetes 1.12+
+* Kubernetes 1.14+
 
 ## Chart Details
 This chart does the following:
@@ -17,7 +17,7 @@ This chart does the following:
 - Default StorageClass set to allow services using the default StorageClass for persistent storage
 - A running Artifactory Enterprise Plus
 - [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed and setup to use the cluster
-- [Helm](https://helm.sh/) v2 or v3 installed
+- [Helm](https://helm.sh/) v3 installed
 
 ## Installing the Chart
 

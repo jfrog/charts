@@ -295,7 +295,7 @@ nodeSelector:
 Resolve unifiedCustomSecretVolumeName value
 */}}
 {{- define "distribution.unifiedCustomSecretVolumeName" -}}
-{{- printf "%s-%s" (include "distribution.name" .) ("unified-secret-volume") -}}
+{{- printf "%s-%s" (include "distribution.name" .) ("unified-secret-volume") | trunc 63 -}}
 {{- end -}}
 
 {{/*

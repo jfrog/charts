@@ -6,6 +6,13 @@ pdnServer:
     limits:
       memory: "3Gi"
       cpu: "2"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the pdnServer postStart handler > /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the pdnServer preStart handler > /tmp/message"]
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
      image: "{{ .Values.initContainerImage }}"
@@ -118,6 +125,14 @@ router:
     limits:
       memory: "1Gi"
       cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler > /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router preStart handler > /tmp/message"]
+
 
 observability:
   resources:
@@ -127,3 +142,10 @@ observability:
     limits:
       memory: "1Gi"
       cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler > /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability preStart handler > /tmp/message"]

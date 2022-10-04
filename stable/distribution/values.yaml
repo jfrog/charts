@@ -45,7 +45,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
 
 # Init containers
 initContainers:
@@ -336,8 +336,8 @@ common:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: jfrog/ubi-minimal
-    tag: 8.5-204
+    repository: ubi8/ubi-minimal
+    tag: 8.6-902
 
 distribution:
   name: distribution
@@ -351,6 +351,9 @@ distribution:
   # unifiedSecretInstallation flag enables single unified secret holding all the distribution secrets
   unifiedSecretInstallation: false
 
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  schedulerName:
+
   # Create a priority class for the Distribution pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -362,6 +365,16 @@ distribution:
     # existingPriorityClass:
 
   labels: {}
+
+  # Add lifecycle hooks for the distribution pods
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
   internalPort: 8080
   externalPort: 80
   ## Distribution requires a unique master key
@@ -560,7 +573,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.42.0
+    tag: 7.45.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -575,6 +588,15 @@ router:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for the router pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the router postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the router preStart handler > /usr/share/message"]
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -637,7 +659,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.9.2
+    tag: 1.9.3
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -647,6 +669,15 @@ observability:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for the observability pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the observability preStart handler > /usr/share/message"]
 
   livenessProbe:
     enabled: true

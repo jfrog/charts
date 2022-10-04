@@ -1,7 +1,11 @@
 # JFrog PDN Server Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.1.3] - Aug 2, 2022
+## [101.2.0] - Aug 23, 2022
+* Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-902`
+* Added support for lifecycle hooks in all containers
+
+## [101.1.0] - Aug 2, 2022
 * Updated router version to 7.45.0
 * Use an alternate command for `find` to copy custom certificates
 * Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-854`
