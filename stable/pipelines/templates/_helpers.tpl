@@ -332,54 +332,10 @@ chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
 {{- end -}}
 
 {{/*
-pipelines liveness probe
-*/}}
-{{- define "pipelines.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-pipelines readiness probe
-*/}}
-{{- define "pipelines.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-router liveness probe
-*/}}
-{{- define "pipelines.router.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-router readiness probe
-*/}}
-{{- define "pipelines.router.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve pipelines requiredServiceTypes value
 */}}
 {{- define "pipelines.router.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfpip" -}}
+{{- $requiredTypes := "jfpip,jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}
 
@@ -399,7 +355,7 @@ nodeSelector:
 Resolve unifiedCustomSecretVolumeName value
 */}}
 {{- define "pipelines.unifiedCustomSecretVolumeName" -}}
-{{- printf "%s-%s" (include "pipelines.name" .) ("unified-secret-volume") -}}
+{{- printf "%s-%s" (include "pipelines.name" .) ("unified-secret-volume") | trunc 63 -}}
 {{- end -}}
 
 {{/*
