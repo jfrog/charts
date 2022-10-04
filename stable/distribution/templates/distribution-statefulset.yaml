@@ -46,6 +46,9 @@ spec:
         {{ $key }}: {{ $value | quote }}
       {{- end }}
     spec:
+    {{- if .Values.distribution.schedulerName }}
+      schedulerName: {{ .Values.distribution.schedulerName | quote }}
+    {{- end }}
     {{- if .Values.distribution.priorityClass.existingPriorityClass }}
       priorityClassName: {{ .Values.distribution.priorityClass.existingPriorityClass }}
     {{- else -}}
@@ -256,6 +259,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/distribution/app/bin/wrapper.sh;
+        {{- with .Values.distribution.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
@@ -362,6 +369,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "distribution.router.requiredServiceTypes" . }}
@@ -409,6 +420,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh;
+        {{- with .Values.observability.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: distribution-data
           mountPath: "{{ .Values.observability.persistence.mountPath }}"

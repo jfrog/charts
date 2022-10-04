@@ -41,6 +41,14 @@ distribution:
     limits:
       memory: "3Gi"
       cpu: "2"
+  # Add lifecycle hooks for distribution container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the distribution postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the distribution postStart handler >> /tmp/message"]
   javaOpts:
     xms: "1g"
     xmx: "3g"
@@ -111,6 +119,14 @@ router:
     limits:
       memory: "1Gi"
       cpu: "1"
+  # Add lifecycle hooks for router container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
 
 observability:
   resources:
@@ -120,3 +136,11 @@ observability:
     limits:
       memory: "1Gi"
       cpu: "1"
+  # Add lifecycle hooks for observability container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
