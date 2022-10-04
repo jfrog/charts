@@ -169,6 +169,11 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/pdnserver/app/pdnserver/bin/pdnserver.sh;
+            exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+        {{- with .Values.pdnServer.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -209,6 +214,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "pdn-server.router.requiredServiceTypes" . }}
@@ -249,6 +258,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh;
+        {{- with .Values.observability.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: pdnserver-data
           mountPath: "{{ .Values.observability.persistence.mountPath }}"
