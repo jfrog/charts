@@ -114,6 +114,9 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         volumeMounts:
+        {{- if .Values.nginx.customVolumeMounts }}
+{{ tpl (include "artifactory.nginx.customVolumeMounts" .)  . | indent 8 }}
+        {{- end }}
         - name: nginx-conf
           mountPath: /etc/nginx/nginx.conf
           subPath: nginx.conf

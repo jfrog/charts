@@ -461,6 +461,15 @@ Resolve customVolumes value
 {{- end -}}
 
 {{/*
+Resolve customVolumeMounts value
+*/}}
+{{- define "artifactory.nginx.customVolumeMounts" -}}
+{{- if .Values.nginx.customVolumeMounts -}}
+{{- .Values.nginx.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customSidecarContainers value
 */}}
 {{- define "artifactory.nginx.customSidecarContainers" -}}
