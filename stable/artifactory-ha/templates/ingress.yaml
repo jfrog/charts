@@ -87,7 +87,7 @@ spec:
   tls:
 {{ toYaml .Values.ingress.tls | indent 4 }}
   {{- end -}}
-{{- if .Values.artifactory.replicator.enabled }}
+{{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.ingress.enabled }}
 ---
 {{- $replicationIngressName := default ( include "artifactory-ha.replicator.fullname" . ) .Values.artifactory.replicator.ingress.name -}}
   {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}

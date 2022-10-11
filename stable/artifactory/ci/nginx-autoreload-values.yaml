@@ -1,0 +1,42 @@
+# Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
+databaseUpgradeReady: true
+
+# To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
+postgresql:
+  postgresqlPassword: password
+  persistence:
+    enabled: false
+artifactory:
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "6Gi"
+      cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
+
+nginx:
+  customVolumes: |
+    - name: scripts
+      configMap:
+        name: {{ template "artifactory.fullname" . }}-nginx-scripts
+        defaultMode: 0550
+  customVolumeMounts: |
+    - name: scripts
+      mountPath: /var/opt/jfrog/nginx/scripts/
+  customCommand:
+    - /bin/sh
+    - -c
+    - |
+      # watch for configmap changes
+      /sbin/inotifyd /var/opt/jfrog/nginx/scripts/configreloader.sh {{ .Values.nginx.persistence.mountPath -}}/conf.d:n &
+      {{ if .Values.nginx.https.enabled -}}
+      # watch for tls secret changes
+      /sbin/inotifyd /var/opt/jfrog/nginx/scripts/configreloader.sh {{ .Values.nginx.persistence.mountPath -}}/ssl:n &
+      {{ end -}}
+      nginx -g 'daemon off;'

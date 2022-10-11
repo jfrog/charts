@@ -81,9 +81,7 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         command:
-          - 'nginx'
-          - '-g'
-          - 'daemon off;'
+{{- tpl (include "nginx.command" .) . | indent 10 }}
         ports:
 {{ if .Values.nginx.customPorts }}
 {{ toYaml .Values.nginx.customPorts | indent 8 }}
@@ -127,6 +125,9 @@ spec:
         {{- if .Values.nginx.https.enabled }}  
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
+        {{- end }}
+        {{- if .Values.nginx.customVolumeMounts }}
+{{ tpl (include "artifactory.nginx.customVolumeMounts" .) . | indent 8 }}
         {{- end }}  
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
