@@ -96,10 +96,10 @@ tls.key: {{ $cert.Key | b64enc }}
 {{- end -}}
 
 {{/*
-Scheme (http/https) based on Access TLS enabled/disabled
+Scheme (http/https) based on Access or Router TLS enabled/disabled
 */}}
 {{- define "artifactory.scheme" -}}
-{{- if .Values.access.accessConfig.security.tls -}}
+{{- if or .Values.access.accessConfig.security.tls .Values.router.tlsEnabled -}}
 {{- printf "%s" "https" -}}
 {{- else -}}
 {{- printf "%s" "http" -}}
@@ -290,8 +290,8 @@ Custom certificate copy command
 {{- define "artifactory.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted \;;
-find {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
 {{/*
@@ -393,39 +393,6 @@ nginx port (80/443) based on http/https enabled
 {{- end -}}
 
 {{/*
-artifactory liveness probe
-*/}}
-{{- define "artifactory.livenessProbe" -}}
-{{- if or .Values.newProbes .Values.splitServicesToContainers -}}
-{{- printf "%s" "/artifactory/api/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-artifactory readiness probe
-*/}}
-{{- define "artifactory.readinessProbe" -}}
-{{- if or .Values.newProbes .Values.splitServicesToContainers -}}
-{{- printf "%s" "/artifactory/api/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-artifactory port
-*/}}
-{{- define "artifactory.port" -}}
-{{- if or .Values.newProbes .Values.splitServicesToContainers -}}
-{{- .Values.artifactory.tomcat.maintenanceConnector.port -}}
-{{- else -}}
-{{- .Values.router.internalPort -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve customInitContainers value
 */}}
 {{- define "artifactory.nginx.customInitContainers" -}}
@@ -443,6 +410,7 @@ Resolve customVolumes value
 {{- end -}}
 {{- end -}}
 
+
 {{/*
 Resolve customVolumeMounts nginx value
 */}}
@@ -451,6 +419,7 @@ Resolve customVolumeMounts nginx value
 {{- .Values.nginx.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
+
 
 {{/*
 Resolve customSidecarContainers value
@@ -489,7 +458,7 @@ nodeSelector:
 Resolve unifiedCustomSecretVolumeName value
 */}}
 {{- define "artifactory.unifiedCustomSecretVolumeName" -}}
-{{- printf "%s-%s" (include "artifactory.name" .) ("unified-secret-volume") -}}
+{{- printf "%s-%s" (include "artifactory.name" .) ("unified-secret-volume") | trunc 63 -}}
 {{- end -}}
 
 {{/*

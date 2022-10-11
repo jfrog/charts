@@ -81,7 +81,7 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         command:
-{{- tpl (include "nginx.command" .) . | indent 8 }}
+{{- tpl (include "nginx.command" .) . | indent 10 }}
         ports:
 {{ if .Values.nginx.customPorts }}
 {{ toYaml .Values.nginx.customPorts | indent 8 }}
@@ -122,13 +122,13 @@ spec:
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-        {{- if .Values.nginx.https.enabled }}
+        {{- if .Values.nginx.https.enabled }}  
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
         {{- end }}
         {{- if .Values.nginx.customVolumeMounts }}
 {{ tpl (include "artifactory.nginx.customVolumeMounts" .) . | indent 8 }}
-        {{- end }}
+        {{- end }}  
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.startupProbe.enabled }}
