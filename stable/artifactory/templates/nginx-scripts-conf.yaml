@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "artifactory.fullname" . }}-nginx-scripts
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  configreloader.sh: |
+    #!/bin/sh
+    ####
+    # A helper script to use inotifyd to reload nginx config
+    # upon configmap/ssl secrets changes.
+    #
+    # Synopsis: setup the nginx command via the values file
+    # as follows:
+    #
+    ####
+    # nginx:
+    #   customVolumes: |
+    #     - name: scripts
+    #       configMap:
+    #         name: {{ "{{" }} template "artifactory.fullname" . {{ "}}" }}-nginx-scripts
+    #         defaultMode: 0550
+    #   customVolumeMounts: |
+    #     - name: scripts
+    #       mountPath: /var/opt/jfrog/nginx/scripts/
+    #   customCommand:
+    #     - /bin/sh
+    #     - -c
+    #     - |
+    #       # watch for configmap changes
+    #       /sbin/inotifyd /var/opt/jfrog/nginx/scripts/configreloader.sh {{ "{{" }} .Values.nginx.persistence.mountPath {{ "-}}" }}/conf.d:n &
+    #       {{ "{{" }} if .Values.nginx.https.enabled {{ "-}}" }}
+    #       # watch for tls secret changes
+    #       /sbin/inotifyd /var/opt/jfrog/nginx/scripts/configreloader.sh {{ "{{" }} .Values.nginx.persistence.mountPath {{ "-}}" }}/ssl:n &
+    #       {{ "{{" }} end {{ "-}}" }}
+    #       nginx -g 'daemon off;'
+    if [[ "$3" =~ data_tmp ]] && [ "$1" = "n" ]
+    then
+      # a symlink has changed in one of the watched folders
+      # lets verify the config
+      nginx -t -q
+      if [ $? -eq 0 ]
+      then
+        # config is valid, lets reload nginx config
+        nginx -q -s reload
+      fi
+    fi
+

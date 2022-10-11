@@ -2086,6 +2086,12 @@ nginx:
 
   customVolumes: |
 
+  customVolumeMounts: |
+
+  customCommand:
+  ##  allows overwriting the command for the nginx container.
+  ##  defaults to [ 'nginx', '-g', 'daemon off;' ]
+
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer

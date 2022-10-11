@@ -1,5 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
+## [107.41.14] - Jun 01, 2022
+* Added nginx.customCommand to nginx container
+* Added an example nginx.customCommand using inotifyd to reload nginx's config upon ssl secret or configmap changes.
 
 ## [107.41.13] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)

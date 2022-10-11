@@ -369,6 +369,19 @@ nginx scheme (http/https)
 {{- end -}}
 
 {{/*
+nginx command
+*/}}
+{{- define "nginx.command" -}}
+{{- if .Values.nginx.customCommand }}
+{{  toYaml .Values.nginx.customCommand }}
+{{ else }}
+- nginx
+- -g
+- 'daemon off;'
+{{- end }}
+{{- end -}}
+
+{{/*
 nginx port (80/443) based on http/https enabled
 */}}
 {{- define "nginx.port" -}}
@@ -427,6 +440,15 @@ Resolve customVolumes value
 {{- define "artifactory.nginx.customVolumes" -}}
 {{- if .Values.nginx.customVolumes -}}
 {{- .Values.nginx.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts nginx value
+*/}}
+{{- define "artifactory.nginx.customVolumeMounts" -}}
+{{- if .Values.nginx.customVolumeMounts -}}
+{{- .Values.nginx.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
 
