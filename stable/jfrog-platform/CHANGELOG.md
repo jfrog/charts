@@ -1,6 +1,14 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.9.0] - Oct 11, 2022
+* Remove filler Pipelines urls in values.yaml as they block default Pipeline's externalApi url from being used
+* Updated rabbitmq version to `3.9.21-debian-11-r0`
+* Removed the no longer used pipelines enablement configuration in artifactory subchart
+* Update dependency artifactory chart version to 107.46.3
+* Update dependency insight chart version to 101.12.1
+* Update dependency pipelines chart version to 101.27.5
+
 ## [10.8.6] - Oct 4, 2022
 * Update dependency distribution chart version to 102.15.0
 * Update dependency pdn-server chart version to 101.2.0
