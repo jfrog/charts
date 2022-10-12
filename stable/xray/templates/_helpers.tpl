@@ -429,7 +429,7 @@ nodeSelector:
 Resolve unifiedCustomSecretVolumeName value
 */}}
 {{- define "xray.unifiedCustomSecretVolumeName" -}}
-{{- printf "%s-%s" (include "xray.name" .) ("unified-secret-volume") -}}
+{{- printf "%s-%s" (include "xray.name" .) ("unified-secret-volume") | trunc 63 -}}
 {{- end -}}
 
 {{/*
