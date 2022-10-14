@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.46.3] - Sep 14, 2022
+## [107.46.6] - Sep 14, 2022
 * **IMPORTANT**
 * Added support for lifecycle hooks for all containers, changed `artifactory.postStartCommand` to `.Values.artifactory.lifecycle.postStart.exec.command`
 * Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.6-902`
