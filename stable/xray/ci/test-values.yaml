@@ -96,7 +96,9 @@ server:
     preStop:
       exec:
         command: ["/bin/sh", "-c", "echo Hello from the server postStart handler >> /tmp/message"]
-
+  statefulset:
+    annotations:
+      xray: test
 
 analysis:
   resources:

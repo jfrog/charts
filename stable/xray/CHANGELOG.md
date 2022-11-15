@@ -1,7 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.59.4] - Aug 25, 2022
+## [103.57.7] - Aug 8, 2022
+* Added support for annotations on the xray statefulset [GH-1677](https://github.com/jfrog/charts/pull/1677)
+
+## [103.57.6] - Aug 8, 2022
 * Added support for lifecycle hooks for all containers
 
 ## [103.56.0] - Aug 25, 2022
