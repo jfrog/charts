@@ -2,7 +2,6 @@
 # This is a YAML-formatted file.
 # Beware when changing values here. You should know what you are doing!
 # Access the values with {{ .Values.key.subkey }}
-
 global:
   # imageRegistry: releases-docker.jfrog.io
   # imagePullSecrets:
@@ -45,7 +44,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-854
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-941
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -321,7 +320,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi8/ubi-minimal
-    tag: 8.6-854
+    tag: 8.6-941
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -666,7 +665,7 @@ analysis:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -680,7 +679,7 @@ analysis:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -730,7 +729,7 @@ indexer:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -744,7 +743,7 @@ indexer:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
@@ -794,7 +793,7 @@ persist:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -808,7 +807,7 @@ persist:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
@@ -875,7 +874,7 @@ server:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}{{ include "xray.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -889,7 +888,7 @@ server:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}{{ include "xray.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
@@ -911,7 +910,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.45.0
+    tag: 7.51.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -951,7 +950,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -965,7 +964,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -979,7 +978,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "xray.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
@@ -996,7 +995,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.9.3
+    tag: 1.11.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1130,9 +1129,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
-
-## To enable new probes
-newProbes: true
 
 ## Specify common probes parameters
 probes:
