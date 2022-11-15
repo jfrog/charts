@@ -7,6 +7,10 @@ metadata:
     {{- with .Values.pipelines.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
+{{- with .Values.pipelines.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   serviceName: {{ include "pipelines.services.name" . }}-headless
 {{- if not .Values.pipelines.autoscaling.enabled }}
