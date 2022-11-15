@@ -13,8 +13,10 @@ global:
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
   ## Artifactory UI URL - Mandatory
   ## Update jfrogUrlUI before running builds on Pipelines
-  ## This must be the external URL of Artifactory, for example: https://artifactory.example.com
-  jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  ## This must be the external URL of Artifactory that any service (such as scm provider) and buildnodes
+  ## that you're using can access, for example: https://artifactory.example.com
+  ## This is a test url and must be changed before running any builds
+  jfrogUrlUI: http://my.artifactory.instance.com
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   ## Chart.AppVersion for each product can be overidden using global.versions.<product>
@@ -76,7 +78,7 @@ rabbitmq:
   enabled: true
   image:
     repository: bitnami/rabbitmq
-    tag: 3.9.15-debian-10-r5
+    tag: 3.9.21-debian-11-r0
   auth:
     username: admin
     password: password
@@ -135,7 +137,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.8.6-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.9.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
@@ -149,9 +151,6 @@ artifactory:
   # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
   mc:
     enabled: true
-  ## Note: This needs to be set to true when artifactory is connected with pipelines and Nginx instances in front of artifactory need to allow websocket traffic. Only applicable on E+ license.
-  pipelines:
-    enabled: false
   artifactory:
     # Note: For HA deployments, set replicaCount >1 (recommended 3)
     replicaCount: 1
@@ -223,10 +222,6 @@ pipelines:
       user: "apiuser"
       password: "pipeline"
   pipelines:
-    api:
-      externalUrl: http://pipelines.test.com
-    www:
-      externalUrl: http://pipelines.test.com
     msg:
       uiUserPassword: password
   redis:

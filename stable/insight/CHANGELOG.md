@@ -1,7 +1,7 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.12.0] - Aug 25, 2022
+## [101.12.1] - Aug 25, 2022
 * Use an alternate command for `find` to copy custom certificates
 * Updated router version to `7.45.0`
 * Added `.Values.insightServer.openMetrics.enabled` flag to enable metrics (defaults to `false`)

@@ -46,7 +46,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
 
 # Init containers
 initContainers:
@@ -64,9 +64,6 @@ installer:
 
 installerInfo: '{"productId": "Helm_artifactory/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
 
-# This needs to be set to true when artifactory is connected with pipelines application and Nginx instances in front of artifactory need to allow websocket traffic
-pipelines:
-  enabled: false
 # For supporting pulling from private registries
 # imagePullSecrets:
 #   - myRegistryKeySecretName
@@ -177,8 +174,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: jfrog/ubi-minimal
-    tag: 8.5-204
+    repository: ubi8/ubi-minimal
+    tag: 8.6-902
 
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
@@ -195,7 +192,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.38.0
+    tag: 7.45.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -215,6 +212,15 @@ router:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for router container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -291,6 +297,9 @@ artifactory:
   updateStrategy:
     type: RollingUpdate
 
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  schedulerName:
+
   # Create a priority class for the Artifactory pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -344,7 +353,7 @@ artifactory:
         level: "info"
       ## Elasticsearch details for filebeat to connect
       elasticsearch:
-        url: "Elasticsearch url where JFrog Mission Control is installed For example, http://<ip_address>:8082"
+        url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
         username: ""
         password: ""
 
@@ -577,9 +586,6 @@ artifactory:
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
 
-  binarystore:
-    enabled: true
-
   ## admin allows to set the password for the default admin user.
   ## See: https://www.jfrog.com/confluence/display/JFROG/Users+and+Groups#UsersandGroups-RecreatingtheDefaultAdminUserrecreate
   admin:
@@ -591,8 +597,15 @@ artifactory:
 
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
   # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
-  ## Extra post-start command to run extra commands after container starts
-  # postStartCommand:
+
+  # Add lifecycle hooks for artifactory container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
 
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
@@ -769,7 +782,18 @@ artifactory:
     #  limits:
     #    memory: "1Gi"
     #    cpu: "1"
+
+    # Add lifecycle hooks for replicator container
+    lifecycle: {}
+      # postStart:
+      #   exec:
+      #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+      # preStop:
+      #   exec:
+      #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
     ingress:
+      enabled: true
       name:
       hosts: []
       className: ""
@@ -816,7 +840,6 @@ artifactory:
   ## If you want to disable the securityContext for the Artifactory StatefulSet, set this tag to false
   setSecurityContext: true
 
-  ## To use newProbes set .Values.newProbes to true
   livenessProbe:
     enabled: true
     config: |
@@ -873,6 +896,9 @@ artifactory:
     ## Use a custom Secret to be mounted as your binarystore.xml
     ## NOTE: This will ignore all settings below that make up binarystore.xml
     customBinarystoreXmlSecret:
+    ## Redundancy required For HA deployments, with "cluster" persistence storage type
+    redundancy: 3
+    lenientLimit: 1
     ## Cache default size. Should be increased for production deployments.
     maxCacheSize: 5000000000
     cacheProviderDir: cache
@@ -880,234 +906,22 @@ artifactory:
     ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
     ## Supported types are:
     ## file-system (default)
+    ## cluster-file-system
     ## nfs
     ## google-storage
-    ## aws-s3
+    ## google-storage-v2
+    ## cluster-google-storage-v2
     ## aws-s3-v3
+    ## s3-storage-v3-direct
+    ## cluster-s3-storage-v3
     ## azure-blob
+    ## azure-blob-storage-direct
+    ## cluster-azure-blob-storage
     type: file-system
 
     ## Use binarystoreXml to provide a custom binarystore.xml
-    ## This can be a template or hardcoded.
-    binarystoreXml: |
-      {{- if eq .Values.artifactory.persistence.type "file-system" -}}
-      <!-- File system filestore -->
-      <config version="v1">
-          <chain>
-            {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
-              <provider id="cache-fs" type="cache-fs">
-            {{- end }}
-                  <provider id="file-system" type="file-system"/>
-            {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
-              </provider>
-            {{- end }}
-          </chain>
-
-        {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
-          <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
-              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
-          </provider>
-        {{- end }}
-      </config>
-      {{- end }}
-      {{- if eq .Values.artifactory.persistence.type "google-storage" }}
-      <!-- Google storage -->
-      <config version="2">
-          <chain>
-              <provider id="cache-fs" type="cache-fs">
-                  <provider id="eventual" type="eventual">
-                      <provider id="retry" type="retry">
-                          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
-                          <provider id="google-storage-v2" type="google-storage-v2"/>
-                          {{- else }}
-                          <provider id="google-storage" type="google-storage"/>
-                          {{- end }}
-                      </provider>
-                  </provider>
-              </provider>
-          </chain>
-
-          <!-- Set max cache-fs size -->
-          <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
-              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
-          </provider>
-
-          <provider id="file-system" type="file-system">
-              <fileStoreDir>{{ .Values.artifactory.persistence.mountPath }}/data/filestore</fileStoreDir>
-              <tempDir>/tmp</tempDir>
-          </provider>
-
-          {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
-          <provider id="google-storage-v2" type="google-storage-v2">
-            {{- if .Values.artifactory.persistence.googleStorage.useInstanceCredentials }}
-              <useInstanceCredentials>true</useInstanceCredentials>
-            {{- else }}
-              <useInstanceCredentials>false</useInstanceCredentials>
-            {{- end }}
-              <enableSignedUrlRedirect>{{ .Values.artifactory.persistence.googleStorage.enableSignedUrlRedirect }}</enableSignedUrlRedirect>
-          {{- else }}
-          <provider id="google-storage" type="google-storage">
-              <identity>{{ .Values.artifactory.persistence.googleStorage.identity }}</identity>
-              <credential>{{ .Values.artifactory.persistence.googleStorage.credential }}</credential>
-          {{- end }}
-              <providerId>google-cloud-storage</providerId>
-              <endpoint>{{ .Values.artifactory.persistence.googleStorage.endpoint }}</endpoint>
-              <httpsOnly>{{ .Values.artifactory.persistence.googleStorage.httpsOnly }}</httpsOnly>
-              <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
-              <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
-              <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
-          </provider>
-      </config>
-      {{- end }}
-      {{- if eq .Values.artifactory.persistence.type "aws-s3-v3" }}
-      <!-- AWS S3 V3 -->
-      <config version="2">
-          <chain>
-              <provider id="cache-fs" type="cache-fs">
-                  <provider id="eventual" type="eventual">
-                      <provider id="retry" type="retry">
-                          <provider id="s3-storage-v3" type="s3-storage-v3"/>
-                      </provider>
-                  </provider>
-              </provider>
-          </chain>
-
-          <!-- Set max cache-fs size -->
-          <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64}}</maxCacheSize>
-              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
-          </provider>
-
-        {{- with .Values.artifactory.persistence.awsS3V3 }}
-          <provider id="s3-storage-v3" type="s3-storage-v3">
-              <testConnection>{{ .testConnection }}</testConnection>
-            {{- if .identity }}
-              <identity>{{ .identity }}</identity>
-            {{- end }}
-            {{- if .credential }}
-              <credential>{{ .credential }}</credential>
-            {{- end }}
-              <region>{{ .region }}</region>
-              <bucketName>{{ .bucketName }}</bucketName>
-              <path>{{ .path }}</path>
-              <endpoint>{{ .endpoint }}</endpoint>
-            {{- with .maxConnections }}
-              <maxConnections>{{ . }}</maxConnections>
-            {{- end }}
-            {{- with .kmsServerSideEncryptionKeyId }}
-              <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
-            {{- end }}
-            {{- with .kmsKeyRegion }}
-              <kmsKeyRegion>{{ . }}</kmsKeyRegion>
-            {{- end }}
-            {{- with .kmsCryptoMode }}
-              <kmsCryptoMode>{{ . }}</kmsCryptoMode>
-            {{- end }}
-            {{- if .useInstanceCredentials }}
-              <useInstanceCredentials>true</useInstanceCredentials>
-            {{- else }}
-              <useInstanceCredentials>false</useInstanceCredentials>
-            {{- end }}
-              <usePresigning>{{ .usePresigning }}</usePresigning>
-              <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
-              <signedUrlExpirySeconds>{{ .signedUrlExpirySeconds }}</signedUrlExpirySeconds>
-            {{- with .cloudFrontDomainName }}
-              <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
-            {{- end }}
-            {{- with .cloudFrontKeyPairId }}
-              <cloudFrontKeyPairId>{{ .cloudFrontKeyPairId }}</cloudFrontKeyPairId>
-            {{- end }}
-            {{- with .cloudFrontPrivateKey }}
-              <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
-            {{- end }}
-            {{- with .enableSignedUrlRedirect }}
-              <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
-            {{- end }}
-            {{- with .enablePathStyleAccess }}
-              <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
-            {{- end }}
-          </provider>
-        {{- end }}
-      </config>
-      {{- end }}
-
-      {{- if eq .Values.artifactory.persistence.type "aws-s3" }}
-      <!-- AWS S3 -->
-      <config version="2">
-          <chain> <!--template="s3"-->
-              <provider id="cache-fs" type="cache-fs">
-                  <provider id="eventual" type="eventual">
-                      <provider id="retry-s3" type="retry">
-                          <provider id="s3" type="s3"/>
-                      </provider>
-                  </provider>
-              </provider>
-          </chain>
-
-          <!-- Set max cache-fs size -->
-          <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
-              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
-          </provider>
-
-          <provider id="s3" type="s3">
-              <endpoint>{{ .Values.artifactory.persistence.awsS3.endpoint }}</endpoint>
-          {{- if .Values.artifactory.persistence.awsS3.roleName }}
-              <roleName>{{ .Values.artifactory.persistence.awsS3.roleName }}</roleName>
-              <refreshCredentials>true</refreshCredentials>
-          {{- else }}
-              <refreshCredentials>{{ .Values.artifactory.persistence.awsS3.refreshCredentials }}</refreshCredentials>
-          {{- end }}
-              <s3AwsVersion>{{ .Values.artifactory.persistence.awsS3.s3AwsVersion }}</s3AwsVersion>
-              <testConnection>{{ .Values.artifactory.persistence.awsS3.testConnection }}</testConnection>
-              <httpsOnly>{{ .Values.artifactory.persistence.awsS3.httpsOnly }}</httpsOnly>
-              <region>{{ .Values.artifactory.persistence.awsS3.region }}</region>
-              <bucketName>{{ .Values.artifactory.persistence.awsS3.bucketName }}</bucketName>
-          {{- if .Values.artifactory.persistence.awsS3.identity }}
-              <identity>{{ .Values.artifactory.persistence.awsS3.identity }}</identity>
-          {{- end }}
-          {{- if .Values.artifactory.persistence.awsS3.credential }}
-              <credential>{{ .Values.artifactory.persistence.awsS3.credential }}</credential>
-          {{- end }}
-              <path>{{ .Values.artifactory.persistence.awsS3.path }}</path>
-          {{- range $key, $value := .Values.artifactory.persistence.awsS3.properties }}
-              <property name="{{ $key }}" value="{{ $value }}"/>
-          {{- end }}
-          </provider>
-      </config>
-      {{- end }}
-      {{- if eq .Values.artifactory.persistence.type "azure-blob" }}
-      <!-- Azure Blob Storage -->
-      <config version="2">
-          <chain> <!--template="azure-blob-storage"-->
-              <provider id="cache-fs" type="cache-fs">
-                  <provider id="eventual" type="eventual">
-                      <provider id="retry-azure-blob-storage" type="retry">
-                          <provider id="azure-blob-storage" type="azure-blob-storage"/>
-                      </provider>
-                  </provider>
-              </provider>
-          </chain>
-
-          <!-- Set max cache-fs size -->
-          <provider id="cache-fs" type="cache-fs">
-              <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
-              <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
-          </provider>
-
-          <provider id="azure-blob-storage" type="azure-blob-storage">
-              <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
-              <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
-              <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
-              <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
-              <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>
-              <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize | int64 }}</multipartElementSize>
-              <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
-          </provider>
-      </config>
-      {{- end }}
+    ## This is intentionally commented and below previous content of binarystoreXml is moved under files/binarystore.xml
+    ## binarystoreXml:
 
     ## For artifactory.persistence.type nfs
     ## If using NFS as the shared storage, you must have a running NFS server that is accessible by your Kubernetes
@@ -1129,7 +943,7 @@ artifactory:
 
     ## For artifactory.persistence.type google-storage
     googleStorage:
-      ## When using GCP buckets as your binary store (Available with enterprise license only)
+      ## When using GCP buckets as your binary store
       gcpServiceAccount:
         enabled: false
         ## Use either an existing secret prepared in advance or put the config (replace the content) in the values
@@ -1152,8 +966,9 @@ artifactory:
       httpsOnly: false
       # Set a unique bucket name
       bucketName: "artifactory-gcp"
-      identity:
-      credential:
+      ## GCP Bucket Authentication with Identity and Credential is deprecated.
+      ## identity:
+      ## credential:
       path: "artifactory/filestore"
       bucketExists: false
       useInstanceCredentials: false
@@ -1181,24 +996,6 @@ artifactory:
       enableSignedUrlRedirect: false
       enablePathStyleAccess: false
 
-    ## For artifactory.persistence.type aws-s3
-    ## IMPORTANT: Make sure S3 `endpoint` and `region` match! See https://docs.aws.amazon.com/general/latest/gr/rande.html
-    awsS3:
-      # Set a unique bucket name
-      bucketName: "artifactory-aws"
-      endpoint:
-      region:
-      roleName:
-      identity:
-      credential:
-      path: "artifactory/filestore"
-      refreshCredentials: true
-      httpsOnly: true
-      testConnection: false
-      s3AwsVersion: AWS4-HMAC-SHA256
-      ## Additional properties to set on the s3 provider
-      properties: {}
-      #  httpclient.max-connections: 100
     ## For artifactory.persistence.type azure-blob
     azureBlob:
       accountName:
@@ -1276,6 +1073,16 @@ frontend:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for frontend container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## Session settings
   session:
     ## Time in minutes after which the frontend token will need to be refreshed
@@ -1350,6 +1157,15 @@ metadata:
   #    memory: "1Gi"
   #    cpu: "1"
 
+  # Add lifecycle hooks for metadata container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1394,6 +1210,16 @@ event:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for event container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1424,7 +1250,6 @@ event:
 
 jfconnect:
   name: jfconnect
-  ## Set to true if using an Enterprise Plus license
   enabled: true
   internalPort: 8030
   ## Extra environment variables that can be used to tune jfconnect to your needs.
@@ -1439,6 +1264,16 @@ jfconnect:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for jfconnect container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1483,6 +1318,16 @@ integration:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for integration container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1527,6 +1372,16 @@ observability:
   #  limits:
   #    memory: "1Gi"
   #    cpu: "1"
+
+  # Add lifecycle hooks for observability container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1728,13 +1583,6 @@ nginx:
     ssl_session_cache shared:SSL:1m;
     ssl_prefer_server_ciphers   on;
     {{- end }}
-    {{- if .Values.pipelines.enabled }}
-    http {
-      map $http_upgrade $connection_upgrade {
-        default upgrade;
-        ''  close;
-    }
-    {{- end }}
     ## server configuration
     server {
     {{- if .Values.nginx.internalPortHttps }}
@@ -1786,17 +1634,23 @@ nginx:
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
         add_header Strict-Transport-Security always;
-        {{- if .Values.pipelines.enabled }}
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        {{- end }}
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
             proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
           }
           proxy_pass         http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+        }
+        location /pipelines/ {
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $http_host;
+          {{- if .Values.router.tlsEnabled }}
+          proxy_pass  https://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+          {{- else }}
+          proxy_pass  http://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+          {{- end }}
         }
       }
     }
@@ -1806,6 +1660,12 @@ nginx:
   customSidecarContainers: |
 
   customVolumes: |
+
+  customVolumeMounts: |
+
+  customCommand:
+  ##  allows overwriting the command for the nginx container.
+  ##  defaults to [ 'nginx', '-g', 'daemon off;' ]
 
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
@@ -1851,7 +1711,6 @@ nginx:
   # internalPortHttps: 443
 
   ## The following settings are to configure the frequency of the liveness and readiness probes.
-  ## To use newProbes please set .Values.newProbes to true
   livenessProbe:
     enabled: true
     config: |
@@ -2078,9 +1937,6 @@ hostAliases: []
 ## This is an experimental feature (not ready for production yet )  that will become default in one of the future releases
 ## Toggling this feature will enable all microservices to run in different containers in a single pod (by default it is false)
 splitServicesToContainers: false
-
-## To enable new probes
-newProbes: true
 
 ## Specify common probes parameters
 probes:

@@ -17,6 +17,15 @@ metadata:
 {{- if and (eq (include "artifactory.isUsingDerby" .) "true") (gt (.Values.artifactory.replicaCount | int64) 1) }}
     {{- fail "Derby database is not supported in HA mode" }}
 {{- end }}
+{{- if .Values.artifactory.postStartCommand }}
+    {{- fail ".Values.artifactory.postStartCommand is not supported and should be replaced with .Values.artifactory.lifecycle.postStart.exec.command" }}
+{{- end }}
+{{- if eq .Values.artifactory.persistence.type "aws-s3" }}
+    {{- fail "\nPersistence storage type 'aws-s3' is deprecated and is not supported and should be replaced with 'aws-s3-v3'" }}
+{{- end }}
+{{- if or .Values.artifactory.persistence.googleStorage.identity .Values.artifactory.persistence.googleStorage.credential }}
+    {{- fail "\nGCP Bucket Authentication with Identity and Credential is deprecated" }}
+{{- end }}
 spec:
   serviceName: {{ template "artifactory.name" . }}
   replicas: {{ .Values.artifactory.replicaCount }}
@@ -59,6 +68,9 @@ spec:
         {{ $key }}: {{ tpl $value $ | quote }}
       {{- end }}
     spec:
+    {{- if .Values.artifactory.schedulerName }}
+      schedulerName: {{ .Values.artifactory.schedulerName | quote }}
+    {{- end }}
     {{- if .Values.artifactory.priorityClass.existingPriorityClass }}
       priorityClassName: {{ .Values.artifactory.priorityClass.existingPriorityClass }}
     {{- else -}}
@@ -162,7 +174,7 @@ spec:
             subPath: "bootstrap.creds"
             {{- end }}
     {{- end }}
-      - name: 'copy-system-yaml'
+      - name: 'copy-system-configurations'
         image: '{{ .Values.initContainerImage }}'
         securityContext:
           runAsNonRoot: true
@@ -187,6 +199,9 @@ spec:
           {{- end }}
           echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
           rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
+          echo "Copy binarystore.xml file";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory;
+          cp -fv /tmp/etc/artifactory/binarystore.xml {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml;
         {{- if .Values.access.accessConfig }}
           echo "Copy access.config.patch.yml to {{ .Values.artifactory.persistence.mountPath }}/etc/access";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
@@ -269,6 +284,13 @@ spec:
           subPath: "system.yaml"
           {{- end }}
       {{- end }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.customBinarystoreXmlSecret }}
+        - name: binarystore-xml
+        {{- else }}
+        - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/tmp/etc/artifactory/binarystore.xml"
+          subPath: binarystore.xml
         {{- if .Values.access.accessConfig }}
         {{- if not .Values.artifactory.unifiedSecretInstallation }}
         - name: access-config
@@ -402,7 +424,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -414,7 +440,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -429,7 +459,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -459,7 +493,7 @@ spec:
         {{- else }}
         - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
         {{- end }}
-          mountPath: "/artifactory_bootstrap/binarystore.xml"
+          mountPath: "/tmp/etc/artifactory/binarystore.xml"
           subPath: "binarystore.xml"
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
         {{- if (not .Values.artifactory.unifiedSecretInstallation) }}
@@ -495,6 +529,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "artifactory.router.requiredServiceTypes" . }}
@@ -539,6 +577,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/bundle.js /opt/jfrog/artifactory/app/frontend
+        {{- with .Values.frontend.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -576,6 +618,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
+        {{- with .Values.metadata.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -589,7 +635,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -601,7 +651,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -616,7 +670,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -652,6 +710,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/event/bin/jf-event start
+        {{- with .Values.event.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -689,6 +751,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/replicator/bin/jf-replicator start
+        {{- with .Values.artifactory.replicator.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -718,6 +784,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/jfconnect/bin/jf-connect start
+        {{- with .Values.jfconnect.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -755,6 +825,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/integration/bin/jf-integration start
+        {{- with .Values.integration.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -792,6 +866,10 @@ spec:
           - '-c'
           - >
             exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+        {{- with .Values.observability.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
         - name: JF_SHARED_NODE_ID
           valueFrom:
@@ -856,16 +934,9 @@ spec:
           {{ tpl .Values.artifactory.preStartCommand . }};
           {{- end }}
           exec /entrypoint-artifactory.sh
-        {{- with .Values.artifactory.postStartCommand }}
+        {{- with .Values.artifactory.lifecycle }}
         lifecycle:
-          postStart:
-            exec:
-              command:
-              - '/bin/bash'
-              - '-c'
-              - >
-                echo "Running custom postStartCommand command";
-                {{ tpl . $ }}
+{{ toYaml . | indent 10 }}
         {{- end }}
         env:
       {{- if and (gt (.Values.artifactory.replicaCount | int64) 1) (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false") }}
@@ -905,6 +976,8 @@ spec:
         - name : JF_OBSERVABILITY_ENABLED
           value: "false"
         - name : JF_JFCONNECT_ENABLED
+          value: "true"
+        - name : JF_JFCONNECT_SERVICE_ENABLED
           value: "false"
         - name : JF_INTEGRATION_ENABLED
           value: "false"
@@ -921,7 +994,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -933,7 +1010,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -948,7 +1029,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -1002,7 +1087,7 @@ spec:
         {{- else }}
         - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
         {{- end }}
-          mountPath: "/artifactory_bootstrap/binarystore.xml"
+          mountPath: "/tmp/etc/artifactory/binarystore.xml"
           subPath: binarystore.xml
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
         {{- if not .Values.artifactory.unifiedSecretInstallation }}
@@ -1207,7 +1292,7 @@ spec:
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
-
+      
       # user Plugin Secrets
       {{- if .Values.artifactory.userPluginSecrets }}
       - name: bootstrap-plugins
@@ -1245,15 +1330,6 @@ spec:
       - name: installer-info
         configMap:
           name: {{ template "artifactory.fullname" . }}-installer-info
-      {{- if .Values.artifactory.userPluginSecrets }}
-      - name: bootstrap-plugins
-        emptyDir: {}
-      {{- range .Values.artifactory.userPluginSecrets }}
-      - name: {{ tpl . $ }}
-        secret:
-          secretName: {{ tpl . $ }}
-      {{- end }}
-      {{- end }}
       {{- if and .Values.artifactory.persistence.enabled .Values.artifactory.persistence.existingClaim }}
       - name: artifactory-volume
         persistentVolumeClaim:
