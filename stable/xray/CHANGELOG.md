@@ -1,7 +1,16 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.59.4] - Aug 25, 2022
+## [103.60.2] - Oct 27, 2022
+* Updated router version to `7.51.0`
+
+## [103.59.0] - Sep 20, 2022
+* Removed `newProbes.enabled`, default to new probes
+* Updated Observability version to `1.11.0`
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-941`
+* Added support for annotations for xray statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+
+## [103.57.0] - Aug 25, 2022
 * Added support for lifecycle hooks for all containers
 
 ## [103.56.0] - Aug 25, 2022
