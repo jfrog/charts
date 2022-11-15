@@ -627,6 +627,40 @@ spec:
           {{- with .Values.pipelines.customVolumeMounts }}
 {{ tpl . $ | nindent 10 }}
           {{- end }}
+{{- if .Values.pipelines.nodepoolmanager.enabled }}
+          - name: nodepoolmanager
+            image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nodepoolmanager" ) }}
+            imagePullPolicy: {{ .Values.pipelines.nodepoolmanager.image.pullPolicy }}
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - NET_RAW
+            env:
+              {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+              - name: NODE_EXTRA_CA_CERTS
+                value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+              {{- end }}
+              - name: PIPELINES_NODE_ID
+                valueFrom:
+                  fieldRef:
+                    fieldPath: "metadata.name"
+            {{- if .Values.pipelines.extraEnvironmentVariables }}
+            {{- with .Values.pipelines.extraEnvironmentVariables }}
+            {{ tpl (toYaml .) $ | indent 12 }}
+            {{- end }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.nodepoolmanager.resources | nindent 12 }}
+          volumeMounts:
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+{{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+{{- end }}
+{{- end}}
         - name: pipelinesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
