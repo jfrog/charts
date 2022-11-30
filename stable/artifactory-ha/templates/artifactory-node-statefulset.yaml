@@ -70,6 +70,10 @@ spec:
         {{- if .Values.artifactory.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
         {{- end }}
+        {{- if .Values.artifactory.seLinuxOptions }}
+        seLinuxOptions:
+        {{- tpl (toYaml .Values.artifactory.seLinuxOptions) . | nindent 10 }}
+        {{- end }}
       {{- end }}
       {{- if .Values.artifactory.topologySpreadConstraints }}
       topologySpreadConstraints:

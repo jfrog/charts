@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.46.12] - Nov 30, 2022
+* Added support for setting `seLinuxOptions` in `securityContext`
+
 ## [107.46.11] - Sep 14, 2022
 * **IMPORTANT**
 * Added support for lifecycle hooks for all containers, changed `artifactory.postStartCommand` to `.Values.artifactory.lifecycle.postStart.exec.command`
