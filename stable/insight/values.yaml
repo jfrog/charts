@@ -43,7 +43,7 @@ global:
 ## Fully override insight.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-941
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -317,12 +317,12 @@ elasticsearch:
   ## To overwrite existing ES search guard certificates, create a secret with the following files (localhost.key, localhost.pem, root-ca.pem, sgadmin.key, sgadmin.pem )
   ## certificatesSecretName:
   name: elasticsearch
-  initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
+  initContainerImage: releases-docker.jfrog.io/jfrog/elasticsearch-sg:7.17.6
   configureDockerHost: true
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.17.1
+    tag: 7.17.6
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -409,7 +409,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi8/ubi-minimal
-    tag: 8.6-902
+    tag: 8.6-941
 
 insightServer:
   name: insight-server
@@ -620,6 +620,10 @@ insightServer:
   service:
     type: ClusterIP
     annotations: {}
+
+  statefulset:
+    annotations: {}
+
   internalPort: 8087
   externalPort: 80
 
@@ -630,7 +634,7 @@ insightServer:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -644,7 +648,7 @@ insightServer:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}{{ include "insight.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightServer.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       failureThreshold: 30
       periodSeconds: 5
@@ -737,7 +741,7 @@ insightScheduler:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -751,7 +755,7 @@ insightScheduler:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}{{ include "insight.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.insightScheduler.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       failureThreshold: 30
       periodSeconds: 5
@@ -762,7 +766,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.45.0
+    tag: 7.51.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -794,7 +798,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -808,7 +812,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -822,7 +826,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "insight.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "insight.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
@@ -920,9 +924,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
-
-## To enable new probes
-newProbes: true
 
 ## Specify common probes parameters
 probes:

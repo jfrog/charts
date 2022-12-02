@@ -250,50 +250,6 @@ if [ -f {{ .Values.insightServer.persistence.mountPath }}/etc/security/keys/trus
 {{- end -}}
 
 {{/*
-insight liveness probe
-*/}}
-{{- define "insight.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/api/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/api/v1/system/ping" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-insight readiness probe
-*/}}
-{{- define "insight.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/api/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/api/v1/system/ping" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-router liveness probe
-*/}}
-{{- define "insight.router.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-router readiness probe
-*/}}
-{{- define "insight.router.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve requiredServiceTypes value
 */}}
 {{- define "insight.router.requiredServiceTypes" -}}
