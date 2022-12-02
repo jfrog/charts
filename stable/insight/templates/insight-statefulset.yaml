@@ -17,6 +17,10 @@ metadata:
   {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/insight/CHANGELOG.md)" .Values.databaseUpgradeReady | quote }}
   {{- end }}
+{{- with .Values.insightServer.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   serviceName: {{ template "insight.fullname" . }}
   replicas: {{ .Values.replicaCount }}
