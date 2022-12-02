@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.60.2] - Oct 27, 2022
+## [103.61.5] - Oct 27, 2022
 * Updated router version to `7.51.0`
 
 ## [103.59.0] - Sep 20, 2022
