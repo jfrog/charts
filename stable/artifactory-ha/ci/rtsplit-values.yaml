@@ -5,6 +5,10 @@ artifactory:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   persistence:
     enabled: false
+# Remove extraEnvironmentVariables 7.45.x onwards
+  extraEnvironmentVariables:
+    - name: JF_JFCONNECT_ENABLED
+      value: "false"
   replicator:
     enabled: true
     ingress:
@@ -14,6 +18,14 @@ artifactory:
     trackerIngress:
       enabled: true
       className: "testclass2"
+    # Add lifecycle hooks for replicator container
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "echo Hello from the replicator postStart handler >> /tmp/message"]
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "echo Hello from the replicator postStart handler >> /tmp/message"]
   primary:
     resources:
       requests:
@@ -33,6 +45,15 @@ artifactory:
   javaOpts:
     xms: "4g"
     xmx: "4g"
+
+  # Add lifecycle hooks for artifactory container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
 
 postgresql:
   postgresqlPassword: password
@@ -63,6 +84,15 @@ jfconnect:
     limits:
       memory: "1Gi"
       cpu: "1"
+  # Add lifecycle hooks for jfconect container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the jfconnect postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the jfconnect postStart handler >> /tmp/message"]
+
 mc:
   enabled: true
 splitServicesToContainers: true
@@ -75,6 +105,14 @@ router:
     limits:
       memory: "1Gi"
       cpu: "1"
+  # Add lifecycle hooks for router container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
 frontend:
   resources:
     requests:
@@ -83,6 +121,14 @@ frontend:
     limits:
       memory: "1Gi"
       cpu: "1"
+  # Add lifecycle hooks for frontend container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
 metadata:
   resources:
     requests:
@@ -91,6 +137,13 @@ metadata:
     limits:
       memory: "1Gi"
       cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the metadata postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the metadata postStart handler >> /tmp/message"]
 event:
   resources:
     requests:
@@ -99,6 +152,13 @@ event:
     limits:
       memory: "1Gi"
       cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
 integration:
   resources:
     requests:
@@ -107,6 +167,13 @@ integration:
     limits:
       memory: "1Gi"
       cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the integration postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the integration postStart handler >> /tmp/message"]
 observability:
   resources:
     requests:
@@ -115,3 +182,10 @@ observability:
     limits:
       memory: "1Gi"
       cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]

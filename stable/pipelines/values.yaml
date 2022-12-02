@@ -143,6 +143,9 @@ pipelines:
 
   # unifiedSecretInstallation flag enables single unified secret holding all the pipelines secrets
   unifiedSecretInstallation: false
+  # If flag is true then name of the unified secret is '{{ template "pipelines.name" . }}-unified-secret'
+  # Update secret name to .Values.vault.server.extraVolumes
+  # Update secret name to .Values.pipelines.customVolumes
 
   ## Join Key to connect to Artifactory
   ## IMPORTANT: You should NOT use the example joinKey for a production deployment!
@@ -220,6 +223,9 @@ pipelines:
     ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
+
+  statefulset:
+    annotations: {}
 
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
@@ -548,6 +554,22 @@ pipelines:
       # requests:
       #   cpu: 10m
       #   memory: 40Mi
+
+  nodepoolmanager:
+    image:
+      # registry:
+      repository: jfrog/pipelines-nodepoolmanager
+      # tag:
+      pullPolicy: IfNotPresent
+    resources: {}
+    enabled: false
+    # limits:
+    #   cpu: 500m
+    #   memory: 500Mi
+    # requests:
+    #   cpu: 5m
+    #   memory: 40Mi
+
 
   msg:
     uiUser: monitor
@@ -1302,6 +1324,13 @@ pipelines:
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18cpp
           defaultVersion: 10
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-u20node
+          isDefault: true
+          defaultVersion: 16
         - architecture: x86_64
           os: Ubuntu_20.04
           language: node
@@ -1676,6 +1705,47 @@ vault:
     service:
       port: 8200
 
+    # A list of init containers. Specified as a YAML list.
+    extraInitContainers:
+      # wait-for-db is checking if postgresql server up
+      - name: vault-wait-for-db
+        image: "releases-docker.jfrog.io/alpine:3.14.2"
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: CONNECTION_DETAILS
+            valueFrom:
+              secretKeyRef:
+                name: vault-storage-config
+                key: postgresql-connection
+        command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Waiting for Postgres to come up..."; until nc -z -w 2 ${CONNECTION_DETAILS} && echo database ok; do
+              sleep 2;
+            done; sleep 10;
+
+      # create-vault-table is creating vault schema changes in postgres db
+      - name: create-vault-table
+        image: releases-docker.jfrog.io/bitnami/postgresql:13.4.0-debian-10-r39
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: vault-storage-config
+                key: postgresql-url
+        command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Creating Vault Tables...";
+            psql ${DATABASE_URL} -f /vault/userconfig/vault-storage-config/vault.sql;
+            psql ${DATABASE_URL} -c "\dt;";
+        volumeMounts:
+          - name: userconfig-vault-storage-config
+            mountPath: /vault/userconfig/vault-storage-config
+
     # Set Pipelines vault-init sidecar container
     extraContainers:
       - name: vault-init
@@ -1703,6 +1773,7 @@ vault:
 
     # Secret name with the storage config file for Postgres connection
     # It will be exposed to Vault in the path "/vault/userconfig/vault-storage-config/"
+    # If .Values.pipelines.unifiedSecretInstallation is true then secret name should be '{{ template "pipelines.name" . }}-unified-secret'
     extraVolumes:
       - type: secret
         name: vault-storage-config
@@ -1736,7 +1807,7 @@ vault:
     livenessProbe:
       enabled: true
       path: "/v1/sys/health?standbyok=true"
-      initialDelaySeconds: 5
+      initialDelaySeconds: 50
 
     serviceAccount:
       create: true

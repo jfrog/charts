@@ -1,7 +1,12 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.27.5] - Sep 28, 2022
+## [101.28.1] - Oct 27, 2022
+* Added init containers wait-for-db and create-vault-table in vault-server pod
+* Added support for annotations for pipelines statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+* Added default pipelines image for ubuntu20 arm64 build nodes
+
+## [101.27.0] - Sep 28, 2022
 * Added `observability` service in pipelines
 * Removed `newProbes.enabled`, default to new probes
 * Fixed bug for `unifiedSecretInstallation` support in observability
@@ -11,6 +16,7 @@ All changes to this chart to be documented in this file.
 * Added flag `pipelines.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
 * Added config to reset log level
 * Change default go runtime images to 1.19
+* Added `NodePoolManager` microservice with default state as disabled
 
 ## [101.25.0] - Aug 25, 2022
 * Additional fix for default path for api external url

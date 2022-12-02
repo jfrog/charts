@@ -1,7 +1,10 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.41.13] - Jul 22, 2022
+## [107.47.10] - Aug 25, 2022
+* Included event service as mandatory and remove the flag from values.yaml
+
+## [107.41.0] - Jul 22, 2022
 * Bumping chart version to align with app version
 * Disabled jfconnect and event services when splitServicesToContainers=true
 
