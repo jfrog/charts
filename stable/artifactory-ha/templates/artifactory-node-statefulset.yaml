@@ -12,9 +12,9 @@ metadata:
 {{- with .Values.artifactory.node.labels }}
 {{ toYaml . | indent 4 }}
 {{- end }}
-{{- with .Values.artifactory.node.statefulset.annotations}}
+{{- with .Values.artifactory.statefulset.annotations }}
   annotations:
-{{ toYaml . | indent 4}}
+{{ toYaml . | indent 4 }}
 {{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.node.name" . }}

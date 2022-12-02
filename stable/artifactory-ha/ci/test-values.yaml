@@ -24,9 +24,6 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
-    statefulset:
-      annotations:
-        artifactory: test
   node:
     resources:
       requests:
@@ -35,12 +32,12 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
-    statefulset:
-      annotations:
-        artifactory: test
   javaOpts:
     xms: "4g"
     xmx: "4g"
+  statefulset:
+    annotations:
+      artifactory: test
 
 postgresql:
   postgresqlPassword: "password"
