@@ -1,0 +1,307 @@
+{{- if eq .Values.artifactory.persistence.type "file-system" -}}
+<!-- File system filestore -->
+<config version="v1">
+    <chain> <!--template="file-system"-->
+        {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
+        <provider id="cache-fs" type="cache-fs">
+        {{- end }}
+            <provider id="file-system" type="file-system"/>
+        {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
+        </provider>
+        {{- end }}
+    </chain>
+
+    {{- if .Values.artifactory.persistence.fileSystem.cache.enabled }}
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+    {{- end }}
+</config>
+{{- end }}
+{{- if eq .Values.artifactory.persistence.type "cluster-file-system" -}}
+<!-- Cluster File system filestore -->
+<config version="2">
+    <chain> <!--template="cluster-file-system"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="sharding-cluster" type="sharding-cluster">
+                <readBehavior>crossNetworkStrategy</readBehavior>
+                <writeBehavior>crossNetworkStrategy</writeBehavior>
+                <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+                <lenientLimit>{{ .Values.artifactory.persistence.lenientLimit }}</lenientLimit>
+                <minSpareUploaderExecutor>2</minSpareUploaderExecutor>
+                <sub-provider id="state-aware" type="state-aware"/>
+                <dynamic-provider id="remote" type="remote"/>
+                <property name="zones" value="local,remote"/>
+            </provider>
+        </provider>
+    </chain>
+
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+
+    <!-- Shards add local file-system provider configuration -->
+    <provider id="state-aware" type="state-aware">
+        <fileStoreDir>shard-fs-1</fileStoreDir>
+        <zone>local</zone>
+    </provider>
+
+    <!-- Shards dynamic remote provider configuration -->
+    <provider id="remote" type="remote">
+        <checkPeriod>30</checkPeriod>
+        <serviceId>tester-remote1</serviceId>
+        <timeout>10000</timeout>
+        <zone>remote</zone>
+        <property name="header.remote.block" value="true"/>
+    </provider>
+</config>
+{{- end }}
+{{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") (eq .Values.artifactory.persistence.type "cluster-google-storage-v2")  }}
+<!-- Google storage -->
+<config version="2">
+    {{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") }}
+    <chain> <!--template="google-storage-v2"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="eventual" type="eventual">
+                <provider id="retry" type="retry">
+                    <provider id="google-storage-v2" type="google-storage-v2"/>
+                </provider>
+            </provider>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "cluster-google-storage-v2" }}
+    <chain> <!--template="cluster-google-storage-v2"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="sharding-cluster" type="sharding-cluster">
+                <readBehavior>crossNetworkStrategy</readBehavior>
+                <writeBehavior>crossNetworkStrategy</writeBehavior>
+                <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+                <lenientLimit>{{ .Values.artifactory.persistence.lenientLimit }}</lenientLimit>
+                <minSpareUploaderExecutor>2</minSpareUploaderExecutor>
+                <sub-provider id="eventual-cluster" type="eventual-cluster">
+                    <provider id="retry" type="retry">
+                        <provider id="google-storage-v2" type="google-storage-v2"/>
+                    </provider>
+                </sub-provider>
+                <dynamic-provider id="remote" type="remote"/>
+                <property name="zones" value="local,remote"/>
+            </provider>
+        </provider>
+    </chain>
+    {{- end }}
+
+    <!-- Set max cache-fs size -->
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+
+    {{- if eq .Values.artifactory.persistence.type "cluster-google-storage-v2" }}
+    <provider id="eventual-cluster" type="eventual-cluster">
+        <zone>local</zone>
+    </provider>
+
+    <provider id="remote" type="remote">
+        <checkPeriod>30</checkPeriod>
+        <timeout>10000</timeout>
+        <zone>remote</zone>
+    </provider>
+    {{- end }}
+
+    <provider id="google-storage-v2" type="google-storage-v2">
+        {{- if .Values.artifactory.persistence.googleStorage.useInstanceCredentials }}
+        <useInstanceCredentials>true</useInstanceCredentials>
+        {{- else }}
+        <useInstanceCredentials>false</useInstanceCredentials>
+        {{- end }}
+        <enableSignedUrlRedirect>{{ .Values.artifactory.persistence.googleStorage.enableSignedUrlRedirect }}</enableSignedUrlRedirect>
+        <providerId>google-cloud-storage</providerId>
+        <endpoint>{{ .Values.artifactory.persistence.googleStorage.endpoint }}</endpoint>
+        <httpsOnly>{{ .Values.artifactory.persistence.googleStorage.httpsOnly }}</httpsOnly>
+        <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
+        <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
+        <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
+    </provider>
+</config>
+{{- end }}
+{{- if or (eq .Values.artifactory.persistence.type "aws-s3-v3") (eq .Values.artifactory.persistence.type "s3-storage-v3-direct") (eq .Values.artifactory.persistence.type "cluster-s3-storage-v3")  }}
+<!-- AWS S3 V3 -->
+<config version="2">
+    {{- if eq .Values.artifactory.persistence.type "aws-s3-v3" }}
+    <chain> <!--template="s3-storage-v3"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="eventual" type="eventual">
+                <provider id="retry" type="retry">
+                    <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                </provider>
+            </provider>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "s3-storage-v3-direct" }}
+    <chain> <!--template="s3-storage-v3-direct"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="s3-storage-v3" type="s3-storage-v3"/>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "cluster-s3-storage-v3" }}
+    <chain> <!--template="cluster-s3-storage-v3"-->
+        <provider id="cache-fs-eventual-s3" type="cache-fs">
+            <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+                <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
+                    <provider id="retry-s3" type="retry">
+                        <provider id="s3-storage-v3" type="s3-storage-v3"/>
+                    </provider>
+                </sub-provider>
+                <dynamic-provider id="remote-s3" type="remote"/>
+            </provider>
+        </provider>
+    </chain>
+    {{- end }}
+
+    <!-- Set max cache-fs size -->
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64}}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+
+    {{- if eq .Values.artifactory.persistence.type "cluster-s3-storage-v3" }}
+    <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
+        <readBehavior>crossNetworkStrategy</readBehavior>
+        <writeBehavior>crossNetworkStrategy</writeBehavior>
+        <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+        <lenientLimit>{{ .Values.artifactory.persistence.lenientLimit }}</lenientLimit>
+        <property name="zones" value="local,remote"/>
+    </provider>
+
+    <provider id="remote-s3" type="remote">
+        <zone>remote</zone>
+    </provider>
+
+    <provider id="eventual-cluster-s3" type="eventual-cluster">
+        <zone>local</zone>
+    </provider>
+    {{- end }}
+
+    {{- with .Values.artifactory.persistence.awsS3V3 }}
+    <provider id="s3-storage-v3" type="s3-storage-v3">
+        <testConnection>{{ .testConnection }}</testConnection>
+        {{- if .identity }}
+        <identity>{{ .identity }}</identity>
+        {{- end }}
+        {{- if .credential }}
+        <credential>{{ .credential }}</credential>
+        {{- end }}
+        <region>{{ .region }}</region>
+        <bucketName>{{ .bucketName }}</bucketName>
+        <path>{{ .path }}</path>
+        <endpoint>{{ .endpoint }}</endpoint>
+        {{- with .maxConnections }}
+        <maxConnections>{{ . }}</maxConnections>
+        {{- end }}
+        {{- with .kmsServerSideEncryptionKeyId }}
+        <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
+        {{- end }}
+        {{- with .kmsKeyRegion }}
+        <kmsKeyRegion>{{ . }}</kmsKeyRegion>
+        {{- end }}
+        {{- with .kmsCryptoMode }}
+        <kmsCryptoMode>{{ . }}</kmsCryptoMode>
+        {{- end }}
+        {{- if .useInstanceCredentials }}
+        <useInstanceCredentials>true</useInstanceCredentials>
+        {{- else }}
+        <useInstanceCredentials>false</useInstanceCredentials>
+        {{- end }}
+        <usePresigning>{{ .usePresigning }}</usePresigning>
+        <signatureExpirySeconds>{{ .signatureExpirySeconds }}</signatureExpirySeconds>
+        <signedUrlExpirySeconds>{{ .signedUrlExpirySeconds }}</signedUrlExpirySeconds>
+        {{- with .cloudFrontDomainName }}
+        <cloudFrontDomainName>{{ . }}</cloudFrontDomainName>
+        {{- end }}
+        {{- with .cloudFrontKeyPairId }}
+        <cloudFrontKeyPairId>{{ . }}</cloudFrontKeyPairId>
+        {{- end }}
+        {{- with .cloudFrontPrivateKey }}
+        <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
+        {{- end }}
+        {{- with .enableSignedUrlRedirect }}
+        <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
+        {{- end }}
+        {{- with .enablePathStyleAccess }}
+        <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
+        {{- end }}
+    </provider>
+    {{- end }}
+</config>
+{{- end }}
+
+{{- if or (eq .Values.artifactory.persistence.type "azure-blob") (eq .Values.artifactory.persistence.type "azure-blob-storage-direct") (eq .Values.artifactory.persistence.type "cluster-azure-blob-storage") }}
+<!-- Azure Blob Storage -->
+<config version="2">
+    {{- if or (eq .Values.artifactory.persistence.type "azure-blob") }}
+    <chain> <!--template="azure-blob-storage"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="eventual" type="eventual">
+                <provider id="retry-azure-blob-storage" type="retry">
+                    <provider id="azure-blob-storage" type="azure-blob-storage"/>
+                </provider>
+            </provider>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "azure-blob-storage-direct" }}
+    <chain> <!--template="azure-blob-storage-direct"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="azure-blob-storage" type="azure-blob-storage"/>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "cluster-azure-blob-storage" }}
+    <chain> <!--template="cluster-azure-blob-storage"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="sharding-cluster" type="sharding-cluster">
+                <sub-provider id="eventual-cluster" type="eventual-cluster">
+                    <provider id="retry-azure-blob-storage" type="retry">
+                        <provider id="azure-blob-storage" type="azure-blob-storage"/>
+                    </provider>
+                </sub-provider>
+                <dynamic-provider id="remote" type="remote"/>
+            </provider>
+        </provider>
+    </chain>
+    {{- end }}
+
+    <!-- Set max cache-fs size -->
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+
+    {{- if eq .Values.artifactory.persistence.type "cluster-azure-blob-storage" }}
+    <!-- cluster eventual Azure Blob Storage Service default chain -->
+    <provider id="sharding-cluster" type="sharding-cluster">
+        <readBehavior>crossNetworkStrategy</readBehavior>
+        <writeBehavior>crossNetworkStrategy</writeBehavior>
+        <redundancy>{{ .Values.artifactory.persistence.redundancy }}</redundancy>
+        <lenientLimit>{{ .Values.artifactory.persistence.lenientLimit }}</lenientLimit>
+        <property name="zones" value="local,remote"/>
+    </provider>
+    <provider id="remote" type="remote">
+        <zone>remote</zone>
+    </provider>
+    <provider id="eventual-cluster" type="eventual-cluster">
+        <zone>local</zone>
+    </provider>
+    {{- end }}
+
+    <provider id="azure-blob-storage" type="azure-blob-storage">
+        <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
+        <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
+        <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
+        <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
+        <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>
+        <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize | int64 }}</multipartElementSize>
+        <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
+    </provider>
+</config>
+{{- end }}

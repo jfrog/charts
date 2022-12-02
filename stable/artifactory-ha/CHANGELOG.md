@@ -4,7 +4,34 @@ All changes to this chart will be documented in this file
 ## [107.41.14] -
 * Added support for annotations for artifactory statefulsets and nginx deployment [GH-1673](https://github.com/jfrog/charts/pull/1673)
 
-## [107.41.13] - June 27, 2022
+## [107.46.11] - Sep 14, 2022
+* **IMPORTANT**
+* Added support for lifecycle hooks for all containers, changed `artifactory.postStartCommand` to `.Values.artifactory.lifecycle.postStart.exec.command`
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.6-902`
+* Update nginx configuration to allow websocket requests when using pipelines
+* Fixed an issue to allow artifactory to make direct API calls to store  instead via jfconnect service when `splitServicesToContainers=true`
+* Refactor binarystore.xml configuration (moved to `files/binarystore.xml` instead of key in values.yaml)
+* Added new binary providers `s3-storage-v3-direct`, `azure-blob-storage-direct`, `google-storage-v2`
+* Deprecated (removed) `aws-s3` binary provider [JetS3t library](https://www.jfrog.com/confluence/display/JFROG/Configuring+the+Filestore#ConfiguringtheFilestore-BinaryProvider)
+* Deprecated (removed) `google-storage` binary provider and force persistence storage type `google-storage` to work with `google-storage-v2` only
+* Copy binarystore.xml in init Container to fix existing persistence on file system in clear text
+* Removed obselete `.Values.artifactory.binarystore.enabled` key
+* Removed `newProbes.enabled`, default to new probes
+* Added nginx.customCommand using inotifyd to reload nginx's config upon ssl secret or configmap changes [GH-1640](https://github.com/jfrog/charts/pull/1640)
+
+## [107.43.0] - Aug 25, 2022
+* Added flag `artifactory.replicator.ingress.enabled` to enable/disable ingress for replicator
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.6-854`
+* Updated router version to `7.45.0`
+* Added flag `artifactory.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+* Enabled TLS based on access or router in values.yaml
+
+## [107.42.0] - Aug 25, 2022
+* Enabled database creds secret to use from unified secret
+* Updated router version to `7.42.0`
+* Added support to truncate (> 63 chars) for unifiedCustomSecretVolumeName
+
+## [107.41.0] - June 27, 2022
 * Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
 * Fix nginx lifecycle values [GH-1646](https://github.com/jfrog/charts/pull/1646)
 * Use an alternate command for `find` to copy custom certificates
@@ -16,7 +43,7 @@ All changes to this chart will be documented in this file
 * From artifactory 7.38.x, joinKey can be retrived from Admin > User Management > Settings in UI
 * Fixed template name for artifactory-ha database creds [GH-1602](https://github.com/jfrog/charts/pull/1602)
 * Allow templating for pod annotations [GH-1634](https://github.com/jfrog/charts/pull/1634)
-* Added flag to control enable/disbable infra services in splitServicesToContainers
+* Added flags to control enable/disable infra services in splitServicesToContainers
 
 ## [107.39.0] - May 16, 2022
 * Fix default `artifactory.async.corePoolSize`  [GH-1612](https://github.com/jfrog/charts/issues/1612)
