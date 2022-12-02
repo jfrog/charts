@@ -1090,6 +1090,8 @@ artifactory:
     # preStartCommand specific to the primary node, to be run after artifactory.preStartCommand
     # preStartCommand:
     labels: {}
+    statefulset:
+      annotations: {}
     persistence:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-primary-0`
@@ -1141,6 +1143,8 @@ artifactory:
     # preStartCommand specific to the member node, to be run after artifactory.preStartCommand
     # preStartCommand:
     labels: {}
+    statefulset:
+      annotations: {}
     persistence:
       ## Set existingClaim to true or false
       ## If true, you must prepare a PVC with the name e.g `volume-myrelease-artifactory-ha-member-0`
@@ -1828,6 +1832,8 @@ nginx:
     #   targetPort: 8066
     #   protocol: TCP
     #   name: docker
+  deployment:
+    annotations: {}
 
   http:
     enabled: true

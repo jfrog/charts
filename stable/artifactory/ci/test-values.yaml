@@ -27,6 +27,9 @@ artifactory:
   javaOpts:
     xms: "4g"
     xmx: "4g"
+  statefulset:
+    annotations:
+      artifactory: test
 
 postgresql:
   postgresqlPassword: password

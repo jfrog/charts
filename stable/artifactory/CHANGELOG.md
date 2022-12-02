@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [10.41.14] - 
+* Added support for annotations on the artifactory statefulset and nginx deployment [GH-1673](https://github.com/jfrog/charts/pull/1673)
+
 ## [107.46.11] - Sep 14, 2022
 * **IMPORTANT**
 * Added support for lifecycle hooks for all containers, changed `artifactory.postStartCommand` to `.Values.artifactory.lifecycle.postStart.exec.command`
