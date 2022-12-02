@@ -44,7 +44,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-941
 
 installer:
   type:
@@ -217,7 +217,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi8/ubi-minimal
-    tag: 8.6-902
+    tag: 8.6-941
 
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
@@ -234,7 +234,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.45.0
+    tag: 7.51.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -1005,6 +1005,9 @@ artifactory:
   javaOpts: {}
     # other: ""
 
+  statefulset:
+    annotations: {}
+
   ## The following setting are to configure a dedicated Ingress object for Replicator service
   replicator:
     name: replicator
@@ -1596,6 +1599,9 @@ nginx:
     repository: jfrog/nginx-artifactory-pro
     # tag:
     pullPolicy: IfNotPresent
+
+  deployment:
+    annotations: {}
 
   # Priority Class name to be used in deployment if provided
   priorityClassName:
