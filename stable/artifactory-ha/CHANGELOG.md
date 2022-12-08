@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.47.10] - Oct 27, 2022
+## [107.47.11] - Oct 27, 2022
 * Updated router version to `7.51.0`
 
 ## [107.47.0] - Sep 29, 2022
