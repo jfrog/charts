@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.28.1] - Oct 27, 2022
+## [101.28.3] - Oct 27, 2022
 * Added init containers wait-for-db and create-vault-table in vault-server pod
 * Added support for annotations for pipelines statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
 * Added default pipelines image for ubuntu20 arm64 build nodes
