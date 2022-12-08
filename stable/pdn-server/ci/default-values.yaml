@@ -1,30 +1,4 @@
 # Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
-pdnServer:
-  jfrogUrl: http://artifactory.rt:8082
-  openMetrics:
-    enabled: true
-  resources:
-    requests:
-      memory: "1Gi"
-      cpu: "1"
-    limits:
-      memory: "3Gi"
-      cpu: "2"
 
-router:
-  resources:
-    requests:
-      memory: "100Mi"
-      cpu: "100m"
-    limits:
-      memory: "1Gi"
-      cpu: "1"
-
-observability:
-  resources:
-    requests:
-      memory: "100Mi"
-      cpu: "100m"
-    limits:
-      memory: "1Gi"
-      cpu: "1"
+pdnServerUrl: pdnserver-pdn-server:8095
+pdnNodeJoinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE

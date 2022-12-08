@@ -1,0 +1,379 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pdnserver.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.statefulsetLabels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.statefulsetLabels "context" $) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.commonAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configuration.yaml") . | sha256sum }}
+        {{- if .Values.extraSecrets }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if or .Values.podAnnotations }}
+        {{- include "pdnserver.podAnnotations" . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "pdnserver.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName | quote }}
+      {{- end }}
+      serviceAccountName: {{ template "pdnserver.serviceAccountName" . }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.topologySpreadConstraints "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      initContainers:
+        - name: 'copy-system-yaml'
+          image: {{ include "pdnserver.initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              echo "Copy system.yaml to {{ .Values.persistence.mountPath }}/etc";
+              mkdir -p {{ .Values.persistence.mountPath }}/etc;
+              mkdir -p {{ .Values.persistence.mountPath }}/etc/access/keys/trusted;
+            {{- if .Values.systemYamlOverride.existingSecret }}
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- else if (tpl .Values.global.systemYamlOverride.existingSecret .) }}
+              cp -fv /tmp/etc/{{ .Values.global.systemYamlOverride.dataKey }} {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- else }}
+              cp -fv /tmp/etc/system.yaml {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- end }}
+              echo "Remove {{ .Values.persistence.mountPath }}/lost+found folder if exists";
+              rm -rfv {{ .Values.persistence.mountPath }}/lost+found;
+          {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+          {{- if or .Values.joinKey .Values.global.joinKey .Values.joinKeySecretName .Values.global.joinKeySecretName }}
+              echo "Copy joinKey to {{ .Values.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.persistence.mountPath }}/etc/security/join.key;
+          {{- end }}
+          {{- if or .Values.masterKey .Values.global.masterKey .Values.masterKeySecretName .Values.global.masterKeySecretName }}
+              echo "Copy masterKey to {{ .Values.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
+          {{- end }}
+          env:
+            {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+            {{- if or .Values.joinKey .Values.global.joinKey .Values.joinKeySecretName .Values.global.joinKeySecretName }}
+            - name: ARTIFACTORY_JOIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdnserver.joinKeySecretName" . }}
+                  key: join-key
+            {{- end }}
+            {{- if or .Values.masterKey .Values.global.masterKey .Values.masterKeySecretName .Values.global.masterKeySecretName }}
+            - name: ARTIFACTORY_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdnserver.masterKeySecretName" . }}
+                  key: master-key
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+          {{- if or (tpl .Values.global.systemYamlOverride.existingSecret .) .Values.systemYamlOverride.existingSecret .Values.systemYaml }}
+            - name: systemyaml
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+              subPath: {{ .Values.systemYamlOverride.dataKey }}
+              {{- else if (tpl .Values.global.systemYamlOverride.existingSecret .) }}
+              mountPath: "/tmp/etc/{{.Values.global.systemYamlOverride.dataKey}}"
+              subPath: {{ .Values.global.systemYamlOverride.dataKey }}
+              {{- else if .Values.systemYaml }}
+              mountPath: "/tmp/etc/system.yaml"
+              subPath: system.yaml
+              {{- end }}
+          {{- end }}
+        {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: copy-custom-certificates
+          image: {{ include "pdnserver.initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - 'bash'
+            - '-c'
+            - >
+{{ include "pdnserver.copyCustomCerts" . | indent 10 }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+      {{- end }}
+      containers:
+        - name: pdnserver
+          image: {{ template "pdnserver.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - |
+              exec /opt/jfrog/pdnserver/app/pdnserver/bin/pdnserver.sh;
+              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+          env:
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+{{- with .Values.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          ports:
+            - name: insecure-grpc
+              containerPort: {{ .Values.insecurePort }}
+            - name: secure-grpc
+              containerPort: {{ .Values.port }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.startupProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- with .Values.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+        {{- if .Values.observability.enabled }}
+        - name: observability
+          image: {{ template "observability.image" . }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy | quote }}
+          resources: {{- toYaml .Values.observability.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          env:
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NEW_PLATFORM_SERVICES_ARCH
+              value: "true"
+            {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdnserver.masterKeySecretName" . }}
+                  key: master-key
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdnserver.joinKeySecretName" . }}
+                  key: join-key
+            {{- end }}
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.observability.persistence.mountPath }}
+              {{- if .Values.observability.persistence.subPath }}
+              subPath: {{ .Values.observability.persistence.subPath }}
+              {{- end }}
+            {{- if .Values.observability.extraVolumeMounts }}
+            {{- toYaml .Values.observability.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.observability.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.observability.startupProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.observability.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.observability.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- with .Values.observability.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+        {{- end }}
+        - name: router
+          image: {{ template "router.image" . }}
+          imagePullPolicy: {{ .Values.router.image.pullPolicy }}
+          resources: {{- toYaml .Values.router.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+          env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: {{ include "pdnserver.router.requiredServiceTypes" . }}
+            - name: JF_SHARED_JFROGURL
+              value: {{ include "pdnserver.jfrogUrl" . }}
+            {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdnserver.masterKeySecretName" . }}
+                  key: master-key
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdnserver.joinKeySecretName" . }}
+                  key: join-key
+            {{- end }}
+{{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.router.internalPort }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.router.persistence.mountPath | quote }}
+            {{- if .Values.router.extraVolumeMounts }}
+            {{- toYaml .Values.router.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.router.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.startupProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.router.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.readinessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.router.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.sidecars }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.sidecars "context" $) | nindent 8 }}
+        {{- end }}
+        {{- with .Values.router.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+      {{- if .Values.filebeat.enabled }}
+        - name: {{ .Values.filebeat.name }}
+          image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+          imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          args:
+            - "-e"
+            - "-E"
+            - "http.enabled=true"
+          volumeMounts:
+            - name: filebeat-config
+              mountPath: /usr/share/filebeat/filebeat.yml
+              readOnly: true
+              subPath: filebeat.yml
+            - name: data
+              mountPath: "{{ .Values.persistence.mountPath }}"
+          livenessProbe: {{ toYaml .Values.filebeat.livenessProbe | nindent 12 }}
+          readinessProbe: {{ toYaml .Values.filebeat.readinessProbe | nindent 12 }}
+          resources: {{ toYaml .Values.filebeat.resources | nindent 10 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+    {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+    {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+    {{- end }}
+    {{- if .Values.hostAliases }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.customCertificates.certificateSecretName }}
+      {{- end }}
+        - name: systemyaml
+          secret:
+            secretName: {{ default ( default (printf "%s-%s" (include "pdnserver.fullname" .) "systemyaml") ( tpl .Values.global.systemYamlOverride.existingSecret .) ) .Values.systemYamlOverride.existingSecret }}
+        {{- if .Values.persistence.volumes }}
+        {{- toYaml .Values.persistence.volumes | nindent 8 }}
+        {{- end }}
+        {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
+        {{- end }}
+        - name: configuration
+          configMap:
+            name: {{ template "pdnserver.fullname" . }}-config
+            items:
+              - key: pdnserver.conf
+                path: pdnserver.conf
+              {{- if .Values.advancedConfiguration }}
+              - key: advanced.config
+                path: advanced.config
+              {{- end }}
+        - name: data
+          emptyDir: {}
