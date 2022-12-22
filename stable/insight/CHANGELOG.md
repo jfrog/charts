@@ -1,6 +1,9 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [101.13.1] - Nov 28, 2022
+* Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
+
 ## [101.13.0] - Oct 27, 2022
 * Removed `newProbes.enabled`, default to new probes
 * Updated initContainerImage to `ubi8/ubi-minimal:8.6-941`
