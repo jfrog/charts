@@ -800,6 +800,9 @@ artifactory:
   ## By default, the Artifactory StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `artifactory.uid` value.
   ## If you want to disable the securityContext for the Artifactory StatefulSet, set this tag to false
   setSecurityContext: true
+  securityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
   livenessProbe:
     enabled: true
     config: |

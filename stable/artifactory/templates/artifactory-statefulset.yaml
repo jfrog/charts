@@ -91,6 +91,8 @@ spec:
       securityContext:
         runAsUser: {{ .Values.artifactory.uid }}
         fsGroup: {{ .Values.artifactory.gid }}
+        runAsNonRoot: {{ .Values.artifactory.securityContext.runAsNonRoot }}
+        allowPrivilegeEscalation: {{ .Values.artifactory.securityContext.allowPrivilegeEscalation }}
         {{- if .Values.artifactory.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
         {{- end }}
