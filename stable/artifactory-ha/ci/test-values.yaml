@@ -1,0 +1,91 @@
+databaseUpgradeReady: true
+artifactory:
+  openMetrics:
+    enabled: true
+  fsGroupChangePolicy: "OnRootMismatch"
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  unifiedSecretInstallation: true
+  persistence:
+    enabled: false
+  replicator:
+    name: replicator
+    enabled: true
+    ingress:
+      name:
+      hosts: []
+      className: "testclass1"
+    trackerIngress:
+      enabled: true
+      className: "testclass2"
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  node:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
+  statefulset:
+    annotations:
+      artifactory: test
+
+postgresql:
+  postgresqlPassword: "password"
+  postgresqlExtendedConf:
+    maxConnections: "102"
+  persistence:
+    enabled: false
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true
+ingress:
+  enabled: true
+  className: "testclass"
+  hosts:
+    - demonow.xyz
+nginx:
+  enabled: false
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.artifactory.persistence.mountPath }}/log/filebeat
+    name: artifactory-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.artifactory.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfrt"
+        log_type: "artifactory"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066

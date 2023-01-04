@@ -1,0 +1,1503 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "artifactory-ha.primary.name" . }}
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    component: {{ .Values.artifactory.name }}
+    version: {{ include "artifactory-ha.app.version" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+{{- with .Values.artifactory.primary.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version (< 4.x.x) that has postgresql.image.tag of 9.x or 10.x or 12.x, make sure to pass the current postgresql.image.tag and set databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 4.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
+{{- end }}
+{{- if .Values.artifactory.postStartCommand }}
+    {{- fail ".Values.artifactory.postStartCommand is not supported and should be replaced with .Values.artifactory.lifecycle.postStart.exec.command" }}
+{{- end }}
+{{- if eq .Values.artifactory.persistence.type "aws-s3" }}
+    {{- fail "\nPersistence storage type 'aws-s3' is deprecated and is not supported and should be replaced with 'aws-s3-v3'" }}
+{{- end }}
+{{- if or .Values.artifactory.persistence.googleStorage.identity .Values.artifactory.persistence.googleStorage.credential }}
+    {{- fail "\nGCP Bucket Authentication with Identity and Credential is deprecated" }}
+{{- end }}
+{{- with .Values.artifactory.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  serviceName: {{ template "artifactory-ha.primary.name" . }}
+  replicas: {{ .Values.artifactory.primary.replicaCount }}
+  updateStrategy: {{- toYaml .Values.artifactory.primary.updateStrategy | nindent 4}}
+  selector:
+    matchLabels:
+      app: {{ template "artifactory-ha.name" . }}
+      role: {{ template "artifactory-ha.primary.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
+        role: {{ template "artifactory-ha.primary.name" . }}
+        component: {{ .Values.artifactory.name }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+        {{- with .Values.artifactory.primary.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+      {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/artifactory-database-secrets.yaml") . | sha256sum }}
+        checksum/binarystore: {{ include (print $.Template.BasePath "/artifactory-binarystore-secret.yaml") . | sha256sum }}
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
+      {{- if .Values.access.accessConfig }}
+        checksum/access-config: {{ include (print $.Template.BasePath "/artifactory-access-config.yaml") . | sha256sum }}
+      {{- end }}
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        checksum/gcpcredentials: {{ include (print $.Template.BasePath "/artifactory-gcp-credentials-secret.yaml") . | sha256sum }}
+      {{- end }}
+      {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
+        checksum/admin-creds: {{ include (print $.Template.BasePath "/admin-bootstrap-creds.yaml") . | sha256sum }}
+      {{- end }}
+      {{- else }}
+        checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
+      {{- range $key, $value := .Values.artifactory.annotations }}
+        {{ $key }}: {{ tpl $value $ | quote }}
+      {{- end }}
+    spec:
+    {{- if .Values.artifactory.schedulerName }}
+      schedulerName: {{ .Values.artifactory.schedulerName | quote }}
+    {{- end }}
+    {{- if .Values.artifactory.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.artifactory.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.artifactory.priorityClass.create }}
+      priorityClassName: {{ default (include "artifactory-ha.fullname" .) .Values.artifactory.priorityClass.name }}
+      {{- end }}
+    {{- end }}
+      serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
+    {{- end }}
+      {{- if .Values.artifactory.setSecurityContext }}
+      securityContext:
+        runAsUser: {{ .Values.artifactory.uid }}
+        fsGroup: {{ .Values.artifactory.gid }}
+        {{- if .Values.artifactory.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.artifactory.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.artifactory.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
+      initContainers:
+    {{- if or .Values.artifactory.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "artifactory-ha.customInitContainersBegin" .)  . | indent 6 }}
+    {{- end }}
+  {{- if .Values.artifactory.persistence.enabled }}
+    {{- if eq .Values.artifactory.persistence.type "file-system" }}
+      {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+      - name: "create-artifactory-data-dir"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - >
+          mkdir -p {{ tpl .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir . }};
+        volumeMounts:
+        - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          name: volume
+      {{- end }}
+    {{- end }}
+      {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
+      - name: "delete-db-properties"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - 'rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/db.properties'
+        volumeMounts:
+        - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          name: volume
+      {{- end }}
+      - name: "remove-lost-found"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - >
+          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
+          rm -rfv {{ tpl .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir . }}/lost+found;
+          rm -rfv {{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}/lost+found;
+        volumeMounts:
+          - name: volume
+            mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
+          - name: artifactory-ha-data-{{ $sharedClaimNumber }}
+            mountPath: "{{ tpl $.Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir $ }}/filestore{{ $sharedClaimNumber }}"
+            {{- end }}
+          - name: artifactory-ha-backup
+            mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
+    {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
+      - name: "access-bootstrap-creds"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+          - 'bash'
+          - '-c'
+          - >
+            echo "Preparing {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds";
+            mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
+            cp -Lrf /tmp/access/bootstrap.creds {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
+            chmod 600 {{ .Values.artifactory.persistence.mountPath }}/etc/access/bootstrap.creds;
+        volumeMounts:
+          - name: volume
+            mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+          {{- if not .Values.artifactory.unifiedSecretInstallation }}
+          - name: access-bootstrap-creds
+          {{- else }}
+          - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
+            mountPath: "/tmp/access/bootstrap.creds"
+            {{- if and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey }}
+            subPath: {{ .Values.artifactory.admin.dataKey }}
+            {{- else }}
+            subPath: bootstrap.creds
+            {{- end }}
+    {{- end }}
+  {{- end }}
+      - name: 'copy-system-configurations'
+        image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+          if [[ -e "{{ .Values.artifactory.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.artifactory.persistence.mountPath }}/etc/filebeat.yaml; fi;
+          echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
+          cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
+          echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
+          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
+          echo "Copy binarystore.xml file";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory;
+          cp -fv /tmp/etc/artifactory/binarystore.xml {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml;
+        {{- if .Values.access.accessConfig }}
+          echo "Copy access.config.patch.yml to {{ .Values.artifactory.persistence.mountPath }}/etc/access";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
+          cp -fv /tmp/etc/access.config.patch.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.patch.yml;
+        {{- end }}
+        {{- if .Values.access.resetAccessCAKeys }}
+          echo "Resetting Access CA Keys";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys;
+          touch {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/reset_ca_keys;
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+          echo "Copying custom certificates to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys;
+          cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.crt;
+          cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.private.key;
+        {{- end }}
+        {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+          echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
+          echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security/join.key;
+        {{- end }}
+        {{- if or .Values.artifactory.jfConnectToken .Values.artifactory.jfConnectTokenSecretName }}
+          echo "Copy jfConnectToken to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/registration_token";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/;
+          echo -n ${ARTIFACTORY_JFCONNECT_TOKEN} > {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/registration_token;
+        {{- end }}
+        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
+          echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
+        {{- end }}
+        env:
+        {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+        - name: ARTIFACTORY_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ include "artifactory-ha.joinKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: join-key
+        {{- end }}
+        {{- if or .Values.artifactory.jfConnectToken .Values.artifactory.jfConnectTokenSecretName }}
+        - name: ARTIFACTORY_JFCONNECT_TOKEN
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ include "artifactory-ha.jfConnectTokenSecretName" . }}
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: jfconnect-token
+        {{- end }}
+        {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+        - name: ARTIFACTORY_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ include "artifactory-ha.masterKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: master-key
+        {{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.artifactory.systemYaml }}
+        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        - name: systemyaml
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
+          {{- else if .Values.artifactory.systemYaml }}
+          mountPath: "/tmp/etc/system.yaml"
+          subPath: system.yaml
+          {{- end }}
+      {{- end }}
+        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        - name: binarystore-xml
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/tmp/etc/artifactory/binarystore.xml"
+          subPath: binarystore.xml
+        {{- if .Values.access.accessConfig }}
+        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        - name: access-config
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/tmp/etc/access.config.patch.yml"
+          subPath: access.config.patch.yml
+        {{- end }}
+        {{- if .Values.access.customCertificatesSecretName }}
+        - name: access-certs
+          mountPath: "/tmp/etc/tls.crt"
+          subPath: tls.crt
+        - name: access-certs
+          mountPath: "/tmp/etc/tls.key"
+          subPath: tls.key
+        {{- end }}
+      {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - >
+{{ include "artifactory-ha.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: volume
+            mountPath: {{ .Values.artifactory.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
+
+      {{- if .Values.artifactory.circleOfTrustCertificatesSecret }}
+      - name: copy-circle-of-trust-certificates
+        image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - >
+{{ include "artifactory.copyCircleOfTrustCertsCerts" . | indent 10 }}
+        volumeMounts:
+          - name: volume
+            mountPath: {{ .Values.artifactory.persistence.mountPath }}
+          - name: circle-of-trust-certs
+            mountPath: "/tmp/circleoftrustcerts"
+      {{- end }}
+
+    {{- if .Values.waitForDatabase }}
+      {{- if or .Values.postgresql.enabled }}
+      - name: "wait-for-db"
+        image: "{{ .Values.initContainerImage }}"
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for postgresql to come up"
+          ready=false;
+          while ! $ready; do echo waiting;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1;
+          done
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- if or .Values.artifactory.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "artifactory-ha.customInitContainers" .)  . | indent 6 }}
+    {{- end }}
+{{- if .Values.artifactory.migration.enabled }}
+      - name: 'migration-artifactory-ha'
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.artifactory.primary.resources | indent 10 }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+          {{- if .Values.artifactory.migration.preStartCommand }}
+          echo "Running custom preStartCommand command";
+          {{ tpl .Values.artifactory.migration.preStartCommand . }};
+          {{- end }}
+          scriptsPath="/opt/jfrog/artifactory/app/bin";
+          mkdir -p $scriptsPath;
+          echo "Copy migration scripts and Run migration";
+          cp -fv /tmp/migrate.sh $scriptsPath/migrate.sh;
+          cp -fv /tmp/migrationHelmInfo.yaml $scriptsPath/migrationHelmInfo.yaml;
+          cp -fv /tmp/migrationStatus.sh $scriptsPath/migrationStatus.sh;
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/log;
+          bash $scriptsPath/migrationStatus.sh {{ include "artifactory-ha.app.version" . }} {{ .Values.artifactory.migration.timeoutSeconds }} > >(tee {{ .Values.artifactory.persistence.mountPath }}/log/helm-migration.log) 2>&1;
+        env:
+      {{- if and (not .Values.waitForDatabase)  (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+        - name: JF_SHARED_NODE_HAENABLED
+          value: "true"
+{{- with .Values.artifactory.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: migration-scripts
+          mountPath: "/tmp/migrate.sh"
+          subPath: migrate.sh
+        - name: migration-scripts
+          mountPath: "/tmp/migrationHelmInfo.yaml"
+          subPath: migrationHelmInfo.yaml
+        - name: migration-scripts
+          mountPath: "/tmp/migrationStatus.sh"
+          subPath: migrationStatus.sh
+        - name: volume
+          mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
+        - name: artifactory-ha-data-{{ $sharedClaimNumber }}
+          mountPath: "{{ tpl $.Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir $ }}/filestore{{ $sharedClaimNumber }}"
+          {{- end }}
+        - name: artifactory-ha-backup
+          mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+        - name: artifactory-ha-data
+          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+        - name: artifactory-ha-backup
+          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+      {{- else }}
+        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        - name: binarystore-xml
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/tmp/etc/artifactory/binarystore.xml"
+          subPath: binarystore.xml
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        {{- if (not .Values.artifactory.unifiedSecretInstallation) }}
+        - name: gcpcreds-json
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
+      {{- end }}
+{{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
+      containers:
+    {{- if .Values.splitServicesToContainers }}
+      - name: {{ .Values.router.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: {{ include "artifactory-ha.router.requiredServiceTypes" . }}
+{{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        ports:
+          - name: http
+            containerPort: {{ .Values.router.internalPort }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.router.persistence.mountPath | quote }}
+{{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+      {{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.frontend.enabled }}
+      - name: {{ .Values.frontend.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/third-party/node/bin/node /opt/jfrog/artifactory/app/frontend/bin/server/dist/bundle.js /opt/jfrog/artifactory/app/frontend
+        {{- with .Values.frontend.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{- with .Values.frontend.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.frontend.resources | indent 10 }}
+      {{- if .Values.frontend.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.frontend.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.frontend.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.frontend.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.metadata.enabled }}
+      - name: {{ .Values.metadata.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
+        {{- with .Values.metadata.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+{{- with .Values.metadata.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.metadata.resources | indent 10 }}
+      {{- if .Values.metadata.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.metadata.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.metadata.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.metadata.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.event.enabled }}
+      - name: {{ .Values.event.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/event/bin/jf-event start
+        {{- with .Values.event.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{- with .Values.event.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.event.resources | indent 10 }}
+      {{- if .Values.event.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.event.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.event.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.event.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.artifactory.replicator.enabled }}
+      - name: {{ .Values.artifactory.replicator.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/replicator/bin/jf-replicator start
+        {{- with .Values.artifactory.replicator.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{- with .Values.artifactory.replicator.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.artifactory.replicator.resources | indent 10 }}
+      {{- end }}
+      {{- if .Values.jfconnect.enabled }}
+      - name: {{ .Values.jfconnect.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/jfconnect/bin/jf-connect start
+        {{- with .Values.jfconnect.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{- with .Values.jfconnect.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.jfconnect.resources | indent 10 }}
+      {{- if .Values.jfconnect.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.jfconnect.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.jfconnect.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.jfconnect.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.integration.enabled }}
+      - name: {{ .Values.integration.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/integration/bin/jf-integration start
+        {{- with .Values.integration.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{- with .Values.integration.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.integration.resources | indent 10 }}
+      {{- if .Values.integration.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.integration.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.integration.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.integration.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.observability.enabled }}
+      - name: {{ .Values.observability.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+        {{- with .Values.observability.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.observability.resources | indent 10 }}
+      {{- if .Values.observability.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.observability.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+    {{- end }}
+      - name: {{ .Values.artifactory.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+          set -e;
+          if [ -d /artifactory_extra_conf ] && [ -d /artifactory_bootstrap ]; then
+            echo "Copying bootstrap config from /artifactory_extra_conf to /artifactory_bootstrap";
+            cp -Lrfv /artifactory_extra_conf/ /artifactory_bootstrap/;
+          fi;
+        {{- if .Values.artifactory.configMapName }}
+          echo "Copying bootstrap configs";
+          cp -Lrf /bootstrap/* /artifactory_bootstrap/;
+        {{- end }}
+        {{- if .Values.artifactory.userPluginSecrets }}
+          echo "Copying plugins";
+          cp -Lrf /tmp/plugin/*/* /artifactory_bootstrap/plugins;
+        {{- end }}
+        {{- range .Values.artifactory.copyOnEveryStartup }}
+          {{- $targetPath := printf "%s/%s" $.Values.artifactory.persistence.mountPath .target }}
+          {{- $baseDirectory := regexFind ".*/" $targetPath }}
+          mkdir -p {{ $baseDirectory }};
+          cp -Lrf {{ .source }} {{ $.Values.artifactory.persistence.mountPath }}/{{ .target }};
+        {{- end }}
+        {{- with .Values.artifactory.preStartCommand }}
+          echo "Running custom preStartCommand command";
+          {{ tpl . $ }};
+        {{- end }}
+        {{- with .Values.artifactory.primary.preStartCommand }}
+          echo "Running primary specific custom preStartCommand command";
+          {{ tpl . $ }};
+        {{- end }}
+          exec /entrypoint-artifactory.sh
+        {{- with .Values.artifactory.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+      {{- if .Values.aws.license.enabled }}
+        - name: IS_AWS_LICENSE
+          value: "true"
+        - name: AWS_REGION
+          value: {{ .Values.aws.region | quote }}
+      {{- if .Values.aws.licenseConfigSecretName }}
+        - name: AWS_WEB_IDENTITY_REFRESH_TOKEN_FILE
+          value: "/var/run/secrets/product-license/license_token"
+        - name: AWS_ROLE_ARN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.aws.licenseConfigSecretName }}
+              key: iam_role
+      {{- end }}
+      {{- end }}
+      {{- if .Values.splitServicesToContainers }}
+        - name : JF_ROUTER_ENABLED
+          value: "true"
+        - name : JF_ROUTER_SERVICE_ENABLED
+          value: "false"
+        - name : JF_EVENT_ENABLED
+          value: "false"
+        - name : JF_METADATA_ENABLED
+          value: "false"
+        - name : JF_FRONTEND_ENABLED
+          value: "false"
+        - name: JF_REPLICATOR_ENABLED
+          value: "true"
+        - name: JF_REPLICATOR_SERVICE_ENABLED
+          value: "false"
+        - name : JF_OBSERVABILITY_ENABLED
+          value: "false"
+        - name : JF_JFCONNECT_ENABLED
+          value: "true"
+        - name : JF_JFCONNECT_SERVICE_ENABLED
+          value: "false"
+        - name : JF_INTEGRATION_ENABLED
+          value: "false"
+      {{- end }}
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+            {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+        - name: JF_SHARED_NODE_HAENABLED
+          value: "true"
+{{- with .Values.artifactory.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.artifactory.internalPort }}
+          name: http
+        - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
+          name: http-internal
+        {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
+        - containerPort: {{ .Values.artifactory.primary.javaOpts.jmx.port }}
+          name: tcp-jmx
+        {{- end }}
+        {{- if .Values.artifactory.ssh.enabled }}
+        - containerPort: {{ .Values.artifactory.ssh.internalPort }}
+          name: tcp-ssh
+        {{- end }}
+        volumeMounts:
+        {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+        {{- end }}
+        {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentPodVolumeClaim.mountPath }}
+        {{- end }}
+        {{- if .Values.aws.licenseConfigSecretName }}
+        - name: awsmp-product-license
+          mountPath: "/var/run/secrets/product-license"
+        {{- end }}
+        {{- if .Values.artifactory.userPluginSecrets }}
+        - name: bootstrap-plugins
+          mountPath: "/artifactory_bootstrap/plugins/"
+        {{- range .Values.artifactory.userPluginSecrets }}
+        - name: {{ tpl . $ }}
+          mountPath: "/tmp/plugin/{{ tpl . $ }}"
+        {{- end }}
+        {{- end }}
+        - name: volume
+          mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
+        - name: artifactory-ha-data-{{ $sharedClaimNumber }}
+          mountPath: "{{ tpl $.Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir $ }}/filestore{{ $sharedClaimNumber }}"
+          {{- end }}
+        - name: artifactory-ha-backup
+          mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
+        {{- end }}
+      {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+        - name: artifactory-ha-data
+          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+        - name: artifactory-ha-backup
+          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+      {{- else }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.customBinarystoreXmlSecret }}
+        - name: binarystore-xml
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/tmp/etc/artifactory/binarystore.xml"
+          subPath: binarystore.xml
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        - name: gcpcreds-json
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
+      {{- end }}
+      {{- if .Values.artifactory.configMapName }}
+        - name: bootstrap-config
+          mountPath: "/bootstrap/"
+      {{- end }}
+      {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.license.secret }}
+        - name: artifactory-license
+        {{- else }}
+        - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/artifactory_bootstrap/artifactory.cluster.license"
+          {{- if .Values.artifactory.license.secret }}
+          subPath: {{ .Values.artifactory.license.dataKey }}
+          {{- else if .Values.artifactory.license.licenseKey }}
+          subPath: artifactory.lic
+          {{- end }}
+      {{- end }}
+        - name: installer-info
+          mountPath: "/artifactory_bootstrap/info/installer-info.json"
+          subPath: installer-info.json
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+        resources:
+{{ toYaml .Values.artifactory.primary.resources | indent 10 }}
+        {{- if .Values.artifactory.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.artifactory.startupProbe.config . | indent 10 }}
+        {{- end }}
+    {{- if and (not .Values.splitServicesToContainers) (semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version) }}
+        {{- if .Values.artifactory.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.artifactory.readinessProbe.config . | indent 10 }}
+        {{- end }}
+    {{- end }}
+        {{- if .Values.artifactory.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.artifactory.livenessProbe.config . | indent 10 }}
+        {{- end }}
+      {{- $mountPath := .Values.artifactory.persistence.mountPath }}
+      {{- range .Values.artifactory.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - 'sh'
+          - '-c'
+          - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        volumeMounts:
+        - name: volume
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
+      {{- end }}
+      {{ if .Values.artifactory.catalinaLoggers }}
+      {{- range .Values.artifactory.catalinaLoggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
+        volumeMounts:
+        - name: volume
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.artifactory.catalinaLoggersResources | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: {{ .Values.filebeat.name }}
+        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        args:
+        - "-e"
+        - "-E"
+        - "http.enabled=true"
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: volume
+          mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        livenessProbe:
+{{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.filebeat.readinessProbe | indent 10 }}
+        resources:
+{{ toYaml .Values.filebeat.resources | indent 10 }}
+      {{- end }}
+    {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
+    {{- end }}
+    {{- if or .Values.artifactory.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "artifactory.nodeSelector" .) . | indent 6 }}
+    {{- end }}
+    {{- if .Values.artifactory.primary.affinity }}
+    {{- with .Values.artifactory.primary.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.artifactory.primary.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: {{ .Values.artifactory.primary.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "artifactory-ha.name" . }}
+                  release: {{ .Release.Name }}
+    {{- else if eq .Values.artifactory.primary.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: {{ .Values.artifactory.primary.podAntiAffinity.topologyKey }}
+            labelSelector:
+              matchLabels:
+                app: {{ template "artifactory-ha.name" . }}
+                release: {{ .Release.Name }}
+    {{- end }}
+    {{- with .Values.artifactory.primary.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      ########## External secrets ###########
+
+      {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.artifactory.customCertificates.certificateSecretName }}
+      {{- end }}
+
+      {{- if .Values.artifactory.circleOfTrustCertificatesSecret }}
+      - name: circle-of-trust-certs
+        secret:
+          secretName: {{ .Values.artifactory.circleOfTrustCertificatesSecret }}
+      {{- end }}
+
+      {{- if .Values.aws.licenseConfigSecretName }}
+      - name: awsmp-product-license
+        secret:
+          secretName: {{ .Values.aws.licenseConfigSecretName }}
+      {{- end }}
+
+      {{- if .Values.artifactory.persistence.customBinarystoreXmlSecret }}
+      - name: binarystore-xml
+        secret:
+          secretName: {{ .Values.artifactory.persistence.customBinarystoreXmlSecret }}
+      {{- end }}
+      {{- if .Values.access.customCertificatesSecretName }}
+      - name: access-certs
+        secret:
+          secretName: {{ .Values.access.customCertificatesSecretName }}
+      {{- end }}
+      {{- if .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+      {{- if .Values.artifactory.license.secret }}
+      - name: artifactory-license
+        secret:
+          secretName: {{ .Values.artifactory.license.secret }}
+      {{- end }}
+      {{- if and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey }}
+      - name: access-bootstrap-creds
+        secret:
+          secretName: {{ .Values.artifactory.admin.secret }}
+      {{- end }}
+      {{- if and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+      - name: gcpcreds-json
+        secret:
+          secretName: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+      {{- end }}
+
+      ############ Config map, Volumes and Custom Volumes ##############
+      {{- if .Values.artifactory.userPluginSecrets }}
+      - name: bootstrap-plugins
+        emptyDir: {}
+      {{- range .Values.artifactory.userPluginSecrets }}
+      - name: {{ tpl . $ }}
+        secret:
+          secretName: {{ tpl . $ }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.artifactory.migration.enabled }}
+      - name: migration-scripts
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-migration-scripts
+      {{- end }}
+      - name: installer-info
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-installer-info
+      {{- if .Values.artifactory.configMapName }}
+      - name: bootstrap-config
+        configMap:
+          name: {{ .Values.artifactory.configMapName }}
+      {{- end}}
+      {{- if or .Values.artifactory.loggers .Values.artifactory.catalinaLoggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-logger
+      {{- end }}
+      {{- if .Values.artifactory.configMaps }}
+      - name: artifactory-configmaps
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-configmaps
+      {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "file-system" }}
+        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
+          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
+      - name: artifactory-ha-data-{{ $sharedClaimNumber }}
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" $ }}-data-pvc-{{ $sharedClaimNumber }}
+          {{- end }}
+      - name: artifactory-ha-backup
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" $ }}-backup-pvc
+        {{- end }}
+      {{- end }}
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+      - name: artifactory-ha-data
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" . }}-data-pvc
+      - name: artifactory-ha-backup
+        persistentVolumeClaim:
+          claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
+      {{- end }}
+      {{- if .Values.artifactory.customPersistentVolumeClaim }}
+      - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ template "artifactory-ha.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if (or .Values.artifactory.customVolumes .Values.global.customVolumes) }}
+{{ tpl (include "artifactory-ha.customVolumes" .) . | indent 6 }}
+      {{- end }}
+  {{- if not .Values.artifactory.persistence.enabled }}
+      - name: volume
+        emptyDir:
+          sizeLimit: {{ .Values.artifactory.persistence.size }}
+  {{- end }}
+
+      #########  unifiedSecretInstallation ###########
+    {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "artifactory-ha.name" . }}-unified-secret
+    {{- else if not .Values.artifactory.unifiedSecretInstallation }}
+
+      ############ If single secret installation flag is disable ############
+      {{- if and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled (not .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName) }}
+      - name: gcpcreds-json
+        secret:
+          secretName: {{ template "artifactory-ha.fullname" . }}-gcpcreds
+      {{- end }}
+      {{- if and .Values.artifactory.license.licenseKey (not .Values.artifactory.license.secret) }}
+      - name: artifactory-license
+        secret:
+          secretName: {{ template "artifactory-ha.fullname" . }}-license
+      {{- end }}
+      {{- if and .Values.artifactory.admin.password (not .Values.artifactory.admin.secret) }}
+      - name: access-bootstrap-creds
+        secret:
+          secretName: {{ template "artifactory-ha.fullname" . }}-bootstrap-creds
+      {{- end }}
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.artifactory.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ template "artifactory-ha.primary.name" . }}-system-yaml
+      {{- end }}
+      {{- if .Values.access.accessConfig }}
+      - name: access-config
+        secret:
+          secretName: {{ template "artifactory-ha.fullname" . }}-access-config
+      {{- end }}
+      {{- if not .Values.artifactory.persistence.customBinarystoreXmlSecret }}
+      - name: binarystore-xml
+        secret:
+          secretName: {{ template "artifactory-ha.fullname" . }}-binarystore
+      {{- end }}
+    {{- end }}
+
+  volumeClaimTemplates:
+  {{- if .Values.artifactory.persistence.enabled }}
+  - metadata:
+      name: volume
+    {{- if not .Values.artifactory.primary.persistence.existingClaim }}
+    spec:
+      {{- if .Values.artifactory.persistence.storageClassName }}
+      {{- if (eq "-" .Values.artifactory.persistence.storageClassName) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.artifactory.persistence.storageClassName }}"
+      {{- end }}
+      {{- end }}
+      accessModes: [ "{{ .Values.artifactory.persistence.accessMode }}" ]
+      resources:
+        requests:
+          storage: {{ .Values.artifactory.persistence.size }}
+    {{- end }}
+  {{- end }}
+  {{- if .Values.artifactory.customPersistentPodVolumeClaim }}
+  - metadata:
+      name: {{ .Values.artifactory.customPersistentPodVolumeClaim.name }}
+    spec:
+    {{- if .Values.artifactory.customPersistentPodVolumeClaim.storageClassName }}
+      {{- if (eq "-" .Values.artifactory.customPersistentPodVolumeClaim.storageClassName) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.artifactory.customPersistentPodVolumeClaim.storageClassName }}"
+      {{- end }}
+    {{- end }}
+      accessModes:
+     {{- range .Values.artifactory.customPersistentPodVolumeClaim.accessModes }}
+        - {{ . | quote }}
+     {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.artifactory.customPersistentPodVolumeClaim.size }}
+  {{- end }}

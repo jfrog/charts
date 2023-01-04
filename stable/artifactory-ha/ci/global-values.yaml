@@ -1,0 +1,255 @@
+databaseUpgradeReady: true
+artifactory:
+  persistence:
+    enabled: false
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  node:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
+  customInitContainersBegin: |
+   - name: "custom-init-begin-local"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - echo "running in local"
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: volume
+  customInitContainers: |
+   - name: "custom-init-local"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - echo "running in local"
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: volume
+  # Add custom volumes
+  customVolumes: |
+   - name: custom-script-local
+     emptyDir:
+       sizeLimit: 100Mi
+  # Add custom volumesMounts
+  customVolumeMounts: |
+   - name: custom-script-local
+     mountPath: "/scriptslocal"
+  # Add custom sidecar containers
+  customSidecarContainers: |
+   - name: "sidecar-list-local"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecarlocal.txt; cat /scriptslocal/sidecarlocal.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scriptslocal"
+         name: custom-script-local
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+
+# To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
+postgresql:
+  postgresqlPassword: password
+  persistence:
+    enabled: false
+global:
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  customInitContainersBegin: |
+   - name: "custom-init-begin-global"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - echo "running in global"
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: volume
+  customInitContainers: |
+   - name: "custom-init-global"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - echo "running in global"
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: volume
+  # Add custom volumes
+  customVolumes: |
+   - name: custom-script-global
+     emptyDir:
+       sizeLimit: 100Mi
+  # Add custom volumesMounts
+  customVolumeMounts: |
+   - name: custom-script-global
+     mountPath: "/scripts"
+  # Add custom sidecar containers
+  customSidecarContainers: |
+   - name: "sidecar-list-global"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in global' >> /scripts/sidecarglobal.txt; cat /scripts/sidecarglobal.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scripts"
+         name: custom-script-global
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+
+nginx:
+  customInitContainers: |
+   - name: "custom-init-begin-nginx"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     command:
+       - 'sh'
+       - '-c'
+       - echo "running in nginx"
+     volumeMounts:
+       - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+         name: custom-script-local
+  customSidecarContainers: |
+   - name: "sidecar-list-nginx"
+     image: "{{ .Values.initContainerImage }}"
+     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecarlocal.txt; cat /scriptslocal/sidecarlocal.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scriptslocal"
+         name: custom-script-local
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+  # Add custom volumes
+  customVolumes: |
+   - name: custom-script-local
+     emptyDir:
+       sizeLimit: 100Mi
+
+  artifactoryConf: |
+    {{- if .Values.nginx.https.enabled }}
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
+    ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
+    ssl_session_cache shared:SSL:1m;
+    ssl_prefer_server_ciphers   on;
+    {{- end }}
+    ## server configuration
+    server {
+      listen 8088;
+      {{- if .Values.nginx.internalPortHttps }}
+      listen {{ .Values.nginx.internalPortHttps }} ssl;
+      {{- else -}}
+      {{- if .Values.nginx.https.enabled }}
+      listen {{ .Values.nginx.https.internalPort }} ssl;
+      {{- end }}
+      {{- end }}
+      {{- if .Values.nginx.internalPortHttp }}
+      listen {{ .Values.nginx.internalPortHttp }};
+      {{- else -}}
+      {{- if .Values.nginx.http.enabled }}
+      listen {{ .Values.nginx.http.internalPort }};
+      {{- end }}
+      {{- end }}
+      server_name ~(?<repo>.+)\.{{ include "artifactory-ha.fullname" . }} {{ include "artifactory-ha.fullname" . }}
+      {{- range .Values.ingress.hosts -}}
+        {{- if contains "." . -}}
+          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+        {{- end -}}
+      {{- end -}};
+      if ($http_x_forwarded_proto = '') {
+        set $http_x_forwarded_proto  $scheme;
+      }
+      ## Application specific logs
+      ## access_log /var/log/nginx/artifactory-access.log timing;
+      ## error_log /var/log/nginx/artifactory-error.log;
+      rewrite ^/artifactory/?$ / redirect;
+      if ( $repo != "" ) {
+        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
+      }
+      chunked_transfer_encoding on;
+      client_max_body_size 0;
+
+      location / {
+        proxy_read_timeout  900;
+        proxy_pass_header   Server;
+        proxy_cookie_path   ~*^/.* /;
+        proxy_pass          {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+        {{- if .Values.nginx.service.ssloffload}}
+        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+        {{- else }}
+        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$server_port;
+        proxy_set_header    X-Forwarded-Port  $server_port;
+        {{- end }}
+        proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+        proxy_set_header    Host              $http_host;
+        proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+        add_header Strict-Transport-Security always;
+
+        location /artifactory/ {
+          if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+            proxy_pass       {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+          }
+          proxy_pass          {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+        }
+      }
+    }
+
+  ## A list of custom ports to expose on the NGINX pod. Follows the conventional Kubernetes yaml syntax for container ports.
+  customPorts:
+  - containerPort: 8088
+    name: http2
+  service:
+    ## A list of custom ports to expose through the Ingress controller service. Follows the conventional Kubernetes yaml syntax for service ports.
+    customPorts:
+    - port: 8088
+      targetPort: 8088
+      protocol: TCP
+      name: http2

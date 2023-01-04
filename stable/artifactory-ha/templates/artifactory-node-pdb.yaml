@@ -1,0 +1,26 @@
+{{- if gt (.Values.artifactory.node.replicaCount | int) 0  -}}
+{{- if .Values.artifactory.node.minAvailable -}}
+{{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: policy/v1beta1
+{{- else }}
+apiVersion: policy/v1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "artifactory-ha.fullname" . }}-node
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    component: {{ .Values.artifactory.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      component: {{ .Values.artifactory.name }}
+      app: {{ template "artifactory-ha.name" . }}
+      role: {{ template "artifactory-ha.node.name" . }}
+      release: {{ .Release.Name }}
+  minAvailable: {{ .Values.artifactory.node.minAvailable }}
+{{- end }}
+{{- end -}}

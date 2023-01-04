@@ -1,0 +1,34 @@
+databaseUpgradeReady: true
+artifactory:
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  persistence:
+    enabled: false
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  node:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
+# To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
+postgresql:
+  postgresqlPassword: password
+  persistence:
+    enabled: false
+access:
+  accessConfig:
+    security:
+      tls: true
+  resetAccessCAKeys: true

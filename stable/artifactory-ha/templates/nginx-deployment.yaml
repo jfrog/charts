@@ -1,0 +1,211 @@
+{{- if .Values.nginx.enabled -}}
+{{- $serviceName := include "artifactory-ha.fullname" . -}}
+{{- $servicePort := .Values.artifactory.externalPort -}}
+apiVersion: apps/v1
+kind: {{ .Values.nginx.kind }}
+metadata:
+  name: {{ template "artifactory-ha.nginx.fullname" . }}
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.nginx.name }}
+{{- if .Values.nginx.labels }}
+{{ toYaml .Values.nginx.labels | indent 4 }}
+{{- end }}
+{{- with .Values.nginx.deployment.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if ne .Values.nginx.kind "DaemonSet" }}
+  replicas: {{ .Values.nginx.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "artifactory-ha.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.nginx.name }}
+  template:
+    metadata:
+      annotations:
+        checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
+        checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.nginx.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+      labels:
+        app: {{ template "artifactory-ha.name" . }}
+        chart: {{ template "artifactory-ha.chart" . }}
+        component: {{ .Values.nginx.name }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.nginx.terminationGracePeriodSeconds }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
+    {{- end }}
+      {{- if .Values.nginx.priorityClassName }}
+      priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.nginx.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.nginx.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
+      initContainers:
+        {{- if .Values.nginx.customInitContainers }}
+{{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
+        {{- end }}
+      - name: "setup"
+        image: "{{ .Values.initContainerImage }}"
+        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found;
+          mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs;
+        volumeMounts:
+        - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
+          name: nginx-volume
+      securityContext:
+        runAsUser: {{ .Values.nginx.uid }}
+        fsGroup: {{ .Values.nginx.gid }}
+      containers:
+      - name: {{ .Values.nginx.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "nginx") }}
+        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        {{- with .Values.nginx.securityContext }}
+        securityContext:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        command:
+{{- tpl (include "nginx.command" .) . | indent 10 }}
+        ports:
+{{ if .Values.nginx.customPorts }}
+{{ toYaml .Values.nginx.customPorts | indent 8 }}
+{{ end }}
+        # DEPRECATION NOTE: The following is to maintain support for values pre 1.3.1 and
+        # will be cleaned up in a later version
+        {{- if .Values.nginx.http }}
+        {{- if .Values.nginx.http.enabled }}
+        - containerPort: {{ .Values.nginx.http.internalPort }}
+          name: http
+        {{- end }}
+        {{- else }} # DEPRECATED
+        - containerPort: {{ .Values.nginx.internalPortHttp }}
+          name: http-internal
+        {{- end }}
+        {{- if .Values.nginx.https }}
+        {{- if .Values.nginx.https.enabled }}
+        - containerPort: {{ .Values.nginx.https.internalPort }}
+          name: https
+        {{- end }}
+        {{- else }} # DEPRECATED
+        - containerPort: {{ .Values.nginx.internalPortHttps }}
+          name: https-internal
+        {{- end }}
+        {{- if .Values.artifactory.ssh.enabled }}
+        - containerPort: {{ .Values.nginx.ssh.internalPort }}
+          name: tcp-ssh
+        {{- end }}
+        {{- with .Values.nginx.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-artifactory-conf
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
+        - name: nginx-volume
+          mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
+        {{- if .Values.nginx.https.enabled }}
+        - name: ssl-certificates
+          mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
+        {{- end }}
+        {{- if .Values.nginx.customVolumeMounts }}
+{{ tpl (include "artifactory.nginx.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.nginx.resources | indent 10 }}
+        {{- if .Values.nginx.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.nginx.startupProbe.config . | indent 10 }}
+        {{- end }}
+        {{- if .Values.nginx.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.nginx.readinessProbe.config . | indent 10 }}
+        {{- end }}
+        {{- if .Values.nginx.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.nginx.livenessProbe.config . | indent 10 }}
+        {{- end }}
+      {{- $mountPath := .Values.nginx.persistence.mountPath }}
+      {{- range .Values.nginx.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        command:
+        - tail
+        args:
+        - '-F'
+        - '{{ $mountPath }}/logs/{{ . }}'
+        volumeMounts:
+        - name: nginx-volume
+          mountPath: {{ $mountPath }}
+        resources:
+{{ toYaml $.Values.nginx.loggersResources | indent 10 }}
+      {{- end }}
+        {{- if .Values.nginx.customSidecarContainers }}
+{{ tpl (include "artifactory.nginx.customSidecarContainers" .)  . | indent 6 }}
+        {{- end }}
+    {{- if or .Values.nginx.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "nginx.nodeSelector" .) . | indent 6 }}
+    {{- end }}
+    {{- with .Values.nginx.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nginx.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        {{- if .Values.nginx.customVolumes }}
+{{ tpl (include "artifactory.nginx.customVolumes" .)  . | indent 6 }}
+        {{- end }}
+      - name: nginx-conf
+        configMap:
+        {{- if .Values.nginx.customConfigMap }}
+          name: {{ .Values.nginx.customConfigMap }}
+        {{- else }}
+          name: {{ template "artifactory-ha.fullname" . }}-nginx-conf
+        {{- end }}
+      - name: nginx-artifactory-conf
+        configMap:
+      {{- if .Values.nginx.customArtifactoryConfigMap }}
+          name: {{ .Values.nginx.customArtifactoryConfigMap }}
+      {{- else }}
+          name: {{ template "artifactory-ha.fullname" . }}-nginx-artifactory-conf
+      {{- end }}
+
+      - name: nginx-volume
+      {{- if .Values.nginx.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.nginx.persistence.existingClaim | default (include "artifactory-ha.nginx.fullname" .) }}
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      {{- if .Values.nginx.https.enabled }}
+      - name: ssl-certificates
+        secret:
+      {{- if .Values.nginx.tlsSecretName }}
+          secretName: {{ .Values.nginx.tlsSecretName }}
+      {{- else }}
+          secretName: {{ template "artifactory-ha.fullname" . }}-nginx-certificate
+      {{- end }}
+      {{- end }}
+{{- end }}

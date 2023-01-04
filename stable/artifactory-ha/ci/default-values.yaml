@@ -1,0 +1,32 @@
+# Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
+databaseUpgradeReady: true
+## This is an exception here because HA needs masterKey to connect with other node members and it is commented in values to support 6.x to 7.x Migration
+## Please refer https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/README.md#special-upgrade-notes-1
+artifactory:
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  persistence:
+    enabled: false
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  node:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
+# To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
+postgresql:
+  postgresqlPassword: password
+  persistence:
+    enabled: false
