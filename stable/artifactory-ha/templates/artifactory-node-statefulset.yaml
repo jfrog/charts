@@ -141,13 +141,11 @@ spec:
           echo "Sleeping to allow time for primary node to come up";
           sleep {{ .Values.artifactory.node.waitForPrimaryStartup.time }};
           {{- else }}
-          response="";
-          url={{ include "artifactory-ha.scheme" . }}://{{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.externalPort }};
-          while [ "$response" != "200" ];
-            do echo "Primary not ready. Waiting..."; sleep 3;
-            response=$(curl -k --connect-timeout 5 --write-out '%{http_code}' --silent --output /dev/null $url);
-          done;
-          echo "Primary node ready!";
+          ready=false;
+          while ! $ready; do echo Primary not ready. Waiting...;
+            timeout 2s bash -c "</dev/tcp/{{ template "artifactory-ha.primary.name" . }}/{{ .Values.artifactory.externalPort }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "Primary node ready!"; fi; sleep 3; 
+          done
           {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
