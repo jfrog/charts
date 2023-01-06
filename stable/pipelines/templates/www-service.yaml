@@ -5,6 +5,10 @@ metadata:
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
     component: {{ include "pipelines.www.name" . }}
+    {{- include "pipelines.common.labels" . | nindent 4 }}
+    {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- if .Values.pipelines.www.service.annotations }}
   annotations:
     {{- range $key, $value := .Values.pipelines.www.service.annotations }}

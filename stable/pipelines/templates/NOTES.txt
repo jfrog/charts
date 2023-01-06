@@ -1,5 +1,9 @@
+{{- if ge (len .Values.pipelines.jfrogUrlUI) 1 }}
 JFrog Pipelines is now accessible in the Pipelines side-tab via the artifactory URL:
   {{ .Values.pipelines.jfrogUrlUI }}
+{{ else }}
+Congratulations! JFrog Pipelines services are deployed!
+{{ end }}
 
 {{- if and (or (or (or (or .Values.systemYamlOverride.existingSecret (and .Values.buildPlane.dynamic.provider.aws.enabled .Values.buildPlane.dynamic.provider.aws.existingSecret)) (and .Values.buildPlane.dynamic.provider.k8s.enabled .Values.buildPlane.dynamic.provider.k8s.existingSecret)) (or .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName)) .Values.pipelines.unifiedSecretInstallation }}
 ****************************************** WARNING **************************************************************************************************

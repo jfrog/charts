@@ -1,6 +1,13 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.11.0] - Jan 6, 2023
+* Update dependency artifactory chart version to 107.49.3
+* Update dependency xray chart version to 103.63.2
+* Update dependency pipelines chart version to 101.30.4
+* Updated postgresql version to `13.9.0-debian-11-r11`
+* Updated redis version to `7.0.6-debian-11-r0`
+
 ## [10.10.2] - Dec 22, 2022
 * Update dependency artifactory chart version to 107.47.14
 * Update dependency insight chart version to 101.13.1

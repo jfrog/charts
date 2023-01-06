@@ -4,6 +4,7 @@ metadata:
   name: {{ include "pipelines.services.name" . }}
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
+    {{- include "pipelines.common.labels" . | nindent 4 }}
     {{- with .Values.pipelines.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
@@ -27,8 +28,10 @@ spec:
       labels:
         {{- include "pipelines.selectorLabels" . | nindent 8 }}
         component: {{ include "pipelines.services.name" . }}
-        app: {{ template "pipelines.name" . }}
-        release: {{ .Release.Name }}
+        {{- include "pipelines.common.labels" . | nindent 8 }}
+        {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       annotations:
       {{- if not .Values.pipelines.unifiedSecretInstallation }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
@@ -435,6 +438,16 @@ spec:
               {{- end }}
             - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
               value: "true"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.router.extraEnvironmentVariables }}
+{{- with .Values.pipelines.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
           ports:
             - name: http-router
               containerPort: {{ .Values.pipelines.router.internalPort }}
@@ -487,6 +500,16 @@ spec:
                   name: "{{ template "pipelines.name" . }}-unified-secret"
                 {{- end }}
                   key: join-key
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.observability.extraEnvironmentVariables }}
+{{- with .Values.pipelines.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
           resources:
             {{ toYaml .Values.pipelines.observability.resources | indent 12 }}
           {{- if .Values.pipelines.observability.startupProbe.enabled }}
@@ -517,8 +540,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.api.extraEnvironmentVariables }}
+{{- with .Values.pipelines.api.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           ports:
             - name: http-api
@@ -567,6 +597,11 @@ spec:
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
 {{- end }}
+{{- if .Values.pipelines.www.extraEnvironmentVariables }}
+{{- with .Values.pipelines.www.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
           ports:
             - name: http-www
               containerPort: 30001
@@ -610,6 +645,11 @@ spec:
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
 {{- end }}
+{{- if .Values.pipelines.frontend.extraEnvironmentVariables }}
+{{- with .Values.pipelines.frontend.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
           ports:
           - containerPort: {{ .Values.pipelines.frontend.internalPort }}
             name: http-frontend
@@ -627,29 +667,35 @@ spec:
           {{- with .Values.pipelines.customVolumeMounts }}
 {{ tpl . $ | nindent 10 }}
           {{- end }}
+{{- if not .Values.splitServicesToPods }}
 {{- if .Values.pipelines.nodepoolmanager.enabled }}
-          - name: nodepoolmanager
-            image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nodepoolmanager" ) }}
-            imagePullPolicy: {{ .Values.pipelines.nodepoolmanager.image.pullPolicy }}
-            securityContext:
-              allowPrivilegeEscalation: false
-              capabilities:
-                drop:
-                  - NET_RAW
-            env:
-              {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-              - name: NODE_EXTRA_CA_CERTS
-                value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-              {{- end }}
-              - name: PIPELINES_NODE_ID
-                valueFrom:
-                  fieldRef:
-                    fieldPath: "metadata.name"
-            {{- if .Values.pipelines.extraEnvironmentVariables }}
-            {{- with .Values.pipelines.extraEnvironmentVariables }}
-            {{ tpl (toYaml .) $ | indent 12 }}
+        - name: nodepoolmanager
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nodepoolmanager" ) }}
+          imagePullPolicy: {{ .Values.pipelines.nodepoolmanager.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
-            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+          {{- if .Values.pipelines.extraEnvironmentVariables }}
+          {{- with .Values.pipelines.extraEnvironmentVariables }}
+          {{ tpl (toYaml .) $ | indent 12 }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.pipelines.nodepoolmanager.extraEnvironmentVariables }}
+          {{- with .Values.pipelines.nodepoolmanager.extraEnvironmentVariables }}
+          {{ tpl (toYaml .) $ | indent 12 }}
+          {{- end }}
+          {{- end }}
           resources:
             {{- toYaml .Values.pipelines.nodepoolmanager.resources | nindent 12 }}
           volumeMounts:
@@ -660,7 +706,7 @@ spec:
 {{- with .Values.pipelines.customVolumeMounts }}
 {{ tpl . $ | nindent 10 }}
 {{- end }}
-{{- end}}
+{{- end }}
         - name: pipelinesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
@@ -681,8 +727,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.pipelineSync.extraEnvironmentVariables }}
+{{- with .Values.pipelines.pipelineSync.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
@@ -711,8 +764,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.runTrigger.extraEnvironmentVariables }}
+{{- with .Values.pipelines.runTrigger.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
@@ -741,8 +801,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
+{{- with .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
@@ -771,8 +838,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.cron.extraEnvironmentVariables }}
+{{- with .Values.pipelines.cron.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.cron.resources | nindent 12 }}
@@ -802,8 +876,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.nexec.extraEnvironmentVariables }}
+{{- with .Values.pipelines.nexec.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
@@ -833,8 +914,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.hookHandler.extraEnvironmentVariables }}
+{{- with .Values.pipelines.hookHandler.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
@@ -863,8 +951,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.marshaller.extraEnvironmentVariables }}
+{{- with .Values.pipelines.marshaller.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
@@ -893,8 +988,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.logup.extraEnvironmentVariables }}
+{{- with .Values.pipelines.logup.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
@@ -923,8 +1025,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.extensionSync.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extensionSync.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.extensionSync.resources | nindent 12 }}
@@ -953,8 +1062,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.reqSealer.extraEnvironmentVariables }}
+{{- with .Values.pipelines.reqSealer.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.reqSealer.resources | nindent 12 }}
@@ -983,8 +1099,15 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.templateSync.extraEnvironmentVariables }}
+{{- with .Values.pipelines.templateSync.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.templateSync.resources | nindent 12 }}
@@ -993,6 +1116,7 @@ spec:
               mountPath: {{ .Values.pipelines.mountPath }}
             - name: jfrog-pipelines-logs
               mountPath: {{ .Values.pipelines.logPath }}
+{{- end }}
           {{- if or .Values.pipelines.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "pipelines.customSidecarContainers" .) . | nindent 8 }}
           {{- end }}

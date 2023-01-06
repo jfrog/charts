@@ -1,0 +1,537 @@
+{{- if .Values.splitServicesToPods -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "pipelines.steptrigger.name" . }}
+  labels:
+    {{- include "pipelines.steptrigger.labels" . | nindent 4 }}
+    {{- with .Values.pipelines.stepTrigger.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- include "pipelines.common.labels" . | nindent 4 }}
+    {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+spec:
+  serviceName: {{ include "pipelines.services.name" . }}-headless
+  replicas: {{ .Values.pipelines.stepTrigger.replicaCount }}
+  updateStrategy:
+    type: {{ .Values.pipelines.updateStrategy }}
+  selector:
+    matchLabels:
+      {{- include "pipelines.steptrigger.selectorLabels" . | nindent 6 }}
+      component: {{ include "pipelines.steptrigger.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "pipelines.steptrigger.selectorLabels" . | nindent 8 }}
+        component: {{ include "pipelines.steptrigger.name" . }}
+        {{- include "pipelines.common.labels" . | nindent 8 }}
+        {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+      {{- if not .Values.pipelines.unifiedSecretInstallation }}
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/pipelines-system-yaml.yaml") . | sha256sum }}
+        checksum/d: {{ include (print $.Template.BasePath "/database-secret.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/pipelines-unified-secret: {{ include (print $.Template.BasePath "/pipelines-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
+        checksum/configfilebeat: {{ include (print $.Template.BasePath "/filebeat-config.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.pipelines.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+    {{- if .Values.pipelines.schedulerName }}
+      schedulerName: {{ .Values.pipelines.schedulerName | quote }}
+    {{- end }}
+    {{- if .Values.pipelines.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.pipelines.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.pipelines.priorityClass.create }}
+      priorityClassName: {{ default (include "pipelines.fullname" .) .Values.pipelines.priorityClass.name }}
+      {{- end }}
+    {{- end }}
+      serviceAccountName: {{ template "pipelines.serviceAccountName" . }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "pipelines.imagePullSecrets" . | nindent 6 }}
+    {{- end }}
+      initContainers:
+          {{- if or .Values.pipelines.stepTrigger.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "pipelines.steptrigger.customInitContainersBegin" .)  . | indent 8 }}
+          {{- end }}
+        - name: wait-for-pipelines-internalapi
+          image: '{{ .Values.initContainer.image }}'
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - 'sh'
+          - '-c'
+          - >
+            echo "Waiting for pipelines-api to come up...";
+            until nc -z -w 2 {{ include "pipelines.internalapi.name" . }} 30002 && echo pipelines-internalapi ok; do
+              sleep 2;
+            done;
+        - name: copy-system-yaml
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            echo "Copy system.yaml to {{ .Values.pipelines.mountPath }}";
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- else }}
+            cp -fv /tmp/etc/system.yaml {{ .Values.pipelines.mountPath }}/system.yaml;
+            {{- end }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+        {{- if or .Values.systemYamlOverride.existingSecret .Values.pipelines.systemYaml }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
+          - name: systemyaml
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+            subPath: {{ .Values.systemYamlOverride.dataKey }}
+            {{- else if .Values.pipelines.systemYaml }}
+            mountPath: "/tmp/etc/system.yaml"
+            subPath: system.yaml
+            {{- end }}
+        {{- end }}
+      {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: copy-custom-certificates
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/sh'
+          - '-c'
+          - >
+{{ include "pipelines.copyCustomCerts" . | indent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
+        - name: pipelines-installer
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
+          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
+                  key: token
+            - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  {{- if .Values.global.postgresql.existingSecret }}
+                  name: {{ .Values.global.postgresql.existingSecret }}
+                  {{- else }}
+                  name: {{ printf "%s-%s" (include "pipelines.fullname" .) "database" }}
+                  {{- end }}
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: postgresql-url
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            {{- if or .Values.pipelines.masterKey .Values.global.masterKey .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
+            - name: PIPELINES_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.masterKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: master-key
+            {{- end }}
+            {{- if or .Values.pipelines.joinKey .Values.global.joinKey .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+            - name: PIPELINES_JOIN_KEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
+            {{- end }}
+          command:
+          - 'sh'
+          - '-c'
+          - >
+          {{- if or .Values.pipelines.masterKey .Values.global.masterKey .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
+            echo "Copy masterKey to {{ .Values.pipelines.mountPath }}/security";
+            mkdir -p {{ .Values.pipelines.mountPath }}/security;
+            echo -n ${PIPELINES_MASTER_KEY} > {{ .Values.pipelines.mountPath }}/security/master.key;
+          {{- end }}
+          {{- if or .Values.pipelines.joinKey .Values.global.joinKey .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+            echo "Copy joinKey to {{ .Values.pipelines.mountPath }}/security";
+            mkdir -p {{ .Values.pipelines.mountPath }}/security;
+            echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
+          {{- end }}
+            sleep 5;
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+          {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
+          - name: buildplane-creds-aws
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
+            readOnly: true
+          - name: buildplane-config-aws
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
+            readOnly: true
+          {{- end }}
+          {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+          {{- if not .Values.pipelines.unifiedSecretInstallation }}
+          - name: buildplane-creds-k8s
+          {{- else }}
+          - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+          {{- end }}
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-creds
+            readOnly: true
+          - name: buildplane-config-k8s
+            mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
+            readOnly: true
+          {{- end }}
+        - name: change-ownership
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            echo "change ownership of {{ .Values.pipelines.mountPath }} directory";
+            chown -R 1066:1066 {{ .Values.pipelines.mountPath }};
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          {{- if or .Values.pipelines.stepTrigger.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "pipelines.steptrigger.customInitContainers" .)  . | indent 8 }}
+          {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
+      containers:
+        {{- if .Values.filebeat.enabled }}
+        - name: {{ .Values.filebeat.name }}
+          image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+          imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          args:
+          - "-e"
+          - "-E"
+          - "http.enabled=true"
+          resources:
+            {{ toYaml .Values.filebeat.resources | nindent 12 }}
+          volumeMounts:
+          - name: filebeat-config
+            mountPath: /usr/share/filebeat/filebeat.yml
+            readOnly: true
+            subPath: filebeat.yml
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+        {{- end }}
+        - name: router
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "router" ) }}
+          imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+          {{- if not .Values.router.routerConfiguration }}
+            - name: JF_SHARED_JFROGURL
+              value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}"
+          {{- end }}
+            - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
+              value: "{{ include "pipelines.grpc.url" . }}"
+            - name: JF_ROUTER_ENTRYPOINTS_INTERNALPORT
+              value: "{{ .Values.pipelines.router.internalPort }}"
+            - name: JF_ROUTER_ENTRYPOINTS_EXTERNALPORT
+              value: "{{ .Values.pipelines.router.externalPort }}"
+            - name: JF_ROUTER_LOGGING_ROUTER_LOGLEVEL
+              value: "DEBUG"
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            - name: JF_SHARED_NODE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: "status.podIP"
+            - name: JF_SHARED_SECURITY_JOINKEY
+              {{- if or .Values.pipelines.joinKeySecretName .Values.global.joinKeySecretName }}
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
+              {{- else }}
+              value: {{ include "pipelines.joinKey" . }}
+              {{- end }}
+            - name: JF_ROUTER_ENCRYPTSYSTEMCONFIG
+              value: "true"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.router.extraEnvironmentVariables }}
+{{- with .Values.pipelines.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          ports:
+            - name: http-router
+              containerPort: {{ .Values.pipelines.router.internalPort }}
+          resources:
+            {{ toYaml .Values.pipelines.router.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.router.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.router.logPath }}
+          - name: data-volume
+            mountPath: {{ .Values.pipelines.router.appStatePath | quote }}
+          {{- if .Values.pipelines.router.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.pipelines.router.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.pipelines.router.internalapi.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.pipelines.router.internalapi.livenessProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.pipelines.router.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.pipelines.router.readinessProbe.config . | indent 12 }}
+        {{- end }}
+        - name: steptrigger
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepTrigger" ) }}
+          imagePullPolicy: {{ .Values.pipelines.stepTrigger.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          workingDir: /opt/jfrog/pipelines/app/micro/stepTrigger
+          env:
+            - name: PIPELINES_INTERNAL_API
+              value: "true"
+            - name: COMPONENT
+              value: steptrigger
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
+{{- with .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+          {{- if or .Values.pipelines.stepTrigger.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "pipelines.steptrigger.customSidecarContainers" .) . | nindent 8 }}
+          {{- end }}
+    {{- if or .Values.pipelines.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "pipelines.nodeSelector" .) . | indent 6 }}
+    {{- end }}
+    {{- if .Values.pipelines.affinity }}
+    {{- with .Values.pipelines.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.pipelines.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.pipelines.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "pipelines.steptrigger.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.pipelines.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.pipelines.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "pipelines.steptrigger.name" . }}
+                  release: {{ .Release.Name }}
+    {{- end }}
+    {{- with .Values.pipelines.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+
+
+      volumes:
+
+      ########## External secrets ###########
+      {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.pipelines.customCertificates.certificateSecretName }}
+      {{- end }}
+
+      # system yaml
+      {{- if .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.aws.enabled .Values.buildPlane.dynamic.provider.aws.existingSecret }}
+      - name: buildplane-creds-aws
+        secret:
+          secretName: {{ .Values.buildPlane.dynamic.provider.aws.existingSecret }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled .Values.buildPlane.dynamic.provider.k8s.existingSecret }}
+      - name: buildplane-creds-k8s
+        secret:
+          secretName: {{ .Values.buildPlane.dynamic.provider.k8s.existingSecret }}
+      {{- end }}
+
+    #########  unifiedSecretInstallation ###########
+    {{- if and .Values.pipelines.unifiedSecretInstallation (eq (include "pipelines.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      - name: {{ include "pipelines.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "pipelines.name" . }}-unified-secret
+    {{- else if not .Values.pipelines.unifiedSecretInstallation }}
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.pipelines.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "pipelines.fullname" .) "system-yaml" }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.aws.enabled (not .Values.buildPlane.dynamic.provider.aws.existingSecret) }}
+      - name: buildplane-creds-aws
+        secret:
+          secretName: {{ printf "%s-dynamic-buildplane-creds-aws" (include "pipelines.fullname" .) }}
+      {{- end }}
+
+      {{- if and .Values.buildPlane.dynamic.provider.k8s.enabled (not .Values.buildPlane.dynamic.provider.k8s.existingSecret) }}
+      - name: buildplane-creds-k8s
+        secret:
+          secretName: {{ printf "%s-dynamic-buildplane-creds-k8s" (include "pipelines.fullname" .) }}
+      {{- end }}
+    {{- end }}
+
+      ############ Config map, Volumes and Custom Volumes ##############
+      {{- if or .Values.pipelines.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "pipelines.customVolumes" .) . | indent 6 }}
+      {{- end }}
+      {{- if .Values.buildPlane.dynamic.provider.aws.enabled }}
+      - name: buildplane-config-aws
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-aws
+      {{- end }}
+
+      {{- if .Values.buildPlane.dynamic.provider.k8s.enabled }}
+      - name: buildplane-config-k8s
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-dynamic-buildplane-config-k8s
+      {{- end }}
+
+      - name: jfrog-pipelines-folder
+        emptyDir: {}
+      - name: jfrog-pipelines-logs
+        emptyDir: {}
+      - name: data-volume
+        emptyDir: {}
+      {{- if .Values.pipelines.configMaps }}
+      - name: pipelines-configmaps
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-configmaps
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ include "pipelines.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if .Values.pipelines.customPersistentVolumeClaim }}
+      - name: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
+      {{- end }}
+{{- end -}}
