@@ -1,0 +1,39 @@
+{{- if .Values.splitServicesToPods -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipelines.internalapi.name" . }}
+  labels:
+    {{- include "pipelines.internalapi.labels" . | nindent 4 }}
+    component: {{ include "pipelines.internalapi.name" . }}
+    {{- with .Values.pipelines.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- include "pipelines.common.labels" . | nindent 4 }}
+{{- if .Values.pipelines.internalapi.service.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.pipelines.internalapi.service.annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+spec:
+  type: {{ .Values.pipelines.internalapi.service.type }}
+{{- if .Values.pipelines.internalapi.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.pipelines.internalapi.service.loadBalancerIP }}
+ {{- end }}
+{{- if .Values.pipelines.internalapi.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml .Values.pipelines.internalapi.service.loadBalancerSourceRanges | indent 4 }}
+{{- end }}
+  ports:
+    - port: {{ .Values.pipelines.internalapi.service.port }}
+{{- if eq .Values.pipelines.internalapi.service.type "NodePort" }}
+      nodePort: {{ .Values.pipelines.internalapi.service.port }}
+{{- end }}
+      targetPort: 30000
+      protocol: TCP
+      name: http-int-api
+  selector:
+    {{- include "pipelines.internalapi.selectorLabels" . | nindent 4 }}
+    component: {{ include "pipelines.internalapi.name" . }}
+{{- end -}}
