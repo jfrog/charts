@@ -129,6 +129,8 @@ securityContext:
   uid: 1030
   gid: 1030
 
+splitServicesToPods: false
+
 ## Pipelines components
 pipelines:
 
@@ -305,7 +307,7 @@ pipelines:
     enabled: false
     minReplicas: 1
     maxReplicas: 3
-    targetCPUUtilizationPercentage: 70
+    targetCPUUtilizationPercentage: 200
   ## JFConnect configuration
   ##
   jfconnect:
@@ -404,6 +406,98 @@ pipelines:
       # requests:
       #   cpu: 50m
       #   memory: 100Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+  internalapi:
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 200
+    labels: {}
+    service:
+      ## Supported service types: ClusterIP, NodePort and LoadBalancer
+      type: ClusterIP
+      port: 30002
+
+      annotations:
+      # external-dns.alpha.kubernetes.io/hostname:  example.org
+      # service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+      # service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:XXXXXX:certificate/XXXXXX
+
+      ## Set LB static IP
+      loadBalancerIP:
+
+      ## Whitelist IPs allowed to LoadBalancer type services
+      ## Example: loadBalancerSourceRanges={82.82.190.51/32,141.141.8.8/32}
+      loadBalancerSourceRanges: []
+    livenessProbe:
+      enabled: true
+      config: |
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
+        periodSeconds: 10
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 5
+        successThreshold: 1
+
+    startupProbe:
+      enabled: true
+      config: |
+        exec:
+          command:
+            - sh
+            - -c
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+        initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
+        periodSeconds: 5
+        timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+        failureThreshold: 30
+
+    ## External URL, it is ignored if ingress is enabled
+    externalUrl:
+
+    ingress:
+      enabled: false
+      annotations: {}
+        # kubernetes.io/ingress.class: nginx
+        # kubernetes.io/tls-acme: "true"
+      path: /
+      className: ""
+      hosts:
+        - chart-example.local
+
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - chart-example.local
+      #      - chart-example.local
+
+    resources: {}
+      # limits:
+      #   cpu: "2"
+      #   memory: 4Gi
+      # requests:
+      #   cpu: 50m
+      #   memory: 100Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
+
   router:
     image:
       # registry:
@@ -466,6 +560,25 @@ pipelines:
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
         failureThreshold: 30
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    internalapi:
+      livenessProbe:
+        enabled: true
+        config: |
+          exec:
+            command:
+              - sh
+              - -c
+              - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/pipelines/internalapi/v1/system/liveness
+          initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
+          periodSeconds: 10
+          timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+          failureThreshold: 5
+          successThreshold: 1
+
   www:
     image:
       # registry:
@@ -525,6 +638,9 @@ pipelines:
       #   cpu: 10m
       #   memory: 40Mi
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
 
   frontend:
     image:
@@ -555,6 +671,10 @@ pipelines:
       #   cpu: 10m
       #   memory: 40Mi
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
   nodepoolmanager:
     image:
       # registry:
@@ -562,6 +682,7 @@ pipelines:
       # tag:
       pullPolicy: IfNotPresent
     resources: {}
+    ## This service will be enabled in split deployment design (splitServicesToPods) as a mandatory service
     enabled: false
     # limits:
     #   cpu: 500m
@@ -570,6 +691,9 @@ pipelines:
     #   cpu: 5m
     #   memory: 40Mi
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
 
   msg:
     uiUser: monitor
@@ -583,6 +707,12 @@ pipelines:
       # tag:
       pullPolicy: IfNotPresent
 
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 200
+
     resources: {}
       # limits:
       #   cpu: "2"
@@ -591,6 +721,16 @@ pipelines:
       #   cpu: 25m
       #   memory: 40Mi
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
+
   runTrigger:
     image:
       # registry:
@@ -598,6 +738,12 @@ pipelines:
       # tag:
       pullPolicy: IfNotPresent
 
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 200
+
     resources: {}
       # limits:
       #   cpu: 500m
@@ -605,6 +751,16 @@ pipelines:
       # requests:
       #   cpu: 5m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
 
   stepTrigger:
     image:
@@ -612,7 +768,7 @@ pipelines:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
-
+    replicaCount: 1
     resources: {}
       # limits:
       #   cpu: 500m
@@ -620,6 +776,16 @@ pipelines:
       # requests:
       #   cpu: 5m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
 
   cron:
     image:
@@ -628,6 +794,8 @@ pipelines:
       # tag:
       pullPolicy: IfNotPresent
 
+    replicaCount: 1
+
     resources: {}
       # limits:
       #   cpu: 500m
@@ -635,6 +803,16 @@ pipelines:
       # requests:
       #   cpu: 5m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
 
   nexec:
     image:
@@ -653,12 +831,22 @@ pipelines:
 
     enabled: true
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
   hookHandler:
     image:
       # registry:
       repository: jfrog/pipelines-micro
       # tag:
       pullPolicy: IfNotPresent
+
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 3
+      targetCPUUtilizationPercentage: 200
 
     resources: {}
       # limits:
@@ -667,6 +855,16 @@ pipelines:
       # requests:
       #   cpu: 25m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
 
   marshaller:
     image:
@@ -683,6 +881,10 @@ pipelines:
       #   cpu: 5m
       #   memory: 60Mi
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
   logup:
     image:
       # registry:
@@ -697,6 +899,10 @@ pipelines:
       # requests:
       #   cpu: 5m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
 
   extensionSync:
     image:
@@ -713,6 +919,10 @@ pipelines:
       #   cpu: 5m
       #   memory: 40Mi
 
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
   templateSync:
     image:
       repository: jfrog/pipelines-micro
@@ -725,6 +935,10 @@ pipelines:
       # requests:
       #   cpu: 5m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
 
   reqSealer:
     image:
@@ -740,6 +954,10 @@ pipelines:
       # requests:
       #   cpu: 5m
       #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
 
   observability:
     image:
@@ -784,6 +1002,10 @@ pipelines:
         failureThreshold: 90
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
 
   ## Pipelines installer
   pipelinesInit:
@@ -940,7 +1162,7 @@ pipelines:
         baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "pipelines.jfrogUrl" .)) . }}"
         ## Unified UI URL
         ##
-        baseUrlUI: "{{ tpl (required "\n\npipelines.jfrogUrlUI or global.jfrogUrlUI is required!" (include "pipelines.jfrogUrlUI" .)) . }}"
+        baseUrlUI: {{ include "pipelines.jfrogUrlUI" . }}
         ## Pipelines Service ID
         ##
         serviceId: "{{ .Values.pipelines.serviceId }}"
@@ -1035,6 +1257,9 @@ pipelines:
           - "www.signals"
           {{- if .Values.pipelines.nexec.enabled }}
           - "core.nexec"
+          {{- end }}
+          {{- if or (.Values.pipelines.nodepoolmanager.enabled) (.Values.splitServicesToPods) }}
+          - "core.nodePoolManager"
           {{- end }}
           - "core.hookHandler"
           - "core.extensionSync"
@@ -1201,8 +1426,9 @@ pipelines:
       lastUpdateTime: ""
       callHomeUrl:  "https://api.bintray.com/products/jfrog/pipelines/stats/usage"
       allowCallHome: true
-      serviceInstanceHealthCheckIntervalInMins: 1
+      serviceInstanceHealthCheckIntervalInMins: 10
       serviceInstanceStatsCutOffIntervalInHours: 24
+      systemConfigRefreshIntervalInSeconds: 300
       {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
       customCACertsPath: "{{ .Values.pipelines.mountPath }}/security/keys/trusted"
       {{- else }}

@@ -64,7 +64,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.4.0-debian-10-r39
+    tag: 13.9.0-debian-11-r11
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -131,13 +131,13 @@ redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 6.2.1-debian-10-r9
+    tag: 7.0.6-debian-11-r0
   cluster:
     enabled: false
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.10.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.11.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false

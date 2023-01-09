@@ -1,0 +1,22 @@
+{{- if and (.Values.splitServicesToPods) (.Values.pipelines.internalapi.autoscaling.enabled) -}}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "pipelines.internalapi.name" . }}
+  labels:
+    {{- include "pipelines.internalapi.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: {{ include "pipelines.internalapi.name" . }}
+  minReplicas: {{ .Values.pipelines.internalapi.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.pipelines.internalapi.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.pipelines.internalapi.autoscaling.targetCPUUtilizationPercentage }}
+{{- end -}}
