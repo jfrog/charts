@@ -1,0 +1,22 @@
+{{- if and (.Values.splitServicesToPods) (.Values.pipelines.hookHandler.autoscaling.enabled) -}}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "pipelines.hookhandler.name" . }}
+  labels:
+    {{- include "pipelines.hookhandler.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: {{ include "pipelines.hookhandler.name" . }}
+  minReplicas: {{ .Values.pipelines.hookHandler.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.pipelines.hookHandler.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.pipelines.hookHandler.autoscaling.targetCPUUtilizationPercentage }}
+{{- end -}}
