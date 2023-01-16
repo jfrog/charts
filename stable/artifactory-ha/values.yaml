@@ -147,7 +147,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.4.0-debian-10-r39
+    tag: 13.9.0-debian-11-r11
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
@@ -758,6 +758,7 @@ artifactory:
   uid: 1030
   gid: 1030
   # fsGroupChangePolicy: "Always"
+  # seLinuxOptions: {}
   terminationGracePeriodSeconds: 30
   ## By default, the Artifactory StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `artifactory.uid` value.
   ## If you want to disable the securityContext for the Artifactory StatefulSet, set this tag to false

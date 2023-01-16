@@ -29,6 +29,7 @@ redis:
 
 distribution:
   jfrogUrl: http://artifactory.rt:8082
+  unifiedSecretInstallation: true
   persistence:
     enabled: false
   annotations:
@@ -54,6 +55,9 @@ distribution:
     xmx: "3g"
   priorityClass:
     create: true
+  statefulset:
+    annotations:
+      distribution: test
 
 # Init containers
 initContainers:

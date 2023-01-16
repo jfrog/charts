@@ -1,6 +1,14 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.16.1] - Dec 16, 2022
+* Removed `newProbes.enabled`, default to new probes
+* Added support for annotations for distribution statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+* Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
+* Added topologySpreadConstraints to distribution pods
+* Updated redis version tag to `7.0.6-debian-11-r0`
+* Updated postgresql tag version to `13.9.0-debian-11-r11`
+
 ## [102.15.0] - Aug 25, 2022
 * Updated router version to `7.45.0`
 * Added flag `distribution.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)

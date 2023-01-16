@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.30.4] - Jan 3, 2022
+## [101.31.2] - Jan 3, 2022
 * Added readiness and liveness for the missing pods
 
 ## [101.29.0] - Dec 6, 2022

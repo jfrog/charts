@@ -1,8 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.49.3] - Dec 14, 2022
+## [107.49.5] - Dec 16, 2022
+* Updated postgresql tag version to `13.9.0-debian-11-11`
+
+## [107.49.0] - Dec 14, 2022
 * Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
+* Added support for setting `seLinuxOptions` in `securityContext` [GH-1699](https://github.com/jfrog/charts/pull/1699)
 * Added option to enable/disable proxy_request_buffering and proxy_buffering_off [GH-1686](https://github.com/jfrog/charts/pull/1686)
 
 ## [107.48.0] - Oct 27, 2022

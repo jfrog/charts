@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.63.2] - Nov 28, 2022
+## [103.64.4] - Nov 28, 2022
 * Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
 
 ## [103.60.0] - Oct 27, 2022

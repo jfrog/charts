@@ -1,6 +1,13 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.11.1] - Jan 16, 2023
+* Update dependency artifactory chart version to 107.49.3
+* Update dependency xray chart version to 103.64.4
+* Update dependency pipelines chart version to 101.31.2
+* Update dependency distribution chart version to 102.16.1
+* Changed initContainerImage to `releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049`
+
 ## [10.11.0] - Jan 6, 2023
 * Update dependency artifactory chart version to 107.49.3
 * Update dependency xray chart version to 103.63.2
