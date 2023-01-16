@@ -1,13 +1,24 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.12.1] - Aug 25, 2022
+## [101.13.1] - Nov 28, 2022
+* Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
+
+## [101.13.0] - Oct 27, 2022
+* Removed `newProbes.enabled`, default to new probes
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-941`
+* Added support for annotations for insight statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+* Update elasticsearch version to `7.17.6` and updated initContainerImage of elasticsearch to releases-docker.jfrog.io/jfrog/elasticsearch-sg:7.17.6
+* Updated router version to `7.51.0`
+
+## [101.12.0] - Aug 25, 2022
 * Use an alternate command for `find` to copy custom certificates
 * Updated router version to `7.45.0`
 * Added `.Values.insightServer.openMetrics.enabled` flag to enable metrics (defaults to `false`)
 * Added flag `insightServer.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
 * Added support for lifecycle hooks for all containers
 * Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-902`
+
 
 ## [101.11.0] - Aug 25, 2022
 * Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the insight secrets

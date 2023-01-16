@@ -3,6 +3,7 @@ artifactory:
   replicaCount: 3
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  unifiedSecretInstallation: true
   openMetrics:
     enabled: true
   persistence:
@@ -27,6 +28,9 @@ artifactory:
   javaOpts:
     xms: "4g"
     xmx: "4g"
+  statefulset:
+    annotations:
+      artifactory: test
 
 postgresql:
   postgresqlPassword: password
