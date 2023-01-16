@@ -1,6 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.49.5] - Nov 30, 2022
+
 ## [107.49.3] - Dec 14, 2022
 * Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
 * Added option to enable/disable proxy_request_buffering and proxy_buffering_off [GH-1686](https://github.com/jfrog/charts/pull/1686)
