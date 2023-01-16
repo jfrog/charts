@@ -24,6 +24,10 @@ metadata:
 {{- if or .Values.artifactory.persistence.googleStorage.identity .Values.artifactory.persistence.googleStorage.credential }}
     {{- fail "\nGCP Bucket Authentication with Identity and Credential is deprecated" }}
 {{- end }}
+{{- with .Values.artifactory.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.primary.name" . }}
   replicas: {{ .Values.artifactory.primary.replicaCount }}

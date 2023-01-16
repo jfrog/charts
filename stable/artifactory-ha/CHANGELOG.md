@@ -1,10 +1,23 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.46.12] - Nov 30, 2022
+## [107.49.5] - Nov 30, 2022
 * Added support for setting `seLinuxOptions` in `securityContext`
 
-## [107.46.11] - Sep 14, 2022
+## [107.49.3] - Dec 14, 2022
+* Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
+* Changed logic in wait-for-primary container to use /dev/tcp instead of curl
+* Added option to enable/disable proxy_request_buffering and proxy_buffering_off [GH-1686](https://github.com/jfrog/charts/pull/1686)
+
+## [107.48.0] - Oct 27, 2022
+* Updated router version to `7.51.0`
+
+## [107.47.0] - Sep 29, 2022
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-941`
+* Added support for annotations for artifactory statefulset and nginx deployment [GH-1665](https://github.com/jfrog/charts/pull/1665)
+* Updated router version to `7.49.0`
+
+## [107.46.0] - Sep 14, 2022
 * **IMPORTANT**
 * Added support for lifecycle hooks for all containers, changed `artifactory.postStartCommand` to `.Values.artifactory.lifecycle.postStart.exec.command`
 * Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.6-902`

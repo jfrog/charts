@@ -1,10 +1,21 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.28.1] - Oct 27, 2022
+## [101.30.4] - Jan 3, 2022
+* Added readiness and liveness for the missing pods
+
+## [101.29.0] - Dec 6, 2022
+* Group and split services to multiple pods to support autoscaling of only required services behind a feature flag
+* Made system config polling configurable from system.yaml
+* Handle long release names in wait for internal api logic in split mode
+* Ability to pass environment variables to specific service container
+* Add support for pod labels
+
+## [101.28.0] - Oct 27, 2022
 * Added init containers wait-for-db and create-vault-table in vault-server pod
 * Added support for annotations for pipelines statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
 * Added default pipelines image for ubuntu20 arm64 build nodes
+* Made baseUrlUI requirement optional in charts during install time
 
 ## [101.27.0] - Sep 28, 2022
 * Added `observability` service in pipelines

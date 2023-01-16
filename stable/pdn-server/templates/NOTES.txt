@@ -1,18 +1,13 @@
-Congratulations. You have just deployed JFrog PDN Server!
+CHART NAME: {{ .Chart.Name }}
+CHART VERSION: {{ .Chart.Version }}
+APP VERSION: {{ .Chart.AppVersion }}
 
-{{- if and (eq .Values.pdnServer.masterKey "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB") (not .Values.pdnServer.masterKeySecretName) (not .Values.global.masterKeySecretName) (not .Values.global.masterKey) }}
+** Please be patient while the chart is being deployed **
 
+Get the list of pods by executing:
 
-***************************************** WARNING ******************************************
-* Your pdnServer master key is still set to the provided example:                       *
-* pdnServer.masterKey=BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB  *
-*                                                                                          *
-* You should change this to your own generated key:                                        *
-* $ export MASTER_KEY=$(openssl rand -hex 32)                                              *
-* $ echo ${MASTER_KEY}                                                                     *
-*                                                                                          *
-* Pass the created master key to helm with '--set pdnServer.masterKey=${MASTER_KEY}'    *
-********************************************************************************************
-{{- end }}
+  kubectl get pods --namespace {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
 
-Open Artifactory - {{ .Values.pdnServer.jfrogUrl }} in your browser. PDN Server should be activated with Artifactory.
+Access the pod you want to debug by executing
+
+  kubectl exec --namespace {{ .Release.Namespace }} -ti <NAME OF THE POD> -- bash
