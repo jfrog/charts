@@ -10,8 +10,8 @@ global:
   ## Chart.AppVersion can be overidden using global.versions.distribution or image tags
   ## Note: Order of preference is 1) global.versions 2) image tags 3) Chart.AppVersion
   versions: {}
-    # distribution:
-    # router:
+  # distribution:
+  # router:
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -33,10 +33,8 @@ global:
   customCertificates:
     enabled: false
     # certificateSecretName:
-
   ## Applies to distribution pods
   nodeSelector: {}
-
 ## String to partially override distribution.fullname template (will maintain the release name)
 ##
 # nameOverride:
@@ -44,9 +42,7 @@ global:
 ## String to fully override distribution.fullname template
 ##
 # fullnameOverride:
-
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.6-902
-
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-micro:8.7.1
 # Init containers
 initContainers:
   resources:
@@ -56,10 +52,9 @@ initContainers:
     limits:
       memory: "1Gi"
       cpu: "1"
-
 # For supporting pulling from private registries
 imagePullSecrets:
-  # - myRegistryKeySecretName
+# - myRegistryKeySecretName
 
 ## Distribution systemYaml override
 ## This is for advanced usecases where users wants to provide their own systemYaml for configuring distribution
@@ -68,18 +63,15 @@ imagePullSecrets:
 ## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
 ## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
 systemYamlOverride:
-## You can use a pre-existing secret by specifying existingSecret
+  ## You can use a pre-existing secret by specifying existingSecret
   existingSecret:
-## The dataKey should be the name of the secret data key created.
+  ## The dataKey should be the name of the secret data key created.
   dataKey:
-
 # For HA
 replicaCount: 1
-
 ## Database configurations
 ## Use the wait-for-db init container. Set to false to skip
 waitForDatabase: true
-
 ## Role Based Access Control
 ## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
@@ -87,47 +79,46 @@ rbac:
   role:
     ## Rules to create. It follows the role specification
     rules:
-    - apiGroups:
-      - ''
-      resources:
-      - services
-      - endpoints
-      - pods
-      verbs:
-      - get
-      - watch
-      - list
-
+      - apiGroups:
+          - ''
+        resources:
+          - services
+          - endpoints
+          - pods
+        verbs:
+          - get
+          - watch
+          - list
 networkpolicy: []
-  # Allows all ingress and egress
-  # - name: distribution
-  #   podSelector:
-  #     matchLabels:
-  #       app: distribution
-  #   egress:
-  #     - {}
-  #   ingress:
-  #     - {}
-  # Uncomment to allow only distribution pods to communicate with postgresql (if postgresql.enabled is true)
-  # - name: postgres
-  #   podSelector:
-  #     matchLabels:
-  #       app: postgresql
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: distribution
-  # Uncomment to allow only distribution pods to communicate with redis
-  # - name: redis
-  #   podSelector:
-  #     matchLabels:
-  #       app: redis
-  #   ingress:
-  #   - from:
-  #     - podSelector:
-  #         matchLabels:
-  #           app: distribution
+# Allows all ingress and egress
+# - name: distribution
+#   podSelector:
+#     matchLabels:
+#       app: distribution
+#   egress:
+#     - {}
+#   ingress:
+#     - {}
+# Uncomment to allow only distribution pods to communicate with postgresql (if postgresql.enabled is true)
+# - name: postgres
+#   podSelector:
+#     matchLabels:
+#       app: postgresql
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app: distribution
+# Uncomment to allow only distribution pods to communicate with redis
+# - name: redis
+#   podSelector:
+#     matchLabels:
+#       app: redis
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app: distribution
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -139,7 +130,6 @@ serviceAccount:
   name:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: false
-
 # PostgreSQL
 ## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
@@ -148,7 +138,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.4.0-debian-10-r39
+    tag: 13.9.0-debian-11-r11
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -176,7 +166,6 @@ postgresql:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
-
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom/external database details here
 database:
@@ -199,8 +188,6 @@ database:
   #  url:
   #    name: "dis-database-creds"
   #    key: "db-url"
-
-
 ## Configuration values for the redis dependency
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
@@ -208,7 +195,7 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 6.2.6-debian-10-r43
+    tag: 7.0.6-debian-11-r0
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
@@ -236,37 +223,46 @@ redis:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
 common:
   uid: 1020
   gid: 1020
   # fsGroupChangePolicy: "Always"
 
+  # Spread Distribution pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: kubernetes.io/hostname
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app: '{{ template "distribution.name" . }}'
+  #       role: '{{ template "distribution.name" . }}'
+  #       release: "{{ .Release.Name }}"
+
   ## Custom command to run before distribution startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
-
   ## Add custom volumes
   # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
-  customVolumes: |
+  customVolumes: ""
   #  - name: custom-script
   #    configMap:
   #      name: custom-script
 
-    ## Add custom volumesMounts
-  customVolumeMounts: |
+  ## Add custom volumesMounts
+  customVolumeMounts: ""
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
 
   # Add any list of configmaps to distribution
-  configMaps: |
+  configMaps: ""
   #  posthook-start.sh: |-
   #    echo "This is a post start script"
   #  posthook-end.sh: |-
   #    echo "This is a post end script"
 
   ## Add custom init containers execution before predefined init containers
-  customInitContainersBegin: |
+  customInitContainersBegin: ""
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
@@ -285,7 +281,7 @@ common:
   #        name: distribution-data
 
   ## Add custom init containers execution after predefined init containers
-  customInitContainers: |
+  customInitContainers: ""
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
@@ -305,7 +301,7 @@ common:
 
   ## Add custom sidecar containers
   # - The provided example uses a custom volume (customVolumes)
-  customSidecarContainers: |
+  customSidecarContainers: ""
   #  - name: "sidecar-list-etc"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
@@ -332,13 +328,11 @@ common:
   #      limits:
   #        memory: "128Mi"
   #        cpu: "100m"
-
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.6-902
-
+    repository: ubi8/ubi-micro
+    tag: 8.7.1
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
@@ -347,13 +341,10 @@ distribution:
     repository: jfrog/distribution-distribution
     # tag:
     imagePullPolicy: IfNotPresent
-
   # unifiedSecretInstallation flag enables single unified secret holding all the distribution secrets
   unifiedSecretInstallation: false
-
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
-
   # Create a priority class for the Distribution pod or use an existing one
   # NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
@@ -363,17 +354,15 @@ distribution:
     # name:
     ## Use an existing priority class
     # existingPriorityClass:
-
   labels: {}
-
   # Add lifecycle hooks for the distribution pods
   lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
-    # preStop:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   internalPort: 8080
   externalPort: 80
@@ -394,21 +383,16 @@ distribution:
   customCertificates:
     enabled: false
     # certificateSecretName:
-
   ## If false, all service console logs will not redirect to a common console.log
   consoleLog: false
   ## Artifactory URL . Mandatory
   jfrogUrl:
-
   ## Migration support from 1.x to 2.x app versions
   migration:
     enabled: false
-
   serviceId:
-
   ## Add custom annotations for pipelines pods
   annotations: {}
-
   ## Extra environment variables that can be used to tune Distribution to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
@@ -447,15 +431,12 @@ distribution:
         {{ .other }}
       {{- end }}
       {{- end }}
-
   service:
     type: ClusterIP
-
   statefulset:
     annotations: {}
-
   ## Add custom volumeMounts
-  customVolumeMounts: |
+  customVolumeMounts: ""
   #  - name: custom-script
   #    mountPath: "/scripts/script.sh"
   #    subPath: script.sh
@@ -475,12 +456,12 @@ distribution:
   #      here the custom secret 2 config
 
   resources: {}
-    # requests:
-    #   memory: "2Gi"
-    #   cpu: "1"
-    # limits:
-    #   memory: "4Gi"
-    #   cpu: "2"
+  # requests:
+  #   memory: "2Gi"
+  #   cpu: "1"
+  # limits:
+  #   memory: "4Gi"
+  #   cpu: "2"
 
   livenessProbe:
     enabled: true
@@ -489,13 +470,12 @@ distribution:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.livenessProbe" .}}
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.distribution.internalPort }}/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
       successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
@@ -503,18 +483,17 @@ distribution:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.distribution.internalPort }}{{ include "distribution.readinessProbe" .}}
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.distribution.internalPort }}/api/v1/system/readiness
       initialDelaySeconds: 5
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-
   ## Control Java options (JAVA_OPTIONS)
   ## IMPORTANT: keep javaOpts.xmx no higher than resources.limits.memory
   javaOpts: {}
-    # xms: "1g"
-    # xmx: "2g"
-    # other: ""
+  # xms: "1g"
+  # xmx: "2g"
+  # other: ""
 
   persistence:
     enabled: true
@@ -534,7 +513,6 @@ distribution:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
-
   ## Custom command to run before Distribution startup.
   preStartCommand:
   ## For example, to import trusted keystore ( Need to mount the certificates first )
@@ -555,12 +533,12 @@ distribution:
 
   # Loggers containers resources
   loggersResources: {}
-    # requests:
-    #   memory: "64Mi"
-    #   cpu: "25m"
-    # limits:
-    #   memory: "128Mi"
-    #   cpu: "50m"
+  # requests:
+  #   memory: "64Mi"
+  #   cpu: "25m"
+  # limits:
+  #   memory: "128Mi"
+  #   cpu: "50m"
 
   nodeSelector: {}
   tolerations: []
@@ -570,13 +548,12 @@ distribution:
     ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
-
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.45.0
+    tag: 7.56.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -594,15 +571,15 @@ router:
 
   # Add lifecycle hooks for the router pod
   lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the router postStart handler > /usr/share/message"]
-    # preStop:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the router preStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the router postStart handler > /usr/share/message"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the router preStart handler > /usr/share/message"]
 
   ## Add custom volumesMounts
-  customVolumeMounts: |
+  customVolumeMounts: ""
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
@@ -614,13 +591,12 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.livenessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
       successThreshold: 1
-
   readinessProbe:
     enabled: true
     config: |
@@ -628,13 +604,12 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
       successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
@@ -642,27 +617,24 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}{{ include "distribution.router.readinessProbe" . }}
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-
   persistence:
     accessMode: ReadWriteOnce
     mountPath: "/var/opt/jfrog/router"
     size: 5Gi
-
   nodeSelector: {}
   tolerations: []
   affinity: {}
-
 observability:
   name: observability
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.9.3
+    tag: 1.12.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -675,12 +647,12 @@ observability:
 
   # Add lifecycle hooks for the observability pod
   lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler > /usr/share/message"]
-    # preStop:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the observability preStart handler > /usr/share/message"]
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler > /usr/share/message"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the observability preStart handler > /usr/share/message"]
 
   livenessProbe:
     enabled: true
@@ -695,7 +667,6 @@ observability:
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
@@ -708,14 +679,11 @@ observability:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-
   persistence:
     mountPath: "/var/opt/jfrog/observability"
-
 shared:
   node:
     id:
-
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Distribution logs. It assumes you have a logstash installed and configured properly.
 filebeat:
@@ -725,9 +693,7 @@ filebeat:
     repository: docker.elastic.co/beats/filebeat
     version: 7.16.2
   logstashUrl: "logstash:5044"
-
   terminationGracePeriod: 10
-
   livenessProbe:
     exec:
       command:
@@ -740,7 +706,6 @@ filebeat:
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
-
   readinessProbe:
     exec:
       command:
@@ -753,14 +718,13 @@ filebeat:
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
-
   resources: {}
-#    requests:
-#      memory: "100Mi"
-#      cpu: "100m"
-#    limits:
-#      memory: "100Mi"
-#      cpu: "100m"
+  #    requests:
+  #      memory: "100Mi"
+  #      cpu: "100m"
+  #    limits:
+  #      memory: "100Mi"
+  #      cpu: "100m"
 
   filebeatYml: |
     logging.level: info
@@ -781,11 +745,9 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
-
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
-additionalResources: |
-
+additionalResources: ""
 # Adding entries to a Pod's /etc/hosts file
 # For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
 hostAliases: []
@@ -797,9 +759,6 @@ hostAliases: []
 #    hostnames:
 #      - "foo.remote"
 #      - "bar.remote"
-
-## To enable new probes
-newProbes: true
 
 ## Specify common probes parameters
 probes:

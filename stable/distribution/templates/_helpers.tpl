@@ -228,50 +228,6 @@ if [ -f {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trust
 {{- end -}}
 
 {{/*
-distribution liveness probe
-*/}}
-{{- define "distribution.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/api/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/api/v1/system/ping" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-distribution readiness probe
-*/}}
-{{- define "distribution.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/api/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/api/v1/system/ping" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-router liveness probe
-*/}}
-{{- define "distribution.router.livenessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/liveness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-router readiness probe
-*/}}
-{{- define "distribution.router.readinessProbe" -}}
-{{- if .Values.newProbes -}}
-{{- printf "%s" "/router/api/v1/system/readiness" -}}
-{{- else -}}
-{{- printf "%s" "/router/api/v1/system/health" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve distribution requiredServiceTypes value
 */}}
 {{- define "distribution.router.requiredServiceTypes" -}}
