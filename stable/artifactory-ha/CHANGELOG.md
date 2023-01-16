@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.49.5] - Nov 30, 2022
+* Added support for setting `seLinuxOptions` in `securityContext`
+
 ## [107.49.3] - Dec 14, 2022
 * Updated initContainerImage and logger image to `ubi8/ubi-micro:8.7.1`
 * Changed logic in wait-for-primary container to use /dev/tcp instead of curl
