@@ -71,6 +71,10 @@ spec:
         {{- if .Values.common.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
         {{- end }}
+      {{- if .Values.common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "insight-server.customInitContainersBegin" .)  . | indent 6 }}
