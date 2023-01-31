@@ -3,7 +3,7 @@
 {{- $servicePort := .Values.artifactory.externalPort -}}
 {{- $artifactoryServicePort := .Values.artifactory.externalArtifactoryPort -}}
 {{- $ingressName := default ( include "artifactory-ha.fullname" . ) .Values.ingress.name -}}
-{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
 apiVersion: networking.k8s.io/v1
 {{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
 apiVersion: networking.k8s.io/v1beta1
@@ -30,7 +30,7 @@ spec:
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
   {{- if .Values.ingress.defaultBackend.enabled }}
-    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
   defaultBackend:
     service:
       name: {{ $serviceName }}
@@ -44,7 +44,7 @@ spec:
   {{- end }}
   rules:
 {{- if .Values.ingress.hosts }}
-  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
     {{- range $host := .Values.ingress.hosts }}
   - host: {{ $host | quote }}
     http:
@@ -90,7 +90,7 @@ spec:
 {{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.ingress.enabled }}
 ---
 {{- $replicationIngressName := default ( include "artifactory-ha.replicator.fullname" . ) .Values.artifactory.replicator.ingress.name -}}
-  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
 apiVersion: networking.k8s.io/v1
   {{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
 apiVersion: networking.k8s.io/v1beta1
@@ -114,7 +114,7 @@ spec:
   ingressClassName: {{ default .Values.ingress.className .Values.artifactory.replicator.ingress.className }}
   {{- end }}
   {{- if .Values.ingress.defaultBackend.enabled }}
-    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
   defaultBackend:
     service:
       name: {{ $serviceName }}
@@ -128,7 +128,7 @@ spec:
   {{- end }}
   rules:
 {{- if .Values.artifactory.replicator.ingress.hosts }}
-  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
     {{- range $host := .Values.artifactory.replicator.ingress.hosts }}
   - host: {{ $host | quote }}
     http:
@@ -172,7 +172,7 @@ spec:
 {{- if and .Values.artifactory.replicator.enabled .Values.artifactory.replicator.trackerIngress.enabled }}
 ---
 {{- $replicatorTrackerIngressName := default ( include "artifactory-ha.replicator.tracker.fullname" . ) .Values.artifactory.replicator.trackerIngress.name -}}
-  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
 apiVersion: networking.k8s.io/v1
   {{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
 apiVersion: networking.k8s.io/v1beta1
@@ -196,7 +196,7 @@ spec:
   ingressClassName: {{ default .Values.ingress.className .Values.artifactory.replicator.trackerIngress.className }}
   {{- end }}
   {{- if .Values.ingress.defaultBackend.enabled }}
-    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
   defaultBackend:
     service:
       name: {{ $serviceName }}
@@ -210,7 +210,7 @@ spec:
   {{- end }}
   rules:
 {{- if .Values.artifactory.replicator.trackerIngress.hosts }}
-  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1/Ingress" }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
     {{- range $host := .Values.artifactory.replicator.trackerIngress.hosts }}
   - host: {{ $host | quote }}
     http:

@@ -186,7 +186,7 @@ PROMPT_RABBITMQ_ACTIVE_NODE_IP="${RABBITMQ_LABEL} active node ip"
 KEY_RABBITMQ_ACTIVE_NODE_IP="$SYS_KEY_RABBITMQ_ACTIVE_NODE_IP"
 
 MESSAGE_JFROGURL(){
-    echo -e "The JFrog URL allows ${PRODUCT_NAME} to connect to a JFrog Platform Instance.\n(You can copy the JFrog URL from Admin > Security > Settings)"
+    echo -e "The JFrog URL allows ${PRODUCT_NAME} to connect to a JFrog Platform Instance.\n(You can copy the JFrog URL from Administration > User Management > Settings > Connection details)"
 }
 PROMPT_JFROGURL="JFrog URL"
 KEY_JFROGURL="$SYS_KEY_SHARED_JFROGURL"
