@@ -137,9 +137,8 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.11.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.11.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
-  initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -166,7 +165,6 @@ artifactory:
 xray:
   enabled: true
   unifiedUpgradeAllowed: true
-  initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
   postgresql:
     enabled: false
   database:
@@ -189,7 +187,6 @@ xray:
 distribution:
   enabled: true
   unifiedUpgradeAllowed: true
-  initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
   postgresql:
     enabled: false
   database:
@@ -200,7 +197,6 @@ distribution:
 insight:
   enabled: true
   unifiedUpgradeAllowed: true
-  initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
   postgresql:
     enabled: false
   database:
