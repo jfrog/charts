@@ -1,15 +1,17 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.31.2] - Jan 3, 2022
+## [101.32.2] - Jan 3, 2022
+* Updated postgresql tag version to `13.9.0-debian-11-r11`
+* Improve pod startup time and reduce default resources on initcontainers
 * Added readiness and liveness for the missing pods
 
-## [101.29.0] - Dec 6, 2022
+## [101.29.0] - Dec 13, 2022
 * Group and split services to multiple pods to support autoscaling of only required services behind a feature flag
 * Made system config polling configurable from system.yaml
 * Handle long release names in wait for internal api logic in split mode
 * Ability to pass environment variables to specific service container
-* Add support for pod labels
+* Add support for pod labels 
 
 ## [101.28.0] - Oct 27, 2022
 * Added init containers wait-for-db and create-vault-table in vault-server pod

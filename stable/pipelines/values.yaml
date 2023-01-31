@@ -75,12 +75,20 @@ initContainer:
 initContainers:
   resources:
     requests:
+      memory: "10Mi"
+      cpu: "10m"
+    limits:
+      memory: "50Mi"
+      cpu: "50m"
+
+pipelineInstallerInitContainer:
+  resources:
+    requests:
       memory: "50Mi"
       cpu: "10m"
     limits:
       memory: "1Gi"
       cpu: "1"
-
 
 ## Available modes: devmode (enable it for debuging) and production
 runMode: production
@@ -1749,7 +1757,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.4.0-debian-10-r39
+    tag: 13.9.0-debian-11-r11
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
   # Password must be set
@@ -1935,7 +1943,7 @@ vault:
     extraInitContainers:
       # wait-for-db is checking if postgresql server up
       - name: vault-wait-for-db
-        image: "releases-docker.jfrog.io/alpine:3.14.2"
+        image: "releases-docker.jfrog.io/bitnami/postgresql:13.9.0-debian-11-r11"
         imagePullPolicy: IfNotPresent
         env:
           - name: CONNECTION_DETAILS
@@ -1947,13 +1955,25 @@ vault:
           - 'sh'
           - '-c'
           - >
-            echo "Waiting for Postgres to come up..."; until nc -z -w 2 ${CONNECTION_DETAILS} && echo database ok; do
+            echo "Waiting for Postgres to come up...";
+            export PIPELINES_PG_HOST=$(echo "${CONNECTION_DETAILS}"  | head -n1 | cut -d " " -f1);
+            export PIPELINES_PG_PORT=$(echo "${CONNECTION_DETAILS}"  | head -n1 | cut -d " " -f2);
+            echo "postgres host : ${PIPELINES_PG_HOST}";
+            echo "postgres port : ${PIPELINES_PG_PORT}";
+            until pg_isready -h ${PIPELINES_PG_HOST} -p ${PIPELINES_PG_PORT} -U pipelines && echo database ok; do
               sleep 2;
-            done; sleep 10;
+            done;
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+          limits:
+            memory: "50Mi"
+            cpu: "50m"
 
       # create-vault-table is creating vault schema changes in postgres db
       - name: create-vault-table
-        image: releases-docker.jfrog.io/bitnami/postgresql:13.4.0-debian-10-r39
+        image: releases-docker.jfrog.io/bitnami/postgresql:13.9.0-debian-11-r11
         imagePullPolicy: IfNotPresent
         env:
           - name: DATABASE_URL
@@ -1971,6 +1991,13 @@ vault:
         volumeMounts:
           - name: userconfig-vault-storage-config
             mountPath: /vault/userconfig/vault-storage-config
+        resources:
+          requests:
+            memory: "10Mi"
+            cpu: "10m"
+          limits:
+            memory: "50Mi"
+            cpu: "50m"
 
     # Set Pipelines vault-init sidecar container
     extraContainers:
@@ -1988,11 +2015,11 @@ vault:
             value: "http://localhost:8200"
         resources:
           requests:
-            memory: 10Mi
-            cpu: 10m
+            memory: "10Mi"
+            cpu: "10m"
           limits:
-            memory: 50Mi
-            cpu: 50m
+            memory: "50Mi"
+            cpu: "50m"
 
     # Pass path of the storage config file with an external Postgres setup
     extraArgs: "-config=/vault/userconfig/vault-storage-config/config.hcl"
