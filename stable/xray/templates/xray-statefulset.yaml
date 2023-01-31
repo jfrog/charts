@@ -91,6 +91,10 @@ spec:
         {{- if .Values.common.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
         {{- end }}
+      {{- if .Values.common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
@@ -439,7 +443,9 @@ spec:
           valueFrom:
             secretKeyRef:
               {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
               {{- else }}
               name: "{{ template "xray.name" . }}-unified-secret"
               {{- end }}
@@ -599,7 +605,9 @@ spec:
           valueFrom:
             secretKeyRef:
               {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
               {{- else }}
               name: "{{ template "xray.name" . }}-unified-secret"
               {{- end }}

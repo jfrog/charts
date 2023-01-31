@@ -42,7 +42,7 @@ global:
 ## String to fully override artifactory.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-micro:8.7.1
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
 # Init containers
 initContainers:
   resources:
@@ -160,8 +160,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-micro
-    tag: 8.7.1
+    repository: ubi8/ubi-minimal
+    tag: 8.7.1049
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -335,11 +335,8 @@ artifactory:
     enabled: false
     path:
   # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
+  # Note : From 107.46.x chart versions, copyOnEveryStartup is not needed for binarystore.xml, it is always copied via initContainers
   copyOnEveryStartup:
-  #  # Absolute path
-  #  - source: /artifactory_bootstrap/binarystore.xml
-  #    # Relative to ARTIFACTORY_HOME/
-  #    target: etc/artifactory/
   #  # Absolute path
   #  - source: /artifactory_bootstrap/artifactory.lic
   #    # Relative to ARTIFACTORY_HOME/

@@ -40,7 +40,7 @@ global:
 
 ## Fully override insight.fullname template
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-micro:8.7.1
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
 # For supporting pulling from private registries
 imagePullSecrets:
 # - myRegistryKeySecretName
@@ -78,6 +78,17 @@ common:
   uid: 1040
   gid: 1040
   # fsGroupChangePolicy: "Always"
+
+  # Spread insight pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: kubernetes.io/hostname
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app: '{{ template "insight.name" . }}'
+  #       role: '{{ template "insight.name" . }}'
+  #       release: "{{ .Release.Name }}"
 
   ## Add custom volumes
   # If .Values.insightServer.unifiedSecretInstallation is true then secret name should be '{{ template "insight.name" . }}-unified-secret'.
@@ -233,7 +244,7 @@ dbSetup:
   postgresql:
     image:
       repository: releases-docker.jfrog.io/postgres
-      tag: 13.4-alpine
+      tag: 13.9-alpine
       pullPolicy: IfNotPresent
 # PostgreSQL
 ## Configuration values for the PostgreSQL dependency sub-chart
@@ -243,7 +254,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.4.0-debian-10-r39
+    tag: 13.9.0-debian-11-r11
   postgresqlUsername: insight
   postgresqlPassword: ""
   postgresqlDatabase: insight
@@ -384,8 +395,8 @@ podRestartTime:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-micro
-    tag: 8.7.1
+    repository: ubi8/ubi-minimal
+    tag: 8.7.1049
 insightServer:
   name: insight-server
   ## Note that by default we use appVersion to get image tag/version

@@ -42,7 +42,7 @@ global:
 ## String to fully override distribution.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-micro:8.7.1
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
 # Init containers
 initContainers:
   resources:
@@ -331,8 +331,8 @@ common:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-micro
-    tag: 8.7.1
+    repository: ubi8/ubi-minimal
+    tag: 8.7.1049
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version

@@ -149,7 +149,7 @@ spec:
 {{- if .Values.vault.enabled }}
   {{- if .Values.waitForDatabase }}
         - name: wait-for-db
-          image: '{{ .Values.initContainer.image }}'
+          image: {{ include "vault.getImageInfoByValue" (list . "postgresql" ) }}
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
@@ -159,13 +159,13 @@ spec:
           - >
             echo "Waiting for Postgres to come up...";
             {{- if .Values.postgresql.enabled }}
-            until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
+            echo "{{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }}";
+            until pg_isready -h {{ .Release.Name }}-postgresql -p {{ .Values.postgresql.service.port }} -U pipelines && echo database ok; do
             {{- else }}
-            until nc -z -w 2 {{ tpl .Values.global.postgresql.host . }} {{ .Values.global.postgresql.port }} && echo database ok; do
+            until pg_isready -h {{ tpl .Values.global.postgresql.host . }} -p {{ .Values.global.postgresql.port }} -U pipelines && echo database ok; do
             {{- end }}
-              sleep 2;
+              sleep 1;
             done;
-            sleep 10;
   {{- end }}
 {{- end }}
         - name: wait-for-vault
@@ -197,7 +197,7 @@ spec:
             {{- else }}
             until nc -z -w 2 {{ .Release.Name }}-vault {{ .Values.vault.server.service.port }} && echo Vault ok; do
             {{- end }}
-              sleep 2;
+              sleep 1;
             done;
             {{- else }}
             is_vault_up=0;
@@ -213,7 +213,7 @@ spec:
                 --server-response 2>&1| grep -c 'HTTP/1.1 200 OK'";
                 is_vault_up=$(eval $wget_cmd);
               echo "Response = $is_vault_up"
-              sleep 2;
+              sleep 1;
             done;
             {{- end }}
         - name: pipelines-installer
@@ -227,7 +227,7 @@ spec:
               drop:
                 - NET_RAW
           resources:
-{{ toYaml .Values.initContainers.resources | nindent 12 }}
+{{ toYaml .Values.pipelineInstallerInitContainer.resources | nindent 12 }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -284,13 +284,13 @@ spec:
           {{- if .Values.rabbitmq.enabled }}
             echo "Waiting for RabbitMQ to come up...";
             until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.service.port }} && echo rabbitmq ok; do
-              sleep 2;
+              sleep 1;
             done;
           {{- end }}
           {{- if .Values.redis.enabled }}
             echo "Waiting for Redis to come up...";
             until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
-              sleep 2;
+              sleep 1;
             done;
           {{- end }}
           {{- if or .Values.pipelines.masterKey .Values.global.masterKey .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
@@ -303,7 +303,6 @@ spec:
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
           {{- end }}
-            sleep 20;
             ./pipelines-k8s;
           volumeMounts:
           - name: jfrog-pipelines-folder
