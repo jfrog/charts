@@ -245,6 +245,19 @@ Resolve masterKeySecretName value
 {{- end -}}
 
 {{/*
+Resolve executionServiceAesKeySecretName value
+*/}}
+{{- define "xray.executionServiceAesKeySecretName" -}}
+{{- if .Values.global.executionServiceAesKeySecretName -}}
+{{- .Values.global.executionServiceAesKeySecretName -}}
+{{- else if .Values.xray.executionServiceAesKeySecretName -}}
+{{- .Values.xray.executionServiceAesKeySecretName -}}
+{{- else -}}
+{{ include "xray.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve imagePullSecrets value
 */}}
 {{- define "xray.imagePullSecrets" -}}

@@ -16,6 +16,7 @@ global:
   # joinKeySecretName:
   # masterKeySecretName:
   # executionServiceAesKey:
+  # executionServiceAesKeySecretName:
 
   ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customInitContainersBegin: |
@@ -41,7 +42,7 @@ global:
 ## String to fully override xray.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-micro:8.7.1
+initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
 imagePullPolicy: IfNotPresent
 # Init containers
 initContainers:
@@ -110,6 +111,8 @@ xray:
   ## You can generate one with the command:
   ## 'openssl rand -hex 16'
   # executionServiceAesKey:
+  ## Alternatively, you can use a pre-existing secret with a key called execution-service-aes-key by specifying executionServiceAesKeySecretName
+  # executionServiceAesKeySecretName:
 
   ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
   # joinKeySecretName:
@@ -159,7 +162,7 @@ xray:
       logging:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "xray.jfrogUrl" .)) . }}"
+      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "xray.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
@@ -296,8 +299,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-micro
-    tag: 8.7.1
+    repository: ubi8/ubi-minimal
+    tag: 8.7.1049
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -317,7 +320,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.4.0-debian-10-r39
+    tag: 13.9.0-debian-11-r11
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -465,6 +468,17 @@ common:
   xrayUserId: 1035
   xrayGroupId: 1035
   # fsGroupChangePolicy: "Always"
+
+  # Spread Xray pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: kubernetes.io/hostname
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app: '{{ template "xray.name" . }}'
+  #       role: '{{ template "xray.name" . }}'
+  #       release: "{{ .Release.Name }}"
 
   # Xray configuration to be written to xray_config.yaml
   xrayConfig:
