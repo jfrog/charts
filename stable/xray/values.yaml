@@ -162,7 +162,7 @@ xray:
       logging:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "xray.jfrogUrl" .)) . }}"
+      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "xray.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"

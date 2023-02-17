@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.49.6] - Jan 20, 2023
+## [107.49.8] - Jan 20, 2023
 * Updated postgresql tag version to `13.9.0-debian-11-r11`
 * Fixed make lint issue on artifactory-ha chart [GH-1714](https://github.com/jfrog/charts/issues/1714)
 * Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
