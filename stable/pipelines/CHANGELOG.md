@@ -1,10 +1,21 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.32.2] - Jan 3, 2022
+## [101.34.0] - Feb 06, 2023
+* Rename nodepoolManager to nodepoolservice
+* Always run the nodepoolservice in both modes ( single pod and split mode)
+* Aligned ingress resource with cluster's networking API
+* Updated jfrogUrl text path to copy
+* Resources in pipelines observability is not renderring as expected
+* Added metrics to required init containers
+* Fixed indentation in nodepoolservice container definition
+
+## [101.33.0] - Dec 30, 2022
+* Added readiness and liveness for the missing pods
+
+## [101.31.0] - Dec 16, 2022
 * Updated postgresql tag version to `13.9.0-debian-11-r11`
 * Improve pod startup time and reduce default resources on initcontainers
-* Added readiness and liveness for the missing pods
 
 ## [101.29.0] - Dec 13, 2022
 * Group and split services to multiple pods to support autoscaling of only required services behind a feature flag

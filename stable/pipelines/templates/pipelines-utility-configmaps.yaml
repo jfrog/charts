@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "pipelines.fullname" . }}-utility-scripts
+  labels:
+    app: {{ template "pipelines.name" . }}
+    chart: {{ template "pipelines.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  add_metrics.sh: |
+{{ .Files.Get "files/add-init-container-metrics.sh" | indent 4 }}

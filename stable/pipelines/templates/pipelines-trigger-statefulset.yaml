@@ -63,18 +63,26 @@ spec:
 {{ tpl (include "pipelines.trigger.customInitContainersBegin" .)  . | indent 8 }}
           {{- end }}
         - name: wait-for-pipelines-internalapi
-          image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
+          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
-          - 'sh'
+          - 'bash'
           - '-c'
           - >
+            export PIP_CONTAINER_START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ");
+            export PIP_METRIC_FILE_PREFIX="trigger-wait-for-internalapi";
             echo "Waiting for pipelines-api to come up...";
             until nc -z -w 2 {{ include "pipelines.internalapi.name" . }} 30002 && echo pipelines-internalapi ok; do
               sleep 2;
             done;
+{{ include "pipelines.addMetrics" . | nindent 12 }}
+          volumeMounts:
+          - name: pipelines-utility-scripts
+            mountPath: "/pipelines-utility-scripts/"
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
         - name: copy-system-yaml
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -199,6 +207,8 @@ spec:
           - 'sh'
           - '-c'
           - >
+            export PIP_CONTAINER_START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ");
+            export PIP_METRIC_FILE_PREFIX="trigger-pipelines-installer";
           {{- if or .Values.pipelines.masterKey .Values.global.masterKey .Values.pipelines.masterKeySecretName .Values.global.masterKeySecretName }}
             echo "Copy masterKey to {{ .Values.pipelines.mountPath }}/security";
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
@@ -209,8 +219,10 @@ spec:
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
           {{- end }}
-            sleep 5;
+{{ include "pipelines.addMetrics" . | nindent 12 }}
           volumeMounts:
+          - name: pipelines-utility-scripts
+            mountPath: "/pipelines-utility-scripts/"
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
@@ -257,7 +269,10 @@ spec:
           - >
             echo "change ownership of {{ .Values.pipelines.mountPath }} directory";
             chown -R 1066:1066 {{ .Values.pipelines.mountPath }};
+{{ include "pipelines.changeOwnershipMetrics" . | nindent 12 }}
           volumeMounts:
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
           {{- if or .Values.pipelines.runTrigger.customInitContainers .Values.global.customInitContainers }}
@@ -369,6 +384,45 @@ spec:
           readinessProbe:
 {{ tpl .Values.pipelines.router.readinessProbe.config . | indent 12 }}
         {{- end }}
+{{- if .Values.pipelines.nodepoolservice.enabled }}
+        - name: nodepoolservice
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nodepoolservice" ) }}
+          imagePullPolicy: {{ .Values.pipelines.nodepoolservice.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.nodepoolservice.extraEnvironmentVariables }}
+{{- with .Values.pipelines.nodepoolservice.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.nodepoolservice.resources | nindent 12 }}
+          volumeMounts:
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+{{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+{{- end }}
+{{- end }}
         {{- if .Values.pipelines.nexec.enabled }}
         - name: nexec
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nexec" ) }}
@@ -679,6 +733,9 @@ spec:
         emptyDir: {}
       - name: data-volume
         emptyDir: {}
+      - name: pipelines-utility-scripts
+        configMap:
+          name: {{ template "pipelines.fullname" . }}-utility-scripts
       {{- if .Values.pipelines.configMaps }}
       - name: pipelines-configmaps
         configMap:

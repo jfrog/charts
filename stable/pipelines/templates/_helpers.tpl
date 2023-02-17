@@ -100,11 +100,11 @@ The frontend name
 {{- end -}}
 
 {{/*
-The nodepoolmanager name
+The nodepoolservice name
 */}}
-{{- define "pipelines.nodepoolmanager.name" -}}
+{{- define "pipelines.nodepoolservice.name" -}}
 {{- $name := .Release.Name | trunc 29 -}}
-{{- printf "%s-%s-nodepoolmanager" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s-nodepoolservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -731,6 +731,22 @@ Return the proper pipelines chart image names
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Common code to add metrics
+*/}}
+{{- define "pipelines.addMetrics" -}}
+export new_script_path=/tmp/add_metrics.sh;
+cp -fv /pipelines-utility-scripts/add_metrics.sh "${new_script_path}"; chmod +x "${new_script_path}";
+bash "${new_script_path}" "${PIP_CONTAINER_START_TIME}" "{{ .Values.pipelines.logPath }}/${PIP_METRIC_FILE_PREFIX}-metrics.log" "kubernetes-init" || true;
+{{- end -}}
+
+{{/*
+Common code to change ownership of metrics file
+*/}}
+{{- define "pipelines.changeOwnershipMetrics" -}}
+chown 1066:1066 {{ .Values.pipelines.logPath }}/*-metrics.log || true;
 {{- end -}}
 
 {{/*

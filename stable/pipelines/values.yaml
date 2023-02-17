@@ -683,10 +683,10 @@ pipelines:
     # - name: MY_ENV_VAR
     #   value: "example_value"
 
-  nodepoolmanager:
+  nodepoolservice:
     image:
       # registry:
-      repository: jfrog/pipelines-nodepoolmanager
+      repository: jfrog/pipelines-nodepool-service
       # tag:
       pullPolicy: IfNotPresent
     resources: {}
@@ -977,7 +977,7 @@ pipelines:
     internalPort: 8036
     logPath: "/opt/jfrog/observability/var/log"
 
-    resources:
+    resources: {}
       # requests:
       #   memory: "100Mi"
       #   cpu: "101Mi"
@@ -1167,7 +1167,7 @@ pipelines:
       artifactory:
         ## Artifactory URL
         ##
-        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "pipelines.jfrogUrl" .)) . }}"
+        baseUrl: "{{ tpl (required "\n\npipelines.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "pipelines.jfrogUrl" .)) . }}"
         ## Unified UI URL
         ##
         baseUrlUI: {{ include "pipelines.jfrogUrlUI" . }}
@@ -1266,9 +1266,7 @@ pipelines:
           {{- if .Values.pipelines.nexec.enabled }}
           - "core.nexec"
           {{- end }}
-          {{- if or (.Values.pipelines.nodepoolmanager.enabled) (.Values.splitServicesToPods) }}
-          - "core.nodePoolManager"
-          {{- end }}
+          - "core.nodePoolService"
           - "core.hookHandler"
           - "core.extensionSync"
           - "core.templateSync"

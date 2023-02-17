@@ -281,6 +281,8 @@ spec:
           - 'sh'
           - '-c'
           - >
+            export PIP_CONTAINER_START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ");
+            export PIP_METRIC_FILE_PREFIX="internalapi-pipelines-installer";
           {{- if .Values.rabbitmq.enabled }}
             echo "Waiting for RabbitMQ to come up...";
             until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.service.port }} && echo rabbitmq ok; do
@@ -304,7 +306,11 @@ spec:
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
           {{- end }}
             ./pipelines-k8s;
+{{ include "pipelines.addMetrics" . | nindent 12 }}
+{{ include "pipelines.changeOwnershipMetrics" . | nindent 12 }}
           volumeMounts:
+          - name: pipelines-utility-scripts
+            mountPath: "/pipelines-utility-scripts/"
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
@@ -481,7 +487,7 @@ spec:
 {{- end }}
 {{- end }}
           resources:
-            {{ toYaml .Values.pipelines.observability.resources | indent 12 }}
+            {{ toYaml .Values.pipelines.observability.resources | nindent 12 }}
           {{- if .Values.pipelines.observability.startupProbe.enabled }}
           volumeMounts:
           - name: jfrog-pipelines-logs
@@ -660,6 +666,9 @@ spec:
         emptyDir: {}
       - name: data-volume
         emptyDir: {}
+      - name: pipelines-utility-scripts
+        configMap:
+          name: {{ template "pipelines.fullname" . }}-utility-scripts
       {{- if .Values.pipelines.configMaps }}
       - name: pipelines-configmaps
         configMap:
