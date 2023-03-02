@@ -1,10 +1,14 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.66.6] - Jan 16, 2023
+## [103.67.9] - Feb 16, 2023
 * Added topologySpreadConstraints to xray pods
 * Allow setting executionServiceAesKey in a secret [GH-1685](https://github.com/jfrog/charts/issues/1685)
 * Updated postgresql tag version to `13.9.0-debian-11-r11`
+* Adding support for PodDisruptionBudget
+* Updated jfrogUrl text path to copy
+* Added pods/log and events resources to xray serviceaccount
+* Added option to pass extra environment variables via `common.extraEnvVars` for xray containers
 
 ## [103.63.0] - Jan 16, 2023
 * Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`

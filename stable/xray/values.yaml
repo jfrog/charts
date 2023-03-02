@@ -77,6 +77,8 @@ xray:
   labels: {}
   persistence:
     mountPath: /var/opt/jfrog/xray
+  # adding minAvailable for Xray Pod Disruption Budget
+  minAvailable: 1
   # unifiedSecretInstallation flag enables single unified secret holding all xray secrets
   unifiedSecretInstallation: false
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
@@ -162,7 +164,7 @@ xray:
       logging:
         consoleLog:
           enabled: {{ .Values.xray.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "xray.jfrogUrl" .)) . }}"
+      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "xray.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"
@@ -240,6 +242,8 @@ rbac:
           - services
           - endpoints
           - pods
+          - pods/log
+          - events
         verbs:
           - get
           - watch
@@ -613,6 +617,23 @@ common:
     ##   GKE, AWS & OpenStack)
     ##
     # storageClass: "-"
+  ## @param extraEnvVars Extra environment variables to add to xray containers
+  ## E.g:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: BAR
+  ##
+  extraEnvVars: |
+    - name: XRAY_CHART_FULL_NAME
+      value: '{{ include "xray.fullname" . }}'
+    - name: XRAY_CHART_NAME
+      value: '{{ include "xray.name" . }}'
+    - name: XRAY_CHART_UNIFIED_SECRET_INSTALLATION
+      value: "{{ .Values.xray.unifiedSecretInstallation }}"
+    - name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_EXISTING_SECRET
+      value: "{{ .Values.systemYamlOverride.existingSecret }}"
+    - name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_DATA_KEY
+      value: "{{ .Values.systemYamlOverride.dataKey }}"
 analysis:
   name: xray-analysis
   ## Note that by default we use appVersion to get image tag/version
@@ -948,7 +969,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.12.0
+    tag: 1.13.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

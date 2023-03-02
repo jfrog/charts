@@ -1,0 +1,23 @@
+{{- if .Values.xray.minAvailable -}}
+{{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: policy/v1beta1
+{{- else }}
+apiVersion: policy/v1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ template "xray.fullname" . }}-pdb
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.xray.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ template "xray.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.xray.name }}
+  minAvailable: {{ .Values.xray.minAvailable }}
+{{- end }}
