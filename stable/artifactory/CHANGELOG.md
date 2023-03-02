@@ -1,9 +1,15 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.49.8] - Jan 20, 2023
-* Updated postgresql tag version to `13.9.0-debian-11-11`
+## [107.55.2] - Jan 31, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
+* Adding a custom preStop to Artifactory router for allowing graceful termination to complete
+
+## [107.53.0] - Jan 20, 2023
 * Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
+
+## [107.50.0] - Jan 20, 2023
+* Updated postgresql tag version to `13.9.0-debian-11-11`
 * Fixed an issue for capabilities check of ingress
 * Updated jfrogUrl text path in migrate.sh file
 * Added a note that from 107.46.x chart versions, `copyOnEveryStartup` is not needed for binarystore.xml, it is always copied via initContainers. For more Info, Refer [GH-1723](https://github.com/jfrog/charts/issues/1723)
@@ -11,6 +17,7 @@ All changes to this chart will be documented in this file.
 ## [107.49.0] - Jan 16, 2023
 * Added support for setting `seLinuxOptions` in `securityContext` [GH-1699](https://github.com/jfrog/charts/pull/1699)
 * Added option to enable/disable proxy_request_buffering and proxy_buffering_off [GH-1686](https://github.com/jfrog/charts/pull/1686)
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
 
 ## [107.48.0] - Oct 27, 2022
 * Updated router version to `7.51.0`

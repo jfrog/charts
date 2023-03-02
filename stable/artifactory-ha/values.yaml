@@ -41,7 +41,7 @@ global:
 ## String to fully override artifactory-ha.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
 installer:
   type:
   platform:
@@ -201,8 +201,8 @@ database:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.7.1049
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1760
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -217,7 +217,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.56.0
+    tag: 7.61.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -239,14 +239,14 @@ router:
   #    cpu: "1"
 
   # Add lifecycle hooks for router container
-  lifecycle: {}
-  # postStart:
-  #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-  # preStop:
-  #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
+  lifecycle:
+    # From Artifactory versions 7.52.x, Wait for Artifactory to complete any open uploads or downloads before terminating
+    preStop:
+      exec:
+        command: ["sh", "-c", "while [[ $(curl --fail --silent --connect-timeout 2 http://localhost:8081/artifactory/api/v1/system/liveness) =~ OK ]]; do echo Artifactory is still alive; sleep 2; done"]
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
   ## Add custom volumesMounts
   customVolumeMounts: ""
   #  - name: custom-script
@@ -638,6 +638,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.terminationGracePeriodSeconds 1000 }}
         -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.primary.javaOpts }}
         {{- if .corePoolSize }}
@@ -844,16 +845,16 @@ artifactory:
         ## Should be a child directory of {{ .Values.artifactory.persistence.mountPath }}
         dataDir: "{{ .Values.artifactory.persistence.mountPath }}/artifactory-data"
         backupDir: "/var/opt/jfrog/artifactory-backup"
-        ## You may also use existing shared claims for the data and backup storage. This allows storage (NAS for example) to be used for Data and Backup dirs which are safe to share across multiple artifactory nodes.
-        ## You may specify numberOfExistingClaims to indicate how many of these existing shared claims to mount. (Default = 1)
-        ## Create PVCs with ReadWriteMany that match the naming convetions:
-        ##   {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
-        ##   {{ template "artifactory-ha.fullname" . }}-backup-pvc
-        ## Example (using numberOfExistingClaims: 2)
-        ##   myexample-data-pvc-0
-        ##   myexample-data-pvc-1
-        ##   myexample-backup-pvc
-        ## Note: While you need two PVC fronting two PVs, multiple PVs can be attached to the same storage in many cases allowing you to share an underlying drive.
+      ## You may also use existing shared claims for the data and backup storage. This allows storage (NAS for example) to be used for Data and Backup dirs which are safe to share across multiple artifactory nodes.
+      ## You may specify numberOfExistingClaims to indicate how many of these existing shared claims to mount. (Default = 1)
+      ## Create PVCs with ReadWriteMany that match the naming convetions:
+      ##   {{ template "artifactory-ha.fullname" . }}-data-pvc-<claim-ordinal>
+      ##   {{ template "artifactory-ha.fullname" . }}-backup-pvc
+      ## Example (using numberOfExistingClaims: 2)
+      ##   myexample-data-pvc-0
+      ##   myexample-data-pvc-1
+      ##   myexample-backup-pvc
+      ## Note: While you need two PVC fronting two PVs, multiple PVs can be attached to the same storage in many cases allowing you to share an underlying drive.
     ## For artifactory.persistence.type nfs
     ## If using NFS as the shared storage, you must have a running NFS server that is accessible by your Kubernetes
     ## cluster nodes.

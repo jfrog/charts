@@ -42,7 +42,7 @@ global:
 ## String to fully override artifactory.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
 # Init containers
 initContainers:
   resources:
@@ -160,8 +160,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.7.1049
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1760
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -176,7 +176,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.56.0
+    tag: 7.61.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -198,14 +198,14 @@ router:
   #    cpu: "1"
 
   # Add lifecycle hooks for router container
-  lifecycle: {}
-  # postStart:
-  #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-  # preStop:
-  #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
+  lifecycle:
+    # From Artifactory versions 7.52.x, Wait for Artifactory to complete any open uploads or downloads before terminating
+    preStop:
+      exec:
+        command: ["sh", "-c", "while [[ $(curl --fail --silent --connect-timeout 2 http://localhost:8081/artifactory/api/v1/system/liveness) =~ OK ]]; do echo Artifactory is still alive; sleep 2; done"]
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
   ## Add custom volumesMounts
   customVolumeMounts: ""
   #  - name: custom-script
@@ -609,6 +609,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
+        -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.terminationGracePeriodSeconds 1000 }}
         -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.javaOpts }}
         {{- if .corePoolSize }}

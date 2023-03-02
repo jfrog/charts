@@ -81,7 +81,7 @@ spec:
       {{- end }}
     {{- end }}
       serviceAccountName: {{ template "artifactory-ha.serviceAccountName" . }}
-      terminationGracePeriodSeconds: {{ .Values.artifactory.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ add .Values.artifactory.terminationGracePeriodSeconds 10 }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
     {{- end }}
