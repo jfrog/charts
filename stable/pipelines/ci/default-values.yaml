@@ -1,9 +1,12 @@
 # CI values for Pipelines
 databaseUpgradeReady: true
+splitServicesToPods: true
 pipelines:
   jfrogUrl: http://artifactory.rt:8082
   jfrogUrlUI: http://artifactory.rt:8082
   unifiedSecretInstallation: true
+  nodepoolservice:
+    enabled: true
   api:
     resources:
       limits:
