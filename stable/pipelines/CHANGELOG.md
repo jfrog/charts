@@ -1,14 +1,20 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.34.0] - Feb 06, 2023
+## [101.35.1] - Feb 20, 2023
+* Fixed indentation in nodepoolservice container definition
+* Added configuration to use access instead of vault to store secrets
+* Retained installer metrics only for db migrations
+
+## [101.34.0] - Jan 24, 2023
+* Added metrics to required init containers
+* Resources in pipelines observability is not renderring as expected
+
+## [101.33.0] - Jan 03, 2023
 * Rename nodepoolManager to nodepoolservice
 * Always run the nodepoolservice in both modes ( single pod and split mode)
 * Aligned ingress resource with cluster's networking API
 * Updated jfrogUrl text path to copy
-* Resources in pipelines observability is not renderring as expected
-* Added metrics to required init containers
-* Fixed indentation in nodepoolservice container definition
 
 ## [101.33.0] - Dec 30, 2022
 * Added readiness and liveness for the missing pods
