@@ -1,0 +1,27 @@
+apiVersion: v2
+appVersion: 1.6.2
+dependencies:
+- name: jfrog-common
+  repository: https://charts.jfrog.io/
+  version: 0.0.5
+- condition: nginx.enabled
+  name: nginx
+  repository: https://charts.jfrog.io/
+  version: 13.2.13
+description: Universal Repository Manager supporting all major packaging formats,
+  build tools and CI servers.
+home: https://www.jfrog.com/artifactory/
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/artifactory/logo/pdn-node-logo.png
+keywords:
+- pdn-node
+- jfrog
+- devops
+kubeVersion: '>= 1.19.0-0'
+maintainers:
+- email: dev-distribution-pdn@jfrog.com
+  name: Chart Maintainers at JFrog
+name: pdn-node
+sources:
+- https://github.com/jfrog/charts
+type: application
+version: 101.6.2
