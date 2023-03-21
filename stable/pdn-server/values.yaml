@@ -2,41 +2,141 @@
 ## Global Docker image parameters
 ## Please, note that this will override the image parameters, including dependencies, configured to use the global value
 ## Current available global Docker image parameters: imageRegistry, imagePullSecrets and storageClass
-##
 
 ## @param global.imageRegistry Global Docker image registry
 ## @param global.imagePullSecrets Global Docker registry secret names as an array
 ## @param global.storageClass Global StorageClass for Persistent Volume(s)
-##
+## @param global.jfrogUrl Global Base URL of the JFrog Platform Deployment (JPD)
+## @param global.masterKey Global Master key for the PDN Server
+## @param global.joinKey Global Join Key to connect other services to Artifactory
 global:
+  ## Docker image registry, default: releases-docker.jfrog.io
   imageRegistry: ""
-  ## E.g.
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Example:
   ## imagePullSecrets:
   ##   - myRegistryKeySecretName
-  ##
   imagePullSecrets: []
+  ## PVC Storage Class for pdnnode data volume
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is set,
+  ## choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
   storageClass: ""
+  ## Base URL of the JFrog Platform Deployment (JPD). This is the URL to the machine
+  ## where JFrog Artifactory is deployed, or the load balancer pointing to it.
+  ## You can copy the JFrog URL from Admin -> User Management -> Settings -> Connection details
+  ## It is recommended to use DNS names rather than direct IPs.
+  ## IMPORTANT: jfrogUrl value will be injected as environment variable
+  ## so it will take precedence over .Values.systemYaml.shared.jfrogUrl
+  ## Example:
+  ## http://abcdefg-1234567.us-east-1.elb.amazonaws.com
+  ## http://artifactory.us-east-1-prod.svc.cluster.local:8082
+  jfrogUrl: ""
+  ## PDN Server requires a unique master key.
+  ## You can generate one with the command: "openssl rand -hex 32"
+  ## An initial one is auto generated on first startup.
+  masterKey: ""
+  ## Alternatively, you can use a pre-existing secret with a key
+  ## called "master-key" by specifying "masterKeySecretName"
+  masterKeySecretName: ""
+  ## Join Key to connect other services to Artifactory
+  ## IMPORTANT: Setting this value overrides the existing joinKey
+  joinKey: ""
+  ## Alternatively, you can use a pre-existing secret with a key
+  ## called "join-key" by specifying "joinKeySecretName"
+  joinKeySecretName: ""
+## PDN Server requires a unique master key.
+## You can generate one with the command: "openssl rand -hex 32"
+## IMPORTANT: You MUST NOT use the example masterKey for a production deployment!
+masterKey: "bca2fafd3b39649b24269de29300ce21"
+## Alternatively, you can use a pre-existing secret with a key
+## called "master-key" by specifying "masterKeySecretName"
+masterKeySecretName: ""
+## Join Key to connect other services to Artifactory
+## IMPORTANT: Setting this value overrides the existing joinKey
+## IMPORTANT: You MUST NOT use the example joinKey for a production deployment!
+joinKey: ""
+## Alternatively, you can use a pre-existing secret with a key
+## called "join-key" by specifying "joinKeySecretName"
+joinKeySecretName: ""
+## Join Key to connect PDN Node(s) to PDN Server
+## If not specified or empty value, a random join key will be generated
+## upon PDN Server startup. You can copy the key from JFrog UI under
+# Admin -> User Management -> Settings -> PDN Access Token -> Join Key
+pdnJoinKey: "aa34bd4dc7902a65f14900fc47ec6b5a"
+## Alternatively, you can use a pre-existing secret with a key
+## called "pdn-join-key" by specifying "pdnJoinKeySecretName"
+pdnJoinKeySecretName: ""
+## The external address to be used from outside
+## the PDN Server service for the PDN Server to be reached.
+## Note: selfAddress value will be injected as environment variable
+## so it will take precedence over .Values.systemYaml.pdnServer.selfAddress
+selfAddress: '{{ include "pdn-server.fullname" . }}:8095'
+## Base URL of the JFrog Platform Deployment (JPD). This is the URL to the machine
+## where JFrog Artifactory is deployed, or the load balancer pointing to it.
+## You can copy the JFrog URL from Admin -> User Management -> Settings -> Connection details
+## It is recommended to use DNS names rather than direct IPs.
+## Note: jfrogUrl value will be injected as environment variable
+## so it will take precedence over .Values.systemYaml.shared.jfrogUrl
+## Example:
+## http://abcdefg-1234567.us-east-1.elb.amazonaws.com
+## http://artifactory.us-east-1-prod.svc.cluster.local:8082
+jfrogUrl: ""
+## PDN Server system configuration file
+## Ref: https://www.jfrog.com/confluence/display/JFROG/Advanced+Private+Distribution+Network+%28PDN%29+Configurations
+systemYaml: |
+  router:
+    serviceRegistry:
+      insecure: false
+  pdnServer:
+    logLevel: info
+    metrics:
+      enabled: true
+## PDN Server systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml
+## Ref: https://www.jfrog.com/confluence/display/JFROG/Advanced+Private+Distribution+Network+%28PDN%29+Configurations
+## Note: This will override existing (default) .Values.artifactory.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources
+## like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is:
+## 1. customInitContainers
+## 2. systemYamlOverride.existingSecret
+## 3. default systemYaml in values.yaml
+systemYamlOverride:
+  ## You can use a pre-existing secret by specifying existingSecret
+  existingSecret: ""
+  ## The dataKey should be the name of the secret data key created.
+  dataKey: ""
+## If enabled certificates added to this secret will be copied
+## to $JFROG_HOME/pdnserver/var/etc/security/keys/trusted directory
+customCertificates:
+  enabled: false
+  certificateSecretName: ""
+## PDN Server containers' resource requests and limits
+## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resources.limits The resources limits for PDN Server containers
+## @param resources.requests The requested resources for PDN Server containers
+resources: {}
+## limits:
+##    cpu: "1"
+##    memory: "2Gi"
+## requests:
+##    cpu: "2"
+##    memory: "4Gi"
 
-  customCertificates:
-    enabled: false
-    # certificateSecretName:
-
-  # masterKey:
-  # joinKey:
-
-  systemYamlOverride:
-    ## You can use a pre-existing secret by specifying existingSecret
-    existingSecret: ""
-    ## The dataKey should be the name of the secret data key created.
-    dataKey:
-
-## @section pdnserver Image parameters
-## @param image.registry pdnserver image registry
-## @param image.repository pdnserver image repository
-## @param image.tag pdnserver image tag (immutable tags are recommended)
-## @param image.pullPolicy pdnserver image pull policy
+## @section PDN Server Image parameters
+## @param image.registry PDN Server image registry
+## @param image.repository PDN Server image repository
+## @param image.tag PDN Server image tag (immutable tags are recommended)
+## @param image.pullPolicy PDN Server image pull policy
 ## @param image.pullSecrets Specify docker-registry secret names as an array
-##
 image:
   registry: releases-docker.jfrog.io
   repository: jfrog/pdn/server
@@ -44,280 +144,107 @@ image:
 
   ## Specify a image PullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
-  ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-  ##
+  ## Ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
-  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
   ## Example:
   ## pullSecrets:
   ##   - myRegistryKeySecretName
-  ##
   pullSecrets: []
-
-## @section Common parameters
-##
-
-## @param nameOverride String to partially override pdnserver.fullname template (will maintain the release name)
-##
-nameOverride: ""
-
-## @param fullnameOverride String to fully override pdnserver.fullname template
-##
-fullnameOverride:
-
-## @param kubeVersion Force target Kubernetes version (using Helm capabilities if not set)
-##
-kubeVersion: ""
-
-## @param clusterDomain Kubernetes Cluster Domain
-##
-clusterDomain: cluster.local
-
-## @param hostAliases Deployment pod host aliases
-## https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
-##
-hostAliases: []
-## @param commonAnnotations Annotations to add to all deployed objects
-##
-commonAnnotations: {}
-
-## @param command Override default container command (useful when using custom images)
-##
-command: []
-## @param args Override default container args (useful when using custom images)
-##
-args: []
-
-## @param terminationGracePeriodSeconds Default duration in seconds k8s waits for container to exit before sending kill signal.
-## Any time in excess of 10 seconds will be spent waiting for any synchronization necessary for cluster not to lose data.
-##
-terminationGracePeriodSeconds: 120
-
-## @param extraEnvironmentVariables that can be used to tune pdnserver to your needs.
-## Example:
-## extraEnvironmentVariables:
-##   - name: MY_ENV_VAR
-##     value: ""
-extraEnvironmentVariables:
-
-## @param extraVolumeMounts Optionally specify extra list of additional volumeMounts
-## Examples:
-## extraVolumeMounts:
-##   - name: extras
-##     mountPath: /usr/share/extras
-##     readOnly: true
-##
-extraVolumeMounts: []
-## @param extraVolumes Optionally specify extra list of additional volumes .
-## Example:
-## extraVolumes:
-##   - name: extras
-##     emptyDir: {}
-##
-extraVolumes: []
-
-## @param extraSecrets Optionally specify extra secrets to be created by the chart.
-## This can be useful when combined with load_definitions to automatically create the secret containing the definitions to be loaded.
-## Example:
-## extraSecrets:
-##   load-definition:
-##     load_definition.json: |
-##       {
-##         ...
-##       }
-##
-extraSecrets: {}
-## @param extraSecretsPrependReleaseName Set this flag to true if extraSecrets should be created with <release-name> prepended.
-##
-extraSecretsPrependReleaseName: false
-
-## @section Statefulset parameters
-##
-
-## @param replicaCount Number of pdnserver replicas to deploy
-##
-replicaCount: 1
-
-## @param schedulerName Use an alternate scheduler, e.g. "stork".
-## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
-##
-schedulerName: ""
-
-## you must change podManagementPolicy to 'Parallel'.
-## @param podManagementPolicy Pod management policy
-##
-podManagementPolicy: OrderedReady
-
-## @param podLabels pdnserver Pod labels. Evaluated as a template
-## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-##
-podLabels: {}
-
-## @param podAnnotations pdnserver Pod annotations. Evaluated as a template
-## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-##
-podAnnotations: {}
-
-## @param updateStrategyType Update strategy type for pdnserver statefulset
-## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
-##
-updateStrategyType: RollingUpdate
-
-## @param statefulsetLabels pdnserver statefulset labels. Evaluated as a template
-## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
-##
-statefulsetLabels: {}
-
-## @param priorityClassName Name of the priority class to be used by pdnserver pods, priority class needs to be created beforehand
-## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
-##
-priorityClassName: ""
-
-## @param podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
-## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
-##
-podAffinityPreset: ""
-
-## @param podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
-## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
-##
-podAntiAffinityPreset: soft
-
-## Node affinity preset
-## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
-##
-nodeAffinityPreset:
-  ## @param nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
-  ##
-  type: ""
-  ## @param nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
-  ## E.g.
-  ## key: "kubernetes.io/e2e-az-name"
-  ##
-  key: ""
-  ## @param nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
-  ## E.g.
-  ## values:
-  ##   - e2e-az1
-  ##   - e2e-az2
-  ##
-  values: []
-
-## @param affinity Affinity for pod assignment. Evaluated as a template
-## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-## Note: podAffinityPreset, podAntiAffinityPreset, and  nodeAffinityPreset will be ignored when it's set
-##
-affinity: {}
-
-## @param nodeSelector Node labels for pod assignment. Evaluated as a template
-## ref: https://kubernetes.io/docs/user-guide/node-selection/
-##
-nodeSelector: {}
-
-## @param tolerations Tolerations for pod assignment. Evaluated as a template
-## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-##
-tolerations: []
-
-## @param topologySpreadConstraints Topology Spread Constraints for pod assignment spread across your cluster among failure-domains. Evaluated as a template
-## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
-##
-topologySpreadConstraints: []
-
-## pdnserver pods' Security Context
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
-## @param podSecurityContext.enabled Enable pdnserver pods' Security Context
+## PDN Server pods' Security Context
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## @param podSecurityContext.enabled Enable PDN Server pods' Security Context
 ## @param podSecurityContext.fsGroup Group ID for the filesystem used by the containers
 ## @param podSecurityContext.runAsUser User ID for the service user running the pod
-##
 podSecurityContext:
   enabled: true
-  fsGroup: 1055
-  runAsUser: 1055
-
-## @param containerSecurityContext pdnserver containers' Security Context
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  fsGroup: 11055
+  runAsUser: 11055
+## @param containerSecurityContext PDN Server containers' Security Context
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 ## Example:
 ##   containerSecurityContext:
 ##     capabilities:
 ##       drop: ["NET_RAW"]
 ##     readOnlyRootFilesystem: true
-##
-containerSecurityContext: {}
-
-## pdnserver containers' resource requests and limits
-## ref: https://kubernetes.io/docs/user-guide/compute-resources/
-## We usually recommend not to specify default resources and to leave this as a conscious
-## choice for the user. This also increases chances charts run on environments with little
-## resources, such as Minikube. If you do want to specify resources, uncomment the following
-## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param resources.limits The resources limits for pdnserver containers
-## @param resources.requests The requested resources for pdnserver containers
-##
-resources: {}
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["NET_RAW"]
+  runAsNonRoot: true
+## @section Exposure parameters
+## Kubernetes service type
+service:
+  ## @param service.type Kubernetes Service type
+  type: ClusterIP
+  ## @param service.portEnabled Amqp port. Cannot be disabled when `auth.tls.enabled` is `false`. Listener can be disabled with `listeners.tcp = none`.
+  portEnabled: true
+  ## @param service.extraPorts Extra ports to expose in the service
+  ## E.g.:
+  ## extraPorts:
+  ## - name: new_svc_name
+  ##   port: 1234
+  ##   targetPort: 1234
+  extraPorts: []
+  ## @param service.loadBalancerSourceRanges Address(es) that are allowed when service is `LoadBalancer`
+  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ## e.g:
+  ## loadBalancerSourceRanges:
+  ## - 10.10.10.0/24
+  loadBalancerSourceRanges: []
+  ## @param service.externalIPs Set the ExternalIPs
+  externalIPs: []
+  ## @param service.externalTrafficPolicy Enable client source IP preservation
+  ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  externalTrafficPolicy: Cluster
+  ## @param service.loadBalancerIP Set the LoadBalancerIP
+  loadBalancerIP: ""
+  ## @param service.labels Service labels. Evaluated as a template
+  labels: {}
+  ## @param service.annotations Service annotations. Evaluated as a template
   ## Example:
-  ## limits:
-  ##    cpu: 1000m
-  ##    memory: 2Gi
-  ##
-  ## Examples:
-  ## requests:
-  ##    cpu: 1000m
-  ##    memory: 2Gi
-##
-
-labels: {}
-
+  ## annotations:
+  ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+  annotations: {}
+  ## @param service.annotationsHeadless Headless Service annotations. Evaluated as a template
+  ## Example:
+  ## annotations:
+  ##   external-dns.alpha.kubernetes.io/internal-hostname: pdnserver.example.com
+  annotationsHeadless: {}
 ## Configure the ingress resource that allows you to access the
 ## event installation. Set up the URL
-## ref: https://kubernetes.io/docs/user-guide/ingress/
-##
+## Ref: https://kubernetes.io/docs/user-guide/ingress/
 ingress:
   ## @param ingress.enabled Enable ingress resource for Management console
-  ##
   enabled: false
-
   ## @param ingress.path Path for the default host. You may need to set this to '/*' in order to use this with ALB ingress controllers.
-  ##
   path: /
-
   ## @param ingress.pathType Ingress path type
-  ##
   pathType: ImplementationSpecific
-
   ## @param ingress.hostname Default host for the ingress resource
-  ##
   hostname: pdnserver.local
-
   ## @param ingress.annotations Additional annotations for the Ingress resource. To enable certificate autogeneration, place here your cert-manager annotations.
   ## For a full list of possible ingress annotations, please see
-  ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+  ## Ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
   ## Use this parameter to set the required annotations for cert-manager, see
-  ## ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
-  ##
+  ## Ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
   ## e.g:
   ## annotations:
   ##   kubernetes.io/ingress.class: nginx
   ##   cert-manager.io/cluster-issuer: cluster-issuer-name
-  ##
   annotations: {}
-
   ## @param ingress.extraHosts The list of additional hostnames to be covered with this ingress record.
   ## Most likely the hostname above will be enough, but in the event more hosts are needed, this is an array
   ## e.g:
   ## extraHosts:
   ##   - name: pdnserver.local
   ##     path: /
-  ##
   extraHosts: []
-
   ## @param ingress.extraRules The list of additional rules to be added to this ingress record. Evaluated as a template
   ## Useful when looking for additional customization, such as using different backend
-  ##
   extraRules: []
-
   ## @param ingress.extraTls The tls configuration for additional hostnames to be covered with this ingress record.
   ## see: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
   ## e.g:
@@ -325,9 +252,7 @@ ingress:
   ##   - hosts:
   ##       - pdnserver.local
   ##     secretName: pdnserver.local-tls
-  ##
   extraTls: []
-
   ## @param ingress.secrets Custom TLS certificates as secrets
   ## NOTE: 'key' and 'certificate' are expected in PEM format
   ## NOTE: 'name' should line up with a 'secretName' set further up
@@ -346,26 +271,15 @@ ingress:
   ##       -----BEGIN CERTIFICATE-----
   ##       ...
   ##       -----END CERTIFICATE-----
-  ##
   secrets: []
-
   ## @param ingress.ingressClassName IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)
   ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster .
-  ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
-  ##
+  ## Ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
   ingressClassName: ""
-
-
-insecurePort: 8093
-port: 8095
-internalPort: 8094
-httpPort: 8092
-
 ## Specify common probes parameters
 probes:
   timeoutSeconds: 5
-
-## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+## The following settings are to configure the frequency of the liveness and startup probes
 livenessProbe:
   enabled: true
   config: |
@@ -373,13 +287,12 @@ livenessProbe:
       command:
         - sh
         - -c
-        - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.httpPort }}/api/v1/system/liveness
+        - curl -s --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:8092{{ include "pdn-server.livenessProbe" .}}
     initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
     failureThreshold: 5
     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
     periodSeconds: 10
     successThreshold: 1
-
 startupProbe:
   enabled: true
   config: |
@@ -387,207 +300,105 @@ startupProbe:
       command:
         - sh
         - -c
-        - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.httpPort }}/api/v1/system/readiness
+        - curl -s --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:8092{{ include "pdn-server.startupProbe" .}}
     initialDelaySeconds: 5
     failureThreshold: 30
     periodSeconds: 5
     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-
-## certificates added to this secret will be copied to $JFROG_HOME/pdnserver/var/etc/security/keys/trusted directory
-customCertificates:
-  enabled: false
-  # certificateSecretName:
-
 ## @param customLivenessProbe Override default liveness probe
-##
 customLivenessProbe: {}
-
 ## @param customReadinessProbe Override default readiness probe
-##
 customReadinessProbe: {}
-
 ## @param customStartupProbe Define a custom startup probe
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
-##
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
 customStartupProbe: {}
-
 # Add lifecycle hooks for integration container
 lifecycle: {}
-  # postStart:
-  #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-  # preStop:
-  #   exec:
-#     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
-## @param initContainers Add init containers to the pdnserver pod
-## Example:
-## initContainers:
-##   - name: your-image-name
-##     image: your-image
-##     pullPolicy: Always
-##     ports:
-##       - name: portname
-##         containerPort: 1234
-##
-# initContainers: []
-
-## @param sidecars Add sidecar containers to the pdnserver pod
-## Example:
-## sidecars:
-##   - name: your-image-name
-##     image: your-image
-##     pullPolicy: Always
-##     ports:
-##       - name: portname
-##         containerPort: 1234
-##
-sidecars: []
+##  postStart:
+##    exec:
+##      command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+##  preStop:
+##    exec:
+##      command: ["/bin/sh","-c","echo Hello from the preStop handler"]
 
 ## Pod Disruption Budget configuration
-## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
-##
+## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
 pdb:
   ## @param pdb.create Enable/disable a Pod Disruption Budget creation
-  ##
   create: false
   ## @param pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
-  ##
   minAvailable: 1
   ## @param pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable
-  ##
   maxUnavailable: ""
-
-## Artifactory URL . Mandatory
-jfrogUrl:
-
-## pdnserver requires a unique master key.
-## You can generate one with the command: "openssl rand -hex 32"
-## An initial one is auto generated by Artifactory on first startup.
-masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
-# masterKeySecretName:
-
-## Join Key to connect other services to Artifactory
-## IMPORTANT: Setting this value overrides the existing joinKey
-## IMPORTANT: You should NOT use the example joinKey for a production deployment!
-joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
-# joinKeySecretName:
-
-selfAddress: localhost:8095
-
-systemYaml: |
-  router:
-    serviceRegistry:
-      insecure: {{ .Values.router.serviceRegistry.insecure }}
-  pdnServer:
-    selfAddress: {{ .Values.selfAddress }}
-  {{- if .Values.openMetrics.enabled }}
-      metrics:
-        enabled: true
-      {{- if .Values.openMetrics.filebeat.enabled }}
-        filebeat: {{ toYaml .Values.openMetrics.filebeat | nindent 6 }}
-      {{- end }}
-    {{- end }}
-
-## pdnserver systemYaml override
-## This is for advanced usecases where users wants to provide their own systemYaml for configuring artifactory
-## Refer: https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML
-## Note: This will override existing (default) .Values.artifactory.systemYaml in values.yaml
-## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
-## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
-systemYamlOverride:
-  ## You can use a pre-existing secret by specifying existingSecret
-  existingSecret: ""
-  ## The dataKey should be the name of the secret data key created.
-  dataKey:
-
 ## @section observability image parameters
 ## @param observability.image.registry observability image registry
 ## @param observability.image.repository observability image repository
 ## @param observability.image.tag observability image tag (immutable tags are recommended)
 ## @param observability.image.pullPolicy observability image pull policy
 ## @param observability.image.pullSecrets Specify docker-registry secret names as an array
-##
 observability:
   enabled: true
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.11.0
-
+    tag: 1.13.0
     ## Specify a image PullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
-    ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-    ##
+    ## Ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
     ## Example:
     ## pullSecrets:
     ##   - myRegistryKeySecretName
-    ##
     pullSecrets: []
-
   ## @param observability.extraVolumeMounts Optionally specify extra list of additional volumeMounts
   ## Examples:
   ## extraVolumeMounts:
   ##   - name: extras
   ##     mountPath: /usr/share/extras
   ##     readOnly: true
-  ##
   extraVolumeMounts: []
   ## @param observability.extraVolumes Optionally specify extra list of additional volumes .
   ## Example:
   ## extraVolumes:
   ##   - name: extras
   ##     emptyDir: {}
-  ##
   extraVolumes: []
-
   ## @param observability.extraEnvironmentVariables that can be used to tune observability to your needs.
   ## Example:
   ## extraEnvironmentVariables:
   ##   - name: MY_ENV_VAR
   ##     value: ""
   extraEnvironmentVariables: []
-
   ## observability containers' resource requests and limits
-  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
   ## choice for the user. This also increases chances charts run on environments with little
   ## resources, such as Minikube. If you do want to specify resources, uncomment the following
   ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   ## @param observability.resources.limits The resources limits for observability containers
   ## @param observability.resources.requests The requested resources for observability containers
-  ##
   resources: {}
-    ## Example:
-    ## limits:
-    ##    cpu: 1000m
-    ##    memory: 2Gi
-    ##
-    ## Examples:
-    ## requests:
-    ##    cpu: 1000m
-    ##    memory: 2Gi
-  ##
+  ##    limits:
+  ##      cpu: "1"
+  ##      memory: "1Gi"
+  ##    requests:
+  ##      cpu: "100m"
+  ##      memory: "100Mi"
   # Add lifecycle hooks for observability container
   lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-    # preStop:
-    #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  ##  postStart:
+  ##    exec:
+  ##      command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  ##  preStop:
+  ##    exec:
+  ##      command: ["/bin/sh","-c","echo Hello from the preStop handler"]
   internalPort: 8036
-
   ## Specify common probes parameters
   probes:
     timeoutSeconds: 5
-
   ## The following settings are to configure the frequency of the liveness and startup probes
   livenessProbe:
     enabled: true
@@ -602,7 +413,6 @@ observability:
       timeoutSeconds: {{ .Values.observability.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
@@ -615,48 +425,45 @@ observability:
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.observability.probes.timeoutSeconds }}
-
   persistence:
     mountPath: "/var/opt/jfrog/observability"
-
 ## Router
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.49.0
+    tag: 7.56.0
     pullPolicy: IfNotPresent
-  serviceRegistry:
-    ## Service registry (Access) TLS verification skipped if enabled
-    insecure: false
-  internalPort: 8082
-  externalPort: 8082
   tlsEnabled: false
+  ## router container resource requests and limits
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param router.resources.limits The resources limits for router container
+  ## @param router.resources.requests The requested resources for router container
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
-
+  ##    limits:
+  ##      cpu: "1"
+  ##      memory: "1Gi"
+  ##    requests:
+  ##      cpu: "100m"
+  ##      memory: "100Mi"
   ## @param router.extraEnvironmentVariables that can be used to tune router to your needs.
   ## Example:
   ## extraEnvironmentVariables:
   ##   - name: MY_ENV_VAR
   ##     value: ""
   extraEnvironmentVariables: []
-
   extraVolumeMounts: []
-  ## @param observability.extraVolumes Optionally specify extra list of additional volumes .
+  ## @param router.extraVolumes Optionally specify extra list of additional volumes .
   ## Example:
   ## extraVolumes:
   ##   - name: extras
   ##     emptyDir: {}
-  ##
   extraVolumes: []
-
   ## To use newProbes set .Values.newProbes to true
   livenessProbe:
     enabled: true
@@ -665,27 +472,12 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "pdnserver.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "pdn-server.scheme" . }}://localhost:8082/router{{ include "pdn-server.livenessProbe" . }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
       successThreshold: 1
-
-  readinessProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "pdnserver.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 5
-      successThreshold: 1
-
   startupProbe:
     enabled: true
     config: |
@@ -693,285 +485,181 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "pdnserver.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "pdn-server.scheme" . }}://localhost:8082/router{{ include "pdn-server.startupProbe" .}}
       initialDelaySeconds: 10
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-
   # Add lifecycle hooks for observability container
   lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-    # preStop:
-    #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
+  ##  postStart:
+  ##    exec:
+  ##      command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  ##  preStop:
+  ##    exec:
+  ##      command: ["/bin/sh","-c","echo Hello from the preStop handler"]
   persistence:
     mountPath: "/var/opt/jfrog/router"
-
-## @section RBAC parameters
-##
-
-## pdnserver pods ServiceAccount
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-##
+## PDN Server pods ServiceAccount
+## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 serviceAccount:
-  ## @param serviceAccount.create Enable creation of ServiceAccount for pdnserver pods
-  ##
+  ## @param serviceAccount.create Enable creation of ServiceAccount for PDN Server pods
   create: true
   ## @param serviceAccount.name Name of the created serviceAccount
   ## If not set and create is true, a name is generated using the pdnserver.fullname template
-  ##
   name: ""
   ## @param serviceAccount.automountServiceAccountToken Auto-mount the service account token in the pod
-  ##
   automountServiceAccountToken: true
-
+## @section RBAC parameters
 ## Role Based Access
-## ref: https://kubernetes.io/docs/admin/authorization/rbac/
-##
+## Ref: https://kubernetes.io/docs/admin/authorization/rbac/
 rbac:
   ## @param rbac.create Whether RBAC rules should be created
-  ## binding pdnserver ServiceAccount to a role
-  ## that allows pdnserver pods querying the K8s API
-  ##
+  ## binding PDN Server ServiceAccount to a role
+  ## that allows PDN Server pods querying the K8s API
   create: true
-
 ## Autoscaling configuration
-##
-
 autoscaling:
   ## @param autoscaling.enabled Enable replica autoscaling settings
-  ##
   enabled: false
   ## @param autoscaling.minReplicas Minimum replicas for the pod autoscaling
-  ##
   minReplicas: 1
   ## @param autoscaling.maxReplicas Maximum replicas for the pod autoscaling
-  ##
   maxReplicas: 11
   ## @param autoscaling.targetCPU Percentage of CPU to consider when autoscaling
-  ##
   targetCPU: ""
   ## @param autoscaling.targetMemory Percentage of Memory to consider when autoscaling
-  ##
   targetMemory: ""
-
 ## @section Persistence parameters
-##
-
 persistence:
   ## @param persistence.enabled
-  ##
   enabled: false
-
-  ## @param persistence.storageClass PVC Storage Class for pdnserver data volume
+  ## @param persistence.storageClass PVC Storage Class for PDN Server data volume
   ## If defined, storageClassName: <storageClass>
   ## If set to "-", storageClassName: "", which disables dynamic provisioning
-  ## If undefined (the default) or set to null, no storageClassName spec is
-  ## set, choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
-  ##
+  ## If undefined (the default) or set to null, no storageClassName spec is set,
+  ## choosing the default provisioner. (gp2 on AWS, standard on GKE, AWS & OpenStack)
   storageClass: ""
   ## @param persistence.selector Selector to match an existing Persistent Volume
   ## selector:
   ##   matchLabels:
   ##     app: my-app
-  ##
   selector: {}
-  ## @param persistence.accessMode PVC Access Mode for pdnserver data volume
-  ##
+  ## @param persistence.accessMode PVC Access Mode for PDN Server data volume
   accessMode: ReadWriteOnce
-
   ## @param persistence.existingClaim Provide an existing PersistentVolumeClaims
   ## The value is evaluated as a template
   ## So, for example, the name can depend on .Release or .Chart
-  ##
   existingClaim: ""
   ## @param persistence.mountPath The path the volume will be mounted at
-  ## Note: useful when using custom pdnserver images
-  ##
+  ## Note: useful when using custom PDN Server images
   mountPath: /var/opt/jfrog/pdnserver
   ## @param persistence.subPath The subdirectory of the volume to mount to
   ## Useful in dev environments and one PV for multiple services
-  ##
   subPath: ""
-  ## @param persistence.size PVC Storage Request for pdnserver data volume
-  ## If you change this value, you might have to adjust `pdnserver.diskFreeLimit` as well
-  ##
-  size: 8Gi
-
+  ## @param persistence.size PVC Storage Request for PDN Server data volume
+  size: 16Gi
   ## @param persistence.volumes Additional volumes without creating PVC
   ##  - name: volume_name
   ##    emptyDir: {}
-  ##
   volumes: []
   ## @param persistence.annotations Persistence annotations. Evaluated as a template
   ## Example:
   ## annotations:
   ##   example.io/disk-volume-type: SSD
-  ##
   annotations: {}
-
-## @section Exposure parameters
-##
-
-## Kubernetes service type
-##
-service:
-  ## @param service.type Kubernetes Service type
-  ##
-  type: ClusterIP
-
-  ## @param service.portEnabled Amqp port. Cannot be disabled when `auth.tls.enabled` is `false`. Listener can be disabled with `listeners.tcp = none`.
-  ##
-  portEnabled: true
-
-  ## @param service.extraPorts Extra ports to expose in the service
-  ## E.g.:
-  ## extraPorts:
-  ## - name: new_svc_name
-  ##   port: 1234
-  ##   targetPort: 1234
-  ##
-  extraPorts: []
-
-  ## @param service.loadBalancerSourceRanges Address(es) that are allowed when service is `LoadBalancer`
-  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
-  ## e.g:
-  ## loadBalancerSourceRanges:
-  ## - 10.10.10.0/24
-  ##
-  loadBalancerSourceRanges: []
-
-  ## @param service.externalIPs Set the ExternalIPs
-  ##
-  externalIPs: []
-
-  ## @param service.externalTrafficPolicy Enable client source IP preservation
-  ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
-  ##
-  externalTrafficPolicy: Cluster
-
-  ## @param service.loadBalancerIP Set the LoadBalancerIP
-  ##
-  loadBalancerIP: ""
-
-  ## @param service.labels Service labels. Evaluated as a template
-  ##
-  labels: {}
-
-  ## @param service.annotations Service annotations. Evaluated as a template
-  ## Example:
-  ## annotations:
-  ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
-  ##
-  annotations: {}
-  ## @param service.annotationsHeadless Headless Service annotations. Evaluated as a template
-  ## Example:
-  ## annotations:
-  ##   external-dns.alpha.kubernetes.io/internal-hostname: pdnserver.example.com
-  ##
-  annotationsHeadless: {}
-
 ## Network Policy configuration
-## ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
-##
-networkPolicy:
-  ## @param networkPolicy.enabled Enable creation of NetworkPolicy resources
-  ##
-  enabled: false
-  ## @param networkPolicy.allowExternal Don't require client label for connections
-  ## The Policy model to apply. When set to false, only pods with the correct
-  ## client label will have network access to the ports pdnserver is listening
-  ## on. When true, pdnserver will accept connections from any source
-  ## (with the correct destination port).
-  ##
-  allowExternal: true
-  ## @param networkPolicy.additionalRules Additional NetworkPolicy Ingress "from" rules to set. Note that all rules are OR-ed.
-  ## e.g:
-  ## additionalRules:
-  ##  - matchLabels:
-  ##    - role: frontend
-  ##  - matchExpressions:
-  ##    - key: role
-  ##      operator: In
-  ##      values:
-  ##        - frontend
-  ##
-  additionalRules: []
+## Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+networkPolicy: []
+## Allows all ingress and egress
+## - name: pdn-server
+##   podSelector:
+##     matchLabels:
+##       app: pdn-server
+##   egress:
+##   - {}
+##   ingress:
+##   - {}
 
 ## @section Init Container Parameters
-##
-
 ## Init Container parameters
-
 initContainers:
-  ## @param volumePermissions.enabled Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`
-  ##
+  ## @param initContainers Add init containers to the PDN Server pod
+  ## Example:
+  ## initContainers:
+  ##   - name: your-image-name
+  ##     image: your-image
+  ##     pullPolicy: Always
+  ##     ports:
+  ##       - name: portname
+  ##         containerPort: 1234
   ## @param initContainers.image.registry Init container volume-permissions image registry
   ## @param initContainers.image.repository Init container volume-permissions image repository
   ## @param initContainers.image.tag Init container volume-permissions image tag
   ## @param initContainers.image.pullPolicy Init container volume-permissions image pull policy
   ## @param initContainers.image.pullSecrets Specify docker-registry secret names as an array
-  ##
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.6-941
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1793
     ## Specify a image PullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
-    ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
-    ##
+    ## Ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets (secrets must be manually created in the namespace)
-    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
     ## Example:
     ## pullSecrets:
     ##   - myRegistryKeySecretName
-    ##
     pullSecrets: []
   ## Init Container resource requests and limits
-  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
   ## choice for the user. This also increases chances charts run on environments with little
   ## resources, such as Minikube. If you do want to specify resources, uncomment the following
   ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  ## @param volumePermissions.resources.limits Init container volume-permissions resource limits
-  ## @param volumePermissions.resources.requests Init container volume-permissions resource requests
-  ##
-  resources:
-    limits:
-      cpu: "1"
-      memory: "1Gi"
-    requests:
-      cpu: "10m"
-      memory: "50Mi"
-
-openMetrics:
-  enabled: false
-  ## Settings for pushing metrics to Insight - enable filebeat to true
-  filebeat:
-    enabled: false
-    log:
-      enabled: false
-      ## Log level for filebeat. Possible values: debug, info, warning, or error.
-      level: "info"
-    ## Elasticsearch details for filebeat to connect
-    elasticsearch:
-      url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
-      username: ""
-      password: ""
-
-# Filebeat Sidecar container
-## The provided filebeat configuration is for Pdn server logs. It assumes you have a logstash installed and configured properly.
+  ## @param initContainers.resources.limits The resources limits for Init containers
+  ## @param initContainers.resources.requests The requested resources for Init containers
+  resources: {}
+  ##    limits:
+  ##      cpu: "1"
+  ##      memory: "1Gi"
+  ##    requests:
+  ##      cpu: "100m"
+  ##      memory: "50Mi"
+  ## @param containerSecurityContext init containers' Security Context
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## Example:
+  ##   containerSecurityContext:
+  ##     capabilities:
+  ##       drop: ["NET_RAW"]
+  ##     readOnlyRootFilesystem: true
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+## @param sidecars Add sidecar containers to the PDN Server pod
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     pullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+sidecars: []
+## Filebeat Sidecar container
+## The provided filebeat configuration is for Pdn server logs.
+## It assumes you have a logstash installed and configured properly.
 filebeat:
   enabled: false
   name: pdnserver-filebeat
   image:
+    pullPolicy: IfNotPresent
     repository: docker.elastic.co/beats/filebeat
-    version: 7.16.2
+    version: 7.17.7
   logstashUrl: "logstash:5044"
   livenessProbe:
     exec:
@@ -985,7 +673,6 @@ filebeat:
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
-
   readinessProbe:
     exec:
       command:
@@ -998,15 +685,21 @@ filebeat:
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
-
+  ## Filebeat container resource requests and limits
+  ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param filebeat.resources.limits The resources limits for filebeat container
+  ## @param filebeat.resources.requests The requested resources for filebeat container
   resources: {}
-  #    requests:
-  #      memory: "100Mi"
-  #      cpu: "100m"
-  #    limits:
-  #      memory: "100Mi"
-  #      cpu: "100m"
-
+  ##    limits:
+  ##      cpu: "100m"
+  ##      memory: "100Mi"
+  ##    requests:
+  ##      cpu: "100m"
+  ##      memory: "100Mi"
   filebeatYml: |
     logging.level: info
     path.data: {{ .Values.persistence.mountPath }}/log/filebeat
@@ -1026,3 +719,177 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+## Allows to add additional kubernetes resources
+## Use --- as a separator between multiple resources
+## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-values.yaml
+additionalResources: ""
+## All values are under the 'nginx' sub chart.
+nginx:
+  ## If you enable nginx you have to manually create pdn-server-nginx-tls
+  ## tls secret and provide certificate, private key, root certficate
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/nginx
+    tag: 1.23.2-debian-11-r2
+  containerPorts:
+    http: 8095
+  service:
+    loadBalancerSourceRanges: []
+    ports:
+      http: 8095
+  extraVolumes:
+    - name: pdn-server-nginx-tls
+      secret:
+        secretName: pdn-server-nginx-tls
+  extraVolumeMounts:
+    - name: pdn-server-nginx-tls
+      mountPath: "/etc/ssl/nginx"
+      readOnly: true
+  serverBlock: |-
+    chunked_transfer_encoding on;
+    proxy_request_buffering off;
+
+    grpc_send_timeout 180;
+    grpc_read_timeout 180;
+
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:1m;
+    ssl_certificate /etc/ssl/nginx/tls.crt;
+    ssl_certificate_key /etc/ssl/nginx/tls.key;
+
+    server {
+        server_name _;
+        listen 0.0.0.0:8095 default_server http2 ssl;
+
+        location / {
+            grpc_pass grpcs://pdn-server:8095;
+        }
+    }
+## @section Common parameters
+## @param nameOverride String to partially override PDN Server.fullname template (will maintain the release name)
+nameOverride: ""
+## @param fullnameOverride String to fully override PDN Server.fullname template
+fullnameOverride: ""
+## @param kubeVersion Force target Kubernetes version (using Helm capabilities if not set)
+kubeVersion: ""
+## @param clusterDomain Kubernetes Cluster Domain
+clusterDomain: cluster.local
+## @param hostAliases Adding entries to a Pod's /etc/hosts file
+## For an example, refer - https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
+## If you do want to specify additional aliases, uncomment the following lines,
+## adjust them as necessary, and remove the square braces after 'hostAliases:'.
+hostAliases: []
+##  - ip: "127.0.0.1"
+##    hostnames:
+##      - "foo.local"
+##      - "bar.local"
+##  - ip: "10.1.2.3"
+##    hostnames:
+##      - "foo.remote"
+##      - "bar.remote"
+
+## @param commonAnnotations Annotations to add to all deployed objects
+commonAnnotations: {}
+## @param command Override default container command (useful when using custom images)
+command: []
+## @param args Override default container args (useful when using custom images)
+args: []
+## @param terminationGracePeriodSeconds Default duration in seconds k8s waits
+## for container to exit before sending kill signal. Any time in excess of 10 seconds
+## will be spent waiting for any synchronization necessary for cluster not to lose data.
+terminationGracePeriodSeconds: 120
+## @param extraEnvironmentVariables that can be used to tune PDN Server to your needs.
+## Example:
+## extraEnvironmentVariables:
+##   - name: MY_ENV_VAR
+##     value: ""
+extraEnvironmentVariables: []
+## @param extraVolumeMounts Optionally specify extra list of additional volumeMounts
+## Examples:
+## extraVolumeMounts:
+##   - name: extras
+##     mountPath: /usr/share/extras
+##     readOnly: true
+extraVolumeMounts: []
+## @param extraVolumes Optionally specify extra list of additional volumes .
+## Example:
+## extraVolumes:
+##   - name: extras
+##     emptyDir: {}
+extraVolumes: []
+## @param extraSecrets Optionally specify extra secrets to be created by the chart.
+## This can be useful when combined with load_definitions to automatically create the secret containing the definitions to be loaded.
+## Example:
+## extraSecrets:
+##   load-definition:
+##     load_definition.json: |
+##       {
+##         ...
+##       }
+extraSecrets: {}
+## @param extraSecretsPrependReleaseName Set this flag to true if extraSecrets should be created with <release-name> prepended.
+extraSecretsPrependReleaseName: false
+## @section Statefulset parameters
+
+## @param replicaCount Number of PDN Server replicas to deploy
+replicaCount: 1
+## @param schedulerName Use an alternate scheduler, e.g. "stork".
+## Ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+schedulerName: ""
+## @param podLabels PDN Server Pod labels. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+podLabels: {}
+## @param podAnnotations PDN Server Pod annotations. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+podAnnotations: {}
+## @param updateStrategyType Update strategy type for PDN Server statefulset
+## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+updateStrategyType: RollingUpdate
+## @param deploymentLabels PDN Server deployment labels. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+deploymentLabels: {}
+## @param priorityClassName Name of the priority class to be used by PDN Server pods, priority class needs to be created beforehand
+## Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+priorityClassName: ""
+## @param affinity Affinity for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## Note: podAffinityPreset, podAntiAffinityPreset, and  nodeAffinityPreset will be ignored when it's set
+affinity: {}
+## @param nodeSelector Node labels for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+nodeSelector: {}
+## @param tolerations Tolerations for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+## @param podAffinityPreset Pod affinity preset.
+## Ignored if `affinity` is set and not empty. Allowed values: `soft` or `hard`
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+podAffinityPreset: ""
+## @param podAntiAffinityPreset Pod anti-affinity preset.
+## Ignored if `affinity` is set and not empty. Allowed values: `soft` or `hard`
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+## We recommend to use the value `hard` to run one pod per node
+podAntiAffinityPreset: soft
+## Node affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+nodeAffinityPreset:
+  ## @param nodeAffinityPreset.type Node affinity preset type.
+  ## Ignored if `affinity` is set and not empty.  Allowed values: `soft` or `hard`
+  type: ""
+  ## @param nodeAffinityPreset.key Node label key to match.
+  ## Ignored if `affinity` is set.
+  ## Example:
+  ## key: "kubernetes.io/e2e-az-name"
+  key: ""
+  ## @param nodeAffinityPreset.values Node label values to match.
+  ## Ignored if `affinity` is set and not empty.
+  ## Example:
+  ## values:
+  ##   - e2e-az1
+  ##   - e2e-az2
+  values: []
+## @param topologySpreadConstraints Topology Spread Constraints for pod assignment
+## spread across your cluster among failure-domains. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
+topologySpreadConstraints: []

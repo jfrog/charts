@@ -1,45 +1,53 @@
 {{/* vim: set filetype=mustache: */}}
 {{/*
-Expand the name of the chart.
+    Expand the name of the chart.
 */}}
-{{- define "pdnserver.name" -}}
+{{- define "pdn-server.name" -}}
 {{- include "common.names.name" . -}}
 {{- end -}}
 
 {{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
+    Create chart name and version as used by the chart label.
 */}}
-{{- define "pdnserver.fullname" -}}
+{{- define "pdn-server.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+    Create a default fully qualified app name.
+    We truncate at 63 chars because some Kubernetes name fields
+    are limited to this (by the DNS naming spec).
+    If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "pdn-server.fullname" -}}
 {{- include "common.names.fullname" . -}}
 {{- end -}}
 
 {{/*
-Return the proper pdnnode image name
+    Return the proper PDN Server image name
 */}}
-{{- define "pdnserver.image" -}}
+{{- define "pdn-server.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global "appVer" .Chart.AppVersion) }}
 {{- end -}}
 
 {{/*
-Return the proper image name (for the init container volume-permissions image)
+    Return the proper init container image name
 */}}
-{{- define "pdnserver.initContainers.image" -}}
+{{- define "pdn-server.initContainers.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.initContainers.image "global" .Values.global) }}
 {{- end -}}
 
 {{/*
-Return the proper Docker Image Registry Secret Names
+    Return the proper Docker Image Registry Secret Names
 */}}
-{{- define "pdnserver.imagePullSecrets" -}}
+{{- define "pdn-server.imagePullSecrets" -}}
 {{ include "common.images.pullSecrets" (dict "images" (list .Values.image .Values.initContainers.image) "global" .Values.global) }}
 {{- end -}}
 
 {{/*
-Return podAnnotations
+    Return podAnnotations
 */}}
-{{- define "pdnserver.podAnnotations" -}}
+{{- define "pdn-server.podAnnotations" -}}
 {{- if .Values.podAnnotations }}
 {{ include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) }}
 {{- end }}
@@ -51,66 +59,18 @@ Return podAnnotations
 {{/*
  Create the name of the service account to use
  */}}
-{{- define "pdnserver.serviceAccountName" -}}
+{{- define "pdn-server.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create -}}
-    {{ default (include "pdnserver.fullname" .) .Values.serviceAccount.name }}
+    {{ default (include "pdn-server.fullname" .) .Values.serviceAccount.name }}
 {{- else -}}
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Resolve pdnNodeJoinKey value
+    Resolve joinKey value
 */}}
-{{- define "pdnserver.pdnServerJoinKey" -}}
-{{- if .Values.global.pdnServerJoinKey -}}
-{{- .Values.global.pdnServerJoinKey -}}
-{{- else if .Values.pdnServerJoinKey -}}
-{{- .Values.pdnServerJoinKey -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Resolve joinKeySecretName value
-*/}}
-{{- define "pdnserver.joinKeySecretName" -}}
-{{- if .Values.global.joinKeySecretName -}}
-{{- .Values.global.joinKeySecretName -}}
-{{- else if .Values.joinKeySecretName -}}
-{{- .Values.joinKeySecretName -}}
-{{- else -}}
-{{ include "pdnserver.fullname" . }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Resolve pdnNodeJoinKeySecretName value
-*/}}
-{{- define "pdnserver.pdnServerJoinKeySecretName" -}}
-{{- if .Values.global.pdnServerJoinKeySecretName -}}
-{{- .Values.global.pdnServerJoinKeySecretName -}}
-{{- else if .Values.pdnServerJoinKeySecretName -}}
-{{- .Values.pdnServerJoinKeySecretName -}}
-{{- else -}}
-{{ include "pdnserver.fullname" . }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Scheme (http/https) based on Access TLS enabled/disabled
-*/}}
-{{- define "pdnserver.scheme" -}}
-{{- if .Values.router.tlsEnabled -}}
-{{- printf "%s" "https" -}}
-{{- else -}}
-{{- printf "%s" "http" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Resolve joinKey value
-*/}}
-{{- define "pdnserver.joinKey" -}}
+{{- define "pdn-server.joinKey" -}}
 {{- if .Values.global.joinKey -}}
 {{- .Values.global.joinKey -}}
 {{- else if .Values.joinKey -}}
@@ -119,20 +79,22 @@ Resolve joinKey value
 {{- end -}}
 
 {{/*
-Resolve jfrogUrl value
+    Resolve joinKeySecretName value
 */}}
-{{- define "pdnserver.jfrogUrl" -}}
-{{- if .Values.global.jfrogUrl -}}
-{{- .Values.global.jfrogUrl -}}
-{{- else if .Values.jfrogUrl -}}
-{{- .Values.jfrogUrl -}}
+{{- define "pdn-server.joinKeySecretName" -}}
+{{- if .Values.global.joinKeySecretName -}}
+{{- .Values.global.joinKeySecretName -}}
+{{- else if .Values.joinKeySecretName -}}
+{{- .Values.joinKeySecretName -}}
+{{- else -}}
+{{ include "pdn-server.fullname" . }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Resolve masterKey value
+    Resolve masterKey value
 */}}
-{{- define "pdnserver.masterKey" -}}
+{{- define "pdn-server.masterKey" -}}
 {{- if .Values.global.masterKey -}}
 {{- .Values.global.masterKey -}}
 {{- else if .Values.masterKey -}}
@@ -141,67 +103,105 @@ Resolve masterKey value
 {{- end -}}
 
 {{/*
-Resolve masterKeySecretName value
+    Resolve masterKeySecretName value
 */}}
-{{- define "pdnserver.masterKeySecretName" -}}
+{{- define "pdn-server.masterKeySecretName" -}}
 {{- if .Values.global.masterKeySecretName -}}
 {{- .Values.global.masterKeySecretName -}}
 {{- else if .Values.masterKeySecretName -}}
 {{- .Values.masterKeySecretName -}}
 {{- else -}}
-{{ include "pdnserver.fullname" . }}
+{{ include "pdn-server.fullname" . }}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the proper observability image name
+    Resolve pdnJoinKeySecretName value
+*/}}
+{{- define "pdn-server.pdnJoinKeySecretName" -}}
+{{- if .Values.global.pdnJoinKeySecretName -}}
+{{- .Values.global.pdnJoinKeySecretName -}}
+{{- else if .Values.pdnJoinKeySecretName -}}
+{{- .Values.pdnJoinKeySecretName -}}
+{{- else -}}
+{{ include "pdn-server.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+    Scheme (http/https) based on Access TLS enabled/disabled
+*/}}
+{{- define "pdn-server.scheme" -}}
+{{- if .Values.router.tlsEnabled -}}
+{{- printf "%s" "https" -}}
+{{- else -}}
+{{- printf "%s" "http" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+    Resolve jfrogUrl value
+*/}}
+{{- define "pdn-server.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.jfrogUrl -}}
+{{- .Values.jfrogUrl -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+    Return the proper observability image name
 */}}
 {{- define "observability.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.observability.image "global" .Values.global) }}
 {{- end -}}
 
 {{/*
-Return the proper router image name
+    Return the proper router image name
 */}}
 {{- define "router.image" -}}
 {{ include "common.images.image" (dict "imageRoot" .Values.router.image "global" .Values.global) }}
 {{- end -}}
 
 {{/*
-Return the proper image name (for the init container volume-permissions image)
+    Custom certificate copy command
 */}}
-{{- define "event.initContainers.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.initContainers.image "global" .Values.global) }}
+{{- define "pdn-server.copyCustomCertsCmd" -}}
+echo "Copy custom certificates to {{ .Values.persistence.mountPath }}/etc/security/keys/trusted"
+mkdir -p {{ .Values.persistence.mountPath }}/etc/security/keys/trusted
+
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep)
+do
+    if [[ -f "${file}" ]]; then
+        cp -v "${file}" {{ .Values.persistence.mountPath }}/etc/security/keys/trusted
+    fi
+done
+
+if [[ -f {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]]; then
+    mv -v {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/tls.crt \
+        {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/ca.crt
+fi
 {{- end -}}
 
 {{/*
-Custom certificate copy command
+    pdnserver liveness probe
 */}}
-{{- define "pdnserver.copyCustomCerts" -}}
-echo "Copy custom certificates to {{ .Values.persistence.mountPath }}/etc/security/keys/trusted";
-mkdir -p {{ .Values.persistence.mountPath }}/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.persistence.mountPath }}/etc/security/keys/trusted; fi done;
-if [ -f {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
-{{- end -}}
-
-{{/*
-pdnserver liveness probe
-*/}}
-{{- define "pdnserver.livenessProbe" -}}
+{{- define "pdn-server.livenessProbe" -}}
 {{- printf "%s" "/api/v1/system/liveness" -}}
 {{- end -}}
 
 {{/*
-pdnserver readiness probe
+    pdnserver startup probe
 */}}
-{{- define "pdnserver.readinessProbe" -}}
+{{- define "pdn-server.startupProbe" -}}
 {{- printf "%s" "/api/v1/system/readiness" -}}
 {{- end -}}
 
 {{/*
-Resolve pdnserver requiredServiceTypes value
+    Resolve pdnserver requiredServiceTypes value
 */}}
-{{- define "pdnserver.router.requiredServiceTypes" -}}
+{{- define "pdn-server.router.requiredServiceTypes" -}}
 {{- $requiredTypes := "jftrk,jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}

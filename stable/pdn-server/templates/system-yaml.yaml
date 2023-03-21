@@ -1,8 +1,8 @@
-{{- if and (not .Values.systemYamlOverride.existingSecret) (not .Values.global.systemYamlOverride.existingSecret) }}
+{{- if not .Values.systemYamlOverride.existingSecret }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ include "pdnserver.fullname" . }}-systemyaml
+  name: {{ include "pdn-server.fullname" . }}-systemyaml
   namespace: {{ .Release.Namespace | quote }}
   labels: {{- include "common.labels.standard" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
