@@ -2,7 +2,7 @@
 kind: Role
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 metadata:
-  name: {{ template "pdnserver.fullname" . }}-endpoint-reader
+  name: {{ template "pdn-server.fullname" . }}-endpoint-reader
   namespace: {{ .Release.Namespace | quote }}
   labels: {{- include "common.labels.standard" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
