@@ -1,0 +1,238 @@
+apiVersion: {{ include "common.capabilities.statefulset.apiVersion" . }}
+kind: StatefulSet
+metadata:
+  name: {{ include "pdn-node.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.statefulsetLabels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.statefulsetLabels "context" $) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  serviceName: {{ template "pdn-node.fullname" . }}-headless
+  podManagementPolicy: {{ .Values.podManagementPolicy }}
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- if .Values.commonAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.extraSecrets }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if or .Values.podAnnotations }}
+        {{- include "pdn-node.podAnnotations" . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "pdn-node.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName | quote }}
+      {{- end }}
+      serviceAccountName: {{ template "pdn-node.serviceAccountName" . }}
+      {{- if .Values.hostAliases }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" .) | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.topologySpreadConstraints "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      initContainers:
+        - name: 'copy-system-yaml'
+          image: {{ include "pdn-node.initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.initContainers.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.initContainers.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            echo "Copy system.yaml to {{ .Values.persistence.mountPath }}/etc";
+            mkdir -p {{ .Values.persistence.mountPath }}/etc;
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- else }}
+            cp -fv /tmp/etc/system.yaml {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- end }}
+            echo "Remove {{ .Values.persistence.mountPath }}/lost+found folder if exists";
+            rm -rfv {{ .Values.persistence.mountPath }}/lost+found
+            {{- if or .Values.pdnJoinKey .Values.pdnJoinKeySecretName }}
+            echo "Copy pdnJoinKey to {{ .Values.persistence.mountPath }}/etc/security";
+            mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
+            echo -n ${PDN_JOIN_KEY} > {{ .Values.persistence.mountPath }}/etc/security/pdn_join.key;
+            {{- end }}
+          env:
+            {{- if or .Values.pdnJoinKey .Values.pdnJoinKeySecretName}}
+            - name: PDN_JOIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdn-node.pdnJoinKeySecretName" . }}
+                  key: pdn-join-key
+            {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+          {{- if or .Values.systemYamlOverride.existingSecret .Values.systemYaml }}
+            - name: systemyaml
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+              subPath: {{ .Values.systemYamlOverride.dataKey }}
+              {{- else if .Values.systemYaml }}
+              mountPath: "/tmp/etc/system.yaml"
+              subPath: system.yaml
+              {{- end }}
+          {{- end }}
+      {{- if .Values.customCertificates.enabled }}
+        - name: 'copy-custom-certificates'
+          image: {{ include "pdn-node.initContainers.image" . }}
+          {{- if .Values.initContainers.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.initContainers.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+          - '/bin/bash'
+          - '-c'
+          - |
+          {{ include "pdn-node.copyCustomCertsCmd" . | nindent 14 }}
+          volumeMounts:
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+      {{- end }}
+      containers:
+        - name: pdn-node
+          image: {{ template "pdn-node.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- end }}
+          {{- with .Values.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+            - name: JF_PDNNODE_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "pdn-node.pdnJoinKeySecretName" . }}
+                  key: pdn-join-key
+            - name: POD_LOCAL_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: JF_PDNNODE_SELFGRPCADDRESS
+              value: "{{ tpl .Values.selfGrpcAddress . }}"
+            - name: JF_PDNNODE_SELFHTTPADDRESS
+              value: "{{ tpl .Values.selfHttpAddress . }}"
+            - name: JF_PDNNODE_PDNSERVERURL
+              value: "{{ .Values.pdnServerUrl }}"
+            - name: JF_PDNNODE_PDNSERVERINITIALCONNECTIONURL
+              value: "{{ .Values.pdnServerInitialConnectionUrl }}"
+{{- with .Values.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          ports:
+            - name: secure-grpc
+              containerPort: 8088
+            - name: http-server
+              containerPort: 8089
+            - name: bouncer-server
+              containerPort: 8090
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.startupProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.sidecars }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.sidecars "context" $) | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: systemyaml
+          secret:
+            secretName: {{ default ( default (printf "%s-%s" (include "pdn-node.fullname" .) "systemyaml") ) .Values.systemYamlOverride.existingSecret }}
+        {{- if .Values.persistence.volumes }}
+        {{- toYaml .Values.persistence.volumes | nindent 8 }}
+        {{- end }}
+        {{- if .Values.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ .Values.customCertificates.certificateSecretName }}
+        {{- end }}
+  {{- if not (contains "data" (quote .Values.persistence.volumes)) }}
+  {{- if not .Values.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+  {{- else if .Values.persistence.existingClaim }}
+        - name: data
+          persistentVolumeClaim:
+            {{- with .Values.persistence.existingClaim }}
+            claimName: {{ tpl . $ }}
+            {{- end }}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels: {{- include "common.labels.matchLabels" . | nindent 10 }}
+        {{- if .Values.persistence.annotations }}
+        annotations:
+          {{- include "common.tplvalues.render" ( dict "value" .Values.persistence.annotations "context" $) | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          - {{ .Values.persistence.accessMode | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+        {{ include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) }}
+        {{- if .Values.persistence.selector }}
+        selector: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.selector "context" $) | nindent 10 }}
+        {{- end -}}
+  {{- end }}
+  {{- end }}
