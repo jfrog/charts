@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "pdnserver.fullname" . }}-filebeat-config
+  name: {{ template "pdn-server.fullname" . }}-filebeat-config
   labels: {{- include "common.labels.standard" . | nindent 4 }}
     {{- if .Values.statefulsetLabels }}
     {{- include "common.tplvalues.render" (dict "value" .Values.statefulsetLabels "context" $) | nindent 4 }}

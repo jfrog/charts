@@ -1,9 +1,13 @@
 apiVersion: v2
-appVersion: 1.3.5
+appVersion: 1.6.2
 dependencies:
-- name: common
+- name: jfrog-common
   repository: https://charts.jfrog.io/
-  version: 0.0.2
+  version: 0.0.5
+- condition: nginx.enabled
+  name: nginx
+  repository: https://charts.jfrog.io/
+  version: 13.2.13
 description: Universal Repository Manager supporting all major packaging formats,
   build tools and CI servers.
 home: https://www.jfrog.com/artifactory/
@@ -20,4 +24,4 @@ name: pdn-server
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 101.3.5
+version: 101.6.2
