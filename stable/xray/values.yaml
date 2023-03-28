@@ -42,7 +42,7 @@ global:
 ## String to fully override xray.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
 imagePullPolicy: IfNotPresent
 # Init containers
 initContainers:
@@ -303,8 +303,8 @@ autoscaling:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.7.1049
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1760
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -890,7 +890,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.56.0
+    tag: 7.61.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -969,7 +969,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.13.0
+    tag: 1.13.1
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

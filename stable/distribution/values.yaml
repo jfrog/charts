@@ -42,7 +42,7 @@ global:
 ## String to fully override distribution.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
 # Init containers
 initContainers:
   resources:
@@ -331,8 +331,8 @@ common:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.7.1049
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1760
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
@@ -407,7 +407,7 @@ distribution:
       logging:
         consoleLog:
           enabled: {{ .Values.distribution.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "distribution.jfrogUrl" .)) . }}"
+      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "distribution.jfrogUrl" .)) . }}"
       database:
       {{- if .Values.postgresql.enabled }}
         type: "postgresql"

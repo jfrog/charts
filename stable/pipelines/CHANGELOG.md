@@ -1,10 +1,13 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.35.1] - Feb 20, 2023
-* Fixed indentation in nodepoolservice container definition
+## [101.36.1] - Feb 20, 2023
+* Added build badge feature for pipelines
 * Added configuration to use access instead of vault to store secrets
 * Retained installer metrics only for db migrations
+
+## [101.35.0] - Feb 06, 2023
+* Fixed indentation in nodepoolservice container definition
 
 ## [101.34.0] - Jan 24, 2023
 * Added metrics to required init containers

@@ -216,6 +216,8 @@ pipelines:
   nodePollerIntervalMS: 15000
   # Auto sync pipelineSource when resource is outdated
   autoSyncResourceIfOutdated: false
+  # Allow build badges for pipelines
+  allowBuildBadges: false
   # Allow static nodes
   allowCustomNodes: true
   # Enforce non root node pools
@@ -1321,6 +1323,12 @@ pipelines:
           - ""
           - ""
 
+      ## Access configuration
+      ##
+      access:
+        enableVaultToAccessMigration: {{ .Values.access.enableVaultToAccessMigration }}
+        shouldJustUpdateAccess: {{ .Values.access.shouldJustUpdateAccess }}
+        shouldReadFromVault: {{ .Values.access.shouldReadFromVault }}
       ## Redis configuration
       ##
       redis:
@@ -1407,6 +1415,7 @@ pipelines:
       dbHealthCheckIntervalInMins: {{ .Values.pipelines.dbHealthCheckIntervalInMins }}
       dbHealthCheckTimeoutInSeconds: {{ .Values.pipelines.dbHealthCheckTimeoutInSeconds }}
       autoSyncResourceIfOutdated: {{ .Values.pipelines.autoSyncResourceIfOutdated}}
+      allowBuildBadges: {{ .Values.pipelines.allowBuildBadges }}
       ## Global proxy settings, to be applied to all services
       ##
       proxy:
@@ -1833,6 +1842,11 @@ rabbitmq:
 
   affinity: {}
 
+## Platform config access configuration
+access:
+  enableVaultToAccessMigration: false
+  shouldJustUpdateAccess: false
+  shouldReadFromVault: false
 ## Redis
 ## Configuration values for the redis dependency
 ## ref: https://github.com/bitnami/charts/tree/master/bitnami/redis

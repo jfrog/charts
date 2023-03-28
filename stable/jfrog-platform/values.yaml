@@ -23,7 +23,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.61.1
+    router: 7.61.2
   #   artifactory:
   #   xray:
   #   distribution:
@@ -64,7 +64,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 13.10.0-debian-11-r14
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -78,11 +78,14 @@ rabbitmq:
   enabled: true
   image:
     repository: bitnami/rabbitmq
-    tag: 3.9.21-debian-11-r0
+    tag: 3.11.10-debian-11-r5
   auth:
     username: admin
     password: password
     erlangCookie: secretcookie
+  ## To support upgrade from 3.8.x to 3.11.x , featureFlags are needed
+  ## ref: https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
+  featureFlags: drop_unroutable_metric,empty_basic_get_metric,implicit_default_bindings,maintenance_mode_status,quorum_queue,stream_queue,user_limits,virtual_host_metadata
   maxAvailableSchedulers: null
   onlineSchedulers: null
   persistence:
@@ -98,6 +101,13 @@ rabbitmq:
           "vhosts": [
             {
               "name": "xray"
+            }
+          ],
+          "users": [
+            {
+              "name": "{{ .Values.auth.username }}",
+              "password": "{{ .Values.auth.password }}",
+              "tags": "administrator"
             }
           ],
           "permissions": [
@@ -131,13 +141,13 @@ redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 7.0.6-debian-11-r0
+    tag: 7.0.9-debian-11-r6
   cluster:
     enabled: false
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.12.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.12.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
@@ -189,6 +199,8 @@ distribution:
   unifiedUpgradeAllowed: true
   postgresql:
     enabled: false
+  image:
+    tag: 7.0.9-debian-11-r6
   database:
     url: '{{ include "database.url" . }}'
     user: distribution
