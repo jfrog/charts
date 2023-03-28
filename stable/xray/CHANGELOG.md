@@ -1,7 +1,11 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.67.9] - Feb 16, 2023
+
+## [103.69.3] - Feb 16, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
+
+## [103.67.0] - Feb 16, 2023
 * Added topologySpreadConstraints to xray pods
 * Allow setting executionServiceAesKey in a secret [GH-1685](https://github.com/jfrog/charts/issues/1685)
 * Updated postgresql tag version to `13.9.0-debian-11-r11`
