@@ -1,7 +1,11 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.16.6] - Jan 16, 2023
+## [102.17.0] - Jan 30, 2023
+* Updated jfrogUrl text path to copy
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
+
+## [102.16.0] - Jan 16, 2023
 * Removed `newProbes.enabled`, default to new probes
 * Added support for annotations for distribution statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
 * Added topologySpreadConstraints to distribution pods
