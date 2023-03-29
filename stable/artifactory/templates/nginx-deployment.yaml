@@ -38,9 +38,6 @@ spec:
       {{- range $key, $value := .Values.nginx.annotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
-{{- if .Values.vault}}
-{{- include "vaultAnnotationsNginx" . | nindent 8 }}
-{{- end}}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
@@ -136,7 +133,7 @@ spec:
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-        {{- if and .Values.nginx.https.enabled (not .Values.vault) }} 
+        {{- if .Values.nginx.https.enabled }}
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
         - name: platform-client-certs
@@ -214,7 +211,7 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- if and .Values.nginx.https.enabled (not .Values.vault) }}
+      {{- if .Values.nginx.https.enabled }}
       - name: ssl-certificates
         secret:
       {{- if .Values.nginx.tlsSecretName }}
