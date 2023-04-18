@@ -4,8 +4,12 @@ common:
     size: 200Gi
 rabbitmq:
   replicaCount: 3
-  schedulers: "2"
-  vm_memory_high_watermark_absolute: 1700MB
+  memoryHighWatermark:
+    enabled: true
+    type: "absolute"
+    value: 1700MB
+  maxAvailableSchedulers: "2"
+  onlineSchedulers: "2"
   resources:
     requests:
       memory: "512Mi"

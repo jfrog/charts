@@ -42,7 +42,7 @@ global:
 ## String to fully override xray.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
 imagePullPolicy: IfNotPresent
 # Init containers
 initContainers:
@@ -304,7 +304,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.1.0.1760
+    tag: 9.1.0.1793
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -324,7 +324,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 13.10.0-debian-11-r14
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -360,7 +360,7 @@ database:
   url:
   user:
   password:
-  ## When working with Azure managed PG you have to provide the actualUsername. The application will pick actualUsername and will use it in some cases where it is needed
+  ## When working with Azure managed PG you have to provide the actualUsername. The application will pick actualUsername and will use it in some cases where it is needed
   actualUsername:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
@@ -383,29 +383,57 @@ database:
 ##
 rabbitmq:
   enabled: true
+  ## Enable the flag if the feature flags in rabbitmq is enabled manually
+  rabbitmqUpgradeReady: false
   replicaCount: 1
   rbac:
     create: true
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.9.21-debian-11-r0
+    tag: 3.11.10-debian-11-r5
   auth:
     username: guest
-    password: ""
+    password: password
     ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
     # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
     # existingErlangSecret: <name-of-existing-secret>
+  # memoryHighWatermark:
+  #   ## @param memoryHighWatermark.enabled Enable configuring Memory high watermark on RabbitMQ
+  #   ##
+  #   enabled: false
+  #   ## @param memoryHighWatermark.type Memory high watermark type. Either `absolute` or `relative`
+  #   ##
+  #   type: "absolute"
+  #   ## Memory high watermark value.
+  #   ## @param memoryHighWatermark.value Memory high watermark value
+  #   ## The default value of 0.4 stands for 40% of available RAM
+  #   ## Note: the memory relative limit is applied to the resource.limits.memory to calculate the memory threshold
+  #   ## You can also use an absolute value, e.g.: 256MB
+  #   ##
+  #   value: 700MB
+  # resources:
+  #   requests:
+  #     memory: "512Mi"
+  #     cpu: "500m"
+  #   limits:
+  #     memory: "1Gi"
+  #     cpu: "1"
+  ## RabbitMQ maximum available scheduler threads and online scheduler threads. By default it will create a thread per CPU detected, with the following parameters you can tune it manually.
   maxAvailableSchedulers: null
   onlineSchedulers: null
+  ## To support upgrade from 3.8.x to 3.11.x , featureFlags are needed
+  ## ref: https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
+  featureFlags: drop_unroutable_metric,empty_basic_get_metric,implicit_default_bindings,maintenance_mode_status,quorum_queue,stream_queue,user_limits,virtual_host_metadata
   ## Additional environment variables to set
   ## ref: https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#adding-extra-environment-variables
   extraEnvVars:
     - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
       value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
   service:
-    port: 5672
+    ports:
+      amqp: 5672
   external:
     username:
     password:
@@ -441,6 +469,13 @@ rabbitmq:
               "read": ".*"
             }
           ],
+          "users": [
+            {
+              "name": "{{ .Values.auth.username }}",
+              "password": "{{ .Values.auth.password }}",
+              "tags": "administrator"
+            }
+          ],
           "vhosts": [
             {
               "name": "/"
@@ -454,7 +489,7 @@ rabbitmq:
               "vhost": "/",
               "definition": {
                 "ha-mode": "all",
-                "ha-sync-mode": "automatic",
+                "ha-sync-mode": "automatic"
               }
             }
           ]
@@ -465,6 +500,33 @@ rabbitmq:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  ## Upgrade of rabbitmq from 3.8.x to 3.11.x needs the feature flags to be enabled.
+  ## Ref: (https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
+  ## migration enable will perform `rabbitmqctl enable_feature_flag all` command on the existing rabbitmq before starting the upgrade
+  migration:
+    ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
+    enabled: true
+    ## Service account for the pre-upgrade hook to perform rabbitmq migration
+    serviceAccount:
+      create: true
+      ## The name of the ServiceAccount to use.
+      ## If not set and create is true, a name is generated using the fullname template
+      name:
+      ## Explicitly mounts the API credentials for the Service Account
+      automountServiceAccountToken: true
+      rbac:
+        create: true
+        role:
+          ## Rules to create. It follows the role specification
+          rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods/exec
+                - pods
+              verbs:
+                - create
+                - get
 # Common Xray settings
 common:
   ## Note that by default we use appVersion to get image tag
@@ -890,7 +952,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.61.1
+    tag: 7.61.2
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled

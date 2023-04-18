@@ -2,7 +2,23 @@
 All changes to this chart will be documented in this file.
 
 
-## [103.69.3] - Feb 16, 2023
+## [103.71.6] - Apr 07, 2023
+* Adding vm memory memoryHighWatermark field and scheduler field for Rabbitmq Chart
+* Update pre-upgrade hook image of rabbitmq
+
+## [103.70.0] - Mar 21, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Updated rabbitmq multi-arch tag version to `3.11.10-debian-11-r5`
+* Added pre-upgrade hook for rabbitmq upgrade from 3.8.x to 3.11.x
+
+## [103.69.0] - Mar 21, 2023
+* **IMPORTANT**
+* Added default rabbitmq user creation via `load_definition` secret to support upstream bitnami [11.x chart](https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq#to-1100)
+* Updated rabbitmq's  chart version  to `11.9.3` and image version to `3.11.9-debian-11-r1`
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+* Added `rabbitmq.featureFlags` to support upgrade from 3.8.x to 3.11.x . More info [here](https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/)
+
+## [103.68.0] - Feb 16, 2023
 * Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
 
 ## [103.67.0] - Feb 16, 2023
