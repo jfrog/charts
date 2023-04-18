@@ -53,6 +53,23 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Expand the name of rabbit chart.
+*/}}
+{{- define "rabbitmq.name" -}}
+{{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- end -}}
+
+
+{{- define "xray.rabbitmq.migration.fullname" -}}
+{{- $name := default "rabbitmq-migration" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -135,6 +152,16 @@ Create the name of the service account to use
 {{- end -}}
 {{- end -}}
 
+Create the name of the service account to use for rabbitmq migration
+*/}}
+{{- define "xray.rabbitmq.migration.serviceAccountName" -}}
+{{- if .Values.rabbitmq.migration.serviceAccount.create -}}
+{{ default (include "xray.rabbitmq.migration.fullname" .) .Values.rabbitmq.migration.serviceAccount.name }}
+{{- else -}}
+{{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -147,12 +174,11 @@ Create rabbitmq URL
 */}}
 {{- define "rabbitmq.url" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- $rabbitmqPort := .Values.rabbitmq.service.port -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
 {{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
 {{- end -}}
 {{- end -}}
-
 
 {{/*
 Create rabbitmq username

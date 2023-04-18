@@ -1,7 +1,7 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.36.1] - Feb 20, 2023
+## [101.37.3] - Feb 20, 2023
 * Added build badge feature for pipelines
 * Added configuration to use access instead of vault to store secrets
 * Retained installer metrics only for db migrations
