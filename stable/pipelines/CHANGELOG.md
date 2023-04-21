@@ -1,6 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.38.1] - Apr 18, 2023
+* Handle jfrogUrlUI if nothing is set
+* Fix migration script failures on ssl enforced database
+
 ## [101.37.3] - Feb 20, 2023
 * Added build badge feature for pipelines
 * Added configuration to use access instead of vault to store secrets
