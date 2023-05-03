@@ -228,3 +228,31 @@ Resolve jfrog url
 {{- define "jfrog-platform.jfrogUrl" -}}
 {{- printf "http://%s-artifactory:8082" .Release.Name -}}
 {{- end -}}
+
+{{/*
+Expand the name of rabbit chart.
+*/}}
+{{- define "rabbitmq.name" -}}
+{{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- end -}}
+
+
+{{- define "jfrog-platform.rabbitmq.migration.fullname" -}}
+{{- $name := default "rabbitmq-migration" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for rabbitmq migration
+*/}}
+{{- define "jfrog-platform.rabbitmq.migration.serviceAccountName" -}}
+{{- if .Values.rabbitmq.migration.serviceAccount.create -}}
+{{ default (include "jfrog-platform.rabbitmq.migration.fullname" .) .Values.rabbitmq.migration.serviceAccount.name }}
+{{- else -}}
+{{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
+{{- end -}}
+{{- end -}}

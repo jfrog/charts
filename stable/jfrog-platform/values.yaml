@@ -76,6 +76,8 @@ postgresql:
 ## This Rabbitmq is used by Xray and Pipelines only, set rabbitmq.enabled: false, when Xray or Pipelines is not enabled
 rabbitmq:
   enabled: true
+  ## Enable the flag if the feature flags in rabbitmq is enabled manually
+  rabbitmqUpgradeReady: false
   image:
     repository: bitnami/rabbitmq
     tag: 3.11.10-debian-11-r5
@@ -135,6 +137,33 @@ rabbitmq:
   loadDefinition:
     enabled: true
     existingSecret: '{{ .Release.Name }}-load-definition'
+  ## Upgrade of rabbitmq from 3.8.x to 3.11.x needs the feature flags to be enabled.
+  ## Ref: (https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
+  ## migration enable will perform `rabbitmqctl enable_feature_flag all` command on the existing rabbitmq before starting the upgrade
+  migration:
+    ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
+    enabled: true
+    ## Service account for the pre-upgrade hook to perform rabbitmq migration
+    serviceAccount:
+      create: true
+      ## The name of the ServiceAccount to use.
+      ## If not set and create is true, a name is generated using the fullname template
+      name:
+      ## Explicitly mounts the API credentials for the Service Account
+      automountServiceAccountToken: true
+      rbac:
+        create: true
+        role:
+          ## Rules to create. It follows the role specification
+          rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods/exec
+                - pods
+              verbs:
+                - create
+                - get
 
 ## This Redis is used by pipelines only, set redis.enabled: false, when pipelines is not enabled
 redis:
@@ -147,7 +176,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.12.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.12.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
@@ -186,12 +215,15 @@ xray:
       size: 200Gi
     rabbitmq:
       connectionConfigFromEnvironment: false
+    extraEnvVars: |
+      - name: "JF_SHARED_RABBITMQ_VHOST"
+        value: "xray"
   rabbitmq:
     enabled: false
     external:
       username: admin
       password: password
-      url: "amqp://{{ .Release.Name }}-rabbitmq:5672/xray"
+      url: "amqp://{{ .Release.Name }}-rabbitmq:5672"
       erlangCookie: secretcookie
 
 distribution:
