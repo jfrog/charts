@@ -1,6 +1,14 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.12.2] - May 3, 2023
+* Update dependency artifactory chart version to 107.55.10
+* Update dependency xray chart version to 103.71.6
+* Update dependency pipelines chart version to 101.37.3
+* Update dependency insight chart version to 101.13.5
+* Added pre-upgrade hook (`rabbitmq.migration.enabled` defaults to true) for rabbitmq upgrade from 3.8.x to 3.11.x
+* Added extraEnvs variable `JF_SHARED_RABBITMQ_VHOST` for supporting non-default `xray` vhost in xray
+
 ## [10.12.1] - Mar 27, 2023
 * Update dependency artifactory chart version to 107.55.9
 * Update dependency distribution chart version to 102.17.0
