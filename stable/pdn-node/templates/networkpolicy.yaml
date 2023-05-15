@@ -12,7 +12,12 @@ spec:
   podSelector:
     matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
   ingress:
-      {{- if not .Values.networkPolicy.allowExternal }}
+    {{- if not .Values.networkPolicy.allowExternal }}
+    - ports:
+        - port: 8088
+          protocol: TCP
+        - port: 8089
+          protocol: TCP
       from:
         - podSelector:
             matchLabels:
