@@ -15,7 +15,7 @@ metadata:
 spec:
   scaleTargetRef:
     apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
-    kind: StatefulSet
+    kind: Deployment
     name: {{ include "pdn-server.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
