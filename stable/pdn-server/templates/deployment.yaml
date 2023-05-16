@@ -11,7 +11,9 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
   template:
@@ -21,6 +23,7 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
         {{- end }}
       annotations:
+        systemYaml/checksum: {{ include (print $.Template.BasePath "/system-yaml.yaml") . | sha256sum }}
         {{- if .Values.commonAnnotations }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
         {{- end }}
@@ -173,9 +176,7 @@ spec:
           command:
             - '/bin/bash'
             - '-c'
-            - |-
-              exec /opt/jfrog/pdnserver/app/pdnserver/bin/pdnserver.sh;
-              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+            - exec /opt/jfrog/pdnserver/app/pdnserver/bin/pdnserver.sh
           env:
             - name: JF_SHARED_NODE_ID
               valueFrom:

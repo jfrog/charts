@@ -1,7 +1,16 @@
 # JFrog PDN Server Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.6.2] - Mar 06, 2023
+## [101.7.3] - May 09, 2023
+* Added checksum annotation to pod to auto-restart upon change to system.yaml
+* Fixed HPA template issue
+
+## [101.7.2] - May 07, 2023
+* Upgraded common chart dependency up to 0.0.6
+* Updated initContainerImage `ubi9/ubi-minimal:9.1.0.1829`
+* Fixed network policy template issue
+
+## [101.6.4] - Mar 06, 2023
 * Updated initContainerImage `ubi9/ubi-minimal:9.1.0.1793`
 * Removed unused global values
 * Added `logLevel` option to systemYaml.pdnServer
