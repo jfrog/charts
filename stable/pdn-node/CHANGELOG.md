@@ -1,12 +1,20 @@
 # JFrog PDN Node Chart Changelog
 All changes to this chart will be documented in this file
 
-## [101.6.2] - Mar 06, 2023
+## [101.7.3] - May 09, 2023
+* Added checksum annotation to pod to auto-restart upon change to system.yaml
+
+## [101.7.2] - May 07, 2023
+* Upgraded common chart dependency up to 0.0.6
+* Updated initContainerImage `ubi9/ubi-minimal:9.1.0.1829`
+* Fixed network policy template issue
+* Added ingress object
+
+## [101.6.4] - Mar 06, 2023
 * Updated initContainerImage `ubi9/ubi-minimal:9.1.0.1793`
 * Removed unused global values
-* Added `podManagementPolicy` default value
-* Added self grpc/http address variable
-* Disabled PDN Bouncer server
+* Added `logLevel` option to systemYaml.pdnServer
+* Added Bitnami nginx sub chart
 * Unify system.yaml
 
 ## [101.5.5] - Jan 20, 2023
