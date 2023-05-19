@@ -1,6 +1,8 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.71.7] - May 19, 2023
+* Allow setting extra SecurityContext
 
 ## [103.71.6] - Apr 07, 2023
 * Adding vm memory memoryHighWatermark field and scheduler field for Rabbitmq Chart
