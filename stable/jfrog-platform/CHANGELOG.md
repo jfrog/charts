@@ -1,6 +1,12 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.12.3] - May 22, 2023
+* Update dependency artifactory chart version to 107.55.13
+* Update dependency pipelines chart version to 101.38.1
+* Update global.versions.router version to `7.67.0`
+* Remove sample url set for global.jfrogUrlUI
+
 ## [10.12.2] - May 3, 2023
 * Update dependency artifactory chart version to 107.55.10
 * Update dependency xray chart version to 103.71.6
