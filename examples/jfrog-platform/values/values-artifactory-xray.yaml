@@ -1,0 +1,53 @@
+# An example of installing Artifactory and Xray only (disabling the rest)
+
+### Install
+# helm repo add jfrog https://charts.jfrog.io
+# helm repo update
+# helm upgrade --install jfp jfrog/jfrog-platform -f ./values-artifactory-xray.yaml
+
+### Uninstall
+# helm uninstall jfp
+# kubectl get pvc ...
+# kubectl delete pvc ...
+
+global:
+  joinKey: 00EEEEEEEEEEEEEEEEEEEEEEEEEEE123
+  masterKey: 00bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb123
+  imageRegistry: ""
+
+artifactory:
+  enabled: true
+  artifactory:
+    # Note: For HA deployments, set replicaCount >1 (recommended 3)
+    replicaCount: 1
+
+    license:
+      licenseKey: |
+        cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk6CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF5TkMw
+        d05TMHhNVlF3TURvd01Eb3dNRm9LYVdRNklDUTFPRGt4T0RZM0xUQm1aalV0TkRneFlTMWlaakky
+        TFdJMk16RmlNakJrTXpkak9BcHZk...
+
+  # Run every Artifactory service to its own container
+  splitServicesToContainers: true
+
+xray:
+  enabled: true
+
+# If enabling Xray, rabbitmq should also be enabled
+rabbitmq:
+  enabled: true
+
+distribution:
+  enabled: false
+
+insight:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+redis:
+  enabled: false
+
+pdnServer:
+  enabled: false
