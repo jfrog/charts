@@ -11,9 +11,11 @@
 # kubectl delete pvc ...
 
 global:
+  # Generate a random join key with 'openssl rand -hex 16'
   joinKey: 00EEEEEEEEEEEEEEEEEEEEEEEEEEE123
+
+  # Generate a random master key with 'openssl rand -hex 32'
   masterKey: 00bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb123
-  imageRegistry: ""
 
 artifactory:
   enabled: true
