@@ -360,6 +360,9 @@ Resolve requiredServiceTypes value
 */}}
 {{- define "artifactory-ha.router.requiredServiceTypes" -}}
 {{- $requiredTypes := "jfrt,jfac" -}}
+{{- if not .Values.access.enabled -}}
+  {{- $requiredTypes = "jfrt" -}}
+{{- end -}}
 {{- if .Values.observability.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfob" -}}
 {{- end -}}
@@ -459,14 +462,26 @@ Resolve customSidecarContainers value
 {{- end -}}
 
 {{/*
-Resolve Artifactory pod node selector value
+Resolve Artifactory pod primary node selector value
 */}}
 {{- define "artifactory.nodeSelector" -}}
 nodeSelector:
 {{- if .Values.global.nodeSelector }}
 {{ toYaml .Values.global.nodeSelector | indent 2 }}
-{{- else if .Values.artifactory.nodeSelector }}
-{{ toYaml .Values.artifactory.nodeSelector | indent 2 }}
+{{- else if .Values.artifactory.primary.nodeSelector }}
+{{ toYaml .Values.artifactory.primary.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve Artifactory pod node nodeselector value
+*/}}
+{{- define "artifactory.node.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.artifactory.node.nodeSelector }}
+{{ toYaml .Values.artifactory.node.nodeSelector | indent 2 }}
 {{- end -}}
 {{- end -}}
 

@@ -1,7 +1,7 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.55.13] - Aug 25, 2022
+## [107.59.9] - Aug 25, 2022
 * Included event service as mandatory and remove the flag from values.yaml
 
 ## [107.41.0] - Jul 22, 2022

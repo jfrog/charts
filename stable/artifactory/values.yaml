@@ -42,7 +42,7 @@ global:
 ## String to fully override artifactory.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
 # Init containers
 initContainers:
   resources:
@@ -161,7 +161,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.1.0.1760
+    tag: 9.1.0.1793
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -176,7 +176,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.61.3
+    tag: 7.67.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -327,6 +327,11 @@ artifactory:
         url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
         username: ""
         password: ""
+  # Support for Cold Artifact Storage
+  # set 'coldStorage.enabled' to 'true' only for Artifactory instance that you are designating as the Cold instance
+  # Refer - https://jfrog.com/help/r/jfrog-platform-administration-documentation/setting-up-cold-artifact-storage
+  coldStorage:
+    enabled: false
   # This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
     enabled: false
@@ -598,6 +603,10 @@ artifactory:
       serviceRegistry:
         insecure: {{ .Values.router.serviceRegistry.insecure }}
     shared:
+    {{- if  .Values.artifactory.coldStorage.enabled }}
+      jfrogColdStorage:
+        coldInstanceEnabled: true
+    {{- end }}
     {{- if  .Values.artifactory.openMetrics.enabled }}
       metrics:
         enabled: true
@@ -609,7 +618,7 @@ artifactory:
         consoleLog:
           enabled: {{ .Values.artifactory.consoleLog }}
       extraJavaOpts: >
-        -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.terminationGracePeriodSeconds 1000 }}
+        -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.artifactory.terminationGracePeriodSeconds 1000 }}
         -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
       {{- with .Values.artifactory.javaOpts }}
         {{- if .corePoolSize }}
@@ -710,6 +719,8 @@ artifactory:
       enabled: true
     {{- else }}
     jfconnect:
+      enabled: false
+    jfconnect_service:
       enabled: false
     {{- end }}
   annotations: {}
@@ -868,6 +879,7 @@ artifactory:
     ## aws-s3-v3
     ## s3-storage-v3-direct
     ## cluster-s3-storage-v3
+    ## s3-storage-v3-archive
     ## azure-blob
     ## azure-blob-storage-direct
     ## cluster-azure-blob-storage
@@ -1059,6 +1071,7 @@ frontend:
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 access:
+  enabled: true
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
   ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
   ## When security.tls is set to true, JFrog Access will act as the Certificate Authority (CA) and sign the TLS certificates used by all the different JFrog Platform nodes.
@@ -1714,7 +1727,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 13.10.0-debian-11-r14
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory

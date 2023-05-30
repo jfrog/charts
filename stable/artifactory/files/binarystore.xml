@@ -126,7 +126,7 @@
     </provider>
 </config>
 {{- end }}
-{{- if or (eq .Values.artifactory.persistence.type "aws-s3-v3") (eq .Values.artifactory.persistence.type "s3-storage-v3-direct") (eq .Values.artifactory.persistence.type "cluster-s3-storage-v3")  }}
+{{- if or (eq .Values.artifactory.persistence.type "aws-s3-v3") (eq .Values.artifactory.persistence.type "s3-storage-v3-direct") (eq .Values.artifactory.persistence.type "cluster-s3-storage-v3") (eq .Values.artifactory.persistence.type "s3-storage-v3-archive")  }}
 <!-- AWS S3 V3 -->
 <config version="2">
     {{- if eq .Values.artifactory.persistence.type "aws-s3-v3" }}
@@ -158,13 +158,22 @@
             </provider>
         </provider>
     </chain>
+    {{- else if eq .Values.artifactory.persistence.type "s3-storage-v3-archive" }}
+    <!-- s3-storage-v3 default chain based on AWS S3 client for archive purposes-->
+    <chain>   <!--template="s3-storage-v3-archive"-->
+        <provider id="s3-storage-v3-archive" type="s3-storage-v3-archive">
+            <provider id="s3-storage-v3" type="s3-storage-v3"/>
+        </provider>
+    </chain>
     {{- end }}
 
+    {{- if or (eq .Values.artifactory.persistence.type "aws-s3-v3") (eq .Values.artifactory.persistence.type "s3-storage-v3-direct") (eq .Values.artifactory.persistence.type "cluster-s3-storage-v3") }}
     <!-- Set max cache-fs size -->
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64}}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
     </provider>
+    {{- end }}
 
     {{- if eq .Values.artifactory.persistence.type "cluster-s3-storage-v3" }}
     <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
