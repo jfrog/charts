@@ -4,9 +4,10 @@ All changes to this chart will be documented in this file.
 ## [103.71.7] - May 19, 2023
 * Allow setting extra SecurityContext
 
-## [103.71.6] - Apr 07, 2023
+## [103.73.8] - Apr 07, 2023
 * Adding vm memory memoryHighWatermark field and scheduler field for Rabbitmq Chart
 * Update pre-upgrade hook image of rabbitmq
+* Added securityContext for rabbitmq pre-upgrade hook pod
 
 ## [103.70.0] - Mar 21, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`

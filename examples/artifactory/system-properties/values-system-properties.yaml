@@ -1,0 +1,18 @@
+# Setting Artifactory and Java system properties
+# This is an easy way to set values previously set in artifactory.system.properties as part of custom helm values
+
+### Install
+# helm upgrade --install artifactory jfrog/artifactory -f ./values-system-properties.yaml
+
+artifactory:
+  javaOpts:
+    other: >
+      -Dartifactory.gc.intervalSecs=14400
+      -Dartifactory.search.userQueryLimit=1000
+      -Dartifactory.security.loginBlockDelay=500
+      -Dartifactory.system.import.enabled=true
+      -Dartifactory.metadata.event.operator.threads=3
+      -XX:MaxMetaspaceSize=512m
+      -Djdk.nio.maxCachedBufferSize=262144
+      -XX:MaxDirectMemorySize=256m
+

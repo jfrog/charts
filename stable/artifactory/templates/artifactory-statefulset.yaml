@@ -128,24 +128,6 @@ spec:
           - name: artifactory-volume
             mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
     {{- end }}
-      - name: "remove-lost-found"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
-        command:
-        - 'bash'
-        - '-c'
-        - 'rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found {{ .Values.artifactory.persistence.mountPath }}/data/.lock'
-        volumeMounts:
-        - name: artifactory-volume
-          mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
     {{- end }}
     {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: "access-bootstrap-creds"
@@ -205,8 +187,6 @@ spec:
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
-          echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
-          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Copy binarystore.xml file";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory;
           cp -fv /tmp/etc/artifactory/binarystore.xml {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml;
@@ -594,6 +574,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+      {{- if and (gt (.Values.artifactory.replicaCount | int64) 1) (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false") }}
+        - name : JF_SHARED_NODE_HAENABLED
+          value: "true"
+      {{- end }}
 {{- with .Values.frontend.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}   

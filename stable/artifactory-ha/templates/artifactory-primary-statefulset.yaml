@@ -149,37 +149,6 @@ spec:
         - mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
           name: volume
       {{- end }}
-      - name: "remove-lost-found"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
-        resources:
-{{ toYaml .Values.initContainers.resources | indent 10 }}
-        command:
-        - 'bash'
-        - '-c'
-        - >
-          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
-          rm -rfv {{ tpl .Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir . }}/lost+found;
-          rm -rfv {{ .Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}/lost+found;
-        volumeMounts:
-          - name: volume
-            mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-      {{- if eq .Values.artifactory.persistence.type "file-system" }}
-        {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
-          {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
-          - name: artifactory-ha-data-{{ $sharedClaimNumber }}
-            mountPath: "{{ tpl $.Values.artifactory.persistence.fileSystem.existingSharedClaim.dataDir $ }}/filestore{{ $sharedClaimNumber }}"
-            {{- end }}
-          - name: artifactory-ha-backup
-            mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
-        {{- end }}
-      {{- end }}
     {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
@@ -239,8 +208,6 @@ spec:
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
-          echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
-          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Copy binarystore.xml file";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory;
           cp -fv /tmp/etc/artifactory/binarystore.xml {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml;
@@ -632,6 +599,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name : JF_SHARED_NODE_HAENABLED
+          value: "true"
 {{- with .Values.frontend.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
@@ -1017,10 +986,10 @@ spec:
           value: "false"
         - name : JF_OBSERVABILITY_ENABLED
           value: "false"
-        - name : JF_JFCONNECT_ENABLED
-          value: "true"
         - name : JF_JFCONNECT_SERVICE_ENABLED
           value: "false"
+        - name : JF_JFCONNECT_ENABLED
+          value: "true"
         - name : JF_INTEGRATION_ENABLED
           value: "false"
       {{- end }}
@@ -1270,7 +1239,7 @@ spec:
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
-    {{- if or .Values.artifactory.nodeSelector .Values.global.nodeSelector }}
+    {{- if or .Values.artifactory.primary.nodeSelector .Values.global.nodeSelector }}
 {{ tpl (include "artifactory.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.artifactory.primary.affinity }}

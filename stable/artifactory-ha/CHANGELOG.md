@@ -1,9 +1,33 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.55.10] - Jan 31, 2023
+## [107.59.9] - May 8, 2023
+* Fixed reference of `terminationGracePeriodSeconds`
+* **Breaking change**
+* Updated the defaults of replicaCount (Values.artifactory.primary.replicaCount and Values.artifactory.node.replicaCount) to support Cloud-Native High Availability. Refer [Cloud-Native High Availability](https://jfrog.com/help/r/jfrog-installation-setup-documentation/cloud-native-high-availability)
+* Updated the values of the recommended resources  - values-small, values-medium and values-large according to the Cloud-Native HA support. 
+* **IMPORTANT**
+* In the absence of custom parameters for primary.replicaCount and node.replicaCount on your deployment, it is recommended to specify the current values explicitly to prevent any undesired changes to the deployment structure.
+* Please be advised that the configuration for resources allocation (requests, limits, javaOpts, affinity rules, etc) will now be applied solely under Values.artifactory.primary when using the new defaults.
+* **Upgrade**
+* Upgrade from primary-members to primary-only is recommended, and can be done by deploy the chart with the new values.
+* During the upgrade, members pods should be deleted and new primary pods should be created. This might trigger the creation of new PVCs.
+* Added Support for Cold Artifact Storage as part of the systemYaml configuration (disabled by default)
+* Added new binary provider `s3-storage-v3-archive`
+* Fixed jfconnect disabling as micro-service on non-splitcontainers
+
+## [107.58.0] - Mar 23, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Removed obselete remove-lost-found initContainer`
+* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode 
+
+## [107.57.0] - Mar 02, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+
+## [107.55.0] - Feb 21, 2023
 * Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
 * Adding a custom preStop to Artifactory router for allowing graceful termination to complete
+* Fixed an invalid reference of node selector on artifactory-ha chart
 
 ## [107.53.0] - Jan 20, 2023
 * Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`

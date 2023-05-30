@@ -175,8 +175,6 @@ spec:
           {{- else }}
           cp -fv /tmp/etc/system.yaml {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml;
           {{- end }}
-          echo "Remove {{ .Values.artifactory.persistence.mountPath }}/lost+found folder if exists";
-          rm -rfv {{ .Values.artifactory.persistence.mountPath }}/lost+found;
           echo "Copy binarystore.xml file";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory;
           cp -fv /tmp/etc/artifactory/binarystore.xml {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml;
@@ -511,6 +509,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name : JF_SHARED_NODE_HAENABLED
+          value: "true"
 {{- with .Values.frontend.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
@@ -884,10 +884,10 @@ spec:
           value: "false"
         - name : JF_OBSERVABILITY_ENABLED
           value: "false"
-        - name : JF_JFCONNECT_ENABLED
-          value: "true"
         - name : JF_JFCONNECT_SERVICE_ENABLED
           value: "false"
+        - name : JF_JFCONNECT_ENABLED
+          value: "true"
         - name : JF_INTEGRATION_ENABLED
           value: "false"
       {{- end }}
@@ -1123,8 +1123,8 @@ spec:
     {{- if or .Values.artifactory.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "artifactory-ha.customSidecarContainers" .) . | indent 6 }}
     {{- end }}
-    {{- if or .Values.artifactory.nodeSelector .Values.global.nodeSelector }}
-{{ tpl (include "artifactory.nodeSelector" .) . | indent 6 }}
+    {{- if or .Values.artifactory.node.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "artifactory.node.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- if .Values.artifactory.node.affinity }}
     {{- with .Values.artifactory.node.affinity }}
