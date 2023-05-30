@@ -147,7 +147,7 @@
     </chain>
     {{- else if eq .Values.artifactory.persistence.type "cluster-s3-storage-v3" }}
     <chain> <!--template="cluster-s3-storage-v3"-->
-        <provider id="cache-fs-eventual-s3" type="cache-fs">
+        <provider id="cache-fs" type="cache-fs">
             <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
                 <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
                     <provider id="retry-s3" type="retry">
