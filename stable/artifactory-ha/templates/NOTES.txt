@@ -123,3 +123,13 @@ jconsole {{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.p
 jconsole {{ template "artifactory-ha.fullname" . }}:{{ .Values.artifactory.node.javaOpts.jmx.port }}
 {{- end }}
 {{- end }}
+
+
+{{- if ge (.Values.artifactory.node.replicaCount | int) 1 }}
+***************************************** WARNING *****************************************************************************
+* Currently member node(s) are enabled, will be depreciated in upcoming releases                                              *
+* It is recommended to upgrade from primary-members to primary-only.                                                          *
+* It can be done by deploying the chart ( >=107.59.x) with the new values. Also, please refer to changelog of 107.59.x chart  *
+* More Info: https://jfrog.com/help/r/jfrog-installation-setup-documentation/cloud-native-high-availability                   *
+*******************************************************************************************************************************
+{{- end }}

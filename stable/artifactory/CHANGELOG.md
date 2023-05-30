@@ -1,7 +1,21 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.55.10] - Jan 31, 2023
+## [107.59.9] - May 8, 2023
+* Fixed reference of `terminationGracePeriodSeconds`
+* Added Support for Cold Artifact Storage as part of the systemYaml configuration (disabled by default)
+* Added new binary provider `s3-storage-v3-archive`
+* Fixed jfconnect disabling as micro-service on non-splitcontainers
+
+## [107.58.0] - Mar 23, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Removed obselete remove-lost-found initContainer`
+* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode 
+
+## [107.57.0] - Mar 02, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+
+## [107.55.0] - Jan 31, 2023
 * Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
 * Adding a custom preStop to Artifactory router for allowing graceful termination to complete
 
