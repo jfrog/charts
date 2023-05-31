@@ -1,6 +1,12 @@
 # JFrog PDN Node Chart Changelog
 All changes to this chart will be documented in this file
 
+## [101.7.6] - May 25, 2023
+* Updated base image `ubi9/ubi-micro:9.2.5`
+* Updated initContainerImage `ubi9/ubi-minimal:9.2.484`
+* Changed podAntiAffinityPreset default value to hard
+* Added ServiceMinotor object
+
 ## [101.7.3] - May 09, 2023
 * Added checksum annotation to pod to auto-restart upon change to system.yaml
 
