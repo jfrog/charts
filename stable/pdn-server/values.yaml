@@ -658,7 +658,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.1.0.1829
+    tag: 9.2.484
     ## Specify a image PullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## Ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -927,7 +927,7 @@ podAffinityPreset: ""
 ## Ignored if `affinity` is set and not empty. Allowed values: `soft` or `hard`
 ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
 ## We recommend to use the value `hard` to run one pod per node
-podAntiAffinityPreset: soft
+podAntiAffinityPreset: hard
 ## Node affinity preset
 ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
 nodeAffinityPreset:
@@ -950,3 +950,16 @@ nodeAffinityPreset:
 ## spread across your cluster among failure-domains. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
 topologySpreadConstraints: []
+## @param serviceMonitor Declaratively specifies how groups of Kubernetes services should be monitored.
+## Ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  port: 8092
+  targetPort: 8092
+  scrapeTimeout: 15s
+  tokenName: ""
+  kubePromApp: ""
+  kubePromFullName: ""
+  namespaceSelector:
+    any: true
