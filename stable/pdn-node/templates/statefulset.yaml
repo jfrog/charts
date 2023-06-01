@@ -209,7 +209,8 @@ spec:
   {{- if not (contains "data" (quote .Values.persistence.volumes)) }}
   {{- if not .Values.persistence.enabled }}
         - name: data
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: {{ .Values.diskSize }}
   {{- else if .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:
@@ -230,7 +231,7 @@ spec:
           - {{ .Values.persistence.accessMode | quote }}
         resources:
           requests:
-            storage: {{ .Values.persistence.size | quote }}
+            storage: {{ .Values.diskSize | quote }}
         {{ include "common.storage.class" (dict "persistence" .Values.persistence "global" .Values.global) }}
         {{- if .Values.persistence.selector }}
         selector: {{- include "common.tplvalues.render" (dict "value" .Values.persistence.selector "context" $) | nindent 10 }}

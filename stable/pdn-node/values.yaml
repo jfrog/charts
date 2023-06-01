@@ -63,6 +63,9 @@ selfGrpcAddress: "$(POD_LOCAL_IP):8088"
 ## selfHttpAddress: "https://abcdefg-1234567.us-east-1.elb.amazonaws.com:443"
 ## selfHttpAddress: "http://nginx-ingress.pdn-node.svc.cluster.local:8089"
 selfHttpAddress: 'http://{{ include "pdn-node.fullname" . }}:8089'
+## @param diskSize Storage limit for PDN Node data volume
+## Must be aligned with dynamic config value `pdnNode.maximumMbToKeep`
+diskSize: 64Gi
 ## PDN Node system configuration file
 ## Ref: https://www.jfrog.com/confluence/display/JFROG/Advanced+Private+Distribution+Network+%28PDN%29+Configurations
 systemYaml: |
@@ -302,9 +305,6 @@ persistence:
   ## @param persistence.subPath The subdirectory of the volume to mount to
   ## Useful in dev environments and one PV for multiple services
   subPath: ""
-  ## @param persistence.size PVC Storage Request for pdnnode data volume
-  ## If you change this value, you might have to adjust dynamic config value `pdnnode.maximumMbToKeep` as well
-  size: 64Gi
   ## @param persistence.volumes Additional volumes without creating PVC
   ##  - name: volume_name
   ##    emptyDir: {}
@@ -498,7 +498,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.1.0.1829
+    tag: 9.2.484
     ## Specify an image PullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## Ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -648,7 +648,7 @@ podAffinityPreset: ""
 ## @param podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
 ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
 ## We recommend to use the value `hard` to run one pod per node
-podAntiAffinityPreset: soft
+podAntiAffinityPreset: hard
 ## Node affinity preset
 ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
 nodeAffinityPreset:
@@ -677,3 +677,15 @@ tolerations: []
 ## @param topologySpreadConstraints Topology Spread Constraints for pod assignment spread across your cluster among failure-domains. Evaluated as a template
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
 topologySpreadConstraints: []
+## @param serviceMonitor Declaratively specifies how groups of Kubernetes services should be monitored.
+## Ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  port: 8089
+  targetPort: 8089
+  scrapeTimeout: 15s
+  kubePromApp: ""
+  kubePromFullName: ""
+  namespaceSelector:
+    any: true
