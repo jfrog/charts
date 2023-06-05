@@ -91,6 +91,7 @@ spec:
         {{- if .Values.common.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
         {{- end }}
+{{ tpl (toYaml .Values.common.extraSecurityContext) . | nindent 8 }}
       {{- if .Values.common.topologySpreadConstraints }}
       topologySpreadConstraints:
 {{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
