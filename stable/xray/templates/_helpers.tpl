@@ -301,6 +301,21 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Resolve imagePullSecretsStrList value
+*/}}
+{{- define "xray.imagePullSecretsStrList" -}}
+{{- if .Values.global.imagePullSecrets }}
+{{- range .Values.global.imagePullSecrets }}
+- {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+{{- range .Values.imagePullSecrets }}
+- {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customInitContainersBegin value
 */}}
 {{- define "xray.customInitContainersBegin" -}}
@@ -387,6 +402,19 @@ Return the proper xray chart image names
     {{- end -}}
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the registry of a service
+*/}}
+{{- define "xray.getRegistryByService" -}}
+{{- $dot := index . 0 }}
+{{- $service := index . 1 }}
+{{- if $dot.Values.global.imageRegistry }}
+    {{- $dot.Values.global.imageRegistry }}
+{{- else -}}
+    {{- index $dot.Values $service "image" "registry" -}}
 {{- end -}}
 {{- end -}}
 

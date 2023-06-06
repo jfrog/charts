@@ -1,11 +1,17 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.75.12] - May 19, 2023
+* Fix lint issue when rabbitmq is disabled
 
-## [103.73.8] - Apr 07, 2023
+## [103.74.0] - May 2, 2023
+* Inject global image pull secret to the system.yaml for JAS
+* Add configuration for JAS images registry and repository in the system.yaml
+* Added securityContext for rabbitmq pre-upgrade hook pod
+
+## [103.72.0] - Apr 07, 2023
 * Adding vm memory memoryHighWatermark field and scheduler field for Rabbitmq Chart
 * Update pre-upgrade hook image of rabbitmq
-* Added securityContext for rabbitmq pre-upgrade hook pod
 
 ## [103.70.0] - Mar 21, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`

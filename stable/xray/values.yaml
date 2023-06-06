@@ -200,6 +200,18 @@ xray:
       indexAllBuilds: {{ .Values.server.indexAllBuilds }}
       {{- end }}
     {{- end }}
+    {{- if (include "xray.imagePullSecretsStrList" .) }}
+    executionService:
+      pullSecret:
+      {{- include "xray.imagePullSecretsStrList" . | indent 2 }}
+    {{- end }}
+    contextualAnalysis:
+      registry: {{ include "xray.getRegistryByService" (list . "contextualAnalysis") }}
+      image: {{ .Values.contextualAnalysis.image.repository }}
+    exposures:
+      container:
+        registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
+        image: {{ .Values.exposures.image.repository }}
   # Sidecar containers for tailing Xray logs
   loggers: []
   # - router-request.log
@@ -947,6 +959,14 @@ server:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+contextualAnalysis:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-jas-contextual-analysis
+exposures:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-jas-exposures
 router:
   name: router
   image:
