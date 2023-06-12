@@ -1,50 +1,57 @@
 apiVersion: v2
-appVersion: 7.25.7
+appVersion: 7.59.9
 dependencies:
-  - name: postgresql
-    version: 10.3.18
-    repository: https://charts.bitnami.com/bitnami
-    condition: postgresql.enabled
-  - name: rabbitmq
-    version: 8.11.4
-    repository: https://charts.bitnami.com/bitnami
-    condition: rabbitmq.enabled
-  - name: redis
-    version: 12.10.1
-    repository: https://charts.bitnami.com/bitnami
-    condition: redis.enabled
-  - name: artifactory
-    version: 107.25.7
-    repository: https://charts.jfrog.io/
-    condition: artifactory.enabled
-  - name: artifactory-ha
-    version: 107.25.7
-    repository: https://charts.jfrog.io/
-    condition: artifactory-ha.enabled
-  - name: xray
-    version: 103.32.2
-    repository: https://charts.jfrog.io/
-    condition: xray.enabled
-  - name: distribution
-    version: 102.9.2
-    repository: https://charts.jfrog.io/
-    condition: distribution.enabled
-  - name: mission-control
-    version: 104.7.14
-    repository: https://charts.jfrog.io/
-    condition: mission-control.enabled
-  - name: pipelines
-    version: 101.17.9
-    repository: https://charts.jfrog.io/
-    condition: pipelines.enabled
-description: The Helm chart for JFrog Platform (Universal, hybrid, end-to-end DevOps automation)
+- condition: postgresql.enabled
+  name: postgresql
+  repository: https://charts.jfrog.io/
+  version: 10.3.18
+- condition: rabbitmq.enabled
+  name: rabbitmq
+  repository: https://charts.jfrog.io/
+  version: 11.9.3
+- condition: redis.enabled
+  name: redis
+  repository: https://charts.jfrog.io/
+  version: 12.10.1
+- condition: artifactory.enabled
+  name: artifactory
+  repository: https://charts.jfrog.io/
+  version: 107.59.9
+- condition: xray.enabled
+  name: xray
+  repository: https://charts.jfrog.io/
+  version: 103.75.12
+- condition: distribution.enabled
+  name: distribution
+  repository: https://charts.jfrog.io/
+  version: 102.18.1
+- condition: insight.enabled
+  name: insight
+  repository: https://charts.jfrog.io/
+  version: 101.13.5
+- condition: pdnServer.enabled
+  name: pdn-server
+  repository: https://charts.jfrog.io/
+  version: 101.2.0
+- condition: pipelines.enabled
+  name: pipelines
+  repository: https://charts.jfrog.io/
+  version: 101.38.1
+description: The Helm chart for JFrog Platform (Universal, hybrid, end-to-end DevOps
+  automation)
 home: https://jfrog.com/platform/
 icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/jfrog-platform/logo/jfrog-platform-logo.png
 keywords:
 - platform
 - artifactory
+- xray
+- distribution
+- insight
+- pdn-server
+- pipelines
 - jfrog
 - devops
+kubeVersion: '>= 1.14.0-0'
 maintainers:
 - email: installers@jfrog.com
   name: Chart Maintainers at JFrog
@@ -52,5 +59,4 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 0.10.1
-kubeVersion: ">= 1.14.0-0"
+version: 10.13.1

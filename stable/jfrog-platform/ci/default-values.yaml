@@ -1,1 +1,37 @@
 # Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
+# If this is an upgrade over an existing platform chart, explicitly pass 'gaUpgradeReady=true' to upgrade
+gaUpgradeReady: true
+
+postgresql:
+  persistence:
+    enabled: false
+artifactory:
+  artifactory:
+    persistence:
+    enabled: false
+xray:
+  common:
+    persistence:
+      enabled: false
+distribution:
+  distribution:
+    persistence:
+      enabled: false
+  redis:
+    persistence:
+      enabled: false
+insight:
+  insightServer:
+    persistence:
+      enabled: false
+  elasticsearch:
+    persistence:
+      enabled: false
+
+rabbitmq:
+  persistence:
+    enabled: false
+redis:
+  master:
+    persistence:
+      enabled: false

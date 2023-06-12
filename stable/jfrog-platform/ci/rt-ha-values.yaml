@@ -1,0 +1,37 @@
+# If this is an upgrade over an existing platform chart , explicitly pass 'gaUpgradeReady=true' to upgrade
+gaUpgradeReady: true
+
+postgresql:
+  persistence:
+    enabled: false
+artifactory:
+  artifactory:
+    replicaCount: 3
+    persistence:
+      enabled: false
+xray:
+  common:
+    persistence:
+      enabled: false
+distribution:
+  distribution:
+    persistence:
+      enabled: false
+  redis:
+    persistence:
+      enabled: false
+insight:
+  insightServer:
+    persistence:
+      enabled: false
+  elasticsearch:
+    persistence:
+      enabled: false
+
+rabbitmq:
+  persistence:
+    enabled: false
+redis:
+  master:
+    persistence:
+      enabled: false

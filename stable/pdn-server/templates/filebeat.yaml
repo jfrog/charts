@@ -1,0 +1,13 @@
+{{- if .Values.filebeat.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "pdn-server.fullname" . }}-filebeat-config
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.statefulsetLabels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.statefulsetLabels "context" $) | nindent 4 }}
+    {{- end }}
+data:
+  filebeat.yml: |
+{{ tpl .Values.filebeat.filebeatYml . | indent 4 }}
+{{- end -}}

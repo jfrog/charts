@@ -1,0 +1,90 @@
+{{- if and (not .Values.rabbitmq.migration.enabled) (not .Values.rabbitmq.rabbitmqUpgradeReady)  }}
+    {{- fail "Rabbitmq migration flag is disabled. Please enable the rabbitmq.rabbitmqUpgradeReady flag after manually enabling the feature flags in rabbitmq" }}
+{{- end }}
+{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.migration.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+automountServiceAccountToken: {{ .Values.rabbitmq.migration.serviceAccount.automountServiceAccountToken }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.rabbitmq.migration.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+rules:
+{{ toYaml .Values.rabbitmq.migration.serviceAccount.rbac.role.rules }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.rabbitmq.migration.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+subjects:
+    - kind: ServiceAccount
+      name: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
+roleRef:
+    kind: Role
+    apiGroup: rbac.authorization.k8s.io
+    name: {{ template "jfrog-platform.rabbitmq.migration.fullname" . }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.rabbitmq.migration.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: {{ template "jfrog-platform.name" . }}
+    chart: {{ template "jfrog-platform.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "jfrog-platform.fullname" . }}-pre-upgrade-hook
+  annotations:
+    "helm.sh/hook": "pre-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  serviceAccountName: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
+  {{- if .Values.rabbitmq.podSecurityContext.enabled }}
+  securityContext: {{- omit .Values.rabbitmq.podSecurityContext "enabled" | toYaml | nindent 4 }}
+  {{- end }}
+  containers:
+    - name: pre-upgrade-container
+      image: releases-docker.jfrog.io/bitnami/kubectl:1.24.12
+      imagePullPolicy: IfNotPresent
+      command: ['sh', '-c', 'kubectl exec -it {{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0 -- rabbitmqctl enable_feature_flag all ; if [ "$?" -ne 0 ]; then echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] "; exit 1; fi' ]
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
+{{- end }}

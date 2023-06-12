@@ -136,7 +136,8 @@ Resolve customInitContainersBegin value
 {{- define "distribution.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.common.customInitContainersBegin -}}
+{{- end -}}
+{{- if .Values.common.customInitContainersBegin -}}
 {{- .Values.common.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
@@ -147,7 +148,8 @@ Resolve customInitContainers value
 {{- define "distribution.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.common.customInitContainers -}}
+{{- end -}}
+{{- if .Values.common.customInitContainers -}}
 {{- .Values.common.customInitContainers -}}
 {{- end -}}
 {{- end -}}
@@ -158,7 +160,8 @@ Resolve customVolumes value
 {{- define "distribution.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- else if .Values.common.customVolumes -}}
+{{- end -}}
+{{- if .Values.common.customVolumes -}}
 {{- .Values.common.customVolumes -}}
 {{- end -}}
 {{- end -}}
@@ -170,7 +173,8 @@ Resolve customVolumeMounts value
 {{- define "distribution.customVolumeMounts" -}}
 {{- if .Values.global.customVolumeMounts -}}
 {{- .Values.global.customVolumeMounts -}}
-{{- else if .Values.common.customVolumeMounts -}}
+{{- end -}}
+{{- if .Values.common.customVolumeMounts -}}
 {{- .Values.common.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
@@ -181,7 +185,8 @@ Resolve customSidecarContainers value
 {{- define "distribution.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
-{{- else if .Values.common.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.common.customSidecarContainers -}}
 {{- .Values.common.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
@@ -218,6 +223,46 @@ Custom certificate copy command
 {{- define "distribution.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted \;;
-find {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
+{{- end -}}
+
+{{/*
+Resolve distribution requiredServiceTypes value
+*/}}
+{{- define "distribution.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfds,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve Distribution pod node selector value
+*/}}
+{{- define "distribution.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.distribution.nodeSelector }}
+{{ toYaml .Values.distribution.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "distribution.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "distribution.name" .) ("unified-secret-volume") | trunc 63 -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.
+*/}}
+{{- define "distribution.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.distribution.customVolumes -}}
+{{- $val := (tpl (include "distribution.customVolumes" .) .) | toJson -}}
+{{- contains (include "distribution.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
 {{- end -}}

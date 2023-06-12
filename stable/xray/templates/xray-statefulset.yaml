@@ -17,6 +17,10 @@ metadata:
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
+{{- with .Values.server.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   serviceName: "{{ template "xray.fullname" . }}"
 {{- if not .Values.autoscaling.enabled }}
@@ -39,8 +43,12 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       annotations:
+      {{- if not .Values.xray.unifiedSecretInstallation }}
         checksum/database-secrets: {{ include (print $.Template.BasePath "/xray-database-secrets.yaml") . | sha256sum }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/xray-system-yaml.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/xray-unified-secret: {{ include (print $.Template.BasePath "/xray-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
         {{- with .Values.analysis.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
@@ -59,14 +67,34 @@ spec:
         {{- with .Values.filebeat.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
+      {{- range $key, $value := .Values.xray.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
+    {{- if .Values.xray.schedulerName }}
+      schedulerName: {{ .Values.xray.schedulerName | quote }}
+    {{- end }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "xray.imagePullSecrets" . | indent 6 }}
+    {{- end }}
+    {{- if .Values.xray.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.xray.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.xray.priorityClass.create }}
+      priorityClassName: {{ default (include "xray.fullname" .) .Values.xray.priorityClass.name }}
+      {{- end }}
     {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
       securityContext:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
+        {{- if .Values.common.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
+        {{- end }}
+      {{- if .Values.common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
       initContainers:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
@@ -76,12 +104,16 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - '/bin/sh'
+        - 'bash'
         - '-c'
         - >
+          if [[ -e "{{ .Values.xray.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.xray.persistence.mountPath }}/etc/filebeat.yaml; fi;
           echo "Copy system.yaml to {{ .Values.xray.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc;
           {{- if .Values.systemYamlOverride.existingSecret }}
@@ -106,21 +138,33 @@ spec:
         - name: XRAY_JOIN_KEY
           valueFrom:
             secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ include "xray.joinKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: join-key
         {{- end }}
         {{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
         - name: XRAY_MASTER_KEY
           valueFrom:
             secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ include "xray.masterKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: master-key
         {{- end }}
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.xray.persistence.mountPath | quote }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
+        {{- if not .Values.xray.unifiedSecretInstallation }}
         - name: systemyaml
+        {{- else }}
+        - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
           {{- if .Values.systemYamlOverride.existingSecret }}
           mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
           subPath: {{ .Values.systemYamlOverride.dataKey }}
@@ -135,10 +179,13 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
         - >
 {{ include "xray.copyCustomCerts" . | indent 10 }}
@@ -148,22 +195,30 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+  {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
-        - >
-          until nc -z -w 2 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && echo database ok; do
-            sleep 2;
-          done;
+        - |
+          echo "Waiting for postgresql to come up"
+          ready=false;
+          while ! $ready; do echo waiting;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
+          done
       {{- end }}
+  {{- end }}
     {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "xray.customInitContainers" .) . | indent 6 }}
     {{- end }}
@@ -179,6 +234,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/sh'
           - '-c'
@@ -188,6 +246,13 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: {{ include "xray.router.requiredServiceTypes" . }}
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
@@ -214,6 +279,41 @@ spec:
         readinessProbe:
 {{ tpl .Values.router.readinessProbe.config . | indent 10 }}
 {{- end }}
+      - name: {{ .Values.observability.name }}
+        image: {{ include "xray.getImageInfoByValue" (list . "observability") }}
+        imagePullPolicy: {{ .Values.observability.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/sh'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh;
+        {{- with .Values.observability.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.observability.persistence.mountPath }}"
+        resources:
+{{ toYaml .Values.observability.resources | indent 10 }}
+      {{- if .Values.observability.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.observability.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
+      {{- end }}
       - name: {{ .Values.server.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -221,6 +321,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -234,6 +337,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.server.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -260,7 +367,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -272,7 +383,11 @@ spec:
               name: {{ tpl .Values.database.secrets.actualUsername.name . }}
               key: {{ tpl .Values.database.secrets.actualUsername.key . }}
         {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-actualUsername
         {{- end }}
       {{- end }}
@@ -284,7 +399,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -299,7 +418,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -314,6 +437,22 @@ spec:
               name: {{ include "rabbitmq.passwordSecretName" .}}
               key: rabbitmq-password
       {{- end }}
+        - name: XRAY_K8S_ENV
+          value: "true"
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: execution-service-aes-key
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
           name: http-server
@@ -336,10 +475,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.server.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.server.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.server.readinessProbe.config . | indent 10 }}
-{{- end }}
       - name: {{ .Values.analysis.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -347,6 +482,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -360,6 +498,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.analysis.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -386,7 +528,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -398,7 +544,11 @@ spec:
               name: {{ tpl .Values.database.secrets.actualUsername.name . }}
               key: {{ tpl .Values.database.secrets.actualUsername.key . }}
         {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-actualUsername
         {{- end }}
       {{- end }}
@@ -410,7 +560,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -425,7 +579,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -446,6 +604,20 @@ spec:
               fieldPath: metadata.name
         - name: XRAY_K8S_ENV
           value: "true"
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: execution-service-aes-key
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
           name: http-analysis
@@ -468,10 +640,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.analysis.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.analysis.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.analysis.readinessProbe.config . | indent 10 }}
-{{- end }}
       - name: {{ .Values.indexer.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -479,6 +647,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -492,6 +663,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.indexer.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -518,7 +693,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -530,7 +709,11 @@ spec:
               name: {{ tpl .Values.database.secrets.actualUsername.name . }}
               key: {{ tpl .Values.database.secrets.actualUsername.key . }}
         {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-actualUsername
         {{- end }}
       {{- end }}
@@ -542,7 +725,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -557,7 +744,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -578,6 +769,9 @@ spec:
               fieldPath: metadata.name
         - name: XRAY_K8S_ENV
           value: "true"
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
           name: http-indexer
@@ -600,10 +794,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.indexer.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.indexer.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
-{{- end }}
       - name: {{ .Values.persist.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -611,6 +801,9 @@ spec:
           runAsNonRoot: true
           runAsUser: {{ .Values.common.xrayUserId }}
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         command:
           - '/bin/bash'
           - '-c'
@@ -624,6 +817,10 @@ spec:
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.persist.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         env:
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
@@ -650,7 +847,11 @@ spec:
               name: {{ tpl .Values.database.secrets.user.name . }}
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-user
         {{- end }}
       {{- end }}
@@ -662,7 +863,11 @@ spec:
               name: {{ tpl .Values.database.secrets.actualUsername.name . }}
               key: {{ tpl .Values.database.secrets.actualUsername.key . }}
         {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-actualUsername
         {{- end }}
       {{- end }}
@@ -674,7 +879,11 @@ spec:
               name: {{ tpl .Values.database.secrets.password.name . }}
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
@@ -689,7 +898,11 @@ spec:
               name: {{ tpl .Values.database.secrets.url.name . }}
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
               key: db-url
         {{- end }}
       {{- end }}
@@ -706,6 +919,9 @@ spec:
       {{- end }}
         - name: XRAY_K8S_ENV
           value: "true"
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.persist.internalPort }}
           name: http-persist
@@ -728,10 +944,29 @@ spec:
         livenessProbe:
 {{ tpl .Values.persist.livenessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.persist.readinessProbe.enabled }}
-        readinessProbe:
-{{ tpl .Values.persist.readinessProbe.config . | indent 10 }}
-{{- end }}
+      {{- $mountPath := .Values.xray.persistence.mountPath }}
+      {{- range .Values.xray.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "xray.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        volumeMounts:
+        - name: data-volume
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.xray.loggersResources | indent 10 }}
+      {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
@@ -743,6 +978,9 @@ spec:
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
@@ -761,28 +999,56 @@ spec:
 {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "xray.customSidecarContainers" .) . | indent 6 }}
 {{- end }}
-    {{- with .Values.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+    {{- if or .Values.xray.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "xray.nodeSelector" .) . | indent 6 }}
     {{- end }}
+    {{- if .Values.affinity }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.xray.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.xray.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "xray.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.xray.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.xray.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "xray.name" . }}
+                  release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+      ########## External secrets ###########
       {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: ca-certs
         secret:
           secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.xray.customCertificates.certificateSecretName }}
       {{- end }}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
+      {{- if .Values.systemYamlOverride.existingSecret }}
       - name: systemyaml
         secret:
-          secretName: {{ default (printf "%s-%s" (include "xray.fullname" .) "system-yaml") .Values.systemYamlOverride.existingSecret }}
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+      ############ Config map, Volumes and Custom Volumes ##############
+      {{- if .Values.xray.loggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "xray.fullname" . }}-logger
       {{- end }}
       {{- if not .Values.common.persistence.enabled }}
       - name: data-volume
@@ -794,6 +1060,20 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.common.persistence.existingClaim }}
       {{- end }}
+      {{- if and .Values.xray.unifiedSecretInstallation (eq (include "xray.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      #########  unifiedSecretInstallation ###########
+      - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "xray.name" . }}-unified-secret
+      {{- else if not .Values.xray.unifiedSecretInstallation }}
+      ######### Non unifiedSecretInstallation ###########
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.xray.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "xray.fullname" .) "system-yaml" }}
+      {{- end }}
+      {{- end }}
+
 {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
 {{ tpl (include "xray.customVolumes" .) . | indent 6 }}
 {{- end }}

@@ -28,6 +28,12 @@ explain why.
 **Which chart**:
 
 
+**Which product license** (Enterprise/Pro/oss):
+
+
+**JFrog support reference** (if already raised with support team): 
+
+
 **What happened**:
 
 

@@ -1,6 +1,6 @@
 Congratulations. You have just deployed JFrog Distribution!
 
-{{- if eq .Values.distribution.masterKey "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" }}
+{{- if and (eq .Values.distribution.masterKey "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB") (not .Values.distribution.masterKeySecretName) (not .Values.global.masterKeySecretName) (not .Values.global.masterKey) }}
 
 
 ***************************************** WARNING ******************************************
@@ -13,6 +13,13 @@ Congratulations. You have just deployed JFrog Distribution!
 *                                                                                          *
 * Pass the created master key to helm with '--set distribution.masterKey=${MASTER_KEY}'    *
 ********************************************************************************************
+{{- end }}
+
+{{- if and (or (or (or .Values.systemYamlOverride.existingSecret (or .Values.distribution.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.distribution.joinKeySecretName .Values.global.joinKeySecretName)) .Values.database.secrets) .Values.distribution.unifiedSecretInstallation }}
+****************************************** WARNING **************************************************************************************************
+* The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*
+* Update the values.yaml with the existing secrets to add them to the unified secret.                                                               *
+*****************************************************************************************************************************************************
 {{- end }}
 
 Open Artifactory - {{ .Values.distribution.jfrogUrl }} in your browser. Distribution should be activated with Artifactory.

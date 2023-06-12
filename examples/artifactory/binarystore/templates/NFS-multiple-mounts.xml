@@ -1,0 +1,40 @@
+<!--
+##############################
+Name: Multiple NFS mounts
+Valid for: Artifactory High Availability
+Reference: https://www.jfrog.com/confluence/display/JFROG/Filestore+Sharding#FilestoreSharding-FileSystemClusterBinaryProvider
+##############################
+-->
+
+<config version="4">
+  <chain>
+    <provider id="cache-fs" type="cache-fs">
+        <provider id="sharding" type="sharding">
+            <sub-provider id="shard-1" type="state-aware"/>
+            <sub-provider id="shard-2" type="state-aware"/>
+        </provider>
+    </provider>
+  </chain>
+
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>5e+10</maxCacheSize>
+        <cacheProviderDir>cache</cacheProviderDir>
+    </provider>
+    
+    <provider id="sharding" type="sharding">
+        <readBehavior>roundRobin</readBehavior>                     
+        <writeBehavior>percentageFreeSpace</writeBehavior>
+        <redundancy>2</redundancy>
+        <lenientLimit>1</lenientLimit>
+    </provider>
+  
+    <provider id="shard-1" type="state-aware">
+        <fileStoreDir>/mnt/shared/artifactory/filestore1</fileStoreDir>
+        <writeEnabled>true</writeEnabled>
+    </provider>
+  
+    <provider id="shard-2" type="state-aware">
+        <fileStoreDir>/mnt/shared/artifactory/filestore2</fileStoreDir>
+        <writeEnabled>true</writeEnabled>
+    </provider>   
+</config>

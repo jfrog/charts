@@ -8,6 +8,9 @@ metadata:
     component: {{ .Values.xray.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
 {{- with .Values.server.service }}
 {{- if .annotations }}
   annotations:

@@ -1,4 +1,4 @@
-{{- if not .Values.systemYamlOverride.existingSecret -}}
+{{- if and (not .Values.systemYamlOverride.existingSecret) (not .Values.pipelines.unifiedSecretInstallation) }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -6,7 +6,6 @@ metadata:
   labels:
     {{- include "pipelines.labels" . | nindent 4 }}
 type: Opaque
-data:
 stringData:
   system.yaml: |
 {{ tpl .Values.pipelines.systemYaml . | indent 4 }}

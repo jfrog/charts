@@ -1,28 +1,35 @@
-# Default values for jfrog-platform.
+# Default values for jfrog-platform
 
 # nameOverride:
 # fullnameOverride:
+
+# If this is an upgrade over an existing platform chart(>= 10.0.0), explicitly pass 'gaUpgradeReady=true' to upgrade
+gaUpgradeReady: false
 
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   imageRegistry: releases-docker.jfrog.io
-  ## Set this flag to false, if you are using artifactory chart.
-  artifactoryHaEnabled: true
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
-  jfrogUrlUI: '{{ include "jfrog-platform.jfrogUrl" . }}'
+  ## Artifactory UI URL - Mandatory
+  ## Update jfrogUrlUI before running builds on Pipelines
+  ## This must be the external URL of Artifactory that any service (such as scm provider) and buildnodes
+  ## that you're using can access, for example: https://artifactory.example.com
+  ## This can also be set through the UI Administration -> Settings -> custom base url
+  jfrogUrlUI: ""
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   ## Chart.AppVersion for each product can be overidden using global.versions.<product>
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.24.1
+    router: 7.67.0
   #   artifactory:
   #   xray:
   #   distribution:
-  #   missionControl:
+  #   insight:
   #   pipelines:
+  #   pdnServer:
   database:
     host: "{{ .Release.Name }}-postgresql"
     port: 5432
@@ -36,8 +43,11 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.2-alpine
+    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.10-alpine
+    # Run the postgres init container as a non-default uid
+    initContainerSetupDBUser:
     initContainerImagePullPolicy: Always
+    # If you are using external postgresql, set initDBCreation: false
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
   customCertificates:
@@ -54,7 +64,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.2.0-debian-10-r55
+    tag: 13.10.0-debian-11-r14
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -66,13 +76,18 @@ postgresql:
 ## This Rabbitmq is used by Xray and Pipelines only, set rabbitmq.enabled: false, when Xray or Pipelines is not enabled
 rabbitmq:
   enabled: true
+  ## Enable the flag if the feature flags in rabbitmq is enabled manually
+  rabbitmqUpgradeReady: false
   image:
     repository: bitnami/rabbitmq
-    tag: 3.8.14-debian-10-r32
+    tag: 3.11.10-debian-11-r5
   auth:
     username: admin
     password: password
     erlangCookie: secretcookie
+  ## To support upgrade from 3.8.x to 3.11.x , featureFlags are needed
+  ## ref: https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
+  featureFlags: drop_unroutable_metric,empty_basic_get_metric,implicit_default_bindings,maintenance_mode_status,quorum_queue,stream_queue,user_limits,virtual_host_metadata
   maxAvailableSchedulers: null
   onlineSchedulers: null
   persistence:
@@ -80,6 +95,7 @@ rabbitmq:
   extraEnvVars:
     - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
       value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
+  extraSecretsPrependReleaseName: true
   extraSecrets:
     load-definition:
       load_definition.json: |
@@ -87,6 +103,13 @@ rabbitmq:
           "vhosts": [
             {
               "name": "xray"
+            }
+          ],
+          "users": [
+            {
+              "name": "{{ .Values.auth.username }}",
+              "password": "{{ .Values.auth.password }}",
+              "tags": "administrator"
             }
           ],
           "permissions": [
@@ -106,30 +129,55 @@ rabbitmq:
               "vhost": "xray",
               "definition": {
                 "ha-mode": "all",
-                "ha-sync-mode": "automatic",
+                "ha-sync-mode": "automatic"
               }
             }
           ]
         }
   loadDefinition:
     enabled: true
-    existingSecret: load-definition
-  extraConfiguration: |
-    management.load_definitions = /app/load_definition.json
+    existingSecret: '{{ .Release.Name }}-load-definition'
+  ## Upgrade of rabbitmq from 3.8.x to 3.11.x needs the feature flags to be enabled.
+  ## Ref: (https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
+  ## migration enable will perform `rabbitmqctl enable_feature_flag all` command on the existing rabbitmq before starting the upgrade
+  migration:
+    ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
+    enabled: true
+    ## Service account for the pre-upgrade hook to perform rabbitmq migration
+    serviceAccount:
+      create: true
+      ## The name of the ServiceAccount to use.
+      ## If not set and create is true, a name is generated using the fullname template
+      name:
+      ## Explicitly mounts the API credentials for the Service Account
+      automountServiceAccountToken: true
+      rbac:
+        create: true
+        role:
+          ## Rules to create. It follows the role specification
+          rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods/exec
+                - pods
+              verbs:
+                - create
+                - get
 
 ## This Redis is used by pipelines only, set redis.enabled: false, when pipelines is not enabled
 redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 6.2.1-debian-10-r9
+    tag: 7.0.9-debian-11-r6
   cluster:
     enabled: false
   usePassword: false
 
 artifactory:
-  ## Note: Set artifactoryHaEnabled flag(global section) to false, if you are using artifactory chart.
-  enabled: false
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.13.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  enabled: true
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -139,31 +187,12 @@ artifactory:
     url: '{{ include "database.url" . }}'
     user: artifactory
     password: artifactory
+  # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
+  mc:
+    enabled: true
   artifactory:
-    migration:
-      enabled: false
-    persistence:
-      size: 200Gi
-    # license:
-    #   secret:
-    #   dataKey:
-
-artifactory-ha:
-  ## Note: Set artifactoryHaEnabled flag(global section) to true, if you are using artifactory-ha chart.
-  enabled: true
-  postgresql:
-    enabled: false
-  waitForDatabase: false
-  database:
-    type: postgresql
-    driver: org.postgresql.Driver
-    url: '{{ include "database.url" . }}'
-    user: artifactoryha
-    password: artifactoryha
-  artifactory:
-    ## For artifactory pro license (supports single node only), enable node replicaCount=0
-    # node:
-    #   replicaCount: 0
+    # Note: For HA deployments, set replicaCount >1 (recommended 3)
+    replicaCount: 1
     migration:
       enabled: false
     persistence:
@@ -186,12 +215,15 @@ xray:
       size: 200Gi
     rabbitmq:
       connectionConfigFromEnvironment: false
+    extraEnvVars: |
+      - name: "JF_SHARED_RABBITMQ_VHOST"
+        value: "xray"
   rabbitmq:
     enabled: false
     external:
       username: admin
       password: password
-      url: "amqp://{{ .Release.Name }}-rabbitmq:5672/xray"
+      url: "amqp://{{ .Release.Name }}-rabbitmq:5672"
       erlangCookie: secretcookie
 
 distribution:
@@ -199,20 +231,22 @@ distribution:
   unifiedUpgradeAllowed: true
   postgresql:
     enabled: false
+  image:
+    tag: 7.0.9-debian-11-r6
   database:
     url: '{{ include "database.url" . }}'
     user: distribution
     password: distribution
 
-mission-control:
+insight:
   enabled: true
   unifiedUpgradeAllowed: true
   postgresql:
     enabled: false
   database:
     url: '{{ include "database.url" . }}'
-    user: mc
-    password: mc
+    user: insight
+    password: insight
     name: '{{ include "database.name" . }}'
   elasticsearch:
     javaOpts:
@@ -232,10 +266,6 @@ pipelines:
       user: "apiuser"
       password: "pipeline"
   pipelines:
-    api:
-      externalUrl: http://pipelines.test.com
-    www:
-      externalUrl: http://pipelines.test.com
     msg:
       uiUserPassword: password
   redis:
@@ -255,3 +285,6 @@ pipelines:
     build_vhost_name: pipelines
     root_vhost_name: pipelinesRoot
     protocol: amqp
+
+pdnServer:
+  enabled: false

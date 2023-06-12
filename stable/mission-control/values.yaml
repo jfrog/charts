@@ -39,7 +39,7 @@ global:
 ## Fully override mission-control.fullname template
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/alpine:3.14.0
+initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -315,14 +315,15 @@ database:
 elasticsearch:
   enabled: true
   uid: 1000
+  ## To overwrite existing ES search guard certificates, create a secret with the following files (localhost.key, localhost.pem, root-ca.pem, sgadmin.key, sgadmin.pem )
   ## certificatesSecretName:
   name: elasticsearch
-  initContainerImage: releases-docker.jfrog.io/alpine:3.14.0
+  initContainerImage: releases-docker.jfrog.io/alpine:3.14.2
   configureDockerHost: true
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/elasticsearch-sg
-    tag: 7.14.0
+    tag: 7.14.1
     pullPolicy: IfNotPresent
   ## Enter elasticsearch connection details
   ## By default url is set to localhost:8082 (router)
@@ -411,7 +412,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: busybox
-    tag: 1.32.1
+    tag: 1.33.1
 
 missionControl:
   name: mission-control
@@ -862,7 +863,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.24.1
+    tag: 7.25.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled

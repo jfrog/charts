@@ -1,0 +1,143 @@
+# CI values for Mission-control.
+
+# If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+insightServer:
+  jfrogUrl: http://artifactory.rt:8082
+  unifiedSecretInstallation: true
+  openMetrics:
+    enabled: true
+  extraEnvironmentVariables:
+  - name: JF_INSIGHT_SERVER_EXTRAJAVAOPTS
+    value: '-Xms2g -Xmx3g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
+  persistence:
+    enabled: false
+  annotations:
+    key1: "value1"
+    key2: "value2"
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  # Add lifecycle hooks for insightServer container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the insightServer postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the insightServer postStart handler >> /tmp/message"]
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+  priorityClass:
+    create: true
+  statefulset:
+    annotations:
+      insight: test
+
+insightScheduler:
+  extraEnvironmentVariables:
+  - name: JF_INSIGHT_SCHEDULER_EXTRAJAVAOPTS
+    value: '-Xms512m -Xmx1g -server -XX:+UseG1GC -Dfile.encoding=UTF8'
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  # Add lifecycle hooks for insightScheduler container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the insightScheduler postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the insightScheduler postStart handler >> /tmp/message"]
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+  # Add lifecycle hooks for router container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+
+postgresql:
+  image:
+    tag: 9.6.15-debian-9-r91
+  postgresqlPassword: password
+  db:
+    password: password
+  persistence:
+    enabled: false
+
+elasticsearch:
+  persistence:
+    enabled: false
+  javaOpts:
+    xms: "2g"
+    xmx: "2g"
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.insightServer.persistence.mountPath }}/log/filebeat
+    name: insight-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.insightServer.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfisv"
+        log_type: "insightServer"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+
+common:
+  fsGroupChangePolicy: "OnRootMismatch"

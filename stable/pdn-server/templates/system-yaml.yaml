@@ -1,0 +1,15 @@
+{{- if not .Values.systemYamlOverride.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "pdn-server.fullname" . }}-systemyaml
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+type: Opaque
+stringData:
+  system.yaml: |
+{{ tpl .Values.systemYaml . | indent 4 }}
+{{- end }}

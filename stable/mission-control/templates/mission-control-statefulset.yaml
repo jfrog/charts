@@ -54,29 +54,19 @@ spec:
 {{ tpl (include "mission-control.customInitContainersBegin" .)  . | indent 6 }}
     {{- end }}      
     {{- if .Values.elasticsearch.enabled }}
+    {{- if .Values.elasticsearch.configureDockerHost }}
       - name: elasticsearch-init
         image: "{{ .Values.elasticsearch.initContainerImage }}"
-        {{- if .Values.elasticsearch.configureDockerHost }}
         securityContext:
           privileged: true
-        {{- end }}
         command:
         - '/bin/sh'
         - '-c'
         - >
-          chmod -R 777 {{ .Values.elasticsearch.persistence.mountPath }};
-          mkdir -p /usr/share/elasticsearch/data/certs;
-          cp -fv /tmp/certs/* /usr/share/elasticsearch/data/certs;
-        {{- if .Values.elasticsearch.configureDockerHost }}
           sysctl -w vm.max_map_count={{ .Values.elasticsearch.env.maxMapCount }}
-        {{- end }}
-        volumeMounts:
-        - name: elastic-certs
-          mountPath: /tmp/certs
-        - name: elasticsearch-data
-          mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
+    {{- end }}
     {{- end }}
       - name: copy-system-yaml
         image: '{{ .Values.initContainerImage }}'
@@ -282,6 +272,10 @@ spec:
         - '-c'
         - >
           sleep 10;
+{{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
+          mkdir -p /usr/share/elasticsearch/data/certs;
+          cp -fv /tmp/certs/* /usr/share/elasticsearch/data/certs;
+{{- end }}
           if [[ $mission_control_pod_name == *"-0"* ]] ; then echo "Setting clustersetup to no" && export ELASTICSEARCH_CLUSTERSETUP=NO; else echo "Setting clustersetup to yes" && export ELASTICSEARCH_CLUSTERSETUP=YES; fi;
           (/usr/local/bin/initializeSearchGuard.sh &) && docker-entrypoint.sh 'elasticsearch';        
         env:  
@@ -339,6 +333,10 @@ spec:
         - name: tcp-estransprt
           containerPort: {{ .Values.elasticsearch.transportPort }}
         volumeMounts:
+{{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
+        - name: elastic-certs
+          mountPath: /tmp/certs
+{{- end }}
         - name: elasticsearch-data
           mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
         resources:
@@ -480,6 +478,7 @@ spec:
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
         securityContext:
           runAsNonRoot: true
+          runAsUser: {{ .Values.common.uid }}
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -754,10 +753,10 @@ spec:
         secret:
           secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.missionControl.customCertificates.certificateSecretName }}
       {{- end }}
-      {{- if .Values.elasticsearch.enabled }}
+      {{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
       - name: elastic-certs
         secret:
-          secretName: {{ default (printf "%s-%s" (include "mission-control.fullname" .) "elasticsearch-certs") .Values.elasticsearch.certificatesSecretName }}
+          secretName: {{ .Values.elasticsearch.certificatesSecretName }}
       {{- end }}
       - name: applicationyaml
         secret:

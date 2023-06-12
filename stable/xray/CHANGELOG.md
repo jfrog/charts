@@ -1,7 +1,176 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.32.2] - Aug 13, 2021
+## [103.75.12] - May 19, 2023
+* Fix lint issue when rabbitmq is disabled
+
+## [103.74.0] - May 2, 2023
+* Inject global image pull secret to the system.yaml for JAS
+* Add configuration for JAS images registry and repository in the system.yaml
+* Added securityContext for rabbitmq pre-upgrade hook pod
+
+## [103.72.0] - Apr 07, 2023
+* Adding vm memory memoryHighWatermark field and scheduler field for Rabbitmq Chart
+* Update pre-upgrade hook image of rabbitmq
+
+## [103.70.0] - Mar 21, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Updated rabbitmq multi-arch tag version to `3.11.10-debian-11-r5`
+* Added pre-upgrade hook for rabbitmq upgrade from 3.8.x to 3.11.x
+
+## [103.69.0] - Mar 21, 2023
+* **IMPORTANT**
+* Added default rabbitmq user creation via `load_definition` secret to support upstream bitnami [11.x chart](https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq#to-1100)
+* Updated rabbitmq's  chart version  to `11.9.3` and image version to `3.11.9-debian-11-r1`
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+* Added `rabbitmq.featureFlags` to support upgrade from 3.8.x to 3.11.x . More info [here](https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/)
+
+## [103.68.0] - Feb 16, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
+
+## [103.67.0] - Feb 16, 2023
+* Added topologySpreadConstraints to xray pods
+* Allow setting executionServiceAesKey in a secret [GH-1685](https://github.com/jfrog/charts/issues/1685)
+* Updated postgresql tag version to `13.9.0-debian-11-r11`
+* Adding support for PodDisruptionBudget
+* Updated jfrogUrl text path to copy
+* Added pods/log and events resources to xray serviceaccount
+* Added option to pass extra environment variables via `common.extraEnvVars` for xray containers
+
+## [103.63.0] - Jan 16, 2023
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
+
+## [103.60.0] - Oct 27, 2022
+* Updated router version to `7.51.0`
+
+## [103.59.0] - Sep 20, 2022
+* Removed `newProbes.enabled`, default to new probes
+* Updated Observability version to `1.11.0`
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-941`
+* Added support for annotations for xray statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+
+## [103.57.0] - Aug 25, 2022
+* Added support for lifecycle hooks for all containers
+
+## [103.56.0] - Aug 25, 2022
+* Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-854`
+* Added `.Values.xray.openMetrics.enabled`  flag to enable metrics (defaults to `false`) [GH-1649](https://github.com/jfrog/charts/pull/1649)
+* Added flag `xray.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+* Updated Observability version to `1.9.3`
+
+## [103.55.0] - Aug 25, 2022
+* Updated initContainerImage to ubi8/ubi-minimal:8.6-854
+* Updated rabbitmq version to `3.9.21-debian-11-r0`
+* Updated router version to `7.45.0`
+* Added support to truncate (> 63 chars) for unifiedCustomSecretVolumeName
+
+## [103.54.0] - July 14, 2022
+* Added new flag "unifiedSecretInstallation" to enables single unified secret holding all the secrets
+* Added `executionserviceAWS` key (optional) in values.yaml like joinkey and masterkey [GH-1600](https://github.com/jfrog/charts/pull/1600)
+* Updated Observability version to `1.9.2`
+* Updated router version to `7.42.0`
+
+## [103.53.0] - Jun 22, 2022
+* Use an alternate command for `find` to copy custom certificates
+
+## [103.52.0] - Jun 20, 2022
+* Updated Observability version to `1.9.0`
+
+## [103.51.0] - May 17, 2022
+* Updated Observability version to `1.7.0`
+
+## [103.49.0] - Apr 29, 2022
+* Updated Observability version to `1.6.1`
+* Updated router version to `7.38.0`
+* Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
+
+## [103.48.0] - Apr 19, 2022
+* Updated Observability version to `1.5.1`
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+
+## [103.47.0] - Apr 14, 2022
+* Added support for custom global probes timeout
+* Added env variable `XRAY_K8S_ENV` to xray server container
+
+## [103.46.0] - Mar 23, 2022
+* Updated router version to `7.36.1`
+* Updated Observability version to `1.5.0`
+
+## [103.45.0] - Mar 11, 2022
+* Updated router version to `7.35.0`
+* Changed dependency charts repo to `charts.jfrog.io`
+* Added support for `global.nodeSelector` applies to xray pods
+
+## [103.44.0] - Feb 15, 2022
+* Updated router version to `7.32.1`
+* Updated Observability version to `1.3.0`
+* Added support loggers sidecars to tail a configured log
+* Added silent option for curl probes
+
+## [103.42.0] - Feb 12, 2022
+* Corrected the NetworkPolicy podSelector for RabbitMQ and Postgres
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+* Added support for PriorityClass
+* Updated Observability version to `1.2.3`
+
+## [103.41.0] - Feb 12, 2022
+* Add more user friendly support for pod affinity and anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Added `ResourceQuota` and permissions for xray execution service
+* Added support for custom pod annotations using `xray.annotations`
+* Added support for setting `fsGroupChangePolicy`
+* Add job permissions to use by execution service
+* Updated Observability version to `1.2.2`
+* Updated router version to `7.30.0`
+* Sets the AES key used by execution server to the xray server and analysis containers
+* Fix regression in affinity path and revert it to its previous path
+
+## [103.40.0] - Dec 23, 2021
+* Refactored `database-creds` secret to create only when database values are passed
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Updated Observability version to `1.2.0
+* Fix filebeat sidecar spool file permissions
+* Added `extraSecretsPrependReleaseName` to load-definitions secret in rabbitmq subchart
+* Updated filebeat sidecar container to `7.16.2`
+
+## [103.39.0] - Dec 17, 2021
+* Added `server.mailServer` and `server.indexAllBuilds` as optional fields
+* Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Refactored `router.requiredServiceTypes` to support platform chart
+
+## [103.37.0] - Nov 26, 2021
+* Fixed incorrect permission for filebeat.yaml [GH-1521](https://github.com/jfrog/charts/issues/1521)
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable 
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+* Updated Observability version to `1.1.4`
+* Updated router version to `7.28.2`
+
+## [103.36.0] - Nov 11, 2021
+* Added Observability service
+
+## [103.35.0] - Oct 14, 2021
+* Added default values cpu and memeory in initContainers
+* Updated router version to `7.26.0`
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+
+## [103.34.0] - Sep 20, 2021
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+
+## [103.32.3] - Sep 08, 2021
+* Dropped NET_RAW capability for the containers
+* Added support for new probes(set to false by default)
+* Updated router version to `7.25.1`
+
+## [103.30.0] - Aug 13, 2021
 * Update router version to `7.24.1`
 * Support global and product specific tags at the same time
 * Updated readme of chart to point to wiki. Refer [Installing Xray](https://www.jfrog.com/confluence/display/JFROG/Installing+Xray)

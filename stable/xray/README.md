@@ -4,7 +4,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.12+
+* Kubernetes 1.14+
 
 ## Chart Details
 

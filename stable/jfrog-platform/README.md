@@ -1,16 +1,16 @@
 # JFrog Platform Helm Chart
 
-**NOTE:** This is the Initial **beta** release of the JFrog Platform chart (Backward compatibility is not guaranteed)
+**NOTE:** This is the **GA** release of the JFrog Platform chart (Backward compatibility with versions < 10.0.0 is not supported)
 
 ## Prerequisites Details
 
-* Kubernetes 1.12+
+* Kubernetes 1.14+
 * Artifactory Enterprise(+) trial license [get one from here](https://jfrog.com/platform/free-trial/) or Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details
 This chart will do the following:
 
-* Deploy JFrog Platform (artifactory-ha, xray, distribution, mission-control and pipelines). Fully customizable.
+* Deploy JFrog Platform (artifactory, xray, distribution, insight and pipelines). Fully customizable.
 * Deploy a PostgreSQL database using the bitnami/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy a Rabbitmq using the bitnami/rabbitmq chart (can be changed)
 * Deploy a Redis using the bitnami/redis chart (can be changed)
@@ -33,12 +33,20 @@ To install the chart with the release name `jfrog-platform`
 helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform
 ```
 
+### High Availability
+
+For **high availability** of Artifactory, set the replica count to be equal or higher than **2**. Recommended is **3**.
+```bash
+# Start artifactory with 3 replicas per service
+helm upgrade --install jfrog-platform --namespace jfrog-platform --set artifactory.artifactory.replicaCount=3
+```
+
 ### Install Artifactory license
 The JFrog platform chart requires an artifactory license. There are three ways to manage the license. **Artifactory UI**, **REST API**, or a **Kubernetes Secret**.
 
 The easier and recommended way is the **Artifactory UI**. Using the **Kubernetes Secret** or **REST API** is for advanced users and is better suited for automation.
 
-**IMPORTANT:** You should use only one of the following methods. Switching between them while a cluster is running might disable your Artifactory HA cluster!
+**IMPORTANT:** You should use only one of the following methods. Switching between them while a cluster is running might disable your Artifactory!
 
 ##### Artifactory UI
 Once primary cluster is running, open Artifactory UI and insert the license(s) in the UI. See [HA installation and setup](https://www.jfrog.com/confluence/display/RTF/HA+Installation+and+Setup) for more details. **Note that you should enter all licenses at once, with each license is separated by a newline.** If you add the licenses one at a time, you may get redirected to a node without a license and the UI won't load for that node.
@@ -56,7 +64,7 @@ kubectl create secret generic artifactory-cluster-license --from-file=./art.lic
 
 ```yaml
 # Create a customvalues.yaml file
-artifactory-ha:
+artifactory:
   enabled: true
   artifactory:
     license:
@@ -73,7 +81,7 @@ Updating the license should be done via Artifactory UI or REST API.
 ##### Create the secret as part of the helm release
 customvalues.yaml
 ```yaml
-artifactory-ha:
+artifactory:
   enabled: true
   artifactory:
     license:
@@ -99,15 +107,16 @@ If you want to keep managing the artifactory license using the same method, you 
 This chart would provide flexibility to enable one or more of the jfrog products.
 1. Xray
 2. Distribution
-3. Mission-Control
+3. Insight
 4. Pipelines
+5. PDN server
 
-For example to enable xray and mission-control with artifactory, you can refer the following yaml and pass it during install.
+For example to enable xray and insight with artifactory, you can refer the following yaml and pass it during install.
 customvalues.yaml
 ```yaml
 xray:
   enabled: true
-mission-control:
+insight:
   enabled: true
 ````
 ```bash

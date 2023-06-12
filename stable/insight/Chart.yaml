@@ -1,0 +1,22 @@
+apiVersion: v2
+appVersion: 1.13.4
+dependencies:
+- condition: postgresql.enabled
+  name: postgresql
+  repository: https://charts.jfrog.io/
+  version: 10.3.18
+description: A Helm chart for JFrog Insights
+home: https://jfrog.com/insight/
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/insight/logo/insight-logo.png
+keywords:
+- insight
+- jfrog
+kubeVersion: '>= 1.14.0-0'
+maintainers:
+- email: installers@jfrog.com
+  name: Chart Maintainers at JFrog
+name: insight
+sources:
+- https://github.com/jfrog/charts
+type: application
+version: 101.13.4

@@ -1,5 +1,5 @@
 {{- if not (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) }}
-{{- if .Values.artifactory.admin.password }}
+{{- if and .Values.artifactory.admin.password (not .Values.artifactory.unifiedSecretInstallation) }}
 kind: Secret
 apiVersion: v1
 metadata:

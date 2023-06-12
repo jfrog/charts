@@ -53,6 +53,23 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Expand the name of rabbit chart.
+*/}}
+{{- define "rabbitmq.name" -}}
+{{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- end -}}
+
+
+{{- define "xray.rabbitmq.migration.fullname" -}}
+{{- $name := default "rabbitmq-migration" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -135,6 +152,16 @@ Create the name of the service account to use
 {{- end -}}
 {{- end -}}
 
+Create the name of the service account to use for rabbitmq migration
+*/}}
+{{- define "xray.rabbitmq.migration.serviceAccountName" -}}
+{{- if .Values.rabbitmq.migration.serviceAccount.create -}}
+{{ default (include "xray.rabbitmq.migration.fullname" .) .Values.rabbitmq.migration.serviceAccount.name }}
+{{- else -}}
+{{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -147,20 +174,19 @@ Create rabbitmq URL
 */}}
 {{- define "rabbitmq.url" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
-{{- $rabbitmqPort := .Values.rabbitmq.service.port -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
 {{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
 {{- end -}}
 {{- end -}}
 
-
 {{/*
-Create rabbitmq username 
+Create rabbitmq username
 */}}
 {{- define "rabbitmq.user" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- .Values.rabbitmq.auth.username -}}
-{{- end -}} 
+{{- end -}}
 {{- end -}}
 
 
@@ -171,7 +197,7 @@ Create rabbitmq password secret name
 {{- if index .Values "rabbitmq" "enabled" -}}
 {{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- .Values.rabbitmq.auth.existingPasswordSecret | default (printf "%s-%s" .Release.Name $name) -}}
-{{- end -}} 
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -245,6 +271,19 @@ Resolve masterKeySecretName value
 {{- end -}}
 
 {{/*
+Resolve executionServiceAesKeySecretName value
+*/}}
+{{- define "xray.executionServiceAesKeySecretName" -}}
+{{- if .Values.global.executionServiceAesKeySecretName -}}
+{{- .Values.global.executionServiceAesKeySecretName -}}
+{{- else if .Values.xray.executionServiceAesKeySecretName -}}
+{{- .Values.xray.executionServiceAesKeySecretName -}}
+{{- else -}}
+{{ include "xray.fullname" . }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve imagePullSecrets value
 */}}
 {{- define "xray.imagePullSecrets" -}}
@@ -257,6 +296,21 @@ imagePullSecrets:
 imagePullSecrets:
 {{- range .Values.imagePullSecrets }}
   - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecretsStrList value
+*/}}
+{{- define "xray.imagePullSecretsStrList" -}}
+{{- if .Values.global.imagePullSecrets }}
+{{- range .Values.global.imagePullSecrets }}
+- {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+{{- range .Values.imagePullSecrets }}
+- {{ . }}
 {{- end }}
 {{- end -}}
 {{- end -}}
@@ -352,11 +406,75 @@ Return the proper xray chart image names
 {{- end -}}
 
 {{/*
+Return the registry of a service
+*/}}
+{{- define "xray.getRegistryByService" -}}
+{{- $dot := index . 0 }}
+{{- $service := index . 1 }}
+{{- if $dot.Values.global.imageRegistry }}
+    {{- $dot.Values.global.imageRegistry }}
+{{- else -}}
+    {{- index $dot.Values $service "image" "registry" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Custom certificate copy command
 */}}
 {{- define "xray.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted \;;
-find {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
+{{- end -}}
+
+{{/*
+Resolve xray requiredServiceTypes value
+*/}}
+{{- define "xray.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfxr,jfxana,jfxidx,jfxpst,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve Xray pod node selector value
+*/}}
+{{- define "xray.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.xray.nodeSelector }}
+{{ toYaml .Values.xray.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "xray.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "xray.name" .) ("unified-secret-volume") | trunc 63 -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.
+*/}}
+{{- define "xray.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.common.customVolumes -}}
+{{- $val := (tpl (include "xray.customVolumes" .) .) | toJson -}}
+{{- contains (include "xray.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve executionServiceAesKey value
+*/}}
+{{- define "xray.executionServiceAesKey" -}}
+{{- if .Values.global.executionServiceAesKey -}}
+{{- .Values.global.executionServiceAesKey -}}
+{{- else if .Values.xray.executionServiceAesKey -}}
+{{- .Values.xray.executionServiceAesKey -}}
+{{- end -}}
 {{- end -}}

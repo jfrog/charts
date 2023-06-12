@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "jfrog-platform.fullname" . }}-configmap
+  labels:
+    app: {{ template "jfrog-platform.name" . }}
+    chart: {{ template "jfrog-platform.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+{{- if .Release.IsUpgrade }}
+    gaUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss due to breaking changes!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md) \nNote: Upgrade is not supported if you are on a chart version (< 10.0.0), otherwise just set gaUpgradeReady=true \n" .Values.gaUpgradeReady | quote }}
+{{- end }}

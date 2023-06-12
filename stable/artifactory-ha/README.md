@@ -8,7 +8,7 @@ Below you will find the basic instructions for installing, uninstalling, and del
 
 ## Prerequisites Details
 
-* Kubernetes 1.12+
+* Kubernetes 1.14+
 * Artifactory HA license
 
 ## Chart Details
@@ -48,12 +48,6 @@ Uninstall Artifactory using the following command.
 
 ```bash
 helm uninstall artifactory-ha && sleep 90 && kubectl delete pvc -l app=artifactory-ha
-```
-
-Next, delete the storage bucket and SQL database.
-
-```bash
-gsutil rm -r gs://artifactory gcloud sql instances delete artifactory
 ```
 
 ## Deleting Artifactory

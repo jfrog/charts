@@ -4,7 +4,7 @@ This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** f
 
 For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
-## Install Helm
+## Install Helm (only V3 is supported)
 
 Get the latest [Helm release](https://github.com/helm/helm#install).
 
@@ -27,8 +27,11 @@ Fork the `repo`, make changes and then please run `make lint` to lint charts loc
 
 On success make a [pull request](https://help.github.com/articles/using-pull-requests) (PR) on to the `master` branch.
 
-Upon successful review, someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
-Three __LGTM__ are needed to get the PR approved and merged.
+We will take this PR changes internally, review and test.
+
+Upon successful review , someone will give the PR a __LGTM__ (_looks good to me_) in the review thread.
+
+We will add PR changes in upcoming releases and credit the contributor with PR link in changelog (and also closing the PR raised by contributor).
 
 ## Linting charts locally
 
@@ -135,6 +138,9 @@ Then store the `CLUSTER` file in the root folder of the repo. It is also ignored
 
 In such setup your local default cluster can be different from the charts testing one.
 
+## Examples
+
+For more detailed examples of each chart values, please refer [examples](https://github.com/jfrog/charts/tree/master/examples).
 
 ## Docs
 

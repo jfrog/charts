@@ -1,205 +1,277 @@
-# JFrog Platform Chart Changelog
+# JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
-## [0.10.1] - Sep 16, 2021
-* Update dependency artifactory/ha charts version to 107.25.7
-* Update dependency mission-control chart version to 104.7.14
-* Update dependency pipelines chart version to 101.17.9
+## [10.13.1] - Jun 6, 2023
+* Update dependency xray chart version to 103.75.12
 
-## [0.10.0] - Sep 6, 2021
-* Update dependency artifactory/ha charts version to 107.25.6
-* Update dependency xray chart version to 103.32.2
-* Update dependency mission-control chart version to 104.7.13
+## [10.13.0] - Jun 2, 2023
+* Update dependency artifactory chart version to 107.59.9
+* Update dependency distribution chart version to 102.18.1
 
-## [0.9.3] - Aug 30, 2021
-* Update dependency pipelines chart version to 101.17.8
+## [10.12.3] - May 22, 2023
+* Update dependency artifactory chart version to 107.55.13
+* Update dependency pipelines chart version to 101.38.1
+* Update global.versions.router version to `7.67.0`
+* Remove sample url set for global.jfrogUrlUI
 
-## [0.9.2] - Aug 23, 2021
-* Update dependency xray chart version to 103.31.1
-* Update dependency distribution chart version to 102.9.2
-* Updated global.versions.router to `7.24.1`
+## [10.12.2] - May 3, 2023
+* Update dependency artifactory chart version to 107.55.10
+* Update dependency xray chart version to 103.71.6
+* Update dependency pipelines chart version to 101.37.3
+* Update dependency insight chart version to 101.13.5
+* Added pre-upgrade hook (`rabbitmq.migration.enabled` defaults to true) for rabbitmq upgrade from 3.8.x to 3.11.x
+* Added extraEnvs variable `JF_SHARED_RABBITMQ_VHOST` for supporting non-default `xray` vhost in xray
 
-## [0.9.1] - Aug 18, 2021
-* Update dependency xray chart version to 103.30.1
-* Update dependency pipelines chart version to 101.17.6
-* Missioncontrol ES max heap (xmx) is set to `2g`
+## [10.12.1] - Mar 27, 2023
+* Update dependency artifactory chart version to 107.55.9
+* Update dependency distribution chart version to 102.17.0
+* Update dependency xray chart version to 103.69.3
+* Update dependency insight chart version to 101.13.4
+* Update dependency pipelines chart version to 101.35.3
+* Update global.versions.router version to `7.61.2`
+* Updated ARM supported postgresql version to `13.10.0-debian-11-r14`
+* Updated ARM supported redis version to `7.0.9-debian-11-r6`
+* Updated rabbitmq's chart version  to `11.9.3` and ARM supported rabbitmq version to `3.11.10-debian-11-r5`
+* Added `rabbitmq.featureFlags` to support upgrade from 3.8.x to 3.11.x . More info [here](https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/)
 
-## [0.9.0] - Aug 13, 2021
-* Update dependency artifactory/ha charts version to 107.24.3
-* Update dependency xray chart version to 103.29.2
-* Update dependency mission-control chart version to 104.7.11
-* Update dependency distribution chart version to 102.9.0
-* Update dependency pipelines chart version to 101.17.3
+## [10.12.0] - Mar 1, 2023
+* Update dependency artifactory chart version to 107.55.2
+* Update dependency pipelines chart version to 101.35.0
+* Update global.versions.router version to `7.61.1`
 
-## [0.8.0] - Aug 13, 2021
-* Update dependency artifactory/ha charts version to 107.23.3
-* Update dependency xray chart version to 103.29.2
-* Update dependency mission-control chart version to 104.7.11
-* Update dependency distribution chart version to 102.9.0
-* Update dependency pipelines chart version to 101.17.3
+## [10.11.6] - Feb 27, 2023
+* Update dependency xray chart version to 103.67.9
+* Update dependency distribution chart version to 102.16.6
+* Update dependency pipelines chart version to 101.34.1
 
-## [0.7.2] - July 28, 2021
-* Update dependency artifactory/ha charts version to 107.21.12
-* Update dependency xray chart version to 103.29.0
+## [10.11.5] - Feb 16, 2023
+* Update dependency artifactory chart version to 107.49.8
+* Update dependency insight chart version to 101.13.3
+* Update dependency pipelines chart version to 101.34.0
 
-## [0.7.1] - July 14, 2021
-* Update dependency artifactory/ha charts version to 107.21.7
-* Update dependency distribution chart version to 102.8.2
-* Update dependency xray chart version to 103.27.4
+## [10.11.4] - Feb 7, 2023
+* Update dependency xray chart version to 103.66.6
+* Update dependency pipelines chart version to 101.33.0
 
-## [0.7.0] - July 9, 2021
-* Added support for `global.versions.router` override tag
-* Update dependency artifactory chart version to 107.21.5 (Artifactory 7.21.5)
-* Update dependency artifactory-ha chart version to 107.21.5 (Artifactory 7.21.5)
-* Update dependency pipelines chart version to 101.16.1 (Pipelines 1.16.1)
-* Update dependency xray chart version to 103.27.3 (Xray 3.27.3)
+## [10.11.3] - Jan 30, 2023
+* Update dependency artifactory chart version to 107.49.6
+* Update dependency xray chart version to 103.65.3
+* Update dependency pipelines chart version to 101.32.2
+* Update dependency distribution chart version to 102.16.2
+* Update dependency insight chart version to 101.13.2
 
-## [0.6.0] - July 2, 2021
-* Update dependency artifactory chart version to 107.21.3 (Artifactory 7.21.3)
-* Update dependency artifactory-ha chart version to 107.21.3 (Artifactory 7.21.3)
+## [10.11.1] - Jan 16, 2023
+* Update dependency artifactory chart version to 107.49.3
+* Update dependency xray chart version to 103.64.4
+* Update dependency pipelines chart version to 101.31.2
+* Update dependency distribution chart version to 102.16.1
+* Changed initContainerImage to `releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049`
 
-## [0.5.0] - June 30, 2021
+## [10.11.0] - Jan 6, 2023
+* Update dependency artifactory chart version to 107.49.3
+* Update dependency xray chart version to 103.63.2
+* Update dependency pipelines chart version to 101.30.4
+* Updated postgresql version to `13.9.0-debian-11-r11`
+* Updated redis version to `7.0.6-debian-11-r0`
+
+## [10.10.2] - Dec 22, 2022
+* Update dependency artifactory chart version to 107.47.14
+* Update dependency insight chart version to 101.13.1
+
+## [10.10.1] - Dec 13, 2022
+* Update dependency artifactory chart version to 107.47.12
+
+## [10.10.0] - Dec 7, 2022
+* Update dependency artifactory chart version to 107.47.11
+* Update dependency xray chart version to 103.62.4
+* Update dependency insight chart version to 101.13.0
+* Update dependency pipelines chart version to 101.28.3
+* Update global.versions.router version to `7.56.0`
+
+## [10.9.4] - Nov 11, 2022
+* Update dependency artifactory chart version to 107.46.11
+* Update dependency xray chart version to 103.59.7
+* Update dependency pipelines chart version to 101.28.1
+* Updated global.versions.router version to `7.51.0`
+
+## [10.9.3] - Oct 31, 2022
+* Update dependency artifactory chart version to 107.46.10
+
+## [10.9.2] - Oct 27, 2022
+* Update dependency artifactory chart version to 107.46.8
+
+## [10.9.1] - Oct 14, 2022
+* Update dependency artifactory chart version to 107.46.6
+* Update dependency xray chart version to 103.59.4
+
+## [10.9.0] - Oct 11, 2022
+* Remove filler Pipelines urls in values.yaml as they block default Pipeline's externalApi url from being used
+* Updated rabbitmq version to `3.9.21-debian-11-r0`
+* Removed the no longer used pipelines enablement configuration in artifactory subchart
+* Update dependency artifactory chart version to 107.46.3
+* Update dependency insight chart version to 101.12.1
+* Update dependency pipelines chart version to 101.27.5
+
+## [10.8.6] - Oct 4, 2022
+* Update dependency distribution chart version to 102.15.0
+* Update dependency pdn-server chart version to 101.2.0
+* Updated global.versions.router version to `7.49.0`
+
+## [10.8.5] - Sep 21, 2022
+* Update dependency artifactory chart version to 107.41.13
+* Update dependency xray chart version to 103.57.6
+* Update dependency insight chart version to 101.12.0
+* Update dependency pdn-server chart version to 101.1.3
+
+## [10.8.4] - Sep 5, 2022
+* Update dependency artifactory chart version to 107.41.12
+* Update dependency distribution chart version to 102.14.3
+* Update dependency pipelines chart version to 101.26.0
+
+## [10.8.3] - Aug 18, 2022
+* Update dependency xray chart version to 103.55.2
+* Update dependency pipelines chart version to 101.25.1
+
+## [10.8.2] - Aug 10, 2022
+* Update dependency xray chart version to 103.54.5
+* Update dependency pipelines chart version to 101.25.0
+
+## [10.8.1] - Aug 3, 2022
+* Update dependency artifactory chart version to 107.41.7
+* Update dependency distribution chart version to 102.14.1
+* Update dependency insight chart version to 101.11.5
+* Update dependency pdn-server chart version to 101.0.5
+
+## [10.8.0] - July 12, 2022
+* Update dependency artifactory chart version to 107.41.4
+* Update dependency xray chart version to 103.52.4
+* Update dependency distribution chart version to 102.13.4
+* Update dependency insight chart version to 101.11.3
+* Update dependency pipelines chart version to 101.24.4
+* Updated global.versions.router version to `7.42.0`
+
+## [10.7.0] - June 21, 2022
 * **IMPORTANT**
-* This chart is only helm v3 compatible
-* Update dependency artifactory/ha charts version to 107.19.9
-* Update dependency xray chart version to 103.26.1
-* Update dependency distribution chart version to 102.8.1
-* Update dependency pipelines chart version to 101.15.3
-* Update dependency mission-control chart version to 104.7.7
+* Added [Private Distribution Network Server](https://www.jfrog.com/confluence/display/JFROG/Installing+PDN+Server) support
+* Added pdn-server new chart version `101.0.3` and defaults to `false`
+* Update dependency artifactory chart version to 107.39.4
+* Update dependency xray chart version to 103.51.0
+* Update dependency distribution chart version to 102.13.3
+* Update dependency pipelines chart version to 101.24.0
+* Updated global.versions.router version to `7.40.0`
 
-## [0.4.1] - Apr 5, 2021
-* Update dependency artifactory chart version to 11.13.0 (Artifactory 7.17.5)
-* Update dependency artifactory-ha chart version to 4.13.0 (Artifactory 7.17.5)
-* Update dependency xray chart version to 7.6.0 (Xray 3.21.2)
-* Update dependency distribution chart version to 7.7.0 (Distribution 2.7.1)
-* Update dependency pipelines chart version to 2.12.0 (Pipelines 1.14.1)
-* Update dependency mission-control chart version to 5.8.0 (MissionControl 4.7.2)
+## [10.6.3] - May 23, 2022
+* Update dependency pipelines chart version to 101.23.6
 
-## [0.4.0] - Apr 5, 2021
+## [10.6.2] - May 20, 2022
+* Update dependency artifactory chart version to 107.38.10
+* Update dependency xray chart version to 103.49.0
+
+## [10.6.1] - May 16, 2022
+* Update dependency artifactory chart version to 107.38.8
+* Update dependency distribution chart version to 102.12.3
+* Allow running the init DB container as a non-root user [GH-1544](https://github.com/jfrog/charts/pull/1544)
+
+## [10.6.0] - May 9, 2022
+* Update rabbitmq chart and image to 8.31.6 and 3.9.15-debian-10-r5
+* Update dependency artifactory chart version to 107.38.7
+* Update dependency xray chart version to 103.48.2
+* Update dependency insight chart version to 101.10.2
+
+## [10.5.2] - Apr 26, 2022
+* Update dependency artifactory chart version to 107.37.15
+* Update dependency xray chart version to 103.47.3
+* Update dependency distribution chart version to 102.12.2
+* Updated global.versions.router version to `7.38.0`
+
+## [10.5.1] - Apr 18, 2022
+* Update dependency artifactory chart version to 107.37.14
+* Update dependency pipelines chart version to 101.22.4
+
+## [10.5.0] - Apr 14, 2022
+* Update dependency artifactory chart version to 107.37.13
+* Update dependency xray chart version to 103.46.0
+* Update dependency insight chart version to 101.9.0
+
+## [10.4.1] - Mar 22, 2022
+* Update dependency artifactory chart version to 107.35.2
+* Update dependency xray chart version to 103.45.1
+* Update dependency pipelines chart version to 101.22.0
+* Updated global.versions.router version to `7.36.1`
+
+## [10.4.0] - Mar 9, 2022
+* Update dependency artifactory chart version to 107.35.1
+* Update dependency xray chart version to 103.44.1
+* Update dependency insight chart version to 101.7.0
+* Update dependency distribution chart version to 102.12.1
+* Updated global.versions.router version to `7.35.0`
+* Changed dependency charts repo to `charts.jfrog.io`
+
+## [10.3.2] - Feb 28, 2022
+* Update dependency xray chart version to 103.43.1
+* Update dependency distribution chart version to 102.12.0
+* Update dependency pipelines chart version to 101.21.5
+
+## [10.3.1] - Feb 17, 2022
+* Update dependency artifactory chart version to 107.33.12
+* Update dependency xray chart version to 103.42.5
+* Update dependency insight chart version to 101.6.2
+* Update dependency pipelines chart version to 101.21.2
+
+## [10.3.0] - Feb 8, 2022
+* Update dependency artifactory chart version to 107.33.9
+* Update dependency distribution chart version to 102.11.0
+* Updated global.versions.router version to `7.32.1`
+
+## [10.2.0] - Jan 31, 2022
+* Update dependency artifactory chart version to 107.31.13
+* Update dependency xray chart version to 103.41.5
+* Update dependency insight chart version to 101.5.0
+* Update dependency pipelines chart version to 101.21.1
+* Adding uniqueness for bitnami rabbitmq extraSecrets
+
+## [10.1.2] - Dec 23, 2021
+* Update dependency insight chart version to 101.3.0
+
+## [10.1.1] - Dec 17, 2021
+* Update dependency artifactory chart version to 107.29.8
+* Update dependency xray chart version to 103.38.2
+* Added distribution.initContainerImage to `releases-docker.jfrog.io/jfrog/ubi-minimal:8.5-204`
+
+## [10.1.0] - Dec 7, 2021
+* Added `artifactory.pipelines.enabled` flag to allow nginx instances in front of artifactory to allow websocket traffic
+* Update dependency artifactory chart version to 107.29.7
+* Update dependency distribution chart version to 102.10.5
+
+## [10.0.4] - Nov 30, 2021
+* Update dependency xray chart version to 103.37.2
+* Updated global.versions.router version to `7.28.2`
+
+## [10.0.3] - Nov 15, 2021
+* Update dependency artifactory chart version to 107.27.10
+* Update dependency xray chart version to 103.36.2
+* Update dependency distribution chart version to 102.10.3
+* Update dependency insight chart version to 101.1.3
+* Update dependency pipelines chart version to 101.19.4
+
+## [10.0.2] - Oct 29, 2021
+* Update dependency artifactory chart version to 107.27.9
+* Update dependency xray chart version to 103.35.0
+* Update dependency insight chart version to 101.1.1
+* Update dependency pipelines chart version to 101.19.3
+* Removed Obsolete code
+
+## [10.0.1] - Oct 22, 2021
+* Update dependency xray chart version to 103.34.1
+* Update dependency pipelines chart version to 101.18.8
+* Updated `NOTES.txt` when `postgres.enabled:false`
+
+## [10.0.0] - Oct 12, 2021
 * **IMPORTANT**
-* Added `charts.jfrog.io` as default JFrog Helm repository
-
-## [0.3.0] - Mar 31, 2021
-* Update dependency artifactory chart version to 11.12.2 (Artifactory 7.17.4)
-* Update dependency artifactory-ha chart version to 4.12.2 (Artifactory 7.17.4)
-* Update dependency xray chart version to 7.5.1 (Xray 3.21.2)
-* Update dependency distribution chart version to 7.6.1 (Distribution 2.7.1)
-* Update dependency pipelines chart version to 2.11.2 (Pipelines 1.14.1)
-* Update dependency mission-control chart version to 5.7.1 (MissionControl 4.7.2)
-
-## [0.2.0] - Mar 15, 2021
-* Update dependency artifactory chart version to 11.10.0 (Artifactory 7.16.3)
-* Update dependency artifactory-ha chart version to 4.10.0 (Artifactory 7.16.3)
-
-## [0.1.2] - Mar 12, 2021
-* Update dependency mission-control chart version to 5.5.3 (MissionControl 4.6.5)
-* Update postgresql version tag to `13.2.0-debian-10-r30`
-* Update rabbitmq version tag to `3.8.14-debian-10-r7`
-* Update redis version tag to `6.2.1-debian-10-r9`
-
-## [0.1.1] - Mar 9, 2021
-* Update dependency artifactory chart version to 11.9.4 (Artifactory 7.15.4)
-* Update dependency artifactory-ha chart version to 4.9.4 (Artifactory 7.15.4)
-* Update dependency xray chart version to 7.1.1 (Xray 3.18.1)
-* Update dependency distribution chart version to 7.4.3 (Distribution 2.6.1)
-* Update dependency pipelines chart version to 2.8.5 (Pipelines 1.12.2)
-* Update dependency mission-control chart version to 5.5.2 (MissionControl 4.6.3)
-
-## [0.1.0] - Feb 19, 2021
-* Update dependency artifactory chart version to 11.9.1 (Artifactory 7.15.3)
-* Update dependency artifactory-ha chart version to 4.9.1 (Artifactory 7.15.3)
-* Update dependency xray chart version to 7.0.2 (Xray 3.17.4)
-* Update dependency distribution chart version to 7.4.1 (Distribution 2.6.0)
-* Update dependency pipelines chart version to 2.8.0 (Pipelines 1.12.2)
-* Update dependency mission-control chart version to 5.5.1 (MissionControl 4.6.3)
-* Update postgresql version tag to `13.2.0-debian-10-r7`
-* Update rabbitmq version tag to `3.8.12-debian-10-r2`
-* Update redis version tag to `6.0.10-debian-10-r32`
-* Added support to resolve jfrog url based on `global.artifactoryHaEnabled` flag
-
-## [0.0.17] - Feb 11, 2021
-* Update dependency xray chart version to 7.0.0 (Xray 3.17.2)
-* Added support for global.versions.<product>
-
-## [0.0.16] - Feb 09, 2021
-* Added support to resolve jfrog url automatically
-
-## [0.0.15] - Feb 08, 2021
-* Update dependency artifactory chart version to 11.8.0 (Artifactory 7.12.8)
-* Update dependency artifactory-ha chart version to 4.8.0 (Artifactory 7.12.8)
-* Update dependency xray chart version to 6.11.0 (Xray 3.17.2)
-* Update dependency distribution chart version to 7.4.0 (Distribution 2.6.0)
-* Update dependency pipelines chart version to 2.7.1 (Pipelines 1.11.3)
-* Update dependency mission-control chart version to 5.5.0 (MissionControl 4.6.3)
-
-## [0.0.14] - Jan 27, 2021
-* Update dependency artifactory chart version to 11.7.6 (Artifactory 7.12.6)
-* Update dependency artifactory-ha chart version to 4.7.6 (Artifactory 7.12.6)
-* Update dependency xray chart version to 6.10.0 (Xray 3.16.0)
-* Update dependency distribution chart version to 7.3.2 (Distribution 2.6.0)
-* Update dependency pipelines chart version to 2.5.5 (Pipelines 1.10.0)
-
-## [0.0.13] - Jan 4, 2021
-* Update dependency artifactory chart version to 11.7.4 (Artifactory 7.12.5)
-* Update dependency artifactory-ha chart version to 4.7.4 (Artifactory 7.12.5)
-* Update dependency xray chart version to 6.9.0 (Xray 3.15.1)
-* Update dependency distribution chart version to 7.2.2 (Distribution 2.5.4)
-* Update dependency mission-control chart version to 5.4.2 (MissionControl 4.6.2)
-* Update dependency pipelines chart version to 2.3.8 (Pipelines 1.9.8)
-
-## [0.0.12] - Dec 8, 2020
-* Update dependency artifactory chart version to 11.5.5 (Artifactory 7.11.5)
-* Update dependency artifactory-ha chart version to 4.5.5 (Artifactory 7.11.5)
-* Update dependency xray chart version to 6.6.0 (Xray 3.13.0)
-* Update dependency distribution chart version to 7.1.7 (Distribution 2.5.3)
-* Update dependency mission-control chart version to 5.3.4 (MissionControl 4.6.1)
-* Update dependency pipelines chart version to 2.3.7 (Pipelines 1.9.8)
-
-## [0.0.11] - Dec 3, 2020
-* Update dependency distribution chart version to 7.1.5 (Distribution 2.5.2)
-
-## [0.0.10] - Dec 3, 2020
-* Update dependency mission-control chart version to 5.3.3 (MissionControl 4.6.1)
-* Update dependency pipelines chart version to 2.3.6 (Pipelines 1.9.8)
-
-## [0.0.9] - Dec 3, 2020
-* Update dependency artifactory chart version to 11.5.4 (Artifactory 7.11.5)
-* Update dependency artifactory-ha chart version to 4.5.4 (Artifactory 7.11.5)
-* Update dependency xray chart version to 6.5.0 (Xray 3.12.0)
-* Update dependency distribution chart version to 7.1.4 (Distribution 2.5.2)
-* Update dependency mission-control chart version to 5.3.2 (MissionControl 4.6.1)
-* Update dependency pipelines chart version to 2.3.5 (Pipelines 1.9.8)
-
-## [0.0.8] - Nov 23, 2020
-* Update dependency artifactory chart version to 11.5.2 (Artifactory 7.11.2)
-* Update dependency artifactory-ha chart version to 4.5.2 (Artifactory 7.11.2)
-* Update dependency xray chart version to 6.4.2 (Xray 3.11.2)
-* Update dependency distribution chart version to 7.1.4 (Distribution 2.5.2)
-* Update dependency pipelines chart version to 2.1.1 (Pipelines 1.8.12)
-
-## [0.0.7] - Nov 10, 2020
-* Update dependency artifactory chart version to 11.4.5 (Artifactory 7.10.6)
-* Update dependency artifactory-ha chart version to 4.4.5 (Artifactory 7.10.6)
-* Update dependency xray chart version to 6.4.0 (Xray 3.11.1)
-
-## [0.0.6] - Nov 4, 2020
-* Update dependency xray chart version to 6.3.0
-* Update dependency pipelines chart version to 2.1.0
-
-## [0.0.5] - Nov 2, 2020
-* Update dependency artifactory chart version to 11.4.4 (Artifactory 7.10.5)
-* Update dependency artifactory-ha chart version to 4.4.4 (Artifactory 7.10.5)
-
-## [0.0.4] - Oct 23, 2020
-* Added Migration steps to move existing artifactory/artifactory-ha installations to JFrog platform chart - Refer [here](https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/UPGRADE_NOTES.md)
-* Updated dependency charts
-
-## [0.0.3] - Oct 21, 2020
-* Added new logo
-
-## [0.0.2] - Oct 21, 2020
-* Fix Logo path in chart.yaml
-* Update artifactory dependency charts
-
-## [0.0.1] - Oct 21, 2020
-* Initial (Beta) release of jfrog-platform chart
+* First GA release of the platform chart
+* Version bump to align with all jfrog platform installers
+* Added insight (new product) chart
+* Missioncontrol is now part of artifactory chart (>= 107.27.x)
+* **Breaking change**
+* Removed `artifactory-ha` chart implies `artifactory` chart (>= 107.27.x) can be used for both single and HA modes
+* If this is an upgrade over an existing platform chart (>= 10.0.0), explicitly pass 'gaUpgradeReady=true' to upgrade

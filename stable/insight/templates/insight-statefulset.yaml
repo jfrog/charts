@@ -1,0 +1,806 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "insight.fullname" . }}
+  labels:
+    app: {{ template "insight.name" . }}
+    chart: {{ template "insight-server.chart" . }}
+    component: {{ .Values.insightServer.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    {{- with .Values.insightServer.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- if .Release.IsUpgrade }}
+    unifiedUpgradeAllowed: {{ required "\n\n**************************************\nIf this is an upgrade over an existing Insight 1.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
+  {{- end }}
+  {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/insight/CHANGELOG.md)" .Values.databaseUpgradeReady | quote }}
+  {{- end }}
+{{- with .Values.insightServer.statefulset.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  serviceName: {{ template "insight.fullname" . }}
+  replicas: {{ .Values.replicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: {{ template "insight.name" . }}
+      component: {{ .Values.insightServer.name }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "insight.name" . }}
+        component: {{ .Values.insightServer.name }}
+        release: {{ .Release.Name }}
+        {{- with .Values.insightServer.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+      annotations:
+      {{- if not .Values.insightServer.unifiedSecretInstallation }}
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/insight-system-yaml.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/insightServer-unified-secret: {{ include (print $.Template.BasePath "/insightServer-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
+      {{- range $key, $value := .Values.insightServer.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
+    spec:
+    {{- if .Values.insightServer.schedulerName }}
+      schedulerName: {{ .Values.insightServer.schedulerName | quote }}
+    {{- end }}
+    {{- if .Values.insightServer.priorityClass.existingPriorityClass }}
+      priorityClassName: {{ .Values.insightServer.priorityClass.existingPriorityClass }}
+    {{- else -}}
+      {{- if .Values.insightServer.priorityClass.create }}
+      priorityClassName: {{ default (include "insight.fullname" .) .Values.insightServer.priorityClass.name }}
+      {{- end }}
+    {{- end }}
+      serviceAccountName: {{ template "insight-server.serviceAccountName" . }}
+    {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+{{- include "insight-server.imagePullSecrets" . | indent 6 }}
+    {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.common.uid }}
+        fsGroup: {{ .Values.common.gid }}
+        {{- if .Values.common.fsGroupChangePolicy }}
+        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
+        {{- end }}
+      {{- if .Values.common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
+      initContainers:
+    {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "insight-server.customInitContainersBegin" .)  . | indent 6 }}
+    {{- end }}
+    {{- if .Values.elasticsearch.enabled }}
+      {{- if .Values.elasticsearch.configureDockerHost }}
+      - name: elasticsearch-init
+        image: "{{ .Values.elasticsearch.initContainerImage }}"
+        securityContext:
+          runAsUser: 0
+          privileged: true
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+          sysctl -w vm.max_map_count={{ .Values.elasticsearch.env.maxMapCount }}
+        volumeMounts:
+        - name: elasticsearch-data
+          mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+      {{- end }}
+    {{- end }}
+      - name: copy-system-yaml
+        image: '{{ .Values.initContainerImage }}'
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - 'bash'
+        - '-c'
+        - >
+          if [[ -e "{{ .Values.insightServer.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.insightServer.persistence.mountPath }}/etc/filebeat.yaml; fi;
+          echo "Copy system.yaml to {{ .Values.insightServer.persistence.mountPath }}/etc";
+          mkdir -p {{ .Values.insightServer.persistence.mountPath }}/etc;
+          mkdir -p {{ .Values.insightServer.persistence.mountPath }}/log/elasticsearch;
+          chmod 776 {{ .Values.insightServer.persistence.mountPath }}/log/elasticsearch;
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.insightServer.persistence.mountPath }}/etc/system.yaml;
+          {{- else }}
+          cp -fv /tmp/etc/system.yaml {{ .Values.insightServer.persistence.mountPath }}/etc/system.yaml;
+          {{- end }}
+          echo "Copy application.yaml to {{ .Values.insightServer.persistence.mountPath }}/bootstrap/insight";
+          mkdir -p {{ .Values.insightServer.persistence.mountPath }}/bootstrap/insight;
+          cp -fv /tmp/etc/application.yaml {{ .Values.insightServer.persistence.mountPath }}/bootstrap/insight/application.yaml;
+          echo "Remove {{ .Values.insightServer.persistence.mountPath }}/lost+found folder if exists";
+          rm -rfv {{ .Values.insightServer.persistence.mountPath }}/lost+found;
+        {{- if or .Values.insightServer.joinKey .Values.insightServer.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
+          echo "Copy joinKey to {{ .Values.insightServer.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.insightServer.persistence.mountPath }}/etc/security;
+          echo ${INSIGHT_JOIN_KEY} > {{ .Values.insightServer.persistence.mountPath }}/etc/security/join.key;
+        {{- end }}
+        {{- if or .Values.insightServer.masterKey .Values.insightServer.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
+          echo "Copy masterKey to {{ .Values.insightServer.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.insightServer.persistence.mountPath }}/etc/security;
+          echo ${INSIGHT_MASTER_KEY} > {{ .Values.insightServer.persistence.mountPath }}/etc/security/master.key;
+        {{- end }}
+        env:
+        {{- if or .Values.insightServer.joinKey .Values.insightServer.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
+        - name: INSIGHT_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ include "insight-server.joinKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: join-key
+        {{- end }}
+        {{- if or .Values.insightServer.masterKey .Values.insightServer.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
+        - name: INSIGHT_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ include "insight-server.masterKeySecretName" . }}
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: master-key
+        {{- end }}
+        volumeMounts:
+        - name: insight-data
+          mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
+      {{- if or .Values.systemYamlOverride.existingSecret .Values.insightServer.systemYaml }}
+        {{- if not .Values.insightServer.unifiedSecretInstallation }}
+        - name: systemyaml
+        {{- else }}
+        - name: {{ include "insight.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          {{- if .Values.systemYamlOverride.existingSecret }}
+          mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+          subPath: {{ .Values.systemYamlOverride.dataKey }}
+          {{- else if .Values.insightServer.systemYaml }}
+          mountPath: "/tmp/etc/system.yaml"
+          subPath: system.yaml
+          {{- end }}
+      {{- end }}
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+      {{- if or .Values.insightServer.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: copy-custom-certificates
+        image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - >
+{{ include "insight-server.copyCustomCerts" . | indent 10 }}
+        volumeMounts:
+          - name: insight-data
+            mountPath: {{ .Values.insightServer.persistence.mountPath }}
+          - name: ca-certs
+            mountPath: "/tmp/certs"
+      {{- end }}
+  {{- if .Values.waitForDatabase }}
+    {{- if .Values.postgresql.enabled }}
+      - name: wait-for-db
+        image: "{{ .Values.initContainerImage }}"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        resources:
+{{ toYaml .Values.initContainers.resources | indent 10 }}
+        command:
+        - 'bash'
+        - '-c'
+        - |
+          echo "Waiting for postgresql to come up"
+          ready=false;
+          while ! $ready; do echo waiting;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1;
+          done
+    {{- end }}
+  {{- end }}
+    {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "insight-server.customInitContainers" .)  . | indent 6 }}
+    {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 6 }}
+      {{- end }}
+      containers:
+    {{- if .Values.elasticsearch.enabled }}
+      - name: {{ .Values.elasticsearch.name }}
+        image: {{ include "insight-server.getImageInfoByValue" (list . "elasticsearch") }}
+        imagePullPolicy: {{ .Values.elasticsearch.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.elasticsearch.uid }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - '/bin/sh'
+        - '-c'
+        - >
+{{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
+          mkdir -p /usr/share/elasticsearch/data/certs;
+          cp -fv /tmp/certs/* /usr/share/elasticsearch/data/certs;
+{{- end }}
+          sleep 10;
+          if [[ $insight_server_pod_name == *"-0"* ]] ; then echo "Setting clustersetup to no" && export ELASTICSEARCH_CLUSTERSETUP=NO; else echo "Setting clustersetup to yes" && export ELASTICSEARCH_CLUSTERSETUP=YES; fi;
+          (/usr/local/bin/initializeSearchGuard.sh &) && docker-entrypoint.sh 'elasticsearch';
+        env:
+        - name: 'insight_server_pod_name'
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: 'cluster.name'
+          value: '{{ .Values.elasticsearch.env.clusterName }}'
+        - name: 'xpack.security.enabled'
+          value: 'false'
+        - name: 'path.logs'
+          value: '{{ .Values.insightServer.persistence.mountPath }}/log/elasticsearch'
+        - name: 'network.host'
+          value: '{{ .Values.elasticsearch.env.networkHost }}'
+        - name: 'transport.host'
+          value: '{{ .Values.elasticsearch.env.transportHost }}'
+        - name: 'transport.port'
+          value: '{{ .Values.elasticsearch.transportPort }}'
+        - name: 'discovery.seed_hosts'
+          value: '{{ template "insight.fullname" . }}'
+        - name: 'cluster.initial_master_nodes'
+          value: '{{ template "elasticsearch.endpoints" . }}'
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: password
+        - name: ELASTICSEARCH_USERNAME
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: username
+        - name: JF_SHARED_ELASTICSEARCH_USERNAME
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: username
+        - name: JF_SHARED_ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: password
+        - name: ES_JAVA_OPTS
+          value: "
+          {{- if .Values.elasticsearch.javaOpts.xms }}
+              -Xms{{ .Values.elasticsearch.javaOpts.xms }}
+          {{- end }}
+          {{- if .Values.elasticsearch.javaOpts.xmx }}
+              -Xmx{{ .Values.elasticsearch.javaOpts.xmx }}
+          {{- end }}
+          "
+        - name: JF_SHARED_ELASTICSEARCH_URL
+          valueFrom:
+            secretKeyRef:
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-elasticsearch-cred
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: url
+        ports:
+        - name: tcp-estransprt
+          containerPort: {{ .Values.elasticsearch.transportPort }}
+        volumeMounts:
+{{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
+        - name: elastic-certs
+          mountPath: /tmp/certs
+{{- end }}
+        - name: elasticsearch-data
+          mountPath: {{ .Values.elasticsearch.persistence.mountPath | quote }}
+        - name: insight-data
+          mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.elasticsearch.resources | indent 10 }}
+{{- if .Values.elasticsearch.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.elasticsearch.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.elasticsearch.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.elasticsearch.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.elasticsearch.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.elasticsearch.readinessProbe.config . | indent 10 }}
+{{- end }}
+    {{- end }}
+      - name: {{ .Values.router.name }}
+        image: {{ include "insight-server.getImageInfoByValue" (list . "router") }}
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+          exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        {{- with .Values.router.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: {{ include "insight.router.requiredServiceTypes" . }}
+        ports:
+        - name: http-router
+          containerPort: {{ .Values.router.internalPort }}
+        volumeMounts:
+        - name: insight-data
+          mountPath: {{ .Values.router.persistence.mountPath | quote }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "insight-server.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+{{- end }}
+      - name: {{ .Values.insightServer.name }}
+        image: {{ include "insight-server.getImageInfoByValue" (list . "insightServer") }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        {{- with .Values.insightServer.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+        {{- with .Values.insightServer.preStartCommand }}
+          echo "Running custom preStartCommand command";
+          {{ tpl . $ }};
+        {{- end }}
+          exec /opt/jfrog/insight/app/bin/entrypoint-server.sh;
+        env:
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+{{- with .Values.insightServer.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.insightServer.internalPort }}
+          protocol: TCP
+          name: http-insight
+        volumeMounts:
+        - name: insight-data
+          mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "insight-server.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+        resources:
+{{ toYaml .Values.insightServer.resources | indent 10 }}
+{{- if .Values.insightServer.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.insightServer.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.insightServer.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.insightServer.livenessProbe.config . | indent 10 }}
+{{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: {{ .Values.filebeat.name }}
+        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+        args:
+        - "-e"
+        - "-E"
+        - "http.enabled=true"
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /usr/share/filebeat/filebeat.yml
+          readOnly: true
+          subPath: filebeat.yml
+        - name: insight-data
+          mountPath: "{{ .Values.insightServer.persistence.mountPath }}"
+        livenessProbe:
+{{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
+        readinessProbe:
+{{ toYaml .Values.filebeat.readinessProbe | indent 10 }}
+        resources:
+{{ toYaml .Values.filebeat.resources | indent 10 }}
+        terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
+      {{- end }}
+      - name: {{ .Values.insightScheduler.name }}
+        image: {{ include "insight-server.getImageInfoByValue" (list . "insightScheduler") }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        {{- with .Values.insightScheduler.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name .}}
+              key: {{ tpl .Values.database.secrets.user.key .}}
+        {{- else if .Values.database.user }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name .}}
+              key: {{ tpl .Values.database.secrets.url.key .}}
+        {{- else if .Values.database.url }}
+            {{- if not .Values.insightServer.unifiedSecretInstallation }}
+              name: {{ template "insight.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "insight.name" . }}-unified-secret"
+            {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+{{- with .Values.insightScheduler.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.insightScheduler.internalPort }}
+          protocol: TCP
+          name: http-insched
+        volumeMounts:
+        - name: insight-data
+          mountPath: {{ .Values.insightServer.persistence.mountPath | quote }}
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "insight-server.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+        resources:
+{{ toYaml .Values.insightScheduler.resources | indent 10 }}
+{{- if .Values.insightScheduler.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.insightScheduler.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.insightScheduler.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.insightScheduler.livenessProbe.config . | indent 10 }}
+{{- end }}
+      {{- $mountPath := .Values.insightServer.persistence.mountPath }}
+      {{- range .Values.insightServer.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "insight-server.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        volumeMounts:
+        - name: insight-data
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.insightServer.loggersResources | indent 10 }}
+      {{- end }}
+      {{- $mountPath := .Values.insightScheduler.persistence.mountPath }}
+      {{- range .Values.insightScheduler.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "insight-server.getImageInfoByValue" (list $ "logger") }}
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        volumeMounts:
+        - name: insight-data
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.insightScheduler.loggersResources | indent 10 }}
+      {{- end }}
+    {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "insight-server.customSidecarContainers" .) . | indent 6 }}
+    {{- end }}
+    {{- if or .Values.insightServer.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "insight.nodeSelector" .) . | indent 6 }}
+    {{- end }}
+    {{- if .Values.insightServer.affinity }}
+    {{- with .Values.insightServer.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.insightServer.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.insightServer.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "insight.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.insightServer.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.insightServer.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "insight.name" . }}
+                  release: {{ .Release.Name }}
+    {{- end }}
+    {{- with .Values.insightServer.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+
+      ########## External secrets ###########
+
+      {{- if or .Values.insightServer.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.insightServer.customCertificates.certificateSecretName }}
+      {{- end }}
+
+      {{- if and .Values.elasticsearch.enabled .Values.elasticsearch.certificatesSecretName }}
+      - name: elastic-certs
+        secret:
+          secretName: {{  .Values.elasticsearch.certificatesSecretName }}
+      {{- end }}
+
+      {{- if .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+
+      ############ Config map, Volumes and Custom Volumes ##############
+      {{- if or .Values.insightScheduler.loggers .Values.insightServer.loggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "insight.fullname" . }}-logger
+      {{- end }}
+    {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ template "insight.fullname" . }}-filebeat-config
+    {{- end }}
+      {{- if .Values.common.configMaps }}
+      - name: insight-configmaps
+        configMap:
+          name: {{ template "insight.fullname" . }}-configmaps
+      {{- end }}
+      {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "insight-server.customVolumes" .) . | indent 6 }}
+      {{- end }}
+    {{- if not .Values.insightServer.persistence.enabled }}
+      - name: insight-data
+        emptyDir: {}
+    {{- end }}
+    {{- if and (.Values.insightServer.persistence.enabled) (.Values.insightServer.persistence.existingClaim) }}
+      - name: insight-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.insightServer.persistence.existingClaim }}
+    {{- end }}
+    {{- if not .Values.elasticsearch.persistence.enabled }}
+      - name: elasticsearch-data
+        emptyDir: {}
+    {{- end }}
+    {{- if and (.Values.elasticsearch.persistence.enabled) (.Values.elasticsearch.persistence.existingClaim) }}
+      - name: elasticsearch-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.elasticsearch.persistence.existingClaim }}
+    {{- end }}
+
+    #########  unifiedSecretInstallation ###########
+    {{- if and .Values.insightServer.unifiedSecretInstallation (eq (include "insight.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      - name: {{ include "insight.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "insight.name" . }}-unified-secret
+    {{- else if not .Values.insightServer.unifiedSecretInstallation }}
+      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.insightServer.systemYaml }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "insight.fullname" .) "systemyaml" }}
+      {{- end }}
+    {{- end }}
+
+  volumeClaimTemplates:
+    {{- if and (.Values.insightServer.persistence.enabled) (not .Values.insightServer.persistence.existingClaim) }}
+    - metadata:
+        name: insight-data
+      spec:
+        {{- if .Values.insightServer.persistence.storageClass }}
+        {{- if (eq "-" .Values.insightServer.persistence.storageClass) }}
+        storageClassName: ''
+        {{- else }}
+        storageClassName: '{{ .Values.insightServer.persistence.storageClass }}'
+        {{- end }}
+        {{- end }}
+        accessModes: [ '{{ .Values.insightServer.persistence.accessMode }}' ]
+        resources:
+          requests:
+            storage: {{ .Values.insightServer.persistence.size }}
+    {{- end }}
+    {{- if and (.Values.elasticsearch.persistence.enabled) (not .Values.elasticsearch.persistence.existingClaim) }}
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        {{- if .Values.elasticsearch.persistence.storageClass }}
+        {{- if (eq "-" .Values.elasticsearch.persistence.storageClass) }}
+        storageClassName: ''
+        {{- else }}
+        storageClassName: '{{ .Values.elasticsearch.persistence.storageClass }}'
+        {{- end }}
+        {{- end }}
+        accessModes: [ '{{ .Values.elasticsearch.persistence.accessMode }}' ]
+        resources:
+          requests:
+            storage: {{ .Values.elasticsearch.persistence.size }}
+    {{- end }}

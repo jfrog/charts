@@ -14,6 +14,10 @@ metadata:
 {{- if .Values.nginx.labels }}
 {{ toYaml .Values.nginx.labels | indent 4 }}
 {{- end }}
+{{- with .Values.nginx.deployment.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
 {{- if eq .Values.nginx.kind "StatefulSet" }}
   serviceName: {{ template "artifactory.nginx.fullname" . }}
@@ -31,6 +35,9 @@ spec:
       annotations:
         checksum/nginx-conf: {{ include (print $.Template.BasePath "/nginx-conf.yaml") . | sha256sum }}
         checksum/nginx-artifactory-conf: {{ include (print $.Template.BasePath "/nginx-artifactory-conf.yaml") . | sha256sum }}
+      {{- range $key, $value := .Values.nginx.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
@@ -39,13 +46,21 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.nginx.terminationGracePeriodSeconds }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory.imagePullSecrets" . | indent 6 }}
     {{- end }}
       {{- if .Values.nginx.priorityClassName }}
       priorityClassName: {{ .Values.nginx.priorityClassName | quote }}
       {{- end }}
+      {{- if .Values.nginx.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.nginx.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
       initContainers:
+        {{- if .Values.nginx.customInitContainers }}
+{{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
+        {{- end }}
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
@@ -70,10 +85,11 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         command:
-          - 'nginx'
-          - '-g'
-          - 'daemon off;'
+{{- tpl (include "nginx.command" .) . | indent 10 }}
         ports:
+{{ if .Values.nginx.customPorts }}
+{{ toYaml .Values.nginx.customPorts | indent 8 }}
+{{ end }}
         # DEPRECATION NOTE: The following is to maintain support for values pre 1.3.1 and
         # will be cleaned up in a later version
         {{- if .Values.nginx.http }}
@@ -98,6 +114,10 @@ spec:
         - containerPort: {{ .Values.nginx.ssh.internalPort }}
           name: tcp-ssh
         {{- end }}
+        {{- with .Values.nginx.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
         volumeMounts:
         - name: nginx-conf
           mountPath: /etc/nginx/nginx.conf
@@ -109,58 +129,23 @@ spec:
         {{- if .Values.nginx.https.enabled }}  
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
+        {{- end }}
+        {{- if .Values.nginx.customVolumeMounts }}
+{{ tpl (include "artifactory.nginx.customVolumeMounts" .) . | indent 8 }}
         {{- end }}  
         resources:
 {{ toYaml .Values.nginx.resources | indent 10 }}
         {{- if .Values.nginx.startupProbe.enabled }}
         startupProbe:
-          httpGet:
-            path: {{ .Values.nginx.startupProbe.path }}
-            {{- if .Values.nginx.http.enabled }}
-            port: {{ .Values.nginx.http.internalPort }}
-            scheme: HTTP
-            {{- else }}
-            port: {{ .Values.nginx.https.internalPort }}
-            scheme: HTTPS
-            {{- end }}
-          initialDelaySeconds: {{ .Values.nginx.startupProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.nginx.startupProbe.periodSeconds }}
-          failureThreshold: {{ .Values.nginx.startupProbe.failureThreshold }}
-          timeoutSeconds: {{ .Values.nginx.startupProbe.timeoutSeconds }}
+{{ tpl .Values.nginx.startupProbe.config . | indent 10 }}
         {{- end }}
         {{- if .Values.nginx.readinessProbe.enabled }}
         readinessProbe:
-          httpGet:
-            path: {{ .Values.nginx.readinessProbe.path }}
-            {{- if .Values.nginx.http.enabled }}
-            port: {{ .Values.nginx.http.internalPort }}
-            scheme: HTTP
-            {{- else }}
-            port: {{ .Values.nginx.https.internalPort }}
-            scheme: HTTPS
-            {{- end }}
-          initialDelaySeconds: {{ tpl (.Values.nginx.readinessProbe.initialDelaySeconds | toString) . }}
-          periodSeconds: {{ .Values.nginx.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.nginx.readinessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.nginx.readinessProbe.failureThreshold }}
-          successThreshold: {{ .Values.nginx.readinessProbe.successThreshold }}
+{{ tpl .Values.nginx.readinessProbe.config . | indent 10 }}
         {{- end }}
         {{- if .Values.nginx.livenessProbe.enabled }}
         livenessProbe:
-          httpGet:
-            path: {{ .Values.nginx.livenessProbe.path }}
-            {{- if .Values.nginx.http.enabled }}
-            port: {{ .Values.nginx.http.internalPort }}
-            scheme: HTTP
-            {{- else }}
-            port: {{ .Values.nginx.https.internalPort }}
-            scheme: HTTPS
-            {{- end }}
-          initialDelaySeconds: {{ tpl (.Values.nginx.livenessProbe.initialDelaySeconds | toString) . }}
-          periodSeconds: {{ .Values.nginx.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.nginx.livenessProbe.timeoutSeconds }}
-          failureThreshold: {{ .Values.nginx.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.nginx.livenessProbe.successThreshold }}
+{{ tpl .Values.nginx.livenessProbe.config . | indent 10 }}
         {{- end }}
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
@@ -177,9 +162,11 @@ spec:
         resources:
 {{ toYaml $.Values.nginx.loggersResources | indent 10 }}
       {{- end }}
-    {{- with .Values.nginx.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
+        {{- if .Values.nginx.customSidecarContainers }}
+{{ tpl (include "artifactory.nginx.customSidecarContainers" .)  . | indent 6 }}
+        {{- end }}
+    {{- if or .Values.nginx.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "nginx.nodeSelector" .) . | indent 6 }}
     {{- end }}
     {{- with .Values.nginx.affinity }}
       affinity:
@@ -190,6 +177,9 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+        {{- if .Values.nginx.customVolumes }}
+{{ tpl (include "artifactory.nginx.customVolumes" .)  . | indent 6 }}
+        {{- end }}
       - name: nginx-conf
         configMap:
         {{- if .Values.nginx.customConfigMap }}

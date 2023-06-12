@@ -1,0 +1,57 @@
+# CI values for Mission-control
+
+# If this is an upgrade over an existing Mission Control 4.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+insightServer:
+  jfrogUrl: http://artifactory.rt:8082
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+
+insightScheduler:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1"
+  javaOpts:
+    xms: "512m"
+    xmx: "2g"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+postgresql:
+  postgresqlPassword: password
+  db:
+    password: password
+  persistence:
+    enabled: false
+
+# For HA
+replicaCount: 2
+
+elasticsearch:
+  persistence:
+    enabled: false
+  javaOpts:
+    xms: "2g"
+    xmx: "2g"
