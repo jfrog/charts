@@ -1,6 +1,23 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.40.1] - May 31, 2023
+* Handle jfrogUrlUI if nothing is set
+* Added log-service
+* Added step-service
+* Enabled nodepoolservice by default
+* Fix migration script failures on ssl enforced database
+* Fix database SSL details not being passed to nodepoolservice as expected in split mode
+* Fix vault issue with enforced SSL on azure database
+* Opens grpc port for nodepoolservice apis.
+* Opens http health check port for nodepoolservice 
+* Add ability to use redis with password
+* Add support to pass db metric parameters in system.yaml
+* Change hpa api version to autoscaling/v2
+* Enable probes on router
+* Add readiness to api container
+* Fix port for router readiness probe
+
 ## [101.38.1] - Apr 18, 2023
 * Handle jfrogUrlUI if nothing is set
 * Fix migration script failures on ssl enforced database
