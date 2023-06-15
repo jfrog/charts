@@ -539,6 +539,10 @@ spec:
           startupProbe:
 {{ tpl .Values.pipelines.internalapi.startupProbe.config . | indent 12 }}
           {{- end }}
+          {{- if .Values.pipelines.internalapi.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.pipelines.internalapi.readinessProbe.config . | indent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.pipelines.internalapi.resources | nindent 12 }}
           volumeMounts:

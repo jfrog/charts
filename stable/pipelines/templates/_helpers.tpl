@@ -108,6 +108,30 @@ The nodepoolservice name
 {{- end -}}
 
 {{/*
+The runservice name
+*/}}
+{{- define "pipelines.runservice.name" -}}
+{{- $name := .Release.Name | trunc 29 -}}
+{{- printf "%s-%s-runservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The logservice name
+*/}}
+{{- define "pipelines.logservice.name" -}}
+{{- $name := .Release.Name | trunc 29 -}}
+{{- printf "%s-%s-logservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The stepservice name
+*/}}
+{{- define "pipelines.stepservice.name" -}}
+{{- $name := .Release.Name | trunc 29 -}}
+{{- printf "%s-%s-stepservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The msg name
 */}}
 {{- define "pipelines.msg.name" -}}

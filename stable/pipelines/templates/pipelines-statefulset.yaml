@@ -566,6 +566,10 @@ spec:
           startupProbe:
 {{ tpl .Values.pipelines.api.startupProbe.config . | indent 12 }}
           {{- end }}
+          {{- if .Values.pipelines.api.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.pipelines.api.readinessProbe.config . | indent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.pipelines.api.resources | nindent 12 }}
           volumeMounts:
@@ -703,6 +707,11 @@ spec:
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.nodepoolservice.resources | nindent 12 }}
+          ports:
+            - name: nps-api
+              containerPort: 30300
+            - name: nps-health-api
+              containerPort: 30301
           volumeMounts:
             - name: jfrog-pipelines-folder
               mountPath: {{ .Values.pipelines.mountPath }}
@@ -712,6 +721,126 @@ spec:
 {{ tpl . $ | nindent 10 }}
 {{- end }}
 {{- end }}
+{{- if .Values.pipelines.runservice.enabled }}
+        - name: runservice
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "runservice" ) }}
+          imagePullPolicy: {{ .Values.pipelines.runservice.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.runservice.extraEnvironmentVariables }}
+{{- with .Values.pipelines.runservice.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.runservice.resources | nindent 12 }}
+          volumeMounts:
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+{{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.pipelines.logservice.enabled }}
+        - name: logservice
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "logservice" ) }}
+          imagePullPolicy: {{ .Values.pipelines.logservice.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.logservice.extraEnvironmentVariables }}
+{{- with .Values.pipelines.logservice.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.logservice.resources | nindent 12 }}
+          volumeMounts:
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+{{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.pipelines.stepservice.enabled }}
+        - name: stepservice
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepservice" ) }}
+          imagePullPolicy: {{ .Values.pipelines.stepservice.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.stepservice.extraEnvironmentVariables }}
+{{- with .Values.pipelines.stepservice.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.stepservice.resources | nindent 12 }}
+          volumeMounts:
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+{{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+{{- end }}
+{{- end }}
+
         - name: pipelinesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
