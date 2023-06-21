@@ -40,7 +40,7 @@ global:
 
 ## Fully override insight.fullname template
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi8/ubi-minimal:8.7.1049
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
 # For supporting pulling from private registries
 imagePullSecrets:
 # - myRegistryKeySecretName
@@ -254,7 +254,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 13.10.0-debian-11-r14
   postgresqlUsername: insight
   postgresqlPassword: ""
   postgresqlDatabase: insight
@@ -395,8 +395,8 @@ podRestartTime:
 logger:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi8/ubi-minimal
-    tag: 8.7.1049
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1793
 insightServer:
   name: insight-server
   ## Note that by default we use appVersion to get image tag/version
@@ -521,7 +521,7 @@ insightServer:
       logging:
         consoleLog:
           enabled: {{ .Values.insightServer.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\ninsight-server.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Admin > Security > Settings" (include "insight-server.jfrogUrl" .)) . }}"
+      jfrogUrl: "{{ tpl (required "\n\ninsight-server.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "insight-server.jfrogUrl" .)) . }}"
       elasticsearch:
         username: {{ .Values.elasticsearch.username }}
         password: {{ .Values.elasticsearch.password }}
@@ -727,7 +727,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.56.0
+    tag: 7.67.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
