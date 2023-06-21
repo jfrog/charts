@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.59.9] - May 8, 2023
+## [107.59.11] - May 31, 2023
 * Fixed reference of `terminationGracePeriodSeconds`
 * **Breaking change**
 * Updated the defaults of replicaCount (Values.artifactory.primary.replicaCount and Values.artifactory.node.replicaCount) to support Cloud-Native High Availability. Refer [Cloud-Native High Availability](https://jfrog.com/help/r/jfrog-installation-setup-documentation/cloud-native-high-availability)
@@ -15,6 +15,8 @@ All changes to this chart will be documented in this file
 * Added Support for Cold Artifact Storage as part of the systemYaml configuration (disabled by default)
 * Added new binary provider `s3-storage-v3-archive`
 * Fixed jfconnect disabling as micro-service on non-splitcontainers
+* Fixed an issue whereby, Artifactory failed to start when using persistence storage type `nfs` due to missing binarystore.xml
+
 
 ## [107.58.0] - Mar 23, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
