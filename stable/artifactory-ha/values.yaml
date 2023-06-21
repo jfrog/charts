@@ -357,6 +357,9 @@ artifactory:
   coldStorage:
     enabled: false
   # This directory is intended for use with NFS eventual configuration for HA
+  # When enabling this section, The system.yaml will include haDataDir section.
+  # The location of Artifactory Data directory and Artifactory Filestore will be modified accordingly and will be shared among all nodes.
+  # It's recommended to leave haDataDir disabled, and the default BinarystoreXml will set the Filestore location as configured in artifactory.persistence.nfs.dataDir.
   haDataDir:
     enabled: false
     path:

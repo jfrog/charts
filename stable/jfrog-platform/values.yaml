@@ -23,7 +23,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.67.0
+    router: 7.70.1
   #   artifactory:
   #   xray:
   #   distribution:
@@ -176,7 +176,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.13.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.13.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false
@@ -216,6 +216,16 @@ xray:
     rabbitmq:
       connectionConfigFromEnvironment: false
     extraEnvVars: |
+      - name: XRAY_CHART_FULL_NAME
+        value: '{{ include "xray.fullname" . }}'
+      - name: XRAY_CHART_NAME
+        value: '{{ include "xray.name" . }}'
+      - name: XRAY_CHART_UNIFIED_SECRET_INSTALLATION
+        value: "{{ .Values.xray.unifiedSecretInstallation }}"
+      - name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_EXISTING_SECRET
+        value: "{{ .Values.systemYamlOverride.existingSecret }}"
+      - name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_DATA_KEY
+        value: "{{ .Values.systemYamlOverride.dataKey }}"
       - name: "JF_SHARED_RABBITMQ_VHOST"
         value: "xray"
   rabbitmq:

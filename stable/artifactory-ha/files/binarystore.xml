@@ -1,3 +1,44 @@
+{{- if and (eq .Values.artifactory.persistence.type "nfs") (.Values.artifactory.haDataDir.enabled) }}
+<!--
+## Important!
+## Artifactory Node haDataDir (artifactory.node.haDataDir) is configured as part of the system.yaml.
+## The Artifactory Filestore is shared among all nodes and located according to the 'haDataDir' value.
+-->
+<config version="2">
+<chain> <!--template="file-system"-->
+    <provider id="file-system" type="file-system"/>
+</chain>
+</config>
+
+{{- end }}
+{{- if and (eq .Values.artifactory.persistence.type "nfs") (not .Values.artifactory.haDataDir.enabled) }}
+<config version="2">
+    {{- if  (.Values.artifactory.persistence.maxCacheSize) }}
+    <chain> <!--template="file-system"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="file-system" type="file-system"/>
+        </provider>
+    </chain>
+    {{- else }}
+    <chain> <!--template="file-system"-->
+            <provider id="file-system" type="file-system"/>
+    </chain>
+    {{- end }}
+
+    {{- if .Values.artifactory.persistence.maxCacheSize }}
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+    {{- end }}
+
+    <provider id="file-system" type="file-system">
+        <fileStoreDir>{{ .Values.artifactory.persistence.nfs.dataDir }}/filestore</fileStoreDir>
+    </provider>
+</config>
+
+{{- end }}
+
 {{- if eq .Values.artifactory.persistence.type "file-system" }}
 <!-- File system replication -->
 {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}

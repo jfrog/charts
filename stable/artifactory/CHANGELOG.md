@@ -1,11 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.59.9] - May 8, 2023
+## [107.59.11] - May 31, 2023
 * Fixed reference of `terminationGracePeriodSeconds`
 * Added Support for Cold Artifact Storage as part of the systemYaml configuration (disabled by default)
 * Added new binary provider `s3-storage-v3-archive`
 * Fixed jfconnect disabling as micro-service on non-splitcontainers
+* Fixed wrong cache-fs provider ID of cluster-s3-storage-v3 in the binarystore.xml [GH-1772](https://github.com/jfrog/charts/issues/1772)
 
 ## [107.58.0] - Mar 23, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
