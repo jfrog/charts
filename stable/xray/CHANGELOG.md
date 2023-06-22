@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.76.0] - Jun 22, 2023
+* Add GOMAXPROCS env configuration from `limits.cpu` for router, analysis, indexer, server, persist in sts.
+
 ## [103.75.12] - May 19, 2023
 * Fix lint issue when rabbitmq is disabled
 
