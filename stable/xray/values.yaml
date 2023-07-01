@@ -78,7 +78,8 @@ xray:
   persistence:
     mountPath: /var/opt/jfrog/xray
   # adding minAvailable for Xray Pod Disruption Budget
-  minAvailable: 1
+  # minAvailable: 1
+
   # unifiedSecretInstallation flag enables single unified secret holding all xray secrets
   unifiedSecretInstallation: false
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
@@ -407,6 +408,9 @@ rabbitmq:
   auth:
     username: guest
     password: password
+    ## @param auth.securePassword Whether to set the RabbitMQ password securely. This is incompatible with loading external RabbitMQ definitions and 'true' when not setting the auth.password parameter.
+    ## ref: https://github.com/bitnami/containers/tree/main/bitnami/rabbitmq#environment-variables
+    securePassword: false
     ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret
     # existingPasswordSecret: <name-of-existing-secret>
     erlangCookie: XRAYRABBITMQCLUSTER
@@ -972,7 +976,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.67.0
+    tag: 7.70.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -1051,7 +1055,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.13.3
+    tag: 1.13.5
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
