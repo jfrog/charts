@@ -1,8 +1,8 @@
-{{- if and .Values.serviceMonitor.enabled }}
+{{- if .Values.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "pdn-node.fullname" . }}
+  name: {{ include "pdn-node.name" . }}-metrics-service
   namespace: {{ .Values.serviceMonitor.kubePromFullName }}
   labels:
     app: {{ .Values.serviceMonitor.kubePromApp }}
@@ -12,7 +12,7 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
-  jobLabel: pdnnode-metrics
+  jobLabel: {{ .Values.serviceMonitor.jobLabel }}
   endpoints:
     - path: /api/v1/metrics
       honorLabels: true
@@ -20,13 +20,12 @@ spec:
       interval: {{ .Values.serviceMonitor.interval }}
       scheme: http
       scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
-      port: {{ .Values.serviceMonitor.port | quote }}
-      targetPort: {{ .Values.serviceMonitor.targetPort | quote }}
+      port: {{ .Values.serviceMonitor.port }}
+      targetPort: {{ .Values.serviceMonitor.targetPort }}
       tlsConfig:
         insecureSkipVerify: true
   namespaceSelector:
 {{ toYaml .Values.serviceMonitor.namespaceSelector | indent 4 }}
   selector:
-    matchLabels:
-      application: pdnnode
+{{ toYaml .Values.serviceMonitor.selector | indent 4 }}
 {{- end }}
