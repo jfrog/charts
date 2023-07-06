@@ -761,6 +761,10 @@ artifactory:
     jfconnect_service:
       enabled: false
     {{- end }}
+    {{- if .Values.event.webhooks }}
+    event:
+      webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
+    {{- end }}
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
   externalPort: 8082
@@ -1330,6 +1334,8 @@ event:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  webhooks: {}
+  # urlStrictPolicy: false
 jfconnect:
   name: jfconnect
   enabled: true

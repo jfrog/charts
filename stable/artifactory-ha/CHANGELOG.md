@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.59.12] - July 6, 2023
+* Add option to configure event.webhooks within generated system.yaml
+
 ## [107.59.11] - May 31, 2023
 * Fixed reference of `terminationGracePeriodSeconds`
 * **Breaking change**
