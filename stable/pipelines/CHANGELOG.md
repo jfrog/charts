@@ -1,6 +1,11 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.41.3] - Jun 16, 2023
+* Add ability to work with redis.fullnameOverride
+* Add support to pass db metric parameters in system.yaml
+* Add hpa api version to autoscaling/v2 for missing conf
+
 ## [101.40.1] - May 31, 2023
 * Handle jfrogUrlUI if nothing is set
 * Added log-service

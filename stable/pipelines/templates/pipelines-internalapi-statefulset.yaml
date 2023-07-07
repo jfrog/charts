@@ -291,7 +291,11 @@ spec:
           {{- end }}
           {{- if .Values.redis.enabled }}
             echo "Waiting for Redis to come up...";
+          {{- if .Values.redis.fullnameOverride }}
+            until nc -z -w 2 {{ .Values.redis.fullnameOverride }}-master {{ .Values.redis.redisPort }} && echo redis ok; do
+          {{- else }}
             until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
+          {{- end }}
               sleep 1;
             done;
           {{- end }}

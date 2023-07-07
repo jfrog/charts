@@ -308,6 +308,10 @@ pipelines:
       rotation:
         maxSizeMb: 10
         maxFiles: 10
+  db:
+    metrics:
+      enabled: false
+      maxTopSlowQueries: 10
 
   signedPipelines:
     enabled: true
@@ -1324,6 +1328,10 @@ pipelines:
         {{- else }}
         connectionString: "{{ tpl (printf "postgres://%s:%s@%v:%v/%s" .Values.global.postgresql.user .Values.global.postgresql.password .Values.global.postgresql.host .Values.global.postgresql.port .Values.global.postgresql.database) . }}"
         {{- end }}
+        metrics:
+          enabled: {{ .Values.pipelines.db.metrics.enabled }}
+          logging: false
+          maxTopSlowQueries: {{ .Values.pipelines.db.metrics.maxTopSlowQueries }}
 
       ## RabbitMQ configuration
       ##
@@ -1428,7 +1436,11 @@ pipelines:
       ## Redis configuration
       ##
       redis:
+        {{- if .Values.redis.fullnameOverride }}
+        ip: {{ .Values.redis.fullnameOverride }}-master
+        {{- else }}
         ip: {{ .Release.Name }}-redis-master
+        {{- end }}
         port: {{ .Values.redis.redisPort }}
         {{- if .Values.redis.usePassword }}
         password: {{ .Values.redis.password }}
@@ -1975,6 +1987,8 @@ redis:
     slaveCount: 2
 
   usePassword: false
+
+  fullnameOverride:
 
   master:
     configmap: |-
