@@ -70,7 +70,6 @@ diskSize: 64Gi
 ## Ref: https://www.jfrog.com/confluence/display/JFROG/Advanced+Private+Distribution+Network+%28PDN%29+Configurations
 systemYaml: |
   pdnNode:
-    disableBouncer: true
     disableBasicAuth: true
     http: true
     logLevel: info
@@ -557,24 +556,13 @@ nginx:
     tag: 1.23.2-debian-11-r2
   containerPorts:
     http: 8089
-  extraContainerPorts:
-    - name: bouncer-backend
-      containerPort: 8090
   service:
     loadBalancerSourceRanges: []
     ports:
       http: 8089
-    extraPorts:
-      - name: bouncer-backend
-        targetPort: 8090
-        port: 8090
   serverBlock: |-
     upstream backend {
         server pdn-node:8089;
-    }
-
-    upstream bouncer-backend {
-        server pdn-node:8090;
     }
 
     server {
@@ -583,15 +571,6 @@ nginx:
 
         location / {
             proxy_pass http://backend;
-        }
-    }
-
-    server {
-        server_name _;
-        listen 0.0.0.0:8090 default_server;
-
-        location / {
-            proxy_pass http://bouncer-backend;
         }
     }
 ## Allows to add additional kubernetes resources
@@ -682,10 +661,14 @@ topologySpreadConstraints: []
 serviceMonitor:
   enabled: false
   interval: 30s
-  port: 8089
+  jobLabel: pdnnode-metrics
+  port: http-server
   targetPort: 8089
   scrapeTimeout: 15s
   kubePromApp: ""
   kubePromFullName: ""
   namespaceSelector:
     any: true
+  selector:
+    matchLabels:
+      app: pdnnode
