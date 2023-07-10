@@ -294,7 +294,7 @@ spec:
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
           ports:
-            - name: http
+            - name: http-router
               containerPort: 8082
           volumeMounts:
             - name: data

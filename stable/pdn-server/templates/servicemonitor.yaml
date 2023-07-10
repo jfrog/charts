@@ -1,8 +1,8 @@
-{{- if and .Values.serviceMonitor.enabled }}
+{{- if .Values.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "pdn-server.fullname" . }}
+  name: {{ include "pdn-server.name" . }}-metrics-service
   namespace: {{ .Values.serviceMonitor.kubePromFullName }}
   labels:
     app: {{ .Values.serviceMonitor.kubePromApp }}
@@ -12,24 +12,23 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
-  jobLabel: pdnserver-metrics
+  jobLabel: {{ .Values.serviceMonitor.jobLabel }}
   endpoints:
-    - path: /api/v1/metrics
+    - path: /pdnserver/api/v1/metrics
       bearerTokenSecret:
         key: token
         name: {{ .Values.serviceMonitor.tokenName }}
       honorLabels: true
       honorTimestamps: false
       interval: {{ .Values.serviceMonitor.interval }}
-      scheme: http
+      scheme: {{ include "pdn-server.scheme" . }}
       scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
-      port: {{ .Values.serviceMonitor.port | quote }}
-      targetPort: {{ .Values.serviceMonitor.targetPort | quote }}
+      port: {{ .Values.serviceMonitor.port }}
+      targetPort: {{ .Values.serviceMonitor.targetPort }}
       tlsConfig:
         insecureSkipVerify: true
   namespaceSelector:
 {{ toYaml .Values.serviceMonitor.namespaceSelector | indent 4 }}
   selector:
-    matchLabels:
-      application: pdnserver
+{{ toYaml .Values.serviceMonitor.selector | indent 4 }}
 {{- end }}
