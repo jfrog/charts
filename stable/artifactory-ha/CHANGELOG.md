@@ -1,7 +1,24 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.59.11] - May 31, 2023
+## [107.63.5] - July 14, 2023
+* Added support for Openshift by adding the securityContext in container level.
+* **IMPORTANT**
+* Nginx deployment is disabled on openshift.
+* Disable securityContext in contaier and pod level to deploy postgres on openshift.
+* Fixed support for fsGroup in non openshift environemnt and runAsGroup in openshift environment.
+
+## [107.62.0] - Jun 5, 2023
+* Added support for 'port' and 'useHttp' parameters for s3-storage-v3 binary provider [GH-1767](https://github.com/jfrog/charts/issues/1767)
+
+## [107.61.0] - May 31, 2023
+* Added new binary provider `google-storage-v2-direct`
+
+## [107.60.0] - May 31, 2023
+* Enabled `splitServicesToContainers` to true by default
+* Updated the recommended values for small, medium and large installations to support the 'splitServicesToContainers'
+
+## [107.59.0] - May 31, 2023
 * Fixed reference of `terminationGracePeriodSeconds`
 * **Breaking change**
 * Updated the defaults of replicaCount (Values.artifactory.primary.replicaCount and Values.artifactory.node.replicaCount) to support Cloud-Native High Availability. Refer [Cloud-Native High Availability](https://jfrog.com/help/r/jfrog-installation-setup-documentation/cloud-native-high-availability)

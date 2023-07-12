@@ -58,7 +58,7 @@
     </provider>
 </config>
 {{- end }}
-{{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") (eq .Values.artifactory.persistence.type "cluster-google-storage-v2")  }}
+{{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") (eq .Values.artifactory.persistence.type "cluster-google-storage-v2") (eq .Values.artifactory.persistence.type "google-storage-v2-direct")  }}
 <!-- Google storage -->
 <config version="2">
     {{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") }}
@@ -88,6 +88,12 @@
                 <dynamic-provider id="remote" type="remote"/>
                 <property name="zones" value="local,remote"/>
             </provider>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "google-storage-v2-direct" }}
+    <chain>  <!--template="google-storage-v2-direct"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="google-storage-v2" type="google-storage-v2"/>
         </provider>
     </chain>
     {{- end }}
@@ -206,6 +212,12 @@
         <bucketName>{{ .bucketName }}</bucketName>
         <path>{{ .path }}</path>
         <endpoint>{{ .endpoint }}</endpoint>
+        {{- with .port }}
+        <port>{{ . }}</port>
+        {{- end }}
+        {{- with .useHttp }}
+        <useHttp>{{ . }}</useHttp>
+        {{- end }}
         {{- with .maxConnections }}
         <maxConnections>{{ . }}</maxConnections>
         {{- end }}
