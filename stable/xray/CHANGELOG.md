@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.76.7] - Jun 05, 2023
+## [103.78.9] - Jun 05, 2023
 * Set securePassword to false in a values yaml [GH-1763](https://github.com/jfrog/charts/pull/1763)
 * Upgraded to autoscaling/v2
 

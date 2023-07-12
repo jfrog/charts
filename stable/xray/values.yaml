@@ -771,6 +771,65 @@ analysis:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+sbom:
+  enabled: false
+  name: xray-sbom
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-sbom
+  internalPort: 7006
+  externalPort: 7006
+  annotations: {}
+  # Add lifecycle hooks for the indexer pod
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
+  ## Add custom volumesMounts
+  customVolumeMounts: ""
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.sbom.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.sbom.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
 indexer:
   name: xray-indexer
   ## Note that by default we use appVersion to get image tag/version
@@ -976,7 +1035,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.70.1
+    tag: 7.70.2
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
