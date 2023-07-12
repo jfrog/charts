@@ -14,6 +14,13 @@ The xray-analysis name
 {{- end -}}
 
 {{/*
+The xray-sbom name
+*/}}
+{{- define "xray-sbom.name" -}}
+{{- default .Chart.Name .Values.sbom.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The xray-indexer name
 */}}
 {{- define "xray-indexer.name" -}}
@@ -79,6 +86,24 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.analysis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.analysis.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "xray-sbom.fullname" -}}
+{{- if .Values.sbom.fullnameOverride -}}
+{{- .Values.sbom.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.sbom.name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -385,14 +410,14 @@ Return the proper xray chart image names
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer")) }}
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}

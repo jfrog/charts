@@ -1,3 +1,4 @@
+{{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
 {{- if .Values.nginx.enabled -}}
 {{- $serviceName := include "artifactory.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
@@ -45,6 +46,9 @@ spec:
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
     spec:
+      securityContext:
+        runAsUser: {{ .Values.nginx.uid }}
+        runAsGroup: {{ .Values.nginx.gid }}
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.nginx.terminationGracePeriodSeconds }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
@@ -64,6 +68,9 @@ spec:
       - name: "setup"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
         - '/bin/sh'
         - '-c'
@@ -73,9 +80,6 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
           name: nginx-volume
-      securityContext:
-        runAsUser: {{ .Values.nginx.uid }}
-        fsGroup: {{ .Values.nginx.gid }}
       containers:
       - name: {{ .Values.nginx.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "nginx") }}
@@ -210,4 +214,5 @@ spec:
           secretName: {{ template "artifactory.fullname" . }}-nginx-certificate
       {{- end }}
       {{- end }}
+{{- end }}
 {{- end }}

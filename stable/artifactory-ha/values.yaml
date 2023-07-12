@@ -169,6 +169,17 @@ postgresql:
     affinity: {}
     tolerations: []
   resources: {}
+  securityContext:
+    enabled: true
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
   #  requests:
   #    memory: "512Mi"
   #    cpu: "100m"
@@ -210,6 +221,16 @@ aws:
     enabled: false
   licenseConfigSecretName:
   region: us-east-1
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 ## The following router settings are to configure only when splitServicesToContainers set to true
 ## splitServicesToContainers (by default it is false)
 router:
@@ -217,7 +238,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.67.0
+    tag: 7.71.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -758,8 +779,6 @@ artifactory:
     {{- else }}
     jfconnect:
       enabled: false
-    jfconnect_service:
-      enabled: false
     {{- end }}
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -841,6 +860,7 @@ artifactory:
     ## nfs
     ## google-storage
     ## google-storage-v2
+    ## google-storage-v2-direct
     ## aws-s3-v3
     ## s3-storage-v3-direct
     ## s3-storage-v3-archive
@@ -924,6 +944,8 @@ artifactory:
       bucketName: artifactory-aws
       path: artifactory/filestore
       endpoint:
+      port:
+      useHttp:
       maxConnections: 50
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
@@ -1926,9 +1948,9 @@ hostAliases: []
 #      - "foo.remote"
 #      - "bar.remote"
 
-## This is an experimental feature (not ready for production yet )  that will become default in one of the future releases
-## Toggling this feature will enable all microservices to run in different containers in a single pod (by default it is false)
-splitServicesToContainers: false
+## Toggling this feature is seamless and requires helm upgrade
+## will enable all microservices to run in different containers in a single pod (by default it is true)
+splitServicesToContainers: true
 ## Specify common probes parameters
 probes:
   timeoutSeconds: 5

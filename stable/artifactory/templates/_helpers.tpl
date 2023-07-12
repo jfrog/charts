@@ -476,3 +476,14 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- printf "%s" "false" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve fsGroup and runAsGroup on cluster based
+*/}}
+{{- define "artifactory.isOpenshiftCompatible" -}}
+{{- if (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
+{{- printf "%s" "true" -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}

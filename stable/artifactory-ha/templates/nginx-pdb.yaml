@@ -1,3 +1,4 @@
+{{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
 {{- if .Values.nginx.enabled -}}
 {{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: policy/v1beta1
@@ -20,4 +21,5 @@ spec:
       app: {{ template "artifactory-ha.name" . }}
       release: {{ .Release.Name }}
   minAvailable: {{ .Values.nginx.minAvailable }}
+{{- end }}
 {{- end }}

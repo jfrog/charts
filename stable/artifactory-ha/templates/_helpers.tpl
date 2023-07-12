@@ -496,3 +496,14 @@ nodeSelector:
 {{ toYaml .Values.nginx.nodeSelector | indent 2 }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve fsGroup and runAsGroup on cluster based
+*/}}
+{{- define "artifactory.isOpenshiftCompatible" -}}
+{{- if (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
+{{- printf "%s" "true" -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}

@@ -1,3 +1,4 @@
+{{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
 {{- if and .Values.nginx.persistence.enabled (.Values.nginx.enabled) (eq (int .Values.nginx.replicaCount) 1) }}
 {{- if (not .Values.nginx.persistence.existingClaim) }}
 kind: PersistentVolumeClaim
@@ -20,6 +21,7 @@ spec:
   storageClassName: ""
 {{- else }}
   storageClassName: "{{ .Values.nginx.persistence.storageClassName }}"
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

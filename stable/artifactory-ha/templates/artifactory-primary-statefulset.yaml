@@ -87,8 +87,13 @@ spec:
     {{- end }}
       {{- if .Values.artifactory.setSecurityContext }}
       securityContext:
+        runAsNonRoot: true
         runAsUser: {{ .Values.artifactory.uid }}
+        {{ if eq (include "artifactory.isOpenshiftCompatible" .) "true" }}
+        runAsGroup: {{ .Values.artifactory.gid }}
+        {{ else if eq (include "artifactory.isOpenshiftCompatible" .) "false"  }}
         fsGroup: {{ .Values.artifactory.gid }}
+        {{- end }}
         {{- if .Values.artifactory.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
         {{- end }}
@@ -111,12 +116,9 @@ spec:
       - name: "create-artifactory-data-dir"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -133,12 +135,9 @@ spec:
       - name: "delete-db-properties"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -153,12 +152,9 @@ spec:
       - name: "access-bootstrap-creds"
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -187,12 +183,9 @@ spec:
   {{- end }}
       - name: 'copy-system-configurations'
         image: '{{ .Values.initContainerImage }}'
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -320,12 +313,9 @@ spec:
       {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -343,12 +333,9 @@ spec:
       {{- if .Values.artifactory.circleOfTrustCertificatesSecret }}
       - name: copy-circle-of-trust-certificates
         image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -367,6 +354,9 @@ spec:
       {{- if or .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
         - /bin/bash
         - -c
@@ -388,12 +378,9 @@ spec:
       - name: 'migration-artifactory-ha'
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         resources:
 {{ toYaml .Values.artifactory.primary.resources | indent 10 }}
         command:
@@ -531,12 +518,9 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -579,12 +563,9 @@ spec:
       - name: {{ .Values.frontend.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -622,12 +603,9 @@ spec:
       - name: {{ .Values.metadata.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -714,12 +692,9 @@ spec:
       - name: {{ .Values.event.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -755,12 +730,9 @@ spec:
       - name: {{ .Values.artifactory.replicator.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -788,12 +760,9 @@ spec:
       - name: {{ .Values.jfconnect.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -829,12 +798,9 @@ spec:
       - name: {{ .Values.integration.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -870,12 +836,9 @@ spec:
       - name: {{ .Values.observability.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -911,12 +874,9 @@ spec:
       - name: {{ .Values.artifactory.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
         - '/bin/bash'
         - '-c'
@@ -1165,12 +1125,9 @@ spec:
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
           - 'sh'
           - '-c'
@@ -1188,12 +1145,9 @@ spec:
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         command:
         - 'sh'
         - '-c'
@@ -1212,12 +1166,9 @@ spec:
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
         args:
         - "-e"
         - "-E"
