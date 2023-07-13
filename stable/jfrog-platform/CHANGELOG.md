@@ -1,6 +1,14 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.14.0] - Jul 12, 2023
+* Update dependency artifactory chart version to 107.63.5
+* Update dependency xray chart version to 103.78.9
+* Update dependency distribution chart version to 102.19.1
+* Update dependency pipelines chart version to 101.41.3
+* Update global.versions.router version to `7.70.2`
+* Added list pods permission for rabbitmq's feature flag conditions, pre-upgrade hook command execution
+
 ## [10.13.3] - Jul 1, 2023
 * Update dependency artifactory chart version to 107.59.11
 * Update dependency xray chart version to 103.76.7
