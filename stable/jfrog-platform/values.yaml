@@ -23,7 +23,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.70.2
+    router: 7.73.0
   #   artifactory:
   #   xray:
   #   distribution:
@@ -218,7 +218,7 @@ redis:
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.14.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.14.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
   postgresql:
     enabled: false

@@ -173,7 +173,7 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
-      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
         securityContext:
@@ -189,11 +189,18 @@ spec:
         - '-c'
         - >
 {{ include "xray.copyCustomCerts" . | indent 10 }}
+{{ include "xray.copyRabbitmqCustomCerts" . | indent 10 }}
         volumeMounts:
           - name: data-volume
             mountPath: {{ .Values.xray.persistence.mountPath }}
+          {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
           - name: ca-certs
             mountPath: "/tmp/certs"
+          {{- end }}
+          {{- if or .Values.global.rabbitmq.auth.tls.enabled .Values.rabbitmq.auth.tls.enabled }}
+          - name: rabbitmq-ca-certs
+            mountPath: "/tmp/rabbitmqcerts"
+          {{- end }}
       {{- end }}
   {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
@@ -253,6 +260,9 @@ spec:
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "xray.router.requiredServiceTypes" . }}
+        {{- if .Values.router.extraEnvVars }}
+        {{- tpl .Values.router.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
@@ -301,6 +311,10 @@ spec:
         lifecycle:
 {{ toYaml . | indent 10 }}
         {{- end }}
+        env:
+        {{- if .Values.observability.extraEnvVars }}
+        {{- tpl .Values.observability.extraEnvVars . | nindent 8 }}
+        {{- end }}
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.observability.persistence.mountPath }}"
@@ -342,6 +356,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -453,6 +469,9 @@ spec:
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
+        {{- if .Values.server.extraEnvVars }}
+        {{- tpl .Values.server.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
           name: http-server
@@ -503,6 +522,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -617,6 +638,9 @@ spec:
               key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.analysis.extraEnvVars }}
+        {{- tpl .Values.analysis.extraEnvVars . | nindent 8 }}
         {{- end }}
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
@@ -669,6 +693,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -784,6 +810,9 @@ spec:
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
+        {{- if .Values.sbom.extraEnvVars }}
+        {{- tpl .Values.sbom.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.sbom.internalPort }}
           name: http-sbom
@@ -835,6 +864,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -939,6 +970,9 @@ spec:
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
+        {{- if .Values.indexer.extraEnvVars }}
+        {{- tpl .Values.indexer.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
           name: http-indexer
@@ -989,6 +1023,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -1088,6 +1124,9 @@ spec:
           value: "true"
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.persist.extraEnvVars }}
+        {{- tpl .Values.persist.extraEnvVars . | nindent 8 }}
         {{- end }}
         ports:
         - containerPort: {{ .Values.persist.internalPort }}
@@ -1239,6 +1278,11 @@ spec:
         secret:
           secretName: {{ printf "%s-%s" (include "xray.fullname" .) "system-yaml" }}
       {{- end }}
+      {{- end }}
+      {{- if or .Values.global.rabbitmq.auth.tls.enabled .Values.rabbitmq.auth.tls.enabled }}
+      - name: rabbitmq-ca-certs
+        secret:
+          secretName: {{ template "xray.rabbitmqCustomCertificateshandler" . }}
       {{- end }}
 
 {{- if or .Values.common.customVolumes .Values.global.customVolumes }}

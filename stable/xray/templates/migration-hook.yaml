@@ -94,7 +94,22 @@ spec:
       {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
       securityContext: {{- omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
-      command: ['sh', '-c', 'kubectl exec -it {{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0 -- rabbitmqctl enable_feature_flag all ; if [ "$?" -ne 0 ]; then echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] "; exit 1; fi' ]
+      command:
+      - sh
+      - -c
+      - |
+        #!/bin/sh
+        if [ "$(kubectl get pods -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }}" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
+            kubectl exec -it {{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0 -- rabbitmqctl enable_feature_flag all
+            if [ "$?" -ne 0 ]; then
+                echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] " 
+                exit 1
+            else
+                echo Feature flags executed successfully!
+            fi
+        else
+            echo "Rabbitmq pod is not in running state. Ignoring feature flag migration for rabbitmq"
+        fi
   restartPolicy: Never
   terminationGracePeriodSeconds: 0
 {{- end }}

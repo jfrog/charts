@@ -1,7 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.78.9] - Jun 05, 2023
+## [103.78.10] - Jul 3, 2023
+* Added TLS support for rabbitmq
+* Moved common.extraEnvs to statefulset from values.yaml
+* Added `extraEnvVars` for each container
+* Fixed rabbitmq feature flag conditions for pre-upgrade hook command execution
+
+## [103.77.0] - Jun 05, 2023
 * Set securePassword to false in a values yaml [GH-1763](https://github.com/jfrog/charts/pull/1763)
 * Upgraded to autoscaling/v2
 

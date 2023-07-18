@@ -1,4 +1,4 @@
-{{- if .Values.autoscaling.enabled }}
+{{- if and (.Values.autoscaling.enabled) (eq .Values.autoscaling.keda.enabled  false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}

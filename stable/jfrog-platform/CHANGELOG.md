@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.14.1] - Jul 18, 2023
+* Update dependency xray chart version to 103.78.10
+* Update global.versions.router version to `7.73.0`
+* Added support for TLS in rabbitmq via `global.rabbitmq.tls.enabled`
+
 ## [10.14.0] - Jul 12, 2023
 * Update dependency artifactory chart version to 107.63.5
 * Update dependency xray chart version to 103.78.9
