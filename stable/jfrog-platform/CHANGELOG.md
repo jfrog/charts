@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.14.3] - Jul 24, 2023
+* Update dependency artifactory chart version to 107.63.7
+
 ## [10.14.2] - Jul 20, 2023
 * Fixed - Added a conditional check if rabbitmq is enabled [GH-1794](https://github.com/jfrog/charts/issues/1794)
 
