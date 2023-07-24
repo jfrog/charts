@@ -1,12 +1,13 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.63.5] - July 14, 2023
+## [107.63.7] - Jul 20, 2023
 * Added support for Openshift by adding the securityContext in container level.
 * **IMPORTANT**
 * Nginx deployment is disabled on openshift.
-* Disable securityContext in contaier and pod level to deploy postgres on openshift.
+* Disable securityContext in container and pod level to deploy postgres on openshift.
 * Fixed support for fsGroup in non openshift environemnt and runAsGroup in openshift environment.
+* Fixed - Helm Template Error when using artifactory.loggers [GH-1791](https://github.com/jfrog/charts/issues/1791)
 
 ## [107.62.0] - Jun 5, 2023
 * Added support for 'port' and 'useHttp' parameters for s3-storage-v3 binary provider [GH-1767](https://github.com/jfrog/charts/issues/1767)

@@ -1015,8 +1015,8 @@ spec:
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
-      {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+      {{- if $.Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
       {{- end }}
         command:
           - 'sh'
@@ -1031,10 +1031,13 @@ spec:
         resources:
 {{ toYaml $.Values.artifactory.loggersResources | indent 10 }}
       {{- end }}
-      {{ if .Values.artifactory.catalinaLoggers }}
+      {{- if .Values.artifactory.catalinaLoggers }}
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+      {{- if $.Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+      {{- end }}
         command:
         - 'sh'
         - '-c'
