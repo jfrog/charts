@@ -42,7 +42,7 @@ global:
 ## String to fully override distribution.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1760
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
 # Init containers
 initContainers:
   resources:
@@ -138,7 +138,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 13.10.0-debian-11-r14
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -195,7 +195,7 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 7.0.6-debian-11-r0
+    tag: 7.0.11-debian-11-r19
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
@@ -332,7 +332,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.1.0.1760
+    tag: 9.1.0.1793
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
@@ -553,7 +553,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.56.0
+    tag: 7.70.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -634,7 +634,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.12.0
+    tag: 1.13.5
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

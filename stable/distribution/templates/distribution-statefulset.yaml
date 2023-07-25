@@ -39,6 +39,9 @@ spec:
         release: {{ .Release.Name }}
         role: {{ template "distribution.name" . }}
         component: {{ .Values.distribution.name }}
+        {{- with .Values.distribution.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       annotations:
       {{- if not .Values.distribution.unifiedSecretInstallation }}
         checksum/database-secrets: {{ include (print $.Template.BasePath "/database-secrets.yaml") . | sha256sum }}
