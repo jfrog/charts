@@ -62,9 +62,8 @@ artifactory:
   # database:
   jfconnect:
     enabled: false
-## Enable the PostgreSQL sub chart
-postgresql:
-  enabled: true
-router:
-  image:
-    tag: 7.71.0
+  ## The following router settings are to configure only when splitServicesToContainers set to true
+  ## splitServicesToContainers (by default it is false)
+  router:
+    image:
+      tag: 7.71.0
