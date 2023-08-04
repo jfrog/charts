@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.63.9] - Jul 20, 2023
+## [107.63.10] - Jul 20, 2023
 * Added support for Openshift by adding the securityContext in container level.
 * **IMPORTANT**
 * Nginx deployment is disabled on openshift.
