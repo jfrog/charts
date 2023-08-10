@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.78.11] - Jul 3, 2023
+## [103.79.11] - Jul 3, 2023
 * Added TLS support for rabbitmq
 * Moved common.extraEnvs to statefulset from values.yaml
 * Added `extraEnvVars` for each container
