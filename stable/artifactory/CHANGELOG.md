@@ -1,13 +1,17 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.63.10] - Jul 20, 2023
+## [107.63.11] - Aug 7, 2023
 * Added support for Openshift by adding the securityContext in container level.
 * **IMPORTANT**
-* Nginx deployment is disabled on openshift.
 * Disable securityContext in container and pod level to deploy postgres on openshift.
-* Fixed support for fsGroup in non openshift environemnt and runAsGroup in openshift environment.
+* Fixed support for fsGroup in non openshift environment and runAsGroup in openshift environment.
 * Fixed - Helm Template Error when using artifactory.loggers [GH-1791](https://github.com/jfrog/charts/issues/1791)
+* Removed the nginx disable condition for openshift
+* Added support to configure event.webhooks within generated system.yaml
+* Fixed an issue to generate ssl certificate should support artifactory fullname
+* Added binarystore.xml template to persistence storage type `nfs`. The default Filestore location configured according to artifactory.persistence.nfs.dataDir.
+* Added 'multiPartLimit' and 'multipartElementSize' parameters to awsS3V3 binary providers.
 
 ## [107.62.0] - Jun 5, 2023
 * Upgraded to autoscaling/v2

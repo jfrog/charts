@@ -293,6 +293,12 @@
         {{- with .enablePathStyleAccess }}
         <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
         {{- end }}
+        {{- with .multiPartLimit }}
+        <multiPartLimit>{{ . }}</multiPartLimit>
+        {{- end }}
+        {{- with .multipartElementSize }}
+        <multipartElementSize>{{ . }}</multipartElementSize>
+        {{- end }}
     </provider>
     {{- end }}
 </config>

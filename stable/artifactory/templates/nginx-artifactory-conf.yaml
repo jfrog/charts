@@ -1,4 +1,3 @@
-{{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
 {{- if and (not .Values.nginx.customArtifactoryConfigMap) .Values.nginx.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -12,5 +11,4 @@ metadata:
 data:
   artifactory.conf: |
 {{ tpl .Values.nginx.artifactoryConf . | indent 4 }}
-{{- end }}
 {{- end }}
