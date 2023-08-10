@@ -1,3 +1,29 @@
+{{- if eq .Values.artifactory.persistence.type "nfs" -}}
+<config version="2">
+    {{- if  (.Values.artifactory.persistence.maxCacheSize) }}
+    <chain> <!--template="file-system"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="file-system" type="file-system"/>
+        </provider>
+    </chain>
+    {{- else }}
+    <chain> <!--template="file-system"-->
+        <provider id="file-system" type="file-system"/>
+    </chain>
+    {{- end }}
+
+    {{- if .Values.artifactory.persistence.maxCacheSize }}
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+    {{- end }}
+
+    <provider id="file-system" type="file-system">
+        <fileStoreDir>{{ .Values.artifactory.persistence.nfs.dataDir }}/filestore</fileStoreDir>
+    </provider>
+</config>
+{{- end }}
 {{- if eq .Values.artifactory.persistence.type "file-system" -}}
 <!-- File system filestore -->
 <config version="v1">
@@ -252,6 +278,12 @@
         {{- end }}
         {{- with .enablePathStyleAccess }}
         <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
+        {{- end }}
+        {{- with .multiPartLimit }}
+        <multiPartLimit>{{ . }}</multiPartLimit>
+        {{- end }}
+        {{- with .multipartElementSize }}
+        <multipartElementSize>{{ . }}</multipartElementSize>
         {{- end }}
     </provider>
     {{- end }}

@@ -1,4 +1,3 @@
-{{- if not (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
 {{- if .Values.nginx.enabled -}}
 {{- $serviceName := include "artifactory.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
@@ -214,5 +213,4 @@ spec:
           secretName: {{ template "artifactory.fullname" . }}-nginx-certificate
       {{- end }}
       {{- end }}
-{{- end }}
 {{- end }}

@@ -780,6 +780,10 @@ artifactory:
     jfconnect:
       enabled: false
     {{- end }}
+    {{- if .Values.event.webhooks }}
+    event:
+      webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
+    {{- end }}
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
   externalPort: 8082
@@ -903,7 +907,7 @@ artifactory:
       backupDir: "/var/opt/jfrog/artifactory-backup"
       capacity: 200Gi
       mountOptions: []
-    ## For artifactory.persistence.type google-storage
+    ## For artifactory.persistence.type google-storage, google-storage-v2, google-storage-v2-direct
     googleStorage:
       ## When using GCP buckets as your binary store (Available with enterprise license only)
       gcpServiceAccount:
@@ -935,7 +939,7 @@ artifactory:
       bucketExists: false
       useInstanceCredentials: false
       enableSignedUrlRedirect: false
-    ## For artifactory.persistence.type aws-s3-v3
+    ## For artifactory.persistence.type aws-s3-v3, s3-storage-v3-direct, s3-storage-v3-archive
     awsS3V3:
       testConnection: false
       identity:
@@ -959,7 +963,9 @@ artifactory:
       cloudFrontPrivateKey:
       enableSignedUrlRedirect: false
       enablePathStyleAccess: false
-    ## For artifactory.persistence.type azure-blob
+      multiPartLimit:
+      multipartElementSize:
+    ## For artifactory.persistence.type azure-blob, azure-blob-storage-direct
     azureBlob:
       accountName:
       accountKey:
@@ -1304,6 +1310,10 @@ event:
   name: event
   enabled: true
   internalPort: 8061
+  ## WebHook handlers settings for event
+  webhooks: {}
+  # urlStrictPolicy: false
+
   ## Extra environment variables that can be used to tune event to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:

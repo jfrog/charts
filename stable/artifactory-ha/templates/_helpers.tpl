@@ -121,9 +121,9 @@ Create chart name and version as used by the chart label.
 Generate SSL certificates
 */}}
 {{- define "artifactory-ha.gen-certs" -}}
-{{- $altNames := list ( printf "%s.%s" (include "artifactory-ha.name" .) .Release.Namespace ) ( printf "%s.%s.svc" (include "artifactory-ha.name" .) .Release.Namespace ) -}}
+{{- $altNames := list ( printf "%s.%s" (include "artifactory-ha.fullname" .) .Release.Namespace ) ( printf "%s.%s.svc" (include "artifactory-ha.fullname" .) .Release.Namespace ) -}}
 {{- $ca := genCA "artifactory-ca" 365 -}}
-{{- $cert := genSignedCert ( include "artifactory-ha.name" . ) nil $altNames 365 $ca -}}
+{{- $cert := genSignedCert ( include "artifactory-ha.fullname" . ) nil $altNames 365 $ca -}}
 tls.crt: {{ $cert.Cert | b64enc }}
 tls.key: {{ $cert.Key | b64enc }}
 {{- end -}}
