@@ -85,12 +85,14 @@ spec:
       {{- end }}
     {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext.enabled }}
       securityContext:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
         {{- if .Values.common.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
         {{- end }}
+      {{- end }}
       {{- if .Values.common.topologySpreadConstraints }}
       topologySpreadConstraints:
 {{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
@@ -101,12 +103,9 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -176,12 +175,9 @@ spec:
       {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -206,12 +202,9 @@ spec:
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -237,13 +230,9 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/sh'
           - '-c'
@@ -292,12 +281,9 @@ spec:
       - name: {{ .Values.observability.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "observability") }}
         imagePullPolicy: {{ .Values.observability.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/sh'
           - '-c'
@@ -331,13 +317,9 @@ spec:
       - name: {{ .Values.server.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -497,13 +479,9 @@ spec:
       - name: {{ .Values.analysis.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -668,13 +646,9 @@ spec:
       - name: {{ .Values.sbom.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "sbom") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -839,13 +813,9 @@ spec:
       - name: {{ .Values.indexer.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -998,13 +968,9 @@ spec:
       - name: {{ .Values.persist.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -1154,12 +1120,9 @@ spec:
       {{- range .Values.xray.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "xray.getImageInfoByValue" (list $ "logger") }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
         - 'sh'
         - '-c'
@@ -1181,12 +1144,9 @@ spec:
         - "-e"
         - "-E"
         - "http.enabled=true"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
