@@ -365,6 +365,18 @@ serviceAccount:
   name:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: true
+## By default, the Xray StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `common.xrayUserId` value.
+## If you want to disable the pod securityContext for the Xray StatefulSet, set this tag to false
+podSecurityContext:
+  enabled: true
+## @param containerSecurityContext.enabled enable the container's Security Context
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
 # PostgreSQL
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
@@ -679,18 +691,15 @@ common:
   #  - name: "custom-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
+  #    {{- if .Values.containerSecurityContext.enabled }}
+  #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+  #    {{- end }}
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'touch {{ .Values.common.xrayConfigPath }}/example-custom-setup'
+  #      - 'touch {{ .Values.xray.persistence.mountPath }}/example-custom-setup'
   #    volumeMounts:
-  #      - mountPath: "{{ .Values.common.xrayConfigPath }}"
+  #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
   #        name: data-volume
 
   ## Add custom init containers execution after predefined init containers
@@ -698,12 +707,9 @@ common:
   #  - name: "custom-systemyaml-setup"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
+  #    {{- if .Values.containerSecurityContext.enabled }}
+  #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+  #    {{- end }}
   #    command:
   #      - 'sh'
   #      - '-c'
@@ -719,22 +725,17 @@ common:
   #  - name: "sidecar-list-etc"
   #    image: "{{ .Values.initContainerImage }}"
   #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
+  #    {{- if .Values.containerSecurityContext.enabled }}
+  #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+  #    {{- end }}
   #    command:
   #      - 'sh'
   #      - '-c'
-  #      - 'sh /scripts/script.sh'
+  #      - >
+  #       while true; do echo "running in sidecar"; sleep 2; done
   #    volumeMounts:
   #      - mountPath: "{{ .Values.xray.persistence.mountPath }}"
-  #        name: volume
-  #      - mountPath: "/scripts/script.sh"
-  #        name: custom-script
-  #        subPath: script.sh
+  #        name: data-volume
   #    resources:
   #      requests:
   #        memory: "32Mi"
@@ -1190,7 +1191,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.13.6
+    tag: 1.14.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

@@ -1,7 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.79.11] - Jul 3, 2023
+## [103.80.9] - Jul 16, 2023
+* Added `podSecurityContext.enabled` and `containerSecurityContext.enabled` to support openshift
+
+## [103.79.0] - Jul 3, 2023
 * Added TLS support for rabbitmq
 * Moved common.extraEnvs to statefulset from values.yaml
 * Added `extraEnvVars` for each container
