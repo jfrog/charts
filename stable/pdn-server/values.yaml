@@ -66,6 +66,8 @@ joinKeySecretName: ""
 ## If not specified or empty value, a random join key will be generated
 ## upon PDN Server startup. You can copy the key from JFrog UI under
 # Admin -> User Management -> Settings -> PDN Access Token -> Join Key
+## You can generate one with the command: "openssl rand -hex 16"
+## The PDN join key must be 16 bytes in length (a 32 characters long hexadecimal value)
 pdnJoinKey: "aa34bd4dc7902a65f14900fc47ec6b5a"
 ## Alternatively, you can use a pre-existing secret with a key
 ## called "pdn-join-key" by specifying "pdnJoinKeySecretName"
@@ -478,7 +480,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.56.0
+    tag: 7.67.0
     pullPolicy: IfNotPresent
   serviceRegistry:
     insecure: false
@@ -955,11 +957,15 @@ topologySpreadConstraints: []
 serviceMonitor:
   enabled: false
   interval: 30s
-  port: 8092
-  targetPort: 8092
+  jobLabel: pdnserver-metrics
+  port: http-router
+  targetPort: 8082
   scrapeTimeout: 15s
   tokenName: ""
   kubePromApp: ""
   kubePromFullName: ""
   namespaceSelector:
     any: true
+  selector:
+    matchLabels:
+      app: pdnserver

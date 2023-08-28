@@ -41,7 +41,7 @@ global:
 ## String to fully override artifactory-ha.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.691
 installer:
   type:
   platform:
@@ -169,6 +169,17 @@ postgresql:
     affinity: {}
     tolerations: []
   resources: {}
+  securityContext:
+    enabled: true
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
   #  requests:
   #    memory: "512Mi"
   #    cpu: "100m"
@@ -202,7 +213,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.1.0.1793
+    tag: 9.2.691
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -210,6 +221,16 @@ aws:
     enabled: false
   licenseConfigSecretName:
   region: us-east-1
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 ## The following router settings are to configure only when splitServicesToContainers set to true
 ## splitServicesToContainers (by default it is false)
 router:
@@ -217,7 +238,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.67.0
+    tag: 7.71.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -357,6 +378,9 @@ artifactory:
   coldStorage:
     enabled: false
   # This directory is intended for use with NFS eventual configuration for HA
+  # When enabling this section, The system.yaml will include haDataDir section.
+  # The location of Artifactory Data directory and Artifactory Filestore will be modified accordingly and will be shared among all nodes.
+  # It's recommended to leave haDataDir disabled, and the default BinarystoreXml will set the Filestore location as configured in artifactory.persistence.nfs.dataDir.
   haDataDir:
     enabled: false
     path:
@@ -755,8 +779,10 @@ artifactory:
     {{- else }}
     jfconnect:
       enabled: false
-    jfconnect_service:
-      enabled: false
+    {{- end }}
+    {{- if .Values.event.webhooks }}
+    event:
+      webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
     {{- end }}
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
@@ -838,6 +864,7 @@ artifactory:
     ## nfs
     ## google-storage
     ## google-storage-v2
+    ## google-storage-v2-direct
     ## aws-s3-v3
     ## s3-storage-v3-direct
     ## s3-storage-v3-archive
@@ -880,7 +907,7 @@ artifactory:
       backupDir: "/var/opt/jfrog/artifactory-backup"
       capacity: 200Gi
       mountOptions: []
-    ## For artifactory.persistence.type google-storage
+    ## For artifactory.persistence.type google-storage, google-storage-v2, google-storage-v2-direct
     googleStorage:
       ## When using GCP buckets as your binary store (Available with enterprise license only)
       gcpServiceAccount:
@@ -912,7 +939,7 @@ artifactory:
       bucketExists: false
       useInstanceCredentials: false
       enableSignedUrlRedirect: false
-    ## For artifactory.persistence.type aws-s3-v3
+    ## For artifactory.persistence.type aws-s3-v3, s3-storage-v3-direct, s3-storage-v3-archive
     awsS3V3:
       testConnection: false
       identity:
@@ -921,6 +948,8 @@ artifactory:
       bucketName: artifactory-aws
       path: artifactory/filestore
       endpoint:
+      port:
+      useHttp:
       maxConnections: 50
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
@@ -934,7 +963,9 @@ artifactory:
       cloudFrontPrivateKey:
       enableSignedUrlRedirect: false
       enablePathStyleAccess: false
-    ## For artifactory.persistence.type azure-blob
+      multiPartLimit:
+      multipartElementSize:
+    ## For artifactory.persistence.type azure-blob, azure-blob-storage-direct
     azureBlob:
       accountName:
       accountKey:
@@ -1279,6 +1310,10 @@ event:
   name: event
   enabled: true
   internalPort: 8061
+  ## WebHook handlers settings for event
+  webhooks: {}
+  # urlStrictPolicy: false
+
   ## Extra environment variables that can be used to tune event to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
@@ -1923,9 +1958,9 @@ hostAliases: []
 #      - "foo.remote"
 #      - "bar.remote"
 
-## This is an experimental feature (not ready for production yet )  that will become default in one of the future releases
-## Toggling this feature will enable all microservices to run in different containers in a single pod (by default it is false)
-splitServicesToContainers: false
+## Toggling this feature is seamless and requires helm upgrade
+## will enable all microservices to run in different containers in a single pod (by default it is true)
+splitServicesToContainers: true
 ## Specify common probes parameters
 probes:
   timeoutSeconds: 5

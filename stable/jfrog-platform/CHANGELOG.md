@@ -1,6 +1,56 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.14.7] - Aug 18, 2023
+* Update dependency artifactory chart version to 107.63.12
+* Update dependency xray chart version to 103.80.9
+
+## [10.14.6] - Aug 10, 2023
+* Update dependency artifactory chart version to 107.63.11
+* Update dependency xray chart version to 103.79.11
+* Update dependency pipelines chart version to 101.43.2
+
+## [10.14.5] - Aug 4, 2023
+* Update dependency artifactory chart version to 107.63.10
+
+## [10.14.4] - Aug 2, 2023
+* Update dependency artifactory chart version to 107.63.9
+* Update dependency xray chart version to 103.78.11
+* Update dependency pipelines chart version to 101.42.0
+* Update global.versions.router version to `7.74.0`
+
+## [10.14.3] - Jul 24, 2023
+* Update dependency artifactory chart version to 107.63.7
+
+## [10.14.2] - Jul 20, 2023
+* Fixed - Added a conditional check if rabbitmq is enabled [GH-1794](https://github.com/jfrog/charts/issues/1794)
+
+## [10.14.1] - Jul 18, 2023
+* Update dependency xray chart version to 103.78.10
+* Update global.versions.router version to `7.73.0`
+* Added support for TLS in rabbitmq via `global.rabbitmq.tls.enabled`
+
+## [10.14.0] - Jul 12, 2023
+* Update dependency artifactory chart version to 107.63.5
+* Update dependency xray chart version to 103.78.9
+* Update dependency distribution chart version to 102.19.1
+* Update dependency pipelines chart version to 101.41.3
+* Update global.versions.router version to `7.70.2`
+* Added list pods permission for rabbitmq's feature flag conditions, pre-upgrade hook command execution
+
+## [10.13.3] - Jul 1, 2023
+* Update dependency artifactory chart version to 107.59.11
+* Update dependency xray chart version to 103.76.7
+* Update dependency pipelines chart version to 101.40.5
+
+## [10.13.2] - Jun 21, 2023
+* Update dependency insight chart version to 101.14.0
+* Update dependency pipelines chart version to 101.40.1
+* Update global.versions.router version to `7.70.1`
+
+## [10.13.1] - Jun 6, 2023
+* Update dependency xray chart version to 103.75.12
+
 ## [10.13.0] - Jun 2, 2023
 * Update dependency artifactory chart version to 107.59.9
 * Update dependency distribution chart version to 102.18.1

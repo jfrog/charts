@@ -291,7 +291,11 @@ spec:
           {{- end }}
           {{- if .Values.redis.enabled }}
             echo "Waiting for Redis to come up...";
+          {{- if .Values.redis.fullnameOverride }}
+            until nc -z -w 2 {{ .Values.redis.fullnameOverride }}-master {{ .Values.redis.redisPort }} && echo redis ok; do
+          {{- else }}
             until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
+          {{- end }}
               sleep 1;
             done;
           {{- end }}
@@ -538,6 +542,10 @@ spec:
           {{- if .Values.pipelines.internalapi.startupProbe.enabled }}
           startupProbe:
 {{ tpl .Values.pipelines.internalapi.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.pipelines.internalapi.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.pipelines.internalapi.readinessProbe.config . | indent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.pipelines.internalapi.resources | nindent 12 }}

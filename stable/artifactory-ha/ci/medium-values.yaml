@@ -1,27 +1,38 @@
+# Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
+databaseUpgradeReady: true
+
+# To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
+postgresql:
+  postgresqlPassword: password
+  persistence:
+    enabled: false
 artifactory:
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  persistence:
+    enabled: false
   database:
-    maxOpenConnections: 150
+    maxOpenConnections: 100
   tomcat:
     connector:
-      maxThreads: 300
+      maxThreads: 200
   primary:
-    replicaCount: 4
+    replicaCount: 3
     resources:
       requests:
-        memory: "6Gi"
+        memory: "4Gi"
         cpu: "2"
       limits:
-        memory: "10Gi"
-        cpu: "8"
+        memory: "8Gi"
+        cpu: "6"
     javaOpts:
-      xms: "8g"
-      xmx: "10g"
+      xms: "6g"
+      xmx: "8g"
 access:
   database:
-    maxOpenConnections: 150
+    maxOpenConnections: 100
   tomcat:
     connector:
-      maxThreads: 100
+      maxThreads: 50
 router:
   resources:
     requests:
@@ -40,7 +51,7 @@ frontend:
       cpu: "1"
 metadata:
   database:
-    maxOpenConnections: 150
+    maxOpenConnections: 100
   resources:
     requests:
       memory: "200Mi"

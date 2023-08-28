@@ -1,6 +1,10 @@
 # JFrog PDN Node Chart Changelog
 All changes to this chart will be documented in this file
 
+## [101.8.4] - Jun 21, 2023
+* Bump PDN node version
+* Bump router version to 7.67.0
+
 ## [101.7.6] - May 25, 2023
 * Updated base image `ubi9/ubi-micro:9.2.5`
 * Updated initContainerImage `ubi9/ubi-minimal:9.2.484`

@@ -1,10 +1,14 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.13.4] - Jan 16, 2023
+## [101.14.0] - Mar 21, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+
+## [101.14.0] - Mar 02, 2023
 * Added topologySpreadConstraints to insight pods
 * Updated postgresql tag version to `13.9.0-debian-11-r11`
-* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
+* Updated jfrogUrl text path to copy
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
 
 ## [101.13.0] - Oct 27, 2022
 * Removed `newProbes.enabled`, default to new probes
@@ -20,7 +24,6 @@ All changes to this chart will be documented in this file.
 * Added flag `insightServer.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
 * Added support for lifecycle hooks for all containers
 * Updated initContainerImage and logger Image to `ubi8/ubi-minimal:8.6-902`
-
 
 ## [101.11.0] - Aug 25, 2022
 * Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the insight secrets

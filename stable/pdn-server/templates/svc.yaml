@@ -22,12 +22,12 @@ spec:
     - name: http-router
       port: 8082
       targetPort: http-router
-    - name: secure-grpc
-      port: 8095
-      targetPort: secure-grpc
     - name: insecure-grpc
       port: 8093
       targetPort: insecure-grpc
+    - name: secure-grpc
+      port: 8095
+      targetPort: secure-grpc
     {{- if .Values.service.extraPorts }}
     {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 4 }}
     {{- end }}

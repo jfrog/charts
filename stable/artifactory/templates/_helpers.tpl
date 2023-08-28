@@ -88,9 +88,9 @@ Create chart name and version as used by the chart label.
 Generate SSL certificates
 */}}
 {{- define "artifactory.gen-certs" -}}
-{{- $altNames := list ( printf "%s.%s" (include "artifactory.name" .) .Release.Namespace ) ( printf "%s.%s.svc" (include "artifactory.name" .) .Release.Namespace ) -}}
+{{- $altNames := list ( printf "%s.%s" (include "artifactory.fullname" .) .Release.Namespace ) ( printf "%s.%s.svc" (include "artifactory.fullname" .) .Release.Namespace ) -}}
 {{- $ca := genCA "artifactory-ca" 365 -}}
-{{- $cert := genSignedCert ( include "artifactory.name" . ) nil $altNames 365 $ca -}}
+{{- $cert := genSignedCert ( include "artifactory.fullname" . ) nil $altNames 365 $ca -}}
 tls.crt: {{ $cert.Cert | b64enc }}
 tls.key: {{ $cert.Key | b64enc }}
 {{- end -}}
@@ -472,6 +472,17 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- if or .Values.global.customVolumes .Values.artifactory.customVolumes -}}
 {{- $val := (tpl (include "artifactory.customVolumes" .) .) | toJson -}}
 {{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve fsGroup and runAsGroup on cluster based
+*/}}
+{{- define "artifactory.isOpenshiftCompatible" -}}
+{{- if (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
+{{- printf "%s" "true" -}}
 {{- else -}}
 {{- printf "%s" "false" -}}
 {{- end -}}

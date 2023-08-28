@@ -1,11 +1,36 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.59.9] - May 8, 2023
+## [107.63.12] - Aug 7, 2023
+* Added support for Openshift by adding the securityContext in container level.
+* **IMPORTANT**
+* Disable securityContext in container and pod level to deploy postgres on openshift.
+* Fixed support for fsGroup in non openshift environment and runAsGroup in openshift environment.
+* Fixed - Helm Template Error when using artifactory.loggers [GH-1791](https://github.com/jfrog/charts/issues/1791)
+* Removed the nginx disable condition for openshift
+* Added support to configure event.webhooks within generated system.yaml
+* Fixed an issue to generate ssl certificate should support artifactory fullname
+* Added binarystore.xml template to persistence storage type `nfs`. The default Filestore location configured according to artifactory.persistence.nfs.dataDir.
+* Added 'multiPartLimit' and 'multipartElementSize' parameters to awsS3V3 binary providers.
+
+## [107.62.0] - Jun 5, 2023
+* Upgraded to autoscaling/v2
+* Added support for 'port' and 'useHttp' parameters for s3-storage-v3 binary provider [GH-1767](https://github.com/jfrog/charts/issues/1767)
+
+## [107.61.0] - May 31, 2023
+* Added new binary provider `google-storage-v2-direct`
+* Added missing parameter 'enableSignedUrlRedirect' to 'googleStorage'
+
+## [107.60.0] - May 31, 2023
+* Enabled `splitServicesToContainers` to true by default
+* Updated the recommended values for small, medium and large installations to support the 'splitServicesToContainers'
+
+## [107.59.0] - May 31, 2023
 * Fixed reference of `terminationGracePeriodSeconds`
 * Added Support for Cold Artifact Storage as part of the systemYaml configuration (disabled by default)
 * Added new binary provider `s3-storage-v3-archive`
 * Fixed jfconnect disabling as micro-service on non-splitcontainers
+* Fixed wrong cache-fs provider ID of cluster-s3-storage-v3 in the binarystore.xml [GH-1772](https://github.com/jfrog/charts/issues/1772)
 
 ## [107.58.0] - Mar 23, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`

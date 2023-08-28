@@ -256,3 +256,18 @@ Create the name of the service account to use for rabbitmq migration
 {{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create external Rabbitmq URL for platform chart scenario.
+*/}}
+{{- define "xray.rabbitmq.extRabbitmq.url" -}}
+{{- if .Values.global.rabbitmq.auth.tls.enabled -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqpTls -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqps" .Release.Name $name $rabbitmqPort -}}
+{{- else -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
+{{- end -}}
+{{- end -}}

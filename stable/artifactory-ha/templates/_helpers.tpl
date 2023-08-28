@@ -121,9 +121,9 @@ Create chart name and version as used by the chart label.
 Generate SSL certificates
 */}}
 {{- define "artifactory-ha.gen-certs" -}}
-{{- $altNames := list ( printf "%s.%s" (include "artifactory-ha.name" .) .Release.Namespace ) ( printf "%s.%s.svc" (include "artifactory-ha.name" .) .Release.Namespace ) -}}
+{{- $altNames := list ( printf "%s.%s" (include "artifactory-ha.fullname" .) .Release.Namespace ) ( printf "%s.%s.svc" (include "artifactory-ha.fullname" .) .Release.Namespace ) -}}
 {{- $ca := genCA "artifactory-ca" 365 -}}
-{{- $cert := genSignedCert ( include "artifactory-ha.name" . ) nil $altNames 365 $ca -}}
+{{- $cert := genSignedCert ( include "artifactory-ha.fullname" . ) nil $altNames 365 $ca -}}
 tls.crt: {{ $cert.Cert | b64enc }}
 tls.key: {{ $cert.Key | b64enc }}
 {{- end -}}
@@ -494,5 +494,16 @@ nodeSelector:
 {{ toYaml .Values.global.nodeSelector | indent 2 }}
 {{- else if .Values.nginx.nodeSelector }}
 {{ toYaml .Values.nginx.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve fsGroup and runAsGroup on cluster based
+*/}}
+{{- define "artifactory.isOpenshiftCompatible" -}}
+{{- if (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
+{{- printf "%s" "true" -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
 {{- end -}}
 {{- end -}}

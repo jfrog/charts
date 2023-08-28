@@ -14,6 +14,13 @@ The xray-analysis name
 {{- end -}}
 
 {{/*
+The xray-sbom name
+*/}}
+{{- define "xray-sbom.name" -}}
+{{- default .Chart.Name .Values.sbom.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The xray-indexer name
 */}}
 {{- define "xray-indexer.name" -}}
@@ -79,6 +86,24 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.analysis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.analysis.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "xray-sbom.fullname" -}}
+{{- if .Values.sbom.fullnameOverride -}}
+{{- .Values.sbom.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.sbom.name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -170,13 +195,19 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{/*
-Create rabbitmq URL 
+Create rabbitmq URL
 */}}
 {{- define "rabbitmq.url" -}}
 {{- if index .Values "rabbitmq" "enabled" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqpTls -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqps" .Release.Name $name $rabbitmqPort -}}
+{{- else -}}
 {{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
 {{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
@@ -189,6 +220,22 @@ Create rabbitmq username
 {{- end -}}
 {{- end -}}
 
+{{/*
+Create rabbitmq URL with user and password
+*/}}
+{{- define "rabbitmq.urlWithCreds" -}}
+{{- if index .Values "rabbitmq" "enabled" -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- $local_svc := default (printf "%s" "svc.cluster.local") -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqpTls -}}
+{{- printf "%s://%s:%s@%s-%s.%s.%s:%g" "amqps" .Values.rabbitmq.auth.username .Values.rabbitmq.auth.password .Release.Name $name .Release.Namespace $local_svc $rabbitmqPort -}}
+{{- else -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
+{{- printf "%s://%s:%s@%s-%s.%s.%s:%g" "amqp" .Values.rabbitmq.auth.username .Values.rabbitmq.auth.password .Release.Name $name .Release.Namespace $local_svc $rabbitmqPort -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 Create rabbitmq password secret name
@@ -301,6 +348,21 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Resolve imagePullSecretsStrList value
+*/}}
+{{- define "xray.imagePullSecretsStrList" -}}
+{{- if .Values.global.imagePullSecrets }}
+{{- range .Values.global.imagePullSecrets }}
+- {{ . }}
+{{- end }}
+{{- else if .Values.imagePullSecrets }}
+{{- range .Values.imagePullSecrets }}
+- {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve customInitContainersBegin value
 */}}
 {{- define "xray.customInitContainersBegin" -}}
@@ -370,14 +432,14 @@ Return the proper xray chart image names
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer")) }}
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "indexer")) }}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
@@ -391,13 +453,41 @@ Return the proper xray chart image names
 {{- end -}}
 
 {{/*
+Return the registry of a service
+*/}}
+{{- define "xray.getRegistryByService" -}}
+{{- $dot := index . 0 }}
+{{- $service := index . 1 }}
+{{- if $dot.Values.global.imageRegistry }}
+    {{- $dot.Values.global.imageRegistry }}
+{{- else -}}
+    {{- index $dot.Values $service "image" "registry" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Custom certificate copy command
 */}}
 {{- define "xray.copyCustomCerts" -}}
+{{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled -}}
 echo "Copy custom certificates to {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted;
 for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted; fi done;
 if [ -f {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
+{{- end -}}
+{{- end -}}
+
+{{/*
+Custom Rabbitmq certificate copy command
+*/}}
+{{- define "xray.copyRabbitmqCustomCerts" -}}
+{{- if or .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled -}}
+echo "Copy rabbitmq custom certificates to {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted {{ .Values.xray.persistence.mountPath }}/data/rabbitmq/certs/;
+cd /tmp/rabbitmqcerts/;
+for file in $(ls * | grep -v ".key" | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/rabbitmq_${file}; fi done;
+for file in $(ls * | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.xray.persistence.mountPath }}/data/rabbitmq/certs/rabbitmq_${file}; fi done;
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -450,3 +540,75 @@ Resolve executionServiceAesKey value
 {{- .Values.xray.executionServiceAesKey -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve autoscalingQueues value
+*/}}
+{{- define "xray.autoscalingQueues" -}}
+{{- if .Values.autoscaling.keda.queues }}
+{{- range .Values.autoscaling.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret name of rabbitmq TLS certs.
+*/}}
+{{- define "xray.rabbitmqCustomCertificateshandler" -}}
+{{- if .Values.global.rabbitmq.auth.tls.enabled -}}
+{{- $secretName := printf "%s-%s" .Release.Name "rabbitmq-certs"  -}}
+{{- $val := default $secretName .Values.global.rabbitmq.auth.tls.existingSecret -}}
+{{- $val -}}
+{{- else if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $secretName := printf "%s-%s" .Release.Name "rabbitmq-certs" -}}
+{{- $val := default $secretName .Values.rabbitmq.auth.tls.existingSecret -}}
+{{- $val -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Prints value of Values.rabbitmq.auth.tls.enabled.
+*/}}
+{{- define "xray.rabbitmq.isTlsEnabled" -}}
+{{- printf "%t" $.Values.auth.tls.enabled -}}
+{{- end -}}
+
+{{/*
+Set xray env variables if rabbitmq.tls is enabled.
+*/}}
+{{- define "xray.rabbitmqTlsEnvVariables" -}}
+{{- if or .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled }}
+- name: GODEBUG
+  value: "x509ignoreCN=0"
+- name: enableTlsConnectionToRabbitMQ
+  value: "true"
+- name: RABBITMQ_CERT_FILE_PATH
+  value: {{.Values.xray.persistence.mountPath }}/data/rabbitmq/certs/rabbitmq_tls.crt
+- name: RABBITMQ_CERT_KEY_FILE_PATH
+  value: {{.Values.xray.persistence.mountPath }}/data/rabbitmq/certs/rabbitmq_tls.key
+- name: RABBITMQ_CA_CERT_FILE_PATH
+  value: {{.Values.xray.persistence.mountPath }}/data/rabbitmq/certs/rabbitmq_ca.crt
+{{- end }}
+{{- end -}}
+
+{{- define "xray.envVariables" }}
+- name: XRAY_CHART_FULL_NAME
+  value: '{{ include "xray.fullname" . }}'
+- name: XRAY_CHART_NAME
+  value: '{{ include "xray.name" . }}'
+- name: XRAY_CHART_UNIFIED_SECRET_INSTALLATION
+  value: "{{ .Values.xray.unifiedSecretInstallation }}"
+- name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_EXISTING_SECRET
+  value: "{{ .Values.systemYamlOverride.existingSecret }}"
+- name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_DATA_KEY
+  value: "{{ .Values.systemYamlOverride.dataKey }}"
+{{- end }}

@@ -1,3 +1,29 @@
+{{- if eq .Values.artifactory.persistence.type "nfs" -}}
+<config version="2">
+    {{- if  (.Values.artifactory.persistence.maxCacheSize) }}
+    <chain> <!--template="file-system"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="file-system" type="file-system"/>
+        </provider>
+    </chain>
+    {{- else }}
+    <chain> <!--template="file-system"-->
+        <provider id="file-system" type="file-system"/>
+    </chain>
+    {{- end }}
+
+    {{- if .Values.artifactory.persistence.maxCacheSize }}
+    <provider id="cache-fs" type="cache-fs">
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+    </provider>
+    {{- end }}
+
+    <provider id="file-system" type="file-system">
+        <fileStoreDir>{{ .Values.artifactory.persistence.nfs.dataDir }}/filestore</fileStoreDir>
+    </provider>
+</config>
+{{- end }}
 {{- if eq .Values.artifactory.persistence.type "file-system" -}}
 <!-- File system filestore -->
 <config version="v1">
@@ -58,7 +84,7 @@
     </provider>
 </config>
 {{- end }}
-{{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") (eq .Values.artifactory.persistence.type "cluster-google-storage-v2")  }}
+{{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") (eq .Values.artifactory.persistence.type "cluster-google-storage-v2") (eq .Values.artifactory.persistence.type "google-storage-v2-direct")  }}
 <!-- Google storage -->
 <config version="2">
     {{- if or (eq .Values.artifactory.persistence.type "google-storage") (eq .Values.artifactory.persistence.type "google-storage-v2") }}
@@ -88,6 +114,12 @@
                 <dynamic-provider id="remote" type="remote"/>
                 <property name="zones" value="local,remote"/>
             </provider>
+        </provider>
+    </chain>
+    {{- else if eq .Values.artifactory.persistence.type "google-storage-v2-direct" }}
+    <chain>  <!--template="google-storage-v2-direct"-->
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="google-storage-v2" type="google-storage-v2"/>
         </provider>
     </chain>
     {{- end }}
@@ -147,7 +179,7 @@
     </chain>
     {{- else if eq .Values.artifactory.persistence.type "cluster-s3-storage-v3" }}
     <chain> <!--template="cluster-s3-storage-v3"-->
-        <provider id="cache-fs-eventual-s3" type="cache-fs">
+        <provider id="cache-fs" type="cache-fs">
             <provider id="sharding-cluster-eventual-s3" type="sharding-cluster">
                 <sub-provider id="eventual-cluster-s3" type="eventual-cluster">
                     <provider id="retry-s3" type="retry">
@@ -206,6 +238,12 @@
         <bucketName>{{ .bucketName }}</bucketName>
         <path>{{ .path }}</path>
         <endpoint>{{ .endpoint }}</endpoint>
+        {{- with .port }}
+        <port>{{ . }}</port>
+        {{- end }}
+        {{- with .useHttp }}
+        <useHttp>{{ . }}</useHttp>
+        {{- end }}
         {{- with .maxConnections }}
         <maxConnections>{{ . }}</maxConnections>
         {{- end }}
@@ -240,6 +278,12 @@
         {{- end }}
         {{- with .enablePathStyleAccess }}
         <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
+        {{- end }}
+        {{- with .multiPartLimit }}
+        <multiPartLimit>{{ . }}</multiPartLimit>
+        {{- end }}
+        {{- with .multipartElementSize }}
+        <multipartElementSize>{{ . }}</multipartElementSize>
         {{- end }}
     </provider>
     {{- end }}

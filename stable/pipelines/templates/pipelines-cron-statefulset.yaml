@@ -132,6 +132,27 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+        - name: change-ownership
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            echo "change ownership of {{ .Values.pipelines.mountPath }} directory";
+            chown -R 1066:1066 {{ .Values.pipelines.mountPath }};
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
@@ -143,7 +164,7 @@ spec:
               drop:
                 - NET_RAW
           resources:
-{{ toYaml .Values.initContainers.resources | nindent 12 }}
+{{ toYaml .Values.pipelineInstallerInitContainer.resources | nindent 12 }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -207,6 +228,7 @@ spec:
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
           {{- end }}
+            ./pipelines-k8s initDBdetails;
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
@@ -236,27 +258,6 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
             readOnly: true
           {{- end }}
-        - name: change-ownership
-          image: "{{ .Values.initContainer.image }}"
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              add:
-                - CHOWN
-              drop:
-                - NET_RAW
-          resources:
-{{ toYaml .Values.initContainers.resources | nindent 12 }}
-          command:
-          - '/bin/sh'
-          - '-c'
-          - >
-            echo "change ownership of {{ .Values.pipelines.mountPath }} directory";
-            chown -R 1066:1066 {{ .Values.pipelines.mountPath }};
-          volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
           {{- if or .Values.pipelines.cron.customInitContainers .Values.global.customInitContainers }}
 {{ tpl (include "pipelines.cron.customInitContainers" .)  . | indent 8 }}
           {{- end }}

@@ -39,9 +39,6 @@ spec:
     - name: http-server
       port: 8089
       targetPort: http-server
-    - name: bouncer-server
-      port: 8090
-      targetPort: bouncer-server
     {{- if .Values.service.extraPorts }}
     {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 4 }}
     {{- end }}

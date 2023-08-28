@@ -85,12 +85,14 @@ spec:
       {{- end }}
     {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext.enabled }}
       securityContext:
         runAsUser: {{ .Values.common.xrayUserId }}
         fsGroup: {{ .Values.common.xrayGroupId }}
         {{- if .Values.common.fsGroupChangePolicy }}
         fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
         {{- end }}
+      {{- end }}
       {{- if .Values.common.topologySpreadConstraints }}
       topologySpreadConstraints:
 {{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
@@ -101,12 +103,9 @@ spec:
     {{- end }}
       - name: 'copy-system-yaml'
         image: '{{ .Values.initContainerImage }}'
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -173,15 +172,12 @@ spec:
           subPath: system.yaml
           {{- end }}
       {{- end }}
-      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled }}
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -189,22 +185,26 @@ spec:
         - '-c'
         - >
 {{ include "xray.copyCustomCerts" . | indent 10 }}
+{{ include "xray.copyRabbitmqCustomCerts" . | indent 10 }}
         volumeMounts:
           - name: data-volume
             mountPath: {{ .Values.xray.persistence.mountPath }}
+          {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
           - name: ca-certs
             mountPath: "/tmp/certs"
+          {{- end }}
+          {{- if or .Values.global.rabbitmq.auth.tls.enabled .Values.rabbitmq.auth.tls.enabled }}
+          - name: rabbitmq-ca-certs
+            mountPath: "/tmp/rabbitmqcerts"
+          {{- end }}
       {{- end }}
   {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -230,13 +230,9 @@ spec:
       - name: {{ .Values.router.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/sh'
           - '-c'
@@ -253,6 +249,9 @@ spec:
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "xray.router.requiredServiceTypes" . }}
+        {{- if .Values.router.extraEnvVars }}
+        {{- tpl .Values.router.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
           - name: http-router
             containerPort: {{ .Values.router.internalPort }}
@@ -282,12 +281,9 @@ spec:
       - name: {{ .Values.observability.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "observability") }}
         imagePullPolicy: {{ .Values.observability.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/sh'
           - '-c'
@@ -300,6 +296,10 @@ spec:
         {{- with .Values.observability.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        {{- if .Values.observability.extraEnvVars }}
+        {{- tpl .Values.observability.extraEnvVars . | nindent 8 }}
         {{- end }}
         volumeMounts:
         - name: data-volume
@@ -317,13 +317,9 @@ spec:
       - name: {{ .Values.server.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -342,6 +338,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -452,6 +450,9 @@ spec:
               key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.server.extraEnvVars }}
+        {{- tpl .Values.server.extraEnvVars . | nindent 8 }}
         {{- end }}
         ports:
         - containerPort: {{ .Values.server.internalPort }}
@@ -478,13 +479,9 @@ spec:
       - name: {{ .Values.analysis.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -503,6 +500,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -618,6 +617,9 @@ spec:
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
+        {{- if .Values.analysis.extraEnvVars }}
+        {{- tpl .Values.analysis.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.analysis.internalPort }}
           name: http-analysis
@@ -640,16 +642,180 @@ spec:
         livenessProbe:
 {{ tpl .Values.analysis.livenessProbe.config . | indent 10 }}
 {{- end }}
+{{- if .Values.sbom.enabled }}
+      - name: {{ .Values.sbom.name }}
+        image: {{ include "xray.getImageInfoByValue" (list . "sbom") }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.sbom.preStartCommand }}
+            echo "Running custom Sbom preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.sbom.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
+      {{- end }}
+        - name: XRAY_HA_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: XRAY_K8S_ENV
+          value: "true"
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: execution-service-aes-key
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.sbom.extraEnvVars }}
+        {{- tpl .Values.sbom.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.sbom.internalPort }}
+          name: http-sbom
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
+{{- end }}
+{{- with .Values.sbom.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.sbom.resources | indent 10 }}
+{{- if .Values.sbom.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.sbom.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.sbom.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.sbom.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- end }}
       - name: {{ .Values.indexer.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -668,6 +834,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -772,6 +940,9 @@ spec:
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
+        {{- if .Values.indexer.extraEnvVars }}
+        {{- tpl .Values.indexer.extraEnvVars . | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.indexer.internalPort }}
           name: http-indexer
@@ -797,13 +968,9 @@ spec:
       - name: {{ .Values.persist.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "persist") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.xrayUserId }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -822,6 +989,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
         - name: JF_SHARED_RABBITMQ_USERNAME
           valueFrom:
@@ -921,6 +1090,9 @@ spec:
           value: "true"
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.persist.extraEnvVars }}
+        {{- tpl .Values.persist.extraEnvVars . | nindent 8 }}
         {{- end }}
         ports:
         - containerPort: {{ .Values.persist.internalPort }}
@@ -948,12 +1120,9 @@ spec:
       {{- range .Values.xray.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "xray.getImageInfoByValue" (list $ "logger") }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         command:
         - 'sh'
         - '-c'
@@ -975,12 +1144,9 @@ spec:
         - "-e"
         - "-E"
         - "http.enabled=true"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
@@ -1072,6 +1238,11 @@ spec:
         secret:
           secretName: {{ printf "%s-%s" (include "xray.fullname" .) "system-yaml" }}
       {{- end }}
+      {{- end }}
+      {{- if or .Values.global.rabbitmq.auth.tls.enabled .Values.rabbitmq.auth.tls.enabled }}
+      - name: rabbitmq-ca-certs
+        secret:
+          secretName: {{ template "xray.rabbitmqCustomCertificateshandler" . }}
       {{- end }}
 
 {{- if or .Values.common.customVolumes .Values.global.customVolumes }}

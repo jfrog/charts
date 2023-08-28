@@ -174,8 +174,6 @@ spec:
               containerPort: 8088
             - name: http-server
               containerPort: 8089
-            - name: bouncer-server
-              containerPort: 8090
           volumeMounts:
             - name: data
               mountPath: {{ .Values.persistence.mountPath }}
