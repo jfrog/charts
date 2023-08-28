@@ -11,12 +11,12 @@ global:
   ## Chart.AppVersion can be overidden using global.versions.artifactory or .Values.artifactory.image.tag
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   ## This applies also for nginx images (.Values.nginx.image.tag)
-  versions: {}
-  #   artifactory:
-  # joinKey:
-  # masterKey:
-  # joinKeySecretName:
-  # masterKeySecretName:
+  versions:
+    artifactory:
+  # joinKey: 
+  # masterKey: 
+  joinKeySecretName: joinkey-secret
+  masterKeySecretName: masterkey-secret
 
   ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
   # customInitContainersBegin: |
@@ -101,15 +101,35 @@ serviceAccount:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: false
 ingress:
-  enabled: false
+  enabled: true
   defaultBackend:
     enabled: true
   # Used to create an Ingress record.
-  hosts: []
+  hosts: [artifactory.wesco.com]
   routerPath: /
   artifactoryPath: /artifactory/
-  className: ""
-  annotations: {}
+  className: "nginx"
+  annotations: 
+    kubernetes.io/proxy-body-size: 50m
+    kubernetes.io/proxy-connect-timeout: "600"
+    kubernetes.io/proxy-read-timeout: "600"
+    kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-max-temp-file-size: 1024m
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    #following is commented out in order to enable SAML authentication to Artifactory
+    #nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+			rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
+      add_header Cache-Control "max-age=0, no-cache, no-store, must-revalidate";
+      #following is the original configuration
+      #rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+      #rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
   # kubernetes.io/ingress.class: nginx
   # nginx.ingress.kubernetes.io/configuration-snippet: |
   #   proxy_pass_header   Server;
@@ -261,7 +281,7 @@ artifactory:
   # unifiedSecretInstallation flag enables single unified secret holding all the artifactory secrets
   unifiedSecretInstallation: false
   # For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
-  replicaCount: 1
+  replicaCount: 3
   # minAvailable: 1
 
   # Note that by default we use appVersion to get image tag/version
@@ -302,12 +322,12 @@ artifactory:
     enabled: false
     # certificateSecretName:
   database:
-    maxOpenConnections: 80
+    maxOpenConnections: 300
   tomcat:
     maintenanceConnector:
       port: 8091
     connector:
-      maxThreads: 200
+      maxThreads: 600
       sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
   # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
@@ -858,7 +878,7 @@ artifactory:
 
     accessMode: ReadWriteOnce
     ## Storage default size. Should be increased for production deployments.
-    size: 20Gi
+    size: 21Gi
     ## Use a custom Secret to be mounted as your binarystore.xml
     ## NOTE: This will ignore all settings below that make up binarystore.xml
     customBinarystoreXmlSecret:
@@ -866,7 +886,7 @@ artifactory:
     redundancy: 3
     lenientLimit: 1
     ## Cache default size. Should be increased for production deployments.
-    maxCacheSize: 5000000000
+    maxCacheSize: 7000000000
     cacheProviderDir: cache
     ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
     ## Supported types are:
@@ -879,11 +899,10 @@ artifactory:
     ## aws-s3-v3
     ## s3-storage-v3-direct
     ## cluster-s3-storage-v3
-    ## s3-storage-v3-archive
     ## azure-blob
     ## azure-blob-storage-direct
     ## cluster-azure-blob-storage
-    type: file-system
+    type: azure-blob
     ## Use binarystoreXml to provide a custom binarystore.xml
     ## This is intentionally commented and below previous content of binarystoreXml is moved under files/binarystore.xml
     ## binarystoreXml:
@@ -959,10 +978,10 @@ artifactory:
       enablePathStyleAccess: false
     ## For artifactory.persistence.type azure-blob
     azureBlob:
-      accountName:
-      accountKey:
-      endpoint:
-      containerName:
+      accountName: stjfrogprodeus01
+      accountKey: tlvQ5a9cU3LqZiA507Hd7WWQslGYLZAvk2PW2jWuiHcjl9TBaoftthyNayO79cpLullI0F1JKRp++AStRrT7uA==
+      endpoint: https://stjfrogprodeus01.blob.core.windows.net/artifactory
+      containerName: artifactory
       multiPartLimit: 100000000
       multipartElementSize: 50000000
       testConnection: false
@@ -978,18 +997,18 @@ artifactory:
     annotations: {}
   ## Uncomment the following resources definitions or pass them from command line
   ## to control the cpu and memory resources allocated by the Kubernetes cluster
-  resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "500m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
+  resources: 
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "8Gi"
+      cpu: "6"
   ## The following Java options are passed to the java process running Artifactory.
   ## You should set them according to the resources set above
   javaOpts:
-    # xms: "1g"
-    # xmx: "2g"
+    xms: "6g"
+    xmx: "8g"
     jmx:
       enabled: false
       port: 9010
@@ -1000,7 +1019,7 @@ artifactory:
       accessFile:
       passwordFile:
       # corePoolSize: 24
-  # other: ""
+    other: "-Dartifactory.async.poolMaxQueueSize=100000 -Dartifactory.async.corePoolSize=128 -Dartifactory.http.client.max.total.connections=150"
 
   nodeSelector: {}
   tolerations: []
@@ -1086,10 +1105,10 @@ access:
   ## When resetAccessCAKeys is true, Access will regenerate the CA certificate and matching private key
   # resetAccessCAKeys: false
   database:
-    maxOpenConnections: 80
+    maxOpenConnections: 300
   tomcat:
     connector:
-      maxThreads: 50
+      maxThreads: 150
       sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
 metadata:
@@ -1097,7 +1116,7 @@ metadata:
   enabled: true
   internalPort: 8086
   database:
-    maxOpenConnections: 80
+    maxOpenConnections: 300
   ## Extra environment variables that can be used to tune metadata to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
@@ -1368,7 +1387,7 @@ mc:
       extraConfig: 'acceptCount="100"'
 # Nginx
 nginx:
-  enabled: true
+  enabled: false
   kind: Deployment
   name: nginx
   labels: {}
@@ -1614,7 +1633,8 @@ nginx:
     ## or pass from helm command line
     ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
     loadBalancerSourceRanges: []
-    annotations: {}
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
     ## Provide static ip address
     loadBalancerIP:
     ## There are two available options: “Cluster” (default) and “Local”.
@@ -1723,7 +1743,7 @@ waitForDatabase: true
 ## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
 postgresql:
-  enabled: true
+  enabled: false
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
@@ -1758,26 +1778,26 @@ postgresql:
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:
-  type:
-  driver:
+  type: postgresql
+  driver: org.postgresql.Driver
   ## If you set the url, leave host and port empty
-  url:
+  #url: jdbc:postgresql://psql-jfrog-prod-eastus-01.postgres.database.azure.com:5432/artifactory
   ## If you would like this chart to create the secret containing the db
   ## password, use these values
-  user:
-  password:
+  #user: 
+  #password: 
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
-  secrets: {}
-  #  user:
-  #    name: "rds-artifactory"
-  #    key: "db-user"
-  #  password:
-  #    name: "rds-artifactory"
-  #    key: "db-password"
-  #  url:
-  #    name: "rds-artifactory"
-  #    key: "db-url"
+  secrets: 
+    user:
+      name: "postgres-credentials"
+      key: "POSTGRES_USERNAME"
+    password:
+      name: "postgres-credentials"
+      key: "POSTGRES_PASSWORD"
+    url:
+      name: "postgres-credentials"
+      key: "POSTGRES_URL"
 # Filebeat Sidecar container
 ## The provided filebeat configuration is for Artifactory logs. It assumes you have a logstash installed and configured properly.
 filebeat:
