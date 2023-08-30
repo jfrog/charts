@@ -1,6 +1,12 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.14.8] - Aug 29, 2023
+* Update dependency artifactory chart version to 107.63.14
+* Update dependency insight chart version to 101.15.3
+* Fixed - Added containerSecurityContext for xray's rabbitmq migration hook container
+* Update global.versions.router version to `7.76.0`
+
 ## [10.14.7] - Aug 18, 2023
 * Update dependency artifactory chart version to 107.63.12
 * Update dependency xray chart version to 103.80.9

@@ -89,6 +89,9 @@ spec:
     - name: pre-upgrade-container
       image: releases-docker.jfrog.io/bitnami/kubectl:1.24.12
       imagePullPolicy: IfNotPresent
+      {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
+      securityContext: {{- tpl (omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+      {{- end }}
       command: ['sh', '-c', 'kubectl exec -it {{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0 -- rabbitmqctl enable_feature_flag all ; if [ "$?" -ne 0 ]; then echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] "; exit 1; fi' ]
   restartPolicy: Never
   terminationGracePeriodSeconds: 0
