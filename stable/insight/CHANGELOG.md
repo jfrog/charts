@@ -1,7 +1,7 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.14.0] - Mar 21, 2023
+## [101.15.3] - Mar 21, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
 
 ## [101.14.0] - Mar 02, 2023
