@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.63.12] - Aug 7, 2023
+## [107.63.14] - Aug 7, 2023
 * Added support for Openshift by adding the securityContext in container level.
 * **IMPORTANT**
 * Disable securityContext in container and pod level to deploy postgres on openshift.
