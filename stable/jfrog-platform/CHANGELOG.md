@@ -1,6 +1,17 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.15.0] - Sep 12, 2023
+**IMPORTANT**
+* Enabled `unifiedSecretInstallation` to true by default,which enables single unified secret holding all of each product secrets
+* Update dependency artifactory chart version to 107.68.7
+* Update dependency xray chart version to 103.82.6
+* Update dependency distribution chart version to 102.20.1
+* Fixed - Support to configure privateRegistry for xray pre-upgrade-hook
+* Fixed rabbitmq feature flag conditions for pre-upgrade hook command execution
+* Updated redis version to `7.2.0-debian-11-r2`
+* Update global.versions.router version to `7.78.0`
+
 ## [10.14.8] - Aug 29, 2023
 * Update dependency artifactory chart version to 107.63.14
 * Update dependency insight chart version to 101.15.3

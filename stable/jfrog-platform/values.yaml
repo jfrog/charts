@@ -23,7 +23,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.76.0
+    router: 7.78.0
   #   artifactory:
   #   xray:
   #   distribution:
@@ -178,6 +178,10 @@ rabbitmq:
   migration:
     ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
     enabled: true
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/kubectl
+      tag: 1.24.12
     ## Service account for the pre-upgrade hook to perform rabbitmq migration
     serviceAccount:
       create: true
@@ -212,14 +216,15 @@ redis:
   enabled: true
   image:
     repository: bitnami/redis
-    tag: 7.0.9-debian-11-r6
+    tag: 7.2.0-debian-11-r2
   cluster:
     enabled: false
   usePassword: false
 
 artifactory:
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.14.8-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   enabled: true
+  unifiedUpgradeAllowed: true
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.15.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -233,6 +238,7 @@ artifactory:
   mc:
     enabled: true
   artifactory:
+    unifiedSecretInstallation: true
     # Note: For HA deployments, set replicaCount >1 (recommended 3)
     replicaCount: 1
     migration:
@@ -246,6 +252,8 @@ artifactory:
 xray:
   enabled: true
   unifiedUpgradeAllowed: true
+  xray:
+    unifiedSecretInstallation: true
   postgresql:
     enabled: false
   database:
@@ -271,18 +279,21 @@ xray:
 distribution:
   enabled: true
   unifiedUpgradeAllowed: true
+  distribution:
+    unifiedSecretInstallation: true
   postgresql:
     enabled: false
-  image:
-    tag: 7.0.9-debian-11-r6
   database:
     url: '{{ include "database.url" . }}'
     user: distribution
     password: distribution
 
+
 insight:
   enabled: true
   unifiedUpgradeAllowed: true
+  insightServer:
+    unifiedSecretInstallation: true
   postgresql:
     enabled: false
   database:
@@ -308,6 +319,7 @@ pipelines:
       user: "apiuser"
       password: "pipeline"
   pipelines:
+    unifiedSecretInstallation: true
     msg:
       uiUserPassword: password
   redis:
