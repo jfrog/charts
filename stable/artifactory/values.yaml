@@ -108,6 +108,7 @@ ingress:
   hosts: []
   routerPath: /
   artifactoryPath: /artifactory/
+  rtfsPath: /rtfs/
   className: ""
   annotations: {}
   # kubernetes.io/ingress.class: nginx
@@ -186,7 +187,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.71.0
+    tag: 7.77.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -269,7 +270,7 @@ artifactory:
   ## root certificates added will be copied to $JFROG_HOME/artifactory/var/etc/access/keys/trusted folder.
   circleOfTrustCertificatesSecret:
   # unifiedSecretInstallation flag enables single unified secret holding all the artifactory secrets
-  unifiedSecretInstallation: false
+  unifiedSecretInstallation: true
   # For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
   replicaCount: 1
   # minAvailable: 1
@@ -319,7 +320,7 @@ artifactory:
     connector:
       maxThreads: 200
       sendReasonPhrase: false
-      extraConfig: 'acceptCount="100"'
+      extraConfig: 'acceptCount="400"'
   # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
   # To enable set `.Values.artifactory.openMetrics.enabled` to `true`
   # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
@@ -731,6 +732,22 @@ artifactory:
     jfconnect:
       enabled: false
     jfconnect_service:
+      enabled: false
+    {{- end }}
+    {{- if and .Values.federation.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+    federation:
+      enabled: true
+      extraJavaOpts: {{ .Values.federation.extraJavaOpts }}
+      port: {{ .Values.federation.internalPort }}
+    rtfs:
+      database:
+        driver: org.postgresql.Driver
+        type: postgresql
+        username: {{ .Values.federation.database.username }}
+        password: {{ .Values.federation.database.password }}
+        url: jdbc:postgresql://{{ .Values.federation.database.host }}:{{ .Values.federation.database.port }}/{{ .Values.federation.database.name }}
+    {{- else }}
+    federation:
       enabled: false
     {{- end }}
     {{- if .Values.event.webhooks }}
@@ -1326,6 +1343,66 @@ integration:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+federation:
+  name: federation
+  enabled: false
+  internalPort: 8085
+  extraJavaOpts: ""
+  # This section should be removed once rtfs service is GA
+  database:
+    port: 5432
+    host: postgresql
+    name: rtfs
+    username: rtfs
+    password: ""
+  ## Extra environment variables that can be used to tune federation to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: MY_ENV_VAR
+  #   value: ""
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  # Add lifecycle hooks for federation container
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/rtfs/sync/ping
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/rtfs/sync/ping
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 observability:
   name: observability
   enabled: true
@@ -1599,7 +1676,7 @@ nginx:
         proxy_request_buffering off;
         proxy_buffering off;
         {{- end }}
-        add_header Strict-Transport-Security always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {

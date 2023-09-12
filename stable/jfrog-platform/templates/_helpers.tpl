@@ -63,6 +63,35 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Return the registry of a service
+*/}}
+{{- define "jfrog-platform.getRegistryByService" -}}
+{{- $dot := index . 0 }}
+{{- $service := index . 1 }}
+{{- if $dot.Values.global.imageRegistry }}
+    {{- $dot.Values.global.imageRegistry }}
+{{- else -}}
+    {{- if (eq $service "migrationHook") -}}
+      {{- index $dot.Values.rabbitmq.migration.image.registry -}}
+   {{- else -}}
+      {{- index $dot.Values $service "image" "registry" -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "jfrog-platform.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Custom init container for Postgres setup
 */}}
 {{- define "initdb" -}}
@@ -143,8 +172,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.user.name . }}
           key: {{ tpl .Values.database.secrets.user.key . }}
     {{- else if .Values.database.user }}
-    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
-          name: {{ include $chartFullName . }}-database-creds
+          name: {{ .Chart.Name }}-unified-secret
           key: db-user
     {{- end }}
     - name: DB_PASSWORD
@@ -154,8 +182,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.password.name . }}
           key: {{ tpl .Values.database.secrets.password.key . }}
     {{- else if .Values.database.password }}
-    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
-          name: {{ include $chartFullName . }}-database-creds
+          name: {{ .Chart.Name }}-unified-secret
           key: db-password
     {{- end }}
     - name: PGPASSWORD

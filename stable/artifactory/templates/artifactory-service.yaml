@@ -29,6 +29,10 @@ spec:
     {{- end }}
     protocol: TCP
     name: http-router
+  - port: {{ .Values.federation.internalPort }}
+    targetPort: {{ .Values.federation.internalPort }}
+    protocol: TCP
+    name: http-rtfs
   - port: {{ .Values.artifactory.externalArtifactoryPort }}
     targetPort: {{ .Values.artifactory.internalArtifactoryPort }}
     protocol: TCP

@@ -832,6 +832,48 @@ spec:
 {{ tpl .Values.integration.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
+      {{- if .Values.federation.enabled }}
+      - name: {{ .Values.federation.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/third-party/java/bin/java {{ .Values.federation.extraJavaOpts }} -jar /opt/jfrog/artifactory/app/rtfs/lib/jf-rtfs
+        {{- with .Values.federation.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      # TODO - Password,Url,Username - should be derived from env variable
+{{- with .Values.federation.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.federation.internalPort }}
+          name: http-rtfs
+        volumeMounts:
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.federation.resources | indent 10 }}
+      {{- if .Values.federation.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.federation.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.federation.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.federation.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.observability.enabled }}
       - name: {{ .Values.observability.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
@@ -944,12 +986,12 @@ spec:
           value: "true"
         - name: JF_REPLICATOR_SERVICE_ENABLED
           value: "false"
+        - name: JF_FEDERATION_ENABLED
+          value: "false"
         - name : JF_OBSERVABILITY_ENABLED
           value: "false"
         - name : JF_JFCONNECT_SERVICE_ENABLED
           value: "false"
-        - name : JF_JFCONNECT_ENABLED
-          value: "true"
         - name : JF_INTEGRATION_ENABLED
           value: "false"
       {{- end }}
@@ -1018,6 +1060,8 @@ spec:
           name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
           name: http-internal
+        - containerPort: {{ .Values.federation.internalPort }}
+          name: http-rtfs
         {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.primary.javaOpts.jmx.port }}
           name: tcp-jmx
