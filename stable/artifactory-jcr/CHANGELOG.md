@@ -1,7 +1,10 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.63.14] - Aug 25, 2022
+## [107.68.7] - Jul 20, 2023
+* Disabled federation services when splitServicesToContainers=true
+
+## [107.45.0] - Aug 25, 2022
 * Included event service as mandatory and remove the flag from values.yaml
 
 ## [107.41.0] - Jul 22, 2022

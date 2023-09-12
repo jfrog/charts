@@ -1,17 +1,32 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.63.14] - Aug 7, 2023
-* Added support for Openshift by adding the securityContext in container level.
-* **IMPORTANT**
-* Disable securityContext in container and pod level to deploy postgres on openshift.
-* Fixed support for fsGroup in non openshift environment and runAsGroup in openshift environment.
-* Fixed - Helm Template Error when using artifactory.loggers [GH-1791](https://github.com/jfrog/charts/issues/1791)
-* Removed the nginx disable condition for openshift
+## [107.68.7] - Aug 28, 2023
+* Enabled `unifiedSecretInstallation` by default
+
+## [107.67.0] - Aug 28, 2023
+* Add 'extraJavaOpts' and 'port' values to federation service
+
+## [107.66.0] - Aug 28, 2023
+* Added federation service container in artifactory
+* Add rtfs service to ingress in artifactory
+
+## [107.64.0] - Aug 28, 2023
 * Added support to configure event.webhooks within generated system.yaml
 * Fixed an issue to generate ssl certificate should support artifactory fullname
 * Added binarystore.xml template to persistence storage type `nfs`. The default Filestore location configured according to artifactory.persistence.nfs.dataDir.
 * Added 'multiPartLimit' and 'multipartElementSize' parameters to awsS3V3 binary providers.
+* Increased default Artifactory Tomcat acceptCount config to 400
+* Fixed Illegal Strict-Transport-Security header in nginx config
+
+## [107.63.0] - Aug 28, 2023
+* Added support for Openshift by adding the securityContext in container level.
+* **IMPORTANT**
+* Disable securityContext in container and pod level to deploy postgres on openshift.
+* Fixed support for fsGroup in non openshift environemnt and runAsGroup in openshift environment.
+* Fixed - Helm Template Error when using artifactory.loggers [GH-1791](https://github.com/jfrog/charts/issues/1791)
+* Removed the nginx disable condition for openshift
+* Fixed jfconnect disabling as micro-service on splitcontainers [GH-1806](https://github.com/jfrog/charts/issues/1806)
 
 ## [107.62.0] - Jun 5, 2023
 * Upgraded to autoscaling/v2

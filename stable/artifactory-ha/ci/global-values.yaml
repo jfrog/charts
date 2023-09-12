@@ -10,6 +10,9 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
+    javaOpts:
+      xms: "4g"
+      xmx: "4g"
   node:
     resources:
       requests:
@@ -18,9 +21,6 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
-  javaOpts:
-    xms: "4g"
-    xmx: "4g"
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
      image: "{{ .Values.initContainerImage }}"
@@ -231,7 +231,7 @@ nginx:
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
-        add_header Strict-Transport-Security always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {

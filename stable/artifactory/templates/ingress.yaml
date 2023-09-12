@@ -63,6 +63,15 @@ spec:
               name: {{ $serviceName }}
               port:
                 number: {{ $artifactoryServicePort }}
+        {{- if and $.Values.federation.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" $.Values.artifactory.image.repository)) }}
+        - path: {{ $.Values.ingress.rtfsPath }}
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: {{ $serviceName }}
+              port:
+                number: {{ $.Values.federation.internalPort }}
+        {{- end }}
     {{- end }}
   {{- else }}
     {{- range $host := .Values.ingress.hosts }}

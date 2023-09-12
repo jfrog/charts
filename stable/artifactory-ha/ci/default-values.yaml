@@ -14,6 +14,9 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
+    javaOpts:
+      xms: "4g"
+      xmx: "4g"
   node:
     resources:
       requests:
@@ -22,9 +25,6 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
-  javaOpts:
-    xms: "4g"
-    xmx: "4g"
 # To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
 postgresql:
   postgresqlPassword: password

@@ -18,6 +18,9 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
+    javaOpts:
+      xms: "4g"
+      xmx: "4g"
   node:
     resources:
       requests:
@@ -26,6 +29,3 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
-  javaOpts:
-    xms: "4g"
-    xmx: "4g"

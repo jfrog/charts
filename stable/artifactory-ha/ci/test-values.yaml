@@ -25,6 +25,9 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
+    javaOpts:
+      xms: "4g"
+      xmx: "4g"
   node:
     resources:
       requests:
@@ -33,9 +36,6 @@ artifactory:
       limits:
         memory: "6Gi"
         cpu: "4"
-  javaOpts:
-    xms: "4g"
-    xmx: "4g"
   statefulset:
     annotations:
       artifactory: test
@@ -57,6 +57,9 @@ ingress:
   hosts:
     - demonow.xyz
 nginx:
+  enabled: false
+
+jfconnect:
   enabled: false
 
 ## filebeat sidecar
