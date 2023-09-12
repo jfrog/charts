@@ -1,6 +1,20 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.20.1] - Aug 29, 2023
+* Updated redis version tag to `7.2.0-debian-11-r2`
+* Enabled `unifiedSecretInstallation` by default
+
+## [102.19.1] - Aug 04, 2023
+* Changed selectors in ServiceMonitor object to empty values
+
+## [102.19.0] - Jun 12, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Updated redis multi-arch tag version to `7.0.11-debian-11-r19`
+
+## [102.18.0] - Mar 02, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+
 ## [102.17.0] - Jan 30, 2023
 * Updated jfrogUrl text path to copy
 * Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
