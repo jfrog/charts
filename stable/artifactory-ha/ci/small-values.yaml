@@ -16,7 +16,7 @@ artifactory:
     connector:
       maxThreads: 200
   primary:
-    replicaCount: 2
+    replicaCount: 1
     resources:
       requests:
         memory: "4Gi"
@@ -27,6 +27,8 @@ artifactory:
     javaOpts:
       xms: "4g"
       xmx: "6g"
+  node:
+    replicaCount: 2
 access:
   database:
     maxOpenConnections: 80

@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.68.8] - Sep 15, 2023
+* Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
+* Removed openshift condition check from NOTES.txt
+
 ## [107.68.7] - Aug 28, 2023
 * Enabled `unifiedSecretInstallation` by default
 

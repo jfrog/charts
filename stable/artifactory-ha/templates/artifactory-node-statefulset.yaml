@@ -99,7 +99,7 @@ spec:
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
         - 'bash'
@@ -133,7 +133,7 @@ spec:
         image: "{{ .Values.initContainerImage }}"
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
         - 'bash'
@@ -156,7 +156,7 @@ spec:
       - name: 'copy-system-configurations'
         image: '{{ .Values.initContainerImage }}'
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
         - '/bin/bash'
@@ -227,7 +227,7 @@ spec:
       - name: copy-custom-certificates
         image: "{{ .Values.initContainerImage }}"
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
@@ -247,7 +247,7 @@ spec:
       - name: copy-circle-of-trust-certificates
         image: "{{ .Values.initContainerImage }}"
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
@@ -289,7 +289,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
         - '/bin/bash'
@@ -429,7 +429,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
         imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -474,7 +474,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -514,7 +514,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -603,7 +603,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -641,7 +641,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -671,7 +671,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -709,7 +709,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -747,7 +747,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -807,7 +807,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - '/bin/bash'
@@ -845,7 +845,7 @@ spec:
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
         - '/bin/bash'
@@ -1078,7 +1078,7 @@ spec:
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
       {{- if $.Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
           - 'sh'
@@ -1098,7 +1098,7 @@ spec:
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
       {{- if $.Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
         - 'sh'
@@ -1119,7 +1119,7 @@ spec:
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | indent 10 }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         args:
         - "-e"

@@ -56,13 +56,8 @@ echo ${DB_PASSWORD}
 
 SETUP:
 1. Get the Artifactory IP and URL
-{{printf "\n" }}
-   {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints" -}}
-   
-   NOTE: You are installing Artifactory in Openshift Environment.
-         Nginx service is not available with this installation. If required, you can set the value for ingress in values.yaml.
 
-   {{- else if contains "NodePort" .Values.nginx.service.type }}
+   {{- if contains "NodePort" .Values.nginx.service.type }}
    export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "artifactory-ha.nginx.fullname" . }})
    export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
    echo http://$NODE_IP:$NODE_PORT/

@@ -108,7 +108,7 @@ ingress:
   hosts: []
   routerPath: /
   artifactoryPath: /artifactory/
-  rtfsPath: /rtfs/
+  rtfsPath: /artifactory/service/rtfs/
   className: ""
   annotations: {}
   # kubernetes.io/ingress.class: nginx
@@ -270,7 +270,7 @@ artifactory:
   ## root certificates added will be copied to $JFROG_HOME/artifactory/var/etc/access/keys/trusted folder.
   circleOfTrustCertificatesSecret:
   # unifiedSecretInstallation flag enables single unified secret holding all the artifactory secrets
-  unifiedSecretInstallation: true
+  unifiedSecretInstallation: false
   # For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
   replicaCount: 1
   # minAvailable: 1
@@ -1385,7 +1385,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/rtfs/sync/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1398,7 +1398,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/rtfs/sync/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
