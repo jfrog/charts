@@ -45,13 +45,8 @@ Congratulations. You have just deployed JFrog Artifactory!
 {{- end }}
 
 1. Get the Artifactory URL by running these commands:
-{{printf "\n" }}
-   {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints" -}}
-   
-   NOTE: You are installing Artifactory in Openshift Environment.
-         Nginx service is not available with this installation. If required, you can set the value for ingress in values.yaml.
 
-   {{- else if .Values.ingress.enabled }}
+   {{- if .Values.ingress.enabled }}
    {{- range .Values.ingress.hosts }}
      http://{{ . }}
    {{- end }}
