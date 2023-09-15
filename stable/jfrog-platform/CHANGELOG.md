@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.15.1] - Sep 15, 2023
+* Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
+
 ## [10.15.0] - Sep 12, 2023
 **IMPORTANT**
 * Enabled `unifiedSecretInstallation` to true by default,which enables single unified secret holding all of each product secrets

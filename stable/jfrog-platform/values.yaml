@@ -224,7 +224,7 @@ redis:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.15.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.15.1-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -238,7 +238,7 @@ artifactory:
   mc:
     enabled: true
   artifactory:
-    unifiedSecretInstallation: true
+    unifiedSecretInstallation: false
     # Note: For HA deployments, set replicaCount >1 (recommended 3)
     replicaCount: 1
     migration:
@@ -253,7 +253,7 @@ xray:
   enabled: true
   unifiedUpgradeAllowed: true
   xray:
-    unifiedSecretInstallation: true
+    unifiedSecretInstallation: false
   postgresql:
     enabled: false
   database:
@@ -280,7 +280,7 @@ distribution:
   enabled: true
   unifiedUpgradeAllowed: true
   distribution:
-    unifiedSecretInstallation: true
+    unifiedSecretInstallation: false
   postgresql:
     enabled: false
   database:
@@ -288,12 +288,11 @@ distribution:
     user: distribution
     password: distribution
 
-
 insight:
   enabled: true
   unifiedUpgradeAllowed: true
   insightServer:
-    unifiedSecretInstallation: true
+    unifiedSecretInstallation: false
   postgresql:
     enabled: false
   database:
@@ -319,7 +318,7 @@ pipelines:
       user: "apiuser"
       password: "pipeline"
   pipelines:
-    unifiedSecretInstallation: true
+    unifiedSecretInstallation: false
     msg:
       uiUserPassword: password
   redis:
