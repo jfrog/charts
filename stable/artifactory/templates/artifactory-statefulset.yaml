@@ -649,6 +649,9 @@ spec:
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
         volumeMounts:
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
