@@ -1,6 +1,13 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.15.2] - Sep 28, 2023
+* Update dependency artifactory chart version to 107.68.11
+* Update dependency xray chart version to 103.82.11
+* Update dependency distribution chart version to 102.20.2
+* Update dependency insight chart version to 101.15.4
+* Update global.versions.router version to `7.79.0`
+
 ## [10.15.1] - Sep 15, 2023
 * Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
 
