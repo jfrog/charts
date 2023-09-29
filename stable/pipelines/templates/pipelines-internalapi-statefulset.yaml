@@ -62,6 +62,7 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       initContainers:
           {{- if or .Values.pipelines.internalapi.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "pipelines.internalapi.customInitContainersBegin" .)  . | indent 8 }}
@@ -168,6 +169,7 @@ spec:
             done;
   {{- end }}
 {{- end }}
+{{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
         - name: wait-for-vault
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -216,6 +218,7 @@ spec:
               sleep 1;
             done;
             {{- end }}
+{{- end }}
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
@@ -233,11 +236,13 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
             - name: VAULT_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
                   key: token
+{{- end }}
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
@@ -496,6 +501,8 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.observability.logPath }}
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.observability.etcPath }}
           startupProbe:
 {{ tpl .Values.pipelines.observability.startupProbe.config . | indent 12 }}
         {{- end }}

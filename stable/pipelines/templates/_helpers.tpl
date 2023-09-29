@@ -42,11 +42,6 @@ The services name
 {{- printf "%s-%s-trigger" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{- define "pipelines.steptrigger.name" -}}
-{{- $name := .Release.Name | trunc 29 -}}
-{{- printf "%s-%s-steptrigger" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
 {{- define "pipelines.extensionsync.name" -}}
 {{- $name := .Release.Name | trunc 29 -}}
 {{- printf "%s-%s-extensionsync" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
@@ -224,7 +219,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
-Common labels for runtrigger
+Common labels for runservice
 */}}
 {{- define "pipelines.trigger.labels" -}}
 helm.sh/chart: {{ include "pipelines.chart" . }}
@@ -236,11 +231,11 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
 {{/*
-Common labels for steptrigger
+Common labels for stepservice
 */}}
-{{- define "pipelines.steptrigger.labels" -}}
+{{- define "pipelines.stepservice.labels" -}}
 helm.sh/chart: {{ include "pipelines.chart" . }}
-{{ include "pipelines.steptrigger.selectorLabels" . }}
+{{ include "pipelines.stepservice.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ include "pipelines.app.version" . | quote }}
 {{- end }}
@@ -348,10 +343,10 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
-Selector labels for steptrigger pod
+Selector labels for stepservice pod
 */}}
-{{- define "pipelines.steptrigger.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "pipelines.steptrigger.name" . }}
+{{- define "pipelines.stepservice.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "pipelines.stepservice.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
@@ -560,24 +555,24 @@ Resolve customInitContainers value for internalapi
 {{- end -}}
 
 {{/*
-Resolve customInitContainersBegin value for steptrigger
+Resolve customInitContainersBegin value for stepservice
 */}}
-{{- define "pipelines.steptrigger.customInitContainersBegin" -}}
+{{- define "pipelines.stepservice.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.pipelines.stepTrigger.customInitContainersBegin -}}
-{{- .Values.pipelines.stepTrigger.customInitContainersBegin -}}
+{{- else if .Values.pipelines.stepservice.customInitContainersBegin -}}
+{{- .Values.pipelines.stepservice.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Resolve customInitContainers value for steptrigger
+Resolve customInitContainers value for stepservice
 */}}
-{{- define "pipelines.steptrigger.customInitContainers" -}}
+{{- define "pipelines.stepservice.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.pipelines.stepTrigger.customInitContainers -}}
-{{- .Values.pipelines.stepTrigger.customInitContainers -}}
+{{- else if .Values.pipelines.stepservice.customInitContainers -}}
+{{- .Values.pipelines.stepservice.customInitContainers -}}
 {{- end -}}
 {{- end -}}
 
@@ -609,8 +604,8 @@ Resolve customInitContainersBegin value for trigger
 {{- define "pipelines.trigger.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.pipelines.runTrigger.customInitContainersBegin -}}
-{{- .Values.pipelines.runTrigger.customInitContainersBegin -}}
+{{- else if .Values.pipelines.runservice.customInitContainersBegin -}}
+{{- .Values.pipelines.runservice.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
 
@@ -620,8 +615,8 @@ Resolve customInitContainers value for trigger
 {{- define "pipelines.trigger.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.pipelines.runTrigger.customInitContainers -}}
-{{- .Values.pipelines.runTrigger.customInitContainers -}}
+{{- else if .Values.pipelines.runservice.customInitContainers -}}
+{{- .Values.pipelines.runservice.customInitContainers -}}
 {{- end -}}
 {{- end -}}
 
@@ -698,14 +693,14 @@ Resolve customSidecarContainers value for internalapi
 {{- end -}}
 
 {{/*
-Resolve customSidecarContainers value for steptrigger
+Resolve customSidecarContainers value for stepservice
 */}}
-{{- define "pipelines.steptrigger.customSidecarContainers" -}}
+{{- define "pipelines.stepservice.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
 {{- end -}}
-{{- if .Values.pipelines.stepTrigger.customSidecarContainers -}}
-{{- .Values.pipelines.stepTrigger.customSidecarContainers -}}
+{{- if .Values.pipelines.stepservice.customSidecarContainers -}}
+{{- .Values.pipelines.stepservice.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
 
@@ -728,8 +723,8 @@ Resolve customSidecarContainers value for trigger
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
 {{- end -}}
-{{- if .Values.pipelines.runTrigger.customSidecarContainers -}}
-{{- .Values.pipelines.runTrigger.customSidecarContainers -}}
+{{- if .Values.pipelines.runservice.customSidecarContainers -}}
+{{- .Values.pipelines.runservice.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
 
@@ -797,8 +792,7 @@ Return the proper vault image name
 Return the proper pipelines app version
 */}}
 {{- define "pipelines.app.version" -}}
-{{- $image := split ":" ((include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" )) | toString) -}}
-{{- $tag := $image._1 -}}
+{{- $tag := (splitList ":" ((include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" )))) | last | toString -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
 

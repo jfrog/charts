@@ -62,6 +62,7 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       initContainers:
           {{- if or .Values.pipelines.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "pipelines.customInitContainersBegin" .)  . | indent 8 }}
@@ -125,6 +126,27 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+        - name: change-ownership
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - CHOWN
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/sh'
+          - '-c'
+          - >
+            echo "change ownership of {{ .Values.pipelines.mountPath }} directory";
+            chown -R 1066:1066 {{ .Values.pipelines.mountPath }};
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
 {{- if .Values.vault.enabled }}
   {{- if .Values.waitForDatabase }}
         - name: wait-for-db
@@ -195,6 +217,7 @@ spec:
             {{- end }}
         {{- end }}
 {{- end }}
+{{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
         - name: wait-for-vault
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -243,6 +266,7 @@ spec:
               sleep 2;
             done;
             {{- end }}
+{{- end }}
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
@@ -260,11 +284,13 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
             - name: VAULT_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
                   key: token
+{{- end }}
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
@@ -525,6 +551,8 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-logs
             mountPath: {{ .Values.pipelines.observability.logPath }}
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.observability.etcPath }}
           startupProbe:
 {{ tpl .Values.pipelines.observability.startupProbe.config . | indent 12 }}
         {{- end }}
@@ -804,8 +832,6 @@ spec:
 {{ tpl . $ | nindent 10 }}
 {{- end }}
 {{- end }}
-
-{{- if .Values.pipelines.stepservice.enabled }}
         - name: stepservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.stepservice.image.pullPolicy }}
@@ -843,8 +869,6 @@ spec:
 {{- with .Values.pipelines.customVolumeMounts }}
 {{ tpl . $ | nindent 10 }}
 {{- end }}
-{{- end }}
-
         - name: pipelinesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
@@ -877,80 +901,6 @@ spec:
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.pipelineSync.resources | nindent 12 }}
-          volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
-        - name: runtrigger
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "runTrigger" ) }}
-          imagePullPolicy: {{ .Values.pipelines.runTrigger.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
-          workingDir: /opt/jfrog/pipelines/app/micro/runTrigger
-          env:
-            - name: COMPONENT
-              value: runtrigger
-            - name: PIPELINES_NODE_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
-{{- if .Values.pipelines.extraEnvironmentVariables }}
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-{{- if .Values.pipelines.runTrigger.extraEnvironmentVariables }}
-{{- with .Values.pipelines.runTrigger.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-          resources:
-            {{- toYaml .Values.pipelines.runTrigger.resources | nindent 12 }}
-          volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
-        - name: steptrigger
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepTrigger" ) }}
-          imagePullPolicy: {{ .Values.pipelines.stepTrigger.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
-          workingDir: /opt/jfrog/pipelines/app/micro/stepTrigger
-          env:
-            - name: COMPONENT
-              value: steptrigger
-            - name: PIPELINES_NODE_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
-{{- if .Values.pipelines.extraEnvironmentVariables }}
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-{{- if .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
-{{- with .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-          resources:
-            {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
@@ -1064,80 +1014,6 @@ spec:
 {{- end }}
           resources:
             {{- toYaml .Values.pipelines.hookHandler.resources | nindent 12 }}
-          volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
-        - name: marshaller
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "marshaller" ) }}
-          imagePullPolicy: {{ .Values.pipelines.marshaller.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
-          workingDir: /opt/jfrog/pipelines/app/micro/marshaller
-          env:
-            - name: COMPONENT
-              value: marshaller
-            - name: PIPELINES_NODE_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
-{{- if .Values.pipelines.extraEnvironmentVariables }}
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-{{- if .Values.pipelines.marshaller.extraEnvironmentVariables }}
-{{- with .Values.pipelines.marshaller.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-          resources:
-            {{- toYaml .Values.pipelines.marshaller.resources | nindent 12 }}
-          volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
-        - name: logup
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "logup" ) }}
-          imagePullPolicy: {{ .Values.pipelines.logup.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
-          workingDir: /opt/jfrog/pipelines/app/micro/logup
-          env:
-            - name: COMPONENT
-              value: logup
-            - name: PIPELINES_NODE_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
-{{- if .Values.pipelines.extraEnvironmentVariables }}
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-{{- if .Values.pipelines.logup.extraEnvironmentVariables }}
-{{- with .Values.pipelines.logup.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-          resources:
-            {{- toYaml .Values.pipelines.logup.resources | nindent 12 }}
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}

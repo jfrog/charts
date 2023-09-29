@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "pipelines.steptrigger.name" . }}
+  name: {{ include "pipelines.stepservice.name" . }}
   labels:
-    {{- include "pipelines.steptrigger.labels" . | nindent 4 }}
-    {{- with .Values.pipelines.stepTrigger.labels }}
+    {{- include "pipelines.stepservice.labels" . | nindent 4 }}
+    {{- with .Values.pipelines.stepservice.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
     {{- include "pipelines.common.labels" . | nindent 4 }}
@@ -14,18 +14,18 @@ metadata:
     {{- end }}
 spec:
   serviceName: {{ include "pipelines.services.name" . }}-headless
-  replicas: {{ .Values.pipelines.stepTrigger.replicaCount }}
+  replicas: {{ .Values.pipelines.stepservice.replicaCount }}
   updateStrategy:
     type: {{ .Values.pipelines.updateStrategy }}
   selector:
     matchLabels:
-      {{- include "pipelines.steptrigger.selectorLabels" . | nindent 6 }}
-      component: {{ include "pipelines.steptrigger.name" . }}
+      {{- include "pipelines.stepservice.selectorLabels" . | nindent 6 }}
+      component: {{ include "pipelines.stepservice.name" . }}
   template:
     metadata:
       labels:
-        {{- include "pipelines.steptrigger.selectorLabels" . | nindent 8 }}
-        component: {{ include "pipelines.steptrigger.name" . }}
+        {{- include "pipelines.stepservice.selectorLabels" . | nindent 8 }}
+        component: {{ include "pipelines.stepservice.name" . }}
         {{- include "pipelines.common.labels" . | nindent 8 }}
         {{- with .Values.pipelines.labels }}
 {{ toYaml . | indent 8 }}
@@ -56,9 +56,10 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       initContainers:
-          {{- if or .Values.pipelines.stepTrigger.customInitContainersBegin .Values.global.customInitContainersBegin }}
-{{ tpl (include "pipelines.steptrigger.customInitContainersBegin" .)  . | indent 8 }}
+          {{- if or .Values.pipelines.stepservice.customInitContainersBegin .Values.global.customInitContainersBegin }}
+{{ tpl (include "pipelines.stepservice.customInitContainersBegin" .)  . | indent 8 }}
           {{- end }}
         - name: wait-for-pipelines-internalapi
           image: '{{ .Values.initContainer.image }}'
@@ -170,11 +171,13 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
             - name: VAULT_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
                   key: token
+{{- end }}
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
@@ -258,8 +261,8 @@ spec:
             mountPath: {{ .Values.pipelines.mountPath }}/buildplane-config
             readOnly: true
           {{- end }}
-          {{- if or .Values.pipelines.stepTrigger.customInitContainers .Values.global.customInitContainers }}
-{{ tpl (include "pipelines.steptrigger.customInitContainers" .)  . | indent 8 }}
+          {{- if or .Values.pipelines.stepservice.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "pipelines.stepservice.customInitContainers" .)  . | indent 8 }}
           {{- end }}
       {{- if .Values.hostAliases }}
       hostAliases:
@@ -367,7 +370,6 @@ spec:
           readinessProbe:
 {{ tpl .Values.pipelines.router.readinessProbe.config . | indent 12 }}
         {{- end }}
-{{- if .Values.pipelines.stepservice.enabled }}
         - name: stepservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.stepservice.image.pullPolicy }}
@@ -405,49 +407,63 @@ spec:
 {{- with .Values.pipelines.customVolumeMounts }}
 {{ tpl . $ | nindent 10 }}
 {{- end }}
-{{- end }}
-        - name: steptrigger
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepTrigger" ) }}
-          imagePullPolicy: {{ .Values.pipelines.stepTrigger.image.pullPolicy }}
+        - name: observability
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "observability" ) }}
+          imagePullPolicy: {{ .Values.pipelines.observability.image.pullPolicy }}
           securityContext:
+            runAsNonRoot: false
             allowPrivilegeEscalation: false
             capabilities:
               drop:
                 - NET_RAW
-          workingDir: /opt/jfrog/pipelines/app/micro/stepTrigger
           env:
-            - name: PIPELINES_INTERNAL_API
-              value: "true"
-            - name: COMPONENT
-              value: steptrigger
-            - name: PIPELINES_NODE_ID
+            - name: JF_OBSERVABILITY_PARENT_SERVICE
+              value: "stepservice"
+            - name: JF_OBSERVABILITY_PARENT_PRODUCT
+              value: "pipelines"
+            - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.masterKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: master-key
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
 {{- if .Values.pipelines.extraEnvironmentVariables }}
 {{- with .Values.pipelines.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
 {{- end }}
-{{- if .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
-{{- with .Values.pipelines.stepTrigger.extraEnvironmentVariables }}
+{{- if .Values.pipelines.observability.extraEnvironmentVariables }}
+{{- with .Values.pipelines.observability.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
 {{- end }}
           resources:
-            {{- toYaml .Values.pipelines.stepTrigger.resources | nindent 12 }}
+            {{ toYaml .Values.pipelines.observability.resources | nindent 12 }}
+          {{- if .Values.pipelines.observability.startupProbe.enabled }}
           volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
           - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
-          {{- if or .Values.pipelines.stepTrigger.customSidecarContainers .Values.global.customSidecarContainers }}
-{{ tpl (include "pipelines.steptrigger.customSidecarContainers" .) . | nindent 8 }}
-          {{- end }}
+            mountPath: {{ .Values.pipelines.observability.logPath }}
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.observability.etcPath }}
+          startupProbe:
+{{ tpl .Values.pipelines.observability.startupProbe.config . | indent 12 }}
+        {{- end }}
+        {{- if .Values.pipelines.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.pipelines.observability.livenessProbe.config . | indent 12 }}
+        {{- end }}
     {{- if or .Values.pipelines.nodeSelector .Values.global.nodeSelector }}
 {{ tpl (include "pipelines.nodeSelector" .) . | indent 6 }}
     {{- end }}
@@ -465,7 +481,7 @@ spec:
                 topologyKey: {{ .Values.pipelines.podAntiAffinity.topologyKey }}
                 labelSelector:
                   matchLabels:
-                    app: {{ template "pipelines.steptrigger.name" . }}
+                    app: {{ template "pipelines.stepservice.name" . }}
                     release: {{ .Release.Name }}
     {{- else if eq .Values.pipelines.podAntiAffinity.type "hard" }}
       affinity:
@@ -474,7 +490,7 @@ spec:
             - topologyKey: {{ .Values.pipelines.podAntiAffinity.topologyKey }}
               labelSelector:
                 matchLabels:
-                  app: {{ template "pipelines.steptrigger.name" . }}
+                  app: {{ template "pipelines.stepservice.name" . }}
                   release: {{ .Release.Name }}
     {{- end }}
     {{- with .Values.pipelines.tolerations }}

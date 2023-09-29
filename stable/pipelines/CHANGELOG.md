@@ -1,6 +1,18 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
+## [101.44.5] - Aug 7, 2023
+* Upadate chart version of vault to 0.25.0 to work with 1.25 of kubernetes
+* Added option to stream logs in json
+* Add support to work without vault on modifying corresponding flags
+* Remove steptrigger from pipelines
+* Remove logup from pipelines
+* Add ability to pass filebeat metric configuration
+* Updated nodePollerInterval from 15 seconds to 5 seconds
+* Fixed #adding colon in image registry breaks deployment with meta label error
+* Add observability container to non api pods
+* Add terminationGracePeriodSeconds for all the pods
+
 ## [101.41.3] - Jun 16, 2023
 * Add ability to work with redis.fullnameOverride
 * Add support to pass db metric parameters in system.yaml

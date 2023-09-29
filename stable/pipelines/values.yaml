@@ -139,6 +139,11 @@ securityContext:
 
 splitServicesToPods: false
 
+## @param terminationGracePeriodSeconds Default duration in seconds k8s waits for container to exit before sending kill signal.
+## Any time in excess of 10 seconds will be spent waiting for any synchronization necessary for cluster not to lose data.
+##
+terminationGracePeriodSeconds: 60
+
 ## Pipelines components
 pipelines:
 
@@ -213,13 +218,17 @@ pipelines:
   # PostgressDB health check timeout in seconds
   dbHealthCheckTimeoutInSeconds: 2
   # BuildPlane polling interval
-  nodePollerIntervalMS: 15000
+  nodePollerIntervalMS: 5000
   # Auto sync pipelineSource when resource is outdated
   autoSyncResourceIfOutdated: false
+  # Retrigger the pipeline after syncing outdated resources
+  reTriggerOnSyncFailure: true
   # Allow build badges for pipelines
   allowBuildBadges: false
   # Allow static nodes
   allowCustomNodes: true
+  # Enable anti-affinity spec for k8s node pool to run one pod per one node
+  runOnePodInOneNode: true
   # Enforce non root node pools
   enforceNonRootNodes: false
   # maximum step timeout value
@@ -264,8 +273,10 @@ pipelines:
   metrics:
     ## if enabled, metrics will be logged
     enabled: false
+
   ## Logging settings
   logging:
+    enableJsonConsoleLogAppenders: false
     ## Livelog settings
     view:
       ## If enabled, livelogs will be enabled
@@ -771,10 +782,10 @@ pipelines:
     # customInitContainers: |
     # customSidecarContainers: |
 
-  runTrigger:
+  runservice:
     image:
       # registry:
-      repository: jfrog/pipelines-micro
+      repository: jfrog/pipelines-run-service
       # tag:
       pullPolicy: IfNotPresent
 
@@ -784,30 +795,6 @@ pipelines:
       maxReplicas: 3
       targetCPUUtilizationPercentage: 200
 
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 500Mi
-      # requests:
-      #   cpu: 5m
-      #   memory: 40Mi
-
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: "example_value"
-
-    ## Add custom init begin containers - first init container to run
-    # customInitContainersBegin: |
-    ## Add custom init containers - last init container to run
-    # customInitContainers: |
-    # customSidecarContainers: |
-
-  runservice:
-    image:
-      # registry:
-      repository: jfrog/pipelines-run-service
-      # tag:
-      pullPolicy: IfNotPresent
     resources: {}
     ## This service will be enabled in split deployment design (splitServicesToPods) as a mandatory service
     enabled: true
@@ -821,6 +808,12 @@ pipelines:
     extraEnvironmentVariables:
     # - name: MY_ENV_VAR
     #   value: "example_value"
+
+    ## Add custom init begin containers - first init container to run
+    # customInitContainersBegin: |
+    ## Add custom init containers - last init container to run
+    # customInitContainers: |
+    # customSidecarContainers: |
 
   logservice:
     image:
@@ -841,31 +834,6 @@ pipelines:
     extraEnvironmentVariables:
     # - name: MY_ENV_VAR
     #   value: "example_value"
-
-  stepTrigger:
-    image:
-      # registry:
-      repository: jfrog/pipelines-micro
-      # tag:
-      pullPolicy: IfNotPresent
-    replicaCount: 1
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 500Mi
-      # requests:
-      #   cpu: 5m
-      #   memory: 40Mi
-
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: "example_value"
-
-    ## Add custom init begin containers - first init container to run
-    # customInitContainersBegin: |
-    ## Add custom init containers - last init container to run
-    # customInitContainers: |
-    # customSidecarContainers: |
 
   stepservice:
     image:
@@ -973,44 +941,6 @@ pipelines:
     # customInitContainers: |
     # customSidecarContainers: |
 
-  marshaller:
-    image:
-      # registry:
-      repository: jfrog/pipelines-micro
-      # tag:
-      pullPolicy: IfNotPresent
-
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 500Mi
-      # requests:
-      #   cpu: 5m
-      #   memory: 60Mi
-
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: "example_value"
-
-  logup:
-    image:
-      # registry:
-      repository: jfrog/pipelines-micro
-      # tag:
-      pullPolicy: IfNotPresent
-
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 500Mi
-      # requests:
-      #   cpu: 5m
-      #   memory: 40Mi
-
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: "example_value"
-
   extensionSync:
     image:
       # registry:
@@ -1075,6 +1005,7 @@ pipelines:
     # name: observability
     internalPort: 8036
     logPath: "/opt/jfrog/observability/var/log"
+    etcPath: "/opt/jfrog/observability/var/etc"
 
     resources: {}
       # requests:
@@ -1113,6 +1044,10 @@ pipelines:
     extraEnvironmentVariables:
     # - name: MY_ENV_VAR
     #   value: "example_value"
+
+    filebeat:
+      enabled: false
+
 
   ## Pipelines installer
   pipelinesInit:
@@ -1243,6 +1178,23 @@ pipelines:
 
 
   systemYaml: |
+    observability:
+      logging:
+        application:
+          level: info
+    {{- if .Values.pipelines.observability.filebeat.enabled }}
+      filebeat:
+        enabled: true
+        elasticsearch:
+          url: {{ .Values.pipelines.observability.filebeat.elasticsearch.url }}
+          username: {{ .Values.pipelines.observability.filebeat.elasticsearch.username }}
+          password: {{ .Values.pipelines.observability.filebeat.elasticsearch.password }}
+          {{- if .Values.pipelines.observability.filebeat.elasticsearch.ssl }}
+          ssl:
+            verification_mode: {{ .Values.pipelines.observability.filebeat.elasticsearch.ssl.verification_mode }}
+          {{- end }}
+    {{- end }}
+
     {{- if .Values.router.routerConfiguration }}
     router:
       ## Router configuration
@@ -1360,11 +1312,7 @@ pipelines:
         {{- end }}
         queues:
           - "core.pipelineSync"
-          - "core.runTrigger"
-          - "core.stepTrigger"
-          - "core.marshaller"
           - "cluster.init"
-          - "core.logup"
           - "www.signals"
           {{- if .Values.pipelines.nexec.enabled }}
           - "core.nexec"
@@ -1451,7 +1399,9 @@ pipelines:
       ## Metrics logging
       metrics:
         enabled: {{ .Values.pipelines.metrics.enabled }}
+
       logging:
+        enableJsonConsoleLogAppenders: {{ .Values.pipelines.logging.enableJsonConsoleLogAppenders }}
 
         view:
           enabled: {{ .Values.pipelines.logging.view.enabled }}
@@ -1526,6 +1476,7 @@ pipelines:
       dbHealthCheckIntervalInMins: {{ .Values.pipelines.dbHealthCheckIntervalInMins }}
       dbHealthCheckTimeoutInSeconds: {{ .Values.pipelines.dbHealthCheckTimeoutInSeconds }}
       autoSyncResourceIfOutdated: {{ .Values.pipelines.autoSyncResourceIfOutdated}}
+      reTriggerOnSyncFailure: {{ .Values.pipelines.reTriggerOnSyncFailure }}
       allowBuildBadges: {{ .Values.pipelines.allowBuildBadges }}
       ## Global proxy settings, to be applied to all services
       ##
@@ -1606,14 +1557,10 @@ pipelines:
           sessionSecret: "{{ .Values.pipelines.authToken }}"
         pipelineSync:
           name: pipelineSync
-        runTrigger:
-          name: runTrigger
         runservice:
           name: runservice
         logservice:
           name: logservice
-        stepTrigger:
-          name: stepTrigger
         stepservice:
           name: stepservice
         cron:
@@ -1624,16 +1571,12 @@ pipelines:
         {{- end }}
         hookHandler:
           name: hookHandler
-        marshaller:
-          name: marshaller
         extensionSync:
           name: extensionSync
         templateSync:
           name: templateSync
         reqSealer:
           name: reqSealer
-        logup:
-          name: logup
 
     ## Runtime configuration
     ##
@@ -1652,6 +1595,7 @@ pipelines:
       defaultMinionInstanceSize: "c4.large"
       allowDynamicNodes: true
       allowCustomNodes: {{ .Values.pipelines.allowCustomNodes }}
+      runOnePodInOneNode: {{ .Values.pipelines.runOnePodInOneNode }}
       enforceNonRootNodes: {{ .Values.pipelines.enforceNonRootNodes }}
       {{- range $key, $value := .Values.runtimeOverride }}
       {{ $key }}: {{ $value | quote }}
@@ -1686,9 +1630,9 @@ pipelines:
           os: Ubuntu_20.04
           language: node
           registryUrl: releases-docker.jfrog.io
-          image: jfrog/pipelines-u20node
+          image: jfrog/pipelines-u20node-arm64
           isDefault: true
-          defaultVersion: 16
+          defaultVersion: 18
         - architecture: x86_64
           os: Ubuntu_20.04
           language: node
@@ -1769,7 +1713,7 @@ pipelines:
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19node
-          defaultVersion: 16
+          defaultVersion: 18
         - architecture: x86_64
           os: WindowsServer_2019
           language: java
@@ -1787,7 +1731,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: WindowsServer_2019
           language: dotnet
@@ -1851,7 +1795,31 @@ pipelines:
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8go
           defaultVersion: 1.19
-
+        - architecture: x86_64
+          os: AmazonLinux_2
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8node
+          isDefault: true
+          defaultVersion: 16
+        - architecture: x86_64
+          os: AmazonLinux_2
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8java
+          defaultVersion: 17
+        - architecture: x86_64
+          os: AmazonLinux_2
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8cpp
+          defaultVersion: 9
+        - architecture: x86_64
+          os: AmazonLinux_2
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-c8go
+          defaultVersion: 1.19
 ## Runtime Override Properties Section
 runtimeOverride: {}
 
@@ -1963,7 +1931,7 @@ rabbitmq:
 access:
   enableVaultToAccessMigration: false
   shouldJustUpdateAccess: false
-  shouldReadFromVault: false
+  shouldReadFromVault: true
 ## Redis
 ## Configuration values for the redis dependency
 ## ref: https://github.com/bitnami/charts/tree/master/bitnami/redis
