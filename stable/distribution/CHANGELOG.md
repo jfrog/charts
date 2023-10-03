@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.20.1] - Aug 29, 2023
+## [102.20.2] - Aug 29, 2023
 * Updated redis version tag to `7.2.0-debian-11-r2`
 * Enabled `unifiedSecretInstallation` by default
 

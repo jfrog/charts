@@ -172,7 +172,8 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.user.name . }}
           key: {{ tpl .Values.database.secrets.user.key . }}
     {{- else if .Values.database.user }}
-          name: {{ .Chart.Name }}-unified-secret
+    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
+          name: {{ include $chartFullName . }}-database-creds
           key: db-user
     {{- end }}
     - name: DB_PASSWORD
@@ -182,7 +183,8 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.password.name . }}
           key: {{ tpl .Values.database.secrets.password.key . }}
     {{- else if .Values.database.password }}
-          name: {{ .Chart.Name }}-unified-secret
+    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
+          name: {{ include $chartFullName . }}-database-creds
           key: db-password
     {{- end }}
     - name: PGPASSWORD

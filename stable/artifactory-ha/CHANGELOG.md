@@ -1,8 +1,18 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.68.11] - Sep 20, 2023
+* Fixed rtfs context
+* Fixed - Metadata service does not respect customVolumeMounts for DB CAs [GH-1815](https://github.com/jfrog/charts/issues/1815)
+
+## [107.68.8] - Sep 18, 2023
+* Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
+* Removed unused `artifactory.javaOpts` from values.yaml
+* Removed openshift condition check from NOTES.txt
+* Fixed an issue with artifactory node replicaCount [GH-1808](https://github.com/jfrog/charts/issues/1808)
+
 ## [107.68.7] - Aug 28, 2023
-* Enabled `unifiedSecretInstallation` as true by default
+* Enabled `unifiedSecretInstallation` by default
 * Removed unused `artifactory.javaOpts` from values.yaml
 
 ## [107.67.0] - Aug 28, 2023
