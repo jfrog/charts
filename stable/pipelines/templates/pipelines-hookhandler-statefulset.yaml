@@ -60,6 +60,7 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "pipelines.imagePullSecrets" . | nindent 6 }}
     {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       initContainers:
           {{- if or .Values.pipelines.hookHandler.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "pipelines.hookhandler.customInitContainersBegin" .)  . | indent 8 }}
@@ -174,11 +175,13 @@ spec:
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
             {{- end }}
+{{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
             - name: VAULT_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.global.vault.existingSecret | default (printf "%s" "root-vault-secret") }}
                   key: token
+{{- end }}
             - name: PIPELINES_SHARED_DB_CONNECTIONSTRING
               valueFrom:
                 secretKeyRef:
@@ -370,6 +373,63 @@ spec:
           {{- if .Values.pipelines.router.readinessProbe.enabled }}
           readinessProbe:
 {{ tpl .Values.pipelines.router.readinessProbe.config . | indent 12 }}
+        {{- end }}
+        - name: observability
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "observability" ) }}
+          imagePullPolicy: {{ .Values.pipelines.observability.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            - name: JF_OBSERVABILITY_PARENT_SERVICE
+              value: "hookhandler"
+            - name: JF_OBSERVABILITY_PARENT_PRODUCT
+              value: "pipelines"
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.masterKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: master-key
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if not .Values.pipelines.unifiedSecretInstallation }}
+                  name: "{{ include "pipelines.joinKeySecretName" . }}"
+                {{- else }}
+                  name: "{{ template "pipelines.name" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.observability.extraEnvironmentVariables }}
+{{- with .Values.pipelines.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{ toYaml .Values.pipelines.observability.resources | nindent 12 }}
+          {{- if .Values.pipelines.observability.startupProbe.enabled }}
+          volumeMounts:
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.observability.logPath }}
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.observability.etcPath }}
+          startupProbe:
+{{ tpl .Values.pipelines.observability.startupProbe.config . | indent 12 }}
+        {{- end }}
+        {{- if .Values.pipelines.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.pipelines.observability.livenessProbe.config . | indent 12 }}
         {{- end }}
         - name: hookhandler
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "hookHandler" ) }}
