@@ -86,10 +86,13 @@ spec:
   {{- if .Values.rabbitmq.podSecurityContext.enabled }}
   securityContext: {{- omit .Values.rabbitmq.podSecurityContext "enabled" | toYaml | nindent 4 }}
   {{- end }}
+  {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+  {{- include "xray.imagePullSecrets" . | indent 2 }}
+  {{- end }}
   serviceAccountName: {{ template "xray.rabbitmq.migration.serviceAccountName" . }}
   containers:
     - name: pre-upgrade-container
-      image: releases-docker.jfrog.io/bitnami/kubectl:1.24.12
+      image: "{{ include "xray.getRegistryByService" (list . "migrationHook") }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
       imagePullPolicy: IfNotPresent
       {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
       securityContext: {{- omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml | nindent 8 }}

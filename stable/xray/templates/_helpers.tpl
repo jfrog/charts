@@ -461,7 +461,11 @@ Return the registry of a service
 {{- if $dot.Values.global.imageRegistry }}
     {{- $dot.Values.global.imageRegistry }}
 {{- else -}}
-    {{- index $dot.Values $service "image" "registry" -}}
+    {{- if (eq $service "migrationHook") -}}
+      {{- index $dot.Values.rabbitmq.migration.image.registry -}}
+   {{- else -}}
+      {{- index $dot.Values $service "image" "registry" -}}
+    {{- end -}}
 {{- end -}}
 {{- end -}}
 

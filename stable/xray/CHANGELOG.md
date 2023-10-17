@@ -1,7 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.82.11] - Jul 16, 2023
+## [103.83.9] - Sep 15,2023
+* Fixed - Support to configure privateRegistry for pre-upgrade-hook
+
+## [103.80.0] - Jul 16, 2023
 * Added `podSecurityContext.enabled` and `containerSecurityContext.enabled` to support openshift
 
 ## [103.79.0] - Jul 3, 2023
