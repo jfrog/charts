@@ -225,6 +225,10 @@ xray:
       {{- if .Values.server.indexAllBuilds }}
       indexAllBuilds: {{ .Values.server.indexAllBuilds }}
       {{- end }}
+      {{- if .Values.server.defaultRetentionDaysForIndexedRepo }}
+      repo:
+        defaultRetentionDaysForIndexedRepo: {{ .Values.server.defaultRetentionDaysForIndexedRepo }}
+      {{- end }}
     {{- end }}
     {{- if (include "xray.imagePullSecretsStrList" .) }}
     executionService:
@@ -1112,6 +1116,7 @@ server:
 
   # mailServer: ""
   # indexAllBuilds: false
+  # defaultRetentionDaysForIndexedRepo: 90 
 
   ## Add custom volumesMounts
   customVolumeMounts: |

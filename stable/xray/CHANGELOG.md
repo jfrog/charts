@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.84.0] - Oct 14, 2023
+* Added `server.defaultRetentionDaysForIndexedRepo` as optional fields
+
 ## [103.83.9] - Sep 15,2023
 * Fixed - Support to configure privateRegistry for pre-upgrade-hook
 
