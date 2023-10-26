@@ -42,7 +42,7 @@ global:
 ## String to fully override artifactory.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.691
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.717
 # Init containers
 initContainers:
   resources:
@@ -162,7 +162,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.2.691
+    tag: 9.2.717
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -187,7 +187,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.77.0
+    tag: 7.81.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -214,9 +214,9 @@ router:
     preStop:
       exec:
         command: ["sh", "-c", "while [[ $(curl --fail --silent --connect-timeout 2 http://localhost:8081/artifactory/api/v1/system/liveness) =~ OK ]]; do echo Artifactory is still alive; sleep 2; done"]
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+        # postStart:
+        #   exec:
+        #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
   ## Add custom volumesMounts
   customVolumeMounts: ""
   #  - name: custom-script
@@ -1861,12 +1861,12 @@ postgresql:
     capabilities:
       drop:
         - ALL
-  #  requests:
-  #    memory: "512Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "500m"
+        #  requests:
+        #    memory: "512Mi"
+        #    cpu: "100m"
+        #  limits:
+        #    memory: "1Gi"
+        #    cpu: "500m"
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:
