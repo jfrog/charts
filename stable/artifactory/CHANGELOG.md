@@ -1,8 +1,8 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.68.14] - Sep 20, 2023
-* Fixed rtfs context
+## [107.71.3] - Sep 18, 2023
+* Adjust rtfs context
 * Fixed - Metadata service does not respect customVolumeMounts for DB CAs [GH-1815](https://github.com/jfrog/charts/issues/1815)
 
 ## [107.68.8] - Sep 18, 2023
