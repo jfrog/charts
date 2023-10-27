@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.71.4] - Oct 27, 2023
+* Added support for custom labels in the Nginx pods
+
 ## [107.71.3] - Sep 18, 2023
 * Adjust rtfs context
 * Fixed - Metadata service does not respect customVolumeMounts for DB CAs [GH-1815](https://github.com/jfrog/charts/issues/1815)
