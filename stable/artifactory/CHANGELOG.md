@@ -1,7 +1,11 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.71.3] - Sep 18, 2023
+## [107.71.4] - Oct 31, 2023
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+* Fixed - Invalid format for awsS3V3 `multiPartLimit,multipartElementSize` in binarystore.xml.
+
+## [107.69.0] - Sep 18, 2023
 * Adjust rtfs context
 * Fixed - Metadata service does not respect customVolumeMounts for DB CAs [GH-1815](https://github.com/jfrog/charts/issues/1815)
 
