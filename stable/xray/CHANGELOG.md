@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.85.6] - Sep 16, 2023
+* Added support for `serviceAccount.annotations`to be passed to chart
+
 ## [103.85.5] - Sep 15,2023
 * Fixed - Support to configure privateRegistry for pre-upgrade-hook
 
