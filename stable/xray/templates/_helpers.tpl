@@ -616,3 +616,17 @@ Set xray env variables if rabbitmq.tls is enabled.
 - name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_DATA_KEY
   value: "{{ .Values.systemYamlOverride.dataKey }}"
 {{- end }}
+
+{{/*
+Calculate the systemYaml from structured and unstructured text input
+*/}}
+{{- define "xray.calculatedSystemYaml" -}}
+{{ tpl (mergeOverwrite (include "xray.systemYaml" . | fromYaml) .Values.xray.structuredSystemYaml | toYaml) . }}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from the unstructured text input
+*/}}
+{{- define "xray.systemYaml" -}}
+{{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
+{{- end -}}
