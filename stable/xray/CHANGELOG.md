@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.86.0] - Nov 20, 2023
+* Added the ability to provide a .Values.xray.structuredSystemYaml configuration which will merge with the existing .Values.xray.systemYaml
+
 ## [103.85.5] - Sep 15,2023
 * Fixed - Support to configure privateRegistry for pre-upgrade-hook
 

@@ -239,6 +239,9 @@ xray:
         registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
         image: {{ .Values.exposures.image.repository }}
 
+  # -- Additional structured values on top of the text based 'xray.systemYaml'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaulated 'xray.systemYaml'.
+  structuredSystemYaml: {}
+
   # Sidecar containers for tailing Xray logs
   loggers: []
   # - router-request.log
