@@ -303,6 +303,8 @@ spec:
               drop:
                 - NET_RAW
           env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: {{ include "pipelines.trigger.router.requiredServiceTypes" . }}
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_SHARED_JFROGURL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}"
@@ -512,6 +514,45 @@ spec:
 {{ tpl . $ | nindent 10 }}
 {{- end }}
 {{- end }}
+{{- if .Values.pipelines.analyticsservice.enabled }}
+        - name: analyticsservice
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "analyticsservice" ) }}
+          imagePullPolicy: {{ .Values.pipelines.analyticsservice.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.analyticsservice.extraEnvironmentVariables }}
+{{- with .Values.pipelines.analyticsservice.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.analyticsservice.resources | nindent 12 }}
+          volumeMounts:
+            - name: jfrog-pipelines-folder
+              mountPath: {{ .Values.pipelines.mountPath }}
+            - name: jfrog-pipelines-logs
+              mountPath: {{ .Values.pipelines.logPath }}
+{{- with .Values.pipelines.customVolumeMounts }}
+{{ tpl . $ | nindent 10 }}
+{{- end }}
+{{- end }}
 {{- if .Values.pipelines.logservice.enabled }}
         - name: logservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "logservice" ) }}
@@ -551,47 +592,6 @@ spec:
 {{ tpl . $ | nindent 10 }}
 {{- end }}
 {{- end }}
-        {{- if .Values.pipelines.nexec.enabled }}
-        - name: nexec
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nexec" ) }}
-          imagePullPolicy: {{ .Values.pipelines.nexec.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
-          workingDir: /opt/jfrog/pipelines/app/micro/nexec
-          env:
-            - name: PIPELINES_INTERNAL_API
-              value: "true"
-            - name: COMPONENT
-              value: nexec
-            - name: PIPELINES_NODE_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
-{{- if .Values.pipelines.extraEnvironmentVariables }}
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-{{- if .Values.pipelines.nexec.extraEnvironmentVariables }}
-{{- with .Values.pipelines.nexec.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-          resources:
-            {{- toYaml .Values.pipelines.nexec.resources | nindent 12 }}
-          volumeMounts:
-          - name: jfrog-pipelines-folder
-            mountPath: {{ .Values.pipelines.mountPath }}
-          - name: jfrog-pipelines-logs
-            mountPath: {{ .Values.pipelines.logPath }}
-        {{- end }}
         - name: reqsealer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "reqSealer" ) }}
           imagePullPolicy: {{ .Values.pipelines.reqSealer.image.pullPolicy }}

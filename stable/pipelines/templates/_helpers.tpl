@@ -127,6 +127,14 @@ The stepservice name
 {{- end -}}
 
 {{/*
+The analyticsservice name
+*/}}
+{{- define "pipelines.analyticsservice.name" -}}
+{{- $name := .Release.Name | trunc 29 -}}
+{{- printf "%s-%s-analyticsservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The msg name
 */}}
 {{- define "pipelines.msg.name" -}}
@@ -810,7 +818,60 @@ chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
 Resolve pipelines requiredServiceTypes value
 */}}
 {{- define "pipelines.router.requiredServiceTypes" -}}
+{{- if .Values.splitServicesToPods }}
+{{- $requiredTypes := "jfpip,jfob,jfpipwww,jfpipfrontend" -}}
+{{- $requiredTypes -}}
+{{- else -}}
+{{- $requiredTypes := "jfpip,jfob,jfpipwww,jfpipfrontend,jfpnps" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.cron.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.sync.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.hookhandler.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.trigger.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob,jfpnps" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.internalapi.router.requiredServiceTypes" -}}
 {{- $requiredTypes := "jfpip,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.stepservice.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}
 

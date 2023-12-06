@@ -1,7 +1,7 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.71.4] - Jul 20, 2023
+## [107.71.5] - Jul 20, 2023
 * Disabled federation services when splitServicesToContainers=true
 
 ## [107.45.0] - Aug 25, 2022
