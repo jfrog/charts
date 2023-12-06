@@ -1,7 +1,10 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.15.4] - Mar 21, 2023
+## [101.16.2] - Oct 17, 2023
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+
+## [101.15.0] - Sep 18, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
 
 ## [101.14.0] - Mar 02, 2023
