@@ -305,6 +305,8 @@ spec:
               drop:
                 - NET_RAW
           env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: {{ include "pipelines.hookhandler.router.requiredServiceTypes" . }}
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_SHARED_JFROGURL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}"
