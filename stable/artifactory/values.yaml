@@ -1385,7 +1385,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} -XPOST http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} -XPOST http://localhost:{{ .Values.federation.internalPort }}/rtfs/ping
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1398,7 +1398,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} -XPOST http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} -XPOST http://localhost:{{ .Values.federation.internalPort }}/rtfs/ping
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
