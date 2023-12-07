@@ -1398,7 +1398,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} -XPOST http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
