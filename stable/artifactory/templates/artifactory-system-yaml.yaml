@@ -11,5 +11,5 @@ metadata:
 type: Opaque
 stringData:
   system.yaml: |
-{{ tpl .Values.artifactory.systemYaml . | indent 4 }}
+{{ include "artifactory.calculatedSystemYaml" . | nindent 4 }}
 {{- end }}
