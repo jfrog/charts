@@ -754,6 +754,10 @@ artifactory:
     event:
       webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
     {{- end }}
+
+  # -- Additional structured values on top of the text based 'artifactory.systemYaml'. Applied after the text based config is evaluated for templates. Enables adding and modifying YAML elements in the evaulated 'artifactory.systemYaml'.
+  structuredSystemYaml: {}
+
   annotations: {}
   service:
     name: artifactory
