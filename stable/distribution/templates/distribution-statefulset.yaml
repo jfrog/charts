@@ -49,8 +49,8 @@ spec:
       {{- else }}
         checksum/distribution-unified-secret: {{ include (print $.Template.BasePath "/distribution-unified-secret.yaml") . | sha256sum }}
       {{- end }}
-      {{- range $key, $value := .Values.distribution.annotations }}
-        {{ $key }}: {{ $value | quote }}
+      {{- with .Values.distribution.annotations }}
+{{ toYaml . | indent 8 }}
       {{- end }}
     spec:
     {{- if .Values.distribution.schedulerName }}
@@ -81,7 +81,7 @@ spec:
     {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "distribution.customInitContainersBegin" .)  . | indent 6 }}
     {{- end }}
-      - name: 'copy-system-yaml'
+      - name: 'copy-system-configurations'
         image: '{{ .Values.initContainerImage }}'
         securityContext:
           runAsNonRoot: true
@@ -94,28 +94,36 @@ spec:
         command:
         - '/bin/bash'
         - '-c'
-        - >
-          sleep 30;
-          if [[ -e "{{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml; fi;
-          echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc";
-          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc;
-          {{- if .Values.systemYamlOverride.existingSecret }}
-          cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
-          {{- else }}
-          cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml;
-          {{- end }}
-          echo "Remove {{ .Values.distribution.persistence.mountPath }}/lost+found folder if exists";
-          rm -rfv {{ .Values.distribution.persistence.mountPath }}/lost+found;
-        {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
-          echo "Copy joinKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
-          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
-          echo ${DISTRIBUTION_JOIN_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/join.key;
-        {{- end }}
-        {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
-          echo "Copy masterKey to {{ .Values.distribution.persistence.mountPath }}/etc/security";
-          mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security;
-          echo ${DISTRIBUTION_MASTER_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/master.key;
-        {{- end }}
+        - |
+            if [[ -e "{{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml" ]]; then
+                chmod 644 {{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml
+            fi
+            echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc"
+            mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml
+            {{- else }}
+            cp -fv /tmp/etc/system.yaml {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml
+            {{- end }}
+            echo "Remove {{ .Values.distribution.persistence.mountPath }}/lost+found folder if exists"
+            rm -rfv {{ .Values.distribution.persistence.mountPath }}/lost+found
+            {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
+            echo "Copy joinKey to {{ .Values.distribution.persistence.mountPath }}/etc/security"
+            mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security
+            echo ${DISTRIBUTION_JOIN_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/join.key
+            {{- end }}
+            {{- if or .Values.distribution.masterKey .Values.distribution.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName }}
+            echo "Copy masterKey to {{ .Values.distribution.persistence.mountPath }}/etc/security"
+            mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security
+            echo ${DISTRIBUTION_MASTER_KEY} > {{ .Values.distribution.persistence.mountPath }}/etc/security/master.key
+            {{- end }}
+            {{- if .Values.newRelic.apm.enabled }}
+            echo "Download NewRelic Java APM agent"
+            mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/newrelic/
+            curl {{ .Values.newRelic.apm.downloadUrl }}/{{ tpl .Values.newRelic.apm.downloadPath . }}/{{ tpl .Values.newRelic.apm.downloadFile . }} \
+                -o {{ .Values.distribution.persistence.mountPath }}/etc/newrelic/newrelic.jar
+            cp -f /tmp/newrelic/newrelic.yml {{ .Values.distribution.persistence.mountPath }}/etc/newrelic/
+            {{- end }}
         env:
         {{- if or .Values.distribution.joinKey .Values.distribution.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
         - name: DISTRIBUTION_JOIN_KEY
@@ -142,6 +150,11 @@ spec:
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
+        {{- if .Values.newRelic.apm.enabled }}
+        - name: newrelic-config
+          mountPath: /tmp/newrelic/newrelic.yml
+          subPath: newrelic.yml
+        {{- end }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
         {{- if not .Values.distribution.unifiedSecretInstallation }}
         - name: systemyaml
@@ -634,6 +647,11 @@ spec:
       - name: tail-logger-script
         configMap:
           name: {{ template "distribution.fullname" . }}-logger
+      {{- end }}
+      {{- if .Values.newRelic.apm.enabled }}
+      - name: newrelic-config
+        configMap:
+          name: {{ template "distribution.fullname" . }}-newrelic-apm-config
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config

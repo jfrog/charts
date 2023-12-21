@@ -1,7 +1,15 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.20.3] - Aug 29, 2023
+## [102.21.3] - Nov 22, 2023
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+* Removed default hardcoded javaOpts `-Xms2g -Xmx4g` from distribution.sh file
+
+## [102.20.1] - Sep 18, 2023
+* Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
+* Added NewRelic APM agent integration
+
+## [102.20.0] - Aug 29, 2023
 * Updated redis version tag to `7.2.0-debian-11-r2`
 * Enabled `unifiedSecretInstallation` by default
 
