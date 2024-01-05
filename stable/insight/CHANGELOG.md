@@ -1,7 +1,7 @@
 # JFrog Insights Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [101.16.2] - Oct 17, 2023
+## [101.16.5] - Oct 17, 2023
 * Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 
 ## [101.15.0] - Sep 18, 2023
