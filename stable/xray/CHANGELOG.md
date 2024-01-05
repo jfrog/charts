@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.86.9] - Nov 14,2023
+## [103.86.10] - Nov 14,2023
 * Fixed - containerSecurityContext on loggers
 
 ## [103.83.0] - Sep 15,2023
