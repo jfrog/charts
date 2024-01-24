@@ -115,7 +115,7 @@ setupDB(){
 
 ## Set Postgres options
 [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
-POSTGRES_OPTIONS="sslmode=${DB_SSL_MODE} --host=${DB_HOST} -U ${PGUSERNAME} -w"
+POSTGRES_OPTIONS="sslmode=${DB_SSL_MODE} --host=${DB_HOST} -p ${DB_PORT} -U ${PGUSERNAME} -w"
 
 init
 

@@ -41,7 +41,7 @@ global:
 ## String to fully override artifactory-ha.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.717
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.750.1697534106
 installer:
   type:
   platform:
@@ -214,7 +214,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.2.717
+    tag: 9.2.750.1697534106
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:

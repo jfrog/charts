@@ -1,6 +1,28 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.16.5] - Jan 05, 2024
+* Update dependency artifactory chart version to 107.71.11
+* Update dependency xray chart version to 103.86.10
+* Update dependency insight chart version to 101.16.5
+* Update global.versions.router version to `7.91.0`
+
+## [10.16.4] - Dec 21, 2023
+* Update dependency artifactory chart version to 107.71.9
+* Update dependency xray chart version to 103.86.9
+* Update dependency distribution chart version to 102.21.3
+
+## [10.16.3] - Dec 6, 2023
+* Update dependency artifactory chart version to 107.71.5
+* Update dependency xray chart version to 103.86.4
+* Update dependency insight chart version to 101.16.2
+* Update global.versions.router version to `7.87.0`
+* Fixed an issue to use custom postgres DB port other than default 5432
+
+## [10.16.2] - Nov 10, 2023
+* Update dependency artifactory chart version to 107.71.4
+* Update dependency xray chart version to 103.85.5
+
 ## [10.16.0] - Oct 26, 2023
 * Update dependency artifactory chart version to 107.71.3
 * Update dependency xray chart version to 103.83.10

@@ -1,4 +1,4 @@
-{{- if gt (.Values.artifactory.node.replicaCount | int) 0  -}}
+{{- if gt (.Values.artifactory.primary.replicaCount | int) 0  -}}
 # Internal service for Artifactory primary node only!
 # Used by member nodes to check readiness of primary node before starting up
 apiVersion: v1

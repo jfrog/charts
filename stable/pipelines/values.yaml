@@ -835,6 +835,26 @@ pipelines:
     # - name: MY_ENV_VAR
     #   value: "example_value"
 
+  analyticsservice:
+    image:
+      # registry:
+      repository: jfrog/pipelines-analytics-service
+      # tag:
+      pullPolicy: IfNotPresent
+    resources: {}
+    ## This service will be enabled in split deployment design (splitServicesToPods) as a mandatory service
+    enabled: true
+    # limits:
+    #   cpu: 500m
+    #   memory: 500Mi
+    # requests:
+    #   cpu: 5m
+    #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
   stepservice:
     image:
       # registry:
@@ -888,27 +908,6 @@ pipelines:
     ## Add custom init containers - last init container to run
     # customInitContainers: |
     # customSidecarContainers: |
-
-  nexec:
-    image:
-      # registry:
-      repository: jfrog/pipelines-micro
-      # tag:
-      pullPolicy: IfNotPresent
-
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 500Mi
-      # requests:
-      #   cpu: 5m
-      #   memory: 40Mi
-
-    enabled: true
-
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: "example_value"
 
   hookHandler:
     image:
@@ -1314,9 +1313,6 @@ pipelines:
           - "core.pipelineSync"
           - "cluster.init"
           - "www.signals"
-          {{- if .Values.pipelines.nexec.enabled }}
-          - "core.nexec"
-          {{- end }}
           - "core.nodePoolService"
           - "core.hookHandler"
           - "core.extensionSync"
@@ -1325,6 +1321,7 @@ pipelines:
           - "core.runService"
           - "core.logService"
           - "core.stepService"
+          - "core.analyticsService"
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
@@ -1565,10 +1562,6 @@ pipelines:
           name: stepservice
         cron:
           name: cron
-        {{- if .Values.pipelines.nexec.enabled }}
-        nexec:
-          name: nexec
-        {{- end }}
         hookHandler:
           name: hookHandler
         extensionSync:
@@ -1613,7 +1606,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: Ubuntu_18.04
           language: java
@@ -1630,16 +1623,16 @@ pipelines:
           os: Ubuntu_20.04
           language: node
           registryUrl: releases-docker.jfrog.io
-          image: jfrog/pipelines-u20node-arm64
+          image: jfrog/pipelines-u20arm
           isDefault: true
-          defaultVersion: 18
+          defaultVersion: 2.6.3
         - architecture: x86_64
           os: Ubuntu_20.04
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20node
           isDefault: true
-          defaultVersion: 16
+          defaultVersion: 18
         - architecture: x86_64
           os: Ubuntu_20.04
           language: java
@@ -1657,7 +1650,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: CentOS_7
           language: node
@@ -1682,7 +1675,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: CentOS_8
           language: node
@@ -1713,7 +1706,7 @@ pipelines:
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19node
-          defaultVersion: 18
+          defaultVersion: 16
         - architecture: x86_64
           os: WindowsServer_2019
           language: java
@@ -1769,7 +1762,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: RHEL_8
           language: node

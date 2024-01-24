@@ -68,8 +68,8 @@ spec:
       {{- else }}
         checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
       {{- end }}
-      {{- range $key, $value := .Values.artifactory.annotations }}
-        {{ $key }}: {{ tpl $value $ | quote }}
+      {{- with .Values.artifactory.annotations }}
+{{ toYaml . | indent 8 }}
       {{- end }}
     spec:
     {{- if .Values.artifactory.schedulerName }}

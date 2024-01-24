@@ -1,8 +1,19 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.44.5] - Aug 7, 2023
+## [101.49.6] - Oct 16, 2023
+* Defined router required service types for pods
+
+## [101.46.2] - Oct 12, 2023
+* Added sidecar container for stepservice logs
+
+## [101.46.0] - Aug 7, 2023
+* Remove nexec microservice
+
+## [101.45.0] - Aug 7, 2023
 * Upadate chart version of vault to 0.25.0 to work with 1.25 of kubernetes
+
+## [101.44.0] - Jul 27, 2023
 * Added option to stream logs in json
 * Add support to work without vault on modifying corresponding flags
 * Remove steptrigger from pipelines
@@ -10,22 +21,13 @@ All changes to this chart to be documented in this file.
 * Add ability to pass filebeat metric configuration
 * Updated nodePollerInterval from 15 seconds to 5 seconds
 * Fixed #adding colon in image registry breaks deployment with meta label error
+
+## [101.42.0] - Jun 16, 2023
 * Add observability container to non api pods
 * Add terminationGracePeriodSeconds for all the pods
-
-## [101.41.3] - Jun 16, 2023
 * Add ability to work with redis.fullnameOverride
-* Add support to pass db metric parameters in system.yaml
-* Add hpa api version to autoscaling/v2 for missing conf
 
-## [101.40.1] - May 31, 2023
-* Handle jfrogUrlUI if nothing is set
-* Added log-service
-* Added step-service
-* Enabled nodepoolservice by default
-* Fix migration script failures on ssl enforced database
-* Fix database SSL details not being passed to nodepoolservice as expected in split mode
-* Fix vault issue with enforced SSL on azure database
+## [101.41.0] - May 31, 2023
 * Opens grpc port for nodepoolservice apis.
 * Opens http health check port for nodepoolservice 
 * Add ability to use redis with password
@@ -34,15 +36,21 @@ All changes to this chart to be documented in this file.
 * Enable probes on router
 * Add readiness to api container
 * Fix port for router readiness probe
+* Adds toggle for enabling/disabling anti-affinity spec for k8s node
 
-## [101.38.1] - Apr 18, 2023
-* Handle jfrogUrlUI if nothing is set
+## [101.40.0] - Apr 25, 2023
+* Added log-service
+* Added step-service
+* Enabled nodepoolservice by default
 * Fix migration script failures on ssl enforced database
+* Fix database SSL details not being passed to nodepoolservice as expected in split mode
+* Fix vault issue with enforced SSL on azure database
 
-## [101.37.3] - Feb 20, 2023
+## [101.36.0] - Feb 23, 2023
 * Added build badge feature for pipelines
 * Added configuration to use access instead of vault to store secrets
 * Retained installer metrics only for db migrations
+* Handle jfrogUrlUI if nothing is set
 
 ## [101.35.0] - Feb 06, 2023
 * Fixed indentation in nodepoolservice container definition

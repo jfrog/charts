@@ -301,6 +301,8 @@ spec:
               drop:
                 - NET_RAW
           env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: {{ include "pipelines.stepservice.router.requiredServiceTypes" . }}
           {{- if not .Values.router.routerConfiguration }}
             - name: JF_SHARED_JFROGURL
               value: "{{ tpl (include "pipelines.jfrogUrl" .) . }}"
@@ -370,43 +372,6 @@ spec:
           readinessProbe:
 {{ tpl .Values.pipelines.router.readinessProbe.config . | indent 12 }}
         {{- end }}
-        - name: stepservice
-          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepservice" ) }}
-          imagePullPolicy: {{ .Values.pipelines.stepservice.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
-          env:
-            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
-            - name: NODE_EXTRA_CA_CERTS
-              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
-            {{- end }}
-            - name: PIPELINES_NODE_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: "metadata.name"
-{{- if .Values.pipelines.extraEnvironmentVariables }}
-{{- with .Values.pipelines.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-{{- if .Values.pipelines.stepservice.extraEnvironmentVariables }}
-{{- with .Values.pipelines.stepservice.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
-{{- end }}
-          resources:
-            {{- toYaml .Values.pipelines.stepservice.resources | nindent 12 }}
-          volumeMounts:
-            - name: jfrog-pipelines-folder
-              mountPath: {{ .Values.pipelines.mountPath }}
-            - name: jfrog-pipelines-logs
-              mountPath: {{ .Values.pipelines.logPath }}
-{{- with .Values.pipelines.customVolumeMounts }}
-{{ tpl . $ | nindent 10 }}
-{{- end }}
         - name: observability
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "observability" ) }}
           imagePullPolicy: {{ .Values.pipelines.observability.image.pullPolicy }}
@@ -464,6 +429,47 @@ spec:
           livenessProbe:
 {{ tpl .Values.pipelines.observability.livenessProbe.config . | indent 12 }}
         {{- end }}
+        - name: stepservice
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepservice" ) }}
+          imagePullPolicy: {{ .Values.pipelines.stepservice.image.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          env:
+            - name: PIPELINES_INTERNAL_API
+              value: "true"
+            - name: COMPONENT
+              value: stepservice
+            - name: PIPELINES_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: NODE_EXTRA_CA_CERTS
+              value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
+            {{- end }}
+{{- if .Values.pipelines.extraEnvironmentVariables }}
+{{- with .Values.pipelines.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+{{- if .Values.pipelines.stepservice.extraEnvironmentVariables }}
+{{- with .Values.pipelines.stepservice.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+{{- end }}
+          resources:
+            {{- toYaml .Values.pipelines.stepservice.resources | nindent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: jfrog-pipelines-logs
+            mountPath: {{ .Values.pipelines.logPath }}
+          {{- if or .Values.pipelines.stepservice.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "pipelines.stepservice.customSidecarContainers" .) . | nindent 8 }}
+          {{- end }}
     {{- if or .Values.pipelines.nodeSelector .Values.global.nodeSelector }}
 {{ tpl (include "pipelines.nodeSelector" .) . | indent 6 }}
     {{- end }}

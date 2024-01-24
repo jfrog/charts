@@ -294,10 +294,10 @@
         <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
         {{- end }}
         {{- with .multiPartLimit }}
-        <multiPartLimit>{{ . }}</multiPartLimit>
+        <multiPartLimit>{{ . | int64 }}</multiPartLimit>
         {{- end }}
         {{- with .multipartElementSize }}
-        <multipartElementSize>{{ . }}</multipartElementSize>
+        <multipartElementSize>{{ . | int64 }}</multipartElementSize>
         {{- end }}
     </provider>
     {{- end }}

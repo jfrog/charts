@@ -1,7 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.83.10] - Sep 15,2023
+## [103.86.10] - Nov 14,2023
+* Fixed - containerSecurityContext on loggers
+
+## [103.83.0] - Sep 15,2023
 * Fixed - Support to configure privateRegistry for pre-upgrade-hook
 
 ## [103.80.0] - Jul 16, 2023

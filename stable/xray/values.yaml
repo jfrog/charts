@@ -52,7 +52,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.717
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.750.1697534106
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -379,7 +379,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.2.717
+    tag: 9.2.750.1697534106
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -1186,7 +1186,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.79.0
+    tag: 7.87.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1272,7 +1272,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.14.0
+    tag: 1.17.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
