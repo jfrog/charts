@@ -1,7 +1,24 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.49.6] - Oct 16, 2023
+## [101.53.4] - Nov 14, 2023
+* Updated rabbitmq version to 3.12.10-debian-11-r1
+* Updated redis version to 7.2.0-debian-11-r2
+
+## [101.51.0] - Nov 14, 2023
+* Update minimum supported kubernetes version to 1.19
+* Updated postgresql tag version to `13.13.0-debian-11-r4`
+* Updated hashicorp tag version to `1.15`
+* Changed default replicacount to 1 for redis
+* Updated sentinel port and master group name
+
+## [101.50.0] - Oct 20, 2023
+* Added sentinel redis
+* Upgrade redis, redis-sentinel and redis-exporter to latest versions
+* Upgrade rabbitmq container and chart version to 3.11.10-debian-11-r5 and 11.9.3
+* Use multiarch supported image for init container
+
+## [101.49.0] - Oct 16, 2023
 * Defined router required service types for pods
 
 ## [101.46.2] - Oct 12, 2023
@@ -12,6 +29,7 @@ All changes to this chart to be documented in this file.
 
 ## [101.45.0] - Aug 7, 2023
 * Upadate chart version of vault to 0.25.0 to work with 1.25 of kubernetes
+
 
 ## [101.44.0] - Jul 27, 2023
 * Added option to stream logs in json

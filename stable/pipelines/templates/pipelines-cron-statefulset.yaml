@@ -62,8 +62,8 @@ spec:
 {{ tpl (include "pipelines.cron.customInitContainersBegin" .)  . | indent 8 }}
           {{- end }}
         - name: wait-for-pipelines-internalapi
-          image: '{{ .Values.initContainer.image }}'
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
+          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:

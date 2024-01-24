@@ -171,8 +171,8 @@ spec:
 {{- end }}
 {{- if and .Values.vault.enabled (.Values.access.shouldReadFromVault) (not .Values.access.shouldJustUpdateAccess) }}
         - name: wait-for-vault
-          image: "{{ .Values.initContainer.image }}"
-          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
+          imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -290,16 +290,16 @@ spec:
             export PIP_METRIC_FILE_PREFIX="internalapi-pipelines-installer";
           {{- if .Values.rabbitmq.enabled }}
             echo "Waiting for RabbitMQ to come up...";
-            until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.service.port }} && echo rabbitmq ok; do
+            until nc -z -w 2 {{ .Release.Name }}-rabbitmq {{ .Values.rabbitmq.service.ports.amqp }} && echo rabbitmq ok; do
               sleep 1;
             done;
           {{- end }}
           {{- if .Values.redis.enabled }}
             echo "Waiting for Redis to come up...";
           {{- if .Values.redis.fullnameOverride }}
-            until nc -z -w 2 {{ .Values.redis.fullnameOverride }}-master {{ .Values.redis.redisPort }} && echo redis ok; do
+            until nc -z -w 2 {{ .Values.redis.fullnameOverride }} {{ .Values.redis.redisPort }} && echo redis ok; do
           {{- else }}
-            until nc -z -w 2 {{ .Release.Name }}-redis-master {{ .Values.redis.redisPort }} && echo redis ok; do
+            until nc -z -w 2 {{ .Release.Name }}-redis {{ .Values.redis.redisPort }} && echo redis ok; do
           {{- end }}
               sleep 1;
             done;

@@ -1,0 +1,116 @@
+{{- if .Values.rabbitmq.enabled }}
+{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.migration.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    labels:
+        app: {{ template "pipelines.name" . }}
+        chart: {{ template "pipelines.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "pipelines.rabbitmq.migration.serviceAccountName" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+automountServiceAccountToken: {{ .Values.rabbitmq.migration.serviceAccount.automountServiceAccountToken }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.rabbitmq.enabled }}
+{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+    labels:
+        app: {{ template "pipelines.name" . }}
+        chart: {{ template "pipelines.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "pipelines.rabbitmq.migration.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+rules:
+{{ toYaml .Values.rabbitmq.migration.serviceAccount.rbac.role.rules }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.rabbitmq.enabled }}
+{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    labels:
+        app: {{ template "pipelines.name" . }}
+        chart: {{ template "pipelines.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "pipelines.rabbitmq.migration.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+subjects:
+    - kind: ServiceAccount
+      name: {{ template "pipelines.rabbitmq.migration.serviceAccountName" . }}
+roleRef:
+    kind: Role
+    apiGroup: rbac.authorization.k8s.io
+    name: {{ template "pipelines.rabbitmq.migration.fullname" . }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- if .Values.rabbitmq.enabled }}
+{{- if .Values.rabbitmq.migration.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: {{ template "pipelines.name" . }}
+    chart: {{ template "pipelines.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "pipelines.fullname" . }}-pre-upgrade-hook
+  annotations:
+    "helm.sh/hook": "pre-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  {{- if .Values.rabbitmq.podSecurityContext.enabled }}
+  securityContext: {{- omit .Values.rabbitmq.podSecurityContext "enabled" | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+  {{- include "pipelines.imagePullSecrets" . | indent 2 }}
+  {{- end }}
+  serviceAccountName: {{ template "pipelines.rabbitmq.migration.serviceAccountName" . }}
+  containers:
+    - name: pre-upgrade-container
+      image: "{{ include "pipelines.getRegistryByService" (list . "migrationHook") }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
+      imagePullPolicy: IfNotPresent
+      {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
+      securityContext: {{- omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      command:
+      - sh
+      - -c
+      - |
+        #!/bin/sh
+        if [ "$(kubectl get pods -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }}" -o jsonpath='{.items[?(@.metadata.name=="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0")].status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
+            kubectl exec -it {{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0 -- rabbitmqctl enable_feature_flag all
+            if [ "$?" -ne 0 ]; then
+                echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] " 
+                exit 1
+            else
+                echo Feature flags executed successfully!
+            fi
+        else
+            echo "Rabbitmq pod is not in running state. Ignoring feature flag migration for rabbitmq"
+        fi
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 0
+{{- end }}
+{{- end }}
