@@ -23,7 +23,7 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.91.0
+    router: 7.95.0
   #   artifactory:
   #   xray:
   #   distribution:
@@ -46,7 +46,7 @@ global:
     initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.10-alpine
     # Run the postgres init container as a non-default uid
     initContainerSetupDBUser:
-    initContainerImagePullPolicy: Always
+    initContainerImagePullPolicy: IfNotPresent
     # If you are using external postgresql, set initDBCreation: false
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
@@ -211,20 +211,10 @@ rabbitmq:
 #  extraConfiguration: |-
 #    management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
 
-## This Redis is used by pipelines only, set redis.enabled: false, when pipelines is not enabled
-redis:
-  enabled: true
-  image:
-    repository: bitnami/redis
-    tag: 7.2.0-debian-11-r2
-  cluster:
-    enabled: false
-  usePassword: false
-
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.16.5-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.17.0-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -323,7 +313,7 @@ pipelines:
     msg:
       uiUserPassword: password
   redis:
-    enabled: false
+    enabled: true
   rabbitmq:
     enabled: false
     internal_ip: "{{ .Release.Name }}-rabbitmq"

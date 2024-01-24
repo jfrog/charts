@@ -10,7 +10,7 @@ artifactory:
     persistence:
       enabled: false
 xray:
-  replicaCount: 2
+  replicaCount: 1
   common:
     persistence:
       enabled: false
@@ -34,10 +34,6 @@ insight:
 pipelines:
   pipelines:
     replicaCount: 2
-
-pdnServer:
-  enabled: true
-  replicaCount: 2
 
 rabbitmq:
   replicaCount: 3

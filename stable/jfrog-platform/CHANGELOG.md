@@ -1,6 +1,22 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.17.0] - Jan 24, 2023
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+* Removed "Waiting for artifactory to start" conditional check in `postgres-setup-init` init container
+* Update pipelines to use its internal redis chart
+* Removed obsolete dependency redis chart from chart.yaml
+* Update `global.database.initContainerImagePullPolicy` to `IfNotPresent`
+* Updated the chart Notes.txt content
+* Fix the pre-upgrade-hook for rabbitmq migration
+* Update dependency artifactory chart version to 107.77.3
+* Update dependency xray chart version to 103.87.9
+* Update dependency distribution chart version to 102.22.1
+* Update dependency insight chart version to 101.16.6
+* Update dependency pipelines chart version to 101.53.4
+* Update global.versions.router version to `7.95.0`
+
 ## [10.16.5] - Jan 05, 2024
 * Update dependency artifactory chart version to 107.71.11
 * Update dependency xray chart version to 103.86.10
