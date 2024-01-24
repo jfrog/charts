@@ -1,0 +1,173 @@
+##############################################################
+# The xsmall sizing
+# This is the minimum size recommended for running JFrog Xray
+##############################################################
+
+replicaCount: 1
+databaseUpgradeReady: true
+waitForDatabase: true
+unifiedUpgradeAllowed: true
+
+xray:
+  masterKey: AFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA
+  joinKey: AEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEA
+
+  ## Artifactory URL. Mandatory
+  jfrogUrl:
+
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "hard"
+    topologyKey: "kubernetes.io/hostname"
+
+# For enabling advanced security features, enable rbac.create and serviceAccount.create
+rbac:
+  create: false
+serviceAccount:
+  create: false
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 200
+  targetMemoryUtilizationPercentage: 800
+
+# Common Xray settings
+common:
+  persistence:
+    enabled: false
+    size: 50Gi
+
+analysis:
+  resources:
+    requests:
+      cpu: "30m"
+      memory: 250Mi
+    limits:
+      # cpu: "3"
+      memory: 4Gi
+
+indexer:
+  resources:
+    requests:
+      cpu: "40m"
+      memory: 250Mi
+    limits:
+      # cpu: "4"
+      memory: 4Gi
+
+persist:
+  resources:
+    requests:
+      cpu: "30m"
+      memory: 250Mi
+    limits:
+      # cpu: "3"
+      memory: 4Gi
+
+server:
+  resources:
+    requests:
+      cpu: "60m"
+      memory: 250Mi
+    limits:
+      # cpu: "3"
+      memory: 4Gi
+
+router:
+  resources:
+    requests:
+      cpu: "20m"
+      memory: 50Mi
+    limits:
+      # cpu: "1"
+      memory: 1Gi
+
+observability:
+  resources:
+    requests:
+      cpu: "10m"
+      memory: 25Mi
+    limits:
+      # cpu: "1"
+      memory: 250Mi
+
+panoramic:
+  enabled: true
+  resources:
+    requests:
+      cpu: "30m"
+      memory: 250Mi
+    limits:
+      # cpu: "3"
+      memory: 4Gi
+
+sbom:
+  enabled: false
+  resources:
+    requests:
+      cpu: "30m"
+      memory: 250Mi
+    limits:
+      # cpu: "3"
+      memory: 4Gi
+
+# PostgreSQL
+## Configuration values for the postgresql dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+##
+postgresql:
+  enabled: true
+  postgresqlUsername: "xray"
+  postgresqlPassword: "bPa$$w0rd!"
+  postgresqlDatabase: "xraydb"
+  postgresqlExtendedConf:
+    listenAddresses: "*"
+    maxConnections: "100"
+  persistence:
+    enabled: true
+    size: 500Gi
+  primary:
+    affinity:
+      # Require PostgreSQL pod to run on a different node than Xray pods
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - xray
+            topologyKey: kubernetes.io/hostname
+  resources:
+    requests:
+      memory: 8Gi
+      cpu: "4"
+    limits:
+      memory: 8Gi
+      # cpu: "12"
+
+rabbitmq:
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - xray
+          topologyKey: kubernetes.io/hostname
+  extraConfiguration: |-
+    vm_memory_high_watermark.absolute = 2G
+    {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+    raft.wal_max_size_bytes = 1048576
+    {{- end }}
+  resources:
+    requests:
+      cpu: "50m"
+      memory: 300Mi
+    limits:
+      # cpu: "2"
+      memory: 3Gi

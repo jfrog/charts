@@ -48,6 +48,13 @@ helm upgrade --install xray --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_K
              --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  --namespace xray jfrog/xray
 ```
 
+### Apply Sizing configurations to the Chart
+To apply the chart with recommended sizing configurations :
+For small configurations :
+```bash
+helm upgrade --install xray --namespace xray jfrog/xray -f sizing/xray-sizing-small.yaml
+```
+
 ## Uninstalling Xray
 
 **IMPORTANT:** Uninstalling Xray using the commands below will also delete your data volumes and you will lose all of your data. You must back up all this information before deletion.

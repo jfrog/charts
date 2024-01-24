@@ -558,6 +558,9 @@ Resolve autoscalingQueues value
     queueName: {{ .name }}
     mode: QueueLength
     value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
   authenticationRef:
     name: keda-trigger-auth-rabbitmq-conn-xray
 {{- end }}
@@ -582,8 +585,12 @@ Return the secret name of rabbitmq TLS certs.
 {{/*
 Prints value of Values.rabbitmq.auth.tls.enabled.
 */}}
-{{- define "xray.rabbitmq.isTlsEnabled" -}}
+{{- define "xray.rabbitmq.isManagementListenerTlsEnabledInContext" -}}
 {{- printf "%t" $.Values.auth.tls.enabled -}}
+{{- end -}}
+
+{{- define "xray.rabbitmq.isManagementListenerTlsEnabled" -}}
+{{- printf "%t" $.Values.rabbitmq.auth.tls.enabled -}}
 {{- end -}}
 
 {{/*

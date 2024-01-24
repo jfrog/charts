@@ -1,7 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.86.10] - Nov 14,2023
+## [103.87.9] - Dec 7,2023
+* Update minimum supported kubernetes version to 1.19
+* Added recommended t-shirt sizing configurations under sizing folder
+* Added support for rabbitmq high-availability quorum queues clean install setup
+* Fix the pre-upgrade-hook for rabbitmq migration to support installations on openshift platforms
+
+## [103.86.0] - Nov 14,2023
 * Fixed - containerSecurityContext on loggers
 
 ## [103.83.0] - Sep 15,2023
