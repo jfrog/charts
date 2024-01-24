@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file
 * Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 * Fixed - Invalid format for awsS3V3 `multiPartLimit,multipartElementSize` in binarystore.xml
 * Fixed - Artifactory primary service condition
+* Added support for custom labels in the Nginx pods
 
 ## [107.69.0] - Sep 18, 2023
 * Adjust rtfs context
