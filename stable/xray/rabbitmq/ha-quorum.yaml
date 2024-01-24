@@ -1,0 +1,9 @@
+rabbitmq:
+  replicaCount: 3
+  podManagementPolicy: Parallel
+
+global:
+  xray:
+    rabbitmq:
+      haQuorum:
+        enabled: true

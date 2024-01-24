@@ -155,21 +155,6 @@ event:
     preStop:
       exec:
         command: ["/bin/sh", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
-integration:
-  resources:
-    requests:
-      memory: "100Mi"
-      cpu: "100m"
-    limits:
-      memory: "1Gi"
-      cpu: "1"
-  lifecycle:
-    postStart:
-      exec:
-        command: ["/bin/sh", "-c", "echo Hello from the integration postStart handler >> /tmp/message"]
-    preStop:
-      exec:
-        command: ["/bin/sh", "-c", "echo Hello from the integration postStart handler >> /tmp/message"]
 observability:
   resources:
     requests:

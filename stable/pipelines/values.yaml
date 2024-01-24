@@ -68,7 +68,7 @@ global:
 
 ## Common
 initContainer:
-  image: "releases-docker.jfrog.io/alpine:3.14.2"
+  image: "releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.691"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -1289,8 +1289,8 @@ pipelines:
       msg:
         {{- if .Values.rabbitmq.enabled }}
         ip: {{ .Release.Name }}-rabbitmq
-        port: {{ .Values.rabbitmq.service.port }}
-        adminPort: {{ .Values.rabbitmq.service.managerPort }}
+        port: {{ .Values.rabbitmq.service.ports.amqp }}
+        adminPort: {{ .Values.rabbitmq.service.ports.manager }}
         erlangCookie: {{ .Values.rabbitmq.auth.erlangCookie }}
         username: {{ .Values.rabbitmq.auth.username }}
         password: "{{ .Values.rabbitmq.auth.password }}"
@@ -1382,16 +1382,16 @@ pipelines:
       ##
       redis:
         {{- if .Values.redis.fullnameOverride }}
-        ip: {{ .Values.redis.fullnameOverride }}-master
+        ip: {{ .Values.redis.fullnameOverride }}
         {{- else }}
-        ip: {{ .Release.Name }}-redis-master
+        ip: {{ .Release.Name }}-redis
         {{- end }}
         port: {{ .Values.redis.redisPort }}
-        {{- if .Values.redis.usePassword }}
-        password: {{ .Values.redis.password }}
-        {{- end }}
-
+        password: {{ .Values.redis.auth.password }}
         clusterEnabled: false
+      sentinel:
+        port: {{ .Values.redis.sentinel.containerPorts.sentinel }}
+        masterGroupName: {{ .Values.redis.sentinel.masterSet }}
 
       ## Metrics logging
       metrics:
@@ -1623,9 +1623,33 @@ pipelines:
           os: Ubuntu_20.04
           language: node
           registryUrl: releases-docker.jfrog.io
-          image: jfrog/pipelines-u20arm
+          image: jfrog/pipelines-ubuntu20arm-node
           isDefault: true
-          defaultVersion: 2.6.3
+          defaultVersion: 18
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-java
+          defaultVersion: 17
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-cpp
+          defaultVersion: 13
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-go
+          defaultVersion: 1.21
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-dotnet
+          defaultVersion: 6.0
         - architecture: x86_64
           os: Ubuntu_20.04
           language: node
@@ -1813,6 +1837,68 @@ pipelines:
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8go
           defaultVersion: 1.19
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-node
+          isDefault: true
+          defaultVersion: 18
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-java
+          defaultVersion: 17
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-cpp
+          defaultVersion: 13
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-go
+          defaultVersion: 1.21
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-dotnet
+          defaultVersion: 6.0
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-node
+          isDefault: true
+          defaultVersion: 18
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-java
+          defaultVersion: 17
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-cpp
+          defaultVersion: 13
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-go
+          defaultVersion: 1.21
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-dotnet
+          defaultVersion: 6.0
 ## Runtime Override Properties Section
 runtimeOverride: {}
 
@@ -1842,7 +1928,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 13.13.0-debian-11-r4
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
   # Password must be set
@@ -1889,14 +1975,14 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.9.21-debian-11-r0
+    tag: 3.12.10-debian-11-r1
   auth:
     username: admin
 
     ## RabbitMQ application password
     ## ref: https://github.com/bitnami/bitnami-docker-rabbitmq#environment-variables
-    # Password must be set
-    password: ""
+    # Password must be changed for production use
+    password: password
     # existingPasswordSecret: name-of-existing-secret
 
     ## Erlang cookie to determine whether different nodes are allowed to communicate with each other
@@ -1920,6 +2006,39 @@ rabbitmq:
 
   affinity: {}
 
+  ## Upgrade of rabbitmq to 3.12.x needs the feature flags to be enabled.
+  ## Ref: (https://www.rabbitmq.com/feature-flags.html#list-of-feature-flags)
+  ## migration enable will perform `rabbitmqctl enable_feature_flag all` command on the existing rabbitmq before starting the upgrade
+  migration:
+    ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
+    enabled: true
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/kubectl
+      tag: 1.24.12
+    ## Service account for the pre-upgrade hook to perform rabbitmq migration
+    serviceAccount:
+      create: true
+      ## The name of the ServiceAccount to use.
+      ## If not set and create is true, a name is generated using the fullname template
+      name:
+      ## Explicitly mounts the API credentials for the Service Account
+      automountServiceAccountToken: true
+      rbac:
+        create: true
+        role:
+          ## Rules to create. It follows the role specification
+          rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods/exec
+                - pods
+              verbs:
+                - create
+                - get
+                - list
+
 ## Platform config access configuration
 access:
   enableVaultToAccessMigration: false
@@ -1937,44 +2056,61 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 6.2.1-debian-10-r9
-  redisPort: 6379
-  ## Redis will come up with auth only if redis.usePassword is set to true
-  ## Change this value for production use
-  password: "password"
-
-  cluster:
-    enabled: false
-    slaveCount: 2
-
-  usePassword: false
-
+    tag: 7.2.0-debian-11-r2
   fullnameOverride:
-
+  redisPort: 6379
+  auth:
+    ## @param auth.enabled Enable password authentication
+    ##
+    enabled: true
+    ## @param auth.sentinel Enable password authentication on sentinels too
+    ##
+    sentinel: true
+    ## @param auth.password Redis&reg; password
+    ## Defaults to a random 10-character alphanumeric string if not set
+    ##
+    password: "password"
+  commonConfiguration: |-
+    appendonly yes
+    maxmemory-policy volatile-lru
+  architecture: "replication"
   master:
-    configmap: |-
-      appendonly yes
-      loglevel notice
-    resources: {}
-    #  requests:
-    #    memory: 100Mi
-    #    cpu: 25m
-    #  limits:
-    #    memory: 4Gi
-    #    cpu: "1"
+    persistence:
+      enabled: true
+    containerPorts:
+      redis: 6379
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 20m
+        memory: 512Mi
+  replica:
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 20m
+        memory: 512Mi
+  sentinel:
+    enabled: true
+    containerPorts:
+      sentinel: 26379
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/redis-sentinel
+      tag: 7.2.0-debian-11-r2
+    masterSet: pipelines-master
+  metrics:
+    enabled: true
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/redis-exporter
+      tag: 1.55.0-debian-11-r0
 
-    affinity: {}
-
-  slave:
-    resources: {}
-    #  requests:
-    #    memory: 100Mi
-    #    cpu: 25m
-    #  limits:
-    #    memory: 4Gi
-    #    cpu: "1"
-
-    affinity: {}
 
 ## Vault
 vault:
@@ -1991,7 +2127,7 @@ vault:
   server:
     image:
       repository: "releases-docker.jfrog.io/hashicorp/vault"
-      tag: 1.8.6
+      tag: "1.15"
 
     # resources: {}
     #  requests:
@@ -2038,7 +2174,7 @@ vault:
     extraInitContainers:
       # wait-for-db is checking if postgresql server up
       - name: vault-wait-for-db
-        image: "releases-docker.jfrog.io/bitnami/postgresql:13.9.0-debian-11-r11"
+        image: "releases-docker.jfrog.io/bitnami/postgresql:13.13.0-debian-11-r4"
         imagePullPolicy: IfNotPresent
         env:
           - name: CONNECTION_DETAILS
@@ -2068,7 +2204,7 @@ vault:
 
       # create-vault-table is creating vault schema changes in postgres db
       - name: create-vault-table
-        image: releases-docker.jfrog.io/bitnami/postgresql:13.9.0-debian-11-r11
+        image: releases-docker.jfrog.io/bitnami/postgresql:13.13.0-debian-11-r4
         imagePullPolicy: IfNotPresent
         env:
           - name: DATABASE_URL

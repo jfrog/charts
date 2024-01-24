@@ -1,9 +1,15 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.21.3] - Nov 22, 2023
+## [102.22.1] - Dec 22, 2023
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+
+## [102.21.0] - Nov 22, 2023
 * Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 * Removed default hardcoded javaOpts `-Xms2g -Xmx4g` from distribution.sh file
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
 
 ## [102.20.1] - Sep 18, 2023
 * Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)

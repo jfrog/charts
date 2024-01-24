@@ -32,6 +32,50 @@ The services name
 {{- printf "%s-%s-services" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Expand the name of rabbit chart.
+*/}}
+{{- define "rabbitmq.name" -}}
+{{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- end -}}
+
+{{/*
+Return the registry of a service
+*/}}
+{{- define "pipelines.getRegistryByService" -}}
+{{- $dot := index . 0 }}
+{{- $service := index . 1 }}
+{{- if $dot.Values.global.imageRegistry }}
+    {{- $dot.Values.global.imageRegistry }}
+{{- else -}}
+    {{- if (eq $service "migrationHook") -}}
+      {{- index $dot.Values.rabbitmq.migration.image.registry -}}
+   {{- else -}}
+      {{- index $dot.Values $service "image" "registry" -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "pipelines.rabbitmq.migration.fullname" -}}
+{{- $name := default "rabbitmq-migration" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for rabbitmq migration
+*/}}
+{{- define "pipelines.rabbitmq.migration.serviceAccountName" -}}
+{{- if .Values.rabbitmq.migration.serviceAccount.create -}}
+{{ default (include "pipelines.rabbitmq.migration.fullname" .) .Values.rabbitmq.migration.serviceAccount.name }}
+{{- else -}}
+{{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
 {{- define "pipelines.sync.name" -}}
 {{- $name := .Release.Name | trunc 29 -}}
 {{- printf "%s-%s-sync" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}

@@ -44,10 +44,13 @@ spec:
         component: {{ .Values.nginx.name }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
+{{- if .Values.nginx.labels }}
+{{ toYaml .Values.nginx.labels | indent 8 }}
+{{- end }}
     spec:
-      securityContext:
-        runAsUser: {{ .Values.nginx.uid }}
-        runAsGroup: {{ .Values.nginx.gid }}
+    {{- if .Values.nginx.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.nginx.podSecurityContext "enabled" | toYaml | nindent 8 }}
+    {{- end }}
       serviceAccountName: {{ template "artifactory.serviceAccountName" . }}
       terminationGracePeriodSeconds: {{ .Values.nginx.terminationGracePeriodSeconds }}
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
@@ -83,12 +86,9 @@ spec:
       - name: {{ .Values.nginx.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "nginx") }}
         imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
-        {{- with .Values.nginx.securityContext }}
-        securityContext:
-{{ toYaml . | indent 10 }}
+        {{- if .Values.nginx.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.nginx.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}
-        command:
-{{- tpl (include "nginx.command" .) . | indent 10 }}
         ports:
 {{ if .Values.nginx.customPorts }}
 {{ toYaml .Values.nginx.customPorts | indent 8 }}

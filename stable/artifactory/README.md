@@ -3,7 +3,7 @@
 **IMPORTANT!** Our Helm Chart docs have moved to our main documentation site. Below you will find the basic instructions for installing, uninstalling, and deleting Artifactory. For all other information, refer to [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory#InstallingArtifactory-HelmInstallation).
 
 ## Prerequisites
-* Kubernetes 1.14+
+* Kubernetes 1.19+
 * Artifactory Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details
@@ -29,6 +29,13 @@ helm repo update
 To install the chart with the release name `artifactory`:
 ```bash
 helm upgrade --install artifactory --namespace artifactory jfrog/artifactory
+```
+
+### Apply Sizing configurations to the Chart
+To apply the chart with recommended sizing configurations :
+For small configurations :
+```bash
+helm upgrade --install artifactory --namespace artifactory jfrog/artifactory -f sizing/artifactory-small-extra-config.yaml -f sizing/artifactory-small.yaml 
 ```
 
 ## Uninstalling Artifactory

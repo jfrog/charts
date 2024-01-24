@@ -320,9 +320,6 @@ Resolve requiredServiceTypes value
 {{- if .Values.event.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevt" -}}
 {{- end -}}
-{{- if .Values.integration.enabled -}}
-  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfint" -}}
-{{- end -}}
 {{- if .Values.frontend.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jffe" -}}
 {{- end -}}
@@ -372,20 +369,7 @@ nginx scheme (http/https)
 {{- end -}}
 
 {{/*
-nginx command
-*/}}
-{{- define "nginx.command" -}}
-{{- if .Values.nginx.customCommand }}
-{{  toYaml .Values.nginx.customCommand }}
-{{ else }}
-- nginx
-- -g
-- 'daemon off;'
-{{- end }}
-{{- end -}}
-
-{{/*
-nginx port (80/443) based on http/https enabled
+nginx port (8080/8443) based on http/https enabled
 */}}
 {{- define "nginx.port" -}}
 {{- if .Values.nginx.http.enabled -}}
@@ -472,17 +456,6 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- if or .Values.global.customVolumes .Values.artifactory.customVolumes -}}
 {{- $val := (tpl (include "artifactory.customVolumes" .) .) | toJson -}}
 {{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
-{{- else -}}
-{{- printf "%s" "false" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Resolve fsGroup and runAsGroup on cluster based
-*/}}
-{{- define "artifactory.isOpenshiftCompatible" -}}
-{{- if (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
-{{- printf "%s" "true" -}}
 {{- else -}}
 {{- printf "%s" "false" -}}
 {{- end -}}

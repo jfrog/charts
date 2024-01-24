@@ -1,9 +1,29 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.71.11] - Oct 31, 2023
+## [107.77.3] - Jan 16, 2024
+* Removed integration service
+* Added recommended postgresql sizing configurations under sizing directory
+* Updated artifactory-federation (probes, port, embedded mode)
+* Fixed - Removed duplicate keys of the sizing yaml file
+
+## [107.76.0] - Dec 13, 2023
+* Added connectionTimeout and socketTimeout paramaters under AWSS3 binarystore section
+* Reduced nginx startupProbe initialDelaySeconds
+
+## [107.74.0] - Nov 30, 2023
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+
+## [107.70.0] - Nov 30, 2023
 * Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 * Fixed - Invalid format for awsS3V3 `multiPartLimit,multipartElementSize` in binarystore.xml.
+* Fixed - SecurityContext with runAsGroup in artifactory [GH-1838](https://github.com/jfrog/charts/issues/1838)
+* Added support for custom labels in the Nginx pods [GH-1836](https://github.com/jfrog/charts/pull/1836)
+* Added podSecurityContext and containerSecurityContext for nginx
+* Added support for nginx on openshift, set `podSecurityContext` and `containerSecurityContext` to false
+* Renamed nginx internalPort 80,443 to 8080,8443 to support openshift
 
 ## [107.69.0] - Sep 18, 2023
 * Adjust rtfs context

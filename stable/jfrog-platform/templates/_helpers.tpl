@@ -95,7 +95,7 @@ imagePullSecrets:
 Custom init container for Postgres setup
 */}}
 {{- define "initdb" -}}
-{{- if and .Values.global.database.initDBCreation (ne .Chart.Name "pdn-server") }}
+{{- if .Values.global.database.initDBCreation }}
 - name: postgres-setup-init
   image: {{ .Values.global.database.initContainerSetupDBImage }}
   imagePullPolicy: {{ .Values.global.database.initContainerImagePullPolicy }}
@@ -107,9 +107,6 @@ Custom init container for Postgres setup
     - '/bin/bash'
     - '-c'
     - >
-      {{- if (ne .Chart.Name "artifactory") }}
-      until nc -z -w 5 {{ .Release.Name }}-artifactory 8082; do echo "Waiting for artifactory to start"; sleep 10; done;
-      {{- end }}
       echo "Running init db scripts";
       bash /scripts/setupPostgres.sh
   {{- if eq .Chart.Name "pipelines" }}

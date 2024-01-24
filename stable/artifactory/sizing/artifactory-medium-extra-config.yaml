@@ -1,0 +1,38 @@
+####################################################################################
+# [WARNING] The configuration mentioned in this file are taken inside system.yaml
+# hence this configuration will be overridden when enabling systemYamlOverride
+####################################################################################
+artifactory:
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=40
+      -XX:MaxRAMPercentage=70
+      -Dartifactory.async.corePoolSize=40
+      -Dartifactory.async.poolMaxQueueSize=10000
+      -Dartifactory.http.client.max.total.connections=50
+      -Dartifactory.http.client.max.connections.per.route=50
+      -Dartifactory.access.client.max.connections=75
+      -Dartifactory.metadata.event.operator.threads=3
+      -XX:MaxMetaspaceSize=512m
+      -Djdk.nio.maxCachedBufferSize=262144
+      -XX:MaxDirectMemorySize=256m
+  tomcat:
+    connector:
+      maxThreads: 300
+      extraConfig: 'acceptCount="600" acceptorThreadCount="2" compression="off" connectionLinger="-1" connectionTimeout="120000" enableLookups="false"'
+
+  database:
+    maxOpenConnections: 50
+
+access:
+  tomcat:
+    connector:
+      maxThreads: 75
+
+  database:
+    maxOpenConnections: 50
+
+metadata:
+  database:
+    maxOpenConnections: 50
+

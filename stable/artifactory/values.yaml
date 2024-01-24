@@ -42,7 +42,7 @@ global:
 ## String to fully override artifactory.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.750.1697534106
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.3.1475
 # Init containers
 initContainers:
   resources:
@@ -162,7 +162,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.2.750.1697534106
+    tag: 9.3.1475
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -187,7 +187,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.81.0
+    tag: 7.91.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -737,6 +737,7 @@ artifactory:
     {{- if and .Values.federation.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
     federation:
       enabled: true
+      embedded: {{ .Values.federation.embedded }}
       extraJavaOpts: {{ .Values.federation.extraJavaOpts }}
       port: {{ .Values.federation.internalPort }}
     rtfs:
@@ -980,6 +981,8 @@ artifactory:
       port:
       useHttp:
       maxConnections: 50
+      connectionTimeout:
+      socketTimeout:
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
       kmsCryptoMode:
@@ -1291,62 +1294,12 @@ jfconnect:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-integration:
-  name: integration
-  enabled: true
-  internalPort: 8071
-  ## Extra environment variables that can be used to tune integration to your needs.
-  ## Uncomment and set value as needed
-  extraEnvironmentVariables:
-  # - name: MY_ENV_VAR
-  #   value: ""
-  resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
-
-  # Add lifecycle hooks for integration container
-  lifecycle: {}
-  # postStart:
-  #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-  # preStop:
-  #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
-  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
-  livenessProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 5
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      periodSeconds: 10
-      successThreshold: 1
-  startupProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/readiness
-      initialDelaySeconds: 30
-      failureThreshold: 90
-      periodSeconds: 5
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 federation:
+  # This is an experimental service which is not in production yet, therefore should not be enabled
   name: federation
   enabled: false
-  internalPort: 8085
+  embedded: false
+  internalPort: 8025
   extraJavaOpts: ""
   # This section should be removed once rtfs service is GA
   database:
@@ -1385,7 +1338,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1398,7 +1351,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1475,9 +1428,21 @@ nginx:
   labels: {}
   replicaCount: 1
   minAvailable: 0
-  uid: 104
-  gid: 107
-  securityContext: {}
+  podSecurityContext:
+    enabled: true
+    runAsUser: 104
+    runAsGroup: 107
+    fsGroup: 107
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    privileged: false
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+    seccompProfile:
+      type: "RuntimeDefault"
   annotations: {}
   terminationGracePeriodSeconds: 30
   disableProxyBuffering: false
@@ -1545,7 +1510,7 @@ nginx:
     {{- else -}}
     error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ .Values.nginx.logs.level }};
     {{- end }}
-    pid        /tmp/nginx.pid;
+    pid        /var/run/nginx.pid;
 
     {{- if .Values.artifactory.ssh.enabled }}
     ## SSH Server Configuration
@@ -1728,22 +1693,23 @@ nginx:
     #   targetPort: 8066
     #   protocol: TCP
     #   name: docker
+  ## Renamed nginx internalPort 80,443 to 8080,8443 to support openshift
   http:
     enabled: true
     externalPort: 80
-    internalPort: 80
+    internalPort: 8080
   https:
     enabled: true
     externalPort: 443
-    internalPort: 443
+    internalPort: 8443
   ssh:
     internalPort: 1339
     externalPort: 1339
   # DEPRECATED: The following will be removed in a future release
-  # externalPortHttp: 80
-  # internalPortHttp: 80
-  # externalPortHttps: 443
-  # internalPortHttps: 443
+  # externalPortHttp: 8080
+  # internalPortHttp: 8080
+  # externalPortHttps: 8443
+  # internalPortHttps: 8443
 
   ## The following settings are to configure the frequency of the liveness and readiness probes.
   livenessProbe:
@@ -1780,7 +1746,7 @@ nginx:
           - sh
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
-      initialDelaySeconds: 30
+      initialDelaySeconds: 3
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1854,19 +1820,12 @@ postgresql:
     enabled: true
   containerSecurityContext:
     enabled: true
-    runAsNonRoot: true
-    allowPrivilegeEscalation: false
-    seccompProfile:
-      type: RuntimeDefault
-    capabilities:
-      drop:
-        - ALL
-        #  requests:
-        #    memory: "512Mi"
-        #    cpu: "100m"
-        #  limits:
-        #    memory: "1Gi"
-        #    cpu: "500m"
+    #  requests:
+    #    memory: "512Mi"
+    #    cpu: "100m"
+    #  limits:
+    #    memory: "1Gi"
+    #    cpu: "500m"
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:

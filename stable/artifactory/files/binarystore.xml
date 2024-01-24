@@ -247,6 +247,12 @@
         {{- with .maxConnections }}
         <maxConnections>{{ . }}</maxConnections>
         {{- end }}
+        {{- with .connectionTimeout }}
+        <connectionTimeout>{{ . }}</connectionTimeout>
+        {{- end }}
+        {{- with .socketTimeout }}
+        <socketTimeout>{{ . }}</socketTimeout>
+        {{- end }}
         {{- with .kmsServerSideEncryptionKeyId }}
         <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
         {{- end }}

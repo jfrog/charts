@@ -1,0 +1,65 @@
+# CI values for Xray
+# If this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+xray:
+  jfrogUrl: http://artifactory.rt:8082
+common:
+  persistence:
+    enabled: false
+
+postgresql:
+  postgresqlPassword: xray
+  persistence:
+    enabled: false
+
+rabbitmq:
+  replicaCount: 3
+  auth:
+    username: guest
+    password: password
+  persistence:
+    enabled: false
+  podManagementPolicy: Parallel
+
+global:
+  xray:
+    rabbitmq:
+      haQuorum:
+        enabled: true
+
+server:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "100m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"
+
+analysis:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"
+
+persist:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"
+
+indexer:
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "4Gi"
+      cpu: "4"
