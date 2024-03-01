@@ -8,24 +8,6 @@ databaseUpgradeReady: true
 waitForDatabase: true
 unifiedUpgradeAllowed: true
 
-xray:
-  masterKey: AFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA
-  joinKey: AEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEA
-
-  ## Artifactory URL. Mandatory
-  jfrogUrl:
-
-  podAntiAffinity:
-    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
-    type: "hard"
-    topologyKey: "kubernetes.io/hostname"
-
-# For enabling advanced security features, enable rbac.create and serviceAccount.create
-rbac:
-  create: false
-serviceAccount:
-  create: false
-
 autoscaling:
   enabled: true
   minReplicas: 1
@@ -33,11 +15,11 @@ autoscaling:
   targetCPUUtilizationPercentage: 200
   targetMemoryUtilizationPercentage: 800
 
-# Common Xray settings
-common:
-  persistence:
-    enabled: false
-    size: 50Gi
+xray:
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "hard"
+    topologyKey: "kubernetes.io/hostname"
 
 analysis:
   resources:
@@ -118,16 +100,16 @@ sbom:
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
 ##
 postgresql:
-  enabled: true
-  postgresqlUsername: "xray"
-  postgresqlPassword: "bPa$$w0rd!"
-  postgresqlDatabase: "xraydb"
   postgresqlExtendedConf:
     listenAddresses: "*"
     maxConnections: "100"
-  persistence:
-    enabled: true
-    size: 500Gi
+  resources:
+    requests:
+      memory: 8Gi
+      cpu: "4"
+    limits:
+      memory: 8Gi
+      # cpu: "12"
   primary:
     affinity:
       # Require PostgreSQL pod to run on a different node than Xray pods
@@ -140,25 +122,8 @@ postgresql:
                   values:
                     - xray
             topologyKey: kubernetes.io/hostname
-  resources:
-    requests:
-      memory: 8Gi
-      cpu: "4"
-    limits:
-      memory: 8Gi
-      # cpu: "12"
 
 rabbitmq:
-  affinity:
-    podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchExpressions:
-              - key: app
-                operator: In
-                values:
-                  - xray
-          topologyKey: kubernetes.io/hostname
   extraConfiguration: |-
     vm_memory_high_watermark.absolute = 2G
     {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
@@ -171,3 +136,13 @@ rabbitmq:
     limits:
       # cpu: "2"
       memory: 3Gi
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - xray
+          topologyKey: kubernetes.io/hostname

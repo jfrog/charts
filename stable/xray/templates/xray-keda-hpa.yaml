@@ -1,3 +1,4 @@
+{{- if or (and  .Values.splitXraytoSeparateDeployments.gradualUpgrade  .Values.splitXraytoSeparateDeployments.enabled)  (not .Values.splitXraytoSeparateDeployments.enabled)  }}
 {{- if and (.Values.autoscaling.enabled) (eq .Values.autoscaling.keda.enabled true) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
@@ -16,9 +17,6 @@ spec:
   maxReplicaCount: {{ .Values.autoscaling.maxReplicas }}
   pollingInterval: {{ .Values.autoscaling.keda.pollingInterval }}
   cooldownPeriod: {{ .Values.autoscaling.keda.cooldownPeriod }}
-  fallback:
-    failureThreshold: 3
-    replicas: 5
   advanced:
     horizontalPodAutoscalerConfig:
       behavior:
@@ -36,4 +34,5 @@ spec:
       metricType: Utilization
       metadata:
         value: "{{ .Values.autoscaling.targetMemoryUtilizationPercentage }}"
+{{- end }}
 {{- end }}
