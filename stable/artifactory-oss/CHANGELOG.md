@@ -1,7 +1,7 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.77.3] - Nov 23, 2023
+## [107.77.6] - Nov 23, 2023
 * **IMPORTANT**
 * Added min kubeVersion ">= 1.19.0-0" in chart.yaml
 

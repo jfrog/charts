@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.22.1] - Dec 22, 2023
+## [102.22.2] - Dec 22, 2023
 * Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
 
 ## [102.21.0] - Nov 22, 2023

@@ -1,0 +1,12 @@
+rabbitmq:
+  extraPlugins: "rabbitmq_shovel rabbitmq_shovel_management"
+  migration:
+    deleteStatefulSetToAllowFieldUpdate:
+      enabled: true
+    removeHaPolicyOnMigrationToHaQuorum:
+      enabled: true
+
+global:
+  xray:
+    rabbitmq:
+      migrateMessagesFromXrayDefaultVhost: true

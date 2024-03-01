@@ -1612,6 +1612,10 @@ nginx:
       if ($http_x_forwarded_proto = '') {
         set $http_x_forwarded_proto  $scheme;
       }
+      set $host_port {{ .Values.nginx.https.externalPort }};
+      if ( $scheme = "http" ) {
+        set $host_port {{ .Values.nginx.http.externalPort }};
+      }
       ## Application specific logs
       ## access_log /var/log/nginx/artifactory-access.log timing;
       ## error_log /var/log/nginx/artifactory-error.log;
@@ -1630,7 +1634,7 @@ nginx:
         {{- if .Values.nginx.service.ssloffload}}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
         {{- else }}
-        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$server_port;
+        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$host_port;
         proxy_set_header    X-Forwarded-Port  $server_port;
         {{- end }}
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
@@ -1642,7 +1646,6 @@ nginx:
         proxy_buffering off;
         {{- end }}
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-
         location /artifactory/ {
           if ( $request_uri ~ ^/artifactory/(.*)$ ) {
             proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;

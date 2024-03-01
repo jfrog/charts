@@ -135,6 +135,28 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+    {{- if .Values.rabbitmq.auth.tls.enabled }}
+        - name: copy-rabbitmq-certs
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/bash'
+          - '-c'
+          - >
+{{ include "pipelines.copyRabbitmqCustomCerts" . | indent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: rabbitmq-ca-certs
+            mountPath: "/tmp/rabbitmqcerts"
+      {{ end }}
         - name: change-ownership
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -441,6 +463,9 @@ spec:
               drop:
                 - NET_RAW
           env:
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+        {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 -}}
+          {{ end }}
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
@@ -485,6 +510,9 @@ spec:
               drop:
                 - NET_RAW
           env:
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+        {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 }}
+          {{ end }}
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
@@ -524,6 +552,9 @@ spec:
               drop:
                 - NET_RAW
           env:
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+        {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 -}}
+          {{ end }}
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
@@ -563,6 +594,9 @@ spec:
               drop:
                 - NET_RAW
           env:
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+        {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 }}
+          {{ end }}
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
               value: "{{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt"
@@ -602,6 +636,9 @@ spec:
                 - NET_RAW
           workingDir: /opt/jfrog/pipelines/app/micro/reqSealer
           env:
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+        {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 }}
+          {{ end }}
             - name: PIPELINES_INTERNAL_API
               value: "true"
             - name: COMPONENT
@@ -759,4 +796,9 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
       {{- end }}
+      {{- if .Values.rabbitmq.auth.tls.enabled }}
+      - name: rabbitmq-ca-certs
+        secret:
+          secretName: {{ template "pipelines.rabbitmqCustomCertificateshandler" . }}
+      {{- end}}
 {{- end -}}

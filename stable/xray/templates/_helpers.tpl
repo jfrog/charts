@@ -66,6 +66,9 @@ Expand the name of rabbit chart.
 {{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- end -}}
 
+{{- define "xray.rabbitmq.migration.isHookRegistered" }}
+{{- or .Values.rabbitmq.migration.enabled .Values.rabbitmq.migration.deleteStatefulSetToAllowFieldUpdate.enabled .Values.rabbitmq.migration.removeHaPolicyOnMigrationToHaQuorum.enabled }}
+{{- end }}
 
 {{- define "xray.rabbitmq.migration.fullname" -}}
 {{- $name := default "rabbitmq-migration" -}}
@@ -503,6 +506,22 @@ Resolve xray requiredServiceTypes value
 {{- end -}}
 
 {{/*
+Resolve xray ipa requiredServiceTypes value
+*/}}
+{{- define "xray.router.ipa.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfxana,jfxidx,jfxpst,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve xray server requiredServiceTypes value
+*/}}
+{{- define "xray.router.server.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfxr,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
 Resolve Xray pod node selector value
 */}}
 {{- define "xray.nodeSelector" -}}
@@ -561,6 +580,44 @@ Resolve autoscalingQueues value
 {{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
     vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
 {{- end }}
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for ipa
+*/}}
+{{- define "xray.autoscalingQueuesIpa" -}}
+{{- if .Values.autoscalingIpa.keda.queues }}
+{{- range .Values.autoscalingIpa.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for server
+*/}}
+{{- define "xray.autoscalingQueuesServer" -}}
+{{- if .Values.autoscalingServer.keda.queues }}
+{{- range .Values.autoscalingServer.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
   authenticationRef:
     name: keda-trigger-auth-rabbitmq-conn-xray
 {{- end }}
