@@ -1,11 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.77.3] - Jan 16, 2024
+## [107.77.6] - Feb 20, 2024
 * Removed integration service
 * Added recommended postgresql sizing configurations under sizing directory
 * Updated artifactory-federation (probes, port, embedded mode)
 * Fixed - Removed duplicate keys of the sizing yaml file
+* Fixing broken nginx port [GH-1860](https://github.com/jfrog/charts/issues/1860)
 
 ## [107.76.0] - Dec 13, 2023
 * Added connectionTimeout and socketTimeout paramaters under AWSS3 binarystore section
