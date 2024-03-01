@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.77.7] - Mar 01, 2024
+* Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct`
+
 ## [107.77.6] - Feb 20, 2024
 * Removed integration service
 * Added recommended postgresql sizing configurations under sizing directory
