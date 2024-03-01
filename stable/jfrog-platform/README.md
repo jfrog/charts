@@ -4,7 +4,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.14+
+* Kubernetes 1.19+
 * Artifactory Enterprise(+) trial license [get one from here](https://jfrog.com/platform/free-trial/) or Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details
@@ -13,7 +13,6 @@ This chart will do the following:
 * Deploy JFrog Platform (artifactory, xray, distribution, insight and pipelines). Fully customizable.
 * Deploy a PostgreSQL database using the bitnami/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy a Rabbitmq using the bitnami/rabbitmq chart (can be changed)
-* Deploy a Redis using the bitnami/redis chart (can be changed)
 * Deploy an optional Nginx server
 
 ## Installing the Chart
@@ -30,7 +29,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `jfrog-platform`
 ```bash
-helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform
+helm upgrade --install jfrog-platform jfrog/jfrog-platform --namespace jfrog-platform --create-namespace 
 ```
 
 ### High Availability
@@ -38,7 +37,7 @@ helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-pla
 For **high availability** of Artifactory, set the replica count to be equal or higher than **2**. Recommended is **3**.
 ```bash
 # Start artifactory with 3 replicas per service
-helm upgrade --install jfrog-platform --namespace jfrog-platform --set artifactory.artifactory.replicaCount=3
+helm upgrade --install jfrog-platform --set artifactory.artifactory.replicaCount=3 --namespace jfrog-platform --create-namespace
 ```
 
 ### Install Artifactory license
@@ -73,7 +72,7 @@ artifactory:
 ```
 ```bash
 # Apply the values file during install
-helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform -f customvalues.yaml
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f customvalues.yaml --namespace jfrog-platform --create-namespace
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
@@ -96,7 +95,7 @@ artifactory:
 ```
 
 ```bash
-helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform -f customvalues.yaml
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f customvalues.yaml --namespace jfrog-platform --create-namespace
 ```
 **NOTE:** This method is relevant for initial deployment only! Once Artifactory is deployed, you should not keep passing these parameters as the license is already persisted into Artifactory's storage (they will be ignored).
 Updating the license should be done via Artifactory UI or REST API.
@@ -109,7 +108,6 @@ This chart would provide flexibility to enable one or more of the jfrog products
 2. Distribution
 3. Insight
 4. Pipelines
-5. PDN server
 
 For example to enable xray and insight with artifactory, you can refer the following yaml and pass it during install.
 customvalues.yaml
@@ -120,7 +118,7 @@ insight:
   enabled: true
 ````
 ```bash
-helm upgrade --install jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform -f customvalues.yaml
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f customvalues.yaml --namespace jfrog-platform --create-namespace
 ```
 
 ### Uninstalling Jfrog Platform chart.
