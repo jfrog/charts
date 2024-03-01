@@ -1,7 +1,13 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.53.4] - Nov 14, 2023
+## [101.55.6] - Dec 28, 2023
+* Handled #redis postfix is ommited from redis service name if it contains redis 
+
+## [101.54.0] - Dec 21, 2023
+* Removed hardcoding of redis resources in default values
+
+## [101.53.0] - Nov 14, 2023
 * Updated rabbitmq version to 3.12.10-debian-11-r1
 * Updated redis version to 7.2.0-debian-11-r2
 
