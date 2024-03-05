@@ -432,6 +432,37 @@ Set grcp url
 {{- end -}}
 
 {{/*
+Create rabbitmq URL
+*/}}
+{{- define "rabbitmq.url" -}}
+{{- if index .Values "rabbitmq" "enabled" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqpTls -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqps" .Release.Name $name $rabbitmqPort -}}
+{{- else -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Custom Rabbitmq certificate copy command
+*/}}
+{{- define "pipelines.copyRabbitmqCustomCerts" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+echo "Copy rabbitmq custom certificates to {{ .Values.pipelines.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.pipelines.mountPath }}/etc/security/keys/trusted {{ .Values.pipelines.mountPath }}/data/rabbitmq/certs/;
+cd /tmp/rabbitmqcerts/;
+for file in $(ls * | grep -v ".key" | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.pipelines.mountPath }}/etc/security/keys/trusted/rabbitmq_${file}; fi done;
+for file in $(ls * | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_${file}; fi done;
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve jfrogUrl value
 */}}
 {{- define "pipelines.jfrogUrl" -}}
@@ -948,4 +979,55 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- else -}}
 {{- printf "%s" "false" -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Construct Redis service name
+*/}}
+{{- define "pipelines.redisServiceName" -}}
+{{- if .Values.redis.fullnameOverride -}}
+{{- .Values.redis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- if contains "redis" .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-redis" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret name of rabbitmq TLS certs.
+*/}}
+{{- define "pipelines.rabbitmqCustomCertificateshandler" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $secretName := printf "%s-%s" .Release.Name "rabbitmq-certs"  -}}
+{{- $val := default $secretName .Values.rabbitmq.auth.tls.existingSecret -}}
+{{- $val -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Prints value of Values.rabbitmq.auth.tls.enabled.
+*/}}
+{{- define "pipelines.rabbitmq.isTlsEnabled" -}}
+{{- printf "%t" $.Values.auth.tls.enabled -}}
+{{- end -}}
+
+{{/*
+Set pipelines env variables if rabbitmq.tls is enabled.
+*/}}
+{{- define "pipelines.rabbitmqTlsEnvVariables" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled }}
+- name: GODEBUG
+  value: "x509ignoreCN=0"
+- name: enableTlsConnectionToRabbitMQ
+  value: "true"
+- name: JF_SHARED_MSG_TLSCERT
+  value: {{.Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_tls.crt
+- name: JF_SHARED_MSG_TLSKEY
+  value: {{.Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_tls.key
+- name: JF_SHARED_MSG_TLSCA
+  value: {{.Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_ca.crt
+{{- end }}
 {{- end -}}

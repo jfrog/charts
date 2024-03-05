@@ -219,6 +219,28 @@ spec:
             done;
             {{- end }}
 {{- end }}
+    {{- if .Values.rabbitmq.auth.tls.enabled }}
+        - name: copy-rabbitmq-certs
+          image: "{{ .Values.initContainer.image }}"
+          imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - NET_RAW
+          resources:
+{{ toYaml .Values.initContainers.resources | nindent 12 }}
+          command:
+          - '/bin/bash'
+          - '-c'
+          - >
+{{ include "pipelines.copyRabbitmqCustomCerts" . | indent 12 }}
+          volumeMounts:
+          - name: jfrog-pipelines-folder
+            mountPath: {{ .Values.pipelines.mountPath }}
+          - name: rabbitmq-ca-certs
+            mountPath: "/tmp/rabbitmqcerts"
+      {{ end }}
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
@@ -296,11 +318,7 @@ spec:
           {{- end }}
           {{- if .Values.redis.enabled }}
             echo "Waiting for Redis to come up...";
-          {{- if .Values.redis.fullnameOverride }}
-            until nc -z -w 2 {{ .Values.redis.fullnameOverride }} {{ .Values.redis.redisPort }} && echo redis ok; do
-          {{- else }}
-            until nc -z -w 2 {{ .Release.Name }}-redis {{ .Values.redis.redisPort }} && echo redis ok; do
-          {{- end }}
+            until nc -z -w 2 {{ template "pipelines.redisServiceName" . }} {{ .Values.redis.redisPort }} && echo redis ok; do
               sleep 1;
             done;
           {{- end }}
@@ -314,7 +332,9 @@ spec:
             mkdir -p {{ .Values.pipelines.mountPath }}/security;
             echo -n ${PIPELINES_JOIN_KEY} > {{ .Values.pipelines.mountPath }}/security/join.key;
           {{- end }}
+            set -e;
             ./pipelines-k8s;
+            set +e;
 {{ include "pipelines.addMetrics" . | nindent 12 }}
 {{ include "pipelines.changeOwnershipMetrics" . | nindent 12 }}
           volumeMounts:
@@ -521,6 +541,9 @@ spec:
               drop:
                 - NET_RAW
           env:
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+        {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 }}
+          {{ end }}
             - name: PIPELINES_INTERNAL_API
               value: "true"
             - name: PIPELINES_NODE_ID
@@ -701,4 +724,9 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Values.pipelines.customPersistentVolumeClaim.name }}
       {{- end }}
+      {{- if .Values.rabbitmq.auth.tls.enabled }}
+      - name: rabbitmq-ca-certs
+        secret:
+          secretName: {{ template "pipelines.rabbitmqCustomCertificateshandler" . }}
+      {{- end}}
 {{- end -}}

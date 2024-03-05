@@ -1,6 +1,15 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.17.1] - Feb 29, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+* Updated `artifactory.installerInfo` content
+* Update dependency artifactory chart version to 107.77.6
+* Update dependency xray chart version to 103.90.1
+* Update dependency distribution chart version to 102.22.2
+* Update dependency insight chart version to 101.16.7
+* Update dependency pipelines chart version to 101.55.6
+
 ## [10.17.0] - Jan 24, 2023
 * **IMPORTANT**
 * Added min kubeVersion ">= 1.19.0-0" in chart.yaml
