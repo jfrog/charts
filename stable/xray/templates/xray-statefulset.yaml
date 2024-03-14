@@ -16,7 +16,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.server.statefulset.annotations }}
   annotations:
@@ -87,12 +87,7 @@ spec:
     {{- end }}
       serviceAccountName: {{ template "xray.serviceAccountName" . }}
       {{- if .Values.podSecurityContext.enabled }}
-      securityContext:
-        runAsUser: {{ .Values.common.xrayUserId }}
-        fsGroup: {{ .Values.common.xrayGroupId }}
-        {{- if .Values.common.fsGroupChangePolicy }}
-        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
-        {{- end }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       {{- if .Values.common.topologySpreadConstraints }}
       topologySpreadConstraints:
@@ -138,7 +133,7 @@ spec:
         - name: XRAY_JOIN_KEY
           valueFrom:
             secretKeyRef:
-              {{- if not .Values.xray.unifiedSecretInstallation }}
+              {{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName) }}
               name: {{ include "xray.joinKeySecretName" . }}
               {{- else }}
               name: "{{ template "xray.name" . }}-unified-secret"
@@ -149,7 +144,7 @@ spec:
         - name: XRAY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              {{- if not .Values.xray.unifiedSecretInstallation }}
+              {{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName) }}
               name: {{ include "xray.masterKeySecretName" . }}
               {{- else }}
               name: "{{ template "xray.name" . }}-unified-secret"
@@ -160,7 +155,7 @@ spec:
         - name: data-volume
           mountPath: {{ .Values.xray.persistence.mountPath | quote }}
       {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
-        {{- if not .Values.xray.unifiedSecretInstallation }}
+        {{- if or (not .Values.xray.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
         - name: systemyaml
         {{- else }}
         - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
