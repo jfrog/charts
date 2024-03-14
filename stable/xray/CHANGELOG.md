@@ -1,6 +1,16 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.91.3] - Feb 21,2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* Renamed sizing yaml file names from `xray-sizing-<size>.yaml` to `xray-<size>.yaml`
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* Renamed `common.xrayUserId` to `podSecurityContext.runAsUser`
+* Renamed `common.xrayGroupId` to `podSecurityContext.runAsGroup` and `podSecurityContext.fsGroup`
+* Renamed `common.fsGroupChangePolicy` to `podSecurityContext.fsGroupChangePolicy`
+
 ## [103.89.0] - Jan 18,2023
 * Remove fallback section from keda.
 
