@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.17.3] - Mar 14, 2024
+* Add missing IF statement in `NOTES.txt`
+* Update dependency artifactory chart version to 107.77.7
+* Update dependency xray chart version to 103.91.3
+
 ## [10.17.1] - Feb 29, 2024
 * Updated README.md to create a namespace using `--create-namespace` as part of helm install
 * Updated `artifactory.installerInfo` content

@@ -105,8 +105,9 @@ xray:
   # adding minAvailable for Xray Pod Disruption Budget
   # minAvailable: 1
 
-  # unifiedSecretInstallation flag enables single unified secret holding all xray secrets
-  unifiedSecretInstallation: false
+  # unifiedSecretInstallation flag enables single unified secret holding all the xray internal(chart) secrets, It won't be affecting external secrets.
+  ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 103.91.x, Users can switch to false to continue with the old way of secret creation.
+  unifiedSecretInstallation: true
 
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
@@ -419,10 +420,15 @@ serviceAccount:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: true
 
-## By default, the Xray StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `common.xrayUserId` value.
-## If you want to disable the pod securityContext for the Xray StatefulSet, set this tag to false
+## @param podSecurityContext.enabled enable the pod's Security Context
 podSecurityContext:
   enabled: true
+  runAsNonRoot: true
+  runAsUser: 1035
+  runAsGroup: 1035
+  fsGroup: 1035
+  # fsGroupChangePolicy: "Always"
+  # seLinuxOptions: {}
 
 ## @param containerSecurityContext.enabled enable the container's Security Context
 containerSecurityContext:
@@ -443,7 +449,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.10.0-debian-11-r14
+    tag: 15.2.0-debian-11-r23
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -812,9 +818,6 @@ rabbitmq:
 common:
   ## Note that by default we use appVersion to get image tag
   # xrayVersion:
-  xrayUserId: 1035
-  xrayGroupId: 1035
-  # fsGroupChangePolicy: "Always"
 
   # Spread Xray pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
