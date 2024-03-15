@@ -79,6 +79,8 @@ spec:
         volumeMounts:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
           name: nginx-volume
+        resources:
+{{ toYaml .Values.nginx.resources | indent 10 }}
       containers:
       - name: {{ .Values.nginx.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "nginx") }}

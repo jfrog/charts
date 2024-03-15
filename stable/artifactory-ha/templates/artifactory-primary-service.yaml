@@ -14,6 +14,10 @@ metadata:
     {{- with .Values.artifactory.primary.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
+{{- with .Values.artifactory.primary.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   # Statically setting service type to ClusterIP since this is an internal only service
   type: ClusterIP
