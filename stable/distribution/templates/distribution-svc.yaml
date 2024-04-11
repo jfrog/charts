@@ -21,6 +21,9 @@ spec:
   - name: http-distro
     port: {{ .Values.distribution.externalPort }}
     targetPort: http-distro
+  - name: http-router
+    port: {{ .Values.router.externalPort }}
+    targetPort: http-router
   selector:
     app: {{ template "distribution.name" . }}
     release: {{ .Release.Name }}
