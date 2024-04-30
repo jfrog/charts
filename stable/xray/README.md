@@ -45,14 +45,14 @@ Provide the join key and JFrog URL as a parameter to the Xray chart installation
 
 ```bash
 helm upgrade --install xray --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL>  --namespace xray jfrog/xray
+             --set xray.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> jfrog/xray --namespace xray --create-namespace
 ```
 
 ### Apply Sizing configurations to the Chart
 To apply the chart with recommended sizing configurations :
 For small configurations :
 ```bash
-helm upgrade --install xray --namespace xray jfrog/xray -f sizing/xray-sizing-small.yaml
+helm upgrade --install xray jfrog/xray -f sizing/xray-sizing-small.yaml --namespace xray --create-namespace
 ```
 
 ## Uninstalling Xray
