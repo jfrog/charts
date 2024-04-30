@@ -1,7 +1,19 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.91.3] - Feb 21,2024
+## [103.94.5] - Mar 27, 2024
+* **IMPORTANT**
+* Added image section for `initContainers` instead of `initContainerImage`
+* Removed image section for `loggers`
+* Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
+
+## [103.93.0] - Mar 5,2024
+* Updated rabbitmq multi-arch tag version to to `3.12.10-debian-11-r1`
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+* Added a headless service for IPA pod
+
+## [103.91.0] - Feb 21,2024
 * **IMPORTANT**
 * Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
 * Renamed sizing yaml file names from `xray-sizing-<size>.yaml` to `xray-<size>.yaml`

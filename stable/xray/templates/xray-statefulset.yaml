@@ -68,8 +68,8 @@ spec:
         {{- with .Values.filebeat.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
-      {{- range $key, $value := .Values.xray.annotations }}
-        {{ $key }}: {{ $value | quote }}
+      {{- with .Values.xray.annotations }}
+{{ toYaml . | indent 8 }}
       {{- end }}
     spec:
     {{- if .Values.xray.schedulerName }}
@@ -98,7 +98,8 @@ spec:
 {{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
     {{- end }}
       - name: 'copy-system-yaml'
-        image: '{{ .Values.initContainerImage }}'
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -170,7 +171,8 @@ spec:
       {{- end }}
       {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled }}
       - name: copy-custom-certificates
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -197,7 +199,8 @@ spec:
   {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
-        image: "{{ .Values.initContainerImage }}"
+        image: "{{ include "xray.getImageInfoByValue" (list . "initContainers") }}"
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -217,7 +220,8 @@ spec:
   {{- end }}
   {{- if and .Values.global.xray.rabbitmq.haQuorum.enabled .Values.common.rabbitmq.waitForReplicasQuorumOnStartup }}
       - name: "wait-for-rabbitmq-replicas-quorum"
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -1198,7 +1202,8 @@ spec:
       {{- $mountPath := .Values.xray.persistence.mountPath }}
       {{- range .Values.xray.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "xray.getImageInfoByValue" (list $ "logger") }}
+        image: {{ include "xray.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
         {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}

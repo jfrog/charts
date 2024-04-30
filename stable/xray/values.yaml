@@ -10,6 +10,7 @@ global:
   ## Note: Order of preference is 1) global.versions 2) common.xrayVersion 3) image tags 4) Chart.AppVersion
   versions: {}
     # xray:
+    # initContainers:
     # router:
   # joinKey:
   # masterKey:
@@ -61,11 +62,15 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.3.1475
 imagePullPolicy: IfNotPresent
 
 # Init containers
 initContainers:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.3.1552
+    pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "50Mi"
@@ -402,13 +407,6 @@ autoscaling:
       - name: impactAnalysis
         value: "100"
 
-
-logger:
-  image:
-    registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.3.1475
-
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -518,7 +516,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.11.10-debian-11-r5
+    tag: 3.12.10-debian-11-r1
   extraPlugins: "rabbitmq_management"
 
   auth:
@@ -869,8 +867,8 @@ common:
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    {{- if .Values.containerSecurityContext.enabled }}
   #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
   #    {{- end }}
@@ -885,8 +883,8 @@ common:
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |
   #  - name: "custom-systemyaml-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: "{{ include "xray.getImageInfoByValue" (list . "initContainers") }}"
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    {{- if .Values.containerSecurityContext.enabled }}
   #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
   #    {{- end }}
@@ -903,8 +901,8 @@ common:
   # - The provided example shows running container as root (id 0)
   customSidecarContainers: |
   #  - name: "sidecar-list-etc"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
   #    {{- if .Values.containerSecurityContext.enabled }}
   #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
   #    {{- end }}
@@ -1321,7 +1319,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.95.0
+    tag: 7.108.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1407,7 +1405,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.21.0
+    tag: 1.25.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1592,7 +1590,7 @@ autoscalingServer:
    pollingInterval: 10
    cooldownPeriod: 10
    queues:
-     - name: impactAnalysis
+     - name: alert
        value: "100"
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
@@ -1629,6 +1627,6 @@ autoscalingIpa:
        value: "100"
      - name: persist
        value: "100"
-     - name: alert
+     - name: impactAnalysis
        value: "100"
 ###################################################################################
