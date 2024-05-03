@@ -15,7 +15,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Distribution 1.x currently not supported!\nIf this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md)\nNote: If you are upgrading from a chart version (< 102.23.x) that has postgresql.image.tag of 9.x or 10.x or 12.x or 13.x, make sure to set the current postgresql.image.tag to the same tag and databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 102.23.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.distribution.statefulset.annotations }}
   annotations:
@@ -67,12 +67,9 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "distribution.imagePullSecrets" . | indent 6 }}
     {{- end }}
-      securityContext:
-        runAsUser: {{ .Values.common.uid }}
-        fsGroup: {{ .Values.common.gid }}
-        {{- if .Values.common.fsGroupChangePolicy }}
-        fsGroupChangePolicy: {{ .Values.common.fsGroupChangePolicy }}
-        {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
       {{- if .Values.common.topologySpreadConstraints }}
       topologySpreadConstraints:
 {{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
@@ -82,13 +79,11 @@ spec:
 {{ tpl (include "distribution.customInitContainersBegin" .)  . | indent 6 }}
     {{- end }}
       - name: 'copy-system-configurations'
-        image: '{{ .Values.initContainerImage }}'
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -129,7 +124,7 @@ spec:
         - name: DISTRIBUTION_JOIN_KEY
           valueFrom:
             secretKeyRef:
-            {{- if not .Values.distribution.unifiedSecretInstallation }}
+            {{- if or (not .Values.distribution.unifiedSecretInstallation) (or .Values.distribution.joinKeySecretName .Values.global.joinKeySecretName) }}
               name: {{ include "distribution.joinKeySecretName" . }}
             {{- else }}
               name: "{{ template "distribution.name" . }}-unified-secret"
@@ -140,7 +135,7 @@ spec:
         - name: DISTRIBUTION_MASTER_KEY
           valueFrom:
             secretKeyRef:
-            {{- if not .Values.distribution.unifiedSecretInstallation }}
+            {{- if or (not .Values.distribution.unifiedSecretInstallation) (or .Values.distribution.masterKeySecretName .Values.global.masterKeySecretName) }}
               name: {{ include "distribution.masterKeySecretName" . }}
             {{- else }}
               name: "{{ template "distribution.name" . }}-unified-secret"
@@ -155,8 +150,7 @@ spec:
           mountPath: /tmp/newrelic/newrelic.yml
           subPath: newrelic.yml
         {{- end }}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.distribution.systemYaml }}
-        {{- if not .Values.distribution.unifiedSecretInstallation }}
+        {{- if or (not .Values.distribution.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
         - name: systemyaml
         {{- else }}
         - name: {{ include "distribution.unifiedCustomSecretVolumeName" . }}
@@ -164,20 +158,17 @@ spec:
           {{- if .Values.systemYamlOverride.existingSecret }}
           mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
           subPath: {{ .Values.systemYamlOverride.dataKey }}
-          {{- else if .Values.distribution.systemYaml }}
+          {{- else  }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
           {{- end }}
-      {{- end }}
       {{- if or .Values.distribution.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
-        image: "{{ .Values.initContainerImage }}"
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -194,13 +185,11 @@ spec:
   {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: 'wait-for-db'
-        image: '{{ .Values.initContainerImage }}'
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -218,14 +207,10 @@ spec:
       {{- if and .Release.IsUpgrade .Values.distribution.migration.enabled }}
       - name: migration-{{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
-        imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.uid }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        imagePullPolicy: {{ .Values.distribution.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -259,14 +244,10 @@ spec:
       containers:
       - name: {{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
-        imagePullPolicy: {{ .Values.distribution.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: {{ .Values.common.uid }}
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        imagePullPolicy: {{ .Values.distribution.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         ports:
         - name: http-distro
           containerPort: {{ .Values.distribution.internalPort }}
@@ -377,13 +358,10 @@ spec:
       {{- end }}
       - name: {{ .Values.router.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "router") }}
-        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        imagePullPolicy: {{ .Values.router.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/bash'
           - '-c'
@@ -428,13 +406,10 @@ spec:
 {{- end }}
       - name: {{ .Values.observability.name }}
         image: {{ include "distribution.getImageInfoByValue" (list . "observability") }}
-        imagePullPolicy: {{ .Values.observability.image.imagePullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         command:
           - '/bin/sh'
           - '-c'
@@ -464,12 +439,9 @@ spec:
       - name: redis
         image: {{ include "distribution.getImageInfoByValue" (list $ "redis") }}
         imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.redis.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.redis.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         env:
         - name: REDIS_REPLICATION_MODE
           value: master
@@ -513,13 +485,11 @@ spec:
       {{- $mountPath := .Values.distribution.persistence.mountPath }}
       {{- range .Values.distribution.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "distribution.getImageInfoByValue" (list $ "logger") }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        image: {{ include "distribution.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         command:
         - 'sh'
         - '-c'
@@ -537,12 +507,9 @@ spec:
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
-        securityContext:
-          runAsNonRoot: true
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
         args:
         - "-e"
         - "-E"
@@ -619,7 +586,7 @@ spec:
           secretName: {{ template "distribution.name" . }}-unified-secret
     {{- else if not .Values.distribution.unifiedSecretInstallation }}
       ############ If single secret installation flag is disable ############
-      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.distribution.systemYaml }}
+      {{- if and (not .Values.systemYamlOverride.existingSecret) }}
       - name: systemyaml
         secret:
           secretName: {{ printf "%s-%s" (include "distribution.fullname" .) "systemyaml" }}

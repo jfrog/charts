@@ -15,6 +15,13 @@ Congratulations. You have just deployed JFrog Distribution!
 ********************************************************************************************
 {{- end }}
 
+{{- if or .Values.common.uid .Values.common.gid .Values.common.fsGroupChangePolicy }}
+****************************************** WARNING **********************************************
+* From chart version 102.23.x, `common.uid,common.gid,common.fsGroupChangePolicy` has been moved under `podSecurityContext`
+  please change your values.yaml before upgrade , For more Info , refer to 102.23.x changelog   *
+*************************************************************************************************
+{{- end }}
+
 {{- if and (or (or (or .Values.systemYamlOverride.existingSecret (or .Values.distribution.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.distribution.joinKeySecretName .Values.global.joinKeySecretName)) .Values.database.secrets) .Values.distribution.unifiedSecretInstallation }}
 ****************************************** WARNING **************************************************************************************************
 * The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*
