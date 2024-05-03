@@ -398,6 +398,16 @@ nginx scheme (http/https)
 {{- end -}}
 {{- end -}}
 
+
+{{/*
+nginx command
+*/}}
+{{- define "nginx.command" -}}
+{{- if .Values.nginx.customCommand }}
+{{  toYaml .Values.nginx.customCommand }}
+{{- end }}
+{{- end -}}
+
 {{/*
 nginx port (8080/8443) based on http/https enabled
 */}}

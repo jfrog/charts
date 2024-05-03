@@ -86,6 +86,10 @@ spec:
         {{- if .Values.nginx.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.nginx.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}
+        {{- if .Values.nginx.customCommand }}
+        command:
+{{- tpl (include "nginx.command" .) . | indent 10 }}
+        {{- end }}
         ports:
 {{ if .Values.nginx.customPorts }}
 {{ toYaml .Values.nginx.customPorts | indent 8 }}

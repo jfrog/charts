@@ -896,7 +896,9 @@ setupScriptLogsRedirection() {
 
 # Returns Y if this method is run inside a container
 isRunningInsideAContainer() {
-    if [ -f "/.dockerenv" ]; then
+    local check1=$(grep -sq 'docker\|kubepods' /proc/1/cgroup; echo $?)
+    local check2=$(grep -sq 'containers' /proc/self/mountinfo; echo $?)
+    if [[ $check1 == 0 || $check2 == 0 || -f "/.dockerenv" ]]; then
         echo -n "$FLAG_Y"
     else
         echo -n "$FLAG_N"
