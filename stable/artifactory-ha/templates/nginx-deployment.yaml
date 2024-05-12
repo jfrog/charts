@@ -65,8 +65,8 @@ spec:
 {{ tpl (include "artifactory.nginx.customInitContainers" .)  . | indent 6 }}
         {{- end }}
       - name: "setup"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.nginx.image.pullPolicy }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -154,7 +154,8 @@ spec:
       {{- $mountPath := .Values.nginx.persistence.mountPath }}
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         command:
         - tail
         args:

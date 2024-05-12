@@ -1,10 +1,59 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.77.11] - April 22, 2024
+## [107.84.10] - May 2, 2024
+* Added image section for `initContainers` instead of `initContainerImage`
+* Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
+* Removed loggers.image section
+* Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
+* Fixed an issue with extraSystemYaml merge
+* **IMPORTANT**
+* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext` 
+* Renamed `artifactory.uid` to `artifactory.podSecurityContext.runAsUser`
+* Renamed `artifactory.gid` to `artifactory.podSecurityContext.runAsGroup` and `artifactory.podSecurityContext.fsGroup`
+* Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
+* Renamed `artifactory.seLinuxOptions` to `artifactory.podSecurityContext.seLinuxOptions`
+* Added flag `allowNonPostgresql` defaults to false
+* Update postgresql tag version to `15.6.0-debian-12-r5`
+* Added a check if `initContainerImage` exists
+
+## [107.83.0] - Mar 12, 2024
+* Added image section for `metadata` and `observability`
+
+## [107.82.0] - Mar 04, 2024
+* Added `disableRouterBypass` flag as experimental feature, to disable the artifactoryPath /artifactory/ and route all traffic through the Router.
+* Removed Replicator Service
+
+## [107.81.0] - Feb 20, 2024
+* **IMPORTANT**
+* Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml)
+* Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given [GH-1848](https://github.com/jfrog/charts/pull/1848)
+* Added option to modify the new cache configs, maxFileSizeLimit and skipDuringUpload
+* Added IPV4/IPV6 Dualstack flag support for Artifactory and nginx service
+* Added `singleStackIPv6Cluster` flag, which manages the Nginx configuration to enable listening on IPv6 and proxying
+* Fixing broken link for creating additional kubernetes resources. Refer [here](https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-ha-values.yaml)
+* Refactored installerInfo configuration (moved to files/installer-info.json instead of key in values.yaml)
+
+## [107.80.0] - Feb 20, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+
+## [107.79.0] - Feb 20, 2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* Added support for azure-blob-storage-v2-direct config
+* Added option to set Nginx to write access_log to container STDOUT
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default bundles PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x/13.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+
+## [107.77.0] - April 22, 2024
 * Removed integration service
 * Added recommended postgresql sizing configurations under sizing directory
 * Updated artifactory-federation (probes, port, embedded mode)
+* **IMPORTANT**
+* setSecurityContext has been renamed to podSecurityContext. 
+* Moved podSecurityContext to values.yaml
 * Fixing broken nginx port [GH-1860](https://github.com/jfrog/charts/issues/1860)
 * Added nginx.customCommand to use custom commands for the nginx container
 

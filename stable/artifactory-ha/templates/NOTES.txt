@@ -39,6 +39,13 @@ Congratulations. You have just deployed JFrog Artifactory HA!
 {{- end }}
 
 
+{{- if .Values.artifactory.setSecurityContext }}
+****************************************** WARNING **********************************************
+* From chart version 107.84.x, `setSecurityContext` has been renamed to `podSecurityContext`,   *
+  please change your values.yaml before upgrade , For more Info , refer to 107.84.x changelog   *
+*************************************************************************************************
+{{- end }}
+
 {{- if and (or (or (or (or (or ( or ( or ( or (or (or ( or (or .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName) .Values.systemYamlOverride.existingSecret) (or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled)) .Values.aws.licenseConfigSecretName) .Values.artifactory.persistence.customBinarystoreXmlSecret) .Values.access.customCertificatesSecretName) .Values.systemYamlOverride.existingSecret) .Values.artifactory.license.secret) .Values.artifactory.userPluginSecrets) (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey)) (and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName)) (or .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName)) .Values.artifactory.unifiedSecretInstallation }}
 ****************************************** WARNING **************************************************************************************************
 * The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*

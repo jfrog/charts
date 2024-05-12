@@ -35,7 +35,7 @@ artifactory:
     # other: ""
   installer:
     platform: jcr-helm
-  installerInfo: '{"productId": "Helm_artifactory-jcr/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
+  installerInfo: '{"productId":"Helm_artifactory-jcr/{{ .Chart.Version }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"PostgreSQL_Enabled/{{ .Values.postgresql.enabled }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"UnifiedSecretInstallation_Enabled/{{ .Values.artifactory.unifiedSecretInstallation }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   ## Nginx
   ## See full list of supported Nginx options and documentation in artifactory chart: https://github.com/jfrog/charts/tree/master/stable/artifactory
   nginx:
@@ -69,8 +69,7 @@ postgresql:
   enabled: true
 router:
   image:
-    tag: 7.91.0
-logger:
+    tag: 7.105.1
+initContainers:
   image:
-    tag: 9.3.1475
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.3.1475
+    tag: 9.3.1552

@@ -1,0 +1,32 @@
+{
+    "productId": "Helm_artifactory/{{ .Chart.Version }}",
+    "features": [
+      {
+        "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"
+      },
+      {
+        "featureId": "Database/{{ .Values.database.type }}"
+      },
+      {
+        "featureId": "PostgreSQL_Enabled/{{ .Values.postgresql.enabled }}"
+      },
+      {
+        "featureId": "Nginx_Enabled/{{ .Values.nginx.enabled }}"
+      },
+      {
+        "featureId": "ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"
+      },
+      {
+        "featureId": "SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"
+      },
+      {
+        "featureId": "UnifiedSecretInstallation_Enabled/{{ .Values.artifactory.unifiedSecretInstallation }}"
+      },
+      {
+        "featureId": "Filebeat_Enabled/{{ .Values.filebeat.enabled }}"
+      },
+      {
+        "featureId": "ReplicaCount/{{ .Values.artifactory.replicaCount }}"
+      }
+    ]
+}

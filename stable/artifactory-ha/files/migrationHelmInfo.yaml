@@ -11,10 +11,6 @@ migration:
       work/access=access/tmp
       log/archived/access=access/logs
       log/archived/artifactory=logs
-      etc/replicator=replicator/etc
-      backup/replicator=replicator/backup
-      data/replicator=replicator/data
-      log/archived/replicator=replicator/logs
   linkFiles:
     map:
     # Note : $JF_ROOT_DATA_DIR will be prepended to the sourceDirectoryPath value only if relative path and $JF_ROOT_DATA_DIR will be prepended to the targetDirectoryPath value
@@ -27,6 +23,5 @@ migration:
     # Note $JF_ROOT_DATA_DIR will be prepended to the map entry
     map:
       access
-      replicator
       metadata
       logs
