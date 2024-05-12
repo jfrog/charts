@@ -30,7 +30,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-oss`:
 ```bash
-helm upgrade --install artifactory-oss --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-oss jfrog/artifactory-oss
+helm upgrade --install artifactory-oss --set artifactory.postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-oss --namespace artifactory-oss --create-namespace
 ```
 
 ### Accessing Artifactory OSS
@@ -39,7 +39,7 @@ helm upgrade --install artifactory-oss --set artifactory.postgresql.postgresqlPa
 ### Updating Artifactory OSS
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade artifactory-oss jfrog/artifactory-oss
+helm upgrade artifactory-oss jfrog/artifactory-oss --namespace artifactory-oss --create-namespace
 ```
 
 ### Special Upgrade Notes
@@ -84,7 +84,7 @@ helm upgrade --install artifactory-oss \
   --set artifactory.ingress.enabled=true \
   --set artifactory.ingress.hosts[0]="artifactory.company.com" \
   --set artifactory.artifactory.service.type=NodePort \
-  --namespace artifactory-oss jfrog/artifactory-oss
+  jfrog/artifactory-oss --namespace artifactory-oss --create-namespace
 ```
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:

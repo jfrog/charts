@@ -30,33 +30,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 
-
-{{/*
-Create a default fully qualified replicator app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "artifactory.replicator.fullname" -}}
-{{- if .Values.artifactory.replicator.ingress.name -}}
-{{- .Values.artifactory.replicator.ingress.name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-replication" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified replicator tracker ingress name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "artifactory.replicator.tracker.fullname" -}}
-{{- if .Values.artifactory.replicator.trackerIngress.name -}}
-{{- .Values.artifactory.replicator.trackerIngress.name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-replication-tracker" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
 {{/*
 Create a default fully qualified nginx name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
@@ -262,6 +235,9 @@ Return the proper artifactory chart image names
     {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
+    {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
     {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
     {{- end -}}
@@ -325,9 +301,6 @@ Resolve requiredServiceTypes value
 {{- end -}}
 {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
-{{- end -}}
-{{- if .Values.artifactory.replicator.enabled -}}
-    {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
 {{- end -}}
 {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
@@ -468,4 +441,18 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- else -}}
 {{- printf "%s" "false" -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from structured and unstructured text input
+*/}}
+{{- define "artifactory.finalSystemYaml" -}}
+{{ tpl (mergeOverwrite (include "artifactory.systemYaml" . | fromYaml) .Values.artifactory.extraSystemYaml | toYaml) . }}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from the unstructured text input
+*/}}
+{{- define "artifactory.systemYaml" -}}
+{{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
 {{- end -}}

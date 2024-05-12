@@ -30,7 +30,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm upgrade --install jfrog-container-registry --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-jcr jfrog/artifactory-jcr
+helm upgrade --install jfrog-container-registry --set artifactory.postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-jcr --namespace artifactory-jcr --create-namespace
 ```
 
 ### Accessing JFrog Container Registry
@@ -39,7 +39,7 @@ helm upgrade --install jfrog-container-registry --set artifactory.postgresql.pos
 ### Updating JFrog Container Registry
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade jfrog-container-registry jfrog/artifactory-jcr
+helm upgrade jfrog-container-registry jfrog/artifactory-jcr --namespace artifactory-jcr --create-namespace
 ```
 
 ### Special Upgrade Notes
@@ -85,7 +85,7 @@ helm upgrade --install jfrog-container-registry \
   --set artifactory.ingress.enabled=true \
   --set artifactory.ingress.hosts[0]="artifactory.company.com" \
   --set artifactory.artifactory.service.type=NodePort \
-  --namespace artifactory-jcr jfrog/artifactory-jcr
+  jfrog/artifactory-jcr --namespace artifactory-jcr --create-namespace
 ```
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:

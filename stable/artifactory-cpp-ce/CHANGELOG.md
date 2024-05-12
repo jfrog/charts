@@ -1,7 +1,13 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.77.11] - Nov 23, 2023
+## [107.84.10] - Feb 20, 2024
+* Updated `artifactory.installerInfo` content
+
+## [107.80.0] - Feb 1, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+
+## [107.74.0] - Nov 23, 2023
 * **IMPORTANT**
 * Added min kubeVersion ">= 1.19.0-0" in chart.yaml
 

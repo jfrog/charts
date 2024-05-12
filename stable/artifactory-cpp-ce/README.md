@@ -30,7 +30,7 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory-cpp-ce`:
 ```bash
-helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresqlPassword=<postgres_password> --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresqlPassword=<postgres_password> jfrog/artifactory-cpp-ce --namespace artifactory-cpp-ce --create-namespace
 ```
 
 ### Accessing Artifactory CE for C++
@@ -39,7 +39,7 @@ helm upgrade --install artifactory-cpp-ce --set artifactory.postgresql.postgresq
 ### Updating Artifactory CE for C++
 Once you have a new chart version, you can upgrade your deployment with
 ```bash
-helm upgrade artifactory-cpp-ce --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
+helm upgrade artifactory-cpp-ce jfrog/artifactory-cpp-ce --namespace artifactory-cpp-ce --create-namespace
 ```
 
 ### Special Upgrade Notes
@@ -85,7 +85,7 @@ helm upgrade --install artifactory-cpp-ce \
   --set artifactory.ingress.enabled=true \
   --set artifactory.ingress.hosts[0]="artifactory.company.com" \
   --set artifactory.artifactory.service.type=NodePort \
-  --namespace artifactory-cpp-ce jfrog/artifactory-cpp-ce
+  jfrog/artifactory-cpp-ce --namespace artifactory-cpp-ce --create-namespace
 ```
 
 To manually configure TLS, first create/retrieve a key & certificate pair for the address(es) you wish to protect. Then create a TLS secret in the namespace:

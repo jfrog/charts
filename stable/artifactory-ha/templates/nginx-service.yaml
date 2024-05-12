@@ -21,6 +21,12 @@ spec:
   {{- if and (eq .Values.nginx.service.type "ClusterIP") .Values.nginx.service.clusterIP }}
   clusterIP: {{ .Values.nginx.service.clusterIP }}
   {{- end }}
+  {{- if .Values.nginx.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.nginx.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if not (empty .Values.nginx.service.ipFamilies)}}
+  ipFamilies: {{- toYaml .Values.nginx.service.ipFamilies | nindent 4 }}
+  {{- end }}
 {{- if eq .Values.nginx.service.type "LoadBalancer" }}
   {{ if .Values.nginx.service.loadBalancerIP -}}
   loadBalancerIP: {{ .Values.nginx.service.loadBalancerIP }}
