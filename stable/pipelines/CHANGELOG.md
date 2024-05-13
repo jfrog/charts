@@ -1,7 +1,10 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.55.6] - Dec 28, 2023
+## [101.56.6] - Jan 31, 2024
+* Fixes in external secret support on unified secret installation
+
+## [101.55.0] - Dec 28, 2023
 * Handled #redis postfix is ommited from redis service name if it contains redis 
 
 ## [101.54.0] - Dec 21, 2023
