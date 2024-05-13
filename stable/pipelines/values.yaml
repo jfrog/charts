@@ -385,7 +385,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}30{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -399,7 +399,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -412,7 +412,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -479,7 +479,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}30{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -493,7 +493,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -506,7 +506,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -577,7 +577,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}30{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -591,7 +591,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -605,7 +605,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -623,7 +623,7 @@ pipelines:
             command:
               - sh
               - -c
-              - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/pipelines/internalapi/v1/system/liveness
+              - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/pipelines/internalapi/v1/system/liveness
           initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
           periodSeconds: 10
           timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -660,7 +660,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.www.service.port }}/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.www.service.port }}/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -674,7 +674,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.www.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.www.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -707,7 +707,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.frontend.internalPort }}/index.html
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.frontend.internalPort }}/index.html
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1020,7 +1020,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
         failureThreshold: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1034,7 +1034,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/readiness
         initialDelaySeconds: 30
         failureThreshold: 90
         periodSeconds: 5
@@ -2296,7 +2296,7 @@ vault:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: VAULT_ADDRESS
-            value: "http://localhost:8200"
+            value: "http://127.0.0.1:8200"
         resources:
           requests:
             memory: "10Mi"
