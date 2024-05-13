@@ -1,13 +1,42 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.22.2] - Dec 22, 2023
+## [102.24.0] - Mar 27, 2024
+* Added image section for `initContainers` instead of `initContainerImage`
+* Renamed `distribution.image.imagePullPolicy` to `distribution.image.pullPolicy`
+* Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
+* Renamed `observability.image.imagePullPolicy` to `observability.image.pullPolicy`
+* Removed loggers.image section
+* Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
+* Fixed an issue with extraSystemYaml merge
+
+
+## [102.23.0] - Feb 15, 2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default bundles PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x/13.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* Added support for distribution on openshift by setting `podSecurityContext` and `containerSecurityContext` to false
+* **IMPORTANT**
+* Renamed `common.uid` to `podSecurityContext.runAsUser`
+* Renamed `common.gid` to `podSecurityContext.runAsGroup` and `podSecurityContext.fsGroup`
+* Renamed `common.fsGroupChangePolicy` to `podSecurityContext.fsGroupChangePolicy`
+* Added `redis.containerSecurityContext` to support openshift
+* Renamed `redis.uid` to `redis.containerSecurityContext.runAsUser`
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+* Updated redis multi-arch tag version to 7.2.4-debian-11-r5
+* Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml).
+* Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given.
+* Added IPV4/IPV6 Dualstack flag support for Distribution chart
+
+## [102.22.0] - Dec 22, 2023
 * Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
 
-## [102.21.0] - Nov 22, 2023
+## [102.21.0] - Nov 27, 2023
 * Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 * Removed default hardcoded javaOpts `-Xms2g -Xmx4g` from distribution.sh file
-* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 * **IMPORTANT**
 * Added min kubeVersion ">= 1.19.0-0" in chart.yaml
 

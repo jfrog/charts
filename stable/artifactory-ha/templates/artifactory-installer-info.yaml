@@ -9,4 +9,8 @@ metadata:
     release: {{ .Release.Name }}
 data:
   installer-info.json: |
-    {{ tpl .Values.installerInfo . }}
+{{- if .Values.installerInfo -}}
+{{- tpl .Values.installerInfo . | nindent 4 -}}
+{{- else -}}
+{{ (tpl ( .Files.Get "files/installer-info.json" | nindent 4 ) .) }}
+{{- end -}}

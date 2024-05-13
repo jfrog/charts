@@ -17,7 +17,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 or 15.2.0-debian-11-r23 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x or 15.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.server.statefulset.annotations }}
   annotations:
@@ -72,8 +72,8 @@ spec:
         {{- with .Values.filebeat.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
-      {{- range $key, $value := .Values.xray.annotations }}
-        {{ $key }}: {{ $value | quote }}
+      {{- with .Values.xray.annotations }}
+{{ toYaml . | indent 8 }}
       {{- end }}
     spec:
     {{- if .Values.xray.schedulerName }}
@@ -102,7 +102,8 @@ spec:
 {{ tpl (include "xray.customInitContainersBegin" .) . | indent 6 }}
     {{- end }}
       - name: 'copy-system-yaml'
-        image: '{{ .Values.initContainerImage }}'
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -158,7 +159,6 @@ spec:
         volumeMounts:
         - name: data-volume
           mountPath: {{ .Values.xray.persistence.mountPath | quote }}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.xray.systemYaml }}
         {{- if or (not .Values.xray.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
         - name: systemyaml
         {{- else }}
@@ -167,14 +167,14 @@ spec:
           {{- if .Values.systemYamlOverride.existingSecret }}
           mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
           subPath: {{ .Values.systemYamlOverride.dataKey }}
-          {{- else if .Values.xray.systemYaml }}
+          {{- else }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
           {{- end }}
-      {{- end }}
       {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled .Values.rabbitmq.auth.tls.enabled .Values.global.rabbitmq.auth.tls.enabled }}
       - name: copy-custom-certificates
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -201,7 +201,8 @@ spec:
   {{- if .Values.waitForDatabase }}
       {{- if .Values.postgresql.enabled }}
       - name: "wait-for-db"
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -221,7 +222,8 @@ spec:
   {{- end }}
   {{- if and .Values.global.xray.rabbitmq.haQuorum.enabled .Values.common.rabbitmq.waitForReplicasQuorumOnStartup }}
       - name: "wait-for-rabbitmq-replicas-quorum"
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
         {{- end }}
@@ -562,7 +564,8 @@ spec:
       {{- $mountPath := .Values.xray.persistence.mountPath }}
       {{- range .Values.xray.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "xray.getImageInfoByValue" (list $ "logger") }}
+        image: {{ include "xray.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
         {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}
@@ -669,7 +672,7 @@ spec:
           secretName: {{ template "xray.name" . }}-unified-secret
       {{- else if not .Values.xray.unifiedSecretInstallation }}
       ######### Non unifiedSecretInstallation ###########
-      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.xray.systemYaml }}
+      {{- if not .Values.systemYamlOverride.existingSecret }}
       - name: systemyaml
         secret:
           secretName: {{ printf "%s-%s" (include "xray.fullname" .) "system-yaml" }}

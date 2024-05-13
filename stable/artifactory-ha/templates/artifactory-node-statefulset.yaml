@@ -67,19 +67,8 @@ spec:
     {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
     {{- end }}
-      {{- if .Values.artifactory.setSecurityContext }}
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: {{ .Values.artifactory.uid }}
-        runAsGroup: {{ .Values.artifactory.gid }}
-        fsGroup: {{ .Values.artifactory.gid }}
-        {{- if .Values.artifactory.fsGroupChangePolicy }}
-        fsGroupChangePolicy: {{ .Values.artifactory.fsGroupChangePolicy }}
-        {{- end }}
-        {{- if .Values.artifactory.seLinuxOptions }}
-        seLinuxOptions:
-        {{- tpl (toYaml .Values.artifactory.seLinuxOptions) . | nindent 10 }}
-        {{- end }}
+      {{- if .Values.artifactory.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.artifactory.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       {{- if .Values.artifactory.topologySpreadConstraints }}
       topologySpreadConstraints:
@@ -93,8 +82,8 @@ spec:
     {{- if eq .Values.artifactory.persistence.type "file-system" }}
       {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
       - name: "create-artifactory-data-dir"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -112,8 +101,8 @@ spec:
     {{- end }}
       {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
         command:
           - 'bash'
           - '-c'
@@ -127,8 +116,8 @@ spec:
     {{- end }}
       {{- if and .Values.artifactory.node.waitForPrimaryStartup.enabled }}
       - name: "wait-for-primary"
-        image: "{{ .Values.initContainerImage }}"
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -151,7 +140,8 @@ spec:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         {{- end }}
       - name: 'copy-system-configurations'
-        image: '{{ .Values.initContainerImage }}'
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -187,7 +177,7 @@ spec:
         - name: ARTIFACTORY_MASTER_KEY
           valueFrom:
             secretKeyRef:
-            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+            {{- if or (not .Values.artifactory.unifiedSecretInstallation) (or .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName) }}
               name: {{ include "artifactory-ha.masterKeySecretName" . }}
             {{- else }}
               name: "{{ template "artifactory-ha.name" . }}-unified-secret"
@@ -199,8 +189,9 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-      {{- if or .Values.systemYamlOverride.existingSecret .Values.artifactory.systemYaml }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+
+      ######################## SystemYaml #########################
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
         - name: systemyaml
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
@@ -208,24 +199,29 @@ spec:
           {{- if .Values.systemYamlOverride.existingSecret }}
           mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
           subPath: {{ .Values.systemYamlOverride.dataKey }}
-          {{- else if .Values.artifactory.systemYaml }}
+          {{- else }}
           mountPath: "/tmp/etc/system.yaml"
           subPath: system.yaml
           {{- end }}
-      {{- end }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+
+        ######################## Binarystore  ##########################
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.customBinarystoreXmlSecret }}
         - name: binarystore-xml
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
         {{- end }}
           mountPath: "/tmp/etc/artifactory/binarystore.xml"
           subPath: binarystore.xml
+
+      ######################## CustomCertificates  ##########################
       {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
+
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
@@ -242,7 +238,8 @@ spec:
 
       {{- if .Values.artifactory.circleOfTrustCertificatesSecret }}
       - name: copy-circle-of-trust-certificates
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -263,7 +260,8 @@ spec:
     {{- if .Values.waitForDatabase }}
       {{- if or .Values.postgresql.enabled }}
       - name: "wait-for-db"
-        image: "{{ .Values.initContainerImage }}"
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
         command:
         - /bin/bash
         - -c
@@ -392,13 +390,18 @@ spec:
   {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
   {{- end }}
+
+      ######################## Artifactory persistence nfs ##########################
   {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
         - name: artifactory-ha-backup
           mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
   {{- else }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+
+
+      ######################## Artifactory persistence binarystore Xml ##########################
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.customBinarystoreXmlSecret }}
         - name: binarystore-xml
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
@@ -406,8 +409,10 @@ spec:
           mountPath: "/tmp/etc/artifactory/binarystore.xml"
           subPath: binarystore.xml
   {{- end }}
+
+      ######################## Artifactory persistence google storage ##########################
   {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
         - name: gcpcreds-json
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
@@ -415,6 +420,7 @@ spec:
           mountPath: "/artifactory_bootstrap/gcp.credentials.json"
           subPath: gcp.credentials.json
   {{- end }}
+
 {{- end }}
       {{- if .Values.hostAliases }}
       hostAliases:
@@ -424,7 +430,7 @@ spec:
     {{- if .Values.splitServicesToContainers }}
       - name: {{ .Values.router.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
-        imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.router.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -508,7 +514,7 @@ spec:
       {{- end }}
       {{- if .Values.metadata.enabled }}
       - name: {{ .Values.metadata.name }}
-        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "metadata") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
@@ -636,36 +642,6 @@ spec:
 {{ tpl .Values.event.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
-      {{- if .Values.artifactory.replicator.enabled }}
-      - name: {{ .Values.artifactory.replicator.name }}
-        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-      {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
-      {{- end }}
-        command:
-          - '/bin/bash'
-          - '-c'
-          - >
-            exec /opt/jfrog/artifactory/app/replicator/bin/jf-replicator start
-        {{- with .Values.artifactory.replicator.lifecycle }}
-        lifecycle:
-{{ toYaml . | indent 10 }}
-        {{- end }}
-        env:
-        - name: JF_SHARED_NODE_ID
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-{{- with .Values.artifactory.replicator.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 8 }}
-{{- end }}
-        volumeMounts:
-        - name: volume
-          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-        resources:
-{{ toYaml .Values.artifactory.replicator.resources | indent 10 }}
-      {{- end }}
       {{- if .Values.jfconnect.enabled }}
       - name: {{ .Values.jfconnect.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
@@ -766,7 +742,7 @@ spec:
       {{- end }}
       {{- if .Values.observability.enabled }}
       - name: {{ .Values.observability.name }}
-        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "observability") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
@@ -859,10 +835,6 @@ spec:
         - name : JF_METADATA_ENABLED
           value: "false"
         - name : JF_FRONTEND_ENABLED
-          value: "false"
-        - name: JF_REPLICATOR_ENABLED
-          value: "true"
-        - name: JF_REPLICATOR_SERVICE_ENABLED
           value: "false"
         - name: JF_FEDERATION_ENABLED
           value: "false"
@@ -961,6 +933,8 @@ spec:
         {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+
+      ######################## Artifactory persistence fs ##########################
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
         {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
           {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
@@ -971,21 +945,27 @@ spec:
           mountPath: "{{ $.Values.artifactory.persistence.fileSystem.existingSharedClaim.backupDir }}"
         {{- end }}
       {{- end }}
+
+      ######################## Artifactory persistence nfs ##########################
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
         - name: artifactory-ha-data
           mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
         - name: artifactory-ha-backup
           mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
       {{- else }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+
+      ######################## Artifactory persistence binarystore Xml ##########################
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.customBinarystoreXmlSecret }}
         - name: binarystore-xml
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
         {{- end }}
           mountPath: "/tmp/etc/artifactory/binarystore.xml"
           subPath: binarystore.xml
+
+      ######################## Artifactory persistence google storage ##########################
       {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
         - name: gcpcreds-json
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
@@ -993,12 +973,16 @@ spec:
           mountPath: "/artifactory_bootstrap/gcp.credentials.json"
           subPath: gcp.credentials.json
       {{- end }}
+
+      ######################## Artifactory ConfigMap ##########################
       {{- if .Values.artifactory.configMapName }}
         - name: bootstrap-config
           mountPath: "/bootstrap/"
       {{- end }}
+
+      ######################## Artifactory license ##########################
       {{- if or .Values.artifactory.license.secret .Values.artifactory.license.licenseKey }}
-        {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.license.secret }}
         - name: artifactory-license
         {{- else }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
@@ -1010,7 +994,7 @@ spec:
           subPath: artifactory.lic
           {{- end }}
       {{- end }}
-      {{- end }}
+    {{- end }}
         - name: installer-info
           mountPath: "/artifactory_bootstrap/info/installer-info.json"
           subPath: installer-info.json
@@ -1036,7 +1020,8 @@ spec:
       {{- $mountPath := .Values.artifactory.persistence.mountPath }}
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -1056,7 +1041,8 @@ spec:
       {{- if .Values.artifactory.catalinaLoggers }}
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
-        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "logger") }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -1177,6 +1163,12 @@ spec:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
 
+      {{- if and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+      - name: gcpcreds-json
+        secret:
+          secretName: {{ .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+      {{- end }}
+
       ############ Config map, Volumes and Custom Volumes ##############
       {{- if .Values.artifactory.migration.enabled }}
       - name: migration-scripts
@@ -1201,6 +1193,7 @@ spec:
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-configmaps
       {{- end }}
+
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
         {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
           {{- range $sharedClaimNumber, $e := until (.Values.artifactory.persistence.fileSystem.existingSharedClaim.numberOfExistingClaims|int) }}
@@ -1213,6 +1206,7 @@ spec:
           claimName: {{ template "artifactory-ha.fullname" $ }}-backup-pvc
         {{- end }}
       {{- end }}
+
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
       - name: artifactory-ha-data
         persistentVolumeClaim:
@@ -1221,6 +1215,7 @@ spec:
         persistentVolumeClaim:
           claimName: {{ template "artifactory-ha.fullname" . }}-backup-pvc
       {{- end }}
+
       {{- if .Values.artifactory.customPersistentVolumeClaim }}
       - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
         persistentVolumeClaim:
@@ -1246,6 +1241,7 @@ spec:
         secret:
           secretName: {{ template "artifactory-ha.name" . }}-unified-secret
     {{- else if not .Values.artifactory.unifiedSecretInstallation }}
+
       ############ If single secret installation flag is disable ############
       {{- if and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled (not .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName) }}
       - name: gcpcreds-json
@@ -1257,21 +1253,13 @@ spec:
         secret:
           secretName: {{ template "artifactory-ha.fullname" . }}-license
       {{- end }}
-      {{- if and .Values.artifactory.admin.password (not .Values.artifactory.admin.secret) }}
-      - name: access-bootstrap-creds
-        secret:
-          secretName: {{ template "artifactory-ha.fullname" . }}-bootstrap-creds
-      {{- end }}
-      {{- if and (not .Values.systemYamlOverride.existingSecret) .Values.artifactory.systemYaml }}
+
+      {{- if and (not .Values.systemYamlOverride.existingSecret) }}
       - name: systemyaml
         secret:
           secretName:  {{ template "artifactory-ha.primary.name" . }}-system-yaml
       {{- end }}
-      {{- if .Values.access.accessConfig }}
-      - name: access-config
-        secret:
-          secretName: {{ template "artifactory-ha.fullname" . }}-access-config
-      {{- end }}
+
       {{- if not .Values.artifactory.persistence.customBinarystoreXmlSecret }}
       - name: binarystore-xml
         secret:

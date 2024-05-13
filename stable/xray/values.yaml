@@ -10,6 +10,7 @@ global:
   ## Note: Order of preference is 1) global.versions 2) common.xrayVersion 3) image tags 4) Chart.AppVersion
   versions: {}
     # xray:
+    # initContainers:
     # router:
   # joinKey:
   # masterKey:
@@ -61,11 +62,15 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.3.1475
 imagePullPolicy: IfNotPresent
 
 # Init containers
 initContainers:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.3.1552
+    pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "50Mi"
@@ -184,88 +189,23 @@ xray:
         username: ""
         password: ""
 
-  systemYaml: |
-    configVersion: 1
-    router:
-      serviceRegistry:
-        insecure: {{ .Values.router.serviceRegistry.insecure }}
-    shared:
-    {{- if .Values.xray.openMetrics.enabled }}
-      metrics:
-        enabled: true
-      {{- if .Values.xray.openMetrics.filebeat.enabled }}
-        filebeat: {{ toYaml .Values.xray.openMetrics.filebeat | nindent 6 }}
-      {{- end }}
-    {{- end }}
-      logging:
-        consoleLog:
-          enabled: {{ .Values.xray.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "xray.jfrogUrl" .)) . }}"
-      database:
-      {{- if .Values.postgresql.enabled }}
-        type: "postgresql"
-        driver: "org.postgresql.Driver"
-        username: "{{ .Values.postgresql.postgresqlUsername }}"
-        url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
-      {{- else }}
-        type: {{ .Values.database.type }}
-        driver: {{ .Values.database.driver }}
-      {{- end }}
-      {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
-      rabbitMq:
-      {{- if .Values.global.xray.rabbitmq.haQuorum.enabled }}
-        ha_quorum: true
-        vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
-        replicasCount: {{ .Values.global.xray.rabbitmq.replicaCount }}
-      {{- end }}
-        erlangCookie:
-          value: "{{ .Values.rabbitmq.external.erlangCookie }}"
-      {{- if not .Values.rabbitmq.external.secrets }}
-        url: "{{ tpl .Values.rabbitmq.external.url . }}"
-        username: "{{ .Values.rabbitmq.external.username }}"
-        password: "{{ .Values.rabbitmq.external.password }}"
-      {{- end }}
-      {{- else if and .Values.rabbitmq.enabled .Values.global.xray.rabbitmq.haQuorum.enabled }}
-      rabbitMq:
-        ha_quorum: true
-        vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
-        replicasCount: {{ .Values.rabbitmq.replicaCount }}
-      {{- end }}
-      {{- if .Values.xray.mongoUrl }}
-      mongo:
-        url: "{{ .Values.xray.mongoUrl }}"
-        username: "{{ .Values.xray.mongoUsername }}"
-        password: "{{ .Values.xray.mongoPassword }}"
-      {{- end }}
-    {{- if or .Values.server.mailServer .Values.server.indexAllBuilds .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
-    server:
-      {{- if .Values.server.mailServer }}
-      mailServer: "{{ .Values.server.mailServer }}"
-      {{- end }}
-      {{- if .Values.server.indexAllBuilds }}
-      indexAllBuilds: {{ .Values.server.indexAllBuilds }}
-      {{- end }}
-      {{- if .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost }}
-      dataMigrations:
-        migrate_msgs_from_other_rabbitmq:
-          vhost: {{ .Values.global.xray.rabbitmq.vhost | default "%2f" | quote }}
-      {{- else if .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
-      dataMigrations:
-        migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
-      {{- end }}
-    {{- end }}
-    {{- if (include "xray.imagePullSecretsStrList" .) }}
-    executionService:
-      pullSecret:
-      {{- include "xray.imagePullSecretsStrList" . | indent 2 }}
-    {{- end }}
-    contextualAnalysis:
-      registry: {{ include "xray.getRegistryByService" (list . "contextualAnalysis") }}
-      image: {{ .Values.contextualAnalysis.image.repository }}
-    exposures:
-      container:
-        registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
-        image: {{ .Values.exposures.image.repository }}
+  ## System YAML entries now reside under files/system.yaml.
+  ## You can provide the specific values that you want to add or override under 'xray.extraSystemYaml'.
+  ## For example:
+  ## extraSystemYaml:
+  ##  shared:
+  ##    logging:
+  ##      consoleLog:
+  ##        enabled: true
+  ## The entries provided under 'xray.extraSystemYaml' are merged with files/system.yaml to create the final system.yaml.
+  ## If you have already provided system.yaml under, 'xray.systemYaml', the values in that entry take precedence over files/system.yaml
+  ## You can modify specific entries with your own value under `xray.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'xray.systemYaml' and files/system.yaml
+
+  extraSystemYaml: {}
+      
+  ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
+  ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
+  # systemYaml:
 
   # Sidecar containers for tailing Xray logs
   loggers: []
@@ -402,13 +342,6 @@ autoscaling:
       - name: impactAnalysis
         value: "100"
 
-
-logger:
-  image:
-    registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.3.1475
-
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -449,7 +382,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 15.2.0-debian-11-r23
+    tag: 15.6.0-debian-11-r16
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -518,7 +451,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.11.10-debian-11-r5
+    tag: 3.12.10-debian-11-r1
   extraPlugins: "rabbitmq_management"
 
   auth:
@@ -869,8 +802,8 @@ common:
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: |
   #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    {{- if .Values.containerSecurityContext.enabled }}
   #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
   #    {{- end }}
@@ -885,8 +818,8 @@ common:
   ## Add custom init containers execution after predefined init containers
   customInitContainers: |
   #  - name: "custom-systemyaml-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: "{{ include "xray.getImageInfoByValue" (list . "initContainers") }}"
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    {{- if .Values.containerSecurityContext.enabled }}
   #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
   #    {{- end }}
@@ -903,8 +836,8 @@ common:
   # - The provided example shows running container as root (id 0)
   customSidecarContainers: |
   #  - name: "sidecar-list-etc"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
   #    {{- if .Values.containerSecurityContext.enabled }}
   #    securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
   #    {{- end }}
@@ -1094,6 +1027,71 @@ sbom:
   #  limits:
   #    memory: "2Gi"
   #    cpu: "1"
+
+panoramic:
+  enabled: false
+  name: xray-panoramic
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-panoramic
+  internalPort: 7007
+  externalPort: 7007
+  annotations: {}
+  extraEnvVars:
+
+  # Add lifecycle hooks for the indexer pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.panoramic.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.panoramic.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+
 
 indexer:
   name: xray-indexer
@@ -1321,7 +1319,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.95.0
+    tag: 7.108.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1407,7 +1405,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.21.0
+    tag: 1.26.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1592,7 +1590,7 @@ autoscalingServer:
    pollingInterval: 10
    cooldownPeriod: 10
    queues:
-     - name: impactAnalysis
+     - name: alert
        value: "100"
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
@@ -1629,6 +1627,6 @@ autoscalingIpa:
        value: "100"
      - name: persist
        value: "100"
-     - name: alert
+     - name: impactAnalysis
        value: "100"
 ###################################################################################

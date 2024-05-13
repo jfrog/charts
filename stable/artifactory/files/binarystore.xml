@@ -16,6 +16,12 @@
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
     </provider>
     {{- end }}
 
@@ -41,6 +47,12 @@
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
     </provider>
     {{- end }}
 </config>
@@ -66,6 +78,12 @@
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
     </provider>
 
     <!-- Shards add local file-system provider configuration -->
@@ -128,6 +146,12 @@
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
     </provider>
 
     {{- if eq .Values.artifactory.persistence.type "cluster-google-storage-v2" }}
@@ -204,6 +228,12 @@
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64}}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
     </provider>
     {{- end }}
 
@@ -334,6 +364,12 @@
     <provider id="cache-fs" type="cache-fs">
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
     </provider>
 
     {{- if eq .Values.artifactory.persistence.type "cluster-azure-blob-storage" }}
@@ -362,5 +398,29 @@
         <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize | int64 }}</multipartElementSize>
         <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
     </provider>
+</config>
+{{- end }}
+{{- if eq .Values.artifactory.persistence.type "azure-blob-storage-v2-direct" -}}
+<config version="3">
+    <chain template="azure-blob-storage-v2-direct"/>
+    <provider type="cache-fs" id="cache-fs">
+        <cacheProviderDir>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</cacheProviderDir> 
+        <maxCacheSize>{{ .Values.artifactory.persistence.cacheProviderDir }}</maxCacheSize>
+        {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
+        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.skipDuringUpload }}
+        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        {{- end }}
+    </provider>
+    <provider id="azure-blob-storage-v2" type="azure-blob-storage-v2">
+        <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
+        <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
+        <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
+        <container>{{ .Values.artifactory.persistence.azureBlob.containerName }}</container> 
+        <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>
+        <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize | int64 }}</multipartElementSize>
+        <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
+    </provider>   
 </config>
 {{- end }}
