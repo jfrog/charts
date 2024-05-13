@@ -98,8 +98,10 @@ spec:
       {{- end }}
       containers:
         - name: pre-upgrade-container
-          image: "{{ include "jfrog-platform.getRegistryByService" (list . "migrationHook") }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
-          imagePullPolicy: IfNotPresent
+          image: "{{ tpl .Values.rabbitmq.migration.image.registry . }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
+          imagePullPolicy: {{ .Values.rabbitmq.migration.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.rabbitmq.migration.resources | indent 12 }}
           {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
           securityContext: {{- tpl (omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml) . | nindent 12 }}
           {{- end }}
