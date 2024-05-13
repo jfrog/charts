@@ -1,0 +1,81 @@
+configVersion: 1
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
+shared:
+{{- if .Values.xray.openMetrics.enabled }}
+  metrics:
+    enabled: true
+  {{- if .Values.xray.openMetrics.filebeat.enabled }}
+    filebeat: {{ toYaml .Values.xray.openMetrics.filebeat | nindent 6 }}
+  {{- end }}
+{{- end }}
+  logging:
+    consoleLog:
+      enabled: {{ .Values.xray.consoleLog }}
+  jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "xray.jfrogUrl" .)) . }}"
+  database:
+  {{- if .Values.postgresql.enabled }}
+    type: "postgresql"
+    driver: "org.postgresql.Driver"
+    username: "{{ .Values.postgresql.postgresqlUsername }}"
+    url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
+  {{- else }}
+    type: {{ .Values.database.type }}
+    driver: {{ .Values.database.driver }}
+  {{- end }}
+  {{- if and (not .Values.rabbitmq.enabled) (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+  rabbitMq:
+  {{- if .Values.global.xray.rabbitmq.haQuorum.enabled }}
+    ha_quorum: true
+    vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
+    replicasCount: {{ .Values.global.xray.rabbitmq.replicaCount }}
+  {{- end }}
+    erlangCookie:
+      value: "{{ .Values.rabbitmq.external.erlangCookie }}"
+  {{- if not .Values.rabbitmq.external.secrets }}
+    url: "{{ tpl .Values.rabbitmq.external.url . }}"
+    username: "{{ .Values.rabbitmq.external.username }}"
+    password: "{{ .Values.rabbitmq.external.password }}"
+  {{- end }}
+  {{- else if and .Values.rabbitmq.enabled .Values.global.xray.rabbitmq.haQuorum.enabled }}
+  rabbitMq:
+    ha_quorum: true
+    vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
+    replicasCount: {{ .Values.rabbitmq.replicaCount }}
+  {{- end }}
+  {{- if .Values.xray.mongoUrl }}
+  mongo:
+    url: "{{ .Values.xray.mongoUrl }}"
+    username: "{{ .Values.xray.mongoUsername }}"
+    password: "{{ .Values.xray.mongoPassword }}"
+  {{- end }}
+{{- if or .Values.server.mailServer .Values.server.indexAllBuilds .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
+server:
+  {{- if .Values.server.mailServer }}
+  mailServer: "{{ .Values.server.mailServer }}"
+  {{- end }}
+  {{- if .Values.server.indexAllBuilds }}
+  indexAllBuilds: {{ .Values.server.indexAllBuilds }}
+  {{- end }}
+  {{- if .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost }}
+  dataMigrations:
+    migrate_msgs_from_other_rabbitmq:
+      vhost: {{ .Values.global.xray.rabbitmq.vhost | default "%2f" | quote }}
+  {{- else if .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
+  dataMigrations:
+    migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
+  {{- end }}
+{{- end }}
+{{- if (include "xray.imagePullSecretsStrList" .) }}
+executionService:
+  pullSecret:
+  {{- include "xray.imagePullSecretsStrList" . | indent 4 }}
+{{- end }}
+contextualAnalysis:
+  registry: {{ include "xray.getRegistryByService" (list . "contextualAnalysis") }}
+  image: {{ .Values.contextualAnalysis.image.repository }}
+exposures:
+  container:
+    registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
+    image: {{ .Values.exposures.image.repository }}

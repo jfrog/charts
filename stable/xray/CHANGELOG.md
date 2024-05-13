@@ -1,7 +1,13 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.94.5] - Mar 27, 2024
+## [103.95.4] - Apr 2, 2024
+* **IMPORTANT**
+* Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml)
+* Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given. [GH-1842](https://github.com/jfrog/charts/pull/1842)
+* Update postgresql tag version to `15.6.0-debian-11-r16`
+
+## [103.94.0] - Mar 27, 2024
 * **IMPORTANT**
 * Added image section for `initContainers` instead of `initContainerImage`
 * Removed image section for `loggers`
