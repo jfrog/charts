@@ -11,5 +11,5 @@ metadata:
 type: Opaque
 stringData:
   system.yaml: |
-{{ tpl .Values.xray.systemYaml . | indent 4 }}
+{{ include "xray.finalSystemYaml" . | nindent 4 }}
 {{- end }}

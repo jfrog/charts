@@ -42,6 +42,12 @@ spec:
     protocol: TCP
     targetPort: {{ .Values.sbom.internalPort }}
 {{- end }}
+{{- if .Values.panoramic.enabled }}
+  - name: http-panoramic
+    port: {{ .Values.panoramic.externalPort }}
+    protocol: TCP
+    targetPort: {{ .Values.panoramic.internalPort }}
+{{- end }}
   selector:
     app: {{ template "xray.name" . }}
     component: {{ .Values.xray.name }}
