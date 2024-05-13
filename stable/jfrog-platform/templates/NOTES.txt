@@ -50,8 +50,9 @@ Instructions for accessing the JFrog Platform
    - Username: admin
    - Password: password
 {{- end }}
-
+{{- if .Values.postgresql.enabled }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
 Use an external PostgreSQL database for production deployments.
 ---------------------------------------------------------------------------------------------------------------------------------------------------
+{{- end }}

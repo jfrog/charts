@@ -47,6 +47,7 @@ global:
   xray:
     # Rabbitmq settings that are specific to Xray
     rabbitmq:
+      replicaCount: 1
       haQuorum:
         enabled: false
         waitForPreviousPodsOnInitialStartup: true
@@ -60,7 +61,7 @@ global:
 ##
 # fullnameOverride:
 
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.3.1361.1699548032
+initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.3.1475
 imagePullPolicy: IfNotPresent
 
 # Init containers
@@ -104,8 +105,9 @@ xray:
   # adding minAvailable for Xray Pod Disruption Budget
   # minAvailable: 1
 
-  # unifiedSecretInstallation flag enables single unified secret holding all xray secrets
-  unifiedSecretInstallation: false
+  # unifiedSecretInstallation flag enables single unified secret holding all the xray internal(chart) secrets, It won't be affecting external secrets.
+  ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 103.91.x, Users can switch to false to continue with the old way of secret creation.
+  unifiedSecretInstallation: true
 
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
@@ -214,7 +216,7 @@ xray:
       {{- if .Values.global.xray.rabbitmq.haQuorum.enabled }}
         ha_quorum: true
         vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
-        replicasCount: 3
+        replicasCount: {{ .Values.global.xray.rabbitmq.replicaCount }}
       {{- end }}
         erlangCookie:
           value: "{{ .Values.rabbitmq.external.erlangCookie }}"
@@ -235,7 +237,7 @@ xray:
         username: "{{ .Values.xray.mongoUsername }}"
         password: "{{ .Values.xray.mongoPassword }}"
       {{- end }}
-    {{- if or .Values.server.mailServer .Values.server.indexAllBuilds .Values.common.rabbitmq.migrateMessagesFromOtherRabbitMq }}
+    {{- if or .Values.server.mailServer .Values.server.indexAllBuilds .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
     server:
       {{- if .Values.server.mailServer }}
       mailServer: "{{ .Values.server.mailServer }}"
@@ -243,9 +245,13 @@ xray:
       {{- if .Values.server.indexAllBuilds }}
       indexAllBuilds: {{ .Values.server.indexAllBuilds }}
       {{- end }}
-      {{- if .Values.common.rabbitmq.migrateMessagesFromOtherRabbitMq }}
+      {{- if .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost }}
       dataMigrations:
-        migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.common.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
+        migrate_msgs_from_other_rabbitmq:
+          vhost: {{ .Values.global.xray.rabbitmq.vhost | default "%2f" | quote }}
+      {{- else if .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
+      dataMigrations:
+        migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
       {{- end }}
     {{- end }}
     {{- if (include "xray.imagePullSecretsStrList" .) }}
@@ -401,7 +407,7 @@ logger:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.3.1361.1699548032
+    tag: 9.3.1475
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -414,10 +420,15 @@ serviceAccount:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: true
 
-## By default, the Xray StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `common.xrayUserId` value.
-## If you want to disable the pod securityContext for the Xray StatefulSet, set this tag to false
+## @param podSecurityContext.enabled enable the pod's Security Context
 podSecurityContext:
   enabled: true
+  runAsNonRoot: true
+  runAsUser: 1035
+  runAsGroup: 1035
+  fsGroup: 1035
+  # fsGroupChangePolicy: "Always"
+  # seLinuxOptions: {}
 
 ## @param containerSecurityContext.enabled enable the container's Security Context
 containerSecurityContext:
@@ -438,7 +449,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.10.0-debian-11-r14
+    tag: 15.2.0-debian-11-r23
   postgresqlUsername: xray
   postgresqlPassword: ""
   postgresqlDatabase: xraydb
@@ -653,6 +664,7 @@ rabbitmq:
             }
           ],
           "policies": [
+            {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
             {
               "name": "ha-all",
               "apply-to": "all",
@@ -663,6 +675,7 @@ rabbitmq:
                 "ha-sync-mode": "automatic"
               }
             }
+            {{- end }}
           ]
         }
   loadDefinition:
@@ -677,6 +690,14 @@ rabbitmq:
   migration:
     ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
     enabled: true
+    ## Another uses of migration hook are:
+    ## - Deleting StatefulSet for allowing updating certain fields that require it:
+    ##   Changing podManagementPolicy OrderedReady -> Parallel requires deleting stateful set
+    ## - Deleting ha-all mirror policy on migrating to Quorum Queues
+    deleteStatefulSetToAllowFieldUpdate:
+      enabled: false
+    removeHaPolicyOnMigrationToHaQuorum:
+      enabled: false
     image:
       registry: releases-docker.jfrog.io
       repository: bitnami/kubectl
@@ -703,6 +724,14 @@ rabbitmq:
                 - create
                 - get
                 - list
+            - apiGroups:
+                - "apps"
+              resources:
+                - statefulsets
+              verbs:
+                - get
+                - list
+                - delete
 
 
   # This is automatically set based on rabbitmqTLS enabled flag.
@@ -789,9 +818,6 @@ rabbitmq:
 common:
   ## Note that by default we use appVersion to get image tag
   # xrayVersion:
-  xrayUserId: 1035
-  xrayGroupId: 1035
-  # fsGroupChangePolicy: "Always"
 
   # Spread Xray pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
@@ -1295,7 +1321,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.92.0
+    tag: 7.95.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1381,7 +1407,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.17.0
+    tag: 1.21.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1527,3 +1553,82 @@ probes:
 quota:
   enabled: true
   jobCount: 100
+
+###################################################################################
+## At present, this feature is not available for onprem installations.
+## Separate Xray into distinct pods
+## (Enabling this setting will divide the Xray pod into two deployments: xray-server and xray-ipa)
+splitXraytoSeparateDeployments:
+ enabled: false
+ ## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
+ gradualUpgrade: false
+replicaCountServer: 2
+## Apply horizontal pod auto scaling on Xray server pods
+## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
+## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscalingServer:
+ enabled: false
+ minReplicas: 2
+ maxReplicas: 3
+ targetCPUUtilizationPercentage: 70
+ targetMemoryUtilizationPercentage: 90
+ ## Specify if using the keda hpa or regular basic hpa
+ ## Note: keda should be installed on the target cluster
+ ## Ref: https://keda.sh/docs/2.10/deploy/
+ keda:
+   enabled: false
+   scaleUp:
+     stabilizationWindowSeconds: 90
+     policies:
+       - type: Pods
+         value: 3
+         periodSeconds: 30
+   scaleDown:
+     stabilizationWindowSeconds: 90
+     policies:
+       - type: Pods
+         value: 1
+         periodSeconds: 30
+   pollingInterval: 10
+   cooldownPeriod: 10
+   queues:
+     - name: impactAnalysis
+       value: "100"
+## Apply horizontal pod auto scaling on Xray ipa pods
+## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
+## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscalingIpa:
+ enabled: false
+ minReplicas: 1
+ maxReplicas: 3
+ targetCPUUtilizationPercentage: 70
+ targetMemoryUtilizationPercentage: 90
+ ## Specify if using the keda hpa or regular basic hpa
+ ## Note: keda should be installed on the target cluster
+ ## Ref: https://keda.sh/docs/2.10/deploy/
+ keda:
+   enabled: false
+   scaleUp:
+     stabilizationWindowSeconds: 90
+     policies:
+       - type: Pods
+         value: 3
+         periodSeconds: 30
+   scaleDown:
+     stabilizationWindowSeconds: 90
+     policies:
+       - type: Pods
+         value: 1
+         periodSeconds: 30
+   pollingInterval: 10
+   cooldownPeriod: 10
+   queues:
+     - name: analysis
+       value: "100"
+     - name: index
+       value: "100"
+     - name: persist
+       value: "100"
+     - name: alert
+       value: "100"
+###################################################################################

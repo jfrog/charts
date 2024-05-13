@@ -1,7 +1,23 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.87.9] - Dec 7,2023
+## [103.91.3] - Feb 21,2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* Renamed sizing yaml file names from `xray-sizing-<size>.yaml` to `xray-<size>.yaml`
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* Renamed `common.xrayUserId` to `podSecurityContext.runAsUser`
+* Renamed `common.xrayGroupId` to `podSecurityContext.runAsGroup` and `podSecurityContext.fsGroup`
+* Renamed `common.fsGroupChangePolicy` to `podSecurityContext.fsGroupChangePolicy`
+
+## [103.89.0] - Jan 18,2023
+* Remove fallback section from keda.
+
+## [103.88.0] - Dec 20,2023
+* Added support for migrating rabbitmq to high-availability quorum queues setup
+
+## [103.87.0] - Dec 7,2023
 * Update minimum supported kubernetes version to 1.19
 * Added recommended t-shirt sizing configurations under sizing folder
 * Added support for rabbitmq high-availability quorum queues clean install setup

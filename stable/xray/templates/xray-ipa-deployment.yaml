@@ -1,14 +1,15 @@
-{{- if or (and  .Values.splitXraytoSeparateDeployments.gradualUpgrade  .Values.splitXraytoSeparateDeployments.enabled)  (not .Values.splitXraytoSeparateDeployments.enabled)  }}
+{{- if .Values.splitXraytoSeparateDeployments.enabled  }}
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: {{ template "xray.fullname" . }}
+  name: {{ template "xray.fullname" . }}-ipa
   labels:
     app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.xray.name }}
+    servicename: ipa
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
@@ -23,23 +24,26 @@ metadata:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  serviceName: "{{ template "xray.fullname" . }}"
-{{- if not .Values.autoscaling.enabled }}
+{{- if not .Values.autoscalingIpa.enabled }}
   replicas: {{ .Values.replicaCount }}
 {{- end }}
-  updateStrategy:
+  strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
       component: {{ .Values.xray.name }}
+      servicename: ipa
   template:
     metadata:
       labels:
         app: {{ template "xray.name" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.xray.name }}
+        servicename: ipa
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 8 }}
     {{- end }}
@@ -327,7 +331,7 @@ spec:
         {{- end }}
         env:
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-          value: {{ include "xray.router.requiredServiceTypes" . }}
+          value: {{ include "xray.router.ipa.requiredServiceTypes" . }}
         {{- if .Values.router.extraEnvVars }}
         {{- tpl .Values.router.extraEnvVars . | nindent 8 }}
         {{- end }}
@@ -393,168 +397,6 @@ spec:
         livenessProbe:
 {{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
       {{- end }}
-      - name: {{ .Values.server.name }}
-        image: {{ include "xray.getImageInfoByValue" (list . "server") }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        {{- if .Values.containerSecurityContext.enabled }}
-        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
-        {{- end }}
-        command:
-          - '/bin/bash'
-          - '-c'
-          - >
-          {{- with .Values.common.preStartCommand }}
-            echo "Running custom common preStartCommand command";
-            {{ tpl . $ }};
-          {{- end }}
-          {{- with .Values.server.preStartCommand }}
-            echo "Running custom Server preStartCommand command";
-            {{ tpl . $ }};
-          {{- end }}
-            exec /opt/jfrog/xray/app/bin/wrapper.sh;
-        {{- with .Values.server.lifecycle }}
-        lifecycle:
-{{ toYaml . | indent 10 }}
-        {{- end }}
-        env:
-      {{ include "xray.envVariables" . | indent 8 }}
-      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
-      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
-        - name: JF_SHARED_RABBITMQ_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
-              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
-        - name: JF_SHARED_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
-              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
-        - name: JF_SHARED_RABBITMQ_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
-              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
-      {{- end }}
-      {{- if or .Values.database.secrets.user .Values.database.user }}
-        - name: JF_SHARED_DATABASE_USERNAME
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.user }}
-              name: {{ tpl .Values.database.secrets.user.name . }}
-              key: {{ tpl .Values.database.secrets.user.key . }}
-        {{- else if .Values.database.user }}
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}-database-creds
-              {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
-              {{- end }}
-              key: db-user
-        {{- end }}
-      {{- end }}
-      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
-        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.actualUsername }}
-              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
-              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
-        {{- else if .Values.database.actualUsername }}
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}-database-creds
-              {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
-              {{- end }}
-              key: db-actualUsername
-        {{- end }}
-      {{- end }}
-      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
-        - name: JF_SHARED_DATABASE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.password }}
-              name: {{ tpl .Values.database.secrets.password.name . }}
-              key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}-database-creds
-              {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
-              {{- end }}
-              key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
-        {{- end }}
-      {{- end }}
-      {{- if or .Values.database.secrets.url .Values.database.url }}
-        - name: JF_SHARED_DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.url }}
-              name: {{ tpl .Values.database.secrets.url.name . }}
-              key: {{ tpl .Values.database.secrets.url.key . }}
-        {{- else if .Values.database.url }}
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}-database-creds
-              {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
-              {{- end }}
-              key: db-url
-        {{- end }}
-      {{- end }}
-      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
-        - name: JF_SHARED_RABBITMQ_USERNAME
-          value: {{ include "rabbitmq.user" .}}
-        - name: JF_SHARED_RABBITMQ_URL
-          value: {{ include "rabbitmq.url" .}}
-        - name: JF_SHARED_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "rabbitmq.passwordSecretName" .}}
-              key: rabbitmq-password
-      {{- end }}
-        - name: XRAY_K8S_ENV
-          value: "true"
-        - name: EXECUTION_JOB_AES_KEY
-          valueFrom:
-            secretKeyRef:
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.executionServiceAesKeySecretName" . }}
-              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
-              name: {{ template "xray.executionServiceAesKeySecretName" . }}
-              {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
-              {{- end }}
-              key: execution-service-aes-key
-        {{- if .Values.common.extraEnvVars }}
-        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
-        {{- end }}
-        {{- if .Values.server.extraEnvVars }}
-        {{- tpl .Values.server.extraEnvVars . | nindent 8 }}
-        {{- end }}
-        ports:
-        - containerPort: {{ .Values.server.internalPort }}
-          name: http-server
-        volumeMounts:
-        - name: data-volume
-          mountPath: "{{ .Values.xray.persistence.mountPath }}"
-{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
-{{- end }}
-{{- with .Values.server.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
-{{- end }}
-        resources:
-{{ toYaml .Values.server.resources | indent 10 }}
-{{- if .Values.server.startupProbe.enabled }}
-        startupProbe:
-{{ tpl .Values.server.startupProbe.config . | indent 10 }}
-{{- end }}
-{{- if .Values.server.livenessProbe.enabled }}
-        livenessProbe:
-{{ tpl .Values.server.livenessProbe.config . | indent 10 }}
-{{- end }}
       - name: {{ .Values.analysis.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "analysis") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -579,6 +421,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_SKIPENTLICCHECKFORCLOUD
+          value: "true"
       {{ include "xray.envVariables" . | indent 8 }}
       {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
@@ -746,6 +590,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_SKIPENTLICCHECKFORCLOUD
+          value: "true"
       {{ include "xray.envVariables" . | indent 8 }}
       {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
@@ -913,6 +759,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_SKIPENTLICCHECKFORCLOUD
+          value: "true"
       {{ include "xray.envVariables" . | indent 8 }}
       {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
@@ -1068,6 +916,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_SKIPENTLICCHECKFORCLOUD
+          value: "true"
       {{ include "xray.envVariables" . | indent 8 }}
       {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
@@ -1295,16 +1145,9 @@ spec:
         configMap:
           name: {{ template "xray.fullname" . }}-logger
       {{- end }}
-      {{- if not .Values.common.persistence.enabled }}
       - name: data-volume
         emptyDir:
           sizeLimit: {{ .Values.common.persistence.size }}
-      {{- end }}
-      {{- if and .Values.common.persistence.enabled .Values.common.persistence.existingClaim }}
-      - name: data-volume
-        persistentVolumeClaim:
-          claimName: {{ .Values.common.persistence.existingClaim }}
-      {{- end }}
       {{- if and .Values.xray.unifiedSecretInstallation (eq (include "xray.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       #########  unifiedSecretInstallation ###########
       - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
@@ -1337,23 +1180,4 @@ spec:
         configMap:
           name: {{ template "xray.fullname" . }}-configmaps
       {{- end }}
-{{- with .Values.common.persistence }}
-  {{- if and .enabled (not .existingClaim) }}
-  volumeClaimTemplates:
-  - metadata:
-      name: data-volume
-    spec:
-      {{- if .storageClass }}
-      {{- if (eq "-" .storageClass) }}
-      storageClassName: ""
-      {{- else }}
-      storageClassName: "{{ .storageClass }}"
-      {{- end }}
-      {{- end }}
-      accessModes: [ "{{ .accessMode }}" ]
-      resources:
-        requests:
-          storage: {{ .size }}
-  {{- end }}
-{{- end }}
 {{- end }}
