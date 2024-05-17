@@ -115,7 +115,7 @@ spec:
       {{- if .Values.artifactory.persistence.fileSystem.existingSharedClaim.enabled }}
       - name: "create-artifactory-data-dir"
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -134,7 +134,7 @@ spec:
       {{- if .Values.artifactory.deleteDBPropertiesOnStartup }}
       - name: "delete-db-properties"
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -151,7 +151,7 @@ spec:
     {{- if or (and .Values.artifactory.admin.secret .Values.artifactory.admin.dataKey) .Values.artifactory.admin.password }}
       - name: "access-bootstrap-creds"
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -183,7 +183,7 @@ spec:
   {{- end }}
       - name: 'copy-system-configurations'
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -244,7 +244,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
               name: {{ include "artifactory-ha.joinKeySecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: join-key
         {{- end }}
@@ -255,7 +255,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.jfConnectTokenSecretName }}
               name: {{ include "artifactory-ha.jfConnectTokenSecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: jfconnect-token
         {{- end }}
@@ -266,7 +266,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
               name: {{ include "artifactory-ha.masterKeySecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: master-key
         {{- end }}
@@ -323,7 +323,7 @@ spec:
       {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
       - name: copy-custom-certificates
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -344,7 +344,7 @@ spec:
       {{- if .Values.artifactory.circleOfTrustCertificatesSecret }}
       - name: copy-circle-of-trust-certificates
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: c
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -366,7 +366,7 @@ spec:
       {{- if or .Values.postgresql.enabled }}
       - name: "wait-for-db"
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -428,7 +428,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-user
         {{- end }}
@@ -444,7 +444,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -463,7 +463,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-url
         {{- end }}
@@ -656,7 +656,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-user
         {{- end }}
@@ -672,7 +672,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -691,7 +691,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-url
         {{- end }}
@@ -964,7 +964,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-user
         {{- end }}
@@ -980,7 +980,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -999,7 +999,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.name" . }}-unified-secret"
+              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
             {{- end }}
               key: db-url
         {{- end }}
@@ -1137,7 +1137,7 @@ spec:
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "initContainers") }}
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
       {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -1158,7 +1158,7 @@ spec:
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list $ "initContainers") }}
-        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
       {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -1366,7 +1366,7 @@ spec:
     {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
         secret:
-          secretName: {{ template "artifactory-ha.name" . }}-unified-secret
+          secretName: {{ template "artifactory-ha.fullname" . }}-unified-secret
     {{- else if not .Values.artifactory.unifiedSecretInstallation }}
 
       ############ If single secret installation flag is disable ############
