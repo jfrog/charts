@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.84.10] - May 2, 2024
+## [107.84.11] - May 16, 2024
 * Added image section for `initContainers` instead of `initContainerImage`
 * Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
 * Removed loggers.image section
@@ -14,8 +14,11 @@ All changes to this chart will be documented in this file
 * Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
 * Renamed `artifactory.seLinuxOptions` to `artifactory.podSecurityContext.seLinuxOptions`
 * Added flag `allowNonPostgresql` defaults to false
-* Update postgresql tag version to `15.6.0-debian-12-r5`
+* Update postgresql tag version to `15.6.0-debian-11-r16`
 * Added a check if `initContainerImage` exists
+* Fixed a wrong imagePullPolicy configuration
+* Fixed an issue to generate unified secret to support artifactory fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
+* Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
 
 ## [107.83.0] - Mar 12, 2024
 * Added image section for `metadata` and `observability`
