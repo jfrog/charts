@@ -1,7 +1,14 @@
 # JFrog Pipelines Chart Changelog
 All changes to this chart to be documented in this file.
 
-## [101.56.6] - Jan 31, 2024
+## [101.59.7] - Feb 21, 2024
+* Updated postgresql tag version to `15.2.0-debian-11-r23`
+    * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+    * If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* Added a check for postgresql version during upgrades
+* Added pod level and container security context
+
+## [101.56.0] - Jan 31, 2024
 * Fixes in external secret support on unified secret installation
 
 ## [101.55.0] - Dec 28, 2023
