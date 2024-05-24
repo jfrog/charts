@@ -848,7 +848,11 @@ bash "${new_script_path}" "${PIP_CONTAINER_START_TIME}" "{{ .Values.pipelines.lo
 Common code to change ownership of metrics file
 */}}
 {{- define "pipelines.changeOwnershipMetrics" -}}
+{{- if .Values.podSecurityContext.enabled -}}
+echo "podSecurityContext is enabled";
+{{- else -}}
 chown 1066:1066 {{ .Values.pipelines.logPath }}/*-metrics.log || true;
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -886,7 +890,9 @@ Custom certificate copy command
 echo "Copy custom certificates to {{ .Values.pipelines.mountPath }}/security/keys/trusted";
 mkdir -p {{ .Values.pipelines.mountPath }}/security/keys/trusted;
 if [ -f /tmp/certs/tls.crt ]; then cp -v /tmp/certs/tls.crt {{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt; fi;
+{{- if not .Values.podSecurityContext.enabled -}}
 chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
+{{- end -}}
 {{- end -}}
 
 {{/*
