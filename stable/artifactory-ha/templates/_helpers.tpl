@@ -300,10 +300,12 @@ Return the proper artifactory chart image names
         {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
     {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
-    {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+        {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
-        {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
+    {{- if $dot.Values.global.versions.artifactory }}
+        {{- if or (eq $indexReference "artifactory") (eq $indexReference "metadata") (eq $indexReference "nginx") (eq $indexReference "observability") }}
+            {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
+        {{- end -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}

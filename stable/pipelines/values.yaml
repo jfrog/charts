@@ -131,11 +131,41 @@ systemYamlOverride:
 ## String to fully override pipelines.fullname template
 # fullnameOverride:
 
-## Set user/group to run Pipelines components with
-securityContext:
+## Pod Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+## @param artifactory.podSecurityContext.enabled Enable security context
+## @param artifactory.podSecurityContext.runAsNonRoot Set pod's Security Context runAsNonRoot
+## @param artifactory.podSecurityContext.runAsUser User ID for the pod
+## @param artifactory.podSecurityContext.runASGroup Group ID for the pod
+## @param artifactory.podSecurityContext.fsGroup Group ID for the pod
+##
+podSecurityContext:
   enabled: true
-  uid: 1030
-  gid: 1030
+  runAsNonRoot: true
+  runAsUser: 1066
+  runAsGroup: 1066
+  fsGroup: 1066
+  # fsGroupChangePolicy: "Always"
+  # seLinuxOptions: {}
+
+## Container Security Context
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param containerSecurityContext.enabled Enabled containers' Security Context
+  ## @param containerSecurityContext.runAsNonRoot Set container's Security Context runAsNonRoot
+  ## @param containerSecurityContext.privileged Set container's Security Context privileged
+  ## @param containerSecurityContext.allowPrivilegeEscalation Set container's Security Context allowPrivilegeEscalation
+  ## @param containerSecurityContext.capabilities.drop List of capabilities to be dropped
+  ## @param containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+  ##
+containerSecurityContext:
+  enabled: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 
 splitServicesToPods: false
 
@@ -1934,7 +1964,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.13.0-debian-11-r4
+    tag: 15.2.0-debian-11-r23
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
   # Password must be set
@@ -2227,7 +2257,7 @@ vault:
     extraInitContainers:
       # wait-for-db is checking if postgresql server up
       - name: vault-wait-for-db
-        image: "releases-docker.jfrog.io/bitnami/postgresql:13.13.0-debian-11-r4"
+        image: "releases-docker.jfrog.io/bitnami/postgresql:15.2.0-debian-11-r23"
         imagePullPolicy: IfNotPresent
         env:
           - name: CONNECTION_DETAILS
@@ -2257,7 +2287,7 @@ vault:
 
       # create-vault-table is creating vault schema changes in postgres db
       - name: create-vault-table
-        image: releases-docker.jfrog.io/bitnami/postgresql:13.13.0-debian-11-r4
+        image: releases-docker.jfrog.io/bitnami/postgresql:15.2.0-debian-11-r23
         imagePullPolicy: IfNotPresent
         env:
           - name: DATABASE_URL

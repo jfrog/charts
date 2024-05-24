@@ -8,6 +8,9 @@ metadata:
     {{- with .Values.pipelines.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/pipelines/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version that has postgresql.image.tag of 9.x or 10.x or 12.x or 13.x, make sure to set the same postgres image version (postgresql.image.tag) and databaseUpgradeReady to true in your custom values yaml file. This is to prevent major version upgrades in postgresql resulting in data corruption.\n" .Values.databaseUpgradeReady | quote }}
+{{- end }}
 {{- with .Values.pipelines.statefulset.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
@@ -51,6 +54,9 @@ spec:
     {{- if .Values.pipelines.schedulerName }}
       schedulerName: {{ .Values.pipelines.schedulerName | quote }}
     {{- end }}
+    {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+    {{- end }}
     {{- if .Values.pipelines.priorityClass.existingPriorityClass }}
       priorityClassName: {{ .Values.pipelines.priorityClass.existingPriorityClass }}
     {{- else -}}
@@ -70,11 +76,9 @@ spec:
         - name: copy-system-yaml
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
@@ -108,11 +112,17 @@ spec:
         - name: copy-custom-certificates
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- else }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
+              add:
+                - CHOWN
               drop:
                 - NET_RAW
+        {{- end }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
@@ -126,6 +136,7 @@ spec:
           - name: ca-certs
             mountPath: "/tmp/certs"
       {{- end }}
+    {{- if not .Values.podSecurityContext.enabled }}
         - name: change-ownership
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
@@ -147,11 +158,15 @@ spec:
           volumeMounts:
           - name: jfrog-pipelines-folder
             mountPath: {{ .Values.pipelines.mountPath }}
+    {{- end }}
 {{- if .Values.vault.enabled }}
   {{- if .Values.waitForDatabase }}
         - name: wait-for-db
           image: {{ include "vault.getImageInfoByValue" (list . "postgresql" ) }}
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
@@ -171,6 +186,9 @@ spec:
         - name: create-vault-table
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           env:
@@ -221,11 +239,9 @@ spec:
         - name: wait-for-vault
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           {{- if not .Values.vault.enabled }}
@@ -271,11 +287,9 @@ spec:
         - name: copy-rabbitmq-certs
           image: "{{ .Values.initContainer.image }}"
           imagePullPolicy: {{ .Values.initContainer.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           resources:
 {{ toYaml .Values.initContainers.resources | nindent 12 }}
           command:
@@ -292,6 +306,9 @@ spec:
         - name: pipelines-installer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelinesInit" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelinesInit.image.pullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- else }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -299,6 +316,7 @@ spec:
                 - CHOWN
               drop:
                 - NET_RAW
+        {{- end }}
           resources:
 {{ toYaml .Values.pipelineInstallerInitContainer.resources | nindent 12 }}
           env:
@@ -428,11 +446,9 @@ spec:
         - name: {{ .Values.filebeat.name }}
           image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
           imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           args:
           - "-e"
           - "-E"
@@ -450,11 +466,9 @@ spec:
         - name: router
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "router" ) }}
           imagePullPolicy: {{ .Values.pipelines.router.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: {{ include "pipelines.router.requiredServiceTypes" . }}
@@ -530,12 +544,9 @@ spec:
         - name: observability
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "observability" ) }}
           imagePullPolicy: {{ .Values.pipelines.observability.image.pullPolicy }}
-          securityContext:
-            runAsNonRoot: false
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
             - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
@@ -583,11 +594,9 @@ spec:
         - name: api
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "api" ) }}
           imagePullPolicy: {{ .Values.pipelines.api.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
         {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 -}}
@@ -642,11 +651,9 @@ spec:
         - name: www
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "www" ) }}
           imagePullPolicy: {{ .Values.pipelines.www.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -693,11 +700,9 @@ spec:
         - name: frontend
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "frontend" ) }}
           imagePullPolicy: {{ .Values.pipelines.frontend.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -739,11 +744,9 @@ spec:
         - name: nodepoolservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "nodepoolservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.nodepoolservice.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
         {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 -}}
@@ -786,11 +789,9 @@ spec:
         - name: runservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "runservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.runservice.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
         {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 -}}
@@ -829,11 +830,9 @@ spec:
         - name: logservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "logservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.logservice.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -870,11 +869,9 @@ spec:
         - name: stepservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "stepservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.stepservice.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
         {{- include "pipelines.rabbitmqTlsEnvVariables" . | indent 12 -}}
@@ -911,11 +908,9 @@ spec:
         - name: analyticsservice
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "analyticsservice" ) }}
           imagePullPolicy: {{ .Values.pipelines.analyticsservice.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           env:
             {{- if or .Values.pipelines.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: NODE_EXTRA_CA_CERTS
@@ -952,11 +947,9 @@ spec:
         - name: pipelinesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "pipelineSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.pipelineSync.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           workingDir: /opt/jfrog/pipelines/app/micro/pipelineSync
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
@@ -992,11 +985,9 @@ spec:
         - name: cron
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "cron" ) }}
           imagePullPolicy: {{ .Values.pipelines.cron.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           workingDir: /opt/jfrog/pipelines/app/micro/cron
           env:
             - name: COMPONENT
@@ -1032,11 +1023,9 @@ spec:
         - name: hookhandler
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "hookHandler" ) }}
           imagePullPolicy: {{ .Values.pipelines.hookHandler.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           workingDir: /opt/jfrog/pipelines/app/micro/hookHandler
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
@@ -1072,11 +1061,9 @@ spec:
         - name: extensionsync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "extensionSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.extensionSync.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           workingDir: /opt/jfrog/pipelines/app/micro/extensionSync
           env:
             - name: COMPONENT
@@ -1112,11 +1099,9 @@ spec:
         - name: reqsealer
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "reqSealer" ) }}
           imagePullPolicy: {{ .Values.pipelines.reqSealer.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           workingDir: /opt/jfrog/pipelines/app/micro/reqSealer
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}
@@ -1152,11 +1137,9 @@ spec:
         - name: templatesync
           image: {{ include "pipelines.getImageInfoByValue" (list . "pipelines" "templateSync" ) }}
           imagePullPolicy: {{ .Values.pipelines.templateSync.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - NET_RAW
+        {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
           workingDir: /opt/jfrog/pipelines/app/micro/templateSync
           env:
           {{- if .Values.rabbitmq.auth.tls.enabled }}

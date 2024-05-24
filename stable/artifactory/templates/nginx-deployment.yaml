@@ -158,7 +158,7 @@ spec:
       {{- range .Values.nginx.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory.getImageInfoByValue" (list $ "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
         command:
         - tail
         args:

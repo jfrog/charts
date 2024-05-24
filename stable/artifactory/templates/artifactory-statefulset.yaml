@@ -226,7 +226,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
               name: {{ include "artifactory.joinKeySecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
             {{- end }}
               key: join-key
         {{- end }}
@@ -237,7 +237,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.jfConnectTokenSecretName }}
               name: {{ include "artifactory.jfConnectTokenSecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
             {{- end }}
               key: jfconnect-token
         {{- end }}
@@ -248,7 +248,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
               name: {{ include "artifactory.masterKeySecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
             {{- end }}
               key: master-key
         {{- end }}
@@ -408,7 +408,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -424,7 +424,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -443,7 +443,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -622,7 +622,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -638,7 +638,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -657,7 +657,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -934,7 +934,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -950,7 +950,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -969,7 +969,7 @@ spec:
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "artifactory.name" . }}-unified-secret"
+              name: "{{ template "artifactory.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -1086,7 +1086,7 @@ spec:
       {{- range .Values.artifactory.loggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory.getImageInfoByValue" (list $ "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
       {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -1107,7 +1107,7 @@ spec:
       {{- range .Values.artifactory.catalinaLoggers }}
       - name: {{ . | replace "_" "-" | replace "." "-" }}
         image: {{ include "artifactory.getImageInfoByValue" (list $ "initContainers") }}
-        imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
       {{- if $.Values.containerSecurityContext.enabled }}
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
@@ -1321,7 +1321,7 @@ spec:
     {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
         secret:
-          secretName: {{ template "artifactory.name" . }}-unified-secret
+          secretName: {{ template "artifactory.fullname" . }}-unified-secret
     {{- else if not .Values.artifactory.unifiedSecretInstallation }}
       ############ If single secret installation flag is disable ############
       {{- if and .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled (not .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName) }}

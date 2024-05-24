@@ -536,7 +536,7 @@ artifactory:
   #        cpu: "100m"
 
   ## Add custom volumes
-  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory-ha.name" . }}-unified-secret'.
+  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory-ha.fullname" . }}-unified-secret'.
   customVolumes: ""
   #  - name: custom-script
   #    configMap:
@@ -585,7 +585,7 @@ artifactory:
   # jfConnectTokenSecretName:
 
   # Add custom secrets - secret per file
-  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory-ha.name" . }}-unified-secret' common to all secrets
+  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory-ha.fullname" . }}-unified-secret' common to all secrets
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
