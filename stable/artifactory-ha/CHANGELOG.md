@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.84.11] - May 16, 2024
+## [107.84.12] - May 20, 2024
 * Added image section for `initContainers` instead of `initContainerImage`
 * Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
 * Removed loggers.image section
@@ -19,6 +19,7 @@ All changes to this chart will be documented in this file
 * Fixed a wrong imagePullPolicy configuration
 * Fixed an issue to generate unified secret to support artifactory fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
 * Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
+* Override metadata and observability image tag with `global.verisons.artifactory` value
 
 ## [107.83.0] - Mar 12, 2024
 * Added image section for `metadata` and `observability`
