@@ -75,6 +75,40 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Reslove Unified Secret name
+*/}}
+{{- define "jfrog-platform.unifiedSecretInstallation" -}}
+{{- if eq .Chart.Name "artifactory" -}}
+{{- if not .Values.artifactory.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "artifactory.fullname" .) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "artifactory.fullname" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "distribution" -}}
+{{- if not .Values.distribution.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "distribution.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "distribution.fullname" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "xray" -}}
+{{- if not .Values.xray.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "xray.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "xray.name" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "insight" -}}
+{{- if not .Values.insightServer.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "insight.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "insight.name" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Custom init container for Postgres setup
 */}}
 {{- define "initdb" -}}
@@ -154,7 +188,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.user.name . }}
           key: {{ tpl .Values.database.secrets.user.key . }}
     {{- else if .Values.database.user }}
-          name: {{ .Chart.Name }}-unified-secret
+          name: {{ include "jfrog-platform.unifiedSecretInstallation" . }}
           key: db-user
     {{- end }}
     - name: DB_PASSWORD
@@ -164,7 +198,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.password.name . }}
           key: {{ tpl .Values.database.secrets.password.key . }}
     {{- else if .Values.database.password }}
-          name: {{ .Chart.Name }}-unified-secret
+          name: {{ include "jfrog-platform.unifiedSecretInstallation" . }}
           key: db-password
     {{- end }}
     - name: PGPASSWORD
