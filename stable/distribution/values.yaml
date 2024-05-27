@@ -49,7 +49,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.3.1552
+    tag: 9.4.949
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -160,7 +160,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 15.2.0-debian-11-r23
+    tag: 15.6.0-debian-11-r16
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -269,7 +269,7 @@ common:
   ## Custom command to run before distribution startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
   ## Add custom volumes
-  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
+  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.fullname" . }}-unified-secret'.
   customVolumes: ""
   #  - name: custom-script
   #    configMap:
@@ -457,7 +457,7 @@ distribution:
   #    subPath: script.sh
 
   # Add custom secrets - secret per file
-  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
+  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.fullname" . }}-unified-secret'.
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -568,7 +568,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.103.0
+    tag: 7.108.0
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
