@@ -321,8 +321,9 @@ Return the proper artifactory chart image names
 Return the proper artifactory app version
 */}}
 {{- define "artifactory-ha.app.version" -}}
-{{- $image := split ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory")) | toString) -}}
-{{- $tag := $image._1 -}}
+{{- $image := (include "artifactory-ha.getImageInfoByValue" (list . "artifactory")) | toString -}}
+{{- $parts := splitList ":" $image -}}
+{{- $tag := index $parts (sub (len $parts) 1) -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
 
