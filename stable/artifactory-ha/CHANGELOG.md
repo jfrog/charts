@@ -1,6 +1,9 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.84.13] - June 11, 2024
+* Fix incorrect capture group in helper function defining chart version
+
 ## [107.84.12] - May 20, 2024
 * Added image section for `initContainers` instead of `initContainerImage`
 * Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
