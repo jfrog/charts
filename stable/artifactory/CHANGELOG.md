@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.84.12] - May 16, 2024
+## [107.84.14] - May 29, 2024
 * Added image section for `initContainers` instead of `initContainerImage`
 * Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
 * Removed image section for `loggers`
@@ -18,6 +18,9 @@ All changes to this chart will be documented in this file.
 * Added a check if `initContainerImage` exists
 * Fixed an issue to generate unified secret to support artifactory fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
 * Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
+* Fixed resource constraints for "setup" initContainer of nginx deployment [GH-962] (https://github.com/jfrog/charts/issues/962)
+* Added .Values.artifactory.unifiedSecretPrependReleaseName` for unified secret to prepend release name
+* Fixed maxCacheSize and cacheProviderDir mix up under azure-blob-storage-v2-direct template in binarystore.xml
 
 ## [107.82.0] - Mar 04, 2024
 * Added `disableRouterBypass` flag as experimental feature, to disable the artifactoryPath /artifactory/ and route all traffic through the Router.
