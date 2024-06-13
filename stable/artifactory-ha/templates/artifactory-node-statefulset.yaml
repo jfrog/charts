@@ -180,7 +180,7 @@ spec:
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) (or .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName) }}
               name: {{ include "artifactory-ha.masterKeySecretName" . }}
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: master-key
         {{- end }}
@@ -320,7 +320,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-user
         {{- end }}
@@ -336,7 +336,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -355,7 +355,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-url
         {{- end }}
@@ -544,7 +544,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-user
         {{- end }}
@@ -560,7 +560,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -579,7 +579,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-url
         {{- end }}
@@ -712,7 +712,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -858,7 +858,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-user
         {{- end }}
@@ -874,7 +874,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -893,7 +893,7 @@ spec:
             {{- if not .Values.artifactory.unifiedSecretInstallation }}
               name: {{ template "artifactory-ha.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "artifactory-ha.fullname" . }}-unified-secret"
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
             {{- end }}
               key: db-url
         {{- end }}
@@ -1239,7 +1239,8 @@ spec:
     {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
         secret:
-          secretName: {{ template "artifactory-ha.fullname" . }}-unified-secret
+          secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+
     {{- else if not .Values.artifactory.unifiedSecretInstallation }}
 
       ############ If single secret installation flag is disable ############
