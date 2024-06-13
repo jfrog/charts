@@ -75,14 +75,14 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
-Reslove Unified Secret name
+Resolve unifiedSecretInstallation name
 */}}
 {{- define "jfrog-platform.unifiedSecretInstallation" -}}
 {{- if eq .Chart.Name "artifactory" -}}
 {{- if not .Values.artifactory.unifiedSecretInstallation }}
 {{- printf "%s-%s" (include "artifactory.fullname" .) "database-creds" -}}
 {{- else }}
-{{- printf "%s-%s" (include "artifactory.fullname" .) "unified-secret" -}}
+{{- printf "%s-%s" (include "artifactory.unifiedSecretPrependReleaseName" .) "unified-secret" -}}
 {{- end }}
 {{- end -}}
 {{- if eq .Chart.Name "distribution" -}}
