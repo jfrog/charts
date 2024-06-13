@@ -69,7 +69,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.3.1552
+    tag: 9.4.949
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -451,7 +451,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.12.10-debian-11-r1
+    tag: 3.12.13-debian-11-r0
   extraPlugins: "rabbitmq_management"
 
   auth:
@@ -617,6 +617,9 @@ rabbitmq:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  containerSecurityContext:
+    enabled: true
+    allowPrivilegeEscalation: false
   ## Upgrade of rabbitmq from 3.8.x to 3.11.x needs the feature flags to be enabled.
   ## Ref: (https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
   ## migration enable will perform `rabbitmqctl enable_feature_flag all` command on the existing rabbitmq before starting the upgrade
@@ -1405,7 +1408,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.26.0
+    tag: 1.28.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
