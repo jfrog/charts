@@ -1,7 +1,11 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.95.4] - Apr 2, 2024
+## [103.96.1] - Apr 17, 2024
+* Added `rabbitmq.containerSecurityContext.allowPrivilegeEscalation` flag to ensure `RunAsUser` commands cannot bypass their existing sets of permissions. Set to `false` by default
+* Updated rabbitmq multi-arch tag version to to `3.12.13-debian-11-r0`
+
+## [103.95.0] - Apr 2, 2024
 * **IMPORTANT**
 * Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml)
 * Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given. [GH-1842](https://github.com/jfrog/charts/pull/1842)
