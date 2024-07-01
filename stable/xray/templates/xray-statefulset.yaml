@@ -1036,8 +1036,8 @@ spec:
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
         volumeMounts:
-          - name: data-volume
-            mountPath: "{{ .Values.xray.persistence.mountPath }}"
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
 {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
