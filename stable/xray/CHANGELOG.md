@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.96.2] - July 1, 2024
+* Fixed formatting error associated to the `volumeMounts` for the `panoramic` microservice [GH-1895](https://github.com/jfrog/charts/issues/1895)
+
 ## [103.96.1] - Apr 17, 2024
 * Added `rabbitmq.containerSecurityContext.allowPrivilegeEscalation` flag to ensure `RunAsUser` commands cannot bypass their existing sets of permissions. Set to `false` by default
 * Updated rabbitmq multi-arch tag version to to `3.12.13-debian-11-r0`
