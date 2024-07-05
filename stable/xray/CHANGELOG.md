@@ -1,7 +1,10 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.96.1] - Apr 17, 2024
+## [103.97.3] - May 27, 2024
+* Added chart label to xray pods
+
+## [103.96.0] - Apr 17, 2024
 * Added `rabbitmq.containerSecurityContext.allowPrivilegeEscalation` flag to ensure `RunAsUser` commands cannot bypass their existing sets of permissions. Set to `false` by default
 * Updated rabbitmq multi-arch tag version to to `3.12.13-debian-11-r0`
 
