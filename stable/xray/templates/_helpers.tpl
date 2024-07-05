@@ -21,6 +21,13 @@ The xray-sbom name
 {{- end -}}
 
 {{/*
+The xray-panoramic name
+*/}}
+{{- define "xray-panoramic.name" -}}
+{{- default .Chart.Name .Values.panoramic.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The xray-indexer name
 */}}
 {{- define "xray-indexer.name" -}}
@@ -66,6 +73,9 @@ Expand the name of rabbit chart.
 {{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- end -}}
 
+{{- define "xray.rabbitmq.migration.isHookRegistered" }}
+{{- or .Values.rabbitmq.migration.enabled .Values.rabbitmq.migration.deleteStatefulSetToAllowFieldUpdate.enabled .Values.rabbitmq.migration.removeHaPolicyOnMigrationToHaQuorum.enabled }}
+{{- end }}
 
 {{- define "xray.rabbitmq.migration.fullname" -}}
 {{- $name := default "rabbitmq-migration" -}}
@@ -432,14 +442,17 @@ Return the proper xray chart image names
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer")) }}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "panoramic")) }}
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer")) }}
+    {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
+    {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "panoramic")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
@@ -503,6 +516,22 @@ Resolve xray requiredServiceTypes value
 {{- end -}}
 
 {{/*
+Resolve xray ipa requiredServiceTypes value
+*/}}
+{{- define "xray.router.ipa.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfxana,jfxidx,jfxpst,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve xray server requiredServiceTypes value
+*/}}
+{{- define "xray.router.server.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfxr,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
 Resolve Xray pod node selector value
 */}}
 {{- define "xray.nodeSelector" -}}
@@ -558,6 +587,47 @@ Resolve autoscalingQueues value
     queueName: {{ .name }}
     mode: QueueLength
     value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for ipa
+*/}}
+{{- define "xray.autoscalingQueuesIpa" -}}
+{{- if .Values.autoscalingIpa.keda.queues }}
+{{- range .Values.autoscalingIpa.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for server
+*/}}
+{{- define "xray.autoscalingQueuesServer" -}}
+{{- if .Values.autoscalingServer.keda.queues }}
+{{- range .Values.autoscalingServer.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
   authenticationRef:
     name: keda-trigger-auth-rabbitmq-conn-xray
 {{- end }}
@@ -582,8 +652,12 @@ Return the secret name of rabbitmq TLS certs.
 {{/*
 Prints value of Values.rabbitmq.auth.tls.enabled.
 */}}
-{{- define "xray.rabbitmq.isTlsEnabled" -}}
+{{- define "xray.rabbitmq.isManagementListenerTlsEnabledInContext" -}}
 {{- printf "%t" $.Values.auth.tls.enabled -}}
+{{- end -}}
+
+{{- define "xray.rabbitmq.isManagementListenerTlsEnabled" -}}
+{{- printf "%t" $.Values.rabbitmq.auth.tls.enabled -}}
 {{- end -}}
 
 {{/*
@@ -620,8 +694,12 @@ Set xray env variables if rabbitmq.tls is enabled.
 {{/*
 Calculate the systemYaml from structured and unstructured text input
 */}}
-{{- define "xray.calculatedSystemYaml" -}}
-{{ tpl (mergeOverwrite (include "xray.systemYaml" . | fromYaml) .Values.xray.structuredSystemYaml | toYaml) . }}
+{{- define "xray.finalSystemYaml" -}}
+{{- if .Values.xray.extraSystemYaml }}
+{{ tpl (mergeOverwrite (include "xray.systemYaml" . | fromYaml) .Values.xray.extraSystemYaml | toYaml) . }}
+{{- else }}
+{{ include "xray.systemYaml" . }}
+{{- end }}
 {{- end -}}
 
 {{/*

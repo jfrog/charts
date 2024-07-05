@@ -1,0 +1,142 @@
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
+shared:
+{{- if  .Values.artifactory.coldStorage.enabled }}
+  jfrogColdStorage:
+    coldInstanceEnabled: true
+{{- end }}
+{{- if  .Values.artifactory.openMetrics.enabled }}
+  metrics:
+    enabled: true
+  {{- if .Values.artifactory.openMetrics.filebeat.enabled }}
+    filebeat: {{ toYaml .Values.artifactory.openMetrics.filebeat | nindent 6 }}
+  {{- end }}
+{{- end }}
+  logging:
+    consoleLog:
+      enabled: {{ .Values.artifactory.consoleLog }}
+  extraJavaOpts: >
+    -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.artifactory.terminationGracePeriodSeconds 1000 }}
+    -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
+  {{- with .Values.artifactory.javaOpts }}
+    {{- if .corePoolSize }}
+    -Dartifactory.async.corePoolSize={{ .corePoolSize }}
+    {{- end }}
+  {{- if .xms }}
+    -Xms{{ .xms }}
+  {{- end }}
+  {{- if .xmx }}
+    -Xmx{{ .xmx }}
+  {{- end }}
+  {{- if .jmx.enabled }}
+    -Dcom.sun.management.jmxremote
+    -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
+    -Dcom.sun.management.jmxremote.rmi.port={{ .jmx.port }}
+    -Dcom.sun.management.jmxremote.ssl={{ .jmx.ssl }}
+  {{- if .jmx.host }}
+    -Djava.rmi.server.hostname={{ tpl .jmx.host $ }}
+  {{- else }}
+    -Djava.rmi.server.hostname={{ template "artifactory.fullname" $ }}
+  {{- end }}
+  {{- if .jmx.authenticate }}
+    -Dcom.sun.management.jmxremote.authenticate=true
+    -Dcom.sun.management.jmxremote.access.file={{ .jmx.accessFile }}
+    -Dcom.sun.management.jmxremote.password.file={{ .jmx.passwordFile }}
+  {{- else }}
+    -Dcom.sun.management.jmxremote.authenticate=false
+  {{- end }}
+  {{- end }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}
+  {{- if or .Values.database.type .Values.postgresql.enabled }}
+  database:
+    allowNonPostgresql: {{ .Values.database.allowNonPostgresql }}
+    {{- if .Values.postgresql.enabled }}
+    type: postgresql
+    url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+    driver: org.postgresql.Driver
+    username: "{{ .Values.postgresql.postgresqlUsername }}"
+    {{- else }}
+    type: "{{ .Values.database.type }}"
+    driver: "{{ .Values.database.driver }}"
+    {{- end }}
+  {{- end }}
+artifactory:
+{{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
+  node:
+  {{- if .Values.artifactory.haDataDir.path }}
+    haDataDir: {{ .Values.artifactory.haDataDir.path }}
+  {{- end }}
+  {{- if .Values.artifactory.haBackupDir.path }}
+    haBackupDir: {{ .Values.artifactory.haBackupDir.path }}
+  {{- end }}
+{{- end }}
+  database:
+    maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
+  tomcat:
+    maintenanceConnector:
+      port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+    connector:
+      maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
+      sendReasonPhrase: {{ .Values.artifactory.tomcat.connector.sendReasonPhrase }}
+      extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
+frontend:
+  session:
+    timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
+access:
+  database:
+    maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
+  tomcat:
+    connector:
+      maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
+      sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
+      extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
+{{- if .Values.mc.enabled }}
+mc:
+  enabled: true
+  database:
+    maxOpenConnections: {{ .Values.mc.database.maxOpenConnections }}
+  idgenerator:
+    maxOpenConnections: {{ .Values.mc.idgenerator.maxOpenConnections }}
+  tomcat:
+    connector:
+      maxThreads: {{ .Values.mc.tomcat.connector.maxThreads }}
+      sendReasonPhrase: {{ .Values.mc.tomcat.connector.sendReasonPhrase }}
+      extraConfig: {{ .Values.mc.tomcat.connector.extraConfig }}
+{{- end }}
+metadata:
+  database:
+    maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
+{{- if and .Values.jfconnect.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+jfconnect:
+  enabled: true
+{{- else }}
+jfconnect:
+  enabled: false
+jfconnect_service:
+  enabled: false
+{{- end }}
+{{- if and .Values.federation.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+federation:
+  enabled: true
+  embedded: {{ .Values.federation.embedded }}
+  extraJavaOpts: {{ .Values.federation.extraJavaOpts }}
+  port: {{ .Values.federation.internalPort }}
+rtfs:
+  database:
+    driver: org.postgresql.Driver
+    type: postgresql
+    username: {{ .Values.federation.database.username }}
+    password: {{ .Values.federation.database.password }}
+    url: jdbc:postgresql://{{ .Values.federation.database.host }}:{{ .Values.federation.database.port }}/{{ .Values.federation.database.name }}
+{{- else }}
+federation:
+  enabled: false
+{{- end }}
+{{- if .Values.event.webhooks }}
+event:
+  webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
+{{- end }}

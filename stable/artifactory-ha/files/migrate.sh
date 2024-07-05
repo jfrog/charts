@@ -896,7 +896,9 @@ setupScriptLogsRedirection() {
 
 # Returns Y if this method is run inside a container
 isRunningInsideAContainer() {
-    if [ -f "/.dockerenv" ]; then
+    local check1=$(grep -sq 'docker\|kubepods' /proc/1/cgroup; echo $?)
+    local check2=$(grep -sq 'containers' /proc/self/mountinfo; echo $?)
+    if [[ $check1 == 0 || $check2 == 0 || -f "/.dockerenv" ]]; then
         echo -n "$FLAG_Y"
     else
         echo -n "$FLAG_N"
@@ -2914,9 +2916,6 @@ yamlMigrate () {
     if [[ ! -z "${value}" ]]; then
         value=$(updateConnectionString "${yamlPath}" "${value}")
     fi
-    if [[ "${PRODUCT}" == "artifactory" ]]; then
-        replicatorProfiling
-    fi
     if [[ -z "${value}" ]]; then
         logger "No value for [${key}] in [${sourceFile}]"
     else
@@ -4216,24 +4215,11 @@ commentNodeId () {
 artifactoryInfoMessage () {
 
     if [[ "${INSTALLER}" == "${COMPOSE_TYPE}" || "${INSTALLER}" == "${HELM_TYPE}" ]]; then
-        addText "# yamlFile was generated from db.properties,replicator.yaml and ha-node.properties config files." "${SYSTEM_YAML_PATH}"
+        addText "# yamlFile was generated from db.properties and ha-node.properties config files." "${SYSTEM_YAML_PATH}"
     else
-        addText "# yamlFile was generated from default file,replicator.yaml,db.properties and ha-node.properties config files." "${SYSTEM_YAML_PATH}"
+        addText "# yamlFile was generated from default file,db.properties and ha-node.properties config files." "${SYSTEM_YAML_PATH}"
     fi
 
-}
-
-replicatorProfiling () {
-
-    if [[ "${key}" == "profilingDisabled" ]]; then
-        if [[ ! -z "${value}" ]]; then
-            if [[ "${value}" == "false" ]]; then
-                value="true"
-            else
-                value="false"
-            fi
-        fi
-    fi
 }
 
 setHaEnabled_hook () {
@@ -4275,27 +4261,9 @@ _createBackupOfLogBackDir () {
     removeFileOperation "${backupDir}/logbackXmlFiles/artifactory" "${artiLogbackFile}"
 }
 
-
-_createBackupOfReplicatorRtYaml () {
-    local backupDir="$1"
-    local replicatorRtYamlFile="${NEW_DATA_DIR}/etc/replicator/replicator.artifactory.yaml"
-    local effectiveUser=
-    local effectiveGroup=
-    if [[ "${INSTALLER}" == "${COMPOSE_TYPE}" || "${INSTALLER}" == "${HELM_TYPE}" ]]; then
-        effectiveUser="${JF_USER}"
-        effectiveGroup="${JF_USER}"
-    elif [[ "${INSTALLER}" == "${DEB_TYPE}" || "${INSTALLER}" == "${RPM_TYPE}" ]]; then
-        effectiveUser="${USER_TO_CHECK}" 
-        effectiveGroup="${GROUP_TO_CHECK}"
-    fi
-    removeSoftLinkAndCreateDir "${backupDir}/replicatorYamlFile" "${effectiveUser}" "${effectiveGroup}" "yes"
-    removeFileOperation "${backupDir}/replicatorYamlFile" "${replicatorRtYamlFile}"
-}
-
 backupFiles_hook () {
     local backupDirectory="$1" 
     _createBackupOfLogBackDir "${backupDirectory}"
-    _createBackupOfReplicatorRtYaml "${backupDirectory}"
 }
 
 migrateArtifactory () {

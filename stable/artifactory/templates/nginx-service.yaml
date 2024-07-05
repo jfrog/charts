@@ -14,6 +14,12 @@ metadata:
 {{ toYaml .Values.nginx.service.annotations | indent 4 }}
 {{- end }}
 spec:
+  {{- if .Values.nginx.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.nginx.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if not (empty .Values.nginx.service.ipFamilies)}}
+  ipFamilies: {{- toYaml .Values.nginx.service.ipFamilies | nindent 4 }}
+  {{- end }}
   type: {{ .Values.nginx.service.type }}
 {{- if eq .Values.nginx.service.type "LoadBalancer" }}
   {{ if .Values.nginx.service.loadBalancerIP -}}

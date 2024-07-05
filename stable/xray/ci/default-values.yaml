@@ -3,7 +3,7 @@
 unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 xray:
-  jfrogUrl: http://artifactory.rt:8082
+  jfrogUrl: http://rt-artifactory.rt:8082
 common:
   persistence:
     enabled: false
@@ -55,3 +55,23 @@ indexer:
     limits:
       memory: "4Gi"
       cpu: "4"
+
+sbom:
+  enabled: true
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"
+
+panoramic:
+  enabled: false
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "50m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"

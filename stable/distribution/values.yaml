@@ -12,6 +12,7 @@ global:
   versions: {}
   # distribution:
   # router:
+  # initContainers:
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -42,9 +43,14 @@ global:
 ## String to fully override distribution.fullname template
 ##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
+
 # Init containers
 initContainers:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.4.949
+    pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "50Mi"
@@ -130,6 +136,22 @@ serviceAccount:
   name:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: false
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## Disable containerSecurityContext for openshift
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
+## Disable podSecurityContext for openshift
+podSecurityContext:
+  enabled: true
+  runAsUser: 1020
+  runAsGroup: 1020
+  fsGroup: 1020
+  # fsGroupChangePolicy: "Always"
 # PostgreSQL
 ## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
@@ -138,7 +160,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.10.0-debian-11-r14
+    tag: 15.6.0-debian-11-r16
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -160,12 +182,17 @@ postgresql:
     affinity: {}
     tolerations: []
   resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "250m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
+  ## Disable SecurityContext and containerSecurityContext for openshift
+  securityContext:
+    enabled: true
+  containerSecurityContext:
+    enabled: true
+    #  requests:
+    #    memory: "1Gi"
+    #    cpu: "250m"
+    #  limits:
+    #    memory: "2Gi"
+    #    cpu: "1"
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom/external database details here
 database:
@@ -195,13 +222,12 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 7.2.0-debian-11-r2
+    tag: 7.2.4-debian-11-r5
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
   ## Alternatively, you can use a pre-existing secret with a key called redis-password by specifying existingSecret
   # existingSecret: <name-of-existing-secret>
-  uid: 1001
   disableCommands: "FLUSHDB,FLUSHALL"
   persistence:
     enabled: true
@@ -212,6 +238,11 @@ redis:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
     accessMode: ReadWriteOnce
+  ## Disable containerSecurityContext for openshift
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+    runAsGroup: 0
   resources: {}
   #  requests:
   #    memory: "256Mi"
@@ -224,10 +255,6 @@ redis:
   tolerations: []
   affinity: {}
 common:
-  uid: 1020
-  gid: 1020
-  # fsGroupChangePolicy: "Always"
-
   # Spread Distribution pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
   # - maxSkew: 1
@@ -242,7 +269,7 @@ common:
   ## Custom command to run before distribution startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
   ## Add custom volumes
-  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
+  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.fullname" . }}-unified-secret'.
   customVolumes: ""
   #  - name: custom-script
   #    configMap:
@@ -264,8 +291,8 @@ common:
   ## Add custom init containers execution before predefined init containers
   customInitContainersBegin: ""
   #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
@@ -283,8 +310,8 @@ common:
   ## Add custom init containers execution after predefined init containers
   customInitContainers: ""
   #  - name: "custom-systemyaml-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
+  #    image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
@@ -303,8 +330,8 @@ common:
   # - The provided example uses a custom volume (customVolumes)
   customSidecarContainers: ""
   #  - name: "sidecar-list-etc"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+  #    imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
   #    securityContext:
   #      runAsNonRoot: true
   #      allowPrivilegeEscalation: false
@@ -328,11 +355,6 @@ common:
   #      limits:
   #        memory: "128Mi"
   #        cpu: "100m"
-logger:
-  image:
-    registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.1.0.1793
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
@@ -340,8 +362,9 @@ distribution:
     registry: releases-docker.jfrog.io
     repository: jfrog/distribution-distribution
     # tag:
-    imagePullPolicy: IfNotPresent
-  # unifiedSecretInstallation flag enables single unified secret holding all the distribution secrets
+    pullPolicy: IfNotPresent
+  # unifiedSecretInstallation flag enables single unified secret holding all the distribution internal(chart) secrets, It won't be affecting external secrets.
+  ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 102.23.0, Users can switch to false to continue with the old way of secret creation.
   unifiedSecretInstallation: true
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
@@ -399,40 +422,32 @@ distribution:
   # - name: JF_DISTRIBUTION_DATABASE_URL
   #   value: "jdbc:postgresql://localhost:5432/distribution"
 
-  systemYaml: |
-    router:
-      serviceRegistry:
-        insecure: {{ .Values.router.serviceRegistry.insecure }}
-    shared:
-      logging:
-        consoleLog:
-          enabled: {{ .Values.distribution.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "distribution.jfrogUrl" .)) . }}"
-      database:
-      {{- if .Values.postgresql.enabled }}
-        type: "postgresql"
-        driver: "org.postgresql.Driver"
-        username: "{{ .Values.postgresql.postgresqlUsername }}"
-        url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
-      {{ else }}
-        type: "{{ .Values.database.type }}"
-        driver: "{{ .Values.database.driver }}"
-      {{- end }}
-    distribution:
-      extraJavaOpts: >
-      {{- with .Values.distribution.javaOpts }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
+  ## System YAML entries now reside under files/system.yaml.
+  ## You can provide the specific values that you want to add or override under 'distribution.extraSystemYaml'.
+  ## For example:
+  ## extraSystemYaml:
+  ##   shared:
+  ##     node:
+  ##       id: my-instance
+  ## The entries provided under 'distribution.extraSystemYaml' are merged with files/system.yaml to create the final system.yaml.
+  ## If you have already provided system.yaml under, 'distribution.systemYaml', the values in that entry take precedence over files/system.yaml
+  ## You can modify specific entries with your own value under `distribution.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'distribution.systemYaml' and files/system.yaml
+  extraSystemYaml: {}
+  ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
+  ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
+  # systemYaml:
   service:
     type: ClusterIP
+    ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
+    ## This can be either SingleStack, PreferDualStack or RequireDualStack
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilyPolicy: ""
+    ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)
+    ## This can be either ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilies: []
   statefulset:
     annotations: {}
   ## Add custom volumeMounts
@@ -442,7 +457,7 @@ distribution:
   #    subPath: script.sh
 
   # Add custom secrets - secret per file
-  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
+  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.fullname" . }}-unified-secret'.
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -553,8 +568,8 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.73.0
-    imagePullPolicy: IfNotPresent
+    tag: 7.108.0
+    pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
     insecure: false
@@ -634,8 +649,8 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.13.6
-    imagePullPolicy: IfNotPresent
+    tag: 1.25.0
+    pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
   #  requests:
@@ -777,3 +792,15 @@ serviceMonitor:
   kubePromFullName: ""
   namespaceSelector: {}
   selector: {}
+## @param newRelic Specify NewRelic APM integration settings
+## https://docs.newrelic.com/docs/apm/agents/java-agent/configuration/java-agent-configuration-config-file/
+newRelic:
+  apm:
+    enabled: false
+    appName: ""
+    version: 8.6.0
+    licenseKey: ""
+    logLevel: info
+    downloadUrl: https://download.newrelic.com
+    downloadPath: newrelic/java-agent/newrelic-agent/{{ .Values.newRelic.apm.version }}
+    downloadFile: newrelic-agent-{{ .Values.newRelic.apm.version }}.jar

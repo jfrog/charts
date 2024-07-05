@@ -32,6 +32,50 @@ The services name
 {{- printf "%s-%s-services" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Expand the name of rabbit chart.
+*/}}
+{{- define "rabbitmq.name" -}}
+{{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- end -}}
+
+{{/*
+Return the registry of a service
+*/}}
+{{- define "pipelines.getRegistryByService" -}}
+{{- $dot := index . 0 }}
+{{- $service := index . 1 }}
+{{- if $dot.Values.global.imageRegistry }}
+    {{- $dot.Values.global.imageRegistry }}
+{{- else -}}
+    {{- if (eq $service "migrationHook") -}}
+      {{- index $dot.Values.rabbitmq.migration.image.registry -}}
+   {{- else -}}
+      {{- index $dot.Values $service "image" "registry" -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "pipelines.rabbitmq.migration.fullname" -}}
+{{- $name := default "rabbitmq-migration" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for rabbitmq migration
+*/}}
+{{- define "pipelines.rabbitmq.migration.serviceAccountName" -}}
+{{- if .Values.rabbitmq.migration.serviceAccount.create -}}
+{{ default (include "pipelines.rabbitmq.migration.fullname" .) .Values.rabbitmq.migration.serviceAccount.name }}
+{{- else -}}
+{{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
 {{- define "pipelines.sync.name" -}}
 {{- $name := .Release.Name | trunc 29 -}}
 {{- printf "%s-%s-sync" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
@@ -124,6 +168,14 @@ The stepservice name
 {{- define "pipelines.stepservice.name" -}}
 {{- $name := .Release.Name | trunc 29 -}}
 {{- printf "%s-%s-stepservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The analyticsservice name
+*/}}
+{{- define "pipelines.analyticsservice.name" -}}
+{{- $name := .Release.Name | trunc 29 -}}
+{{- printf "%s-%s-analyticsservice" $name .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -377,6 +429,37 @@ Set grcp url
 {{- else }}
 {{- printf "%s" (tpl .Values.pipelines.jfrogUrl . ) }}
 {{- end }}
+{{- end -}}
+
+{{/*
+Create rabbitmq URL
+*/}}
+{{- define "rabbitmq.url" -}}
+{{- if index .Values "rabbitmq" "enabled" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqpTls -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqps" .Release.Name $name $rabbitmqPort -}}
+{{- else -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Custom Rabbitmq certificate copy command
+*/}}
+{{- define "pipelines.copyRabbitmqCustomCerts" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+echo "Copy rabbitmq custom certificates to {{ .Values.pipelines.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.pipelines.mountPath }}/etc/security/keys/trusted {{ .Values.pipelines.mountPath }}/data/rabbitmq/certs/;
+cd /tmp/rabbitmqcerts/;
+for file in $(ls * | grep -v ".key" | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.pipelines.mountPath }}/etc/security/keys/trusted/rabbitmq_${file}; fi done;
+for file in $(ls * | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_${file}; fi done;
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -765,7 +848,11 @@ bash "${new_script_path}" "${PIP_CONTAINER_START_TIME}" "{{ .Values.pipelines.lo
 Common code to change ownership of metrics file
 */}}
 {{- define "pipelines.changeOwnershipMetrics" -}}
+{{- if .Values.podSecurityContext.enabled -}}
+echo "podSecurityContext is enabled";
+{{- else -}}
 chown 1066:1066 {{ .Values.pipelines.logPath }}/*-metrics.log || true;
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -803,14 +890,69 @@ Custom certificate copy command
 echo "Copy custom certificates to {{ .Values.pipelines.mountPath }}/security/keys/trusted";
 mkdir -p {{ .Values.pipelines.mountPath }}/security/keys/trusted;
 if [ -f /tmp/certs/tls.crt ]; then cp -v /tmp/certs/tls.crt {{ .Values.pipelines.mountPath }}/security/keys/trusted/pipelines_custom_certs.crt; fi;
+{{- if not .Values.podSecurityContext.enabled -}}
 chown -R 1066:1066 {{ .Values.pipelines.mountPath }}
+{{- end -}}
 {{- end -}}
 
 {{/*
 Resolve pipelines requiredServiceTypes value
 */}}
 {{- define "pipelines.router.requiredServiceTypes" -}}
+{{- if .Values.splitServicesToPods }}
+{{- $requiredTypes := "jfpip,jfob,jfpipwww,jfpipfrontend" -}}
+{{- $requiredTypes -}}
+{{- else -}}
+{{- $requiredTypes := "jfpip,jfob,jfpipwww,jfpipfrontend,jfpnps" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.cron.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.sync.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.hookhandler.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.trigger.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob,jfpnps" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.internalapi.router.requiredServiceTypes" -}}
 {{- $requiredTypes := "jfpip,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve pipelines requiredServiceTypes value
+*/}}
+{{- define "pipelines.stepservice.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}
 
@@ -843,4 +985,55 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- else -}}
 {{- printf "%s" "false" -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Construct Redis service name
+*/}}
+{{- define "pipelines.redisServiceName" -}}
+{{- if .Values.redis.fullnameOverride -}}
+{{- .Values.redis.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- if contains "redis" .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-redis" .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret name of rabbitmq TLS certs.
+*/}}
+{{- define "pipelines.rabbitmqCustomCertificateshandler" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled -}}
+{{- $secretName := printf "%s-%s" .Release.Name "rabbitmq-certs"  -}}
+{{- $val := default $secretName .Values.rabbitmq.auth.tls.existingSecret -}}
+{{- $val -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Prints value of Values.rabbitmq.auth.tls.enabled.
+*/}}
+{{- define "pipelines.rabbitmq.isTlsEnabled" -}}
+{{- printf "%t" $.Values.auth.tls.enabled -}}
+{{- end -}}
+
+{{/*
+Set pipelines env variables if rabbitmq.tls is enabled.
+*/}}
+{{- define "pipelines.rabbitmqTlsEnvVariables" -}}
+{{- if .Values.rabbitmq.auth.tls.enabled }}
+- name: GODEBUG
+  value: "x509ignoreCN=0"
+- name: enableTlsConnectionToRabbitMQ
+  value: "true"
+- name: JF_SHARED_MSG_TLSCERT
+  value: {{.Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_tls.crt
+- name: JF_SHARED_MSG_TLSKEY
+  value: {{.Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_tls.key
+- name: JF_SHARED_MSG_TLSCA
+  value: {{.Values.pipelines.mountPath }}/data/rabbitmq/certs/rabbitmq_ca.crt
+{{- end }}
 {{- end -}}

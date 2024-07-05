@@ -1,0 +1,81 @@
+##############################################################
+# The xlarge sizing
+# This size is intended for very large organizations. It can be increased with adding replicas
+##############################################################
+
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+
+replicaCount: 2
+
+distribution:
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      # cpu: "4"
+      memory: 3Gi
+
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "2"
+
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=40
+      -XX:MaxRAMPercentage=70
+      -XX:+UseStringDeduplication
+      -XX:MaxMetaspaceSize=300m
+      -Djdk.nio.maxCachedBufferSize=262144
+      -XX:MaxDirectMemorySize=256m
+
+router:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      # cpu: "1"
+      memory: 1Gi
+
+observability:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 50Mi
+    limits:
+      # cpu: "1"
+      memory: 250Mi
+
+redis:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      # cpu: "1"
+      memory: 1Gi
+
+postgresql:
+  postgresqlExtendedConf:
+    maxConnections: "200"
+  primary:
+    affinity:
+      # Require PostgreSQL pod to run on a different node than distribution pods
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - distribution
+            topologyKey: kubernetes.io/hostname
+  resources:
+    requests:
+      cpu: "100m"
+      memory: 1Gi
+    limits:
+      # cpu: "2"
+      memory: 8Gi

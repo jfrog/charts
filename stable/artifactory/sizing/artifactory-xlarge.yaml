@@ -1,0 +1,117 @@
+##############################################################
+# The xlarge sizing
+# This size is intended for very large organizations. It can be increased with adding replicas
+##############################################################
+splitServicesToContainers: true
+artifactory:
+  # Enterprise and above licenses are required for setting replicaCount greater than 1.
+  # Count should be equal or above the total number of licenses available for artifactory.
+  replicaCount: 4
+
+  # Require multiple Artifactory pods to run on separate nodes
+  podAntiAffinity:
+    type: "hard"
+
+  resources:
+    requests:
+      cpu: "2"
+      memory: 14Gi
+    limits:
+      # cpu: "14"
+      memory: 16Gi
+
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "16"
+    - name : JF_SHARED_NODE_HAENABLED
+      value: "true"
+    - name: SKIP_WAIT_FOR_EXTERNAL_DB
+      value: "true"
+
+router:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 500Mi
+    limits:
+      # cpu: "4"
+      memory: 1Gi
+
+frontend:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 300Mi
+    limits:
+      # cpu: "3"
+      memory: 1Gi
+
+metadata:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 200Mi
+    limits:
+      # cpu: "4"
+      memory: 1Gi
+
+event:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+    limits:
+      # cpu: 500m
+      memory: 250Mi
+
+observability:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 50Mi
+    limits:
+      # cpu: 500m
+      memory: 250Mi
+
+jfconnect:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      # cpu: 500m
+      memory: 250Mi
+
+nginx:
+  replicaCount: 2
+  disableProxyBuffering: true
+  resources:
+    requests:
+      cpu: "4"
+      memory: "4Gi"
+    limits:
+      # cpu: "12"
+      memory: "8Gi"
+
+postgresql:
+  postgresqlExtendedConf:
+    maxConnections: "2500"
+  primary:
+    affinity:
+      # Require PostgreSQL pod to run on a different node than Artifactory pods
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - artifactory
+            topologyKey: kubernetes.io/hostname
+  resources:
+    requests:
+      memory: 128Gi
+      cpu: "32"
+    limits:
+      memory: 128Gi
+      # cpu: "64"
