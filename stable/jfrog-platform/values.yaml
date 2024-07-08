@@ -247,6 +247,8 @@ artifactory:
     enabled: true
   artifactory:
     unifiedSecretInstallation: true
+    ## unifiedSecretPrependReleaseName Set this flag to false if unifiedSecret should not be created with <release-name> prepended.
+    unifiedSecretPrependReleaseName: true
     # Note: For HA deployments, set replicaCount >1 (recommended 3)
     replicaCount: 1
     migration:

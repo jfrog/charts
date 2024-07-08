@@ -491,3 +491,14 @@ Calculate the systemYaml from the unstructured text input
 {{- define "artifactory.systemYaml" -}}
 {{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
 {{- end -}}
+
+{{/*
+Resolve unified secret prepend release name
+*/}}
+{{- define "artifactory.unifiedSecretPrependReleaseName" -}}
+{{- if .Values.artifactory.unifiedSecretPrependReleaseName }}
+{{- printf "%s" (include "artifactory-ha.fullname" .) -}}
+{{- else }}
+{{- printf "%s" (include "artifactory-ha.name" .) -}}
+{{- end }}
+{{- end }}

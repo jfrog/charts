@@ -38,6 +38,7 @@ spec:
     metadata:
       labels:
         app: {{ template "xray.name" . }}
+        chart: {{ template "xray.chart" . }}
         release: {{ .Release.Name }}
         component: {{ .Values.xray.name }}
     {{- with .Values.xray.labels }}

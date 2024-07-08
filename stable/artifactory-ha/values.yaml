@@ -48,7 +48,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.3.1552
+    tag: 9.4.949
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -345,6 +345,8 @@ artifactory:
   # unifiedSecretInstallation flag enables single unified secret holding all the artifactory-ha internal(chart) secrets, It won't be affecting external secrets.
   ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 107.78.x, Users can switch to false to continue with the old way of secret creation.
   unifiedSecretInstallation: true
+  ## unifiedSecretPrependReleaseName Set this flag to false if unifiedSecret should not be created with <release-name> prepended.
+  unifiedSecretPrependReleaseName: true
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-pro
@@ -536,7 +538,7 @@ artifactory:
   #        cpu: "100m"
 
   ## Add custom volumes
-  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory-ha.fullname" . }}-unified-secret'.
+  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret'.
   customVolumes: ""
   #  - name: custom-script
   #    configMap:
@@ -585,7 +587,7 @@ artifactory:
   # jfConnectTokenSecretName:
 
   # Add custom secrets - secret per file
-  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory-ha.fullname" . }}-unified-secret' common to all secrets
+  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret' common to all secrets
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml

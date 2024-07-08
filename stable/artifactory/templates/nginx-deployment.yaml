@@ -79,6 +79,8 @@ spec:
         - >
           rm -rfv {{ .Values.nginx.persistence.mountPath }}/lost+found;
           mkdir -p {{ .Values.nginx.persistence.mountPath }}/logs;
+        resources:
+          {{- toYaml .Values.initContainers.resources | nindent 10 }}
         volumeMounts:
         - mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
           name: nginx-volume

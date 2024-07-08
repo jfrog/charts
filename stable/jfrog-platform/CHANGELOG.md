@@ -1,6 +1,16 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.18.2] - June 12, 2024
+* Update dependency artifactory chart version to 107.84.14
+* Update dependency xray chart version to 103.96.1
+* Fixed an issue related to chart artifactory fullname
+
+## [10.18.1] - May 26, 2024
+* Update dependency artifactory chart version to 107.84.12
+* Update dependency xray chart version to 103.95.7
+* Fixed an issue related to chart fullname when unifiedSecretInstallation is set to false [GH-1882](https://github.com/jfrog/charts/issues/1882)
+
 ## [10.18.0] - May 12, 2024
 * **Important change:**
 * Distribution, Insight and Pipelines are disabled by default, if you are using these products from previous release, enable them using your custom-values.yaml file.
@@ -34,11 +44,6 @@ All changes to this chart will be documented in this file.
 ## [10.17.1] - Feb 29, 2024
 * Updated README.md to create a namespace using `--create-namespace` as part of helm install
 * Updated `artifactory.installerInfo` content
-* Update dependency artifactory chart version to 107.77.6
-* Update dependency xray chart version to 103.90.1
-* Update dependency distribution chart version to 102.22.2
-* Update dependency insight chart version to 101.16.7
-* Update dependency pipelines chart version to 101.55.6
 
 ## [10.17.0] - Jan 24, 2023
 * **IMPORTANT**

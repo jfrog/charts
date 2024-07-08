@@ -417,8 +417,8 @@
 <config version="3">
     <chain template="azure-blob-storage-v2-direct"/>
     <provider type="cache-fs" id="cache-fs">
-        <cacheProviderDir>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</cacheProviderDir> 
-        <maxCacheSize>{{ .Values.artifactory.persistence.cacheProviderDir }}</maxCacheSize>
+        <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
+        <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
         <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
         {{- end }}
