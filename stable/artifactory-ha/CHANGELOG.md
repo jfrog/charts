@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.84.14] - May 29, 2024
+## [107.84.17] - June 27, 2024
 * Added image section for `initContainers` instead of `initContainerImage`
 * Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
 * Removed loggers.image section
@@ -23,6 +23,7 @@ All changes to this chart will be documented in this file
 * Fixed resource constraints for "setup" initContainer of nginx deployment [GH-962] (https://github.com/jfrog/charts/issues/962)
 * Added .Values.artifactory.unifiedSecretsPrependReleaseName` for unified secret to prepend release name
 * Fixed maxCacheSize and cacheProviderDir mix up under azure-blob-storage-v2-direct template in binarystore.xml
+* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 
 ## [107.83.0] - Mar 12, 2024
 * Added image section for `metadata` and `observability`
