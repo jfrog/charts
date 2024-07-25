@@ -1511,12 +1511,18 @@ nginx:
         proxy_cookie_path   ~*^/.* /;
         proxy_pass          {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
         {{- if .Values.nginx.service.ssloffload}}
+        {{- if .Values.nginx.service.ssloffloadForceHttps}}
+        proxy_set_header    X-JFrog-Override-Base-Url https://$host;
+        proxy_set_header    X-Forwarded-Proto https;
+        {{- else }}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+        proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+        {{- end }}
         {{- else }}
         proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$host_port;
         proxy_set_header    X-Forwarded-Port  $server_port;
-        {{- end }}
         proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+        {{- end }}
         proxy_set_header    Host              $http_host;
         proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
         {{- if .Values.nginx.disableProxyBuffering}}
@@ -1556,6 +1562,8 @@ nginx:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
     ssloffload: false
+    ## @param service.ssloffloadForceHttps Override http_x_forwarded_proto flag for external ingress (optional, likely OpenShift specific for ClusterIP based nginx service config)
+    ssloffloadForceHttps: false
     ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
     ## This can be either SingleStack, PreferDualStack or RequireDualStack
     ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
