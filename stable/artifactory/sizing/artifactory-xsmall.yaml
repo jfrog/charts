@@ -23,10 +23,17 @@ artifactory:
   extraEnvironmentVariables:
     - name: MALLOC_ARENA_MAX
       value: "2"
-    - name : JF_SHARED_NODE_HAENABLED
-      value: "true"
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
+
+access:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1.5Gi
+    limits:
+      # cpu: 1
+      memory: 2Gi
 
 router:
   resources:
@@ -95,7 +102,7 @@ nginx:
 
 postgresql:
   postgresqlExtendedConf:
-    maxConnections: "100"
+    maxConnections: "50"
   primary:
     affinity:
       # Require PostgreSQL pod to run on a different node than Artifactory pods

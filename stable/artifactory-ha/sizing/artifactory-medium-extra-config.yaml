@@ -31,6 +31,11 @@ access:
     connector:
       maxThreads: 75
 
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=20
+      -XX:MaxRAMPercentage=60
+
   database:
     maxOpenConnections: 50
 
