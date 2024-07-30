@@ -8,6 +8,7 @@ metadata:
     chart: {{ template "xray.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    version: {{ include "xray.app.version" . }}
     component: {{ .Values.xray.name }}
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 4 }}
