@@ -283,3 +283,14 @@ Calculate the systemYaml from the unstructured text input
 {{- define "distribution.systemYaml" -}}
 {{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
 {{- end -}}
+
+{{/*
+Resolve unified secret prepend release name
+*/}}
+{{- define "distribution.unifiedSecretPrependReleaseName" -}}
+{{- if .Values.distribution.unifiedSecretPrependReleaseName }}
+{{- printf "%s" (include "distribution.fullname" .) -}}
+{{- else }}
+{{- printf "%s" (include "distribution.name" .) -}}
+{{- end }}
+{{- end }}

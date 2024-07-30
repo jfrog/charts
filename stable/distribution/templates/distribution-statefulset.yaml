@@ -127,7 +127,7 @@ spec:
             {{- if or (not .Values.distribution.unifiedSecretInstallation) (or .Values.distribution.joinKeySecretName .Values.global.joinKeySecretName) }}
               name: {{ include "distribution.joinKeySecretName" . }}
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: join-key
         {{- end }}
@@ -138,7 +138,7 @@ spec:
             {{- if or (not .Values.distribution.unifiedSecretInstallation) (or .Values.distribution.masterKeySecretName .Values.global.masterKeySecretName) }}
               name: {{ include "distribution.masterKeySecretName" . }}
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: master-key
         {{- end }}
@@ -280,7 +280,7 @@ spec:
             {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ template "distribution.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: db-user
         {{- end }}
@@ -296,7 +296,7 @@ spec:
             {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ template "distribution.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -315,7 +315,7 @@ spec:
             {{- if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ template "distribution.fullname" . }}-database-creds
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: db-url
         {{- end }}
@@ -328,7 +328,7 @@ spec:
             {{- else if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ include "distribution.fullname" . }}
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: redis-password
         - name: JF_SHARED_REDIS_CONNECTIONSTRING
@@ -453,7 +453,7 @@ spec:
             {{- else if not .Values.distribution.unifiedSecretInstallation }}
               name: {{ include "distribution.fullname" . }}
             {{- else }}
-              name: "{{ template "distribution.fullname" . }}-unified-secret"
+              name: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
             {{- end }}
               key: redis-password
         - name: REDIS_PORT
@@ -583,7 +583,8 @@ spec:
     {{- if and .Values.distribution.unifiedSecretInstallation (eq (include "distribution.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       - name: {{ include "distribution.unifiedCustomSecretVolumeName" . }}
         secret:
-          secretName: {{ template "distribution.fullname" . }}-unified-secret
+          secretName: {{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret
+
     {{- else if not .Values.distribution.unifiedSecretInstallation }}
       ############ If single secret installation flag is disable ############
       {{- if and (not .Values.systemYamlOverride.existingSecret) }}
