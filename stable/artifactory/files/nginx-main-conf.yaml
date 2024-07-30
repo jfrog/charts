@@ -1,0 +1,83 @@
+# Main Nginx configuration file
+worker_processes  4;
+
+{{- if .Values.nginx.logs.stderr }}
+error_log  stderr {{ .Values.nginx.logs.level }};
+{{- else -}}
+error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ .Values.nginx.logs.level }};
+{{- end }}
+pid        /var/run/nginx.pid;
+
+{{- if .Values.artifactory.ssh.enabled }}
+## SSH Server Configuration
+stream {
+  server {
+    {{- if .Values.nginx.singleStackIPv6Cluster }}
+    listen [::]:{{ .Values.nginx.ssh.internalPort }};
+    {{- else -}}
+    listen {{ .Values.nginx.ssh.internalPort }};
+    {{- end }}
+    proxy_pass {{ include "artifactory.fullname" . }}:{{ .Values.artifactory.ssh.externalPort }};
+  }
+}
+{{- end }}
+
+events {
+  worker_connections  1024;
+}
+
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+
+  variables_hash_max_size 1024;
+  variables_hash_bucket_size 64;
+  server_names_hash_max_size 4096;
+  server_names_hash_bucket_size 128;
+  types_hash_max_size 2048;
+  types_hash_bucket_size 64;
+  proxy_read_timeout 2400s;
+  client_header_timeout 2400s;
+  client_body_timeout 2400s;
+  proxy_connect_timeout 75s;
+  proxy_send_timeout 2400s;
+  proxy_buffer_size 128k;
+  proxy_buffers 40 128k;
+  proxy_busy_buffers_size 128k;
+  proxy_temp_file_write_size 250m;
+  proxy_http_version 1.1;
+  client_body_buffer_size 128k;
+
+  log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+  '$status $body_bytes_sent "$http_referer" '
+  '"$http_user_agent" "$http_x_forwarded_for"';
+
+  log_format timing 'ip = $remote_addr '
+  'user = \"$remote_user\" '
+  'local_time = \"$time_local\" '
+  'host = $host '
+  'request = \"$request\" '
+  'status = $status '
+  'bytes = $body_bytes_sent '
+  'upstream = \"$upstream_addr\" '
+  'upstream_time = $upstream_response_time '
+  'request_time = $request_time '
+  'referer = \"$http_referer\" '
+  'UA = \"$http_user_agent\"';
+
+  {{- if .Values.nginx.logs.stdout }}
+  access_log /dev/stdout timing;
+  {{- else -}}
+  access_log {{ .Values.nginx.persistence.mountPath }}/logs/access.log timing;
+  {{- end }}
+
+  sendfile        on;
+  #tcp_nopush     on;
+
+  keepalive_timeout  65;
+
+  #gzip  on;
+
+  include /etc/nginx/conf.d/*.conf;
+
+}

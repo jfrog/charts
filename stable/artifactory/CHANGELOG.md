@@ -1,7 +1,38 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.84.17] - June 27, 2024
+## [107.90.5] - July 18, 2024
+* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
+* Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
+* Added a deprecation notice of ingress.hosts when `ngnix.enabled` is true
+* Added new evidence service
+* Corrected database connection values based on sizing
+* **IMPORTANT**
+* Separate access from artifactory tomcat to run on its own dedicated tomcat
+  * With this change access will be running in its own dedicated container
+  * This will give the ability to control resources and java options specific to access
+    Can be done by passing the following,
+    `access.javaOpts.other`
+    `access.resources`
+    `access.extraEnvironmentVariables`
+* Updating the example link for downloading the DB driver
+* Added Binary Provider recommendations
+
+## [107.89.0] - June 7, 2024
+* Fix the indentation of the commented-out sections in the values.yaml file
+* Fixed sizing values by removing `JF_SHARED_NODE_HAENABLED` in xsmall/small configurations
+
+## [107.88.0] - May 29, 2024
+* **IMPORTANT**
+* Refactored `nginx.artifactoryConf` and `nginx.mainConf` configuration (moved to files/nginx-artifactory-conf.yaml  and files/nginx-main-conf.yaml instead of keys in values.yaml)
+
+## [107.87.0] - May 29, 2024
+* Renamed `.Values.artifactory.openMetrics` to `.Values.artifactory.metrics`
+
+## [107.85.0] - May 29, 2024
+* Changed `migration.enabled` to false by default. For 6.x to 7.x migration, this flag needs to be set to `true`
+
+## [107.84.0] - May 29, 2024
 * Added image section for `initContainers` instead of `initContainerImage`
 * Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
 * Removed image section for `loggers`
@@ -14,14 +45,13 @@ All changes to this chart will be documented in this file.
 * Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
 * Renamed `artifactory.seLinuxOptions` to `artifactory.podSecurityContext.seLinuxOptions`
 * Added flag `allowNonPostgresql` defaults to false
-* Update postgresql tag version to `15.6.0-debian-11-r16`
+* Update postgresql tag version to `15.6.0-debian-12-r5`
 * Added a check if `initContainerImage` exists
 * Fixed an issue to generate unified secret to support artifactory fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
 * Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
 * Fixed resource constraints for "setup" initContainer of nginx deployment [GH-962] (https://github.com/jfrog/charts/issues/962)
 * Added .Values.artifactory.unifiedSecretPrependReleaseName` for unified secret to prepend release name
 * Fixed maxCacheSize and cacheProviderDir mix up under azure-blob-storage-v2-direct template in binarystore.xml
-* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 
 ## [107.82.0] - Mar 04, 2024
 * Added `disableRouterBypass` flag as experimental feature, to disable the artifactoryPath /artifactory/ and route all traffic through the Router.
