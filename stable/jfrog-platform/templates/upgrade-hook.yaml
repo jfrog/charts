@@ -1,5 +1,5 @@
 {{- if .Values.preUpgradeHook.enabled }}
-{{- if not (and .Values.insight.enabled .Values.pipelines.enabled .Values.distribution.enabled) }}
+{{- if not (and .Values.insight.enabled .Values.pipelines.enabled .Values.distribution.enabled .Values.artifactory.mc.enabled) }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -34,6 +34,13 @@ rules:
     - pods
   verbs:
     - create
+    - get
+    - list
+- apiGroups:
+    - ""
+  resources:
+    - secrets
+  verbs:
     - get
     - list
 ---
@@ -129,6 +136,32 @@ spec:
                 else
                     echo "Pipelines pod(s) don't exist. Allowing upgrade"
                 fi
+                {{- end }}
+
+                {{- if not .Values.artifactory.mc.enabled }}
+                    systemYamlUnifiedSecret={{ .Release.Name }}-artifactory-unified-secret
+                    systemYamlSecret={{ .Release.Name }}-artifactory-systemyaml
+                    systemYamlEncoded=$(kubectl get secrets "$systemYamlUnifiedSecret" -o jsonpath="{.data.system\.yaml}")
+                    if [ $? -ne 0 ]; then
+                      systemYamlEncoded=$(kubectl get secrets "$systemYamlSecret" -o jsonpath="{.data.system\.yaml}")
+                      if [ $? -ne 0 ]; then
+                        systemYamlEncoded=$(kubectl get secrets "artifactory-unified-secret" -o jsonpath="{.data.system\.yaml}")
+                        if [ $? -ne 0 ]; then
+                          echo "Error: Secret '$systemYamlSecret' or '$systemYamlUnifiedSecret' or "artifactory-unified-secret" not found"
+                          exit 1
+                        fi
+                      fi
+                    fi
+                    systemYaml=$(echo "$systemYamlEncoded" | base64 -d)
+                    isMcEnabled=$(echo "$systemYaml" | awk 'BEGIN {flag=0} /^mc:/ {flag=1} flag && /^  enabled: / {print $2; exit} /^[^ ]/ && !/^mc:/ {if (flag) flag=0}')
+                    if [ "$isMcEnabled" = "true" ]; then
+                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
+                      echo "From chart verison 10.19.x, Artifactory's Mission Control is disabled. If you are using this in the previous release(s)."
+                      echo "Enable them using your custom-values.yaml file "
+                      exit 1
+                    else
+                      echo "Artifactory's Mission Control is not enabled. Allowing upgrade"
+                    fi
                 {{- end }}
       restartPolicy: Never
       terminationGracePeriodSeconds: 10
