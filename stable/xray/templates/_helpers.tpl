@@ -466,6 +466,14 @@ Return the proper xray chart image names
 {{- end -}}
 
 {{/*
+Return the proper xray app version
+*/}}
+{{- define "xray.app.version" -}}
+{{- $tag := (splitList ":" ((include "xray.getImageInfoByValue" (list . "server" )))) | last | toString -}}
+{{- printf "%s" $tag -}}
+{{- end -}}
+
+{{/*
 Return the registry of a service
 */}}
 {{- define "xray.getRegistryByService" -}}
