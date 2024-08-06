@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.19.1] - Aug 6, 2024
+* Update dependency artifactory chart version to 107.90.6
+* Update dependency xray chart version to 103.101.5
+
 ## [10.19.0] - Jul 25, 2024
 * **Important change:**
 * Mission Control is also disabled by default now, if you are using this product from previous release, enable them using your custom-values.yaml file.
