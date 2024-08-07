@@ -6,13 +6,7 @@ shared:
   jfrogColdStorage:
     coldInstanceEnabled: true
 {{- end }}
-{{- if  .Values.artifactory.openMetrics.enabled }}
-  metrics:
-    enabled: true
-  {{- if .Values.artifactory.openMetrics.filebeat.enabled }}
-    filebeat: {{ toYaml .Values.artifactory.openMetrics.filebeat | nindent 6 }}
-  {{- end }}
-{{- end }}
+{{ tpl (include "artifactory.metrics" .) . }}
   logging:
     consoleLog:
       enabled: {{ .Values.artifactory.consoleLog }}
@@ -87,8 +81,21 @@ frontend:
   session:
     timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
 access:
+  runOnArtifactoryTomcat: {{ .Values.access.runOnArtifactoryTomcat | default false }}
   database:
     maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
+  {{- if not (.Values.access.runOnArtifactoryTomcat | default false) }}
+  extraJavaOpts: >
+  {{- if .Values.splitServicesToContainers }}
+    -XX:InitialRAMPercentage=20
+    -XX:MaxRAMPercentage=70
+  {{- end }}
+  {{- with .Values.access.javaOpts }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
   tomcat:
     connector:
       maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
@@ -139,4 +146,11 @@ federation:
 {{- if .Values.event.webhooks }}
 event:
   webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
+{{- end }}
+{{- if .Values.evidence.enabled }}
+evidence:
+  enabled: true
+{{- else }}
+evidence:
+  enabled: false
 {{- end }}

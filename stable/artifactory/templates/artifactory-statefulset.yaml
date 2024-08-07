@@ -8,6 +8,7 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
+    version: {{ include "artifactory.app.version" . }}
 {{- with .Values.artifactory.labels }}
 {{ toYaml . | indent 4 }}
 {{- end }}
@@ -590,6 +591,100 @@ spec:
 {{ tpl .Values.frontend.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
+      {{- if .Values.evidence.enabled }}
+      - name: {{ .Values.evidence.name }}
+        image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+          exec /opt/jfrog/artifactory/app/evidence/bin/jf-evidence start
+        {{- with .Values.evidence.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+{{- with .Values.evidence.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.evidence.internalPort }}
+          name: http-evidence
+        - containerPort: {{ .Values.evidence.externalPort }}
+          name: grpc-evidence
+        volumeMounts:
+        - name: artifactory-volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.evidence.resources | indent 10 }}
+      {{- if .Values.evidence.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.evidence.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.evidence.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.evidence.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
       {{- if .Values.metadata.enabled }}
       - name: {{ .Values.metadata.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
@@ -758,6 +853,139 @@ spec:
 {{ tpl .Values.jfconnect.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
+      {{- if and .Values.access.enabled (not (.Values.access.runOnArtifactoryTomcat | default false)) }}
+      - name: {{ .Values.access.name }}
+        image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
+      {{- if .Values.access.resources }}
+        resources:
+{{ toYaml .Values.access.resources | indent 10 }}
+      {{- end }}
+        command:
+        - '/bin/bash'
+        - '-c'
+        - >
+          set -e;
+          {{- if .Values.access.preStartCommand }}
+          echo "Running custom preStartCommand command";
+          {{ tpl .Values.access.preStartCommand . }};
+          {{- end }}
+          exec /opt/jfrog/artifactory/app/access/bin/entrypoint-access.sh
+        {{- with .Values.access.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+      {{- if and (gt (.Values.artifactory.replicaCount | int64) 1) (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false") }}
+        - name : JF_SHARED_NODE_HAENABLED
+          value: "true"
+      {{- end }}
+      {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+      {{- end }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+{{- with .Values.access.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+      {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+      {{- end }}
+        - name: artifactory-volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+
+      ######################## Artifactory persistence nfs ##########################
+      {{- if eq .Values.artifactory.persistence.type "nfs" }}
+        - name: artifactory-data
+          mountPath: "{{ .Values.artifactory.persistence.nfs.dataDir }}"
+        - name: artifactory-backup
+          mountPath: "{{ .Values.artifactory.persistence.nfs.backupDir }}"
+      {{- else }}
+
+      ######################## Artifactory persistence googleStorage ##########################
+      {{- if .Values.artifactory.persistence.googleStorage.gcpServiceAccount.enabled }}
+        {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.googleStorage.gcpServiceAccount.customSecretName }}
+        - name: gcpcreds-json
+        {{- else }}
+        - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
+        {{- end }}
+          mountPath: "/artifactory_bootstrap/gcp.credentials.json"
+          subPath: gcp.credentials.json
+      {{- end }}
+      {{- end }}
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+      {{- if .Values.access.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.access.startupProbe.config . | indent 10 }}
+        {{- end }}
+    {{- if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}   
+        {{- if .Values.access.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.access.readinessProbe.config . | indent 10 }}
+        {{- end }}
+    {{- end }}
+      {{- if .Values.access.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.access.livenessProbe.config . | indent 10 }}
+        {{- end }}
+      {{- end }}
       {{- if and .Values.federation.enabled .Values.federation.embedded (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
       - name: {{ .Values.federation.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
@@ -918,6 +1146,12 @@ spec:
           value: "false"
         - name : JF_JFCONNECT_SERVICE_ENABLED
           value: "false"
+        - name : JF_EVIDENCE_ENABLED
+          value: "false"
+        {{- if not (.Values.access.runOnArtifactoryTomcat | default false) }}
+        - name : JF_ACCESS_ENABLED
+          value: "false"
+        {{- end}}
       {{- end}}
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
