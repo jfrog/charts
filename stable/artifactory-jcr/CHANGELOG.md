@@ -1,7 +1,7 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.90.6] - Feb 20, 2024
+## [107.90.7] - Feb 20, 2024
 * Updated `artifactory.installerInfo` content
 
 ## [107.80.0] - Feb 1, 2024
