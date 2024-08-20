@@ -69,7 +69,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.4.949
+    tag: 9.4.949.1716471857
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -931,11 +931,9 @@ analysis:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.analysis.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -945,11 +943,9 @@ analysis:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.analysis.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.analysis.internalPort }}
       initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 30
       periodSeconds: 5
@@ -1126,11 +1122,9 @@ indexer:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.indexer.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1140,11 +1134,9 @@ indexer:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.indexer.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.indexer.internalPort }}
       initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 30
       periodSeconds: 5
@@ -1191,11 +1183,9 @@ persist:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.persist.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1205,11 +1195,9 @@ persist:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.persist.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.persist.internalPort }}
       initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 30
       periodSeconds: 5
@@ -1272,11 +1260,9 @@ server:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.server.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1286,11 +1272,9 @@ server:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.server.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.server.internalPort }}
       initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 30
       periodSeconds: 5
@@ -1322,7 +1306,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.108.0
+    tag: 7.118.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1359,11 +1343,10 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+      httpGet:
+        path: /router/api/v1/system/liveness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "xray.scheme" . | upper }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1372,12 +1355,11 @@ router:
 
   readinessProbe:
     enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+    config: | 
+      httpGet:
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "xray.scheme" . | upper}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1387,11 +1369,10 @@ router:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "xray.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+      httpGet:
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "xray.scheme" . | upper }}
       initialDelaySeconds: 30
       failureThreshold: 30
       periodSeconds: 5
@@ -1408,7 +1389,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.28.0
+    tag: 1.30.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1432,11 +1413,10 @@ observability:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: observability/api/v1/system/liveness
+        port: 8082
+        scheme: {{ include "xray.scheme" . | upper}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1446,11 +1426,10 @@ observability:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: observability/api/v1/system/readiness
+        port: 8082
+        scheme: {{ include "xray.scheme" . | upper}}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5

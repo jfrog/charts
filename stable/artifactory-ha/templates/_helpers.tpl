@@ -321,8 +321,7 @@ Return the proper artifactory chart image names
 Return the proper artifactory app version
 */}}
 {{- define "artifactory-ha.app.version" -}}
-{{- $image := split ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory")) | toString) -}}
-{{- $tag := $image._1 -}}
+{{- $tag := (splitList ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory" )))) | last | toString -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
 
@@ -367,6 +366,9 @@ Resolve requiredServiceTypes value
 {{- end -}}
 {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
+{{- end -}}
+{{- if .Values.evidence.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevd" -}}
 {{- end -}}
 {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
@@ -493,6 +495,44 @@ Calculate the systemYaml from the unstructured text input
 {{- end -}}
 
 {{/*
+Metrics enabled
+*/}}
+{{- define "metrics.enabled" -}}
+shared:
+  metrics:
+    enabled: true
+{{- end }}
+
+{{/*
+Resolve artifactory metrics
+*/}}
+{{- define "artifactory.metrics" -}}
+{{- if .Values.artifactory.openMetrics -}} 
+{{- if .Values.artifactory.openMetrics.enabled -}}
+{{ include "metrics.enabled" . }}
+{{- if .Values.artifactory.openMetrics.filebeat }}
+{{- if .Values.artifactory.openMetrics.filebeat.enabled }}
+{{ include "metrics.enabled" . }}
+    filebeat:
+{{ tpl (.Values.artifactory.openMetrics.filebeat | toYaml) . | indent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else if .Values.artifactory.metrics -}}
+{{- if .Values.artifactory.metrics.enabled -}}
+{{ include "metrics.enabled" . }}
+{{- if .Values.artifactory.metrics.filebeat }}
+{{- if .Values.artifactory.metrics.filebeat.enabled }}
+{{ include "metrics.enabled" . }}
+    filebeat:
+{{ tpl (.Values.artifactory.metrics.filebeat | toYaml) . | indent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve unified secret prepend release name
 */}}
 {{- define "artifactory.unifiedSecretPrependReleaseName" -}}
@@ -502,3 +542,22 @@ Resolve unified secret prepend release name
 {{- printf "%s" (include "artifactory-ha.name" .) -}}
 {{- end }}
 {{- end }}
+
+{{/*
+Resolve nginx hosts value
+*/}}
+{{- define "artifactory.nginx.hosts" -}}
+{{- if .Values.ingress.hosts }}
+{{- range .Values.ingress.hosts -}}
+  {{- if contains "." . -}}
+    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+  {{- end -}}
+{{- end -}}
+{{- else if .Values.nginx.hosts }}
+{{- range .Values.nginx.hosts -}}
+  {{- if contains "." . -}}
+    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
