@@ -28,6 +28,13 @@ The xray-panoramic name
 {{- end -}}
 
 {{/*
+The xray-policyenforcer name
+*/}}
+{{- define "xray-policyenforcer.name" -}}
+{{- default .Chart.Name .Values.panoramic.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The xray-indexer name
 */}}
 {{- define "xray-indexer.name" -}}

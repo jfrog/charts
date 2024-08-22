@@ -27,10 +27,10 @@ spec:
 {{- if not .Values.autoscalingServer.enabled }}
   replicas: {{ .Values.replicaCountServer }}
 {{- end }}
+{{- with .Values.deployment.strategy }}
   strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxUnavailable: 1
+{{ toYaml . | indent 4 }}
+{{- end }}
   selector:
     matchLabels:
       app: {{ template "xray.name" . }}

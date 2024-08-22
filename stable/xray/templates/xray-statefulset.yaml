@@ -296,7 +296,7 @@ spec:
               key: rabbitmq-password
       {{- end }}
         - name: JF_SHARED_RABBITMQ_REPLICASCOUNT
-      {{- if .Values.rabbitmq.enabled }}  
+      {{- if .Values.rabbitmq.enabled }}
           value: "{{ .Values.rabbitmq.replicaCount }}"
       {{- else }}
           value: "{{ .Values.global.xray.rabbitmq.replicaCount }}"
@@ -1055,6 +1055,167 @@ spec:
 {{- if .Values.panoramic.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.panoramic.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- end }}
+{{- if .Values.policyenforcer.enabled }}
+      - name: {{ .Values.policyenforcer.name }}
+        image: {{ include "xray.getImageInfoByValue" (list . "policyenforcer") }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.xrayUserId }}
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - NET_RAW
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.policyenforcer.preStartCommand }}
+            echo "Running custom policyenforcer preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.policyenforcer.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+          - name: JF_SHARED_RABBITMQ_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+                key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+          - name: JF_SHARED_RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+                key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+          - name: JF_SHARED_RABBITMQ_URL
+            valueFrom:
+              secretKeyRef:
+                name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+                key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: postgresql-password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+        - name: JF_SHARED_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
+      {{- end }}
+        - name: XRAY_HA_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: XRAY_K8S_ENV
+          value: "true"
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.indexer.extraEnvVars }}
+        {{- tpl .Values.indexer.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        ports:
+          - containerPort: {{ .Values.policyenforcer.internalPort }}
+            name: http-polenf
+        volumeMounts:
+          - name: data-volume
+            mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
+{{- end }}
+{{- with .Values.sbom.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.policyenforcer.resources | indent 10 }}
+{{- if .Values.policyenforcer.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.policyenforcer.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.policyenforcer.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.policyenforcer.livenessProbe.config . | indent 10 }}
 {{- end }}
 {{- end }}
       - name: {{ .Values.indexer.name }}
