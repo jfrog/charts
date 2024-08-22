@@ -54,6 +54,12 @@ global:
         waitForPreviousPodsOnInitialStartup: true
         vhost: xray_haq
 
+deployment:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+
 ## String to partially override xray.fullname template (will maintain the release name)
 ##
 # nameOverride:
@@ -337,7 +343,7 @@ autoscaling:
         value: "100"
       - name: persist
         value: "100"
-      - name: alert
+      - name: policyEnforcer
         value: "100"
       - name: impactAnalysis
         value: "100"
@@ -1091,6 +1097,70 @@ panoramic:
   #    memory: "2Gi"
   #    cpu: "1"
 
+policyenforcer:
+  enabled: false
+  name: xray-policyenforcer
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-policyenforcer
+  internalPort: 7009
+  externalPort: 7009
+  annotations: {}
+  extraEnvVars:
+
+  # Add lifecycle hooks for the indexer pod
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.policyenforcer.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.policyenforcer.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1" 
+
 
 indexer:
   name: xray-indexer
@@ -1306,7 +1376,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.118.0
+    tag: 7.124.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1572,7 +1642,7 @@ autoscalingServer:
    pollingInterval: 10
    cooldownPeriod: 10
    queues:
-     - name: alert
+     - name: policyEnforcer
        value: "100"
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
@@ -1610,5 +1680,7 @@ autoscalingIpa:
      - name: persist
        value: "100"
      - name: impactAnalysis
+       value: "100"
+     - name: policyEnforcer
        value: "100"
 ###################################################################################

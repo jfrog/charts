@@ -52,7 +52,7 @@ helm upgrade --install xray --set xray.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_K
 To apply the chart with recommended sizing configurations :
 For small configurations :
 ```bash
-helm upgrade --install xray jfrog/xray -f sizing/xray-small.yaml --namespace xray --create-namespace
+helm upgrade --install xray jfrog/xray -f sizing/xray-sizing-small.yaml --namespace xray --create-namespace
 ```
 
 ## Uninstalling Xray
