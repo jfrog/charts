@@ -76,6 +76,9 @@ spec:
       {{- with .Values.xray.annotations }}
 {{ toYaml . | indent 8 }}
       {{- end }}
+        {{- with .Values.policyenforcer.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
     spec:
     {{- if .Values.xray.schedulerName }}
       schedulerName: {{ .Values.xray.schedulerName | quote }}
