@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.90.9] - July 18, 2024
+## [107.90.10] - July 18, 2024
 * Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 * Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
 * Added a deprecation notice of ingress.hosts when `ngnix.enabled` is true
