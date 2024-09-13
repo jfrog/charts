@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.19.6] - Sep 13, 2024
+* Setup postgres script default on fourth argument if no CHART_NAME variable is defined.
+
 ## [10.19.5] - Sep 11, 2024
 * Update dependency artifactory chart version to 107.90.10
 * Update dependency xray chart version to 103.104.8
