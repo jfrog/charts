@@ -1481,6 +1481,10 @@ nginx:
     ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
     ## This can be either SingleStack, PreferDualStack or RequireDualStack
     ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+
+    ## @param service.ssloffloadForceHttps Override http_x_forwarded_proto flag for external ingress (optional, likely OpenShift specific for ClusterIP based nginx service config)
+    ssloffloadForceHttps: false
+
     ##
     ipFamilyPolicy: ""
     ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)

@@ -1628,6 +1628,8 @@ nginx:
     ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
     ## This can be either SingleStack, PreferDualStack or RequireDualStack
     ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+
+    ssloffloadForceHttps: false
     ##
     ipFamilyPolicy: ""
     ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)
