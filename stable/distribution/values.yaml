@@ -1,7 +1,7 @@
-# Default values for distribution.
-# This is a YAML-formatted file.
-# Beware when changing values here. You should know what you are doing!
-# Access the values with {{ .Values.key.subkey }}
+## Default values for distribution.
+## This is a YAML-formatted file.
+## Beware when changing values here. You should know what you are doing!
+## Access the values with {{ .Values.key.subkey }}
 
 global:
   # imageRegistry:
@@ -12,6 +12,7 @@ global:
   versions: {}
   # distribution:
   # router:
+  # initContainers:
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -36,15 +37,18 @@ global:
   ## Applies to distribution pods
   nodeSelector: {}
 ## String to partially override distribution.fullname template (will maintain the release name)
-##
 # nameOverride:
 
 ## String to fully override distribution.fullname template
-##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.1.0.1793
-# Init containers
+
+## Init containers
 initContainers:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.4.949.1716471857
+    pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "50Mi"
@@ -52,7 +56,7 @@ initContainers:
     limits:
       memory: "1Gi"
       cpu: "1"
-# For supporting pulling from private registries
+## For supporting pulling from private registries
 imagePullSecrets:
 # - myRegistryKeySecretName
 
@@ -67,7 +71,7 @@ systemYamlOverride:
   existingSecret:
   ## The dataKey should be the name of the secret data key created.
   dataKey:
-# For HA
+## For HA
 replicaCount: 1
 ## Database configurations
 ## Use the wait-for-db init container. Set to false to skip
@@ -90,7 +94,7 @@ rbac:
           - watch
           - list
 networkpolicy: []
-# Allows all ingress and egress
+## Allows all ingress and egress
 # - name: distribution
 #   podSelector:
 #     matchLabels:
@@ -99,7 +103,7 @@ networkpolicy: []
 #     - {}
 #   ingress:
 #     - {}
-# Uncomment to allow only distribution pods to communicate with postgresql (if postgresql.enabled is true)
+## Uncomment to allow only distribution pods to communicate with postgresql (if postgresql.enabled is true)
 # - name: postgres
 #   podSelector:
 #     matchLabels:
@@ -109,7 +113,7 @@ networkpolicy: []
 #     - podSelector:
 #         matchLabels:
 #           app: distribution
-# Uncomment to allow only distribution pods to communicate with redis
+## Uncomment to allow only distribution pods to communicate with redis
 # - name: redis
 #   podSelector:
 #     matchLabels:
@@ -130,7 +134,23 @@ serviceAccount:
   name:
   ## Explicitly mounts the API credentials for the Service Account
   automountServiceAccountToken: false
-# PostgreSQL
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## Disable containerSecurityContext for openshift
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
+## Disable podSecurityContext for openshift
+podSecurityContext:
+  enabled: true
+  runAsUser: 1020
+  runAsGroup: 1020
+  fsGroup: 1020
+  # fsGroupChangePolicy: "Always"
+## PostgreSQL
 ## Configuration values for the PostgreSQL dependency sub-chart
 ## ref: https://github.com/bitnami/charts/blob/master/bitnami/postgresql/README.md
 postgresql:
@@ -138,7 +158,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.10.0-debian-11-r14
+    tag: 15.6.0-debian-11-r16
   postgresqlUsername: distribution
   postgresqlPassword: ""
   postgresqlDatabase: distribution
@@ -160,12 +180,17 @@ postgresql:
     affinity: {}
     tolerations: []
   resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "250m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
+  ## Disable SecurityContext and containerSecurityContext for openshift
+  securityContext:
+    enabled: true
+  containerSecurityContext:
+    enabled: true
+    # requests:
+    #   memory: "1Gi"
+    #   cpu: "250m"
+    # limits:
+    #   memory: "2Gi"
+    #   cpu: "1"
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom/external database details here
 database:
@@ -179,15 +204,15 @@ database:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
-  #  user:
-  #    name: "dis-database-creds"
-  #    key: "db-user"
-  #  password:
-  #    name: "dis-database-creds"
-  #    key: "db-password"
-  #  url:
-  #    name: "dis-database-creds"
-  #    key: "db-url"
+  # user:
+  #   name: "dis-database-creds"
+  #   key: "db-user"
+  # password:
+  #   name: "dis-database-creds"
+  #   key: "db-password"
+  # url:
+  #   name: "dis-database-creds"
+  #   key: "db-url"
 ## Configuration values for the redis dependency
 ## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
 ##
@@ -195,13 +220,12 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 7.2.0-debian-11-r2
+    tag: 7.2.4-debian-11-r5
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
   ## Alternatively, you can use a pre-existing secret with a key called redis-password by specifying existingSecret
   # existingSecret: <name-of-existing-secret>
-  uid: 1001
   disableCommands: "FLUSHDB,FLUSHALL"
   persistence:
     enabled: true
@@ -212,23 +236,24 @@ redis:
     ## If defined, PVC must be created manually before volume will be bound
     # existingClaim:
     accessMode: ReadWriteOnce
+  ## Disable containerSecurityContext for openshift
+  containerSecurityContext:
+    enabled: true
+    runAsUser: 1001
+    runAsGroup: 0
   resources: {}
-  #  requests:
-  #    memory: "256Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "250m"
+  # requests:
+  #   memory: "256Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "2Gi"
+  #   cpu: "250m"
 
   nodeSelector: {}
   tolerations: []
   affinity: {}
 common:
-  uid: 1020
-  gid: 1020
-  # fsGroupChangePolicy: "Always"
-
-  # Spread Distribution pods evenly across your nodes or some other topology
+  ## Spread Distribution pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
   # - maxSkew: 1
   #   topologyKey: kubernetes.io/hostname
@@ -242,97 +267,87 @@ common:
   ## Custom command to run before distribution startup. Runs BEFORE any microservice-specific preStartCommand
   preStartCommand:
   ## Add custom volumes
-  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
-  customVolumes: ""
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
+  ## If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret'.
+  customVolumes: |
+    # - name: custom-script
+    #   configMap:
+    #     name: custom-script
   ## Add custom volumesMounts
-  customVolumeMounts: ""
-  #  - name: custom-script
-  #    mountPath: /scripts/script.sh
-  #    subPath: script.sh
-
-  # Add any list of configmaps to distribution
-  configMaps: ""
-  #  posthook-start.sh: |-
-  #    echo "This is a post start script"
-  #  posthook-end.sh: |-
-  #    echo "This is a post end script"
-
+  customVolumeMounts: |
+    # - name: custom-script
+    #   mountPath: /scripts/script.sh
+    #   subPath: script.sh
+  ## Add any list of configmaps to distribution
+  configMaps: |
+    # posthook-start.sh: |-
+    #   echo "This is a post start script"
+    # posthook-end.sh: |-
+    #   echo "This is a post end script"
   ## Add custom init containers execution before predefined init containers
-  customInitContainersBegin: ""
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: distribution-data
-
+  customInitContainersBegin: |
+    # - name: "custom-setup"
+    #   image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+    #   imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     allowPrivilegeEscalation: false
+    #     capabilities:
+    #       drop:
+    #         - NET_RAW
+    #   command:
+    #     - 'sh'
+    #     - '-c'
+    #     - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
+    #   volumeMounts:
+    #     - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+    #       name: distribution-data
   ## Add custom init containers execution after predefined init containers
-  customInitContainers: ""
-  #  - name: "custom-systemyaml-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.distribution.image.pullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'curl -o {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: distribution-data
-
+  customInitContainers: |
+    # - name: "custom-systemyaml-setup"
+    #   image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+    #   imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     allowPrivilegeEscalation: false
+    #     capabilities:
+    #       drop:
+    #         - NET_RAW
+    #   command:
+    #     - 'sh'
+    #     - '-c'
+    #     - 'curl -o {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+    #   volumeMounts:
+    #     - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+    #       name: distribution-data
   ## Add custom sidecar containers
-  # - The provided example uses a custom volume (customVolumes)
-  customSidecarContainers: ""
-  #  - name: "sidecar-list-etc"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'sh /scripts/script.sh'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
-  #        name: volume
-  #      - mountPath: "/scripts/script.sh"
-  #        name: custom-script
-  #        subPath: script.sh
-  #    resources:
-  #      requests:
-  #        memory: "32Mi"
-  #        cpu: "50m"
-  #      limits:
-  #        memory: "128Mi"
-  #        cpu: "100m"
-logger:
-  image:
-    registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.1.0.1793
+  ## - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+    # - name: "sidecar-list-etc"
+    #   image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+    #   imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     allowPrivilegeEscalation: false
+    #     capabilities:
+    #       drop:
+    #         - NET_RAW
+    #   command:
+    #     - 'sh'
+    #     - '-c'
+    #     - 'sh /scripts/script.sh'
+    #   volumeMounts:
+    #     - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
+    #       name: volume
+    #     - mountPath: "/scripts/script.sh"
+    #       name: custom-script
+    #       subPath: script.sh
+    #   resources:
+    #     requests:
+    #       memory: "32Mi"
+    #       cpu: "50m"
+    #     limits:
+    #       memory: "128Mi"
+    #       cpu: "100m"
 distribution:
   name: distribution
   ## Note that by default we use appVersion to get image tag/version
@@ -340,13 +355,16 @@ distribution:
     registry: releases-docker.jfrog.io
     repository: jfrog/distribution-distribution
     # tag:
-    imagePullPolicy: IfNotPresent
-  # unifiedSecretInstallation flag enables single unified secret holding all the distribution secrets
+    pullPolicy: IfNotPresent
+  ## unifiedSecretInstallation flag enables single unified secret holding all the distribution internal(chart) secrets, It won't be affecting external secrets.
+  ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 102.23.0, Users can switch to false to continue with the old way of secret creation.
   unifiedSecretInstallation: true
+  ## unifiedSecretPrependReleaseName Set this flag to false if unifiedSecret should not be created with <release-name> prepended.
+  unifiedSecretPrependReleaseName: true
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
-  # Create a priority class for the Distribution pod or use an existing one
-  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  ## Create a priority class for the Distribution pod or use an existing one
+  ## NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
     create: false
     value: 1000000000
@@ -355,7 +373,7 @@ distribution:
     ## Use an existing priority class
     # existingPriorityClass:
   labels: {}
-  # Add lifecycle hooks for the distribution pods
+  ## Add lifecycle hooks for the distribution pods
   lifecycle: {}
   # postStart:
   #   exec:
@@ -399,61 +417,52 @@ distribution:
   # - name: JF_DISTRIBUTION_DATABASE_URL
   #   value: "jdbc:postgresql://localhost:5432/distribution"
 
-  systemYaml: |
-    router:
-      serviceRegistry:
-        insecure: {{ .Values.router.serviceRegistry.insecure }}
-    shared:
-      logging:
-        consoleLog:
-          enabled: {{ .Values.distribution.consoleLog }}
-      jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "distribution.jfrogUrl" .)) . }}"
-      database:
-      {{- if .Values.postgresql.enabled }}
-        type: "postgresql"
-        driver: "org.postgresql.Driver"
-        username: "{{ .Values.postgresql.postgresqlUsername }}"
-        url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
-      {{ else }}
-        type: "{{ .Values.database.type }}"
-        driver: "{{ .Values.database.driver }}"
-      {{- end }}
-    distribution:
-      extraJavaOpts: >
-      {{- with .Values.distribution.javaOpts }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
+  ## System YAML entries now reside under files/system.yaml.
+  ## You can provide the specific values that you want to add or override under 'distribution.extraSystemYaml'.
+  ## For example:
+  ## extraSystemYaml:
+  ##   shared:
+  ##     node:
+  ##       id: my-instance
+  ## The entries provided under 'distribution.extraSystemYaml' are merged with files/system.yaml to create the final system.yaml.
+  ## If you have already provided system.yaml under, 'distribution.systemYaml', the values in that entry take precedence over files/system.yaml
+  ## You can modify specific entries with your own value under `distribution.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'distribution.systemYaml' and files/system.yaml
+  extraSystemYaml: {}
+  ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
+  ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
+  # systemYaml:
   service:
     type: ClusterIP
+    ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
+    ## This can be either SingleStack, PreferDualStack or RequireDualStack
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilyPolicy: ""
+    ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)
+    ## This can be either ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilies: []
   statefulset:
     annotations: {}
   ## Add custom volumeMounts
-  customVolumeMounts: ""
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-
-  # Add custom secrets - secret per file
-  # If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.name" . }}-unified-secret'.
+  customVolumeMounts: |
+    # - name: custom-script
+    #   mountPath: "/scripts/script.sh"
+    #   subPath: script.sh
+  ## Add custom secrets - secret per file
+  ## If .Values.distribution.unifiedSecretInstallation is true then secret name should be '{{ template "distribution.unifiedSecretPrependReleaseName" . }}-unified-secret'.
   customSecrets:
-  #  - name: custom-secret
-  #    key: custom-secret.yaml
-  #    data: >
-  #      custom_secret_config:
-  #        parameter1: value1
-  #        parameter2: value2
-  #  - name: custom-secret2
-  #    key: custom-secret2.config
-  #    data: |
-  #      here the custom secret 2 config
+  # - name: custom-secret
+  #   key: custom-secret.yaml
+  #   data: >
+  #     custom_secret_config:
+  #       parameter1: value1
+  #       parameter2: value2
+  # - name: custom-secret2
+  #   key: custom-secret2.config
+  #   data: |
+  #     here the custom secret 2 config
 
   resources: {}
   # requests:
@@ -531,7 +540,7 @@ distribution:
   # - observability-request.log
   # - observability-service.log
 
-  # Loggers containers resources
+  ## Loggers containers resources
   loggersResources: {}
   # requests:
   #   memory: "64Mi"
@@ -553,8 +562,8 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.73.0
-    imagePullPolicy: IfNotPresent
+    tag: 7.118.0
+    pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
     insecure: false
@@ -562,14 +571,14 @@ router:
   externalPort: 8082
   tlsEnabled: false
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for the router pod
+  ## Add lifecycle hooks for the router pod
   lifecycle: {}
   # postStart:
   #   exec:
@@ -579,11 +588,10 @@ router:
   #     command: ["/bin/sh", "-c", "echo Hello from the router preStart handler > /usr/share/message"]
 
   ## Add custom volumesMounts
-  customVolumeMounts: ""
-  #  - name: custom-script
-  #    mountPath: /scripts/script.sh
-  #    subPath: script.sh
-
+  customVolumeMounts: |
+    # - name: custom-script
+    #   mountPath: /scripts/script.sh
+    #   subPath: script.sh
   livenessProbe:
     enabled: true
     config: |
@@ -634,18 +642,18 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.13.6
-    imagePullPolicy: IfNotPresent
+    tag: 1.29.0
+    pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for the observability pod
+  ## Add lifecycle hooks for the observability pod
   lifecycle: {}
   # postStart:
   #   exec:
@@ -684,7 +692,7 @@ observability:
 shared:
   node:
     id:
-# Filebeat Sidecar container
+## Filebeat Sidecar container
 ## The provided filebeat configuration is for Distribution logs. It assumes you have a logstash installed and configured properly.
 filebeat:
   enabled: false
@@ -719,12 +727,12 @@ filebeat:
     periodSeconds: 10
     timeoutSeconds: 5
   resources: {}
-  #    requests:
-  #      memory: "100Mi"
-  #      cpu: "100m"
-  #    limits:
-  #      memory: "100Mi"
-  #      cpu: "100m"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "100Mi"
+  #   cpu: "100m"
 
   filebeatYml: |
     logging.level: info
@@ -748,17 +756,17 @@ filebeat:
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
 additionalResources: ""
-# Adding entries to a Pod's /etc/hosts file
-# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+## Adding entries to a Pod's /etc/hosts file
+## For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
 hostAliases: []
-#  - ip: "127.0.0.1"
-#    hostnames:
-#      - "foo.local"
-#      - "bar.local"
-#  - ip: "10.1.2.3"
-#    hostnames:
-#      - "foo.remote"
-#      - "bar.remote"
+# - ip: "127.0.0.1"
+#   hostnames:
+#     - "foo.local"
+#     - "bar.local"
+# - ip: "10.1.2.3"
+#   hostnames:
+#     - "foo.remote"
+#     - "bar.remote"
 
 ## Specify common probes parameters
 probes:
@@ -777,3 +785,15 @@ serviceMonitor:
   kubePromFullName: ""
   namespaceSelector: {}
   selector: {}
+## @param newRelic Specify NewRelic APM integration settings
+## https://docs.newrelic.com/docs/apm/agents/java-agent/configuration/java-agent-configuration-config-file/
+newRelic:
+  apm:
+    enabled: false
+    appName: ""
+    version: 8.6.0
+    licenseKey: ""
+    logLevel: info
+    downloadUrl: https://download.newrelic.com
+    downloadPath: newrelic/java-agent/newrelic-agent/{{ .Values.newRelic.apm.version }}
+    downloadFile: newrelic-agent-{{ .Values.newRelic.apm.version }}.jar

@@ -1,0 +1,129 @@
+{{- if .Values.newRelic.apm.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "distribution.fullname" . }}-newrelic-apm-config
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  newrelic.yml: |-
+    common: &default_settings
+      license_key: {{ .Values.newRelic.apm.licenseKey }}
+      agent_enabled: {{ .Values.newRelic.apm.enabled }}
+      app_name: {{ .Values.newRelic.apm.appName }}
+      high_security: false
+      enable_auto_app_naming: false
+      enable_auto_transaction_naming: true
+      audit_mode: false
+      log_level: {{ .Values.newRelic.apm.logLevel }}
+      log_file_count: 1
+      log_limit_in_kbytes: 100000
+      log_daily: false
+      log_file_path: {{ .Values.distribution.persistence.mountPath }}/log
+      log_file_name: newrelic_apm_agent.log
+
+      application_logging:
+        enabled: true
+        forwarding:
+          enabled: true
+          context_data:
+            enabled: false
+        metrics:
+          enabled: true
+          code_level_metrics:
+            enabled: true
+
+      max_stack_trace_lines: 30
+      attributes:
+        enabled: true
+
+      transaction_tracer:
+        enabled: true
+        transaction_threshold: apdex_f
+        record_sql: obfuscated
+        log_sql: false
+        stack_trace_threshold: 0.5
+        explain_enabled: true
+        explain_threshold: 0.5
+        top_n: 20
+
+      error_collector:
+        enabled: true
+        ignore_classes:
+          - "akka.actor.ActorKilledException"
+        ignore_status_codes: 404
+
+      transaction_events:
+        enabled: true
+        max_samples_stored: 2000
+
+      distributed_tracing:
+        enabled: true
+        exclude_newrelic_header: false
+
+      span_events:
+        enabled: true
+        max_samples_stored: 2000
+        attributes:
+          enabled: true
+
+      thread_profiler:
+        enabled: true
+
+      browser_monitoring:
+        auto_instrument: true
+
+      class_transformer:
+        com.newrelic.instrumentation.servlet-user:
+          enabled: false
+
+        com.newrelic.instrumentation.spring-aop-2:
+          enabled: false
+
+        com.newrelic.instrumentation.jdbc-resultset:
+          enabled: false
+
+        classloader_excludes:
+          groovy.lang.GroovyClassLoader$InnerLoader,
+          org.codehaus.groovy.runtime.callsite.CallSiteClassLoader,
+          com.collaxa.cube.engine.deployment.BPELClassLoader,
+          org.springframework.data.convert.ClassGeneratingEntityInstantiator$ObjectInstantiatorClassGenerator,
+          org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer$ContextClassLoader,
+          gw.internal.gosu.compiler.SingleServingGosuClassLoader,
+
+      jfr:
+        enabled: false
+        audit_logging: false
+
+      labels:
+        # An example label
+        #label_name: label_value
+
+      security:
+        enabled: false
+        mode: IAST
+        validator_service_url: wss://csec.nr-data.net
+        agent:
+          enabled: false
+        detection:
+          rci:
+            enabled: true
+          rxss:
+            enabled: true
+          deserialization:
+            enabled: true
+
+    development:
+      <<: *default_settings
+      app_name: My Application (Development)
+
+    staging:
+      <<: *default_settings
+      app_name: My Application (Staging)
+
+    production:
+      <<: *default_settings
+{{- end }}

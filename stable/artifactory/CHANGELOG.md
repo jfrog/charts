@@ -1,9 +1,110 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.71.4] - Oct 31, 2023
+## [107.90.10] - July 18, 2024
+* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
+* Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
+* Added a deprecation notice of ingress.hosts when `ngnix.enabled` is true
+* Added new evidence service
+* Corrected database connection values based on sizing
+* **IMPORTANT**
+* Separate access from artifactory tomcat to run on its own dedicated tomcat
+  * With this change access will be running in its own dedicated container
+  * This will give the ability to control resources and java options specific to access
+    Can be done by passing the following,
+    `access.javaOpts.other`
+    `access.resources`
+    `access.extraEnvironmentVariables`
+* Updating the example link for downloading the DB driver
+* Added Binary Provider recommendations
+
+## [107.89.0] - June 7, 2024
+* Fix the indentation of the commented-out sections in the values.yaml file
+* Fixed sizing values by removing `JF_SHARED_NODE_HAENABLED` in xsmall/small configurations
+
+## [107.88.0] - May 29, 2024
+* **IMPORTANT**
+* Refactored `nginx.artifactoryConf` and `nginx.mainConf` configuration (moved to files/nginx-artifactory-conf.yaml  and files/nginx-main-conf.yaml instead of keys in values.yaml)
+
+## [107.87.0] - May 29, 2024
+* Renamed `.Values.artifactory.openMetrics` to `.Values.artifactory.metrics`
+
+## [107.85.0] - May 29, 2024
+* Changed `migration.enabled` to false by default. For 6.x to 7.x migration, this flag needs to be set to `true`
+
+## [107.84.0] - May 29, 2024
+* Added image section for `initContainers` instead of `initContainerImage`
+* Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
+* Removed image section for `loggers`
+* Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
+* Fixed an issue with extraSystemYaml merge
+* **IMPORTANT**
+* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext` 
+* Renamed `artifactory.uid` to `artifactory.podSecurityContext.runAsUser`
+* Renamed `artifactory.gid` to `artifactory.podSecurityContext.runAsGroup` and `artifactory.podSecurityContext.fsGroup`
+* Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
+* Renamed `artifactory.seLinuxOptions` to `artifactory.podSecurityContext.seLinuxOptions`
+* Added flag `allowNonPostgresql` defaults to false
+* Update postgresql tag version to `15.6.0-debian-12-r5`
+* Added a check if `initContainerImage` exists
+* Fixed an issue to generate unified secret to support artifactory fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
+* Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
+* Fixed resource constraints for "setup" initContainer of nginx deployment [GH-962] (https://github.com/jfrog/charts/issues/962)
+* Added .Values.artifactory.unifiedSecretPrependReleaseName` for unified secret to prepend release name
+* Fixed maxCacheSize and cacheProviderDir mix up under azure-blob-storage-v2-direct template in binarystore.xml
+
+## [107.82.0] - Mar 04, 2024
+* Added `disableRouterBypass` flag as experimental feature, to disable the artifactoryPath /artifactory/ and route all traffic through the Router.
+* Removed Replicator service
+
+## [107.81.0] - Feb 20, 2024
+* **IMPORTANT**
+* Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml)
+* Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given [GH-1848](https://github.com/jfrog/charts/pull/1848)
+* Added option to modify the new cache configs, maxFileSizeLimit and skipDuringUpload
+* Added IPV4/IPV6 Dualstack flag support for Artifactory and nginx service
+* Added `singleStackIPv6Cluster` flag, which manages the Nginx configuration to enable listening on IPv6 and proxying.
+* Fixing broken link for creating additional kubernetes resources. Refer [here](https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-values.yaml)
+* Refactored installerInfo configuration (moved to files/installer-info.json instead of key in values.yaml)
+
+## [107.80.0] - Feb 20, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+
+## [107.79.0] - Feb 20, 2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* Added support for azure-blob-storage-v2-direct config
+* Added option to set Nginx to write access_log to container STDOUT
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default bundles PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x/13.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+
+## [107.77.0] - April 22, 2024
+* Removed integration service
+* Added recommended postgresql sizing configurations under sizing directory
+* Updated artifactory-federation (probes, port, embedded mode)
+* Fixed - Removed duplicate keys of the sizing yaml file
+* Fixing broken nginx port [GH-1860](https://github.com/jfrog/charts/issues/1860)
+* Added nginx.customCommand to use custom commands for the nginx container
+
+## [107.76.0] - Dec 13, 2023
+* Added connectionTimeout and socketTimeout paramaters under AWSS3 binarystore section
+* Reduced nginx startupProbe initialDelaySeconds
+
+## [107.74.0] - Nov 30, 2023
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+
+## [107.70.0] - Nov 30, 2023
 * Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
 * Fixed - Invalid format for awsS3V3 `multiPartLimit,multipartElementSize` in binarystore.xml.
+* Fixed - SecurityContext with runAsGroup in artifactory [GH-1838](https://github.com/jfrog/charts/issues/1838)
+* Added support for custom labels in the Nginx pods [GH-1836](https://github.com/jfrog/charts/pull/1836)
+* Added podSecurityContext and containerSecurityContext for nginx
+* Added support for nginx on openshift, set `podSecurityContext` and `containerSecurityContext` to false
+* Renamed nginx internalPort 80,443 to 8080,8443 to support openshift
 
 ## [107.69.0] - Sep 18, 2023
 * Adjust rtfs context

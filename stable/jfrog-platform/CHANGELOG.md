@@ -1,6 +1,116 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.19.5] - Sep 11, 2024
+* Update dependency artifactory chart version to 107.90.10
+* Update dependency xray chart version to 103.104.8
+
+## [10.19.4] - Aug 28, 2024
+* Update dependency artifactory chart version to 107.90.9
+* Update dependency xray chart version to 103.103.6
+
+## [10.19.3] - Aug 16, 2024
+* Update dependency artifactory chart version to 107.90.8
+* Update dependency xray chart version to 103.102.3
+* Update global.versions.router version to `7.124.1`
+
+## [10.19.2] - Aug 9, 2024
+* Update dependency artifactory chart version to 107.90.7
+* Update global.versions.router version to `7.124.0`
+
+## [10.19.1] - Aug 6, 2024
+* Update dependency artifactory chart version to 107.90.6
+* Update dependency xray chart version to 103.101.5
+
+## [10.19.0] - Jul 25, 2024
+* **Important change:**
+* Mission Control is also disabled by default now, if you are using this product from previous release, enable them using your custom-values.yaml file.
+* Update dependency artifactory chart version to 107.90.5
+* Update dependency xray chart version to 103.100.3
+* Update global.versions.router version to `7.122.1`
+
+## [10.18.3] - Jul 15, 2024
+* Update dependency artifactory chart version to 107.84.17
+* Update dependency xray chart version to 103.98.5
+
+## [10.18.2] - June 12, 2024
+* Update dependency artifactory chart version to 107.84.14
+* Update dependency xray chart version to 103.96.1
+* Fixed an issue related to chart artifactory fullname
+
+## [10.18.1] - May 26, 2024
+* Update dependency artifactory chart version to 107.84.12
+* Update dependency xray chart version to 103.95.7
+* Fixed an issue related to chart fullname when unifiedSecretInstallation is set to false [GH-1882](https://github.com/jfrog/charts/issues/1882)
+
+## [10.18.0] - May 12, 2024
+* **Important change:**
+* Distribution, Insight and Pipelines are disabled by default, if you are using these products from previous release, enable them using your custom-values.yaml file.
+* Added `preUpgradeHook.enabled` flag defaults to true to check if previous Distribution, Insight and Pipelines releases exists 
+* Update postgresql tag version to `15.6.0-debian-11-r16`
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default bundles PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x/13.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* Added suppport for `global.imageRegistry` for initContainers 
+* Updated rabbitmq tag version to `3.12.10-debian-11-r1`
+* Added default resources for postgres-setup-init, pre-upgrade-check and rabbitmq's migration pre-upgrade-container container 
+* Enabled `unifiedSecretInstallation` to true by default,which enables single unified secret holding all of each product secrets
+* Update dependency artifactory chart version to 107.84.10
+* Update dependency xray chart version to 103.94.6
+
+## [10.17.4] - May 2, 2024
+* Update dependency artifactory chart version to 107.77.11
+* Update dependency xray chart version to 103.94.5
+* Update dependency distribution chart version to 102.24.0
+* Update global.versions.router version to `7.108.0`
+
+## [10.17.3] - Mar 14, 2024
+* Add missing IF statement in `NOTES.txt`
+* Update dependency artifactory chart version to 107.77.7
+* Update dependency xray chart version to 103.91.3
+
+## [10.17.3] - Mar 14, 2024
+* Add missing IF statement in `NOTES.txt`
+* Update dependency artifactory chart version to 107.77.7
+* Update dependency xray chart version to 103.91.3
+
+## [10.17.1] - Feb 29, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+* Updated `artifactory.installerInfo` content
+
+## [10.17.0] - Jan 24, 2023
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+* Removed "Waiting for artifactory to start" conditional check in `postgres-setup-init` init container
+* Update pipelines to use its internal redis chart
+* Removed obsolete dependency redis chart from chart.yaml
+* Update `global.database.initContainerImagePullPolicy` to `IfNotPresent`
+* Updated the chart Notes.txt content
+* Fix the pre-upgrade-hook for rabbitmq migration
+* Update dependency artifactory chart version to 107.77.3
+* Update dependency xray chart version to 103.87.9
+* Update dependency distribution chart version to 102.22.1
+* Update dependency insight chart version to 101.16.6
+* Update dependency pipelines chart version to 101.53.4
+* Update global.versions.router version to `7.95.0`
+
+## [10.16.5] - Jan 05, 2024
+* Update dependency artifactory chart version to 107.71.11
+* Update dependency xray chart version to 103.86.10
+* Update dependency insight chart version to 101.16.5
+* Update global.versions.router version to `7.91.0`
+
+## [10.16.4] - Dec 21, 2023
+* Update dependency artifactory chart version to 107.71.9
+* Update dependency xray chart version to 103.86.9
+* Update dependency distribution chart version to 102.21.3
+
+## [10.16.3] - Dec 6, 2023
+* Update dependency artifactory chart version to 107.71.5
+* Update dependency xray chart version to 103.86.4
+* Update dependency insight chart version to 101.16.2
+* Update global.versions.router version to `7.87.0`
+* Fixed an issue to use custom postgres DB port other than default 5432
+
 ## [10.16.2] - Nov 10, 2023
 * Update dependency artifactory chart version to 107.71.4
 * Update dependency xray chart version to 103.85.5

@@ -1,0 +1,169 @@
+{{- if .Values.preUpgradeHook.enabled }}
+{{- if not (and .Values.insight.enabled .Values.pipelines.enabled .Values.distribution.enabled .Values.artifactory.mc.enabled) }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - pods/exec
+    - pods
+  verbs:
+    - create
+    - get
+    - list
+- apiGroups:
+    - ""
+  resources:
+    - secrets
+  verbs:
+    - get
+    - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+subjects:
+    - kind: ServiceAccount
+      name: {{ template "jfrog-platform.fullname" . }}
+roleRef:
+    kind: Role
+    apiGroup: rbac.authorization.k8s.io
+    name: {{ template "jfrog-platform.fullname" . }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: {{ template "jfrog-platform.name" . }}
+    chart: {{ template "jfrog-platform.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "jfrog-platform.fullname" . }}-pre-upgrade-check
+  annotations:
+    "helm.sh/hook": "pre-upgrade"
+    "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded"
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "jfrog-platform.fullname" . }}
+      {{- if .Values.global.imagePullSecrets }}
+      {{- include "jfrog-platform.imagePullSecrets" . | indent 6 }}
+      {{- end }}
+      containers:
+        - name: pre-upgrade-check
+          image: "{{ tpl .Values.preUpgradeHook.image.registry . }}/{{ .Values.preUpgradeHook.image.repository }}:{{ .Values.preUpgradeHook.image.tag }}"
+          imagePullPolicy: {{ .Values.preUpgradeHook.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.preUpgradeHook.resources | indent 12 }}
+          command:
+            - sh
+            - -c
+            - |
+                #!/bin/sh
+                {{- if not .Values.distribution.enabled }}
+                if [ "$(kubectl get pods -l "statefulset.kubernetes.io/pod-name={{ .Release.Name }}-distribution-0" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
+                    if [ "$?" -eq 0 ]; then
+                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
+                      echo "From chart verison 10.18.x, Products - Distribution, Insight and Pipelines are disabled. If you are using these products in the previous release(s)."
+                      echo "Enable them using your custom-values.yaml file "
+                      exit 1
+                    fi
+                else
+                    echo "Distribution pod(s) don't exist. Allowing upgrade"
+                fi
+                {{- end }}
+                {{- if not .Values.insight.enabled }}
+                if [ "$(kubectl get pods -l "statefulset.kubernetes.io/pod-name={{ .Release.Name }}-insight-0" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
+                    if [ "$?" -eq 0 ]; then
+                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
+                      echo "From chart verison 10.18.x, Products - Distribution, Insight and Pipelines are disabled. If you are using these products in the previous release(s)."
+                      echo "Enable them using your custom-values.yaml file "
+                      exit 1
+                    fi
+                else
+                    echo "Insight pod(s) don't exist. Allowing upgrade"
+                fi
+                {{- end }}
+                {{- if not .Values.pipelines.enabled }}
+                if [ "$(kubectl get pods -l "statefulset.kubernetes.io/pod-name={{ .Release.Name }}-pipelines-0" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
+                    if [ "$?" -eq 0 ]; then
+                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
+                      echo "From chart verison 10.18.x, Products - Distribution, Insight and Pipelines are disabled. If you are using these products in the previous release(s)."
+                      echo "Enable them using your custom-values.yaml file "
+                      exit 1
+                    fi
+                else
+                    echo "Pipelines pod(s) don't exist. Allowing upgrade"
+                fi
+                {{- end }}
+
+                {{- if not .Values.artifactory.mc.enabled }}
+                    systemYamlUnifiedSecret={{ .Release.Name }}-artifactory-unified-secret
+                    systemYamlSecret={{ .Release.Name }}-artifactory-systemyaml
+                    systemYamlEncoded=$(kubectl get secrets "$systemYamlUnifiedSecret" -o jsonpath="{.data.system\.yaml}")
+                    if [ $? -ne 0 ]; then
+                      systemYamlEncoded=$(kubectl get secrets "$systemYamlSecret" -o jsonpath="{.data.system\.yaml}")
+                      if [ $? -ne 0 ]; then
+                        systemYamlEncoded=$(kubectl get secrets "artifactory-unified-secret" -o jsonpath="{.data.system\.yaml}")
+                        if [ $? -ne 0 ]; then
+                          echo "Error: Secret '$systemYamlSecret' or '$systemYamlUnifiedSecret' or "artifactory-unified-secret" not found"
+                          exit 1
+                        fi
+                      fi
+                    fi
+                    systemYaml=$(echo "$systemYamlEncoded" | base64 -d)
+                    isMcEnabled=$(echo "$systemYaml" | awk 'BEGIN {flag=0} /^mc:/ {flag=1} flag && /^  enabled: / {print $2; exit} /^[^ ]/ && !/^mc:/ {if (flag) flag=0}')
+                    if [ "$isMcEnabled" = "true" ]; then
+                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
+                      echo "From chart verison 10.19.x, Artifactory's Mission Control is disabled. If you are using this in the previous release(s)."
+                      echo "Enable them using your custom-values.yaml file "
+                      exit 1
+                    else
+                      echo "Artifactory's Mission Control is not enabled. Allowing upgrade"
+                    fi
+                {{- end }}
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 10
+{{- end }}
+{{- end }}

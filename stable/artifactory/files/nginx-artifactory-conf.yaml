@@ -1,0 +1,98 @@
+{{- if .Values.nginx.https.enabled }}
+ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
+ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
+ssl_session_cache shared:SSL:1m;
+ssl_prefer_server_ciphers   on;
+{{- end }}
+## server configuration
+server {
+{{- if .Values.nginx.internalPortHttps }}
+{{- if .Values.nginx.singleStackIPv6Cluster }}
+listen [::]:{{ .Values.nginx.internalPortHttps }} ssl;
+{{- else -}}
+listen {{ .Values.nginx.internalPortHttps }} ssl;
+{{- end }}
+{{- else -}}
+{{- if .Values.nginx.https.enabled }}
+{{- if .Values.nginx.singleStackIPv6Cluster }}
+listen [::]:{{ .Values.nginx.https.internalPort }} ssl;
+{{- else -}}
+listen {{ .Values.nginx.https.internalPort }} ssl;
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.nginx.internalPortHttp }}
+{{- if .Values.nginx.singleStackIPv6Cluster }}
+listen [::]:{{ .Values.nginx.internalPortHttp }};
+{{- else -}}
+listen {{ .Values.nginx.internalPortHttp }};
+{{- end }}
+{{- else -}}
+{{- if .Values.nginx.http.enabled }}
+{{- if .Values.nginx.singleStackIPv6Cluster }}
+listen [::]:{{ .Values.nginx.http.internalPort }};
+{{- else -}}
+listen {{ .Values.nginx.http.internalPort }};
+{{- end }}
+{{- end }}
+{{- end }}
+server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }}
+{{ tpl (include "artifactory.nginx.hosts" .) . }};
+
+if ($http_x_forwarded_proto = '') {
+  set $http_x_forwarded_proto  $scheme;
+}
+set $host_port {{ .Values.nginx.https.externalPort }};
+if ( $scheme = "http" ) {
+  set $host_port {{ .Values.nginx.http.externalPort }};
+}
+## Application specific logs
+## access_log /var/log/nginx/artifactory-access.log timing;
+## error_log /var/log/nginx/artifactory-error.log;
+rewrite ^/artifactory/?$ / redirect;
+if ( $repo != "" ) {
+  rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
+}
+chunked_transfer_encoding on;
+client_max_body_size 0;
+
+location / {
+  proxy_read_timeout  900;
+  proxy_pass_header   Server;
+  proxy_cookie_path   ~*^/.* /;
+  proxy_pass          {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+  {{- if .Values.nginx.service.ssloffload}}
+  proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+  {{- else }}
+  proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$host_port;
+  proxy_set_header    X-Forwarded-Port  $server_port;
+  {{- end }}
+  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+  proxy_set_header    Host              $http_host;
+  proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+  {{- if .Values.nginx.disableProxyBuffering}}
+  proxy_http_version 1.1;
+  proxy_request_buffering off;
+  proxy_buffering off;
+  {{- end }}
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  location /artifactory/ {
+    if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+      proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+    }
+    proxy_pass         http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+  }
+  location /pipelines/ {
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $http_host;
+    {{- if .Values.router.tlsEnabled }}
+    proxy_pass  https://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+    {{- else }}
+    proxy_pass  http://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+    {{- end }}
+  }
+}
+}

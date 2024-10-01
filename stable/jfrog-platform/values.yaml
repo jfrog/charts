@@ -6,6 +6,10 @@
 # If this is an upgrade over an existing platform chart(>= 10.0.0), explicitly pass 'gaUpgradeReady=true' to upgrade
 gaUpgradeReady: false
 
+# If you are upgrading from a chart version(< 10.18.x) that has postgresql.image.tag of 13.x, make sure to set the current postgresql.image.tag to the same tag and databaseUpgradeReady=true.
+# If you are upgrading from a chart version (>= 10.18.x), just set databaseUpgradeReady=true.
+databaseUpgradeReady: false
+
 global:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
@@ -23,13 +27,12 @@ global:
   ## For example : For artifactory, using global.versions.artifactory
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   versions:
-    router: 7.81.0
+    router: 7.124.1
   #   artifactory:
   #   xray:
   #   distribution:
   #   insight:
   #   pipelines:
-  #   pdnServer:
   database:
     host: "{{ .Release.Name }}-postgresql"
     port: 5432
@@ -43,10 +46,17 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: releases-docker.jfrog.io/postgres:13.10-alpine
+    initContainerSetupDBImage: "{{ .Values.global.imageRegistry }}/postgres:15.6-alpine"
     # Run the postgres init container as a non-default uid
     initContainerSetupDBUser:
-    initContainerImagePullPolicy: Always
+    initContainerImagePullPolicy: IfNotPresent
+    initContainerImageResources:
+      requests:
+        cpu: 5m
+        memory: 10Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
     # If you are using external postgresql, set initDBCreation: false
     initDBCreation: true
   ## certificates added to this secret will be copied to $JFROG_HOME/<product>/var/etc/security/keys/trusted directory
@@ -76,7 +86,7 @@ postgresql:
   enabled: true
   image:
     repository: bitnami/postgresql
-    tag: 13.10.0-debian-11-r14
+    tag: 15.6.0-debian-11-r16
   postgresqlUsername: postgres
   postgresqlPassword: postgres
   postgresqlExtendedConf:
@@ -92,7 +102,7 @@ rabbitmq:
   rabbitmqUpgradeReady: false
   image:
     repository: bitnami/rabbitmq
-    tag: 3.11.10-debian-11-r5
+    tag: 3.12.10-debian-11-r1
   auth:
   ## Enable encryption to rabbitmq
   ## ref: https://www.rabbitmq.com/ssl.html
@@ -179,9 +189,17 @@ rabbitmq:
     ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
     enabled: true
     image:
-      registry: releases-docker.jfrog.io
+      registry: "{{ .Values.global.imageRegistry }}"
       repository: bitnami/kubectl
       tag: 1.24.12
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 5m
+        memory: 10Mi
+      limits:
+        cpu: 1
+        memory: 1Gi
     ## Service account for the pre-upgrade hook to perform rabbitmq migration
     serviceAccount:
       create: true
@@ -211,20 +229,10 @@ rabbitmq:
 #  extraConfiguration: |-
 #    management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
 
-## This Redis is used by pipelines only, set redis.enabled: false, when pipelines is not enabled
-redis:
-  enabled: true
-  image:
-    repository: bitnami/redis
-    tag: 7.2.0-debian-11-r2
-  cluster:
-    enabled: false
-  usePassword: false
-
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId": "Helm_JFrogPlatform/{{ printf "10.16.2-%s" .Chart.AppVersion  }}", "features": [ { "featureId": "Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "10.19.5-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -235,10 +243,13 @@ artifactory:
     user: artifactory
     password: artifactory
   # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
+  # Note: mission-control is disabled by default, this is only available for E+ customers, and can be enabled by setting mc.enabled: true
   mc:
-    enabled: true
+    enabled: false
   artifactory:
-    unifiedSecretInstallation: false
+    unifiedSecretInstallation: true
+    ## unifiedSecretPrependReleaseName Set this flag to false if unifiedSecret should not be created with <release-name> prepended.
+    unifiedSecretPrependReleaseName: true
     # Note: For HA deployments, set replicaCount >1 (recommended 3)
     replicaCount: 1
     migration:
@@ -253,7 +264,7 @@ xray:
   enabled: true
   unifiedUpgradeAllowed: true
   xray:
-    unifiedSecretInstallation: false
+    unifiedSecretInstallation: true
   postgresql:
     enabled: false
   database:
@@ -277,10 +288,10 @@ xray:
       erlangCookie: secretcookie
 
 distribution:
-  enabled: true
+  enabled: false
   unifiedUpgradeAllowed: true
   distribution:
-    unifiedSecretInstallation: false
+    unifiedSecretInstallation: true
   postgresql:
     enabled: false
   database:
@@ -289,10 +300,10 @@ distribution:
     password: distribution
 
 insight:
-  enabled: true
+  enabled: false
   unifiedUpgradeAllowed: true
   insightServer:
-    unifiedSecretInstallation: false
+    unifiedSecretInstallation: true
   postgresql:
     enabled: false
   database:
@@ -305,9 +316,8 @@ insight:
       xms: "2g"
       xmx: "2g"
 
-
 pipelines:
-  enabled: true
+  enabled: false
   unifiedUpgradeAllowed: true
   postgresql:
     enabled: false
@@ -319,11 +329,11 @@ pipelines:
       user: "apiuser"
       password: "pipeline"
   pipelines:
-    unifiedSecretInstallation: false
+    unifiedSecretInstallation: true
     msg:
       uiUserPassword: password
   redis:
-    enabled: false
+    enabled: true
   rabbitmq:
     enabled: false
     internal_ip: "{{ .Release.Name }}-rabbitmq"
@@ -339,3 +349,20 @@ pipelines:
     build_vhost_name: pipelines
     root_vhost_name: pipelinesRoot
     protocol: amqp
+
+
+preUpgradeHook:
+  ## This is required to be performed to check if existing products like distribution, insight and pipelines already exists
+  enabled: true
+  image:
+    registry: "{{ .Values.global.imageRegistry }}"
+    repository: bitnami/kubectl
+    tag: 1.24.12
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 5m
+      memory: 10Mi
+    limits:
+      cpu: 1
+      memory: 1Gi

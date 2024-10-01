@@ -63,23 +63,6 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Return the registry of a service
-*/}}
-{{- define "jfrog-platform.getRegistryByService" -}}
-{{- $dot := index . 0 }}
-{{- $service := index . 1 }}
-{{- if $dot.Values.global.imageRegistry }}
-    {{- $dot.Values.global.imageRegistry }}
-{{- else -}}
-    {{- if (eq $service "migrationHook") -}}
-      {{- index $dot.Values.rabbitmq.migration.image.registry -}}
-   {{- else -}}
-      {{- index $dot.Values $service "image" "registry" -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Resolve imagePullSecrets value
 */}}
 {{- define "jfrog-platform.imagePullSecrets" -}}
@@ -92,13 +75,49 @@ imagePullSecrets:
 {{- end -}}
 
 {{/*
+Resolve unifiedSecretInstallation name
+*/}}
+{{- define "jfrog-platform.unifiedSecretInstallation" -}}
+{{- if eq .Chart.Name "artifactory" -}}
+{{- if not .Values.artifactory.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "artifactory.fullname" .) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "artifactory.unifiedSecretPrependReleaseName" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "distribution" -}}
+{{- if not .Values.distribution.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "distribution.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "distribution.fullname" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "xray" -}}
+{{- if not .Values.xray.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "xray.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "xray.name" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "insight" -}}
+{{- if not .Values.insightServer.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "insight.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "insight.name" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Custom init container for Postgres setup
 */}}
 {{- define "initdb" -}}
-{{- if and .Values.global.database.initDBCreation (ne .Chart.Name "pdn-server") }}
+{{- if .Values.global.database.initDBCreation }}
 - name: postgres-setup-init
-  image: {{ .Values.global.database.initContainerSetupDBImage }}
+  image: "{{ tpl .Values.global.database.initContainerSetupDBImage . }}"
   imagePullPolicy: {{ .Values.global.database.initContainerImagePullPolicy }}
+  resources: 
+{{ toYaml .Values.global.database.initContainerImageResources | indent 10 }}
   {{- with .Values.global.database.initContainerSetupDBUser }}
   securityContext:
     runAsUser: {{ . }}
@@ -107,9 +126,6 @@ Custom init container for Postgres setup
     - '/bin/bash'
     - '-c'
     - >
-      {{- if (ne .Chart.Name "artifactory") }}
-      until nc -z -w 5 {{ .Release.Name }}-artifactory 8082; do echo "Waiting for artifactory to start"; sleep 10; done;
-      {{- end }}
       echo "Running init db scripts";
       bash /scripts/setupPostgres.sh
   {{- if eq .Chart.Name "pipelines" }}
@@ -172,8 +188,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.user.name . }}
           key: {{ tpl .Values.database.secrets.user.key . }}
     {{- else if .Values.database.user }}
-    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
-          name: {{ include $chartFullName . }}-database-creds
+          name: {{ include "jfrog-platform.unifiedSecretInstallation" . }}
           key: db-user
     {{- end }}
     - name: DB_PASSWORD
@@ -183,8 +198,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.password.name . }}
           key: {{ tpl .Values.database.secrets.password.key . }}
     {{- else if .Values.database.password }}
-    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
-          name: {{ include $chartFullName . }}-database-creds
+          name: {{ include "jfrog-platform.unifiedSecretInstallation" . }}
           key: db-password
     {{- end }}
     - name: PGPASSWORD

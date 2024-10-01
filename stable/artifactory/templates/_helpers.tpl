@@ -30,33 +30,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 {{- end -}}
 
-
-{{/*
-Create a default fully qualified replicator app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "artifactory.replicator.fullname" -}}
-{{- if .Values.artifactory.replicator.ingress.name -}}
-{{- .Values.artifactory.replicator.ingress.name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-replication" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified replicator tracker ingress name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "artifactory.replicator.tracker.fullname" -}}
-{{- if .Values.artifactory.replicator.trackerIngress.name -}}
-{{- .Values.artifactory.replicator.trackerIngress.name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-replication-tracker" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
 {{/*
 Create a default fully qualified nginx name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
@@ -262,6 +235,9 @@ Return the proper artifactory chart image names
     {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
+    {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
     {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
     {{- end -}}
@@ -279,8 +255,7 @@ Return the proper artifactory chart image names
 Return the proper artifactory app version
 */}}
 {{- define "artifactory.app.version" -}}
-{{- $image := split ":" ((include "artifactory.getImageInfoByValue" (list . "artifactory")) | toString) -}}
-{{- $tag := $image._1 -}}
+{{- $tag := (splitList ":" ((include "artifactory.getImageInfoByValue" (list . "artifactory" )))) | last | toString -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
 
@@ -320,17 +295,14 @@ Resolve requiredServiceTypes value
 {{- if .Values.event.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevt" -}}
 {{- end -}}
-{{- if .Values.integration.enabled -}}
-  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfint" -}}
-{{- end -}}
 {{- if .Values.frontend.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jffe" -}}
 {{- end -}}
 {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
 {{- end -}}
-{{- if .Values.artifactory.replicator.enabled -}}
-    {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
+{{- if .Values.evidence.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevd" -}}
 {{- end -}}
 {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
@@ -377,15 +349,11 @@ nginx command
 {{- define "nginx.command" -}}
 {{- if .Values.nginx.customCommand }}
 {{  toYaml .Values.nginx.customCommand }}
-{{ else }}
-- nginx
-- -g
-- 'daemon off;'
 {{- end }}
 {{- end -}}
 
 {{/*
-nginx port (80/443) based on http/https enabled
+nginx port (8080/8443) based on http/https enabled
 */}}
 {{- define "nginx.port" -}}
 {{- if .Values.nginx.http.enabled -}}
@@ -478,12 +446,83 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- end -}}
 
 {{/*
-Resolve fsGroup and runAsGroup on cluster based
+Calculate the systemYaml from structured and unstructured text input
 */}}
-{{- define "artifactory.isOpenshiftCompatible" -}}
-{{- if (.Capabilities.APIVersions.Has "security.openshift.io/v1/SecurityContextConstraints") -}}
-{{- printf "%s" "true" -}}
-{{- else -}}
-{{- printf "%s" "false" -}}
+{{- define "artifactory.finalSystemYaml" -}}
+{{ tpl (mergeOverwrite (include "artifactory.systemYaml" . | fromYaml) .Values.artifactory.extraSystemYaml | toYaml) . }}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from the unstructured text input
+*/}}
+{{- define "artifactory.systemYaml" -}}
+{{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
+{{- end -}}
+
+{{/*
+Metrics enabled
+*/}}
+{{- define "metrics.enabled" -}}
+shared:
+  metrics:
+    enabled: true
+{{- end }}
+
+{{/*
+Resolve unified secret prepend release name
+*/}}
+{{- define "artifactory.unifiedSecretPrependReleaseName" -}}
+{{- if .Values.artifactory.unifiedSecretPrependReleaseName }}
+{{- printf "%s" (include "artifactory.fullname" .) -}}
+{{- else }}
+{{- printf "%s" (include "artifactory.name" .) -}}
+{{- end }}
+{{- end }}
+
+{{/*
+Resolve artifactory metrics
+*/}}
+{{- define "artifactory.metrics" -}}
+{{- if .Values.artifactory.openMetrics -}} 
+{{- if .Values.artifactory.openMetrics.enabled -}}
+{{ include "metrics.enabled" . }}
+{{- if .Values.artifactory.openMetrics.filebeat }}
+{{- if .Values.artifactory.openMetrics.filebeat.enabled }}
+{{ include "metrics.enabled" . }}
+    filebeat:
+{{ tpl (.Values.artifactory.openMetrics.filebeat | toYaml) . | indent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else if .Values.artifactory.metrics -}}
+{{- if .Values.artifactory.metrics.enabled -}}
+{{ include "metrics.enabled" . }}
+{{- if .Values.artifactory.metrics.filebeat }}
+{{- if .Values.artifactory.metrics.filebeat.enabled }}
+{{ include "metrics.enabled" . }}
+    filebeat:
+{{ tpl (.Values.artifactory.metrics.filebeat | toYaml) . | indent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve nginx hosts value
+*/}}
+{{- define "artifactory.nginx.hosts" -}}
+{{- if .Values.ingress.hosts }}
+{{- range .Values.ingress.hosts -}}
+  {{- if contains "." . -}}
+    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+  {{- end -}}
+{{- end -}}
+{{- else if .Values.nginx.hosts }}
+{{- range .Values.nginx.hosts -}}
+  {{- if contains "." . -}}
+    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+  {{- end -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

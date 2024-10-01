@@ -16,8 +16,8 @@ common:
     enabled: false
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -34,8 +34,8 @@ common:
      mountPath: "/scriptslocal"
   customInitContainers: |
    - name: "custom-init-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -45,8 +45,8 @@ common:
          name: data-volume
   customSidecarContainers: |
    - name: "sidecar-list-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:
@@ -65,13 +65,13 @@ common:
          cpu: "100m"
 
 global:
-  jfrogUrl: http://artifactory.rt:8082
+  jfrogUrl: http://rt-artifactory.rt:8082
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   customInitContainersBegin: |
    - name: "custom-init-begin-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -88,8 +88,8 @@ global:
      mountPath: "/scriptsglobal"
   customInitContainers: |
    - name: "custom-init-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -99,8 +99,8 @@ global:
          name: data-volume
   customSidecarContainers: |
    - name: "sidecar-list-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:

@@ -8,7 +8,7 @@ Below you will find the basic instructions for installing, uninstalling, and del
 
 ## Prerequisites Details
 
-* Kubernetes 1.14+
+* Kubernetes 1.19+
 * Artifactory HA license
 
 ## Chart Details
@@ -37,7 +37,14 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `artifactory`:
 ```bash
-helm upgrade --install artifactory-ha --namespace artifactory-ha jfrog/artifactory-ha
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha --create-namespace
+```
+
+### Apply Sizing configurations to the Chart
+To apply the chart with recommended sizing configurations :
+For small configurations :
+```bash
+helm upgrade --install artifactory-ha jfrog/artifactory-ha -f sizing/artifactory-small-extra-config.yaml -f sizing/artifactory-small.yaml --namespace artifactory-ha --create-namespace
 ```
 
 ## Uninstalling Artifactory

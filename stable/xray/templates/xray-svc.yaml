@@ -14,8 +14,8 @@ metadata:
 {{- with .Values.server.service }}
 {{- if .annotations }}
   annotations:
-    {{- range $key, $value := .annotations }}
-      {{ $key }}: {{ $value | quote }}
+    {{- with .annotations }}
+{{ toYaml . | indent 4 }}
     {{- end }}
 {{- end }}
 spec:
@@ -37,3 +37,6 @@ spec:
     app: {{ template "xray.name" . }}
     component: {{ .Values.xray.name }}
     release: {{ .Release.Name }}
+{{- if and  (not .Values.splitXraytoSeparateDeployments.gradualUpgrade)  .Values.splitXraytoSeparateDeployments.enabled  }}
+    servicename: server
+{{- end }}

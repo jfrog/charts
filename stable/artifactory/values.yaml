@@ -1,8 +1,8 @@
-# Default values for artifactory.
-# This is a YAML-formatted file.
+## Default values for artifactory.
+## This is a YAML-formatted file.
 
-# Beware when changing values here. You should know what you are doing!
-# Access the values with {{ .Values.key.subkey }}
+## Beware when changing values here. You should know what you are doing!
+## Access the values with {{ .Values.key.subkey }}
 
 global:
   # imageRegistry: releases-docker.jfrog.io
@@ -12,7 +12,8 @@ global:
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   ## This applies also for nginx images (.Values.nginx.image.tag)
   versions: {}
-  #   artifactory:
+  # artifactory:
+  # initContainers:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -36,15 +37,18 @@ global:
   ## Applies to artifactory and nginx pods
   nodeSelector: {}
 ## String to partially override artifactory.fullname template (will maintain the release name)
-##
 # nameOverride:
 
 ## String to fully override artifactory.fullname template
-##
 # fullnameOverride:
-initContainerImage: releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.750.1697534106
-# Init containers
+
+## Init containers
 initContainers:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.4.949.1716471857
+    pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "50Mi"
@@ -55,8 +59,11 @@ initContainers:
 installer:
   type:
   platform:
-installerInfo: '{"productId": "Helm_artifactory/{{ .Chart.Version }}", "features": [ { "featureId": "Platform/{{ default "kubernetes" .Values.installer.platform }}"}]}'
-# For supporting pulling from private registries
+## The installerInfo is intentionally commented out and the previous content has been moved under `files/installer-info.json`
+## To override the content in `files/installer-info.json`, Uncomment the `installerInfo` and  add relevant data
+# installerInfo: '{}'
+
+## For supporting pulling from private registries
 # imagePullSecrets:
 #   - myRegistryKeySecretName
 
@@ -90,7 +97,6 @@ rbac:
           - list
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
-##
 serviceAccount:
   create: false
   ## The name of the ServiceAccount to use.
@@ -104,7 +110,7 @@ ingress:
   enabled: false
   defaultBackend:
     enabled: true
-  # Used to create an Ingress record.
+  ## Used to create an Ingress record.
   hosts: []
   routerPath: /
   artifactoryPath: /artifactory/
@@ -121,17 +127,19 @@ ingress:
   # traffic-type: external
   # traffic-type: internal
   tls: []
-  # Secrets must be manually created in the namespace.
+  ## Secrets must be manually created in the namespace.
   # - secretName: chart-example-tls
   #   hosts:
   #     - artifactory.domain.example
 
-  # Additional ingress rules
+  ## Additional ingress rules
   additionalRules: []
+  ## This is an experimental feature, enabling this feature will route all traffic through the Router.
+  disableRouterBypass: false
 ## Allows to add custom ingress
 customIngress: ""
 networkpolicy: []
-# Allows all ingress and egress
+## Allows all ingress and egress
 # - name: artifactory
 #   podSelector:
 #     matchLabels:
@@ -140,7 +148,7 @@ networkpolicy: []
 #   - {}
 #   ingress:
 #   - {}
-# Uncomment to allow only artifactory pods to communicate with postgresql (if postgresql.enabled is true)
+## Uncomment to allow only artifactory pods to communicate with postgresql (if postgresql.enabled is true)
 # - name: postgresql
 #   podSelector:
 #     matchLabels:
@@ -158,11 +166,6 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
-logger:
-  image:
-    registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.2.750.1697534106
 ## You can use a pre-existing secret with keys license_token and iam_role by specifying licenseConfigSecretName
 ## Example : Create a generic secret using `kubectl create secret generic <secret-name> --from-literal=license_token=${TOKEN} --from-literal=iam_role=${ROLE_ARN}`
 aws:
@@ -170,10 +173,19 @@ aws:
     enabled: false
   licenseConfigSecretName:
   region: us-east-1
+## Container Security Context
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## @param containerSecurityContext.enabled Enabled containers' Security Context
+## @param containerSecurityContext.runAsNonRoot Set container's Security Context runAsNonRoot
+## @param containerSecurityContext.privileged Set container's Security Context privileged
+## @param containerSecurityContext.allowPrivilegeEscalation Set container's Security Context allowPrivilegeEscalation
+## @param containerSecurityContext.capabilities.drop List of capabilities to be dropped
+## @param containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+##
 containerSecurityContext:
   enabled: true
   runAsNonRoot: true
+  privileged: false
   allowPrivilegeEscalation: false
   seccompProfile:
     type: RuntimeDefault
@@ -181,14 +193,13 @@ containerSecurityContext:
     drop:
       - ALL
 ## The following router settings are to configure only when splitServicesToContainers set to true
-## splitServicesToContainers (by default it is false)
 router:
   name: router
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.81.0
-    imagePullPolicy: IfNotPresent
+    tag: 7.118.2
+    pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
     insecure: false
@@ -208,9 +219,9 @@ router:
   #    memory: "1Gi"
   #    cpu: "1"
 
-  # Add lifecycle hooks for router container
+  ## Add lifecycle hooks for router container
   lifecycle:
-    # From Artifactory versions 7.52.x, Wait for Artifactory to complete any open uploads or downloads before terminating
+    ## From Artifactory versions 7.52.x, Wait for Artifactory to complete any open uploads or downloads before terminating
     preStop:
       exec:
         command: ["sh", "-c", "while [[ $(curl --fail --silent --connect-timeout 2 http://localhost:8081/artifactory/api/v1/system/liveness) =~ OK ]]; do echo Artifactory is still alive; sleep 2; done"]
@@ -218,11 +229,10 @@ router:
         #   exec:
         #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
   ## Add custom volumesMounts
-  customVolumeMounts: ""
-  #  - name: custom-script
-  #    mountPath: /scripts/script.sh
-  #    subPath: script.sh
-
+  customVolumeMounts: |
+    # - name: custom-script
+    #   mountPath: /scripts/script.sh
+    #   subPath: script.sh
   livenessProbe:
     enabled: true
     config: |
@@ -263,19 +273,22 @@ router:
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
   persistence:
     mountPath: "/var/opt/jfrog/router"
-# Artifactory
+## Artifactory
 artifactory:
   name: artifactory
   ## refer - https://www.jfrog.com/confluence/display/JFROG/Access+Federation#AccessFederation-EstablishingtheCircleofTrust
   ## root certificates added will be copied to $JFROG_HOME/artifactory/var/etc/access/keys/trusted folder.
   circleOfTrustCertificatesSecret:
-  # unifiedSecretInstallation flag enables single unified secret holding all the artifactory secrets
-  unifiedSecretInstallation: false
-  # For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
+  ## unifiedSecretInstallation flag enables single unified secret holding all the artifactory internal(chart) secrets, It won't be affecting external secrets.
+  ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 107.79.x, Users can switch to false to continue with the old way of secret creation.
+  unifiedSecretInstallation: true
+  ## unifiedSecretPrependReleaseName Set this flag to false if unifiedSecret should not be created with <release-name> prepended.
+  unifiedSecretPrependReleaseName: true
+  ## For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
   replicaCount: 1
   # minAvailable: 1
 
-  # Note that by default we use appVersion to get image tag/version
+  ## Note that by default we use appVersion to get image tag/version
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-pro
@@ -286,8 +299,8 @@ artifactory:
     type: RollingUpdate
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
-  # Create a priority class for the Artifactory pod or use an existing one
-  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  ## Create a priority class for the Artifactory pod or use an existing one
+  ## NOTE - Maximum allowed value of a user defined priority is 1000000000
   priorityClass:
     create: false
     value: 1000000000
@@ -295,7 +308,7 @@ artifactory:
     # name:
     ## Use an existing priority class
     # existingPriorityClass:
-  # Spread Artifactory pods evenly across your nodes or some other topology
+  ## Spread Artifactory pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
   # - maxSkew: 1
   #   topologyKey: kubernetes.io/hostname
@@ -306,9 +319,9 @@ artifactory:
   #       role: '{{ template "artifactory.name" . }}'
   #       release: "{{ .Release.Name }}"
 
-  # Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
+  ## Delete the db.properties file in ARTIFACTORY_HOME/etc/db.properties
   deleteDBPropertiesOnStartup: true
-  # certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
+  ## certificates added to this secret will be copied to $JFROG_HOME/artifactory/var/etc/security/keys/trusted directory
   customCertificates:
     enabled: false
     # certificateSecretName:
@@ -321,10 +334,11 @@ artifactory:
       maxThreads: 200
       sendReasonPhrase: false
       extraConfig: 'acceptCount="400"'
-  # Support for open metrics is only available for Artifactory 7.7.x (appVersions) and above.
-  # To enable set `.Values.artifactory.openMetrics.enabled` to `true`
-  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
-  openMetrics:
+  ## Support for metrics is only available for Artifactory 7.7.x (appVersions) and above.
+  ## To enable set `.Values.artifactory.metrics.enabled` to `true`
+  ## Note : Depricated openMetrics as part of 7.87.x and renamed to `metrics`
+  ## Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  metrics:
     enabled: false
     ## Settings for pushing metrics to Insight - enable filebeat to true
     filebeat:
@@ -338,27 +352,27 @@ artifactory:
         url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
         username: ""
         password: ""
-  # Support for Cold Artifact Storage
-  # set 'coldStorage.enabled' to 'true' only for Artifactory instance that you are designating as the Cold instance
-  # Refer - https://jfrog.com/help/r/jfrog-platform-administration-documentation/setting-up-cold-artifact-storage
+  ## Support for Cold Artifact Storage
+  ## set 'coldStorage.enabled' to 'true' only for Artifactory instance that you are designating as the Cold instance
+  ## Refer - https://jfrog.com/help/r/jfrog-platform-administration-documentation/setting-up-cold-artifact-storage
   coldStorage:
     enabled: false
-  # This directory is intended for use with NFS eventual configuration for HA
+  ## This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
     enabled: false
     path:
   haBackupDir:
     enabled: false
     path:
-  # Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
-  # Note : From 107.46.x chart versions, copyOnEveryStartup is not needed for binarystore.xml, it is always copied via initContainers
+  ## Files to copy to ARTIFACTORY_HOME/ on each Artifactory startup
+  ## Note : From 107.46.x chart versions, copyOnEveryStartup is not needed for binarystore.xml, it is always copied via initContainers
   copyOnEveryStartup:
-  #  # Absolute path
-  #  - source: /artifactory_bootstrap/artifactory.lic
-  #    # Relative to ARTIFACTORY_HOME/
-  #    target: etc/artifactory/
+  ## Absolute path
+  # - source: /artifactory_bootstrap/artifactory.lic
+  ## Relative to ARTIFACTORY_HOME/
+  #   target: etc/artifactory/
 
-  # Sidecar containers for tailing Artifactory logs
+  ## Sidecar containers for tailing Artifactory logs
   loggers: []
   # - access-audit.log
   # - access-request.log
@@ -378,130 +392,125 @@ artifactory:
   # - router-traefik.log
   # - derby.log
 
-  # Loggers containers resources
+  ## Loggers containers resources
   loggersResources: {}
-  #  requests:
-  #    memory: "10Mi"
-  #    cpu: "10m"
-  #  limits:
-  #    memory: "100Mi"
-  #    cpu: "50m"
+  # requests:
+  #   memory: "10Mi"
+  #   cpu: "10m"
+  # limits:
+  #   memory: "100Mi"
+  #   cpu: "50m"
 
-  # Sidecar containers for tailing Tomcat (catalina) logs
+  ## Sidecar containers for tailing Tomcat (catalina) logs
   catalinaLoggers: []
   # - tomcat-catalina.log
   # - tomcat-localhost.log
 
-  # Tomcat (catalina) loggers resources
+  ## Tomcat (catalina) loggers resources
   catalinaLoggersResources: {}
-  #  requests:
-  #    memory: "10Mi"
-  #    cpu: "10m"
-  #  limits:
-  #    memory: "100Mi"
-  #    cpu: "50m"
+  # requests:
+  #   memory: "10Mi"
+  #   cpu: "10m"
+  # limits:
+  #   memory: "100Mi"
+  #   cpu: "50m"
 
-  # Migration support from 6.x to 7.x
+  ## Migration support from 6.x to 7.x
   migration:
-    enabled: true
+    enabled: false
     timeoutSeconds: 3600
     ## Extra pre-start command in migration Init Container to install JDBC driver for MySql/MariaDb/Oracle
-    # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+    # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
   ## Add custom init containers execution before predefined init containers
-  customInitContainersBegin: ""
-  #  - name: "custom-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-  #        name: artifactory-volume
-
+  customInitContainersBegin: |
+    # - name: "custom-setup"
+    #   image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+    #   imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     allowPrivilegeEscalation: false
+    #     capabilities:
+    #       drop:
+    #         - NET_RAW
+    #   command:
+    #     - 'sh'
+    #     - '-c'
+    #     - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
+    #   volumeMounts:
+    #     - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+    #       name: artifactory-volume
   ## Add custom init containers execution after predefined init containers
-  customInitContainers: ""
-  #  - name: "custom-systemyaml-setup"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'curl -o {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-  #        name: artifactory-volume
-
+  customInitContainers: |
+    # - name: "custom-systemyaml-setup"
+    #   image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+    #   imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     allowPrivilegeEscalation: false
+    #     capabilities:
+    #       drop:
+    #         - NET_RAW
+    #   command:
+    #     - 'sh'
+    #     - '-c'
+    #     - 'curl -o {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+    #   volumeMounts:
+    #     - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+    #       name: artifactory-volume
   ## Add custom sidecar containers
-  # - The provided example uses a custom volume (customVolumes)
-  customSidecarContainers: ""
-  #  - name: "sidecar-list-etc"
-  #    image: "{{ .Values.initContainerImage }}"
-  #    imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
-  #    securityContext:
-  #      runAsNonRoot: true
-  #      allowPrivilegeEscalation: false
-  #      capabilities:
-  #        drop:
-  #          - NET_RAW
-  #    command:
-  #      - 'sh'
-  #      - '-c'
-  #      - 'sh /scripts/script.sh'
-  #    volumeMounts:
-  #      - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-  #        name: artifactory-volume
-  #      - mountPath: "/scripts/script.sh"
-  #        name: custom-script
-  #        subPath: script.sh
-  #    resources:
-  #      requests:
-  #        memory: "32Mi"
-  #        cpu: "50m"
-  #      limits:
-  #        memory: "128Mi"
-  #        cpu: "100m"
-
+  ## - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+    # - name: "sidecar-list-etc"
+    #   image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+    #   imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
+    #   securityContext:
+    #     runAsNonRoot: true
+    #     allowPrivilegeEscalation: false
+    #     capabilities:
+    #       drop:
+    #         - NET_RAW
+    #   command:
+    #     - 'sh'
+    #     - '-c'
+    #     - 'sh /scripts/script.sh'
+    #   volumeMounts:
+    #     - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+    #       name: artifactory-volume
+    #     - mountPath: "/scripts/script.sh"
+    #       name: custom-script
+    #       subPath: script.sh
+    #   resources:
+    #     requests:
+    #       memory: "32Mi"
+    #       cpu: "50m"
+    #     limits:
+    #       memory: "128Mi"
+    #       cpu: "100m"
   ## Add custom volumes
-  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.name" . }}-unified-secret'
-  customVolumes: ""
-  #  - name: custom-script
-  #    configMap:
-  #      name: custom-script
-
+  ## If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret'
+  customVolumes: |
+    # - name: custom-script
+    #   configMap:
+    #     name: custom-script
   ## Add custom volumesMounts
-  customVolumeMounts: ""
-  #  - name: custom-script
-  #    mountPath: "/scripts/script.sh"
-  #    subPath: script.sh
-  #  - name: posthook-start
-  #    mountPath: "/scripts/posthoook-start.sh"
-  #    subPath: posthoook-start.sh
-  #  - name: prehook-start
-  #    mountPath: "/scripts/prehook-start.sh"
-  #    subPath: prehook-start.sh
-
-  # Add custom persistent volume mounts - Available to the entire namespace
+  customVolumeMounts: |
+    # - name: custom-script
+    #   mountPath: "/scripts/script.sh"
+    #   subPath: script.sh
+    # - name: posthook-start
+    #   mountPath: "/scripts/posthoook-start.sh"
+    #   subPath: posthoook-start.sh
+    # - name: prehook-start
+    #   mountPath: "/scripts/prehook-start.sh"
+    #   subPath: prehook-start.sh
+  ## Add custom persistent volume mounts - Available to the entire namespace
   customPersistentVolumeClaim: {}
-  #  name:
-  #  mountPath:
-  #  accessModes:
+  # name:
+  # mountPath:
+  # accessModes:
   #   - "-"
-  #  size:
-  #  storageClassName:
+  # size:
+  # storageClassName:
 
   ## Artifactory license.
   license:
@@ -514,20 +523,19 @@ artifactory:
     dataKey:
   ## Create configMap with artifactory.config.import.xml and security.import.xml and pass name of configMap in following parameter
   configMapName:
-  # Add any list of configmaps to Artifactory
-  configMaps: ""
-  #  posthook-start.sh: |-
-  #    echo "This is a post start script"
-  #  posthook-end.sh: |-
-  #    echo "This is a post end script"
-
+  ## Add any list of configmaps to Artifactory
+  configMaps: |
+    # posthook-start.sh: |-
+    #   echo "This is a post start script"
+    # posthook-end.sh: |-
+    #   echo "This is a post end script"
   ## List of secrets for Artifactory user plugins.
   ## One Secret per plugin's files.
   userPluginSecrets:
-  #  - archive-old-artifacts
-  #  - build-cleanup
-  #  - webhook
-  #  - '{{ template "my-chart.fullname" . }}'
+  # - archive-old-artifacts
+  # - build-cleanup
+  # - webhook
+  # - '{{ template "my-chart.fullname" . }}'
 
   ## Artifactory requires a unique master key.
   ## You can generate one with the command: "openssl rand -hex 32"
@@ -548,8 +556,8 @@ artifactory:
   ## Alternatively, you can use a pre-existing secret with a key called jfconnect-token by specifying jfConnectTokenSecretName
   # jfConnectTokenSecretName:
 
-  # Add custom secrets - secret per file
-  # If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.name" . }}-unified-secret' common to all secrets
+  ## Add custom secrets - secret per file
+  ## If .Values.artifactory.unifiedSecretInstallation is true then secret name should be '{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret' common to all secrets
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -573,9 +581,9 @@ artifactory:
     secret:
     dataKey:
   ## Extra pre-start command to install JDBC driver for MySql/MariaDb/Oracle
-  # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://jcenter.bintray.com/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
+  # preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar"
 
-  # Add lifecycle hooks for artifactory container
+  ## Add lifecycle hooks for artifactory container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -609,155 +617,34 @@ artifactory:
   #       name: my-secret-name
   #       key: my-secret-key
 
-  systemYaml: |
-    router:
-      serviceRegistry:
-        insecure: {{ .Values.router.serviceRegistry.insecure }}
-    shared:
-    {{- if  .Values.artifactory.coldStorage.enabled }}
-      jfrogColdStorage:
-        coldInstanceEnabled: true
-    {{- end }}
-    {{- if  .Values.artifactory.openMetrics.enabled }}
-      metrics:
-        enabled: true
-      {{- if .Values.artifactory.openMetrics.filebeat.enabled }}
-        filebeat: {{ toYaml .Values.artifactory.openMetrics.filebeat | nindent 6 }}
-      {{- end }}
-    {{- end }}
-      logging:
-        consoleLog:
-          enabled: {{ .Values.artifactory.consoleLog }}
-      extraJavaOpts: >
-        -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.artifactory.terminationGracePeriodSeconds 1000 }}
-        -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
-      {{- with .Values.artifactory.javaOpts }}
-        {{- if .corePoolSize }}
-        -Dartifactory.async.corePoolSize={{ .corePoolSize }}
-        {{- end }}
-      {{- if .xms }}
-        -Xms{{ .xms }}
-      {{- end }}
-      {{- if .xmx }}
-        -Xmx{{ .xmx }}
-      {{- end }}
-      {{- if .jmx.enabled }}
-        -Dcom.sun.management.jmxremote
-        -Dcom.sun.management.jmxremote.port={{ .jmx.port }}
-        -Dcom.sun.management.jmxremote.rmi.port={{ .jmx.port }}
-        -Dcom.sun.management.jmxremote.ssl={{ .jmx.ssl }}
-      {{- if .jmx.host }}
-        -Djava.rmi.server.hostname={{ tpl .jmx.host $ }}
-      {{- else }}
-        -Djava.rmi.server.hostname={{ template "artifactory.fullname" $ }}
-      {{- end }}
-      {{- if .jmx.authenticate }}
-        -Dcom.sun.management.jmxremote.authenticate=true
-        -Dcom.sun.management.jmxremote.access.file={{ .jmx.accessFile }}
-        -Dcom.sun.management.jmxremote.password.file={{ .jmx.passwordFile }}
-      {{- else }}
-        -Dcom.sun.management.jmxremote.authenticate=false
-      {{- end }}
-      {{- end }}
-      {{- if .other }}
-        {{ .other }}
-      {{- end }}
-      {{- end }}
-      {{- if or .Values.database.type .Values.postgresql.enabled }}
-      database:
-        {{- if .Values.postgresql.enabled }}
-        type: postgresql
-        url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
-        driver: org.postgresql.Driver
-        username: "{{ .Values.postgresql.postgresqlUsername }}"
-        {{- else }}
-        type: "{{ .Values.database.type }}"
-        driver: "{{ .Values.database.driver }}"
-        {{- end }}
-      {{- end }}
-    artifactory:
-    {{- if or .Values.artifactory.haDataDir.enabled .Values.artifactory.haBackupDir.enabled }}
-      node:
-      {{- if .Values.artifactory.haDataDir.path }}
-        haDataDir: {{ .Values.artifactory.haDataDir.path }}
-      {{- end }}
-      {{- if .Values.artifactory.haBackupDir.path }}
-        haBackupDir: {{ .Values.artifactory.haBackupDir.path }}
-      {{- end }}
-    {{- end }}
-      database:
-        maxOpenConnections: {{ .Values.artifactory.database.maxOpenConnections }}
-      tomcat:
-        maintenanceConnector:
-          port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
-        connector:
-          maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
-          sendReasonPhrase: {{ .Values.artifactory.tomcat.connector.sendReasonPhrase }}
-          extraConfig: {{ .Values.artifactory.tomcat.connector.extraConfig }}
-    frontend:
-      session:
-        timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
-    access:
-      database:
-        maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
-      tomcat:
-        connector:
-          maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
-          sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
-          extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
-    {{- if .Values.mc.enabled }}
-    mc:
-      enabled: true
-      database:
-        maxOpenConnections: {{ .Values.mc.database.maxOpenConnections }}
-      idgenerator:
-        maxOpenConnections: {{ .Values.mc.idgenerator.maxOpenConnections }}
-      tomcat:
-        connector:
-          maxThreads: {{ .Values.mc.tomcat.connector.maxThreads }}
-          sendReasonPhrase: {{ .Values.mc.tomcat.connector.sendReasonPhrase }}
-          extraConfig: {{ .Values.mc.tomcat.connector.extraConfig }}
-    {{- end }}
-    metadata:
-      database:
-        maxOpenConnections: {{ .Values.metadata.database.maxOpenConnections }}
-    {{- if .Values.artifactory.replicator.enabled }}
-    replicator:
-      enabled: true
-    {{- end }}
-    {{- if and .Values.jfconnect.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
-    jfconnect:
-      enabled: true
-    {{- else }}
-    jfconnect:
-      enabled: false
-    jfconnect_service:
-      enabled: false
-    {{- end }}
-    {{- if and .Values.federation.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
-    federation:
-      enabled: true
-      extraJavaOpts: {{ .Values.federation.extraJavaOpts }}
-      port: {{ .Values.federation.internalPort }}
-    rtfs:
-      database:
-        driver: org.postgresql.Driver
-        type: postgresql
-        username: {{ .Values.federation.database.username }}
-        password: {{ .Values.federation.database.password }}
-        url: jdbc:postgresql://{{ .Values.federation.database.host }}:{{ .Values.federation.database.port }}/{{ .Values.federation.database.name }}
-    {{- else }}
-    federation:
-      enabled: false
-    {{- end }}
-    {{- if .Values.event.webhooks }}
-    event:
-      webhooks: {{ toYaml .Values.event.webhooks | nindent 6 }}
-    {{- end }}
+  ## System YAML entries now reside under files/system.yaml.
+  ## You can provide the specific values that you want to add or override under 'artifactory.extraSystemYaml'.
+  ## For example:
+  ## extraSystemYaml:
+  ##   shared:
+  ##     node:
+  ##       id: my-instance
+  ## The entries provided under 'artifactory.extraSystemYaml' are merged with files/system.yaml to create the final system.yaml.
+  ## If you have already provided system.yaml under, 'artifactory.systemYaml', the values in that entry take precedence over files/system.yaml
+  ## You can modify specific entries with your own value under `artifactory.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'artifactory.systemYaml' and files/system.yaml
+  extraSystemYaml: {}
+  ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
+  ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
+  # systemYaml:
   annotations: {}
   service:
     name: artifactory
     type: ClusterIP
+    ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
+    ## This can be either SingleStack, PreferDualStack or RequireDualStack
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilyPolicy: ""
+    ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)
+    ## This can be either ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilies: []
     ## For supporting whitelist on the Artifactory service (useful if setting service.type=LoadBalancer)
     ## Set this to a list of IP CIDR ranges
     ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
@@ -769,78 +656,29 @@ artifactory:
     # nodePort: 32082
   statefulset:
     annotations: {}
-  ## The following setting are to configure a dedicated Ingress object for Replicator service
-  replicator:
-    name: replicator
-    enabled: false
-    ## Extra environment variables that can be used to tune replicator to your needs.
-    ## Uncomment and set value as needed
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: ""
-    resources: {}
-    #  requests:
-    #    memory: "100Mi"
-    #    cpu: "100m"
-    #  limits:
-    #    memory: "1Gi"
-    #    cpu: "1"
-
-    # Add lifecycle hooks for replicator container
-    lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-    # preStop:
-    #   exec:
-    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
-    ingress:
-      enabled: true
-      name:
-      hosts: []
-      className: ""
-      annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # nginx.ingress.kubernetes.io/proxy-buffering: "off"
-      # nginx.ingress.kubernetes.io/configuration-snippet: |
-      #   chunked_transfer_encoding on;
-      tls: []
-      #  Secrets must be manually created in the namespace.
-      # - hosts:
-      #   - artifactory.domain.example
-      #   secretName: chart-example-tls-secret
-    ## When replicator is enabled and want to use tracker feature, trackerIngress.enabled flag should be set to true
-    ## Please refer - https://www.jfrog.com/confluence/display/JFROG/JFrog+Peer-to-Peer+%28P2P%29+Downloads
-    trackerIngress:
-      enabled: false
-      name:
-      hosts: []
-      className: ""
-      annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # nginx.ingress.kubernetes.io/proxy-buffering: "off"
-      # nginx.ingress.kubernetes.io/configuration-snippet: |
-      #   chunked_transfer_encoding on;
-      tls: []
-      #  Secrets must be manually created in the namespace.
-      # - hosts:
-      #   - artifactory.domain.example
-      #   secretName: chart-example-tls-secret
   ## IMPORTANT: If overriding artifactory.internalPort:
   ## DO NOT use port lower than 1024 as Artifactory runs as non-root and cannot bind to ports lower than 1024!
   externalPort: 8082
   internalPort: 8082
   externalArtifactoryPort: 8081
   internalArtifactoryPort: 8081
-  uid: 1030
-  gid: 1030
-  # fsGroupChangePolicy: "Always"
-  # seLinuxOptions: {}
   terminationGracePeriodSeconds: 30
-  ## By default, the Artifactory StatefulSet is created with a securityContext that sets the `runAsUser` and the `fsGroup` to the `artifactory.uid` value.
-  ## If you want to disable the securityContext for the Artifactory StatefulSet, set this tag to false
-  setSecurityContext: true
+  ## Pod Security Context
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  ## @param artifactory.podSecurityContext.enabled Enable security context
+  ## @param artifactory.podSecurityContext.runAsNonRoot Set pod's Security Context runAsNonRoot
+  ## @param artifactory.podSecurityContext.runAsUser User ID for the pod
+  ## @param artifactory.podSecurityContext.runASGroup Group ID for the pod
+  ## @param artifactory.podSecurityContext.fsGroup Group ID for the pod
+  ##
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1030
+    runAsGroup: 1030
+    fsGroup: 1030
+    # fsGroupChangePolicy: "Always"
+    # seLinuxOptions: {}
   livenessProbe:
     enabled: true
     config: |
@@ -896,9 +734,13 @@ artifactory:
     ## Redundancy required For HA deployments, with "cluster" persistence storage type
     redundancy: 3
     lenientLimit: 1
-    ## Cache default size. Should be increased for production deployments.
+    ## cache-fs binary provider configurations
+    ## Refer: https://jfrog.com/help/r/jfrog-installation-setup-documentation/cache-fs-template-configuration
     maxCacheSize: 5000000000
     cacheProviderDir: cache
+    ## maxFileSizeLimit:
+    ## skipDuringUpload:
+
     ## Set the persistence storage type. This will apply the matching binarystore.xml to Artifactory config
     ## Supported types are:
     ## file-system (default)
@@ -906,14 +748,15 @@ artifactory:
     ## nfs
     ## google-storage
     ## google-storage-v2
-    ## google-storage-v2-direct
+    ## google-storage-v2-direct (Recommended for GCS - Google Cloud Storage)
     ## cluster-google-storage-v2
     ## aws-s3-v3
-    ## s3-storage-v3-direct
+    ## s3-storage-v3-direct (Recommended for AWS S3)
     ## cluster-s3-storage-v3
     ## s3-storage-v3-archive
     ## azure-blob
     ## azure-blob-storage-direct
+    ## azure-blob-storage-v2-direct (Recommended for Azure Blob Storage)
     ## cluster-azure-blob-storage
     type: file-system
     ## Use binarystoreXml to provide a custom binarystore.xml
@@ -925,7 +768,7 @@ artifactory:
     ## cluster nodes.
     ## Need to have the following set
     nfs:
-      # Must pass actual IP of NFS server with '--set For artifactory.persistence.nfs.ip=${NFS_IP}'
+      ## Must pass actual IP of NFS server with '--set For artifactory.persistence.nfs.ip=${NFS_IP}'
       ip:
       haDataMount: "/data"
       haBackupMount: "/backup"
@@ -959,7 +802,7 @@ artifactory:
         #   }
       endpoint: commondatastorage.googleapis.com
       httpsOnly: false
-      # Set a unique bucket name
+      ## Set a unique bucket name
       bucketName: "artifactory-gcp"
       ## GCP Bucket Authentication with Identity and Credential is deprecated.
       ## identity:
@@ -980,6 +823,8 @@ artifactory:
       port:
       useHttp:
       maxConnections: 50
+      connectionTimeout:
+      socketTimeout:
       kmsServerSideEncryptionKeyId:
       kmsKeyRegion:
       kmsCryptoMode:
@@ -994,7 +839,7 @@ artifactory:
       enablePathStyleAccess: false
       multiPartLimit:
       multipartElementSize:
-    ## For artifactory.persistence.type azure-blob, azure-blob-storage-direct, cluster-azure-blob-storage
+    ## For artifactory.persistence.type azure-blob, azure-blob-storage-direct, cluster-azure-blob-storage, azure-blob-storage-v2-direct
     azureBlob:
       accountName:
       accountKey:
@@ -1016,12 +861,12 @@ artifactory:
   ## Uncomment the following resources definitions or pass them from command line
   ## to control the cpu and memory resources allocated by the Kubernetes cluster
   resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "500m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "1Gi"
+  #   cpu: "500m"
+  # limits:
+  #   memory: "2Gi"
+  #   cpu: "1"
   ## The following Java options are passed to the java process running Artifactory.
   ## You should set them according to the resources set above
   javaOpts:
@@ -1032,13 +877,12 @@ artifactory:
       port: 9010
       host:
       ssl: false
-      # When authenticate is true, accessFile and passwordFile are required
+      ## When authenticate is true, accessFile and passwordFile are required
       authenticate: false
       accessFile:
       passwordFile:
       # corePoolSize: 24
-  # other: ""
-
+      # other: ""
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -1061,14 +905,14 @@ frontend:
   # - name: MY_ENV_VAR
   #   value: ""
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for frontend container
+  ## Add lifecycle hooks for frontend container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1108,6 +952,7 @@ frontend:
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 access:
+  name: access
   enabled: true
   ## Enable TLS by changing the tls entry (under the security section) in the access.config.yaml file.
   ## ref: https://www.jfrog.com/confluence/display/JFROG/Managing+TLS+Certificates#ManagingTLSCertificates
@@ -1129,6 +974,67 @@ access:
       maxThreads: 50
       sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:8040/access/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+  readinessProbe:
+    enabled: false
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:8040/access/api/v1/system/readiness
+      initialDelaySeconds: 5
+      failureThreshold: 30
+      periodSeconds: 15
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:8040/access/api/v1/system/readiness
+      initialDelaySeconds: 5
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  ## access container's resource requests and limits
+  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param access.resources.limits The resources limits for access containers
+  ## @param access.resources.requests The requested resources for access containers
+  ##
+  resources: {}
+  # limits:
+  #   cpu: 1000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 1000m
+  #   memory: 2Gi
+  javaOpts:
+  # other: ""
+
+  ## Extra environment variables that can be used to tune access to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: MY_ENV_VAR
+  #   value: ""
 metadata:
   name: metadata
   enabled: true
@@ -1141,14 +1047,14 @@ metadata:
   # - name: MY_ENV_VAR
   #   value: ""
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for metadata container
+  ## Add lifecycle hooks for metadata container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1183,6 +1089,59 @@ metadata:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+evidence:
+  name: evidence
+  enabled: false
+  internalPort: 8051
+  externalPort: 8052
+  ## Extra environment variables that can be used to tune evidence to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: MY_ENV_VAR
+  #   value: ""
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  # Add lifecycle hooks for evidence container
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.evidence.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.evidence.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 event:
   name: event
   enabled: true
@@ -1197,14 +1156,14 @@ event:
   # - name: MY_ENV_VAR
   #   value: ""
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for event container
+  ## Add lifecycle hooks for event container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1249,14 +1208,14 @@ jfconnect:
   # - name: MY_ENV_VAR
   #   value: ""
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for jfconnect container
+  ## Add lifecycle hooks for jfconnect container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1291,64 +1250,14 @@ jfconnect:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-integration:
-  name: integration
-  enabled: true
-  internalPort: 8071
-  ## Extra environment variables that can be used to tune integration to your needs.
-  ## Uncomment and set value as needed
-  extraEnvironmentVariables:
-  # - name: MY_ENV_VAR
-  #   value: ""
-  resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
-
-  # Add lifecycle hooks for integration container
-  lifecycle: {}
-  # postStart:
-  #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
-  # preStop:
-  #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
-
-  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
-  livenessProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      failureThreshold: 5
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      periodSeconds: 10
-      successThreshold: 1
-  startupProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.integration.internalPort }}/api/v1/system/readiness
-      initialDelaySeconds: 30
-      failureThreshold: 90
-      periodSeconds: 5
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 federation:
+  ## This is an experimental service which is not in production yet, therefore should not be enabled
   name: federation
   enabled: false
-  internalPort: 8085
+  embedded: false
+  internalPort: 8025
   extraJavaOpts: ""
-  # This section should be removed once rtfs service is GA
+  ## This section should be removed once rtfs service is GA
   database:
     port: 5432
     host: postgresql
@@ -1361,14 +1270,14 @@ federation:
   # - name: MY_ENV_VAR
   #   value: ""
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for federation container
+  ## Add lifecycle hooks for federation container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1385,7 +1294,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1398,7 +1307,7 @@ federation:
         command:
           - sh
           - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/ping
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/api/v1/system/readiness
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1413,14 +1322,14 @@ observability:
   # - name: MY_ENV_VAR
   #   value: ""
   resources: {}
-  #  requests:
-  #    memory: "100Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "1Gi"
-  #    cpu: "1"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
 
-  # Add lifecycle hooks for observability container
+  ## Add lifecycle hooks for observability container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1455,7 +1364,7 @@ observability:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-# MISSION_CONTROL
+## MISSION_CONTROL
 mc:
   enabled: false
   database:
@@ -1467,31 +1376,47 @@ mc:
       maxThreads: 50
       sendReasonPhrase: false
       extraConfig: 'acceptCount="100"'
-# Nginx
+## Nginx
 nginx:
   enabled: true
   kind: Deployment
   name: nginx
   labels: {}
+  hosts: []
   replicaCount: 1
   minAvailable: 0
-  uid: 104
-  gid: 107
-  securityContext: {}
+  podSecurityContext:
+    enabled: true
+    runAsUser: 104
+    runAsGroup: 107
+    fsGroup: 107
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    privileged: false
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+    seccompProfile:
+      type: "RuntimeDefault"
   annotations: {}
   terminationGracePeriodSeconds: 30
   disableProxyBuffering: false
+  ## singleStackIPv6Cluster flag, which manages the Nginx configuration to enable listening on IPv6 and proxy.
+  ## If .Values.nginx.service.ipFamilies and .Values.artifactory.service.ipFamilies is configured for only IPv6, users need to enable this flag.
+  singleStackIPv6Cluster: false
   deployment:
     annotations: {}
-  # Note that by default we use appVersion to get image tag/version
+  ## Note that by default we use appVersion to get image tag/version
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/nginx-artifactory-pro
     # tag:
     pullPolicy: IfNotPresent
-  # Priority Class name to be used in deployment if provided
+  ## Priority Class name to be used in deployment if provided
   priorityClassName:
-  # Spread nginx pods evenly across your nodes or some other topology
+  ## Spread nginx pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
   # - maxSkew: 1
   #   topologyKey: kubernetes.io/hostname
@@ -1502,8 +1427,8 @@ nginx:
   #       release: '{{ .Release.Name }}'
   #       component: '{{ .Values.nginx.name }}'
 
-  # Add lifecycle hooks for the nginx pods
-  # For example, you can add a `preStop` hook that sends a SIGQUIT to nginx and wait for it to terminate gracefully
+  ## Add lifecycle hooks for the nginx pods
+  ## For example, you can add a `preStop` hook that sends a SIGQUIT to nginx and wait for it to terminate gracefully
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1512,191 +1437,35 @@ nginx:
   #   exec:
   #     command: ["/bin/sh","-c","nginx -s quit; while killall -0 nginx; do sleep 1; done"]
 
-  # Sidecar containers for tailing Nginx logs
+  ## Sidecar containers for tailing Nginx logs
   loggers: []
   # - access.log
   # - error.log
 
-  # Loggers containers resources
+  ## Loggers containers resources
   loggersResources: {}
-  #  requests:
-  #    memory: "64Mi"
-  #    cpu: "25m"
-  #  limits:
-  #    memory: "128Mi"
-  #    cpu: "50m"
+  # requests:
+  #   memory: "64Mi"
+  #   cpu: "25m"
+  # limits:
+  #   memory: "128Mi"
+  #   cpu: "50m"
 
-  # Logs options
+  ## Logs options
   logs:
     stderr: false
+    stdout: false
     level: warn
   ## A list of custom ports to expose on the NGINX pod. Follows the conventional Kubernetes yaml syntax for container ports.
   customPorts: []
-  # customPorts:
   # - containerPort: 8066
   #   name: docker
 
-  mainConf: |
-    # Main Nginx configuration file
-    worker_processes  4;
+  ## The nginx main conf was moved to files/nginx-main-conf.yaml. This key is commented out to keep support for the old configuration
+  # mainConf: |
 
-    {{ if .Values.nginx.logs.stderr }}
-    error_log  stderr {{ .Values.nginx.logs.level }};
-    {{- else -}}
-    error_log  {{ .Values.nginx.persistence.mountPath }}/logs/error.log {{ .Values.nginx.logs.level }};
-    {{- end }}
-    pid        /tmp/nginx.pid;
-
-    {{- if .Values.artifactory.ssh.enabled }}
-    ## SSH Server Configuration
-    stream {
-      server {
-        listen {{ .Values.nginx.ssh.internalPort }};
-        proxy_pass {{ include "artifactory.fullname" . }}:{{ .Values.artifactory.ssh.externalPort }};
-      }
-    }
-    {{- end }}
-
-    events {
-      worker_connections  1024;
-    }
-
-
-    http {
-      include       /etc/nginx/mime.types;
-      default_type  application/octet-stream;
-
-      variables_hash_max_size 1024;
-      variables_hash_bucket_size 64;
-      server_names_hash_max_size 4096;
-      server_names_hash_bucket_size 128;
-      types_hash_max_size 2048;
-      types_hash_bucket_size 64;
-      proxy_read_timeout 2400s;
-      client_header_timeout 2400s;
-      client_body_timeout 2400s;
-      proxy_connect_timeout 75s;
-      proxy_send_timeout 2400s;
-      proxy_buffer_size 128k;
-      proxy_buffers 40 128k;
-      proxy_busy_buffers_size 128k;
-      proxy_temp_file_write_size 250m;
-      proxy_http_version 1.1;
-      client_body_buffer_size 128k;
-
-      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-      '$status $body_bytes_sent "$http_referer" '
-      '"$http_user_agent" "$http_x_forwarded_for"';
-
-      log_format timing 'ip = $remote_addr '
-      'user = \"$remote_user\" '
-      'local_time = \"$time_local\" '
-      'host = $host '
-      'request = \"$request\" '
-      'status = $status '
-      'bytes = $body_bytes_sent '
-      'upstream = \"$upstream_addr\" '
-      'upstream_time = $upstream_response_time '
-      'request_time = $request_time '
-      'referer = \"$http_referer\" '
-      'UA = \"$http_user_agent\"';
-
-      access_log  {{ .Values.nginx.persistence.mountPath }}/logs/access.log  timing;
-
-      sendfile        on;
-      #tcp_nopush     on;
-
-      keepalive_timeout  65;
-
-      #gzip  on;
-
-      include /etc/nginx/conf.d/*.conf;
-
-    }
-  artifactoryConf: |
-    {{- if .Values.nginx.https.enabled }}
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
-    ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
-    ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
-    ssl_session_cache shared:SSL:1m;
-    ssl_prefer_server_ciphers   on;
-    {{- end }}
-    ## server configuration
-    server {
-    {{- if .Values.nginx.internalPortHttps }}
-      listen {{ .Values.nginx.internalPortHttps }} ssl;
-    {{- else -}}
-      {{- if .Values.nginx.https.enabled }}
-      listen {{ .Values.nginx.https.internalPort }} ssl;
-      {{- end }}
-    {{- end }}
-    {{- if .Values.nginx.internalPortHttp }}
-      listen {{ .Values.nginx.internalPortHttp }};
-    {{- else -}}
-      {{- if .Values.nginx.http.enabled }}
-      listen {{ .Values.nginx.http.internalPort }};
-      {{- end }}
-    {{- end }}
-      server_name ~(?<repo>.+)\.{{ include "artifactory.fullname" . }} {{ include "artifactory.fullname" . }}
-      {{- range .Values.ingress.hosts -}}
-        {{- if contains "." . -}}
-          {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
-        {{- end -}}
-      {{- end -}};
-
-      if ($http_x_forwarded_proto = '') {
-        set $http_x_forwarded_proto  $scheme;
-      }
-      ## Application specific logs
-      ## access_log /var/log/nginx/artifactory-access.log timing;
-      ## error_log /var/log/nginx/artifactory-error.log;
-      rewrite ^/artifactory/?$ / redirect;
-      if ( $repo != "" ) {
-        rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
-      }
-      chunked_transfer_encoding on;
-      client_max_body_size 0;
-
-      location / {
-        proxy_read_timeout  900;
-        proxy_pass_header   Server;
-        proxy_cookie_path   ~*^/.* /;
-        proxy_pass          {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
-        {{- if .Values.nginx.service.ssloffload}}
-        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
-        {{- else }}
-        proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$server_port;
-        proxy_set_header    X-Forwarded-Port  $server_port;
-        {{- end }}
-        proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
-        proxy_set_header    Host              $http_host;
-        proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
-        {{- if .Values.nginx.disableProxyBuffering}}
-        proxy_http_version 1.1;
-        proxy_request_buffering off;
-        proxy_buffering off;
-        {{- end }}
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-
-        location /artifactory/ {
-          if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-            proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
-          }
-          proxy_pass         http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
-        }
-        location /pipelines/ {
-          proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "upgrade";
-          proxy_set_header Host $http_host;
-          {{- if .Values.router.tlsEnabled }}
-          proxy_pass  https://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
-          {{- else }}
-          proxy_pass  http://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
-          {{- end }}
-        }
-      }
-    }
+  ## The nginx artifactory conf was moved to files/nginx-artifactory-conf.yaml. This key is commented out to keep support for the old configuration
+  # artifactoryConf: |
   customInitContainers: ""
   customSidecarContainers: ""
   customVolumes: ""
@@ -1709,6 +1478,16 @@ nginx:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
     ssloffload: false
+    ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
+    ## This can be either SingleStack, PreferDualStack or RequireDualStack
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilyPolicy: ""
+    ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)
+    ## This can be either ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilies: []
     ## For supporting whitelist on the Nginx LoadBalancer service
     ## Set this to a list of IP CIDR ranges
     ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
@@ -1718,7 +1497,7 @@ nginx:
     annotations: {}
     ## Provide static ip address
     loadBalancerIP:
-    ## There are two available options: “Cluster” (default) and “Local”.
+    ## There are two available options: "Cluster" (default) and "Local".
     externalTrafficPolicy: Cluster
     ## If the type is NodePort you can set a fixed port
     # nodePort: 32082
@@ -1728,22 +1507,23 @@ nginx:
     #   targetPort: 8066
     #   protocol: TCP
     #   name: docker
+  ## Renamed nginx internalPort 80,443 to 8080,8443 to support openshift
   http:
     enabled: true
     externalPort: 80
-    internalPort: 80
+    internalPort: 8080
   https:
     enabled: true
     externalPort: 443
-    internalPort: 443
+    internalPort: 8443
   ssh:
     internalPort: 1339
     externalPort: 1339
-  # DEPRECATED: The following will be removed in a future release
-  # externalPortHttp: 80
-  # internalPortHttp: 80
-  # externalPortHttps: 443
-  # internalPortHttps: 443
+  ## DEPRECATED: The following will be removed in a future release
+  # externalPortHttp: 8080
+  # internalPortHttp: 8080
+  # externalPortHttps: 8443
+  # internalPortHttps: 8443
 
   ## The following settings are to configure the frequency of the liveness and readiness probes.
   livenessProbe:
@@ -1780,7 +1560,7 @@ nginx:
           - sh
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
-      initialDelaySeconds: 30
+      initialDelaySeconds: 3
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1809,12 +1589,12 @@ nginx:
     ##
     # storageClassName: "-"
   resources: {}
-  #  requests:
-  #    memory: "250Mi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "250Mi"
-  #    cpu: "500m"
+  # requests:
+  #   memory: "250Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "250Mi"
+  #   cpu: "500m"
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -1828,7 +1608,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.10.0-debian-11-r14
+    tag: 15.6.0-debian-11-r16
   postgresqlUsername: artifactory
   postgresqlPassword: ""
   postgresqlDatabase: artifactory
@@ -1854,22 +1634,17 @@ postgresql:
     enabled: true
   containerSecurityContext:
     enabled: true
-    runAsNonRoot: true
-    allowPrivilegeEscalation: false
-    seccompProfile:
-      type: RuntimeDefault
-    capabilities:
-      drop:
-        - ALL
-        #  requests:
-        #    memory: "512Mi"
-        #    cpu: "100m"
-        #  limits:
-        #    memory: "1Gi"
-        #    cpu: "500m"
+    # requests:
+    #   memory: "512Mi"
+    #   cpu: "100m"
+    # limits:
+    #   memory: "1Gi"
+    #   cpu: "500m"
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom database details here or leave empty and Artifactory will use embedded derby
 database:
+  ## To run Artifactory with any database other than PostgreSQL allowNonPostgresql set to true.
+  allowNonPostgresql: false
   type:
   driver:
   ## If you set the url, leave host and port empty
@@ -1881,16 +1656,16 @@ database:
   ## If you have existing Kubernetes secrets containing db credentials, use
   ## these values
   secrets: {}
-  #  user:
-  #    name: "rds-artifactory"
-  #    key: "db-user"
-  #  password:
-  #    name: "rds-artifactory"
-  #    key: "db-password"
-  #  url:
-  #    name: "rds-artifactory"
-  #    key: "db-url"
-# Filebeat Sidecar container
+  # user:
+  #   name: "rds-artifactory"
+  #   key: "db-user"
+  # password:
+  #   name: "rds-artifactory"
+  #   key: "db-password"
+  # url:
+  #   name: "rds-artifactory"
+  #   key: "db-url"
+## Filebeat Sidecar container
 ## The provided filebeat configuration is for Artifactory logs. It assumes you have a logstash installed and configured properly.
 filebeat:
   enabled: false
@@ -1924,12 +1699,12 @@ filebeat:
     periodSeconds: 10
     timeoutSeconds: 5
   resources: {}
-  #    requests:
-  #      memory: "100Mi"
-  #      cpu: "100m"
-  #    limits:
-  #      memory: "100Mi"
-  #      cpu: "100m"
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "100Mi"
+  #   cpu: "100m"
 
   filebeatYml: |
     logging.level: info
@@ -1952,19 +1727,19 @@ filebeat:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
-## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/artifactory-values.yaml
+## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-values.yaml
 additionalResources: ""
-# Adding entries to a Pod's /etc/hosts file
-# For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+## Adding entries to a Pod's /etc/hosts file
+## For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
 hostAliases: []
-#  - ip: "127.0.0.1"
-#    hostnames:
-#      - "foo.local"
-#      - "bar.local"
-#  - ip: "10.1.2.3"
-#    hostnames:
-#      - "foo.remote"
-#      - "bar.remote"
+# - ip: "127.0.0.1"
+#   hostnames:
+#     - "foo.local"
+#     - "bar.local"
+# - ip: "10.1.2.3"
+#   hostnames:
+#     - "foo.remote"
+#     - "bar.remote"
 
 ## Toggling this feature is seamless and requires helm upgrade
 ## will enable all microservices to run in different containers in a single pod (by default it is true)

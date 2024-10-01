@@ -5,23 +5,6 @@ artifactory:
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   persistence:
     enabled: false
-  replicator:
-    enabled: true
-    ingress:
-      name:
-      hosts: []
-      className: "testclass1"
-    trackerIngress:
-      enabled: true
-      className: "testclass2"
-    # Add lifecycle hooks for replicator container
-    lifecycle:
-      postStart:
-        exec:
-          command: ["/bin/sh", "-c", "echo Hello from the replicator postStart handler >> /tmp/message"]
-      preStop:
-        exec:
-          command: ["/bin/sh", "-c", "echo Hello from the replicator postStart handler >> /tmp/message"]
   resources:
     requests:
       memory: "4Gi"
@@ -150,22 +133,6 @@ event:
     preStop:
       exec:
         command: ["/bin/sh", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
-
-integration:
-  resources:
-    requests:
-      memory: "100Mi"
-      cpu: "100m"
-    limits:
-      memory: "1Gi"
-      cpu: "1"
-  lifecycle:
-    postStart:
-      exec:
-        command: ["/bin/sh", "-c", "echo Hello from the integration postStart handler >> /tmp/message"]
-    preStop:
-      exec:
-        command: ["/bin/sh", "-c", "echo Hello from the integration postStart handler >> /tmp/message"]
 
 observability:
   resources:

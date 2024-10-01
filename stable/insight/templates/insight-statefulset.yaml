@@ -47,8 +47,8 @@ spec:
       {{- else }}
         checksum/insightServer-unified-secret: {{ include (print $.Template.BasePath "/insightServer-unified-secret.yaml") . | sha256sum }}
       {{- end }}
-      {{- range $key, $value := .Values.insightServer.annotations }}
-        {{ $key }}: {{ $value | quote }}
+      {{- with .Values.insightServer.annotations }}
+{{ toYaml . | indent 8 }}
       {{- end }}
     spec:
     {{- if .Values.insightServer.schedulerName }}

@@ -19,8 +19,8 @@ artifactory:
     xmx: "4g"
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -30,8 +30,8 @@ artifactory:
          name: artifactory-volume
   customInitContainers: |
    - name: "custom-init-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -51,8 +51,8 @@ artifactory:
   # Add custom sidecar containers
   customSidecarContainers: |
    - name: "sidecar-list-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:
@@ -75,8 +75,8 @@ global:
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   customInitContainersBegin: |
    - name: "custom-init-begin-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -86,8 +86,8 @@ global:
          name: artifactory-volume
   customInitContainers: |
    - name: "custom-init-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -107,8 +107,8 @@ global:
   # Add custom sidecar containers
   customSidecarContainers: |
    - name: "sidecar-list-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:
@@ -129,8 +129,8 @@ global:
 nginx:
   customInitContainers: |
    - name: "custom-init-begin-nginx"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      command:
        - 'sh'
        - '-c'
@@ -140,8 +140,8 @@ nginx:
          name: custom-script-local
   customSidecarContainers: |
    - name: "sidecar-list-nginx"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.artifactory.image.pullPolicy }}"
+     image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:

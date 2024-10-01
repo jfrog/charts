@@ -1,65 +1,59 @@
-Congratulations. You have just deployed JFrog Platform Chart with following products:
-
+Congratulations, you have just deployed JFrog Platform Chart with the following products:{{- if .Values.artifactory.enabled }} Artifactory{{- end }}{{- if .Values.xray.enabled }}, Xray {{- end }}{{- if .Values.distribution.enabled }}, Distribution{{- end }}{{- if index .Values "insight" "enabled" }}, Insight{{- end }}{{- if .Values.pipelines.enabled }}, Pipelines{{- end }}
 {{- if .Values.artifactory.enabled }}
-- artifactory
-{{- end }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+Instructions for accessing the JFrog Platform
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
-{{- if .Values.xray.enabled }}
-- xray
-{{- end }}
+1. The JFrog Platform Chart is being deployed. This process may take up to 10 minutes, depending on your internet connection speed.
+   You can monitor the deployment status by running the following command:
 
-{{- if index .Values "insight" "enabled" }}
-- insight
-{{- end }}
+     $ kubectl get pods -w --namespace {{ .Release.Namespace }}
 
-{{- if .Values.distribution.enabled }}
-- distribution
-{{- end }}
-
-{{- if .Values.pipelines.enabled }}
-- pipelines
-{{- end }}
-
-{{- if .Values.artifactory.enabled }}
-
-1. Get the Artifactory URL by running these commands:
+2. Retrieve the JFrog Platform URL:
 
    {{- if .Values.artifactory.ingress.enabled }}
    {{- range .Values.artifactory.ingress.hosts }}
      http://{{ . }}
    {{- end }}
-   
+
    {{- else if contains "NodePort" .Values.artifactory.nginx.service.type }}
-   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }})
-   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-   echo http://$NODE_IP:$NODE_PORT/
+   $ export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }})
+   $ export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+   $ echo http://$NODE_IP:$NODE_PORT/
 
    {{- else if contains "LoadBalancer"  .Values.artifactory.nginx.service.type }}
-   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-         You can watch the status of the service by running 'kubectl get svc --namespace {{ .Release.Namespace }} -w {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }}'
-   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-   echo http://$SERVICE_IP/
+
+   - Method 1: LoadBalancer Connection (preferred)
+     It may take a few minutes for the LoadBalancer service to be available.
+     You can monitor the service status by running this command:
+
+     $ kubectl get svc --namespace {{ .Release.Namespace }} -w {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }}
+
+     Extract the LoadBalancer IP / Hostname:
+
+     $ export SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} --template "{{ "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}" }}")
+     $ echo http://$SERVICE_HOSTNAME/
+
+   - Method 2: Port Forwarding
+
+     $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} 8080:{{ .Values.artifactory.nginx.http.internalPort }} &
+     $ echo http://localhost:8080/
 
    {{- else if contains "ClusterIP" .Values.artifactory.nginx.service.type }}
-   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "component={{ .Values.artifactory.nginx.name }}" -o jsonpath="{.items[0].metadata.name}")
-   echo http://127.0.0.1:{{ .Values.artifactory.nginx.externalPortHttp }}
-   kubectl port-forward --namespace {{ .Release.Namespace }} $POD_NAME {{ .Values.artifactory.nginx.externalPortHttp }}:{{ .Values.artifactory.nginx.internalPortHttp }}
+   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} 8080:{{ .Values.artifactory.nginx.http.internalPort }} &
+   $ echo http://localhost:8080/
    {{- end }}
 
-2. Open Artifactory in your browser
-   Default credential for Artifactory:
-   user: admin
-   password: password
 
-Open Artifactory URL in your browser.
+3. Once you have the URL, open your preferred web browser and access the JFrog Platform.
+   Default credentials for Artifactory:
+   - Username: admin
+   - Password: password
 {{- end }}
 
 {{- if .Values.postgresql.enabled }}
-To extract the database password, run the following
-export DB_PASSWORD=$(kubectl get --namespace {{ .Release.Namespace }} $(kubectl get secret --namespace {{ .Release.Namespace }} -o name | grep postgresql) -o jsonpath="{.data.postgresql-password}" | base64 --decode)
-echo ${DB_PASSWORD}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
-***WARNING*** You are using the bundled postgresql database from the chart. Bundled postgresql database is not supported for production use cases. 
-Use an external postgresql database for production deployments.
+***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
+Use an external PostgreSQL database for production deployments.
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}

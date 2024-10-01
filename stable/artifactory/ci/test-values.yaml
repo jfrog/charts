@@ -4,20 +4,10 @@ artifactory:
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
   unifiedSecretInstallation: false
-  openMetrics:
+  metrics:
     enabled: true
   persistence:
     enabled: false
-  replicator:
-    name: replicator
-    enabled: true
-    ingress:
-      name:
-      hosts: []
-      className: "testclass1"
-    trackerIngress:
-      enabled: true
-      className: "testclass2"
   resources:
     requests:
       memory: "4Gi"

@@ -68,7 +68,7 @@ global:
 
 ## Common
 initContainer:
-  image: "releases-docker.jfrog.io/alpine:3.14.2"
+  image: "releases-docker.jfrog.io/ubi9/ubi-minimal:9.2.691"
   pullPolicy: IfNotPresent
 
 # Init containers
@@ -131,11 +131,41 @@ systemYamlOverride:
 ## String to fully override pipelines.fullname template
 # fullnameOverride:
 
-## Set user/group to run Pipelines components with
-securityContext:
+## Pod Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+## @param artifactory.podSecurityContext.enabled Enable security context
+## @param artifactory.podSecurityContext.runAsNonRoot Set pod's Security Context runAsNonRoot
+## @param artifactory.podSecurityContext.runAsUser User ID for the pod
+## @param artifactory.podSecurityContext.runASGroup Group ID for the pod
+## @param artifactory.podSecurityContext.fsGroup Group ID for the pod
+##
+podSecurityContext:
   enabled: true
-  uid: 1030
-  gid: 1030
+  runAsNonRoot: true
+  runAsUser: 1066
+  runAsGroup: 1066
+  fsGroup: 1066
+  # fsGroupChangePolicy: "Always"
+  # seLinuxOptions: {}
+
+## Container Security Context
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+  ## @param containerSecurityContext.enabled Enabled containers' Security Context
+  ## @param containerSecurityContext.runAsNonRoot Set container's Security Context runAsNonRoot
+  ## @param containerSecurityContext.privileged Set container's Security Context privileged
+  ## @param containerSecurityContext.allowPrivilegeEscalation Set container's Security Context allowPrivilegeEscalation
+  ## @param containerSecurityContext.capabilities.drop List of capabilities to be dropped
+  ## @param containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+  ##
+containerSecurityContext:
+  enabled: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - ALL
 
 splitServicesToPods: false
 
@@ -385,7 +415,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}30{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -399,7 +429,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -412,7 +442,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -479,7 +509,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}30{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -493,7 +523,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -506,7 +536,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.api.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -577,7 +607,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}30{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -591,7 +621,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -605,7 +635,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/router/api/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -623,7 +653,7 @@ pipelines:
             command:
               - sh
               - -c
-              - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.router.internalPort }}/pipelines/internalapi/v1/system/liveness
+              - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.router.internalPort }}/pipelines/internalapi/v1/system/liveness
           initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
           periodSeconds: 10
           timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -660,7 +690,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.www.service.port }}/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.www.service.port }}/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -674,7 +704,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.www.service.port }}/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.www.service.port }}/v1/system/readiness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -707,7 +737,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.frontend.internalPort }}/index.html
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.frontend.internalPort }}/index.html
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}20{{ else }}0{{ end }}
         periodSeconds: 10
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -835,6 +865,26 @@ pipelines:
     # - name: MY_ENV_VAR
     #   value: "example_value"
 
+  analyticsservice:
+    image:
+      # registry:
+      repository: jfrog/pipelines-analytics-service
+      # tag:
+      pullPolicy: IfNotPresent
+    resources: {}
+    ## This service will be enabled in split deployment design (splitServicesToPods) as a mandatory service
+    enabled: true
+    # limits:
+    #   cpu: 500m
+    #   memory: 500Mi
+    # requests:
+    #   cpu: 5m
+    #   memory: 40Mi
+
+    extraEnvironmentVariables:
+    # - name: MY_ENV_VAR
+    #   value: "example_value"
+
   stepservice:
     image:
       # registry:
@@ -888,27 +938,6 @@ pipelines:
     ## Add custom init containers - last init container to run
     # customInitContainers: |
     # customSidecarContainers: |
-
-  nexec:
-    image:
-      # registry:
-      repository: jfrog/pipelines-micro
-      # tag:
-      pullPolicy: IfNotPresent
-
-    resources: {}
-      # limits:
-      #   cpu: 500m
-      #   memory: 500Mi
-      # requests:
-      #   cpu: 5m
-      #   memory: 40Mi
-
-    enabled: true
-
-    extraEnvironmentVariables:
-    # - name: MY_ENV_VAR
-    #   value: "example_value"
 
   hookHandler:
     image:
@@ -1021,7 +1050,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/liveness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/liveness
         initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
         failureThreshold: 5
         timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1035,7 +1064,7 @@ pipelines:
           command:
             - sh
             - -c
-            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/readiness
+            - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://127.0.0.1:{{ .Values.pipelines.observability.internalPort }}/api/v1/system/readiness
         initialDelaySeconds: 30
         failureThreshold: 90
         periodSeconds: 5
@@ -1290,8 +1319,14 @@ pipelines:
       msg:
         {{- if .Values.rabbitmq.enabled }}
         ip: {{ .Release.Name }}-rabbitmq
-        port: {{ .Values.rabbitmq.service.port }}
-        adminPort: {{ .Values.rabbitmq.service.managerPort }}
+        {{- if .Values.rabbitmq.auth.tls.enabled }}
+        port: {{ .Values.rabbitmq.service.ports.amqpTls }}
+        protocol: {{ .Values.rabbitmq.protocol }}
+        {{- else }}
+        port: {{ .Values.rabbitmq.service.ports.amqp }}
+        protocol: amqp
+        {{- end }}
+        adminPort: {{ .Values.rabbitmq.service.ports.manager }}
         erlangCookie: {{ .Values.rabbitmq.auth.erlangCookie }}
         username: {{ .Values.rabbitmq.auth.username }}
         password: "{{ .Values.rabbitmq.auth.password }}"
@@ -1314,9 +1349,6 @@ pipelines:
           - "core.pipelineSync"
           - "cluster.init"
           - "www.signals"
-          {{- if .Values.pipelines.nexec.enabled }}
-          - "core.nexec"
-          {{- end }}
           - "core.nodePoolService"
           - "core.hookHandler"
           - "core.extensionSync"
@@ -1325,12 +1357,12 @@ pipelines:
           - "core.runService"
           - "core.logService"
           - "core.stepService"
+          - "core.analyticsService"
         ui:
           {{- if .Values.rabbitmq.enabled }}
           username: {{ .Values.pipelines.msg.uiUser }}
           password: "{{ .Values.pipelines.msg.uiUserPassword }}"
           {{- else }}
-          protocol: http
           username: {{ .Values.rabbitmq.cp_username }}
           password: "{{ .Values.rabbitmq.cp_password }}"
           {{- end }}
@@ -1339,7 +1371,12 @@ pipelines:
           {{- if .Values.rabbitmq.externalUrl }}
           url: {{ .Values.rabbitmq.externalUrl }}
           {{- else if .Values.rabbitmq.enabled }}
+          {{- if .Values.rabbitmq.auth.tls.enabled }}
+          url: amqps://{{ tpl .Release.Name . }}-rabbitmq
+          protocol: {{ .Values.rabbitmq.protocol }}
+          {{- else }}
           url: amqp://{{ tpl .Release.Name . }}-rabbitmq
+          {{- end }}
           {{- else }}
           url: {{ .Values.rabbitmq.protocol }}://{{ tpl .Values.rabbitmq.msg_hostname . }}:{{ .Values.rabbitmq.port }}
           {{- end }}
@@ -1384,17 +1421,13 @@ pipelines:
       ## Redis configuration
       ##
       redis:
-        {{- if .Values.redis.fullnameOverride }}
-        ip: {{ .Values.redis.fullnameOverride }}-master
-        {{- else }}
-        ip: {{ .Release.Name }}-redis-master
-        {{- end }}
+        ip: {{ template "pipelines.redisServiceName" . }}
         port: {{ .Values.redis.redisPort }}
-        {{- if .Values.redis.usePassword }}
-        password: {{ .Values.redis.password }}
-        {{- end }}
-
+        password: {{ .Values.redis.auth.password }}
         clusterEnabled: false
+      sentinel:
+        port: {{ .Values.redis.sentinel.containerPorts.sentinel }}
+        masterGroupName: {{ .Values.redis.sentinel.masterSet }}
 
       ## Metrics logging
       metrics:
@@ -1565,10 +1598,6 @@ pipelines:
           name: stepservice
         cron:
           name: cron
-        {{- if .Values.pipelines.nexec.enabled }}
-        nexec:
-          name: nexec
-        {{- end }}
         hookHandler:
           name: hookHandler
         extensionSync:
@@ -1613,7 +1642,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u18go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: Ubuntu_18.04
           language: java
@@ -1630,16 +1659,40 @@ pipelines:
           os: Ubuntu_20.04
           language: node
           registryUrl: releases-docker.jfrog.io
-          image: jfrog/pipelines-u20node-arm64
+          image: jfrog/pipelines-ubuntu20arm-node
           isDefault: true
           defaultVersion: 18
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-java
+          defaultVersion: 17
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-cpp
+          defaultVersion: 13
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-go
+          defaultVersion: 1.21
+        - architecture: ARM64
+          os: Ubuntu_20.04
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu20arm-dotnet
+          defaultVersion: 6.0
         - architecture: x86_64
           os: Ubuntu_20.04
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20node
           isDefault: true
-          defaultVersion: 16
+          defaultVersion: 18
         - architecture: x86_64
           os: Ubuntu_20.04
           language: java
@@ -1657,7 +1710,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-u20go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: CentOS_7
           language: node
@@ -1682,7 +1735,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: CentOS_8
           language: node
@@ -1713,7 +1766,7 @@ pipelines:
           language: node
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-w19node
-          defaultVersion: 18
+          defaultVersion: 16
         - architecture: x86_64
           os: WindowsServer_2019
           language: java
@@ -1769,7 +1822,7 @@ pipelines:
           language: go
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c7go
-          defaultVersion: 1.19
+          defaultVersion: 1.21
         - architecture: x86_64
           os: RHEL_8
           language: node
@@ -1820,6 +1873,68 @@ pipelines:
           registryUrl: releases-docker.jfrog.io
           image: jfrog/pipelines-c8go
           defaultVersion: 1.19
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-node
+          isDefault: true
+          defaultVersion: 18
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-java
+          defaultVersion: 17
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-cpp
+          defaultVersion: 13
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-go
+          defaultVersion: 1.21
+        - architecture: x86_64
+          os: Ubuntu_22.04
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-dotnet
+          defaultVersion: 6.0
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: node
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-node
+          isDefault: true
+          defaultVersion: 18
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: java
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-java
+          defaultVersion: 17
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: cpp
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-cpp
+          defaultVersion: 13
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: go
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-go
+          defaultVersion: 1.21
+        - architecture: ARM64
+          os: Ubuntu_22.04
+          language: dotnet
+          registryUrl: releases-docker.jfrog.io
+          image: jfrog/pipelines-ubuntu22-dotnet
+          defaultVersion: 6.0
 ## Runtime Override Properties Section
 runtimeOverride: {}
 
@@ -1849,7 +1964,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 13.9.0-debian-11-r11
+    tag: 15.2.0-debian-11-r23
   postgresqlDatabase: "pipelinesdb"
   postgresqlUsername: "apiuser"
   # Password must be set
@@ -1896,14 +2011,53 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.9.21-debian-11-r0
+    tag: 3.12.10-debian-11-r1
   auth:
+      ## Enable encryption to rabbitmq
+      ## ref: https://www.rabbitmq.com/ssl.html
+      ## @param auth.tls.enabled Enable TLS support on RabbitMQ
+      ## @param auth.tls.autoGenerated Generate automatically self-signed TLS certificates
+      ## @param auth.tls.failIfNoPeerCert When set to true, TLS connection will be rejected if client fails to provide a certificate
+      ## @param auth.tls.sslOptionsVerify Should [peer verification](https://www.rabbitmq.com/ssl.html#peer-verification) be enabled?
+      ## @param auth.tls.sslOptionsPassword.enabled Enable usage of password for private Key
+      ## @param auth.tls.sslOptionsPassword.existingSecret Name of existing Secret containing the sslOptionsPassword
+      ## @param auth.tls.sslOptionsPassword.key Enable Key referring to sslOptionsPassword in Secret specified in auth.tls.sslOptionsPassword.existingSecret
+      ## @param auth.tls.sslOptionsPassword.password Use this string as Password. If set, auth.tls.sslOptionsPassword.existingSecret and auth.tls.sslOptionsPassword.key are ignored
+      ## @param auth.tls.caCertificate Certificate Authority (CA) bundle content
+      ## @param auth.tls.serverCertificate Server certificate content
+      ## @param auth.tls.serverKey Server private key content
+      ## @param auth.tls.existingSecret Existing secret with certificate content to RabbitMQ credentials
+      ## @param auth.tls.existingSecretFullChain Whether or not the existing secret contains the full chain in the certificate (`tls.crt`). Will be used in place of `ca.cert` if `true`.
+      ## @param auth.tls.overrideCaCertificate Existing secret with certificate content be mounted instead of the `ca.crt` coming from caCertificate or existingSecret/existingSecretFullChain.
+      ##
+    tls:
+      enabled: false
+      # By default TLS certs are autogenerated, if you wish to add your own certs, please set this to false.
+      autoGenerated: true
+      failIfNoPeerCert: false
+      sslOptionsVerify: verify_peer
+      failIfNoCert: false
+      sslOptionsPassword:
+        enabled: false
+        existingSecret: ""
+        key: ""
+        password: ""
+
+      caCertificate:
+      serverCertificate:
+      serverKey:
+
+      # Rabbitmq tls-certs secret name, as by default it will have {{ .Release.Name }}-rabbitmq-certs.
+      existingSecret:
+      existingSecretFullChain: false
+      overrideCaCertificate: ""
+
     username: admin
 
     ## RabbitMQ application password
     ## ref: https://github.com/bitnami/bitnami-docker-rabbitmq#environment-variables
-    # Password must be set
-    password: ""
+    # Password must be changed for production use
+    password: password
     # existingPasswordSecret: name-of-existing-secret
 
     ## Erlang cookie to determine whether different nodes are allowed to communicate with each other
@@ -1919,6 +2073,12 @@ rabbitmq:
     - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
       value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
 
+  service:
+    ports:
+      amqp: 5672
+      amqpTls: 5671
+      manager: 15672
+
   persistence:
     enabled: true
     size: 20Gi
@@ -1926,6 +2086,41 @@ rabbitmq:
   resources: {}
 
   affinity: {}
+
+  ## Upgrade of rabbitmq to 3.12.x needs the feature flags to be enabled.
+  ## Ref: (https://www.rabbitmq.com/feature-flags.html#list-of-feature-flags)
+  ## migration enable will perform `rabbitmqctl enable_feature_flag all` command on the existing rabbitmq before starting the upgrade
+  migration:
+    ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
+    enabled: true
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/kubectl
+      tag: 1.24.12
+    ## Service account for the pre-upgrade hook to perform rabbitmq migration
+    serviceAccount:
+      create: true
+      ## The name of the ServiceAccount to use.
+      ## If not set and create is true, a name is generated using the fullname template
+      name:
+      ## Explicitly mounts the API credentials for the Service Account
+      automountServiceAccountToken: true
+      rbac:
+        create: true
+        role:
+          ## Rules to create. It follows the role specification
+          rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods/exec
+                - pods
+              verbs:
+                - create
+                - get
+                - list
+  extraConfiguration: |-
+    management.listener.ssl = {{ template "pipelines.rabbitmq.isTlsEnabled" . }}
 
 ## Platform config access configuration
 access:
@@ -1944,44 +2139,61 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 6.2.1-debian-10-r9
-  redisPort: 6379
-  ## Redis will come up with auth only if redis.usePassword is set to true
-  ## Change this value for production use
-  password: "password"
-
-  cluster:
-    enabled: false
-    slaveCount: 2
-
-  usePassword: false
-
+    tag: 7.2.0-debian-11-r2
   fullnameOverride:
-
+  redisPort: 6379
+  auth:
+    ## @param auth.enabled Enable password authentication
+    ##
+    enabled: true
+    ## @param auth.sentinel Enable password authentication on sentinels too
+    ##
+    sentinel: true
+    ## @param auth.password Redis&reg; password
+    ## Defaults to a random 10-character alphanumeric string if not set
+    ##
+    password: "password"
+  commonConfiguration: |-
+    appendonly yes
+    maxmemory-policy volatile-lru
+  architecture: "replication"
   master:
-    configmap: |-
-      appendonly yes
-      loglevel notice
+    persistence:
+      enabled: true
+    containerPorts:
+      redis: 6379
     resources: {}
-    #  requests:
-    #    memory: 100Mi
-    #    cpu: 25m
-    #  limits:
-    #    memory: 4Gi
-    #    cpu: "1"
-
-    affinity: {}
-
-  slave:
+      # limits:
+      #   cpu: 1
+      #   memory: 2Gi
+      # requests:
+      #   cpu: 20m
+      #   memory: 512Mi
+  replica:
+    replicaCount: 1
     resources: {}
-    #  requests:
-    #    memory: 100Mi
-    #    cpu: 25m
-    #  limits:
-    #    memory: 4Gi
-    #    cpu: "1"
+      # limits:
+      #   cpu: 1
+      #   memory: 2Gi
+      # requests:
+      #   cpu: 20m
+      #   memory: 512Mi
+  sentinel:
+    enabled: true
+    containerPorts:
+      sentinel: 26379
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/redis-sentinel
+      tag: 7.2.0-debian-11-r2
+    masterSet: pipelines-master
+  metrics:
+    enabled: true
+    image:
+      registry: releases-docker.jfrog.io
+      repository: bitnami/redis-exporter
+      tag: 1.55.0-debian-11-r0
 
-    affinity: {}
 
 ## Vault
 vault:
@@ -1998,7 +2210,7 @@ vault:
   server:
     image:
       repository: "releases-docker.jfrog.io/hashicorp/vault"
-      tag: 1.8.6
+      tag: "1.15"
 
     # resources: {}
     #  requests:
@@ -2045,7 +2257,7 @@ vault:
     extraInitContainers:
       # wait-for-db is checking if postgresql server up
       - name: vault-wait-for-db
-        image: "releases-docker.jfrog.io/bitnami/postgresql:13.9.0-debian-11-r11"
+        image: "releases-docker.jfrog.io/bitnami/postgresql:15.2.0-debian-11-r23"
         imagePullPolicy: IfNotPresent
         env:
           - name: CONNECTION_DETAILS
@@ -2075,7 +2287,7 @@ vault:
 
       # create-vault-table is creating vault schema changes in postgres db
       - name: create-vault-table
-        image: releases-docker.jfrog.io/bitnami/postgresql:13.9.0-debian-11-r11
+        image: releases-docker.jfrog.io/bitnami/postgresql:15.2.0-debian-11-r23
         imagePullPolicy: IfNotPresent
         env:
           - name: DATABASE_URL
@@ -2114,7 +2326,7 @@ vault:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: VAULT_ADDRESS
-            value: "http://localhost:8200"
+            value: "http://127.0.0.1:8200"
         resources:
           requests:
             memory: "10Mi"
