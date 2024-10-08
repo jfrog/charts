@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.104.8] - July 17, 2024
+## [103.104.17] - July 17, 2024
 * Added support of specifying resources constraints for RabbitMQ's pre-upgrade-hook job
 * Fixed formatting error associated to the `volumeMounts` for the `panoramic` microservice [GH-1895](https://github.com/jfrog/charts/issues/1895)
 
