@@ -64,7 +64,7 @@ spec:
   {{- if .Values.nginx.https }}
   {{- if or .Values.nginx.https.enabled .Values.nginx.service.ssloffload }}
   - port: {{ .Values.nginx.https.externalPort }}
-    {{- if .Values.nginx.service.ssloffload }}
+    {{- if and .Values.nginx.service.ssloffload (not .Values.nginx.service.ssloffloadForceHttps) }}
     targetPort: {{ .Values.nginx.http.internalPort }}
     {{- else }}
     targetPort: {{ .Values.nginx.https.internalPort}}
