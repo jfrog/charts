@@ -103,6 +103,10 @@ rabbitmq:
   image:
     repository: bitnami/rabbitmq
     tag: 3.12.10-debian-11-r1
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
   auth:
   ## Enable encryption to rabbitmq
   ## ref: https://www.rabbitmq.com/ssl.html
@@ -242,6 +246,11 @@ artifactory:
     url: '{{ include "database.url" . }}'
     user: artifactory
     password: artifactory
+  ingress:
+    enabled: false
+  nginx:
+    service:
+      type: ""
   # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
   # Note: mission-control is disabled by default, this is only available for E+ customers, and can be enabled by setting mc.enabled: true
   mc:
@@ -359,6 +368,10 @@ preUpgradeHook:
     repository: bitnami/kubectl
     tag: 1.24.12
     pullPolicy: IfNotPresent
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
   resources:
     requests:
       cpu: 5m
