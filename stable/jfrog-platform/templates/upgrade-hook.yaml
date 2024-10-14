@@ -87,6 +87,9 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ template "jfrog-platform.fullname" . }}
+      {{- if .Values.preUpgradeHook.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.preUpgradeHook.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
       {{- if .Values.global.imagePullSecrets }}
       {{- include "jfrog-platform.imagePullSecrets" . | indent 6 }}
       {{- end }}
@@ -94,6 +97,9 @@ spec:
         - name: pre-upgrade-check
           image: "{{ tpl .Values.preUpgradeHook.image.registry . }}/{{ .Values.preUpgradeHook.image.repository }}:{{ .Values.preUpgradeHook.image.tag }}"
           imagePullPolicy: {{ .Values.preUpgradeHook.image.pullPolicy }}
+          {{- if .Values.preUpgradeHook.containerSecurityContext.enabled }}
+          securityContext: {{- tpl (omit .Values.preUpgradeHook.containerSecurityContext "enabled" | toYaml) . | nindent 12 }}
+          {{- end }}
           resources:
 {{ toYaml .Values.preUpgradeHook.resources | indent 12 }}
           command:
