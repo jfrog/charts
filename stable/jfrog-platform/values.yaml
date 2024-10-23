@@ -103,10 +103,6 @@ rabbitmq:
   image:
     repository: bitnami/rabbitmq
     tag: 3.12.10-debian-11-r1
-  podSecurityContext:
-    enabled: false
-  containerSecurityContext:
-    enabled: false
   auth:
   ## Enable encryption to rabbitmq
   ## ref: https://www.rabbitmq.com/ssl.html
@@ -236,7 +232,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "10.19.6-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "10.19.7-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -246,11 +242,6 @@ artifactory:
     url: '{{ include "database.url" . }}'
     user: artifactory
     password: artifactory
-  ingress:
-    enabled: false
-  nginx:
-    service:
-      type: ""
   # Note: For artifactory Pro license, mission-control is not supported, Hence, set mc.enabled: false
   # Note: mission-control is disabled by default, this is only available for E+ customers, and can be enabled by setting mc.enabled: true
   mc:
@@ -368,10 +359,6 @@ preUpgradeHook:
     repository: bitnami/kubectl
     tag: 1.24.12
     pullPolicy: IfNotPresent
-  podSecurityContext:
-    enabled: false
-  containerSecurityContext:
-    enabled: false
   resources:
     requests:
       cpu: 5m
@@ -380,3 +367,7 @@ preUpgradeHook:
       cpu: 1
       memory: 1Gi
   tolerations: []
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false

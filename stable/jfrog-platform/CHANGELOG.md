@@ -1,8 +1,10 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
-## [10.19.7] - Oct 14, 2024
-* Fixed - Added podSecurityContext and containerSecurityContext for pre-upgrade-check migration hook container
+## [10.19.7] - Oct 23, 2024
+* Added podSecurityContext and containerSecurityContext for pre-upgrade-check migration hook container. [GH-1929](https://github.com/jfrog/charts/pull/1929)
+* Update dependency artifactory chart version to 107.90.15
+* Update dependency xray chart version to 103.104.18
 
 ## [10.19.6] - Oct 8, 2024
 * Fixed typo to get fourth parameter for setupPostgres.sh [GH-1992](https://github.com/jfrog/charts/pull/1992)
