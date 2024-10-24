@@ -1,6 +1,9 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.90.16] - Oct 24, 2024
+* Remove unused values
+
 ## [107.90.15] - Feb 20, 2024
 * Updated `artifactory.installerInfo` content
 
