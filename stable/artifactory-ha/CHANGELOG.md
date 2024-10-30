@@ -17,6 +17,7 @@ All changes to this chart will be documented in this file.
     `access.extraEnvironmentVariables`
 * Updating the example link for downloading the DB driver
 * Added Binary Provider recommendations
+* Add support for EnvironmentVaraiables on Filebeat Sidecar
 
 ## [107.89.0] - May 30, 2024
 * Fix the indentation of the commented-out sections in the values.yaml file
