@@ -47,7 +47,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.4.949.1716471857
+    tag: 9.4.1227
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -562,7 +562,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.118.0
+    tag: 7.134.1
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -642,7 +642,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.29.0
+    tag: 1.31.1
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
