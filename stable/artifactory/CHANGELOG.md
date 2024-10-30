@@ -17,6 +17,7 @@ All changes to this chart will be documented in this file.
     `access.extraEnvironmentVariables`
 * Updating the example link for downloading the DB driver
 * Added Binary Provider recommendations
+* Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct`
 
 ## [107.89.0] - June 7, 2024
 * Fix the indentation of the commented-out sections in the values.yaml file
