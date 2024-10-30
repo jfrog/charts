@@ -204,6 +204,14 @@ spec:
           cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.crt;
           cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.private.key;
         {{- end }}
+        {{- if .Values.jfconnect.customCertificatesSecretName }}
+          echo "Copying custom certificates to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys;
+          cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+          cp -fv /tmp/etc/tls.cer {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+          cp -fv /tmp/etc/tls.pem {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+          cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+        {{- end }}
         {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
@@ -295,6 +303,21 @@ spec:
           mountPath: "/tmp/etc/tls.crt"
           subPath: tls.crt
         - name: access-certs
+          mountPath: "/tmp/etc/tls.key"
+          subPath: tls.key
+        {{- end }}
+
+        {{- if .Values.jfconnect.customCertificatesSecretName }}
+        - name: jfconnect-certs
+          mountPath: "/tmp/etc/tls.crt"
+          subPath: tls.crt
+        - name: jfconnect-certs
+          mountPath: "/tmp/etc/tls.pem"
+          subPath: tls.pem
+        - name: jfconnect-certs
+          mountPath: "/tmp/etc/tls.cer"
+          subPath: tls.cer
+        - name: jfconnect-certs
           mountPath: "/tmp/etc/tls.key"
           subPath: tls.key
         {{- end }}
@@ -526,9 +549,6 @@ spec:
 {{- with .Values.router.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
-        ports:
-          - name: http
-            containerPort: {{ .Values.router.internalPort }}
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -1011,9 +1031,11 @@ spec:
 {{- with .Values.federation.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
+      {{- if .Values.federation.enabled }}
         ports:
         - containerPort: {{ .Values.federation.internalPort }}
           name: http-rtfs
+      {{- end }}
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -1216,8 +1238,10 @@ spec:
           name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
           name: http-internal
+        {{- if .Values.federation.enabled }}
         - containerPort: {{ .Values.federation.internalPort }}
           name: http-rtfs
+        {{- end }}
         {{- if .Values.artifactory.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.javaOpts.jmx.port }}
           name: tcp-jmx
@@ -1370,6 +1394,10 @@ spec:
         - "-e"
         - "-E"
         - "http.enabled=true"
+        env:
+{{- with .Values.filebeat.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
@@ -1454,6 +1482,13 @@ spec:
       - name: access-certs
         secret:
           secretName: {{ .Values.access.customCertificatesSecretName }}
+      {{- end }}
+
+      # jfconnect-certs secrets
+      {{- if .Values.jfconnect.customCertificatesSecretName }}
+      - name: jfconnect-certs
+        secret:
+          secretName: {{ .Values.jfconnect.customCertificatesSecretName }}
       {{- end }}
 
       # system yaml

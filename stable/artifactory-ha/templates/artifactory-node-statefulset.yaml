@@ -169,6 +169,9 @@ spec:
         {{- if .Values.access.customCertificatesSecretName }}
           echo "Load custom certificates from database";
         {{- end }}
+        {{- if .Values.jfconnect.customCertificatesSecretName }}
+          echo "Load custom certificates from database";
+        {{- end }}
         {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
           echo "Copy masterKey to {{ .Values.artifactory.persistence.mountPath }}/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security;
@@ -449,9 +452,6 @@ spec:
 {{- with .Values.router.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
-        ports:
-          - name: http
-            containerPort: {{ .Values.router.internalPort }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -817,9 +817,11 @@ spec:
 {{- with .Values.federation.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
+      {{- if .Values.federation.enabled }}
         ports:
         - containerPort: {{ .Values.federation.internalPort }}
           name: http-rtfs
+      {{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -1187,8 +1189,10 @@ spec:
           name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
           name: http-internal
+      {{- if .Values.federation.enabled }}
         - containerPort: {{ .Values.federation.internalPort }}
           name: http-rtfs
+      {{- end }}
         {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.node.javaOpts.jmx.port }}
           name: tcp-jmx
@@ -1350,6 +1354,10 @@ spec:
         - "-e"
         - "-E"
         - "http.enabled=true"
+        env:
+{{- with .Values.filebeat.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
@@ -1357,10 +1365,6 @@ spec:
           subPath: filebeat.yml
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
-        env:
-{{- with .Values.filebeat.EnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 10 }}
-{{- end }}
         livenessProbe:
 {{ toYaml .Values.filebeat.livenessProbe | indent 10 }}
         readinessProbe:

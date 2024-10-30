@@ -1,7 +1,9 @@
-##############################################################
+##############################################################################################
 # The small sizing
 # This is the size recommended for running Artifactory for small teams
-##############################################################
+# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# hence this configuration will be overridden when enabling systemYamlOverride
+##############################################################################################
 splitServicesToContainers: true
 artifactory:
   primary:
@@ -21,24 +23,52 @@ artifactory:
         # cpu: "10"
         memory: 5Gi
 
+    javaOpts:
+      other: >
+        -XX:InitialRAMPercentage=40
+        -XX:MaxRAMPercentage=70
+        -Dartifactory.async.corePoolSize=40
+        -Dartifactory.async.poolMaxQueueSize=10000
+        -Dartifactory.http.client.max.total.connections=50
+        -Dartifactory.http.client.max.connections.per.route=50
+        -Dartifactory.access.client.max.connections=75
+        -Dartifactory.metadata.event.operator.threads=3
+        -XX:MaxMetaspaceSize=512m
+        -Djdk.nio.maxCachedBufferSize=262144
+        -XX:MaxDirectMemorySize=256m
+  tomcat:
+    connector:
+      maxThreads: 300
+      extraConfig: 'acceptCount="600" acceptorThreadCount="2" compression="off" connectionLinger="-1" connectionTimeout="120000" enableLookups="false"'
+
+  database:
+    maxOpenConnections: 50
+
   extraEnvironmentVariables:
     - name: MALLOC_ARENA_MAX
       value: "2"
-    - name : JF_SHARED_NODE_HAENABLED
-      value: "true"
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
 
 router:
   resources:
     requests:
-      cpu: 100m
-      memory: 250Mi
-    limits:
-      # cpu: "1"
+      cpu: 200m
       memory: 500Mi
+    limits:
+      # cpu: "2"
+      memory: 1Gi
 
 access:
+  tomcat:
+    connector:
+      maxThreads: 75
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=20
+      -XX:MaxRAMPercentage=60
+  database:
+    maxOpenConnections: 50
   resources:
     requests:
       cpu: 500m
@@ -57,6 +87,8 @@ frontend:
       memory: 250Mi
 
 metadata:
+  database:
+    maxOpenConnections: 50
   resources:
     requests:
       cpu: 100m

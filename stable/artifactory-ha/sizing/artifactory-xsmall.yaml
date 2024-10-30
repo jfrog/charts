@@ -1,7 +1,10 @@
-##############################################################
+##############################################################################################
+
 # The xsmall sizing
 # This is the minimum size recommended for running Artifactory
-##############################################################
+# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# hence this configuration will be overridden when enabling systemYamlOverride
+##############################################################################################
 splitServicesToContainers: true
 artifactory:
   primary:
@@ -21,15 +24,44 @@ artifactory:
         # cpu: "10"
         memory: 4Gi
 
+    javaOpts:
+      other: >
+        -XX:InitialRAMPercentage=40
+        -XX:MaxRAMPercentage=70
+        -Dartifactory.async.corePoolSize=10
+        -Dartifactory.async.poolMaxQueueSize=2000
+        -Dartifactory.http.client.max.total.connections=20
+        -Dartifactory.http.client.max.connections.per.route=20
+        -Dartifactory.access.client.max.connections=15
+        -Dartifactory.metadata.event.operator.threads=2
+        -XX:MaxMetaspaceSize=400m
+        -XX:CompressedClassSpaceSize=96m
+        -Djdk.nio.maxCachedBufferSize=131072
+        -XX:MaxDirectMemorySize=128m
+  tomcat:
+    connector:
+      maxThreads: 50
+      extraConfig: 'acceptCount="200" acceptorThreadCount="2" compression="off" connectionLinger="-1" connectionTimeout="120000" enableLookups="false"'
+
+  database:
+    maxOpenConnections: 15
+
   extraEnvironmentVariables:
     - name: MALLOC_ARENA_MAX
       value: "2"
-    - name : JF_SHARED_NODE_HAENABLED
-      value: "true"
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
 
 access:
+  tomcat:
+    connector:
+      maxThreads: 15
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=20
+      -XX:MaxRAMPercentage=60
+  database:
+    maxOpenConnections: 15
   resources:
     requests:
       cpu: 500m
@@ -41,11 +73,11 @@ access:
 router:
   resources:
     requests:
-      cpu: 50m
-      memory: 100Mi
+      cpu: 100m
+      memory: 200Mi
     limits:
-      # cpu: "1"
-      memory: 500Mi
+      # cpu: "2"
+      memory: 1Gi
 
 frontend:
   resources:
@@ -57,6 +89,8 @@ frontend:
       memory: 250Mi
 
 metadata:
+  database:
+    maxOpenConnections: 15
   resources:
     requests:
       cpu: 50m

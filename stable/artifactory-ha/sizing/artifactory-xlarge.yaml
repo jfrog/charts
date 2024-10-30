@@ -1,7 +1,9 @@
-##############################################################
+##############################################################################################
 # The xlarge sizing
 # This size is intended for very large organizations. It can be increased with adding replicas
-##############################################################
+# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# hence this configuration will be overridden when enabling systemYamlOverride
+##############################################################################################
 splitServicesToContainers: true
 artifactory:
   primary:
@@ -9,7 +11,6 @@ artifactory:
     # Count should be equal or above the total number of licenses available for artifactory.
     replicaCount: 4
 
-    # Require multiple Artifactory pods to run on separate nodes
     podAntiAffinity:
       type: "hard"
 
@@ -21,15 +22,44 @@ artifactory:
         # cpu: "14"
         memory: 16Gi
 
+    javaOpts:
+      other: >
+        -XX:InitialRAMPercentage=40
+        -XX:MaxRAMPercentage=65
+        -Dartifactory.async.corePoolSize=160
+        -Dartifactory.async.poolMaxQueueSize=50000
+        -Dartifactory.http.client.max.total.connections=150
+        -Dartifactory.http.client.max.connections.per.route=150
+        -Dartifactory.access.client.max.connections=150
+        -Dartifactory.metadata.event.operator.threads=5
+        -XX:MaxMetaspaceSize=512m
+        -Djdk.nio.maxCachedBufferSize=1048576
+        -XX:MaxDirectMemorySize=1024m
+  tomcat:
+    connector:
+      maxThreads: 600
+      extraConfig: 'acceptCount="1200" acceptorThreadCount="2" compression="off" connectionLinger="-1" connectionTimeout="120000" enableLookups="false"'
+
+  database:
+    maxOpenConnections: 150
+    # Require multiple Artifactory pods to run on separate nodes
+
   extraEnvironmentVariables:
     - name: MALLOC_ARENA_MAX
       value: "16"
-    - name : JF_SHARED_NODE_HAENABLED
-      value: "true"
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
 
 access:
+  tomcat:
+    connector:
+      maxThreads: 150
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=20
+      -XX:MaxRAMPercentage=60
+  database:
+    maxOpenConnections: 150
   resources:
     requests:
       cpu: 1
@@ -41,11 +71,11 @@ access:
 router:
   resources:
     requests:
-      cpu: 200m
-      memory: 500Mi
-    limits:
-      # cpu: "4"
+      cpu: 400m
       memory: 1Gi
+    limits:
+      # cpu: "8"
+      memory: 2Gi
 
 frontend:
   resources:
@@ -57,6 +87,8 @@ frontend:
       memory: 1Gi
 
 metadata:
+  database:
+    maxOpenConnections: 150
   resources:
     requests:
       cpu: 200m
