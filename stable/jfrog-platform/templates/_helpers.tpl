@@ -162,7 +162,7 @@ Custom init container for Postgres setup
     {{- end }}
     - name: CHART_NAME
       value: {{ .Chart.Name }}
-  {{- else }}
+  {{- else if not (eq .Chart.Name "worker") }}
   env:
     - name: PGUSERNAME
     {{- if .Values.global.database.secrets.adminUsername }}
