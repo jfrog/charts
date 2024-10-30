@@ -1,7 +1,7 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.90.15] - Feb 20, 2024
+## [107.98.7] - Feb 20, 2024
 * Updated `artifactory.installerInfo` content
 
 ## [107.80.0] - Feb 1, 2024

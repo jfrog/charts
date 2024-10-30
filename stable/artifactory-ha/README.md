@@ -14,7 +14,7 @@ Below you will find the basic instructions for installing, uninstalling, and del
 ## Chart Details
 This chart will do the following:
 
-* Deploy Artifactory highly available cluster. 1 primary node and 2 member nodes.
+* Deploy Artifactory highly available cluster. 3 primary nodes.
 * Deploy a PostgreSQL database  **NOTE:** For production grade installations it is recommended to use an external PostgreSQL
 * Deploy an Nginx server
 
@@ -44,7 +44,7 @@ helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifacto
 To apply the chart with recommended sizing configurations :
 For small configurations :
 ```bash
-helm upgrade --install artifactory-ha jfrog/artifactory-ha -f sizing/artifactory-small-extra-config.yaml -f sizing/artifactory-small.yaml --namespace artifactory-ha --create-namespace
+helm upgrade --install artifactory-ha jfrog/artifactory-ha -f sizing/artifactory-small.yaml --namespace artifactory-ha --create-namespace
 ```
 
 ## Uninstalling Artifactory

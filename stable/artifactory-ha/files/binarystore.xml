@@ -198,6 +198,11 @@
         <bucketName>{{ .Values.artifactory.persistence.googleStorage.bucketName }}</bucketName>
         <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
         <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
+        {{- if .Values.artifactory.persistence.googleStorage.signedUrlExpirySeconds }}
+        <signedUrlExpirySeconds>true</signedUrlExpirySeconds>
+        {{- else }}
+        <signedUrlExpirySeconds>false</signedUrlExpirySeconds>
+        {{- end }}
     </provider>
 </config>
 {{- end }}

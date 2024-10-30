@@ -295,6 +295,16 @@ Return the proper artifactory chart image names
 {{- else -}}
     {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- end -}}
+{{- if and (eq $indexReference "metadata") (hasKey $dot.Values.metadata "standaloneImageEnabled") }}
+    {{- if default false $dot.Values.metadata.standaloneImageEnabled }}
+        {{- $tag = default $dot.Chart.Annotations.metadataVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+    {{- end -}}
+{{- end -}}
+{{- if and (eq $indexReference "observability") (hasKey $dot.Values.observability "standaloneImageEnabled") }}
+    {{- if default false $dot.Values.observability.standaloneImageEnabled }}
+        {{- $tag = default $dot.Chart.Annotations.observabilityVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+    {{- end -}}
+{{- end -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.versions.router (eq $indexReference "router") }}
         {{- $tag = $dot.Values.global.versions.router | toString -}}
@@ -560,4 +570,20 @@ Resolve nginx hosts value
   {{- end -}}
 {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified grpc ingress name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "artifactory.ingressGrpc.fullname" -}}
+{{- printf "%s-%s" (include "artifactory-ha.fullname" .) .Values.ingressGrpc.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified grpc service name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "artifactory.serviceGrpc.fullname" -}}
+{{- printf "%s-%s" (include "artifactory-ha.fullname" .) .Values.artifactory.serviceGrpc.name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

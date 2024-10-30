@@ -1,6 +1,30 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.98.7] - Oct 02, 2024
+* Add support for `extraEnvironmentVariables` on filebeat Sidecar [GH-1377](https://github.com/jfrog/charts/pull/1377)
+* Support for SSL offload HTTPS proto override in Nginx service (ClusterIP, LoadBalancer) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type. [GH-1906](https://github.com/jfrog/charts/pull/1906)
+* Enable Access workers integration when artifactory.worker.enabled is true
+* Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct` [GH-1858](https://github.com/jfrog/charts/pull/1858)
+* Added support to bootstrap jfconnect custom certs to jfconnect trusted directory
+
+## [107.96.0] - Sep 10, 2024
+* Merged Artifactory sizing templates to a single file per size
+
+## [107.94.0] - Aug 14, 2024
+* Fixed #Expose rtfs port only when it is enabled
+
+## [107.93.0] - Aug 9, 2024
+* Added support for worker via `artifactory.worker.enabled` flag
+* Fixed creation of duplicate objects in statefulSet
+
+## [107.92.0] - July 31, 2024
+* Updating the example link for downloading the DB driver
+* Adding dedicated ingress and service path for GRPC protocol
+
+## [107.91.0] - July 18, 2024
+* Remove X-JFrog-Override-Base-Url port when using default `443/80` ports
+
 ## [107.90.15] - July 18, 2024
 * Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 * Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
@@ -15,10 +39,7 @@ All changes to this chart will be documented in this file.
     `access.javaOpts.other`
     `access.resources`
     `access.extraEnvironmentVariables`
-* Updating the example link for downloading the DB driver
 * Added Binary Provider recommendations
-* Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct`
-* Support for SSL offload HTTPS proto override in Nginx service(ClusterIP) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type.
 
 ## [107.89.0] - June 7, 2024
 * Fix the indentation of the commented-out sections in the values.yaml file
@@ -41,7 +62,7 @@ All changes to this chart will be documented in this file.
 * Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
 * Fixed an issue with extraSystemYaml merge
 * **IMPORTANT**
-* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext`
+* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext` 
 * Renamed `artifactory.uid` to `artifactory.podSecurityContext.runAsUser`
 * Renamed `artifactory.gid` to `artifactory.podSecurityContext.runAsGroup` and `artifactory.podSecurityContext.fsGroup`
 * Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
@@ -165,7 +186,7 @@ All changes to this chart will be documented in this file.
 ## [107.58.0] - Mar 23, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
 * Removed obselete remove-lost-found initContainer`
-* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode
+* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode 
 
 ## [107.57.0] - Mar 02, 2023
 * Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
@@ -383,7 +404,7 @@ All changes to this chart will be documented in this file.
 
 ## [12.0.0] - April 22, 2021
 * **Breaking change:**
-* Increased default postgresql persistence  size to `200Gi`
+* Increased default postgresql persistence  size to `200Gi` 
 * Update postgresql tag version to `13.2.0-debian-10-r55`
 * Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!

@@ -2,9 +2,13 @@ router:
   serviceRegistry:
     insecure: {{ .Values.router.serviceRegistry.insecure }}
 shared:
-{{- if  .Values.artifactory.coldStorage.enabled }}
+{{- if .Values.artifactory.coldStorage.enabled }}
   jfrogColdStorage:
     coldInstanceEnabled: true
+{{- end }}
+{{- if .Values.artifactory.worker.enabled }}
+  featureToggler:
+    worker: true
 {{- end }}
 {{ tpl (include "artifactory.metrics" .) . }}
   logging:
@@ -13,6 +17,9 @@ shared:
   extraJavaOpts: >
     -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.artifactory.terminationGracePeriodSeconds 1000 }}
     -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
+{{- if .Values.artifactory.worker.enabled }}
+    -Dartifactory.workers.addon.support=true
+{{- end }}
   {{- with .Values.artifactory.javaOpts }}
     {{- if .corePoolSize }}
     -Dartifactory.async.corePoolSize={{ .corePoolSize }}
@@ -101,6 +108,10 @@ access:
       maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
       sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
       extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
+{{- if .Values.artifactory.worker.enabled }}
+  worker:
+    enabled: true
+{{- end }}
 {{- if .Values.mc.enabled }}
 mc:
   enabled: true
