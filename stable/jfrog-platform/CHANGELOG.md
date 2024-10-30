@@ -1,7 +1,46 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
-## [10.18.3] - July 15, 2024
+## [10.19.7] - Oct 23, 2024
+* Added podSecurityContext and containerSecurityContext for pre-upgrade-check migration hook container. [GH-1929](https://github.com/jfrog/charts/pull/1929)
+* Update dependency artifactory chart version to 107.90.15
+* Update dependency xray chart version to 103.104.18
+
+## [10.19.6] - Oct 8, 2024
+* Fixed typo to get fourth parameter for setupPostgres.sh [GH-1992](https://github.com/jfrog/charts/pull/1992)
+* Added `preUpgradeHook.tolerations`
+* Update dependency artifactory chart version to 107.90.14
+* Update dependency xray chart version to 103.104.17
+
+## [10.19.5] - Sep 11, 2024
+* Update dependency artifactory chart version to 107.90.10
+* Update dependency xray chart version to 103.104.8
+
+## [10.19.4] - Aug 28, 2024
+* Update dependency artifactory chart version to 107.90.9
+* Update dependency xray chart version to 103.103.6
+
+## [10.19.3] - Aug 16, 2024
+* Update dependency artifactory chart version to 107.90.8
+* Update dependency xray chart version to 103.102.3
+* Update global.versions.router version to `7.124.1`
+
+## [10.19.2] - Aug 9, 2024
+* Update dependency artifactory chart version to 107.90.7
+* Update global.versions.router version to `7.124.0`
+
+## [10.19.1] - Aug 6, 2024
+* Update dependency artifactory chart version to 107.90.6
+* Update dependency xray chart version to 103.101.5
+
+## [10.19.0] - Jul 25, 2024
+* **Important change:**
+* Mission Control is also disabled by default now, if you are using this product from previous release, enable them using your custom-values.yaml file.
+* Update dependency artifactory chart version to 107.90.5
+* Update dependency xray chart version to 103.100.3
+* Update global.versions.router version to `7.122.1`
+
+## [10.18.3] - Jul 15, 2024
 * Update dependency artifactory chart version to 107.84.17
 * Update dependency xray chart version to 103.98.5
 

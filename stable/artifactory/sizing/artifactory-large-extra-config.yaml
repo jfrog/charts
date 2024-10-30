@@ -28,7 +28,10 @@ access:
   tomcat:
     connector:
       maxThreads: 125
-
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=20
+      -XX:MaxRAMPercentage=60
   database:
     maxOpenConnections: 100
 

@@ -1,7 +1,14 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.98.5] - May 27, 2024
+## [103.104.18] - July 17, 2024
+* Added support of specifying resources constraints for RabbitMQ's pre-upgrade-hook job
+* Fixed formatting error associated to the `volumeMounts` for the `panoramic` microservice [GH-1895](https://github.com/jfrog/charts/issues/1895)
+
+## [103.99.0] - June 18, 2024
+* Fixed #adding colon in image registry breaks deployment with meta label error. [GH-1892](https://github.com/jfrog/charts/pull/1892)
+
+## [103.97.0] - May 27, 2024
 * Added chart label to xray pods
 
 ## [103.96.0] - Apr 17, 2024

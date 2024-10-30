@@ -102,6 +102,10 @@ spec:
         - name: pre-upgrade-container
           image: "{{ include "xray.getRegistryByService" (list . "migrationHook") }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
           imagePullPolicy: IfNotPresent
+          {{- if .Values.rabbitmq.resources }}
+          resources:
+            {{- toYaml .Values.rabbitmq.resources | nindent 12 }}
+          {{- end }}
           {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
           securityContext: {{- omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}

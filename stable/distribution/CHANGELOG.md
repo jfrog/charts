@@ -1,10 +1,14 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.25.1] - May 16, 2024
-* Update postgresql tag version to `15.6.0-debian-11-r16`
+## [102.26.1] - May 29, 2024
+* Fix the indentation of the commented-out sections in the values.yaml file
+
+## [102.25.0] - May 16, 2024
+* Update postgresql tag version to `15.6.0-debian-12-r5`
 * Fixed an issue to generate unified secret to support distribution fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
 * Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
+* Added `.Values.distribution.unifiedSecretPrependReleaseName` for unified secret name as fullname release name
 
 ## [102.24.0] - Mar 27, 2024
 * Added image section for `initContainers` instead of `initContainerImage`

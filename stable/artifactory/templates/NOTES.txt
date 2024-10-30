@@ -97,3 +97,10 @@ sudo sh -c "echo \"${SERVICE_IP}    {{ template "artifactory.fullname" . }}\" >>
 3. Launch jconsole:
 jconsole {{ template "artifactory.fullname" . }}:{{ .Values.artifactory.javaOpts.jmx.port }}
 {{- end }}
+
+{{- if and .Values.nginx.enabled .Values.ingress.hosts }}
+***************************************** WARNING *****************************************************************************
+* when nginx is enabled , .Values.ingress.hosts will be deprecated in upcoming releases                                              *
+* It is recommended to use nginx.hosts instead ingress.hosts 
+*******************************************************************************************************************************
+{{- end }}

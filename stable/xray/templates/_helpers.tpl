@@ -28,6 +28,13 @@ The xray-panoramic name
 {{- end -}}
 
 {{/*
+The xray-policyenforcer name
+*/}}
+{{- define "xray-policyenforcer.name" -}}
+{{- default .Chart.Name .Values.panoramic.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 The xray-indexer name
 */}}
 {{- define "xray-indexer.name" -}}
@@ -463,6 +470,14 @@ Return the proper xray chart image names
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper xray app version
+*/}}
+{{- define "xray.app.version" -}}
+{{- $tag := (splitList ":" ((include "xray.getImageInfoByValue" (list . "server" )))) | last | toString -}}
+{{- printf "%s" $tag -}}
 {{- end -}}
 
 {{/*

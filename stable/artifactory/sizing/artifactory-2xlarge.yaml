@@ -28,6 +28,15 @@ artifactory:
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
 
+access:
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      # cpu: 2
+      memory: 4Gi
+
 router:
   resources:
     requests:
@@ -95,7 +104,7 @@ nginx:
 
 postgresql:
   postgresqlExtendedConf:
-    maxConnections: "2500"
+    maxConnections: "5000"
   primary:
     affinity:
       # Require PostgreSQL pod to run on a different node than Artifactory pods
