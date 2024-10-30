@@ -18,6 +18,7 @@ All changes to this chart will be documented in this file.
 * Updating the example link for downloading the DB driver
 * Added Binary Provider recommendations
 * Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct`
+* Support for SSL offload HTTPS proto override in Nginx service(ClusterIP) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type.
 
 ## [107.89.0] - June 7, 2024
 * Fix the indentation of the commented-out sections in the values.yaml file
@@ -40,7 +41,7 @@ All changes to this chart will be documented in this file.
 * Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
 * Fixed an issue with extraSystemYaml merge
 * **IMPORTANT**
-* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext` 
+* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext`
 * Renamed `artifactory.uid` to `artifactory.podSecurityContext.runAsUser`
 * Renamed `artifactory.gid` to `artifactory.podSecurityContext.runAsGroup` and `artifactory.podSecurityContext.fsGroup`
 * Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
@@ -164,7 +165,7 @@ All changes to this chart will be documented in this file.
 ## [107.58.0] - Mar 23, 2023
 * Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
 * Removed obselete remove-lost-found initContainer`
-* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode 
+* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode
 
 ## [107.57.0] - Mar 02, 2023
 * Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
@@ -382,7 +383,7 @@ All changes to this chart will be documented in this file.
 
 ## [12.0.0] - April 22, 2021
 * **Breaking change:**
-* Increased default postgresql persistence  size to `200Gi` 
+* Increased default postgresql persistence  size to `200Gi`
 * Update postgresql tag version to `13.2.0-debian-10-r55`
 * Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
 * If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
