@@ -1,0 +1,627 @@
+# Default values for worker.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  # imageRegistry: ""
+  imagePullSecrets:
+    - regcred
+
+  ## Worker service requires a unique master key.
+  ## You can generate one with the command: "openssl rand -hex 32"
+  ## An initial one is auto generated on first startup.
+  # masterKey: ""
+
+  ## Alternatively, you can use a pre-existing secret with a key
+  ## called "master-key" by specifying "masterKeySecretName"
+  # masterKeySecretName: ""
+
+  ## Join Key to connect other services to Artifactory
+  ## IMPORTANT: Setting this value overrides the existing joinKey
+  joinKey: "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+
+  ## Alternatively, you can use a pre-existing secret with a key
+  ## called "join-key" by specifying "joinKeySecretName"
+  masterKey: "1111111111111111111111111111111111111111111111111111111111111111"
+
+    ## Note: tags customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
+    # customVolumes: |
+
+    # customVolumeMounts: |
+
+    # customInitContainers: |
+
+    # customSidecarContainers: |
+
+    ## certificates added to this secret will be copied to $JFROG_HOME/worker/var/data/router/keys/trusted directory
+    # customCertificates:
+    # enabled: false
+  # certificateSecretName:
+
+  ## Applies to Worker pods
+  nodeSelector:
+    kubernetes.io/hostname: kind-singletenant-control-plane
+
+jfrogUrl: "http://artifactory-local:8082"
+
+## Number of replicas used when autoscaling is disabled
+replicaCount: 1
+
+## Worker image
+image:
+  registry: entplus.jfrog.io
+  pullSecrets:
+    - "regcred"
+  repository: dev-feature-wks-1019-docker-virtual/jfrog/worker
+  tag: feature-WKS-1019-13
+  # pullPolicy: IfNotPresent
+
+## String to partially override worker.name template (will maintain the release name)
+nameOverride: "workername"
+## String to fully override worker.fullname template
+fullnameOverride: "workerfullname"
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 110
+
+## Service Account
+## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
+##
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+## Annotations added to Worker pods
+podAnnotations:
+  custom: myworker
+
+## Disable podSecurityContext for openshift
+podSecurityContext:
+  enabled: true
+  fsGroup: 1131
+  runAsUser: 1131
+
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## Disable securityContext for openshift
+securityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
+
+## Set sleep in order to keep service responding while k8s is removing it from network
+lifecycle:
+  preStopSleepSeconds: 5
+
+## Worker service configuration
+service:
+  type: ClusterIP
+  port: 8098
+  grpcPort: 8099
+  nodePort: 30000
+  productHome: /opt/jfrog/worker
+
+## Worker service ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+  grpcReadTimeout: 43200s
+  grpcSendTimeout: 43200s
+  clientBodyTimeout: 43200s
+
+## Worker container resources
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
+## Autoscaling configuration for Worker deployment
+autoscaling:
+  ## Enable autoscaling for Worker deployment
+  enabled: false
+  ## Type of autoscaler. Possible values:
+  ## - "keda"
+  ##    ref: https://keda.sh/
+  ## - "hpa"
+  ##    ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  kind: "keda"
+  minReplicas: 1
+  maxReplicas: 10
+  pollingInterval: 30
+  cooldownPeriod: 300
+  # targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+  keda:
+    threshold: '3'
+    query: sum(avg_over_time(jfwks_execution_processing_count{service="{{ .Release.Name }}", namespace="{{ .Release.Namespace }}"}[1m]))
+    metricType: AverageValue
+
+## @param serviceMonitor Declaratively specifies how groups of Kubernetes services should be monitored.
+## Ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md
+serviceMonitor:
+  targetPort: 8082
+  enabled: false
+  interval: 60s
+  scrapeTimeout: 15s
+  kubePromApp: ""
+  kubePromFullName: ""
+  namespaceSelector:
+    any: true
+
+## Applies to worker pods
+# nodeSelector: {}
+
+## Applies to worker pods
+# tolerations: []
+
+## Applies to worker pods
+# affinity: {}
+
+## Extra environment variables that can be used to tune worker service to your needs.
+## Uncomment and set value as needed
+extraEnvironmentVariables:
+  - name: MY_ENV_VAR
+    value: "4"
+
+
+router:
+  name: router
+  image:
+    registry: entplus.jfrog.io
+    repository: jfrog-docker/jfrog/router
+    tag: 7.118.0
+  #   imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: true
+    url: http://tenant1-artifactory:8082
+    grpcUrl: tenant1-artifactory:8082
+  internalPort: 8046
+  externalPort: 8082
+  tlsEnabled: false
+
+  ## Extra environment variables that can be used to tune router to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    - name: MY_ENV_VAR
+      value: "5"
+
+      # resources:
+      #   requests: {}
+      #    memory: "100Mi"
+      #    cpu: "100m"
+      # limits: {}
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+    - name: custom-script
+      mountPath: /scripts/router-script.sh
+      subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 10
+      successThreshold: 1
+  # readinessProbe:
+  #   enabled: true
+  #   config: |
+  #     exec:
+  #       command:
+  #         - sh
+  #         - -c
+  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+  #     initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+  #     periodSeconds: 5
+  #     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  #     failureThreshold: 10
+  #     successThreshold: 1
+  # startupProbe:
+  #   enabled: true
+  #   config: |
+  #     exec:
+  #       command:
+  #         - sh
+  #         - -c
+  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+  #     initialDelaySeconds: 0
+  #     failureThreshold: 60
+  #     periodSeconds: 5
+  #     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
+
+## @section Init Container Parameters
+##
+
+## Init Container parameters
+
+initContainers:
+  ## @param volumePermissions.enabled Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`
+  ##
+  ## @param initContainers.image.registry Init container volume-permissions image registry
+  ## @param initContainers.image.repository Init container volume-permissions image repository
+  ## @param initContainers.image.tag Init container volume-permissions image tag
+  ## @param initContainers.image.pullPolicy Init container volume-permissions image pull policy
+  ## @param initContainers.image.pullSecrets Specify docker-registry secret names as an array
+  ##
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.4.949.1716471857
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets (secrets must be manually created in the namespace)
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets:
+      - "regcred"
+  ## Init Container resource requests and limits
+  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param volumePermissions.resources.limits Init container volume-permissions resource limits
+  ## @param volumePermissions.resources.requests Init container volume-permissions resource requests
+  ##
+  resources:
+    ## Example:
+    ## limits:
+    ##    cpu: 100m
+    ##    memory: 128Mi
+    ##
+    limits: {}
+    ## Examples:
+    ## requests:
+    ##    cpu: 100m
+    ##    memory: 128Mi
+    ##
+    requests: {}
+
+## a unique master key.
+## You can generate one with the command: "openssl rand -hex 32"
+## An initial one is auto generated by Artifactory on first startup.
+# masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+# masterKeySecretName: ""
+
+## Join Key to connect other services to Artifactory
+## IMPORTANT: Setting this value overrides the existing joinKey
+## IMPORTANT: You should NOT use the example joinKey for a production deployment!
+# joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+# joinKeySecretName: ""
+
+## Contents of the system.yaml file
+# systemYaml: |
+#   router:
+#     serviceRegistry:
+#       insecure: {{ .Values.router.serviceRegistry.insecure }}
+
+## worker systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring artifactory
+## Refer: https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML
+## Note: This will override existing (default) .Values.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+# systemYamlOverride:
+#   ## You can use a pre-existing secret by specifying existingSecret
+#   existingSecret: ""
+#   ## The dataKey should be the name of the secret data key created.
+#   dataKey:
+
+## @param commonAnnotations Annotations to add to all deployed objects
+##
+commonAnnotations:
+  jfrog.io/service_type: jfwks
+
+## @param podLabels integration Pod labels. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+podLabels:
+  podlabel: number1
+
+## Worker deployment labels
+labels:
+  dpLabel: number2
+
+common:
+  ## Spread Worker pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+    # - maxSkew: 1
+    #   topologyKey: kubernetes.io/hostname
+    #   whenUnsatisfiable: DoNotSchedule
+    #   labelSelector:
+    #     matchLabels:
+    #       app: '{{ template "worker.name" . }}'
+  #       role: '{{ template "worker.name" . }}'
+  #       release: "{{ .Release.Name }}"
+
+  ## Custom command to run before worker startup. Runs BEFORE any microservice-specific preStartCommand
+  preStartCommand: "ls"
+
+  ## Add custom volumes
+  customVolumes: |
+    - name: custom-script
+      configMap:
+        name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+    - name: custom-script
+      mountPath: /scripts/script.sh
+      subPath: script.sh
+
+  ## Add any list of configmaps to worker
+  configMaps: |
+    posthook-start.sh: |-
+      echo "This is a post start script"
+    posthook-end.sh: |-
+      echo "This is a post end script"
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: |
+    - name: "custom-systemyaml-setup"
+      image: {{ template "initContainers.image" $ }}
+      imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - NET_RAW
+      command:
+        - 'sh'
+        - '-c'
+        - 'ls /opt/jfrog/worker/var/etc/'
+        # - 'curl -o /opt/jfrog/worker/var/etc/system-custom.yaml https://<repo-url>/systemyaml'
+      volumeMounts:
+        - mountPath: "/opt/jfrog/worker/var"
+          name: data
+
+  ## Add custom sidecar containers
+  ## - The provided example uses a custom volume (customVolumes)
+  customSidecarContainers: |
+    - name: "sidecar-list-etc"
+      image: {{ template "initContainers.image" $ }}
+      imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - NET_RAW
+      command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/script.sh'
+      volumeMounts:
+        - mountPath: "/opt/jfrog/worker/var"
+          name: data
+        - mountPath: "/scripts/script.sh"
+          name: custom-script
+          subPath: script.sh
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+## certificates added to this secret will be copied to $JFROG_HOME/worker/var/data/router/keys/trusted directory
+customCertificates:
+  enabled: true
+  certificateSecretName: platformcert
+
+## Adding entries to a Pod's /etc/hosts file
+## For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases:
+  - ip: "100.64.0.1"
+    hostnames:
+      - "webhook.site"
+
+## Worker liveness probe configuration
+livenessProbe:
+  enabled: true
+  config: |
+    httpGet:
+      path: /api/v1/system/liveness
+      port: {{ .Values.service.port }}
+    initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+    periodSeconds: 5
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+    failureThreshold: 10
+    successThreshold: 1
+
+## Worker readiness probe configuration
+readinessProbe:
+  enabled: true
+  config: |
+    httpGet:
+      path: /api/v1/system/readiness
+      port: {{ .Values.service.port }}
+    initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+    periodSeconds: 5
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+    failureThreshold: 10
+    successThreshold: 1
+
+## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+loggers:
+  - router-request.log
+  - router-service.log
+  - router-traefik.log
+  - worker-service.log
+  - worker-request.log
+
+## Loggers containers resources
+loggersResources:
+  requests:
+    memory: "64Mi"
+    cpu: "25m"
+  limits:
+    memory: "128Mi"
+    cpu: "50m"
+
+## Filebeat Sidecar container
+## The provided filebeat configuration is for Worker logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: true
+  name: worker-filebeat
+  image:
+    repository: docker.elastic.co/beats/filebeat
+    version: 7.16.2
+    pullPolicy: IfNotPresent
+  logstashUrl: "logstash-logstash-headless:9600"
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: /opt/jfrog/worker/var/log/filebeat
+    name: worker-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - /opt/jfrog/worker/var/log/*.log
+      fields:
+        service: "jfwks"
+        log_type: "worker"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+observability:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/observability
+    tag: 1.31.4
+  enabled: true
+  name: observability
+  internalPort: 8036
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+  ## Add lifecycle hooks for the observability pod
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo 'Hello from the observability postStart handler'"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo 'Hello from the observability preStart handler'"]
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  persistence:
+    mountPath: "/var/opt/jfrog/observability"

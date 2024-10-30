@@ -1,0 +1,29 @@
+# this service is for rest LB : nginx will redirect traffic directly to it
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "worker.fullname" . }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    metricsName: worker
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: http-router
+      port: {{ .Values.router.externalPort }}
+      targetPort: {{ .Values.router.externalPort }}
+      {{- if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
+      protocol: TCP
+    - name: http-router-in
+      port: {{ .Values.router.internalPort }}
+      targetPort: {{ .Values.router.internalPort }}
+      protocol: TCP
+  selector: {{ include "common.labels.matchLabels" . | nindent 4 }}
