@@ -1,0 +1,85 @@
+## Artifactory URL. Mandatory
+jfrogUrl: "http://artifactory-local:8082"
+
+router:
+  customLivenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - curl -s -k --fail --max-time 120 http://localhost:8046/router/api/v1/system/liveness
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 120
+    failureThreshold: 10
+    successThreshold: 1
+
+  customReadinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - curl -s -k --fail --max-time 120 http://localhost:8046/router/api/v1/system/readiness
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 120
+    failureThreshold: 10
+    successThreshold: 1
+
+  customStartupProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - curl -s -k --fail --max-time 120 http://localhost:8046/router/api/v1/system/readiness
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    timeoutSeconds: 120
+    failureThreshold: 10
+    successThreshold: 1
+
+## Worker custom liveness probe configuration
+customLivenessProbe:
+  httpGet:
+    path: /api/v1/system/liveness
+    port: 8098
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 120
+  failureThreshold: 10
+  successThreshold: 1
+
+## Worker custom readiness probe configuration
+customReadinessProbe:
+  httpGet:
+    path: /api/v1/system/readiness
+    port: 8098
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 120
+  failureThreshold: 10
+  successThreshold: 1
+
+observability:
+  customLivenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - curl --fail --max-time 120 http://localhost:8036/api/v1/system/liveness
+    initialDelaySeconds: 0
+    failureThreshold: 5
+    timeoutSeconds: 120
+    periodSeconds: 10
+    successThreshold: 1
+
+  customStartupProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - curl --fail --max-time 120 http://localhost:8036/api/v1/system/readiness
+    initialDelaySeconds: 30
+    failureThreshold: 90
+    periodSeconds: 5
+    timeoutSeconds: 120

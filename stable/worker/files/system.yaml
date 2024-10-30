@@ -1,0 +1,143 @@
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
+    # entrypoints:
+    ## Router port for internal communication
+    #  internalPort: 8046
+    ## Endpoint for health check
+    # healthPath: '/api/v1/system/liveness'
+
+# shared:
+## New Relic configuration
+  # newrelic:
+    # licenseKey: ''
+    # appName: ''
+    # enabled: false
+    # distributedTracerEnabled: false
+
+## Access client configuration
+# accessClient:
+  # routerBaseUrl: localhost:8046
+  # accessBaseUrl: http://localhost:8046/access
+  # accessGrpcBaseUrl: localhost:8046
+  # serviceId: jfwks@000
+  # skipPingOnJoin: true
+  # timeoutMillis: 5000
+
+## Worker service configuration
+worker:
+  ## Worker port for REST API
+  port: {{ .Values.service.port }}
+  ## Worker port for gRPC API
+  grpcPort: {{ .Values.service.grpcPort }}
+  ## Worker cache configuration
+  # workerCache:
+    ## Maximum number of workers stored in cache
+    # max: 200
+    ## Time to live for workers in cache
+    # ttlMillis: 300000
+  # worker:
+    ## Amount of workers allowed per action
+    # maxPerActionPerTenant: 10
+    ## Interval in milliseconds for fetching metrics
+    # metricsFetchIntervalMillis: 300000
+    ## Defines how many memory max in Mb the node process can use per worker (child process)
+    # maxOldSpace: 128
+  # edition:
+    # limits:
+        ## Maximum number of code characters allowed in a single worker
+      # maxCodeChars: 100000
+  # execution:
+    # errorRateLimiter:
+      ## Backed off by 2^10 which is around 17 minutes
+      # maxExponentBackoff: 10
+      ## Reset errorRateLimiter every day (backoff exponent and current rate will be reset)
+      # cleanIntervalMillis: 1000 * 60 * 60 * 24
+      ## How many times we can fail withing cleanIntervalMillis before backing off
+      # rateLimit: 10
+    # limits:
+      ## Maximum CPU time in milliseconds allowed for a single worker
+      # cpuTimeMillis: 1000
+      ## Maximum call time in milliseconds allowed for a single worker
+      # callTimeMillis: 5000
+      ## Maximum memory in Mb allowed for a single worker
+      # memoryMB: 64
+      ## How often we check for the worker status
+      # checkIntervalMillis: 100
+      ## Maximum call depth allowed for a single worker
+      # maxCallDepth: 100
+      ## Maximum time a worker can wait in the queue before being killed
+      # maxWaitingInQueueMillis: 30000
+    # workers:
+      ## Number of processes in worker pool
+      # count: 10
+    ## Security configuration for axios client used in workers
+    # axios:
+      ## List of axios config properties allowed for modification
+      # requestConfigWhiteList: {}
+      ## Whether to reset the request config base white list
+      # resetRequestConfigBaseWhiteList: false
+      ## DNS cache configuration
+      # dnsCache:
+        # enabled: true
+        # maxTtlSeconds: 5
+        # errorTtlSeconds: 1
+    ## These fields will be skipped from obfuscation in the worker output
+    # skipFieldsObfuscation:
+      # - 'modifiedRepoPath'
+    ## Execution history configuration
+    # history:
+      # enabled: false
+      # storageConfig:
+        ## The limit in Kb beyond which the entry will be truncated (essentially logs and custom data returned by the worker)
+        # maxEntrySizeKb: 130
+        ## Interval in milliseconds for trimming the history
+        # trimIntervalMillis: 60000
+        ## Maximum number of entries in the history
+        # maxTrimLength: 100
+        ## Redis URL
+        # url: 'redis://localhost:6379'
+        ## Redis connection parameters
+        # params: 'mode=single;password=toBeOverridden'
+  # security:
+    # accessTokenExpirySeconds: 900
+    # tokenCacheExpiryMillis: 720000
+    # tokenCacheSize: 500
+  ## Logging configuration
+  # logging:
+    ## Log throttle configuration
+    # throttle:
+      # maxItems: 50
+      # intervalMillis: 250
+    ## Application logging configuration
+    # application:
+      # dirPath: 'var/log'
+      # level: 'info'
+      # rotation:
+        # frequency: '24h'
+        # maxSizeMb: 25
+        # maxFiles: 10
+        # datePattern: 'YYYY-MM-DD-HH'
+    ## Request logging configuration
+    # request:
+      # dirPath: 'var/log'
+      # level: 'info'
+      # rotation:
+        # frequency: '24h'
+        # maxSizeMb: 25
+        # maxFiles: 10
+        # datePattern: 'YYYY-MM-DD-HH'
+    ## Usage logging configuration
+    # usage:
+      # maxSizeMb: 10
+      # maxFiles: 10
+      # metricKeys:
+        # -'jfwks_execution_total_count'
+        # -'jfwks_execution_cpu_time_count'
+        # -'jfwks_execution_time_count'
+        # -'jfwks_execution_total_count'
+        # -'jfwks_workers_count_total'
+        # -'jfwks_tenants_count_total'
+  ## Support bundle configuration
+  # supportBundle:
+    # enabled: true

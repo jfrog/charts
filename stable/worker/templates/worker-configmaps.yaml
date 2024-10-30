@@ -1,0 +1,13 @@
+{{ if .Values.common.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "worker.fullname" . }}-configmaps
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+data:
+{{ tpl .Values.common.configMaps . | indent 2 }}
+{{ end -}}

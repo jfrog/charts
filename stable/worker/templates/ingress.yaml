@@ -1,0 +1,42 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "worker.fullname" . }}
+  annotations:
+    nginx.ingress.kubernetes.io/load-balance: ewma
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      grpc_read_timeout {{ .Values.ingress.grpcReadTimeout }};
+      grpc_send_timeout {{ .Values.ingress.grpcSendTimeout }};
+      client_body_timeout {{ .Values.ingress.clientBodyTimeout }};
+    {{ if .Values.ingress.backendTls }}
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPCS"
+    {{ else }}
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    {{ end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+    nginx.ingress.kubernetes.io/enable-underscores-in-headers: "true"
+spec:
+  ingressClassName: {{ .Values.ingress.ingress_class }}
+  rules:
+    - host: {{ .Values.ingress.hostname }}
+      http:
+        paths:
+            - path: /com.jfrog.worker.v1..*
+              pathType: ImplementationSpecific
+              backend:
+                service:
+                  name: {{ include "worker.fullname" . }}
+                  port:
+                    name: {{ .Values.ingress.backendPortName }}
+            - path: /worker/.*
+              pathType: ImplementationSpecific
+              backend:
+                service:
+                  name: {{ include "worker.fullname" . }}
+                  port:
+                    name: {{ .Values.ingress.backendPortName }}
+{{- end }}
