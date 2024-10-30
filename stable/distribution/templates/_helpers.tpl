@@ -192,6 +192,14 @@ Resolve customSidecarContainers value
 {{- end -}}
 
 {{/*
+Return the proper distribution app version
+*/}}
+{{- define "distribution.app.version" -}}
+{{- $tag := (splitList ":" ((include "distribution.getImageInfoByValue" (list . "distribution" )))) | last | toString -}}
+{{- printf "%s" $tag -}}
+{{- end -}}
+
+{{/*
 Return the proper distribution chart image names
 */}}
 {{- define "distribution.getImageInfoByValue" -}}
