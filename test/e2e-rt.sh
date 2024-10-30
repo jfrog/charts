@@ -31,7 +31,7 @@ deploy() {
     echo
     echo "Waiting for Artifactory to be ready!"
     kubectl rollout status statefulset/artifactory-postgresql -w -n ${namespace} --request-timeout="10m"
-    kubectl rollout status statefulset/artifactory-artifactory -w -n ${namespace} --request-timeout="10m"
+    kubectl rollout status statefulset/artifactory -w -n ${namespace} --request-timeout="10m"
     kubectl get pods -n ${namespace}
     kubectl get svc -n ${namespace}
     echo

@@ -46,22 +46,6 @@ createDB(){
     fi
 }
 
-# Create schema if it does not exist
-createSchema(){
-    local schema=$1
-    local db=$2
-    local user=$3
-
-    echo "Setting schema : $1 in DB : $2 for user : $3"
-
-    [ ! -z ${schema} ] || errorExit "schema is empty"
-    [ ! -z ${db}     ] || errorExit "db is empty"
-    [ ! -z ${user}   ] || errorExit "user is empty"
-
-    PGOPTIONS='--client-min-messages=warning' ${PSQL} $POSTGRES_OPTIONS --dbname="${db}" -qc "CREATE SCHEMA IF NOT EXISTS ${schema} AUTHORIZATION ${user}" 1>/dev/null
-    ${PSQL} $POSTGRES_OPTIONS -c "GRANT ALL ON SCHEMA ${schema} TO ${user}" --dbname="${db}" 1>/dev/null;
-}
-
 # Check if postgres db is ready
 postgresIsNotReady() {
     attempt_number=${attempt_number:-0}
@@ -120,7 +104,7 @@ setupDB(){
 : ${DB_NAME:=$1}
 : ${DB_USERNAME:=$2}
 : ${DB_PASSWORD:=$3}
-: ${CHART_NAME:=4}
+: ${CHART_NAME:=$4}
 
 ### Following are the postgres details being setup for each service.
 ##  Common details
@@ -131,24 +115,12 @@ setupDB(){
 
 ## Set Postgres options
 [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
-POSTGRES_OPTIONS="sslmode=${DB_SSL_MODE} --host=${DB_HOST} -U ${PGUSERNAME} -w"
+POSTGRES_OPTIONS="sslmode=${DB_SSL_MODE} --host=${DB_HOST} -p ${DB_PORT} -U ${PGUSERNAME} -w"
 
 init
 
 log "Setting up DB $DB_NAME and user $DB_USERNAME on Postgres for $CHART_NAME chart."
 setupDB "${DB_USERNAME}" "${DB_PASSWORD}" "${DB_NAME}" || true
-
-if [ "${CHART_NAME}" == "mission-control" ]; then
-    ##  Insight Server
-    : ${JFIS_DB_SCHEMA:="insight_server"}
-    createSchema "${JFIS_DB_SCHEMA}" "${DB_NAME}" "${DB_USERNAME}"
-    ##  Insight Scheduler
-    : ${JFSC_DB_SCHEMA:="insight_scheduler"}
-    createSchema "${JFSC_DB_SCHEMA}" "${DB_NAME}" "${DB_USERNAME}"
-    ##  Jfmc Server
-    : ${JFMC_DB_SCHEMA:="jfmc_server"}
-    createSchema "${JFMC_DB_SCHEMA}" "${DB_NAME}" "${DB_USERNAME}"
-fi
 
 log "$POSTGRES_LABEL setup is now complete."
 

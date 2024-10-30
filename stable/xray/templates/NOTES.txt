@@ -15,6 +15,12 @@ Congratulations! JFrog Xray services are deployed!
 ***************************************************************************************
 {{- end }}
 
+{{- if and (or (or (or .Values.systemYamlOverride.existingSecret (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName)) .Values.database.secrets) .Values.xray.unifiedSecretInstallation }}
+****************************************** WARNING **************************************************************************************************
+* The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*
+* Update the values.yaml with the existing secrets to add them to the unified secret.                                                               *
+*****************************************************************************************************************************************************
+{{- end }}
 
 Open Artifactory - {{ .Values.xray.jfrogUrl }} in your browser. Xray should be activated with Artifactory.
 

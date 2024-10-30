@@ -1,0 +1,44 @@
+initContainers:
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "10m"
+    limits:
+      memory: "128Mi"
+      cpu: "250m"
+elasticsearch:
+  resources:
+    requests:
+      memory: "8Gi"
+      cpu: "1"
+    limits:
+      memory: "8Gi"
+      cpu: "2"
+  ## ElasticSearch xms and xmx should be same!
+  javaOpts:
+    xms: "7g"
+    xmx: "7g"
+
+insightServer:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "1"
+    limits:
+      memory: "4Gi"
+      cpu: "2"
+  javaOpts:
+    xms: "3g"
+    xmx: "6g"
+
+insightScheduler:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "1"
+    limits:
+      memory: "3Gi"
+      cpu: "2"
+  javaOpts:
+    xms: "512m"
+    xmx: "3g"

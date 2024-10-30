@@ -1,14 +1,11 @@
-{{- range .Values.networkpolicy }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ template "pipelines.fullname" $ }}-{{ .name }}-networkpolicy
   labels:
-    app: {{ template "pipelines.name" $ }}
-    chart: {{ template "pipelines.chart" $ }}
-    release: {{ $.Release.Name }}
-    heritage: {{ $.Release.Service }}  
+    {{- include "pipelines.labels" . | nindent 4 }}
 spec:
+{{- range .Values.networkpolicy }}
 {{- if .podSelector }}
   podSelector:
 {{ .podSelector | toYaml | trimSuffix "\n" | indent 4 -}}
@@ -31,4 +28,4 @@ spec:
 {{ .egress | toYaml | trimSuffix "\n" | indent 2 -}}
 {{- end }}
 ---
-{{- end -}}
+{{- end }}

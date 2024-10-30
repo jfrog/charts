@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 readonly IMAGE_TAG=${CHART_TESTING_TAG}
-readonly IMAGE_REPOSITORY="quay.io/rimusz/harts-ci"
+readonly IMAGE_REPOSITORY="releases-docker.jfrog.io/charts-ci"
 readonly REPO_ROOT="${REPO_ROOT:-$(git rev-parse --show-toplevel)}"
 
 # shellcheck source=test/common.sh

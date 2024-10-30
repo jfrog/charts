@@ -1,0 +1,68 @@
+common:
+
+  # Create extra config maps with the required fluent-bit configuration
+  configMaps: |
+    fluent-bit-input.conf: |-
+      [INPUT]
+          Name              tail
+          Path              /var/opt/jfrog/xray/log/*.log
+          DB                /var/opt/jfrog/fluentdb/fluentdb.db
+          Exclude_Path      *router-request.log,*console.log,*-metrics.log
+          Path_Key          file
+          Refresh_Interval  20
+          Multiline         On
+          Parser_Firstline  multiline_pattern
+          Skip_Long_Lines   On
+
+    fluent-bit-output.conf: |-
+      [OUTPUT]
+          Name   stdout
+          Match  *
+          Format json_lines
+
+    fluent-bit-service.conf: |-
+      [SERVICE]
+          Flush        1
+          Daemon       Off
+          Log_Level    info
+          Parsers_File parsers.conf
+
+    fluent-bit.conf: |-
+      @INCLUDE fluent-bit-service.conf
+      @INCLUDE fluent-bit-input.conf
+      @INCLUDE fluent-bit-output.conf
+
+    parsers.conf: |-
+      [PARSER]
+          Name      multiline_pattern
+          Format    regex
+          Regex     ^(?<log>\d{2,4}\-\d{2,4}\-\d{2,4}T\d{2,4}\:\d{2,4}\:\d{2,4}\.\d{1,6}?.*)
+
+  # Create the extra sidecar container
+  customSidecarContainers: |
+    - name: xray-fluent-bit
+      image: "fluent/fluent-bit:2.1.2"
+      volumeMounts:
+      - mountPath: /var/opt/jfrog/xray
+        name: data-volume
+      - mountPath: /var/opt/jfrog/fluentdb
+        name: fluentdb
+      - mountPath: /fluent-bit/etc/fluent-bit.conf
+        name: xray-configmaps
+        subPath: fluent-bit.conf
+      - mountPath: /fluent-bit/etc/fluent-bit-service.conf
+        name: xray-configmaps
+        subPath: fluent-bit-service.conf
+      - mountPath: /fluent-bit/etc/fluent-bit-input.conf
+        name: xray-configmaps
+        subPath: fluent-bit-input.conf
+      - mountPath: /fluent-bit/etc/fluent-bit-output.conf
+        name: xray-configmaps
+        subPath: fluent-bit-output.conf
+      - mountPath: /fluent-bit/etc/parsers.conf
+        name: xray-configmaps
+        subPath: parsers.conf
+
+  customVolumes: |
+    - name: fluentdb
+      emptyDir: {}

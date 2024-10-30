@@ -1,6 +1,55 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
+## [107.90.15] - Feb 20, 2024
+* Updated `artifactory.installerInfo` content
+
+## [107.80.0] - Feb 1, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+
+## [107.74.0] - Nov 23, 2023
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+
+## [107.66.0] - Jul 20, 2023
+* Disabled federation services when splitServicesToContainers=true
+
+## [107.45.0] - Aug 25, 2022
+* Included event service as mandatory and remove the flag from values.yaml
+
+## [107.41.0] - Jul 22, 2022
+* Bumping chart version to align with app version
+* Disabled jfconnect and event services when splitServicesToContainers=true
+
+## [107.19.4] - May 27, 2021
+* Bumping chart version to align with app version
+* Update dependency Artifactory chart version to 107.19.4
+
+## [4.0.0] - Apr 22, 2021
+* **Breaking change:**
+* Increased default postgresql persistence  size to `200Gi` 
+* Update postgresql tag version to `13.2.0-debian-10-r55`
+* Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* **IMPORTANT**
+* This chart is only helm v3 compatible.
+* Update dependency Artifactory chart version to 12.0.0 (Artifactory 7.18.3)
+
+## [3.8.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+* Update dependency Artifactory chart version to 11.13.0 (Artifactory 7.17.5)
+
+## [3.7.0] - Mar 31, 2021
+* Update dependency Artifactory chart version to 11.12.2 (Artifactory 7.17.4)
+
+## [3.6.0] - Mar 15, 2021
+* Update dependency Artifactory chart version to 11.10.0 (Artifactory 7.16.3)
+
+## [3.5.1] - Mar 03, 2021
+* Update dependency Artifactory chart version to 11.9.3 (Artifactory 7.15.4)
+
 ## [3.5.0] - Feb 18, 2021
 * Update dependency Artifactory chart version to 11.9.0 (Artifactory 7.15.3)
 

@@ -1,4 +1,4 @@
-{{- if not .Values.systemYamlOverride.existingSecret }}
+{{- if and (not .Values.systemYamlOverride.existingSecret) (not .Values.distribution.unifiedSecretInstallation) }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -12,5 +12,5 @@ metadata:
 type: Opaque
 stringData:
   system.yaml: |
-{{ tpl .Values.distribution.systemYaml . | indent 4 }}
+{{ include "distribution.finalSystemYaml" . | nindent 4 }}
 {{- end }}

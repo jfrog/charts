@@ -1,0 +1,67 @@
+# An example of installing Artifactory and Xray only (disabling the rest)
+
+### Install
+# helm repo add jfrog https://charts.jfrog.io
+# helm repo update
+# helm upgrade --install jfp jfrog/jfrog-platform -f ./values-artifactory-xray.yaml
+
+### Uninstall
+# helm uninstall jfp
+# kubectl get pvc ...
+# kubectl delete pvc ...
+
+global:
+  # Generate a random join key with 'openssl rand -hex 32'
+  joinKey: 00EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE123
+
+  # Generate a random master key with 'openssl rand -hex 32'
+  masterKey: 00bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb123
+
+artifactory:
+  enabled: true
+  artifactory:
+
+    license:
+      # For multiple licenses (Artifactory enterprise HA), each license
+      # needs a block of its own. Separated by a new line as shown by the value of licenseKey below
+      licenseKey: |
+        cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk6CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF5TkMw
+        TFdJMk16RmlNakJrTXpkak9BcHZk...
+        
+        cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk7CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF5TkMw
+        TFdJMk16RmlNakJrTXpkak9BcHZj...
+
+        cHJvZHVjdHM6CiAgYXJ0aWZhY3Rvcnk8CiAgICBwcm9kdWN0OiBaWGh3YVhKbGN6b2dNakF5TkMw
+        TFdJMk16RmlNakJrTXpkak9BcHZl...
+
+      ## NOTE: For HA deployments, set replicaCount > 1 (recommended 3) and add env var JF_SHARED_NODE_HAENABLED=true
+    # replicaCount: 1
+    # extraEnvironmentVariables:
+      # - name : JF_SHARED_NODE_HAENABLED
+      #   value: "true"
+
+
+  # Run every Artifactory service to its own container
+  splitServicesToContainers: true
+
+xray:
+  enabled: true
+
+# If enabling Xray, rabbitmq should also be enabled
+rabbitmq:
+  enabled: true
+
+distribution:
+  enabled: false
+
+insight:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+redis:
+  enabled: false
+
+pdnServer:
+  enabled: false

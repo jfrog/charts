@@ -1,4 +1,4 @@
-{{- if not .Values.systemYamlOverride.existingSecret }}
+{{- if and (not .Values.systemYamlOverride.existingSecret) (not .Values.artifactory.unifiedSecretInstallation) }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -11,5 +11,6 @@ metadata:
 type: Opaque
 stringData:
   system.yaml: |
-{{ tpl .Values.artifactory.systemYaml . | indent 4 }}
+{{ include "artifactory.finalSystemYaml" . | nindent 4 }}
 {{- end }}
+

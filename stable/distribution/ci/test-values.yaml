@@ -18,21 +18,46 @@ postgresql:
 redis:
   password: "password"
   persistence:
-    enabled: false
-
-distributor:
-  persistence:
-    enabled: false
-  # loggers:
-  #   - foreman.log
+    enabled: true
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "1"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
 
 distribution:
-  jfrogUrl: http://artifactory-artifactory.rt:8082
+  jfrogUrl: http://artifactory.rt:8082
+  unifiedSecretInstallation: false
   persistence:
     enabled: false
-  # loggers:
-  #   - access.log
-  #   - request.log
+  annotations:
+    key1: "value1"
+    key2: "value2"
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1"
+    limits:
+      memory: "3Gi"
+      cpu: "2"
+  # Add lifecycle hooks for distribution container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the distribution postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the distribution postStart handler >> /tmp/message"]
+  javaOpts:
+    xms: "1g"
+    xmx: "3g"
+  priorityClass:
+    create: true
+  statefulset:
+    annotations:
+      distribution: test
 
 # Init containers
 initContainers:
@@ -43,3 +68,83 @@ initContainers:
     limits:
       memory: "128Mi"
       cpu: "250m"
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  automountServiceAccountToken: true
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.distribution.persistence.mountPath }}/log/filebeat
+    name: artifactory-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.distribution.persistence.mountPath }}/log/*.log
+      fields:
+        service: "jfds"
+        log_type: "distribution"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+
+common:
+  fsGroupChangePolicy: "OnRootMismatch"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+  # Add lifecycle hooks for router container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+
+observability:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+  # Add lifecycle hooks for observability container
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]

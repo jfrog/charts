@@ -10,5 +10,9 @@ metadata:
     release: {{ .Release.Name }}
 data:
   artifactory.conf: |
+{{- if .Values.nginx.artifactoryConf }} 
 {{ tpl .Values.nginx.artifactoryConf . | indent 4 }}
+{{- else }}
+{{ tpl ( .Files.Get "files/nginx-artifactory-conf.yaml" ) . | indent 4 }}
+{{- end }}
 {{- end }}

@@ -1,0 +1,10 @@
+Congratulations. You have just deployed JFrog Insights!
+
+{{- if and (or (or (or .Values.elasticsearch.certificatesSecretName (or .Values.insightServer.customCertificates.enabled .Values.global.customCertificates.enabled)) (or .Values.insightServer.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.insightServer.joinKeySecretName .Values.global.joinKeySecretName)) .Values.insightServer.unifiedSecretInstallation }}
+****************************************** WARNING **************************************************************************************************
+* The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*
+* Update the values.yaml with the existing secrets to add them to the unified secret.                                                               *
+*****************************************************************************************************************************************************
+{{- end }}
+
+Open Artifactory - {{ .Values.insightServer.jfrogUrl }} in your browser. Insight should be activated with Artifactory.

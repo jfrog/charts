@@ -1,6 +1,438 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.90.15] - July 18, 2024
+* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
+* Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
+* Added a deprecation notice of ingress.hosts when `ngnix.enabled` is true
+* Added new evidence service
+* Corrected database connection values based on sizing
+* **IMPORTANT**
+* Separate access from artifactory tomcat to run on its own dedicated tomcat
+  * With this change access will be running in its own dedicated container
+  * This will give the ability to control resources and java options specific to access
+    Can be done by passing the following,
+    `access.javaOpts.other`
+    `access.resources`
+    `access.extraEnvironmentVariables`
+* Updating the example link for downloading the DB driver
+* Added Binary Provider recommendations
+
+## [107.89.0] - June 7, 2024
+* Fix the indentation of the commented-out sections in the values.yaml file
+* Fixed sizing values by removing `JF_SHARED_NODE_HAENABLED` in xsmall/small configurations
+
+## [107.88.0] - May 29, 2024
+* **IMPORTANT**
+* Refactored `nginx.artifactoryConf` and `nginx.mainConf` configuration (moved to files/nginx-artifactory-conf.yaml  and files/nginx-main-conf.yaml instead of keys in values.yaml)
+
+## [107.87.0] - May 29, 2024
+* Renamed `.Values.artifactory.openMetrics` to `.Values.artifactory.metrics`
+
+## [107.85.0] - May 29, 2024
+* Changed `migration.enabled` to false by default. For 6.x to 7.x migration, this flag needs to be set to `true`
+
+## [107.84.0] - May 29, 2024
+* Added image section for `initContainers` instead of `initContainerImage`
+* Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
+* Removed image section for `loggers`
+* Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
+* Fixed an issue with extraSystemYaml merge
+* **IMPORTANT**
+* Renamed `artifactory.setSecurityContext` to `artifactory.podSecurityContext` 
+* Renamed `artifactory.uid` to `artifactory.podSecurityContext.runAsUser`
+* Renamed `artifactory.gid` to `artifactory.podSecurityContext.runAsGroup` and `artifactory.podSecurityContext.fsGroup`
+* Renamed `artifactory.fsGroupChangePolicy` to `artifactory.podSecurityContext.fsGroupChangePolicy`
+* Renamed `artifactory.seLinuxOptions` to `artifactory.podSecurityContext.seLinuxOptions`
+* Added flag `allowNonPostgresql` defaults to false
+* Update postgresql tag version to `15.6.0-debian-12-r5`
+* Added a check if `initContainerImage` exists
+* Fixed an issue to generate unified secret to support artifactory fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
+* Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
+* Fixed resource constraints for "setup" initContainer of nginx deployment [GH-962] (https://github.com/jfrog/charts/issues/962)
+* Added .Values.artifactory.unifiedSecretPrependReleaseName` for unified secret to prepend release name
+* Fixed maxCacheSize and cacheProviderDir mix up under azure-blob-storage-v2-direct template in binarystore.xml
+
+## [107.82.0] - Mar 04, 2024
+* Added `disableRouterBypass` flag as experimental feature, to disable the artifactoryPath /artifactory/ and route all traffic through the Router.
+* Removed Replicator service
+
+## [107.81.0] - Feb 20, 2024
+* **IMPORTANT**
+* Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml)
+* Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given [GH-1848](https://github.com/jfrog/charts/pull/1848)
+* Added option to modify the new cache configs, maxFileSizeLimit and skipDuringUpload
+* Added IPV4/IPV6 Dualstack flag support for Artifactory and nginx service
+* Added `singleStackIPv6Cluster` flag, which manages the Nginx configuration to enable listening on IPv6 and proxying.
+* Fixing broken link for creating additional kubernetes resources. Refer [here](https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-values.yaml)
+* Refactored installerInfo configuration (moved to files/installer-info.json instead of key in values.yaml)
+
+## [107.80.0] - Feb 20, 2024
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+
+## [107.79.0] - Feb 20, 2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* Added support for azure-blob-storage-v2-direct config
+* Added option to set Nginx to write access_log to container STDOUT
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default bundles PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x/13.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+
+## [107.77.0] - April 22, 2024
+* Removed integration service
+* Added recommended postgresql sizing configurations under sizing directory
+* Updated artifactory-federation (probes, port, embedded mode)
+* Fixed - Removed duplicate keys of the sizing yaml file
+* Fixing broken nginx port [GH-1860](https://github.com/jfrog/charts/issues/1860)
+* Added nginx.customCommand to use custom commands for the nginx container
+
+## [107.76.0] - Dec 13, 2023
+* Added connectionTimeout and socketTimeout paramaters under AWSS3 binarystore section
+* Reduced nginx startupProbe initialDelaySeconds
+
+## [107.74.0] - Nov 30, 2023
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+
+## [107.70.0] - Nov 30, 2023
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+* Fixed - Invalid format for awsS3V3 `multiPartLimit,multipartElementSize` in binarystore.xml.
+* Fixed - SecurityContext with runAsGroup in artifactory [GH-1838](https://github.com/jfrog/charts/issues/1838)
+* Added support for custom labels in the Nginx pods [GH-1836](https://github.com/jfrog/charts/pull/1836)
+* Added podSecurityContext and containerSecurityContext for nginx
+* Added support for nginx on openshift, set `podSecurityContext` and `containerSecurityContext` to false
+* Renamed nginx internalPort 80,443 to 8080,8443 to support openshift
+
+## [107.69.0] - Sep 18, 2023
+* Adjust rtfs context
+* Fixed - Metadata service does not respect customVolumeMounts for DB CAs [GH-1815](https://github.com/jfrog/charts/issues/1815)
+
+## [107.68.8] - Sep 18, 2023
+* Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
+* Removed openshift condition check from NOTES.txt
+
+## [107.68.7] - Aug 28, 2023
+* Enabled `unifiedSecretInstallation` by default
+
+## [107.67.0] - Aug 28, 2023
+* Add 'extraJavaOpts' and 'port' values to federation service
+
+## [107.66.0] - Aug 28, 2023
+* Added federation service container in artifactory
+* Add rtfs service to ingress in artifactory
+
+## [107.64.0] - Aug 28, 2023
+* Added support to configure event.webhooks within generated system.yaml
+* Fixed an issue to generate ssl certificate should support artifactory fullname
+* Added binarystore.xml template to persistence storage type `nfs`. The default Filestore location configured according to artifactory.persistence.nfs.dataDir.
+* Added 'multiPartLimit' and 'multipartElementSize' parameters to awsS3V3 binary providers.
+* Increased default Artifactory Tomcat acceptCount config to 400
+* Fixed Illegal Strict-Transport-Security header in nginx config
+
+## [107.63.0] - Aug 28, 2023
+* Added support for Openshift by adding the securityContext in container level.
+* **IMPORTANT**
+* Disable securityContext in container and pod level to deploy postgres on openshift.
+* Fixed support for fsGroup in non openshift environemnt and runAsGroup in openshift environment.
+* Fixed - Helm Template Error when using artifactory.loggers [GH-1791](https://github.com/jfrog/charts/issues/1791)
+* Removed the nginx disable condition for openshift
+* Fixed jfconnect disabling as micro-service on splitcontainers [GH-1806](https://github.com/jfrog/charts/issues/1806)
+
+## [107.62.0] - Jun 5, 2023
+* Upgraded to autoscaling/v2
+* Added support for 'port' and 'useHttp' parameters for s3-storage-v3 binary provider [GH-1767](https://github.com/jfrog/charts/issues/1767)
+
+## [107.61.0] - May 31, 2023
+* Added new binary provider `google-storage-v2-direct`
+* Added missing parameter 'enableSignedUrlRedirect' to 'googleStorage'
+
+## [107.60.0] - May 31, 2023
+* Enabled `splitServicesToContainers` to true by default
+* Updated the recommended values for small, medium and large installations to support the 'splitServicesToContainers'
+
+## [107.59.0] - May 31, 2023
+* Fixed reference of `terminationGracePeriodSeconds`
+* Added Support for Cold Artifact Storage as part of the systemYaml configuration (disabled by default)
+* Added new binary provider `s3-storage-v3-archive`
+* Fixed jfconnect disabling as micro-service on non-splitcontainers
+* Fixed wrong cache-fs provider ID of cluster-s3-storage-v3 in the binarystore.xml [GH-1772](https://github.com/jfrog/charts/issues/1772)
+
+## [107.58.0] - Mar 23, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Removed obselete remove-lost-found initContainer`
+* Added env JF_SHARED_NODE_HAENABLED under frontend when running in the container split mode 
+
+## [107.57.0] - Mar 02, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+
+## [107.55.0] - Jan 31, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
+* Adding a custom preStop to Artifactory router for allowing graceful termination to complete
+
+## [107.53.0] - Jan 20, 2023
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
+
+## [107.50.0] - Jan 20, 2023
+* Updated postgresql tag version to `13.9.0-debian-11-11`
+* Fixed an issue for capabilities check of ingress
+* Updated jfrogUrl text path in migrate.sh file
+* Added a note that from 107.46.x chart versions, `copyOnEveryStartup` is not needed for binarystore.xml, it is always copied via initContainers. For more Info, Refer [GH-1723](https://github.com/jfrog/charts/issues/1723)
+
+## [107.49.0] - Jan 16, 2023
+* Added support for setting `seLinuxOptions` in `securityContext` [GH-1699](https://github.com/jfrog/charts/pull/1699)
+* Added option to enable/disable proxy_request_buffering and proxy_buffering_off [GH-1686](https://github.com/jfrog/charts/pull/1686)
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
+
+## [107.48.0] - Oct 27, 2022
+* Updated router version to `7.51.0`
+
+## [107.47.0] - Sep 29, 2022
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-941`
+* Added support for annotations for artifactory statefulset and nginx deployment [GH-1665](https://github.com/jfrog/charts/pull/1665)
+* Updated router version to `7.49.0`
+
+## [107.46.0] - Sep 14, 2022
+* **IMPORTANT**
+* Added support for lifecycle hooks for all containers, changed `artifactory.postStartCommand` to `.Values.artifactory.lifecycle.postStart.exec.command`
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-902`
+* Update nginx configuration to allow websocket requests when using pipelines
+* Fixed an issue to allow artifactory to make direct API calls to store  instead via jfconnect service when `splitServicesToContainers=true`
+* Refactor binarystore.xml configuration (moved to `files/binarystore.xml` instead of key in values.yaml)
+* Added new binary providers `cluster-s3-storage-v3`, `s3-storage-v3-direct`, `azure-blob-storage-direct`, `google-storage-v2`
+* Deprecated (removed) `aws-s3` binary provider [JetS3t library](https://www.jfrog.com/confluence/display/JFROG/Configuring+the+Filestore#ConfiguringtheFilestore-BinaryProvider)
+* Deprecated (removed) `google-storage` binary provider and force persistence storage type `google-storage` to work with `google-storage-v2` only
+* Copy binarystore.xml in init Container to fix existing persistence on file system in clear text
+* Removed obselete `.Values.artifactory.binarystore.enabled` key
+* Removed `newProbes.enabled`, default to new probes
+* Added nginx.customCommand using inotifyd to reload nginx's config upon ssl secret or configmap changes [GH-1640](https://github.com/jfrog/charts/pull/1640)
+
+## [107.43.0] - Aug 25, 2022
+* Added flag `artifactory.replicator.ingress.enabled` to enable/disable ingress for replicator
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-854`
+* Updated router version to `7.45.0`
+* Added flag `artifactory.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+* Enabled TLS based on access or router in values.yaml
+
+## [107.42.0] - Aug 25, 2022
+* Enabled database creds secret to use from unified secret
+* Updated router version to `7.42.0`
+* Fix duplicate volumes for userPluginSecrets [GH-1650] (https://github.com/jfrog/charts/issues/1650)
+* Added support to truncate (> 63 chars) for unifiedCustomSecretVolumeName
+
+## [107.41.0] - June 27, 2022
+* Added support for nginx.terminationGracePeriodSeconds [GH-1645](https://github.com/jfrog/charts/issues/1645)
+* Use an alternate command for `find` to copy custom certificates
+* Added support for circle of trust using `circleOfTrustCertificatesSecret` secret name [GH-1623](https://github.com/jfrog/charts/pull/1623)
+
+## [107.40.0] - June 16, 2022
+* Added support for PodDisruptionBudget [GH-1618](https://github.com/jfrog/charts/issues/1618)
+* From artifactory 7.38.x, joinKey can be retrived from Admin > User Management > Settings in UI
+* Allow templating for pod annotations [GH-1634](https://github.com/jfrog/charts/pull/1634)
+* Fixed `customPersistentPodVolumeClaim` name to `customPersistentVolumeClaim`
+* Added flags to control enable/disable infra services in splitServicesToContainers
+
+## [107.39.0] - May 31, 2022
+* Fix default `artifactory.async.corePoolSize` [GH-1612](https://github.com/jfrog/charts/issues/1612)
+* Added support of nginx annotations
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+* Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the artifactory secrets
+* Updated router version to `7.38.0`
+* Add support for NFS config with directories `haBackupDir` and `haDataDir`
+* Fixed - disable jfconnect on oss/jcr/cpp flavours [GH-1630](https://github.com/jfrog/charts/issues/1630)
+
+## [107.38.0] - May 04, 2022
+* Added support for `global.nodeSelector` to artifactory and nginx pods
+* Updated router version to `7.36.1`
+* Added support for custom global probes timeout
+* Updated frontend container command
+* Added topologySpreadConstraints to artifactory and nginx, and add lifecycle hooks to nginx [GH-1596](https://github.com/jfrog/charts/pull/1596)
+* Added support of extraEnvironmentVariables for all infra services containers
+* Enabled the consumption (jfconnect) flag by default
+* Fix jfconnect disabling on non-splitcontainers
+
+## [107.37.0] - Mar 08, 2022
+* Added support for customPorts in nginx deployment
+* Bugfix - Wrong proxy_pass configurations for /artifactory/ in the default artifactory.conf
+* Added signedUrlExpirySeconds option to artifactory.persistence.type aws-S3-V3
+* Updated router version to `7.35.0`
+* Added useInstanceCredentials,enableSignedUrlRedirect option to google-storage-v2
+* Changed dependency charts repo to `charts.jfrog.io`
+
+## [107.36.0] - Mar 03, 2022
+* Remove pdn tracker which starts replicator service
+* Added silent option for curl probes
+* Added readiness health check for the artifactory container for k8s version < 1.20
+* Fix property file migration issue to system.yaml 6.x to 7.x
+
+## [107.35.0] - Feb 08, 2022
+* Updated router version to `7.32.1`
+
+## [107.33.0] - Jan 11, 2022
+* Add more user friendly support for anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Readme fixes
+* Added support for setting `fsGroupChangePolicy`
+* Added nginx customInitContainers, customVolumes, customSidecarContainers [GH-1565](https://github.com/jfrog/charts/pull/1565)
+* Updated router version to `7.30.0`
+
+## [107.32.0] - Dec 22, 2021
+* Updated logger image to `jfrog/ubi-minimal:8.5-204`
+* Added default `8091` as `artifactory.tomcat.maintenanceConnector.port` for probes check
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Refactored `database-creds` secret to create only when database values are passed
+* Added new endpoints for probes `/artifactory/api/v1/system/liveness` and `/artifactory/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Fix filebeat sidecar spool file permissions
+* Updated filebeat sidecar container to `7.16.2`
+
+## [107.31.0] - Dec 17, 2021
+* Added support for HorizontalPodAutoscaler apiVersion `autoscaling/v2beta2`
+* Remove integration service feature flag to make it mandatory service
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Fixed `artifactory.resources` indentation in `migration-artifactory` init container [GH-1562](https://github.com/jfrog/charts/issues/1562)
+* Refactored `router.requiredServiceTypes` to support platform chart
+
+## [107.30.0] - Nov 30, 2021
+* Fixed incorrect permission for filebeat.yaml
+* Updated healthcheck (liveness/readiness) api for integration service
+* Disable readiness health check for the artifactory container when running in the container split mode
+* Ability to start replicator on enabling pdn tracker
+
+## [107.29.0] - Nov 26, 2021
+* Added integration service container in artifactory
+* Add support for Ingress Class Name in Ingress Spec [GH-1516](https://github.com/jfrog/charts/pull/1516)
+* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+* Updated nginx config to allow websockets when pipelines is enabled
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable
+* Added jfconnect in system.yaml
+* Updated artifactory container’s health probes to use artifactory api on rt-split
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+* Updated router version to `7.28.2`
+* Set Jfconnect enabled to `false` in the artifactory container when running in the container split mode
+
+## [107.28.0] - Nov 11, 2021
+* Added default values cpu and memeory in initContainers
+* Updated router version to `7.26.0`
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Changed init-container images from `alpine` to `ubi8/ubi-minimal`
+* Added support for AWS License Manager using `.Values.aws.licenseConfigSecretName`
+
+## [107.27.0] - Oct 6, 2021
+* **Breaking change**
+* Aligned probe structure (moved probes variables under config block)
+* Added support for new probes(set to false by default)
+* Bugfix - Invalid format for `multiPartLimit,multipartElementSize,maxCacheSize` in binarystore.xml [GH-1466](https://github.com/jfrog/charts/issues/1466)
+* Added missioncontrol container in artifactory
+* Dropped NET_RAW capability for the containers
+* Added resources to migration-artifactory init container
+* Added resources to all rt split containers
+* Updated router version to `7.25.1`
+* Added support for Ingress networking.k8s.io/v1/Ingress for k8s >=1.22 [GH-1487](https://github.com/jfrog/charts/pull/1487)
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+* Update busybox tag version to `1.33.1`
+* Artifactory chart support for cluster license
+
+## [107.26.0] - Aug 23, 2021
+* Added Observability container (only when `splitServicesToContainers` is enabled)
+* Support for high availability (when replicaCount > 1)
+* Added min kubeVersion ">= 1.12.0-0" in chart.yaml
+
+## [107.25.0] - Aug 13, 2021
+* Updated readme of chart to point to wiki. Refer [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory)
+* Added startupProbe and livenessProbe for RT-split containers
+* Updated router version to 7.24.1
+* Added security hardening fixes
+* Enabled startup probes for k8s >= 1.20.x
+* Changed network policy to allow all ingress and egress traffic
+* Added Observability changes
+* Added support for global.versions.router (only when `splitServicesToContainers` is enabled)
+
+## [107.24.0] - July 27, 2021
+* Support global and product specific tags at the same time
+* Added support for artifactory containers split
+
+## [107.23.0] - July 8, 2021
+* Bug fix - logger sideCar picks up Wrong File in helm
+* Allow filebeat metrics configuration in values.yaml
+
+## [107.22.0] - July 6, 2021
+* Update alpine tag version to `3.14.0`
+* Added `nodePort` support to artifactory-service and nginx-service templates
+* Removed redundant `terminationGracePeriodSeconds` in statefulset
+* Increased `startupProbe.failureThreshold` time
+
+## [107.21.3] - July 2, 2021
+* Added ability to change sendreasonphrase value in server.xml via system yaml
+
+## [107.19.3] - May 20, 2021
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+
+## [107.18.6] - April 29, 2021
+* Bumping chart version to align with app version
+* Add `securityContext` option on nginx container
+
+## [12.0.0] - April 22, 2021
+* **Breaking change:**
+* Increased default postgresql persistence  size to `200Gi` 
+* Update postgresql tag version to `13.2.0-debian-10-r55`
+* Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* **IMPORTANT**
+* This chart is only helm v3 compatible.
+* Fixed filebeat-configmap naming
+* Explicitly set ServiceAccount `automountServiceAccountToken` to 'true'
+* Update alpine tag version to `3.13.5`
+
+## [11.13.2] - April 15, 2021
+* Updated Artifactory version to 7.17.9 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.9)
+
+## [11.13.1] - April 6, 2021
+* Updated Artifactory version to 7.17.6 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.6)
+* Update alpine tag version to `3.13.4`
+
+## [11.13.0] - April 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+* Updated Artifactory version to 7.17.5 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.5)
+
+## [11.12.2] - Mar 31, 2021
+* Updated Artifactory version to 7.17.4 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.17.4)
+
+## [11.12.1] - Mar 30, 2021
+* Updated Artifactory version to 7.17.3
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [11.12.0] - Mar 24, 2021
+* Updated Artifactory version to 7.17.2
+* Optimized startupProbe time
+
+## [11.11.0] - Mar 18, 2021
+* Add support to startupProbe
+
+## [11.10.0] - Mar 15, 2021
+* Updated Artifactory version to 7.16.3
+
+## [11.9.5] - Mar 09, 2021
+* Added HSTS header to nginx conf
+
+## [11.9.4] - Mar 9, 2021
+* Removed bintray URL references in the chart
+
+## [11.9.3] - Mar 04, 2021
+* Updated Artifactory version to 7.15.4 - [Release Notes](https://www.jfrog.com/confluence/display/JFROG/Artifactory+Release+Notes#ArtifactoryReleaseNotes-Artifactory7.15.4)
+
+## [11.9.2] - Mar 04, 2021
+* Fixed creation of nginx-certificate-secret when Nginx is disabled
+
 ## [11.9.1] - Feb 19, 2021
 * Update busybox tag version to `1.32.1`
 

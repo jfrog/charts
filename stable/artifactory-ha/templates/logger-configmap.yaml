@@ -26,12 +26,12 @@ data:
     LOG_PREFIX=$(echo ${LOG_NAME} | sed 's/.log$//g')
 
     # Find the log to tail
-    LOG_FILE=$(ls -1t ./${LOG_PREFIX}*.log 2>/dev/null | head -1)
+    LOG_FILE=$(ls -1t ./${LOG_PREFIX}.log 2>/dev/null)
 
     # Wait for the log file
     while [ -z "${LOG_FILE}" ]; do
       sleep 1
-      LOG_FILE=$(ls -1t ./${LOG_PREFIX}*.log 2>/dev/null | head -1)
+      LOG_FILE=$(ls -1t ./${LOG_PREFIX}.log 2>/dev/null)
     done
 
     echo "Log file ${LOG_FILE} is ready!"

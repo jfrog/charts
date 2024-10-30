@@ -1,0 +1,19 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: {{ template "insight.name" . }}
+    chart: {{ template "insight-server.chart" . }}
+    component: {{ .Values.insightServer.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "insight.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "insight-server.serviceAccountName" . }}
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: {{ template "insight.fullname" . }}
+{{- end }}

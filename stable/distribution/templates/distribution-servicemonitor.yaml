@@ -1,0 +1,33 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.serviceMonitor.name }}
+  namespace: {{ .Values.serviceMonitor.kubePromFullName }}
+  labels:
+    app: {{ .Values.serviceMonitor.kubePromApp }}
+    release: {{ .Values.serviceMonitor.kubePromFullName }}
+    app.kubernetes.io/name: {{ include "distribution.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- if .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- end }}
+spec:
+  jobLabel: {{ .Values.serviceMonitor.jobLabel }}
+  selector: {{ toYaml .Values.serviceMonitor.selector | nindent 4 }}
+  namespaceSelector: {{ toYaml .Values.serviceMonitor.namespaceSelector | nindent 4 }}
+  endpoints:
+    - path: /api/v1/metrics
+      bearerTokenSecret:
+        key: token
+        name: {{ .Values.serviceMonitor.tokenName }}
+      honorLabels: true
+      honorTimestamps: false
+      interval: {{ .Values.serviceMonitor.interval }}
+      scheme: http
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      port: {{ .Values.serviceMonitor.port }}
+      tlsConfig:
+        insecureSkipVerify: true
+{{- end }}

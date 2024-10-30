@@ -10,5 +10,9 @@ metadata:
     release: {{ .Release.Name }}
 data:
   nginx.conf: |
+{{- if .Values.nginx.mainConf }} 
 {{ tpl .Values.nginx.mainConf . | indent 4 }}
+{{- else }}
+{{ tpl ( .Files.Get "files/nginx-main-conf.yaml" ) . | indent 4 }}
+{{- end }}
 {{- end }}

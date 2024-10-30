@@ -1,0 +1,56 @@
+newRelic:
+  apm:
+    enabled: true
+    appName: "ci-test"
+    licenseKey: "123456789"
+    version: 8.6.0
+    logLevel: severe
+    downloadUrl: https://download.newrelic.com
+    downloadPath: newrelic/java-agent/newrelic-agent/{{ .Values.newRelic.apm.version }}
+    downloadFile: newrelic-agent-{{ .Values.newRelic.apm.version }}.jar
+
+distribution:
+  jfrogUrl: http://artifactory.rt:8082
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "1"
+    limits:
+      memory: "3Gi"
+      cpu: "2"
+
+postgresql:
+  postgresqlPassword: password
+  persistence:
+    enabled: false
+
+redis:
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "1"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+observability:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"

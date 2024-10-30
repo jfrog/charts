@@ -1,0 +1,9 @@
+{{- if .Values.xray.priorityClass.create }}
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: {{ default (include "xray.fullname" .) .Values.xray.priorityClass.name }}
+value: {{ .Values.xray.priorityClass.value }}
+globalDefault: false
+description: "Xray priority class"
+{{- end }}

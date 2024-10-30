@@ -8,13 +8,6 @@ Expand the name of the chart.
 {{- end -}}
 
 {{/*
-The distributor name
-*/}}
-{{- define "distributor.name" -}}
-{{- default .Chart.Name .Values.distributor.name .Values.distributorNameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
 Create a default fully qualified distribution name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -24,25 +17,6 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.distribution.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.distribution.name -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
-
-
-{{/*
-Create a default fully qualified distributor name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "distributor.fullname" -}}
-{{- if .Values.distributor.fullnameOverride -}}
-{{- .Values.distributor.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.distributor.name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -162,7 +136,8 @@ Resolve customInitContainersBegin value
 {{- define "distribution.customInitContainersBegin" -}}
 {{- if .Values.global.customInitContainersBegin -}}
 {{- .Values.global.customInitContainersBegin -}}
-{{- else if .Values.common.customInitContainersBegin -}}
+{{- end -}}
+{{- if .Values.common.customInitContainersBegin -}}
 {{- .Values.common.customInitContainersBegin -}}
 {{- end -}}
 {{- end -}}
@@ -173,7 +148,8 @@ Resolve customInitContainers value
 {{- define "distribution.customInitContainers" -}}
 {{- if .Values.global.customInitContainers -}}
 {{- .Values.global.customInitContainers -}}
-{{- else if .Values.common.customInitContainers -}}
+{{- end -}}
+{{- if .Values.common.customInitContainers -}}
 {{- .Values.common.customInitContainers -}}
 {{- end -}}
 {{- end -}}
@@ -184,7 +160,8 @@ Resolve customVolumes value
 {{- define "distribution.customVolumes" -}}
 {{- if .Values.global.customVolumes -}}
 {{- .Values.global.customVolumes -}}
-{{- else if .Values.common.customVolumes -}}
+{{- end -}}
+{{- if .Values.common.customVolumes -}}
 {{- .Values.common.customVolumes -}}
 {{- end -}}
 {{- end -}}
@@ -196,7 +173,8 @@ Resolve customVolumeMounts value
 {{- define "distribution.customVolumeMounts" -}}
 {{- if .Values.global.customVolumeMounts -}}
 {{- .Values.global.customVolumeMounts -}}
-{{- else if .Values.common.customVolumeMounts -}}
+{{- end -}}
+{{- if .Values.common.customVolumeMounts -}}
 {{- .Values.common.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
@@ -207,7 +185,8 @@ Resolve customSidecarContainers value
 {{- define "distribution.customSidecarContainers" -}}
 {{- if .Values.global.customSidecarContainers -}}
 {{- .Values.global.customSidecarContainers -}}
-{{- else if .Values.common.customSidecarContainers -}}
+{{- end -}}
+{{- if .Values.common.customSidecarContainers -}}
 {{- .Values.common.customSidecarContainers -}}
 {{- end -}}
 {{- end -}}
@@ -222,7 +201,13 @@ Return the proper distribution chart image names
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
 {{- if $dot.Values.global }}
-    {{- if and $dot.Values.global.versions.distribution (or (eq $indexReference "distribution") (eq $indexReference "distributor") ) }}
+    {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
+    {{- $tag = $dot.Values.global.versions.router | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
+    {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.distribution (eq $indexReference "distribution") }}
     {{- $tag = $dot.Values.global.versions.distribution | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
@@ -241,6 +226,71 @@ Custom certificate copy command
 {{- define "distribution.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted;
-find /tmp/certs -type f -not -name "*.key" -exec cp -v {} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted \;;
-find {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ -type f -name "tls.crt" -exec mv -v {} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt \;;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.distribution.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
+
+{{/*
+Resolve distribution requiredServiceTypes value
+*/}}
+{{- define "distribution.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfds,jfob" -}}
+{{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve Distribution pod node selector value
+*/}}
+{{- define "distribution.nodeSelector" -}}
+nodeSelector:
+{{- if .Values.global.nodeSelector }}
+{{ toYaml .Values.global.nodeSelector | indent 2 }}
+{{- else if .Values.distribution.nodeSelector }}
+{{ toYaml .Values.distribution.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedCustomSecretVolumeName value
+*/}}
+{{- define "distribution.unifiedCustomSecretVolumeName" -}}
+{{- printf "%s-%s" (include "distribution.name" .) ("unified-secret-volume") | trunc 63 -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.
+*/}}
+{{- define "distribution.checkDuplicateUnifiedCustomVolume" -}}
+{{- if or .Values.global.customVolumes .Values.distribution.customVolumes -}}
+{{- $val := (tpl (include "distribution.customVolumes" .) .) | toJson -}}
+{{- contains (include "distribution.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from structured and unstructured text input
+*/}}
+{{- define "distribution.finalSystemYaml" -}}
+{{ tpl (mergeOverwrite (include "distribution.systemYaml" . | fromYaml) .Values.distribution.extraSystemYaml | toYaml) . }}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from the unstructured text input
+*/}}
+{{- define "distribution.systemYaml" -}}
+{{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
+{{- end -}}
+
+{{/*
+Resolve unified secret prepend release name
+*/}}
+{{- define "distribution.unifiedSecretPrependReleaseName" -}}
+{{- if .Values.distribution.unifiedSecretPrependReleaseName }}
+{{- printf "%s" (include "distribution.fullname" .) -}}
+{{- else }}
+{{- printf "%s" (include "distribution.name" .) -}}
+{{- end }}
+{{- end }}

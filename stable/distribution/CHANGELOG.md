@@ -1,6 +1,212 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.26.1] - May 29, 2024
+* Fix the indentation of the commented-out sections in the values.yaml file
+
+## [102.25.0] - May 16, 2024
+* Update postgresql tag version to `15.6.0-debian-12-r5`
+* Fixed an issue to generate unified secret to support distribution fullname [GH-1882](https://github.com/jfrog/charts/issues/1882)
+* Fixed an issue template render on loggers [GH-1883](https://github.com/jfrog/charts/issues/1883)
+* Added `.Values.distribution.unifiedSecretPrependReleaseName` for unified secret name as fullname release name
+
+## [102.24.0] - Mar 27, 2024
+* Added image section for `initContainers` instead of `initContainerImage`
+* Renamed `distribution.image.imagePullPolicy` to `distribution.image.pullPolicy`
+* Renamed `router.image.imagePullPolicy` to `router.image.pullPolicy`
+* Renamed `observability.image.imagePullPolicy` to `observability.image.pullPolicy`
+* Removed loggers.image section
+* Added support for `global.verisons.initContainers` to override `initContainers.image.tag`
+* Fixed an issue with extraSystemYaml merge
+
+## [102.23.0] - Feb 15, 2024
+* **IMPORTANT**
+* Added `unifiedSecretInstallation` flag which enables single unified secret holding all internal (chart) secrets to `true` by default
+* **Important change:**
+* Update postgresql tag version to `15.2.0-debian-11-r23`
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default bundles PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x/13.x's postgresql.image.tag, previous postgresql.persistence.size and databaseUpgradeReady=true
+* Added support for distribution on openshift by setting `podSecurityContext` and `containerSecurityContext` to false
+* **IMPORTANT**
+* Renamed `common.uid` to `podSecurityContext.runAsUser`
+* Renamed `common.gid` to `podSecurityContext.runAsGroup` and `podSecurityContext.fsGroup`
+* Renamed `common.fsGroupChangePolicy` to `podSecurityContext.fsGroupChangePolicy`
+* Added `redis.containerSecurityContext` to support openshift
+* Renamed `redis.uid` to `redis.containerSecurityContext.runAsUser`
+* Updated README.md to create a namespace using `--create-namespace` as part of helm install
+* Updated redis multi-arch tag version to 7.2.4-debian-11-r5
+* Refactored systemYaml configuration (moved to files/system.yaml instead of key in values.yaml).
+* Added ability to provide `extraSystemYaml` configuration in values.yaml which will merge with the existing system yaml when `systemYamlOverride` is not given.
+* Added IPV4/IPV6 Dualstack flag support for Distribution chart
+
+## [102.22.0] - Dec 22, 2023
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+
+## [102.21.0] - Nov 27, 2023
+* Fixed - StatefulSet pod annotations changed from range to toYaml [GH-1828](https://github.com/jfrog/charts/issues/1828)
+* Removed default hardcoded javaOpts `-Xms2g -Xmx4g` from distribution.sh file
+* **IMPORTANT**
+* Added min kubeVersion ">= 1.19.0-0" in chart.yaml
+
+## [102.20.1] - Sep 18, 2023
+* Reverted - Enabled `unifiedSecretInstallation` by default [GH-1819](https://github.com/jfrog/charts/issues/1819)
+* Added NewRelic APM agent integration
+
+## [102.20.0] - Aug 29, 2023
+* Updated redis version tag to `7.2.0-debian-11-r2`
+* Enabled `unifiedSecretInstallation` by default
+
+## [102.19.1] - Aug 04, 2023
+* Changed selectors in ServiceMonitor object to empty values
+
+## [102.19.0] - Jun 12, 2023
+* Updated postgresql multi-arch tag version to `13.10.0-debian-11-r14`
+* Updated redis multi-arch tag version to `7.0.11-debian-11-r19`
+
+## [102.18.0] - Mar 02, 2023
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1793`
+
+## [102.17.0] - Jan 30, 2023
+* Updated jfrogUrl text path to copy
+* Updated initContainerImage and logger image to `ubi9/ubi-minimal:9.1.0.1760`
+
+## [102.16.0] - Jan 16, 2023
+* Removed `newProbes.enabled`, default to new probes
+* Added support for annotations for distribution statefulset [GH-1665](https://github.com/jfrog/charts/pull/1665)
+* Added topologySpreadConstraints to distribution pods
+* Updated redis version tag to `7.0.6-debian-11-r0`
+* Updated postgresql tag version to `13.9.0-debian-11-r11`
+* Updated initContainerImage and logger image to `ubi8/ubi-minimal:8.7.1049`
+
+## [102.15.0] - Aug 25, 2022
+* Updated router version to `7.45.0`
+* Added flag `distribution.schedulerName` to set for the pods the value of schedulerName field [GH-1606](https://github.com/jfrog/charts/issues/1606)
+* Updated Observability version to `1.9.3`
+* Added support for lifecycle hooks for all containers
+* Updated logger Image to `ubi8/ubi-minimal:8.6-902`
+
+## [102.14.0] - Aug 25, 2022
+* Updated Observability version to `1.9.2`
+* Use an alternate command for `find` to copy custom certificates
+* Updated router version to `7.42.0`
+* Increased distribution redis container probes timeout [GH-1655](https://github.com/jfrog/charts/issues/1655)
+* Updated initContainerImage to `ubi8/ubi-minimal:8.6-854`
+* Added support to truncate (> 63 chars) for unifiedCustomSecretVolumeName
+
+## [102.13.0] - Apr 29, 2022
+* Fixed loggers sidecars to tail a configured log
+* Added silent option for curl probes
+* Changed dependency charts repo to `charts.jfrog.io`
+* Added support for `global.nodeSelector` applies to distribution pods
+* Added support for custom global probes timeout
+* Reduce startupProbe `initialDelaySeconds`
+* Align all liveness and readiness probes failureThreshold to `5` seconds
+* Added new flag `unifiedSecretInstallation` to enables single unified secret holding all the distribution secrets
+* Updated router version to `7.38.0`
+* Updated Observability version to `1.6.1`
+
+## [102.12.0] - Feb 14, 2022
+* Refactored `database-creds` secret to create only when database values are passed
+* Refactored probes to replace httpGet probes with basic exec + curl
+* Added new endpoints for probes `/api/v1/system/liveness` and `/api/v1/system/readiness`
+* Enabled `newProbes:true` by default to use these endpoints
+* Fix filebeat sidecar spool file permissions
+* Updated filebeat sidecar container to `7.16.2`
+* Add more user friendly support for pod affinity and anti-affinity
+* Pod anti-affinity is now enabled by default (soft rule)
+* Added support for custom pod annotations using `distribution.annotations`
+* Updated NOTES.txt to fix improper warnings
+* Added support for setting `fsGroupChangePolicy`
+* Option to skip wait-for-db init container with '--set waitForDatabase=false'
+* Added support for PriorityClass
+* Added support to disable persistence for redis data
+* Updated router version to `7.32.1`
+* Updated Observability version to `1.3.0`
+
+## [102.11.0] - Dec 17, 2021
+* Updated (`rbac.create` and `serviceAccount.create` to false by default) for least privileges
+* Fixed incorrect data type for `Values.router.serviceRegistry.insecure` in default values.yaml [GH-1514](https://github.com/jfrog/charts/pull/1514/files)
+* **IMPORTANT**
+* Fixed chart values to use curl instead of wget [GH-1529](https://github.com/jfrog/charts/issues/1529)
+* Fixed incorrect permission for filebeat.yaml
+* Moved router.topology.local.requireqservicetypes from system.yaml to router as environment variable
+* Updated initContainerImage to `jfrog/ubi-minimal:8.5-204`
+* Update redis version tag to `6.2.6-debian-10-r43`
+* Added Observability service
+* Add support custom labels using `distribution.labels`
+* Updated router version to `7.28.2`
+* Update postgresql tag version to `13.4.0-debian-10-r39`
+* Refactored `router.requiredServiceTypes` to support platform chart
+
+## [102.10.0] - Sep 24, 2021
+* Updated readme of chart to point to wiki. Refer [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution)
+* Added security hardening fixes
+* Enabled startup probes for k8s >= 1.20.x
+* Changed network policy to allow all ingress and egress traffic
+* Added support for serviceRegistry insecure flag in router
+* Dropped NET_RAW capability for the containers
+* Added support for new probes(set to false by default)
+* Updated router version to `7.25.1`
+* Added min kubeVersion ">= 1.14.0-0" in chart.yaml
+* Update alpine tag version to `3.14.2`
+* Update busybox tag version to `1.33.1`
+* Added default values cpu and memeory in initContainers
+
+## [102.9.0] - Aug 2, 2021
+* Added support for `common.preStartCommand`
+* Added support for graceful shutdown of router container on SIGTERM
+* Update router version to `7.21.5`
+* Support global and product specific tags at the same time
+
+## [102.8.3] - July 13, 2021
+* Add support for custom secrets
+
+## [102.8.2] - July 6, 2021
+* Update router version to `7.21.3`
+* Update alpine tag version to `3.14.0`
+* Add required services for router container in systemYaml
+
+## [102.8.1] - June 22, 2021
+* Bumping chart version to align with app version
+* **Breaking change:**
+* Update postgresql tag version to `13.2.0-debian-10-r55`
+* Update postgresql chart version to `10.3.18` in chart.yaml - [10.x Upgrade Notes](https://github.com/bitnami/charts/tree/master/bitnami/postgresql#to-1000)
+* If this is a new deployment or you already use an external database (`postgresql.enabled=false`), these changes **do not affect you**!
+* If this is an upgrade and you are using the default PostgreSQL (`postgresql.enabled=true`), you need to pass previous 9.x/10.x/12.x's postgresql.image.tag and databaseUpgradeReady=true
+* **IMPORTANT**
+* This chart is only helm v3 compatible
+* Removed distributor service
+* Increased CPU and memory limits for the Distribution service
+* Update redis version tag to `6.2.1-debian-10-r9`
+* Update router version to `7.19.8`
+* Fix broken support for startupProbe for k8s < 1.18.x
+* Added support for `nameOverride` and `fullnameOverride` in values.yaml
+* Added configurable `.Values.global.versions.router` in values.yaml
+
+## [7.7.1] - April 6, 2021
+* Update alpine tag version to `3.13.4`
+
+## [7.7.0] - Apr 5, 2021
+* **IMPORTANT**
+* Added `charts.jfrog.io` as default JFrog Helm repository
+
+## [7.6.1] - Mar 30, 2021
+* Update router version to `7.17.2`
+* Add `timeoutSeconds` to all exec probes - Please refer [here](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#configure-probes)
+
+## [7.6.0] - Mar 22, 2021
+* Update Distribution to version `2.7.1`
+* Update router version to `7.17.1`
+* Add support for graceful shutdown
+* Optimized startupProbe time
+
+## [7.5.0] - Mar 18, 2021
+* Add support to startupProbe
+
+## [7.4.3] - Mar 9, 2021
+* Removed bintray URL references in the chart
+* Update router version to `7.15.3`
+
 ## [7.4.2] - Feb 25, 2021
 * Update Distribution to version `2.6.1` - [Release notes](https://www.jfrog.com/confluence/display/JFROG/Distribution+Release+Notes#DistributionReleaseNotes-Distribution2.6.1)
 

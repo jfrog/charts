@@ -63,24 +63,71 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Resolve imagePullSecrets value
+*/}}
+{{- define "jfrog-platform.imagePullSecrets" -}}
+{{- if .Values.global.imagePullSecrets }}
+imagePullSecrets:
+{{- range .Values.global.imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedSecretInstallation name
+*/}}
+{{- define "jfrog-platform.unifiedSecretInstallation" -}}
+{{- if eq .Chart.Name "artifactory" -}}
+{{- if not .Values.artifactory.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "artifactory.fullname" .) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "artifactory.unifiedSecretPrependReleaseName" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "distribution" -}}
+{{- if not .Values.distribution.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "distribution.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "distribution.fullname" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "xray" -}}
+{{- if not .Values.xray.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "xray.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "xray.name" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- if eq .Chart.Name "insight" -}}
+{{- if not .Values.insightServer.unifiedSecretInstallation }}
+{{- printf "%s-%s" (include "insight.fullname" . ) "database-creds" -}}
+{{- else }}
+{{- printf "%s-%s" (include "insight.name" .) "unified-secret" -}}
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Custom init container for Postgres setup
 */}}
 {{- define "initdb" -}}
 {{- if .Values.global.database.initDBCreation }}
 - name: postgres-setup-init
-  image: {{ .Values.global.database.initContainerSetupDBImage }}
+  image: "{{ tpl .Values.global.database.initContainerSetupDBImage . }}"
   imagePullPolicy: {{ .Values.global.database.initContainerImagePullPolicy }}
+  resources: 
+{{ toYaml .Values.global.database.initContainerImageResources | indent 10 }}
+  {{- with .Values.global.database.initContainerSetupDBUser }}
   securityContext:
-    runAsUser: 0
+    runAsUser: {{ . }}
+  {{- end }}
   command:
     - '/bin/bash'
     - '-c'
     - >
-      {{- if and (ne .Chart.Name "artifactory-ha") (ne .Chart.Name "artifactory") }}
-      until nc -z -w 5 {{ .Release.Name }}-artifactory-ha 8082 || nc -z -w 5 {{ .Release.Name }}-artifactory 8082; do echo "Waiting for artifactory to start"; sleep 10; done;
-      {{- end }}
       echo "Running init db scripts";
-      su postgres -c "bash /scripts/setupPostgres.sh"
+      bash /scripts/setupPostgres.sh
   {{- if eq .Chart.Name "pipelines" }}
   env:
     - name: PGUSERNAME
@@ -141,8 +188,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.user.name . }}
           key: {{ tpl .Values.database.secrets.user.key . }}
     {{- else if .Values.database.user }}
-    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
-          name: {{ include $chartFullName . }}-database-creds
+          name: {{ include "jfrog-platform.unifiedSecretInstallation" . }}
           key: db-user
     {{- end }}
     - name: DB_PASSWORD
@@ -152,8 +198,7 @@ Custom init container for Postgres setup
           name: {{ tpl .Values.database.secrets.password.name . }}
           key: {{ tpl .Values.database.secrets.password.key . }}
     {{- else if .Values.database.password }}
-    {{- $chartFullName := printf "%s.fullname" .Chart.Name }}
-          name: {{ include $chartFullName . }}-database-creds
+          name: {{ include "jfrog-platform.unifiedSecretInstallation" . }}
           key: db-password
     {{- end }}
     - name: PGPASSWORD
@@ -224,9 +269,48 @@ Define database name
 Resolve jfrog url
 */}}
 {{- define "jfrog-platform.jfrogUrl" -}}
-{{- if .Values.global.artifactoryHaEnabled -}}
-{{- printf "http://%s-artifactory-ha:8082" .Release.Name -}}
-{{- else -}}
 {{- printf "http://%s-artifactory:8082" .Release.Name -}}
+{{- end -}}
+
+{{/*
+Expand the name of rabbit chart.
+*/}}
+{{- define "rabbitmq.name" -}}
+{{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- end -}}
+
+
+{{- define "jfrog-platform.rabbitmq.migration.fullname" -}}
+{{- $name := default "rabbitmq-migration" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for rabbitmq migration
+*/}}
+{{- define "jfrog-platform.rabbitmq.migration.serviceAccountName" -}}
+{{- if .Values.rabbitmq.migration.serviceAccount.create -}}
+{{ default (include "jfrog-platform.rabbitmq.migration.fullname" .) .Values.rabbitmq.migration.serviceAccount.name }}
+{{- else -}}
+{{ default "rabbitmq-migration" .Values.rabbitmq.migration.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create external Rabbitmq URL for platform chart scenario.
+*/}}
+{{- define "xray.rabbitmq.extRabbitmq.url" -}}
+{{- if .Values.global.rabbitmq.auth.tls.enabled -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqpTls -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqps" .Release.Name $name $rabbitmqPort -}}
+{{- else -}}
+{{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
+{{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
+{{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
 {{- end -}}
 {{- end -}}

@@ -1,0 +1,148 @@
+##############################################################
+# The large sizing
+# This size is intended for large organizations. It can be increased with adding replicas or moving to the xlarge sizing
+##############################################################
+
+replicaCount: 2
+databaseUpgradeReady: true
+waitForDatabase: true
+unifiedUpgradeAllowed: true
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 200
+  targetMemoryUtilizationPercentage: 800
+
+xray:
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "hard"
+    topologyKey: "kubernetes.io/hostname"
+
+analysis:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: 250Mi
+    limits:
+      # cpu: "4"
+      memory: 10Gi
+
+indexer:
+  resources:
+    requests:
+      cpu: "300m"
+      memory: 550Mi
+    limits:
+      # cpu: "6"
+      memory: 8Gi
+
+persist:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: 250Mi
+    limits:
+      # cpu: "4"
+      memory: 8Gi
+
+server:
+  resources:
+    requests:
+      cpu: "200m"
+      memory: 500Mi
+    limits:
+      # cpu: "4"
+      memory: 6Gi
+
+router:
+  resources:
+    requests:
+      cpu: "60m"
+      memory: 100Mi
+    limits:
+      # cpu: "1"
+      memory: 1Gi
+
+observability:
+  resources:
+    requests:
+      cpu: "10m"
+      memory: 25Mi
+    limits:
+      # cpu: "1"
+      memory: 250Mi
+
+panoramic:
+  enabled: true
+  resources:
+    requests:
+      cpu: "100m"
+      memory: 250Mi
+    limits:
+      # cpu: "4"
+      memory: 8Gi
+
+sbom:
+  enabled: false
+  resources:
+    requests:
+      cpu: "100m"
+      memory: 250Mi
+    limits:
+      # cpu: "4"
+      memory: 10Gi
+
+# PostgreSQL
+## Configuration values for the postgresql dependency
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+##
+postgresql:
+  postgresqlExtendedConf:
+    listenAddresses: "*"
+    maxConnections: "600"
+  resources:
+    requests:
+      memory: 32Gi
+      cpu: "16"
+    limits:
+      memory: 32Gi
+      # cpu: "32"
+  primary:
+    affinity:
+      # Require PostgreSQL pod to run on a different node than Xray pods
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - xray
+            topologyKey: kubernetes.io/hostname
+
+rabbitmq:
+  extraConfiguration: |-
+    vm_memory_high_watermark.absolute = 3G
+    {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+    raft.wal_max_size_bytes = 1048576
+    {{- end }}
+  resources:
+    requests:
+      cpu: "200m"
+      memory: 500Mi
+    limits:
+      # cpu: "2"
+      memory: 4Gi
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - xray
+          topologyKey: kubernetes.io/hostname

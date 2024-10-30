@@ -1,23 +1,233 @@
 # CI values for Pipelines
 databaseUpgradeReady: true
 global:
-  versions:
-    pipelines: 1.10.0
-  jfrogUrl: http://artifactory-artifactory.rt:8082
-  jfrogUrlUI: http://artifactory-artifactory.rt:8082
+  customInitContainersBegin: |
+   - name: "custom-init-begin-global"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
+     imagePullPolicy: "IfNotPresent"
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch {{ .Values.pipelines.mountPath }}/init-begin-global'
+     volumeMounts:
+       - mountPath: "{{ .Values.pipelines.mountPath }}"
+         name: jfrog-pipelines-folder
+  customInitContainers: |
+   - name: "custom-init-global"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
+     imagePullPolicy: "IfNotPresent"
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch {{ .Values.pipelines.mountPath }}/init-global'
+     volumeMounts:
+       - mountPath: "{{ .Values.pipelines.mountPath }}"
+         name: jfrog-pipelines-folder
+  customVolumes: |
+   - name: custom-volume-global
+     emptyDir:
+       sizeLimit: 100Mi
+  customSidecarContainers: |
+   - name: "sidecar-list-global"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
+     imagePullPolicy: "IfNotPresent"
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "{{ .Values.pipelines.mountPath }}"
+         name: jfrog-pipelines-folder
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
 pipelines:
+  jfrogUrl: http://artifactory.rt:8082
+  jfrogUrlUI: http://artifactory.rt:8082
+  annotations:
+    key1: "value1"
+    key2: "value2"
   api:
-    externalUrl: http://pipelines.test.com
+    resources:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: 50m
+        memory: 100Mi
 
+  router:
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "10m"
+      limits:
+        memory: "1Gi"
+        cpu: "1"
   www:
-    externalUrl: http://pipelines.test.com
+    resources:
+      limits:
+        cpu: 800m
+        memory: 900Mi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+
+  pipelineSync:
+    resources:
+      limits:
+        cpu: "2"
+        memory: 500Mi
+      requests:
+        cpu: 25m
+        memory: 40Mi
+
+  cron:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  nexec:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  hookHandler:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 25m
+        memory: 40Mi
+
+  extensionSync:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  templateSync:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  reqSealer:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 5m
+        memory: 40Mi
+
+  ## Pipelines installer
+  pipelinesInit:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
   msg:
     uiUserPassword: password
+  customSidecarContainers: |
+   - name: "sidecar-list-local"
+     image: "releases-docker.jfrog.io/alpine:3.14.2"
+     imagePullPolicy: "IfNotPresent"
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "{{ .Values.pipelines.mountPath }}"
+         name: jfrog-pipelines-folder
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
 
+  statefulset:
+    annotations:
+      pipelines: test
 postgresql:
   postgresqlPassword: password
+  persistence:
+    enabled: false
 
 rabbitmq:
   auth:
     password: password
+  persistence:
+    enabled: false
+
+redis:
+  master:
+    persistence:
+      enabled: false
+
+## filebeat sidecar
+filebeat:
+  enabled: true
+  filebeatYml: |
+    logging.level: info
+    path.data: {{ .Values.pipelines.logPath }}/filebeat
+    name: pipelines-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - {{ .Values.pipelines.logPath }}/*.log
+      fields:
+        service: "jfpip"
+        log_type: "pipelines"
+    output.file:
+      path: "/tmp/filebeat"
+      filename: filebeat
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
