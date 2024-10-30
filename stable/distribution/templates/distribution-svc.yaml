@@ -16,11 +16,20 @@ metadata:
 {{ toYaml .Values.distribution.service.annotations | indent 4 }}
 {{- end }}
 spec:
+  {{- if .Values.distribution.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.distribution.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if not (empty .Values.distribution.service.ipFamilies)}}
+  ipFamilies: {{- toYaml .Values.distribution.service.ipFamilies | nindent 4 }}
+  {{- end }}
   type: {{ .Values.distribution.service.type }}
   ports:
   - name: http-distro
     port: {{ .Values.distribution.externalPort }}
     targetPort: http-distro
+  - name: http-router
+    port: {{ .Values.router.externalPort }}
+    targetPort: http-router
   selector:
     app: {{ template "distribution.name" . }}
     release: {{ .Release.Name }}

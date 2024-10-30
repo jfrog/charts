@@ -1,0 +1,34 @@
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
+shared:
+  logging:
+    consoleLog:
+      enabled: {{ .Values.distribution.consoleLog }}
+  jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "distribution.jfrogUrl" .)) . }}"
+  database:
+  {{- if .Values.postgresql.enabled }}
+    type: "postgresql"
+    driver: "org.postgresql.Driver"
+    username: "{{ .Values.postgresql.postgresqlUsername }}"
+    url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+  {{ else }}
+    type: "{{ .Values.database.type }}"
+    driver: "{{ .Values.database.driver }}"
+  {{- end }}
+distribution:
+  extraJavaOpts: >
+  {{- if .Values.newRelic.apm.enabled }}
+    -javaagent:{{ .Values.distribution.persistence.mountPath }}/etc/newrelic/newrelic.jar
+  {{- end }}
+  {{- with .Values.distribution.javaOpts }}
+  {{- if .xms }}
+    -Xms{{ .xms }}
+  {{- end }}
+  {{- if .xmx }}
+    -Xmx{{ .xmx }}
+  {{- end }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}

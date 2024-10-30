@@ -3,7 +3,8 @@ databaseUpgradeReady: true
 postgresql:
   enabled: false
 artifactory:
-  fsGroupChangePolicy: "OnRootMismatch"
+  podSecurityContext:
+    fsGroupChangePolicy: "OnRootMismatch"
   persistence:
     enabled: false
   resources:

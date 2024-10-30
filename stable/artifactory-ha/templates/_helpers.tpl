@@ -56,32 +56,6 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
-Create a default fully qualified Replicator app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "artifactory-ha.replicator.fullname" -}}
-{{- if .Values.artifactory.replicator.ingress.name -}}
-{{- .Values.artifactory.replicator.ingress.name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-replication" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Create a default fully qualified replicator tracker ingress name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
-*/}}
-{{- define "artifactory-ha.replicator.tracker.fullname" -}}
-{{- if .Values.artifactory.replicator.trackerIngress.name -}}
-{{- .Values.artifactory.replicator.trackerIngress.name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-replication-tracker" .Chart.Name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -309,13 +283,29 @@ Return the proper artifactory chart image names
 {{- $indexReference := index . 1 }}
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
-{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- $tag := "" -}}
+{{- if and (eq $indexReference "artifactory") (hasKey $dot.Values "artifactoryService") }}
+    {{- if default false $dot.Values.artifactoryService.enabled }}
+        {{- $indexReference = "artifactoryService" -}}
+        {{- $tag = default $dot.Chart.Annotations.artifactoryServiceVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+        {{- $repositoryName = index $dot.Values $indexReference "image" "repository" -}}
+    {{- else -}}
+        {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+    {{- end -}}
+{{- else -}}
+    {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- end -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.versions.router (eq $indexReference "router") }}
-    {{- $tag = $dot.Values.global.versions.router | toString -}}
+        {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
-    {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
+    {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
+        {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
+    {{- if $dot.Values.global.versions.artifactory }}
+        {{- if or (eq $indexReference "artifactory") (eq $indexReference "metadata") (eq $indexReference "nginx") (eq $indexReference "observability") }}
+            {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
+        {{- end -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
@@ -331,8 +321,7 @@ Return the proper artifactory chart image names
 Return the proper artifactory app version
 */}}
 {{- define "artifactory-ha.app.version" -}}
-{{- $image := split ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory")) | toString) -}}
-{{- $tag := $image._1 -}}
+{{- $tag := (splitList ":" ((include "artifactory-ha.getImageInfoByValue" (list . "artifactory" )))) | last | toString -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
 
@@ -378,8 +367,8 @@ Resolve requiredServiceTypes value
 {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
 {{- end -}}
-{{- if .Values.artifactory.replicator.enabled -}}
-    {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfxfer" -}}
+{{- if .Values.evidence.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevd" -}}
 {{- end -}}
 {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
@@ -396,6 +385,16 @@ nginx scheme (http/https)
 {{- else -}}
 {{- printf "%s" "https" -}}
 {{- end -}}
+{{- end -}}
+
+
+{{/*
+nginx command
+*/}}
+{{- define "nginx.command" -}}
+{{- if .Values.nginx.customCommand }}
+{{  toYaml .Values.nginx.customCommand }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -478,5 +477,87 @@ nodeSelector:
 {{ toYaml .Values.global.nodeSelector | indent 2 }}
 {{- else if .Values.nginx.nodeSelector }}
 {{ toYaml .Values.nginx.nodeSelector | indent 2 }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from structured and unstructured text input
+*/}}
+{{- define "artifactory.finalSystemYaml" -}}
+{{ tpl (mergeOverwrite (include "artifactory.systemYaml" . | fromYaml) .Values.artifactory.extraSystemYaml | toYaml) . }}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from the unstructured text input
+*/}}
+{{- define "artifactory.systemYaml" -}}
+{{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
+{{- end -}}
+
+{{/*
+Metrics enabled
+*/}}
+{{- define "metrics.enabled" -}}
+shared:
+  metrics:
+    enabled: true
+{{- end }}
+
+{{/*
+Resolve artifactory metrics
+*/}}
+{{- define "artifactory.metrics" -}}
+{{- if .Values.artifactory.openMetrics -}} 
+{{- if .Values.artifactory.openMetrics.enabled -}}
+{{ include "metrics.enabled" . }}
+{{- if .Values.artifactory.openMetrics.filebeat }}
+{{- if .Values.artifactory.openMetrics.filebeat.enabled }}
+{{ include "metrics.enabled" . }}
+    filebeat:
+{{ tpl (.Values.artifactory.openMetrics.filebeat | toYaml) . | indent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else if .Values.artifactory.metrics -}}
+{{- if .Values.artifactory.metrics.enabled -}}
+{{ include "metrics.enabled" . }}
+{{- if .Values.artifactory.metrics.filebeat }}
+{{- if .Values.artifactory.metrics.filebeat.enabled }}
+{{ include "metrics.enabled" . }}
+    filebeat:
+{{ tpl (.Values.artifactory.metrics.filebeat | toYaml) . | indent 6 }}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unified secret prepend release name
+*/}}
+{{- define "artifactory.unifiedSecretPrependReleaseName" -}}
+{{- if .Values.artifactory.unifiedSecretPrependReleaseName }}
+{{- printf "%s" (include "artifactory-ha.fullname" .) -}}
+{{- else }}
+{{- printf "%s" (include "artifactory-ha.name" .) -}}
+{{- end }}
+{{- end }}
+
+{{/*
+Resolve nginx hosts value
+*/}}
+{{- define "artifactory.nginx.hosts" -}}
+{{- if .Values.ingress.hosts }}
+{{- range .Values.ingress.hosts -}}
+  {{- if contains "." . -}}
+    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+  {{- end -}}
+{{- end -}}
+{{- else if .Values.nginx.hosts }}
+{{- range .Values.nginx.hosts -}}
+  {{- if contains "." . -}}
+    {{ "" | indent 0 }} ~(?<repo>.+)\.{{ . }}
+  {{- end -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

@@ -104,7 +104,7 @@ setupDB(){
 : ${DB_NAME:=$1}
 : ${DB_USERNAME:=$2}
 : ${DB_PASSWORD:=$3}
-: ${CHART_NAME:=4}
+: ${CHART_NAME:=$4}
 
 ### Following are the postgres details being setup for each service.
 ##  Common details

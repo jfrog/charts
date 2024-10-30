@@ -109,12 +109,14 @@ This chart would provide flexibility to enable one or more of the jfrog products
 3. Insight
 4. Pipelines
 
-For example to enable xray and insight with artifactory, you can refer the following yaml and pass it during install.
+For example to enable distribution, insight and pipelines with artifactory, you can refer the following yaml and pass it during install.
 customvalues.yaml
 ```yaml
-xray:
+distribution:
   enabled: true
 insight:
+  enabled: true
+pipelines:
   enabled: true
 ````
 ```bash

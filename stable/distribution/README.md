@@ -37,14 +37,14 @@ Provide a join key and the JFrog URL as a parameter to the Distribution chart in
 
 ```bash
 helm upgrade --install distribution --set distribution.joinKey=<YOUR_PREVIOUSLY_RETIREVED_JOIN_KEY> \
-             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> --namespace distribution jfrog/distribution
+             --set distribution.jfrogUrl=<YOUR_PREVIOUSLY_RETIREVED_BASE_URL> jfrog/distribution --namespace distribution --create-namespace
 ```
 
 ### Apply Sizing configurations to the Chart
 To apply the chart with recommended sizing configurations :
 For small configurations :
 ```bash
-helm upgrade --install distribution --namespace distribution jfrog/distribution -f sizing/distribution-small.yaml 
+helm upgrade --install distribution jfrog/distribution -f sizing/distribution-small.yaml --namespace distribution --create-namespace
 ```
 
 ## Uninstalling Distribution

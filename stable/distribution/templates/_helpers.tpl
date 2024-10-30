@@ -204,6 +204,9 @@ Return the proper distribution chart image names
     {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
+    {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.distribution (eq $indexReference "distribution") }}
     {{- $tag = $dot.Values.global.versions.distribution | toString -}}
     {{- end -}}
@@ -266,3 +269,28 @@ if the volume exists in customVolume then an extra volume with the same name wil
 {{- printf "%s" "false" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Calculate the systemYaml from structured and unstructured text input
+*/}}
+{{- define "distribution.finalSystemYaml" -}}
+{{ tpl (mergeOverwrite (include "distribution.systemYaml" . | fromYaml) .Values.distribution.extraSystemYaml | toYaml) . }}
+{{- end -}}
+
+{{/*
+Calculate the systemYaml from the unstructured text input
+*/}}
+{{- define "distribution.systemYaml" -}}
+{{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
+{{- end -}}
+
+{{/*
+Resolve unified secret prepend release name
+*/}}
+{{- define "distribution.unifiedSecretPrependReleaseName" -}}
+{{- if .Values.distribution.unifiedSecretPrependReleaseName }}
+{{- printf "%s" (include "distribution.fullname" .) -}}
+{{- else }}
+{{- printf "%s" (include "distribution.name" .) -}}
+{{- end }}
+{{- end }}

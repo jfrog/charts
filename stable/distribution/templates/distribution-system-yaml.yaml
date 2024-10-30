@@ -12,5 +12,5 @@ metadata:
 type: Opaque
 stringData:
   system.yaml: |
-{{ tpl .Values.distribution.systemYaml . | indent 4 }}
+{{ include "distribution.finalSystemYaml" . | nindent 4 }}
 {{- end }}

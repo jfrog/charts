@@ -33,8 +33,8 @@ global:
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   customInitContainersBegin: |
    - name: "custom-init-begin-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
        - 'sh'
        - '-c'
@@ -51,8 +51,8 @@ global:
      mountPath: "/scriptsglobal"
   customInitContainers: |
    - name: "custom-init-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
        - 'sh'
        - '-c'
@@ -62,8 +62,8 @@ global:
          name: distribution-data
   customSidecarContainers: |
    - name: "sidecar-list-global"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:
@@ -84,8 +84,8 @@ global:
 common:
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
        - 'sh'
        - '-c'
@@ -102,8 +102,8 @@ common:
      mountPath: "/scriptslocal"
   customInitContainers: |
    - name: "custom-init-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
        - 'sh'
        - '-c'
@@ -113,8 +113,8 @@ common:
          name: distribution-data
   customSidecarContainers: |
    - name: "sidecar-list-local"
-     image: "{{ .Values.initContainerImage }}"
-     imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+     image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
+     imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      securityContext:
        allowPrivilegeEscalation: false
        capabilities:
