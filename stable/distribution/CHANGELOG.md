@@ -1,8 +1,13 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.26.1] - May 29, 2024
+## [102.27.2] - Oct 02, 2024
+* Adding distribution service with http-router port [GH-1872](https://github.com/jfrog/charts/pull/1872)
+
+## [102.26.1] - June 20, 2024
 * Fix the indentation of the commented-out sections in the values.yaml file
+* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
+* Fixed sizing file names
 
 ## [102.25.0] - May 16, 2024
 * Update postgresql tag version to `15.6.0-debian-12-r5`

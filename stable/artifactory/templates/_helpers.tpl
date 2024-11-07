@@ -526,3 +526,19 @@ Resolve nginx hosts value
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create a default fully qualified grpc ingress name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "artifactory.ingressGrpc.fullname" -}}
+{{- printf "%s-%s" (include "artifactory.fullname" .) .Values.ingressGrpc.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified grpc service name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "artifactory.serviceGrpc.fullname" -}}
+{{- printf "%s-%s" (include "artifactory.fullname" .) .Values.artifactory.serviceGrpc.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}

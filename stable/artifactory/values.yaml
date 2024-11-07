@@ -47,7 +47,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.4.949.1716471857
+    tag: 9.4.1227
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -117,7 +117,6 @@ ingress:
   rtfsPath: /artifactory/service/rtfs/
   className: ""
   annotations: {}
-  # kubernetes.io/ingress.class: nginx
   # nginx.ingress.kubernetes.io/configuration-snippet: |
   #   proxy_pass_header   Server;
   #   proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
@@ -138,6 +137,37 @@ ingress:
   disableRouterBypass: false
 ## Allows to add custom ingress
 customIngress: ""
+## There is a need to separate HTTP1.1 traffic from gRPC (HTTP2) to benefit
+## 1. Use the Nginx keepalive for HTTP1.1
+## 2. Keep gRPC over the HTTP2 connections only
+ingressGrpc:
+  enabled: false
+  name: grpc
+  defaultBackend:
+    enabled: true
+  ## Used to create an Ingress record.
+  hosts: []
+  grpcPath: /com.jfrog
+  className: ""
+  ## For supporting GRPC protocol traffic sent to the backend it is necessary to change the backend protocol
+  ## Example: nginx.ingress.kubernetes.io/backend-protocol: GRPCS
+  annotations: {}
+  # nginx.ingress.kubernetes.io/configuration-snippet: |
+  #   proxy_pass_header   Server;
+  #   proxy_set_header    X-JFrog-Override-Base-Url https://<artifactory-domain>;
+  # kubernetes.io/tls-acme: "true"
+  # nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  labels: {}
+  # traffic-type: external
+  # traffic-type: internal
+  tls: []
+  ## Secrets must be manually created in the namespace.
+  # - secretName: chart-example-tls
+  #   hosts:
+  #     - artifactory.domain.example
+
+  ## Additional ingress rules
+  additionalRules: []
 networkpolicy: []
 ## Allows all ingress and egress
 # - name: artifactory
@@ -198,7 +228,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.118.3
+    tag: 7.135.1
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -356,6 +386,10 @@ artifactory:
   ## set 'coldStorage.enabled' to 'true' only for Artifactory instance that you are designating as the Cold instance
   ## Refer - https://jfrog.com/help/r/jfrog-platform-administration-documentation/setting-up-cold-artifact-storage
   coldStorage:
+    enabled: false
+  ## Support for workers
+  ## set 'worker.enabled' to 'true' to enable artifactory addon that executes workers on artifactory events
+  worker:
     enabled: false
   ## This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
@@ -654,6 +688,28 @@ artifactory:
     annotations: {}
     ## If the type is NodePort you can set a fixed port
     # nodePort: 32082
+  serviceGrpc:
+    name: grpc
+    type: ClusterIP
+    ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
+    ## This can be either SingleStack, PreferDualStack or RequireDualStack
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilyPolicy: ""
+    ## @param service.ipFamilies Controller Service ipFamilies (optional, cloud specific)
+    ## This can be either ["IPv4"], ["IPv6"], ["IPv4", "IPv6"] or ["IPv6", "IPv4"]
+    ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
+    ##
+    ipFamilies: []
+    ## For supporting whitelist on the Artifactory service (useful if setting service.type=LoadBalancer)
+    ## Set this to a list of IP CIDR ranges
+    ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
+    ## or pass from helm command line
+    ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
+    loadBalancerSourceRanges: []
+    annotations: {}
+    ## If the type is NodePort you can set a fixed port
+    # nodePort: 32082
   statefulset:
     annotations: {}
   ## IMPORTANT: If overriding artifactory.internalPort:
@@ -811,6 +867,7 @@ artifactory:
       bucketExists: false
       useInstanceCredentials: false
       enableSignedUrlRedirect: false
+      # signedUrlExpirySeconds: false
     ## For artifactory.persistence.type aws-s3-v3, s3-storage-v3-direct, cluster-s3-storage-v3, s3-storage-v3-archive
     awsS3V3:
       testConnection: false
@@ -1224,6 +1281,10 @@ jfconnect:
   #   exec:
   #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
 
+  ## You can use a pre-existing secret by specifying customCertificatesSecretName
+  ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=tls.crt --key=tls.key`
+  # customCertificatesSecretName:
+
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
@@ -1478,6 +1539,10 @@ nginx:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
     ssloffload: false
+    ## @param service.ssloffloadForceHttps Only enabled when service.ssloffload is set to True.
+    ## Force all requests from NGINX to the upstream server are over HTTPS, even when SSL offloading is enabled.
+    ## This is useful in environments where internal traffic must remain secure with https only.
+    ssloffloadForceHttps: false
     ## @param service.ipFamilyPolicy Controller Service ipFamilyPolicy (optional, cloud specific)
     ## This can be either SingleStack, PreferDualStack or RequireDualStack
     ## ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
@@ -1725,6 +1790,9 @@ filebeat:
     output:
       logstash:
          hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+  extraEnvironmentVariables: {}
+  #   - name: MY_ENV_VAR
+  #     value: "s"
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
 ## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-values.yaml

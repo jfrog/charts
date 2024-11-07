@@ -8,6 +8,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
+    version: {{ include "distribution.app.version" . }}
     {{- with .Values.distribution.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}

@@ -70,12 +70,22 @@ location / {
   proxy_cookie_path   ~*^/.* /;
   proxy_pass          {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
   {{- if .Values.nginx.service.ssloffload}}
+  {{- if .Values.nginx.service.ssloffloadForceHttps}}
+  proxy_set_header    X-JFrog-Override-Base-Url https://$host;
+  proxy_set_header    X-Forwarded-Proto https;
+  {{- else }}
   proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+  {{- end }}
+  {{- else if or (eq (int .Values.nginx.https.internalPort) 80) (eq (int .Values.nginx.https.externalPort) 443)}}
+  proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+  proxy_set_header    X-Forwarded-Port  $server_port;
+  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
   {{- else }}
   proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$host_port;
   proxy_set_header    X-Forwarded-Port  $server_port;
-  {{- end }}
   proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+  {{- end }}
   proxy_set_header    Host              $http_host;
   proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
   {{- if .Values.nginx.disableProxyBuffering}}

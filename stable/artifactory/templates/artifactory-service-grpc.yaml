@@ -1,0 +1,44 @@
+{{- if .Values.ingressGrpc.enabled -}}
+# Service for GRPC communication.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "artifactory.serviceGrpc.fullname" . }}
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    component: {{ .Values.artifactory.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    {{- with .Values.artifactory.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+{{- if .Values.artifactory.serviceGrpc.annotations }}
+  annotations:
+{{ toYaml .Values.artifactory.serviceGrpc.annotations | indent 4 }}
+{{- end }}
+spec:
+  {{- if .Values.artifactory.serviceGrpc.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.artifactory.serviceGrpc.ipFamilyPolicy }}
+  {{- end }}
+  {{- if not (empty .Values.artifactory.serviceGrpc.ipFamilies)}}
+  ipFamilies: {{- toYaml .Values.artifactory.serviceGrpc.ipFamilies | nindent 4 }}
+  {{- end }}
+  type: {{ .Values.artifactory.serviceGrpc.type }}
+{{- if .Values.artifactory.serviceGrpc.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+{{ toYaml .Values.artifactory.serviceGrpc.loadBalancerSourceRanges | indent 4 }}
+{{- end }}
+  ports:
+  - port: {{ .Values.artifactory.externalPort }}
+    targetPort: {{ .Values.artifactory.internalPort }}
+    {{- if .Values.artifactory.nodePort }}
+    nodePort: {{ .Values.artifactory.nodePort }}
+    {{- end }}
+    protocol: TCP
+    name: http-router
+  selector:
+    app: {{ template "artifactory.name" . }}
+    component: "{{ .Values.artifactory.name }}"
+    release: {{ .Release.Name }}
+{{- end -}}

@@ -1,6 +1,14 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.20.0] - Oct 29, 2024
+* **IMPORTANT**
+* Added new dependency chart `worker` which is disabled by default and set `worker.enabled: true` to enable it. More info [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/installing-jfrog-worker)
+* Commented `global.versions.router` to enable latest router version to picked from corresponding products
+* Update dependency artifactory chart version to 107.98.7
+* Update dependency distribution chart version to 102.27.2
+* Update dependency worker chart version to 101.95.1
+
 ## [10.19.7] - Oct 23, 2024
 * Added podSecurityContext and containerSecurityContext for pre-upgrade-check migration hook container. [GH-1929](https://github.com/jfrog/charts/pull/1929)
 * Update dependency artifactory chart version to 107.90.15

@@ -1,6 +1,30 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.98.7] - Oct 02, 2024
+* Add support for `extraEnvironmentVariables` on filebeat Sidecar [GH-1377](https://github.com/jfrog/charts/pull/1377)
+* Support for SSL offload HTTPS proto override in Nginx service (ClusterIP, LoadBalancer) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type. [GH-1906](https://github.com/jfrog/charts/pull/1906)
+* Enable Access workers integration when artifactory.worker.enabled is true
+* Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct` [GH-1858](https://github.com/jfrog/charts/pull/1858)
+* Added support to bootstrap jfconnect custom certs to jfconnect trusted directory
+
+## [107.96.0] - Sep 10, 2024
+* Merged Artifactory sizing templates to a single file per size
+
+## [107.94.0] - Aug 14, 2024
+* Fixed #Expose rtfs port only when it is enabled
+
+## [107.93.0] - Aug 9, 2024
+* Added support for worker via `artifactory.worker.enabled` flag
+* Fixed creation of duplicate objects in statefulSet
+
+## [107.92.0] - July 31, 2024
+* Updating the example link for downloading the DB driver
+* Adding dedicated ingress and service path for GRPC protocol
+
+## [107.91.0] - July 18, 2024
+* Remove X-JFrog-Override-Base-Url port when using default `443/80` ports
+
 ## [107.90.15] - July 18, 2024
 * Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 * Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
@@ -15,7 +39,6 @@ All changes to this chart will be documented in this file.
     `access.javaOpts.other`
     `access.resources`
     `access.extraEnvironmentVariables`
-* Updating the example link for downloading the DB driver
 * Added Binary Provider recommendations
 
 ## [107.89.0] - June 7, 2024

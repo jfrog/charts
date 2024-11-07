@@ -221,6 +221,14 @@ spec:
           cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.crt;
           cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/ca.private.key;
         {{- end }}
+        {{- if .Values.jfconnect.customCertificatesSecretName }}
+          echo "Copying custom certificates to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys";
+          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys;
+          cp -fv /tmp/etc/tls.crt {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+          cp -fv /tmp/etc/tls.cer {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+          cp -fv /tmp/etc/tls.pem {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+          cp -fv /tmp/etc/tls.key {{ .Values.artifactory.persistence.mountPath }}/bootstrap/jfconnect/etc/keys/;
+        {{- end }}
         {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
           echo "Copy joinKey to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/access/etc/security;
@@ -270,7 +278,7 @@ spec:
             {{- end }}
               key: master-key
         {{- end }}
-    
+
       ######################## Volume Mounts For copy-system-configurations ##########################
         volumeMounts:
         - name: volume
@@ -316,6 +324,21 @@ spec:
           mountPath: "/tmp/etc/tls.crt"
           subPath: tls.crt
         - name: access-certs
+          mountPath: "/tmp/etc/tls.key"
+          subPath: tls.key
+      {{- end }}
+
+      {{- if .Values.jfconnect.customCertificatesSecretName }}
+        - name: jfconnect-certs
+          mountPath: "/tmp/etc/tls.crt"
+          subPath: tls.crt
+        - name: jfconnect-certs
+          mountPath: "/tmp/etc/tls.pem"
+          subPath: tls.pem
+        - name: jfconnect-certs
+          mountPath: "/tmp/etc/tls.cer"
+          subPath: tls.cer
+        - name: jfconnect-certs
           mountPath: "/tmp/etc/tls.key"
           subPath: tls.key
       {{- end }}
@@ -561,9 +584,6 @@ spec:
 {{- with .Values.router.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
-        ports:
-          - name: http
-            containerPort: {{ .Values.router.internalPort }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
@@ -728,8 +748,11 @@ spec:
         command:
           - '/bin/bash'
           - '-c'
-          - >
-            exec /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
+          {{- if default false .Values.metadata.standaloneImageEnabled }}
+          - exec /opt/jfrog/metadata/app/metadata/bin/jf-metadata
+          {{- else }}
+          - exec /opt/jfrog/artifactory/app/metadata/bin/jf-metadata start
+          {{- end }}
         {{- with .Values.metadata.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
@@ -798,7 +821,11 @@ spec:
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
         - name: volume
+          {{- if default false .Values.metadata.standaloneImageEnabled }}
+          mountPath: {{ .Values.metadata.persistence.mountPath | quote }}
+          {{- else }}
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          {{- end }}
         resources:
 {{ toYaml .Values.metadata.resources | indent 10 }}
       {{- if .Values.metadata.startupProbe.enabled }}
@@ -911,9 +938,11 @@ spec:
 {{- with .Values.federation.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
+      {{- if .Values.federation.enabled }}
         ports:
         - containerPort: {{ .Values.federation.internalPort }}
           name: http-rtfs
+      {{- end }}
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
@@ -938,8 +967,11 @@ spec:
         command:
           - '/bin/bash'
           - '-c'
-          - >
-            exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+          {{- if default false .Values.observability.standaloneImageEnabled }}
+          - exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh
+          {{- else }}
+          - exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+          {{- end }}
         {{- with .Values.observability.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
@@ -954,7 +986,11 @@ spec:
 {{- end }}
         volumeMounts:
         - name: volume
+          {{- if default false .Values.observability.standaloneImageEnabled }}
+          mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+          {{- else }}
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          {{- end }}
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
       {{- if .Values.observability.startupProbe.enabled }}
@@ -1288,8 +1324,10 @@ spec:
           name: http
         - containerPort: {{ .Values.artifactory.internalArtifactoryPort }}
           name: http-internal
+        {{- if .Values.federation.enabled }}
         - containerPort: {{ .Values.federation.internalPort }}
           name: http-rtfs
+        {{- end }}
         {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
         - containerPort: {{ .Values.artifactory.primary.javaOpts.jmx.port }}
           name: tcp-jmx
@@ -1461,6 +1499,10 @@ spec:
         - "-e"
         - "-E"
         - "http.enabled=true"
+        env:
+{{- with .Values.filebeat.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
         volumeMounts:
         - name: filebeat-config
           mountPath: /usr/share/filebeat/filebeat.yml
@@ -1542,6 +1584,11 @@ spec:
       - name: access-certs
         secret:
           secretName: {{ .Values.access.customCertificatesSecretName }}
+      {{- end }}
+      {{- if .Values.jfconnect.customCertificatesSecretName }}
+      - name: jfconnect-certs
+        secret:
+          secretName: {{ .Values.jfconnect.customCertificatesSecretName }}
       {{- end }}
       {{- if .Values.systemYamlOverride.existingSecret }}
       - name: systemyaml

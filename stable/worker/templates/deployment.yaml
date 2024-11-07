@@ -1,0 +1,426 @@
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ include "worker.fullname" . }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.commonAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.podAnnotations }}
+        {{ include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+        {{- end }}
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "worker.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ include "worker.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{ tpl (toYaml .Values.common.topologySpreadConstraints) . | indent 8 }}
+      {{- end }}
+      initContainers:
+        - name: 'copy-system-yaml'
+          image: {{ template "initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              echo "Copy system.yaml to /opt/jfrog/worker/var/etc";
+              mkdir -p /opt/jfrog/worker/var/etc;
+            {{- if .Values.systemYamlOverride.existingSecret }}
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} /opt/jfrog/worker/var/etc/system.yaml;
+            {{- else }}
+              cp -fv /tmp/etc/system.yaml /opt/jfrog/worker/var/etc/system.yaml;
+            {{- end }}
+              echo "Remove /opt/jfrog/worker/var/lost+found folder if exists";
+              rm -rfv /opt/jfrog/worker/var/lost+found;
+              mkdir -p /opt/jfrog/worker/var/data/worker/usage;
+          volumeMounts:
+            - name: data
+              mountPath: "/opt/jfrog/worker/var"
+            - name: systemyaml
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+              subPath: {{ .Values.systemYamlOverride.dataKey }}
+              {{- else }}
+              mountPath: "/tmp/etc/system.yaml"
+              subPath: system.yaml
+              {{- end }}
+      {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: copy-custom-certificates
+          image: {{ template "initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - 'bash'
+            - '-c'
+            - >
+{{ include "worker.copyCustomCerts" . | indent 14 }}
+          volumeMounts:
+            - name: data
+              mountPath: "/opt/jfrog/worker/var"
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+      {{- end }}
+    {{- if or .Values.common.customInitContainers .Values.global.customInitContainers }}
+{{ tpl (include "worker.customInitContainers" .)  . | indent 8 }}
+    {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases:
+{{ toYaml .Values.hostAliases | indent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          image: {{ template "worker.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ .Values.service.grpcPort }}
+              protocol: TCP
+          {{- if .Values.customReadinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.readinessProbe "enabled") "context" $) | nindent 12 }}
+            initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" $.Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            httpGet:
+              path: /api/v1/system/readiness
+              port: {{ .Values.service.port }}
+          {{- end }}
+          {{- if .Values.customLivenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customLivenessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.livenessProbe "enabled") "context" $) | nindent 12 }}
+            initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" $.Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            httpGet:
+              path: /api/v1/system/liveness
+              port: {{ .Values.service.port }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: PROTO_DIR
+              value: './proto'
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- if not .Values.systemYamlOverride.existingSecret }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "worker.joinKeySecretName" . }}
+                  key: join-key
+                  optional: true
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "worker.masterKeySecretName" . }}
+                  key: master-key
+                  optional: true
+            {{- end }}
+            - name: JF_PRODUCT_HOME
+              value: {{ .Values.service.productHome | quote }}
+{{- with .Values.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: "/opt/jfrog/worker/var"
+      {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "worker.customVolumeMounts" .) . | indent 12 }}
+      {{- end }}
+          {{- if .Values.lifecycle.preStopSleepSeconds }}
+# this sleep is here in order to keep our service responding while k8s is removing it from network
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep {{ .Values.lifecycle.preStopSleepSeconds }}"]
+          {{- end }}
+        - name: {{ .Values.router.name }}
+          image: {{ template "router.image" . }}
+          imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.router.persistence.mountPath | quote }}
+          {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "worker.customVolumeMounts" .) . | indent 12 }}
+          {{- end }}
+          {{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 12 }}
+          {{- end }}
+          env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: ""
+            - name: JF_ROUTER_SERVICEREGISTRY_URL
+              value: "{{ default (tpl (required "\n\njfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "worker.jfrogUrl" .)) .) .Values.router.serviceRegistry.url }}/access"
+            - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
+              value: "{{ default (include "worker.jfrogUrlHost" .) .Values.router.serviceRegistry.grpcUrl }}"
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- if not .Values.systemYamlOverride.existingSecret }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "worker.joinKeySecretName" . }}
+                  key: join-key
+                  optional: true
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "worker.masterKeySecretName" . }}
+                  key: master-key
+                  optional: true
+            {{- end }}
+
+{{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.router.internalPort }}
+            - name: http-router
+              containerPort: {{ .Values.router.externalPort }}
+          resources:
+{{ toYaml .Values.router.resources | indent 12 }}
+          {{- if .Values.router.customStartupProbe }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customStartupProbe "context" $) | nindent 12 }}
+          {{- else if .Values.router.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.router.startupProbe "enabled") "context" $) | nindent 12 }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          {{- end }}
+          {{- if .Values.router.customReadinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customReadinessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.router.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.router.readinessProbe "enabled") "context" $) | nindent 12 }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+          {{- end }}
+          {{- if .Values.router.customLivenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customLivenessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.router.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.router.livenessProbe "enabled") "context" $) | nindent 12 }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+            initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+          {{- end }}
+          {{- if .Values.lifecycle.preStopSleepSeconds }}
+# this sleep is here in order to keep our service responding while k8s is removing it from network
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep {{ .Values.lifecycle.preStopSleepSeconds }}"]
+          {{- end }}
+      {{- if .Values.observability.enabled }}
+        - name: {{ .Values.observability.name }}
+          image: {{ template "observability.image" . }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/sh'
+            - '-c'
+            - >
+          {{- with .Values.common.preStartCommand }}
+              echo "Running custom common preStartCommand command";
+              {{ tpl . $ }};
+          {{- end }}
+              exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh;
+          {{- with .Values.observability.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: "{{ .Values.observability.persistence.mountPath }}"
+          resources:
+{{ toYaml .Values.observability.resources | indent 12 }}
+          {{- if .Values.observability.customStartupProbe }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.observability.customStartupProbe "context" $) | nindent 12 }}
+          {{- else if .Values.observability.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.observability.startupProbe "enabled") "context" $) | nindent 12 }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+          {{- end }}
+          {{- if .Values.observability.customLivenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.observability.customLivenessProbe "context" $) | nindent 12 }}
+          {{- else if .Values.observability.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.observability.livenessProbe "enabled") "context" $) | nindent 12 }}
+            initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            exec:
+              command:
+                - sh
+                - -c
+                - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+          {{- end }}
+          env:
+            {{- if not .Values.systemYamlOverride.existingSecret }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "worker.joinKeySecretName" . }}
+                  key: join-key
+                  optional: true
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "worker.masterKeySecretName" . }}
+                  key: master-key
+                  optional: true
+            {{- end }}
+            - name: JF_SHARED_PLATFORMSERVICES_ENABLED
+              value: "true"
+      {{- end }}
+      {{- range .Values.loggers }}
+        - name: {{ . | replace "_" "-" | replace "." "-" }}
+          image: {{ template "initContainers.image" $ }}
+          imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+          {{- if $.Values.securityContext.enabled }}
+          securityContext: {{- omit $.Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          resources:
+{{ toYaml $.Values.loggersResources | indent 12 }}
+          command:
+            - 'sh'
+            - '-c'
+            - 'sh /scripts/tail-log.sh /opt/jfrog/worker/var/log {{ . }}'
+          volumeMounts:
+            - name: data
+              mountPath: "/opt/jfrog/worker/var"
+            - name: tail-logger-script
+              mountPath: /scripts/tail-log.sh
+              subPath: tail-log.sh
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+        - name: {{ .Values.filebeat.name }}
+          image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+          imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          args:
+            - "-e"
+            - "-E"
+            - "http.enabled=true"
+          volumeMounts:
+            - name: filebeat-config
+              mountPath: /usr/share/filebeat/filebeat.yml
+              readOnly: true
+              subPath: filebeat.yml
+            - name: data
+              mountPath: "/opt/jfrog/worker/var"
+          livenessProbe:
+{{ toYaml .Values.filebeat.livenessProbe | indent 12 }}
+          readinessProbe:
+{{ toYaml .Values.filebeat.readinessProbe | indent 12 }}
+          resources:
+{{ toYaml .Values.filebeat.resources | indent 12 }}
+      {{- end }}
+    {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "worker.customSidecarContainers" .) . | indent 8 }}
+    {{- end }}
+    {{- if or .Values.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "worker.nodeSelector" .) . | indent 6 }}
+    {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.customCertificates.certificateSecretName }}
+      {{- end }}
+        - name: data
+          emptyDir: {}
+        - name: systemyaml
+          secret:
+            secretName: {{ default ( default (printf "%s-%s" (include "worker.fullname" .) "systemyaml") ) .Values.systemYamlOverride.existingSecret }}
+      {{- if .Values.loggers }}
+        - name: tail-logger-script
+          configMap:
+            name: {{ template "worker.fullname" . }}-logger
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+        - name: filebeat-config
+          configMap:
+            name: {{ template "worker.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if or .Values.common.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "worker.customVolumes" .) . | indent 8 }}
+      {{- end }}
+      {{- if .Values.common.configMaps }}
+        - name: worker-configmaps
+          configMap:
+            name: {{ template "worker.fullname" . }}-configmaps
+      {{- end }}
