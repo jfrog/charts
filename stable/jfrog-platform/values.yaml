@@ -137,6 +137,7 @@ rabbitmq:
   onlineSchedulers: null
   persistence:
     size: 50Gi
+  tolerations: []
   extraEnvVars:
     - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
       value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
