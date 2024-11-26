@@ -83,3 +83,8 @@ exposures:
   container:
     registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
     image: {{ .Values.exposures.image.repository }}
+{{- if .Values.jas.healthcheck.enabled }}
+jas:
+  healthCheckApi:
+    enabled: true
+{{- end }}
