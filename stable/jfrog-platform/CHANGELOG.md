@@ -1,6 +1,12 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.20.1] - Nov 25, 2024
+* Fix jfrog url with duplicate artifactory string when release name has artifactory
+* Updated kubectl image to version `1.31.2`
+* Update dependency artifactory chart version to 107.98.9
+* Update dependency xray chart version to 103.107.11
+
 ## [10.20.0] - Oct 29, 2024
 * **IMPORTANT**
 * Added new dependency chart `worker` which is disabled by default and set `worker.enabled: true` to enable it. More info [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/installing-jfrog-worker)

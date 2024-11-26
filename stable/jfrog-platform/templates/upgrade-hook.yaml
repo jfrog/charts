@@ -145,8 +145,8 @@ spec:
                 {{- end }}
 
                 {{- if not .Values.artifactory.mc.enabled }}
-                    systemYamlUnifiedSecret={{ .Release.Name }}-artifactory-unified-secret
-                    systemYamlSecret={{ .Release.Name }}-artifactory-systemyaml
+                    systemYamlUnifiedSecret={{ include "jfrog-platform.artifactory.fullname" . }}-unified-secret
+                    systemYamlSecret={{ include "jfrog-platform.artifactory.fullname" . }}-systemyaml
                     systemYamlEncoded=$(kubectl get secrets "$systemYamlUnifiedSecret" -o jsonpath="{.data.system\.yaml}")
                     if [ $? -ne 0 ]; then
                       systemYamlEncoded=$(kubectl get secrets "$systemYamlSecret" -o jsonpath="{.data.system\.yaml}")
