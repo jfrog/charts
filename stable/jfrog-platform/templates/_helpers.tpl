@@ -7,6 +7,19 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Handle uscases where the release name contains artifactory as part of it
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "jfrog-platform.artifactory.fullname" -}}
+{{- $name := "artifactory" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -269,7 +282,7 @@ Define database name
 Resolve jfrog url
 */}}
 {{- define "jfrog-platform.jfrogUrl" -}}
-{{- printf "http://%s-artifactory:8082" .Release.Name -}}
+{{- printf "http://%s:8082" (include "jfrog-platform.artifactory.fullname" .) -}}
 {{- end -}}
 
 {{/*
