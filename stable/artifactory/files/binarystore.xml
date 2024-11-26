@@ -180,9 +180,7 @@
         <path>{{ .Values.artifactory.persistence.googleStorage.path }}</path>
         <bucketExists>{{ .Values.artifactory.persistence.googleStorage.bucketExists }}</bucketExists>
         {{- if .Values.artifactory.persistence.googleStorage.signedUrlExpirySeconds }}
-        <signedUrlExpirySeconds>true</signedUrlExpirySeconds>
-        {{- else }}
-        <signedUrlExpirySeconds>false</signedUrlExpirySeconds>
+        <signedUrlExpirySeconds>{{ .Values.artifactory.persistence.googleStorage.signedUrlExpirySeconds | int64 }}</signedUrlExpirySeconds>
         {{- end }}
     </provider>
 </config>

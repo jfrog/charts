@@ -674,7 +674,7 @@ spec:
               key: {{ tpl .Values.database.secrets.user.key . }}
         {{- else if .Values.database.user }}
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
-              name: {{ template "artifactory.fullname" . }}-database-creds
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               {{- else }}
               name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
               {{- end }}
@@ -690,7 +690,7 @@ spec:
               key: {{ tpl .Values.database.secrets.password.key . }}
         {{- else if .Values.database.password }}
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
-              name: {{ template "artifactory.fullname" . }}-database-creds
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               {{- else }}
               name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
               {{- end }}
@@ -709,7 +709,7 @@ spec:
               key: {{ tpl .Values.database.secrets.url.key . }}
         {{- else if .Values.database.url }}
               {{- if not .Values.artifactory.unifiedSecretInstallation }}
-              name: {{ template "artifactory.fullname" . }}-database-creds
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
               {{- else }}
               name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
               {{- end }}
