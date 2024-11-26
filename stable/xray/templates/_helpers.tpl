@@ -693,6 +693,26 @@ Set xray env variables if rabbitmq.tls is enabled.
 {{- end }}
 {{- end -}}
 
+{{- define "xray.resolveUsedMasterKeySecretName" -}}
+{{- if or .Values.xray.masterKey .Values.xray.masterKeySecretName .Values.global.masterKey .Values.global.masterKeySecretName -}}
+{{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName) -}}
+{{- include "xray.masterKeySecretName" . -}}
+{{- else -}}
+{{ template "xray.name" . }}-unified-secret
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "xray.resolveUsedJoinKeySecretName" -}}
+{{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName -}}
+{{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName) -}}
+{{- include "xray.joinKeySecretName" . -}}
+{{- else -}}
+{{ template "xray.name" . }}-unified-secret
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "xray.envVariables" }}
 - name: XRAY_CHART_FULL_NAME
   value: '{{ include "xray.fullname" . }}'
@@ -704,6 +724,10 @@ Set xray env variables if rabbitmq.tls is enabled.
   value: "{{ .Values.systemYamlOverride.existingSecret }}"
 - name: XRAY_CHART_SYSTEM_YAML_OVERRIDE_DATA_KEY
   value: "{{ .Values.systemYamlOverride.dataKey }}"
+- name: XRAY_CHART_MASTER_KEY_SECRET_NAME
+  value: '{{ include "xray.resolveUsedMasterKeySecretName" . }}'
+- name: XRAY_CHART_JOIN_KEY_SECRET_NAME
+  value: '{{ include "xray.resolveUsedJoinKeySecretName" . }}'
 {{- end }}
 
 {{/*
