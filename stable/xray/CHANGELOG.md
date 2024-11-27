@@ -1,7 +1,14 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.104.8] - July 17, 2024
+## [103.107.11] - September 26, 2024
+* Added support to read rabbitmq and database secrets from mounted secret files
+
+## [103.105.0] - August 22, 2024
+* Added support for `serviceAccount.annotations`to be passed to chart [GH-1841](https://github.com/jfrog/charts/pull/1841)
+* Updated rabbitmq multi-arch tag version to to `3.13.6-debian-12-r1`
+
+## [103.102.0] - July 17, 2024
 * Added support of specifying resources constraints for RabbitMQ's pre-upgrade-hook job
 * Fixed formatting error associated to the `volumeMounts` for the `panoramic` microservice [GH-1895](https://github.com/jfrog/charts/issues/1895)
 
