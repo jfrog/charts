@@ -212,7 +212,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
         {{- end }}
         volumeMounts:
@@ -274,7 +274,7 @@ spec:
           echo "Waiting for postgresql to come up"
           ready=false;
           while ! $ready; do echo waiting;
-            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.primary.service.ports.postgresql }}"; exit_status=$?;
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
       {{- end }}

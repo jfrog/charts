@@ -1,8 +1,17 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.107.11] - September 26, 2024
+## [103.107.16] - November 27, 2024
 * Added support to read rabbitmq and database secrets from mounted secret files
+* **Important changes**
+* Upgrade rabbitmq chart version to 14.6.6
+* Added catalog as a dependency chart
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+    * This has many changes related to key names and path in values yaml
+    * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+    * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+    * Delete the postgresql statefulset and postgresql secret before the upgrade. for more information, please refer the [xray upgrade docs](https://jfrog.com/help/r/jfrog-installation-setup-documentation/upgrading-xray)
 
 ## [103.105.0] - August 22, 2024
 * Added support for `serviceAccount.annotations`to be passed to chart [GH-1841](https://github.com/jfrog/charts/pull/1841)
