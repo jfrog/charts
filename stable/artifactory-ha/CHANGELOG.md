@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.98.9] - Nov 06, 2024
+## [107.98.10] - Nov 06, 2024
 * Add support for `extraEnvironmentVariables` on filebeat Sidecar [GH-1377](https://github.com/jfrog/charts/pull/1377)
 * Support for SSL offload HTTPS proto override in Nginx service (ClusterIP, LoadBalancer) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type. [GH-1906](https://github.com/jfrog/charts/pull/1906)
 * Enable Access workers integration when artifactory.worker.enabled is true
