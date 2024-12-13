@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [10.20.2] - December 12, 2024
+* Update dependency artifactory chart version to 107.98.10
+* Update dependency xray chart version to 103.107.16
+
 ## [10.20.1] - Nov 25, 2024
 * Fix jfrog url with duplicate artifactory string when release name has artifactory
 * Updated kubectl image to version `1.31.2`
