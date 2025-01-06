@@ -79,7 +79,7 @@ Note: This requires distribution chart 102.23.0+ to work, which comes default wi
   $ kubectl create secret generic my-database --from-literal=db-url='database_url' --from-literal=db-user='admin_user' --from-literal=db-password='password' -n <namespace>
   $ kubectl create secret generic my-distribution-database --from-literal=db-url='database_url' --from-literal=db-user='admin_user' --from-literal=db-password='password' -n <namespace>
 
-5. Create the binarystore.xml secrect or pull the values from environment variables. 
+5. Create the binarystore.xml secret or pull the values from environment variables. 
    
    $  kubectl create secret generic my-binarystore --from-file=binarystore.xml
    
