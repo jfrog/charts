@@ -1,4 +1,4 @@
-## 3-Node Artifactory Cluster with Distribution and direct-S3 Persistence
+## 3-Node Artifactory Cluster with Distribution and direct-S3 Provider
 
 ### Overall
 | Product   | Enabled   |
@@ -19,11 +19,11 @@
 | Persistence | Default Storage Class + S3 |
 | SSL | ✅ |
 | Ingress | ❌ |
-| Nginx Deployment | ❌ |
+| Nginx Deployment | ✅ |
 | UnifiedSecret | ✅ |
-| Default Admin Credential | ❌ |
+| Non-Default Admin Credential | ✅ |
 | Default Master Key |  ❌ |
-| Restriected Resources | ✅ |
+| Sizing Parameters | artifactory-xlarge |
 | Private Registry | ✅ |
 
 
@@ -32,12 +32,12 @@
 | Detail   | Value    |
 |-------------|-------------|
 | Replica      | 2       |
-| Database | Bundled Postgres |
+| Database | External Postgres |
 | Persistence | Default Storage Class |
 | External redis | ❌ |
 | SSL | ✅ |
 | UnifiedSecret | ❌ |
-| Restriected Resources | ✅ |
+| Sizing Parameters | distribution-xlarge |
 | Private Registry | ✅ |
 
 
@@ -77,23 +77,29 @@ Note: This requires distribution chart 102.23.0+ to work, which comes default wi
 4. Fill in database details ( values-artifactory.yaml ). [See here for more details related to database.](https://jfrog.com/help/r/jfrog-installation-setup-documentation/database-configuration)
 
   $ kubectl create secret generic my-database --from-literal=db-url='database_url' --from-literal=db-user='admin_user' --from-literal=db-password='password' -n <namespace>
+  $ kubectl create secret generic my-distribution-database --from-literal=db-url='database_url' --from-literal=db-user='admin_user' --from-literal=db-password='password' -n <namespace>
 
-5. Fill in awsS3V3 connection details. To use IAM roles, check [here](https://jfrog.com/help/r/artifactory-how-to-configure-an-aws-s3-object-store-using-an-iam-role-instead-of-an-iam-user/artifactory-how-to-configure-an-aws-s3-object-store-using-an-iam-role-instead-of-an-iam-user)
+5. Create the binarystore.xml secrect or pull the values from environment variables. 
+   
+   $  kubectl create secret generic my-binarystore --from-file=binarystore.xml
+   
+   To use IAM roles, check [here](https://jfrog.com/help/r/artifactory-how-to-configure-an-aws-s3-object-store-using-an-iam-role-instead-of-an-iam-user/artifactory-how-to-configure-an-aws-s3-object-store-using-an-iam-role-instead-of-an-iam-user)
 
 6. Pull charts ( if you need to reference the suggested sizing paramerters ) and install 
 
 
 ```
+$ helm repo update
 $ helm pull jfrog/jfrog-platform --untar
 ```
 
 
 ```
-$ helm install <name> jfrog/jfrog-platform -n <namespace> -f values-main.yaml -f values-artifactory.yaml -f jfrog-platform/charts/artifactory/sizing/artifactory-xlarge.yaml -f jfrog-platform/charts/distribution/sizing/distribution-xlarge.yaml
+$ helm install <name> jfrog/jfrog-platform -n <namespace> -f values-main.yaml -f values-artifactory.yaml -f values-distribution.yaml -f jfrog-platform/charts/artifactory/sizing/artifactory-xlarge.yaml -f jfrog-platform/charts/distribution/sizing/distribution-xlarge.yaml
 ```
 
 7. If you are installing on openshift, add values-openshift.yaml
   
 ```
-$ helm install <name> jfrog/jfrog-platform -n <namespace> -f values-main.yaml -f values-artifactory.yaml -f values-openshift.yaml -f jfrog-platform/charts/artifactory/sizing/artifactory-xlarge.yaml -f jfrog-platform/charts/distribution/sizing/distribution-xlarge.yaml
+$ helm install <name> jfrog/jfrog-platform -n <namespace> -f values-main.yaml -f values-artifactory.yaml -f values-distribution.yaml -f values-openshift.yaml -f jfrog-platform/charts/artifactory/sizing/artifactory-xlarge.yaml -f jfrog-platform/charts/distribution/sizing/distribution-xlarge.yaml
 ```

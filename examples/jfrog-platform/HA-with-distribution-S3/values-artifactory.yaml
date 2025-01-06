@@ -7,8 +7,6 @@ artifactory:
   artifactory:
     name: artifactory
     admin:
-      username: "admin"
-      password: 
       secret: my-admin
       dataKey: bootstrap.creds
 
@@ -23,18 +21,8 @@ artifactory:
     persistence:
       enabled: true
       accessMode: ReadWriteOnce
-      size: 200Gi
-      type: s3-storage-v3-direct
-      awsS3V3:
-        testConnection: false
-        identity:                                 # required
-        credential:                               # required
-        region:                                   # required
-        bucketName: artifactory-aws
-        path: artifactory/filestore
-        endpoint:                                 # optional
-        port:                                     # optional
-        maxConnections: 150                       # optional
+      size: 100Gi
+      customBinarystoreXmlSecret: my-binarystore
     
   access:
     enabled: true
