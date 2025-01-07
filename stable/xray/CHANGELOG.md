@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.107.18] - November 27, 2024
+## [103.107.21] - November 27, 2024
 * Added support to read rabbitmq and database secrets from mounted secret files
 * **Important changes**
 * Upgrade rabbitmq chart version to 14.6.6
