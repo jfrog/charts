@@ -552,8 +552,8 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-        {{- if or .Values.router.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "router.customVolumeMounts" .) . | indent 8 }}
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
         {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
