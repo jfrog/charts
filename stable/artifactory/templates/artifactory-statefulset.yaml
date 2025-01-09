@@ -552,9 +552,9 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.router.persistence.mountPath | quote }}
-{{- with .Values.router.customVolumeMounts }}
-{{ tpl . $ | indent 8 }}
-{{- end }}
+        {{- if or .Values.router.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "router.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
       {{- if .Values.router.startupProbe.enabled }}
@@ -600,6 +600,9 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.frontend.resources | indent 10 }}
       {{- if .Values.frontend.startupProbe.enabled }}
@@ -824,6 +827,9 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.event.resources | indent 10 }}
       {{- if .Values.event.startupProbe.enabled }}
@@ -862,6 +868,9 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.jfconnect.resources | indent 10 }}
       {{- if .Values.jfconnect.startupProbe.enabled }}
@@ -1039,6 +1048,9 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.federation.resources | indent 10 }}
       {{- if .Values.federation.startupProbe.enabled }}
@@ -1077,6 +1089,9 @@ spec:
         volumeMounts:
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
+        {{- end }}
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
       {{- if .Values.observability.startupProbe.enabled }}
