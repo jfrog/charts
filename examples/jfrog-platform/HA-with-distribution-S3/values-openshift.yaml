@@ -1,0 +1,24 @@
+artifactory:
+  containerSecurityContext:
+    enabled: false
+  artifactory:
+    podSecurityContext: 
+      enabled: false
+  nginx:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+distribution:
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
+  redis:
+    containerSecurityContext:
+      enabled: false
+  postgresql:
+    securityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
