@@ -1,0 +1,235 @@
+## Custom values for the JFrog Platform Helm Chart
+
+global:
+  ## IMPORTANT: Artifactory masterKey and joinKey are immutable and should not be changed after the first installation.
+  # Generate a random join key with 'openssl rand -hex 32'
+  joinKey: AAAEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE456
+  # Generate a random master key with 'openssl rand -hex 32'
+  masterKey: aaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb456
+
+  # Since we are using an external postgresql, skip the initDBCreation
+  database:
+    initDBCreation: false
+
+# Disable the PostgreSQL deployment
+postgresql:
+  enabled: false
+
+artifactory:
+  artifactory:
+
+    ## To provide support for HA
+    extraEnvironmentVariables:
+      - name : JF_SHARED_NODE_HAENABLED
+        value: "true"
+
+    ## Artifactory to use S3 for filestore
+    persistence:
+      enabled: false
+      type: s3-storage-v3-direct
+      awsS3V3:
+        testConnection: false
+        endpoint: s3.amazonaws.com
+        path: artifactory/filestore
+        useInstanceCredentials: true
+
+    ## Require multiple Artifactory pods to run on separate nodes
+    podAntiAffinity:
+      type: "hard"
+
+    ## Run on nodes marked with the label "group=artifactory"
+    nodeSelector:
+      group: "artifactory"
+
+  ## Nginx
+  nginx:
+    disableProxyBuffering: true
+
+    ## Logs to stdout and stderr
+    logs:
+      stderr: true
+      stdout: true
+      level: warn
+
+    ## Run on nodes marked with the label "group=nginx"
+    nodeSelector:
+      group: "nginx"
+
+    service:
+      ## Use an NLB for the Nginx service for better performance
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "instance"
+        service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "TCP"
+        service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "traffic-port"
+
+    ## Custom Nginx configuration for better performance
+    mainConf: |
+      # Main Nginx configuration file
+      worker_processes  auto;
+      error_log  stderr warn;
+      pid        /var/run/nginx.pid;
+      
+      events {
+        worker_connections  8192;
+        multi_accept on;
+        use epoll;
+      }
+      
+      http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+      
+        variables_hash_max_size 1024;
+        variables_hash_bucket_size 64;
+        server_names_hash_max_size 4096;
+        server_names_hash_bucket_size 128;
+        types_hash_max_size 2048;
+        types_hash_bucket_size 64;
+        proxy_read_timeout 2400s;
+        client_header_timeout 2400s;
+        client_body_timeout 2400s;
+        proxy_connect_timeout 75s;
+        proxy_send_timeout 2400s;
+        proxy_buffer_size 128k;
+        proxy_buffers 40 128k;
+        proxy_busy_buffers_size 128k;
+        proxy_temp_file_write_size 250m;
+        proxy_http_version 1.1;
+        client_body_buffer_size 128k;
+      
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+        '$status $body_bytes_sent "$http_referer" '
+        '"$http_user_agent" "$http_x_forwarded_for"';
+      
+        log_format timing 'ip = $remote_addr '
+        'user = \"$remote_user\" '
+        'local_time = \"$time_local\" '
+        'host = $host '
+        'request = \"$request\" '
+        'status = $status '
+        'bytes = $body_bytes_sent '
+        'upstream = \"$upstream_addr\" '
+        'upstream_time = $upstream_response_time '
+        'request_time = $request_time '
+        'referer = \"$http_referer\" '
+        'UA = \"$http_user_agent\"';
+        access_log /dev/stdout timing;
+      
+        sendfile        on;
+        #tcp_nopush     on;
+      
+        keepalive_timeout  65;
+      
+        #gzip  on;
+      
+        include /etc/nginx/conf.d/*.conf;
+      }
+  
+
+    artifactoryConf: |
+      ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+      ssl_certificate  /var/opt/jfrog/nginx/ssl/tls.crt;
+      ssl_certificate_key  /var/opt/jfrog/nginx/ssl/tls.key;
+      ssl_session_cache shared:SSL:1m;
+      ssl_prefer_server_ciphers   on;
+      
+      upstream artifactory {
+         server jfrog-artifactory:8082;
+         keepalive 1000;
+         keepalive_requests 10000;
+      }
+      
+      ## server configuration
+      server {
+        listen 8443 ssl;
+        listen 8080;
+        server_name ~(?<repo>.+)\.artifactory artifactory;  
+      
+        if ($http_x_forwarded_proto = '') {
+          set $http_x_forwarded_proto  $scheme;
+        }
+        set $host_port 443;
+        if ( $scheme = "http" ) {
+          set $host_port 80;
+        }
+        ## Application specific logs
+        ## access_log /var/log/nginx/artifactory-access.log timing;
+        ## error_log /var/log/nginx/artifactory-error.log;
+        rewrite ^/artifactory/?$ / redirect;
+        if ( $repo != "" ) {
+          rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
+        }
+        chunked_transfer_encoding on;
+        client_max_body_size 0;
+      
+        location / {
+           proxy_read_timeout  900;
+           proxy_pass_header   Server;
+           proxy_cookie_path   ~*^/.* /;
+           proxy_pass          http://artifactory;
+           proxy_set_header    Connection "";
+           proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+           proxy_set_header    X-Forwarded-Port  $server_port;
+           proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+           proxy_set_header    Host              $http_host;
+           proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+           proxy_http_version 1.1;
+           proxy_request_buffering off;
+           proxy_buffering off;
+           add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        }
+      }
+
+
+  ## Don't use the PostgreSQL chart
+  postgresql:
+    enabled: false
+
+  database:
+    type: postgresql
+    driver: org.postgresql.Driver
+
+  databaseUpgradeReady: true
+
+# Enable Xray
+xray:
+  enabled: true
+  unifiedUpgradeAllowed: true
+  postgresql:
+    enabled: false
+  common:
+    persistence:
+      enabled: false
+
+  ## Run on nodes marked with the label "group=xray"
+  global:
+    nodeSelector:
+      group: "xray"
+
+#  observability:
+#    extraEnvVars: |
+#      - name: JF_DUMMY
+#        value: "true"
+
+# RabbitMQ is required for Xray
+rabbitmq:
+  enabled: true
+
+  # Run on nodes marked with the label "group=xray"
+  nodeSelector:
+    group: "xray"
+
+# Disable other services
+distribution:
+  enabled: false
+
+insight:
+  enabled: false
+
+pipelines:
+  enabled: false
+
+redis:
+  enabled: false

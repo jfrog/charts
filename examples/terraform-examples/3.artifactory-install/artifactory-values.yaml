@@ -1,0 +1,30 @@
+## Custom values for artifactory.
+artifactory:
+
+  ## IMPORTANT: Artifactory masterKey and joinKey are immutable and should not be changed after the first installation.
+  masterKey: AAFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFAA
+  joinKey: BBEEEEEEEEEEEEEEEEEEEEEEEEEEEECC
+
+  ## To provide support for HA
+  extraEnvironmentVariables:
+    - name : JF_SHARED_NODE_HAENABLED
+      value: "true"
+
+  # Fix a know issue. Will be fixed with 7.102.X
+  preStartCommand: "sed -i -e 's, -Xms[^ ]\\+,,g' -e 's, -Xmx[^ ]\\+,,g' /opt/jfrog/artifactory/app/bin/artifactory.default || exit 1"
+
+## Nginx
+nginx:
+  disableProxyBuffering: true
+
+  ## Logs to stdout and stderr
+  logs:
+    stderr: true
+    stdout: true
+    level: warn
+
+## Configuration values for the PostgreSQL dependency sub-chart
+postgresql:
+  postgresqlPassword: "Password321"
+
+databaseUpgradeReady: true
