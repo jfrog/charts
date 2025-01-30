@@ -1,8 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.107.21] - November 27, 2024
-* Added support to read rabbitmq and database secrets from mounted secret files
+## [103.111.9] - Jan 15, 2025
+* Fix an issue with a warning in the rabbitmq password check
+* Updated rabbitmq multi-arch tag version to to `3.13.7-debian-12-r5`
+* Updated bitnami kubectl multi-arch tag version to to `1.32.0`
+
+## [103.109.0] - Nov 27, 2024
 * **Important changes**
 * Upgrade rabbitmq chart version to 14.6.6
 * Added catalog as a dependency chart
@@ -12,6 +16,14 @@ All changes to this chart will be documented in this file.
     * The effected keys present in default yaml have been aligned to the new path in 15.5.20
     * if you have customised any keys, make sure to validate it with the 15.5.20 chart
     * Delete the postgresql statefulset and postgresql secret before the upgrade. for more information, please refer the [xray upgrade docs](https://jfrog.com/help/r/jfrog-installation-setup-documentation/upgrading-xray)
+
+## [103.108.0] - Nov 11, 2024
+* Introduced a validation check in the template to warn users against using the default RabbitMQ password. If a default password is found, the installation will be paused, prompting users to update their credentials before proceeding.
+* Fix for panoramic env indentation [GH-1919](https://github.com/jfrog/charts/pull/1919)
+* Added memory metric targetMemoryUtilizationPercentage to Xray Horizontal Pod Scaler
+
+## [103.107.0] - September 26, 2024
+* Added support to read rabbitmq and database secrets from mounted secret files
 
 ## [103.105.0] - August 22, 2024
 * Added support for `serviceAccount.annotations`to be passed to chart [GH-1841](https://github.com/jfrog/charts/pull/1841)

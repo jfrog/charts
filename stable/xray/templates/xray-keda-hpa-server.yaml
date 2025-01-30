@@ -9,6 +9,15 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: {{ template "xray.fullname" . }}-server
+  {{- if or .Values.global.autoscaling.keda.annotations .Values.autoscalingServer.keda.annotations }}
+  annotations:
+    {{- with .Values.global.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- with .Values.autoscalingServer.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   scaleTargetRef:
     kind: Deployment
