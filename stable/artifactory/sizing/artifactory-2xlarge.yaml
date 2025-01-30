@@ -1,7 +1,7 @@
 ##############################################################################################
 # The 2xlarge sizing
 # This size is intended for very large organizations. It can be increased with adding replicas
-# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
 # hence this configuration will be overridden when enabling systemYamlOverride
 ##############################################################################################
 splitServicesToContainers: true
@@ -66,6 +66,11 @@ access:
     limits:
       # cpu: 2
       memory: 4Gi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "16"
+    - name: SKIP_WAIT_FOR_EXTERNAL_DB
+      value: "true"
 
 router:
   resources:
@@ -119,6 +124,25 @@ jfconnect:
     requests:
       cpu: 100m
       memory: 100Mi
+    limits:
+      # cpu: "1"
+      memory: 250Mi
+
+topology:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1000Mi
+    limits:
+      memory: 1500Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "8"
+onemodel:
+  resources:
+    requests:
+      cpu: 225m
+      memory: 180Mi
     limits:
       # cpu: "1"
       memory: 250Mi

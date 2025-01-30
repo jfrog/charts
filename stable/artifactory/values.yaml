@@ -1,9 +1,7 @@
 ## Default values for artifactory.
 ## This is a YAML-formatted file.
-
 ## Beware when changing values here. You should know what you are doing!
 ## Access the values with {{ .Values.key.subkey }}
-
 global:
   # imageRegistry: releases-docker.jfrog.io
   # imagePullSecrets:
@@ -14,6 +12,7 @@ global:
   versions: {}
   # artifactory:
   # initContainers:
+  # rtfs:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -47,7 +46,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.5.1731604394
+    tag: 9.5.1733767867
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -112,6 +111,8 @@ ingress:
     enabled: true
   ## Used to create an Ingress record.
   hosts: []
+  ## Useful in controllers where ImplementationSpecific is considered as a Regex Match and, not a Prefix match
+  pathType: ImplementationSpecific
   routerPath: /
   artifactoryPath: /artifactory/
   rtfsPath: /artifactory/service/rtfs/
@@ -147,6 +148,8 @@ ingressGrpc:
     enabled: true
   ## Used to create an Ingress record.
   hosts: []
+  ## Useful in controllers where ImplementationSpecific is considered as a Regex Match and, not a Prefix match
+  pathType: ImplementationSpecific
   grpcPath: /com.jfrog
   className: ""
   ## For supporting GRPC protocol traffic sent to the backend it is necessary to change the backend protocol
@@ -228,7 +231,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.135.2
+    tag: 7.149.0
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -391,6 +394,8 @@ artifactory:
   ## set 'worker.enabled' to 'true' to enable artifactory addon that executes workers on artifactory events
   worker:
     enabled: false
+  ## Set servicePrependReleaseName to true  to prepend service release name in statefulset
+  servicePrependReleaseName: false
   ## This directory is intended for use with NFS eventual configuration for HA
   haDataDir:
     enabled: false
@@ -1311,21 +1316,19 @@ jfconnect:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-federation:
-  ## This is an experimental service which is not in production yet, therefore should not be enabled
-  name: federation
-  enabled: false
-  embedded: false
-  internalPort: 8025
-  extraJavaOpts: ""
-  ## This section should be removed once rtfs service is GA
-  database:
-    port: 5432
-    host: postgresql
-    name: rtfs
-    username: rtfs
-    password: ""
-  ## Extra environment variables that can be used to tune federation to your needs.
+onemodel:
+  name: onemodel
+  enabled: true
+  # Apollo Router Yaml is used to configure one of the components of one model (Apollo Router)
+  # This allows you to change the port etc. for the Apollo Router
+  # This doesn't need to change for usual cases
+  apolloYaml:
+  # Example
+  # supergraph:
+  #     listen: 127.0.0.1:8079
+
+  internalPort: 8071
+  ## Extra environment variables that can be used to tune onemodel to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
   # - name: MY_ENV_VAR
@@ -1338,7 +1341,74 @@ federation:
   #   memory: "1Gi"
   #   cpu: "1"
 
-  ## Add lifecycle hooks for federation container
+  ## Add lifecycle hooks for onemodel container
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    # By default, liveness will fail after 60 seconds of failing readiness (from system.yaml).
+    # Container will be restarted after 50 additional seconds.
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.onemodel.internalPort }}
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      failureThreshold: 5
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: api/v1/system/readiness
+        port: {{ .Values.onemodel.internalPort }}
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      failureThreshold: 12
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: api/v1/system/readiness
+        port: {{ .Values.onemodel.internalPort }}
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 5
+      successThreshold: 1
+topology:
+  name: topology
+  enabled: true
+  internalPort: 8020
+  database:
+    maxOpenConnections: 80
+  javaOpts:
+  # other: ""
+
+  ## Extra environment variables that can be used to tune topology to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+  # - name: MY_ENV_VAR
+  #   value: ""
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  # Add lifecycle hooks for topology container
   lifecycle: {}
   # postStart:
   #   exec:
@@ -1351,25 +1421,34 @@ federation:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      httpGet:
+        path: /topology/api/v1/system/liveness
+        port: {{ .Values.topology.internalPort }}
+        scheme: HTTP
+      initialDelaySeconds: 10
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
       successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /topology/api/v1/system/readiness
+        port: {{ .Values.topology.internalPort }}
+        scheme: HTTP
+      initialDelaySeconds: 5
+      failureThreshold: 30
+      periodSeconds: 15
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.federation.internalPort }}/artifactory/service/rtfs/api/v1/system/readiness
-      initialDelaySeconds: 30
+      httpGet:
+        path: /topology/api/v1/system/readiness
+        port: {{ .Values.topology.internalPort }}
+        scheme: HTTP
+      initialDelaySeconds: 3
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1793,6 +1872,151 @@ filebeat:
   extraEnvironmentVariables: {}
   #   - name: MY_ENV_VAR
   #     value: "s"
+## RTFS deployment
+rtfs:
+  name: rtfs
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/artifactory-federation
+    pullPolicy: IfNotPresent
+    tag: 1.4.18
+  jfrogUrl: ""
+  replicaCount: 1
+  internalRestPort: 8025
+  apiContext: artifactory/service/rtfs
+  database:
+    type: "postgresql"
+    driver: "org.postgresql.Driver"
+    url: ""
+    username: ""
+    password: ""
+  persistence:
+    mountPath: "/var/opt/jfrog/federation"
+    federationProperties: {}
+  ## @param federationProperties Configuration to be added to the config map, overriding Spring configuration.
+  ## @param customFederationPropertiesConfig Specifies the name of a custom configMap to use instead of the default one.
+  ## The name of the custom configMap will be initialized from the value of customFederationPropertiesConfig.
+  #  customFederationPropertiesConfig:
+  javaOpts: ""
+  service:
+    type: ClusterIP
+    restPort: 8025
+    grpcPort: 8026
+    ## @param service.loadBalancerSourceRanges Address(es) that are allowed when service is `LoadBalancer`
+    ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+    ## e.g:
+    ## loadBalancerSourceRanges:
+    ## - 10.10.10.0/24
+    ##
+    loadBalancerSourceRanges: []
+    ## @param service.externalIPs Set the ExternalIPs
+    ##
+    externalIPs: []
+    ## @param service.externalTrafficPolicy Enable client source IP preservation
+    ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    ##
+    externalTrafficPolicy: Cluster
+    ## @param service.loadBalancerIP Set the LoadBalancerIP
+    ##
+    loadBalancerIP: ""
+    ## @param service.labels Service labels. Evaluated as a template
+    labels: {}
+    ## @param service.annotations Service annotations. Evaluated as a template
+    ## Example:
+    ## annotations:
+    ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+    annotations: {}
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /{{ .Values.rtfs.apiContext }}/api/v1/system/liveness
+        port: {{ .Values.rtfs.internalRestPort }}
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.internalPort }}
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /{{ .Values.rtfs.apiContext }}/api/v1/system/readiness
+        port: {{ .Values.rtfs.internalRestPort }}
+        scheme: HTTP
+      initialDelaySeconds: 120
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for observability container
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  fullnameOverride: ""
+  annotations: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1030
+    runAsGroup: 1030
+    fsGroup: 1030
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customInitContainers: ""
+  customSidecarContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
+  ## @param extraEnvironmentVariables that can be used to tune PDN Server to your needs.
+  ## Example:
+  ## extraEnvironmentVariables:
+  ##   - name: MY_ENV_VAR
+  ##     value: ""
+  extraEnvironmentVariables: []
 ## Allows to add additional kubernetes resources
 ## Use --- as a separator between multiple resources
 ## For an example, refer - https://github.com/jfrog/log-analytics-prometheus/blob/master/helm/artifactory-values.yaml

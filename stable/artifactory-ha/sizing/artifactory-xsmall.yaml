@@ -2,7 +2,7 @@
 
 # The xsmall sizing
 # This is the minimum size recommended for running Artifactory
-# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
 # hence this configuration will be overridden when enabling systemYamlOverride
 ##############################################################################################
 splitServicesToContainers: true
@@ -69,6 +69,11 @@ access:
     limits:
       # cpu: 1
       memory: 2Gi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "2"
+    - name: SKIP_WAIT_FOR_EXTERNAL_DB
+      value: "true"
 
 router:
   resources:
@@ -99,6 +104,15 @@ metadata:
       # cpu: "2"
       memory: 1Gi
 
+onemodel:
+  resources:
+    requests:
+      cpu: 125m
+      memory: 100Mi
+    limits:
+      # cpu: "2"
+      memory: 500Mi
+
 event:
   resources:
     requests:
@@ -125,6 +139,17 @@ jfconnect:
     limits:
       # cpu: 500m
       memory: 250Mi
+
+topology:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 500Mi
+    limits:
+      memory: 800Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "2"
 
 nginx:
   replicaCount: 1
