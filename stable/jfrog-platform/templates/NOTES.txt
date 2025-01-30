@@ -1,4 +1,5 @@
-Congratulations, you have just deployed JFrog Platform Chart with the following products:{{- if .Values.artifactory.enabled }} Artifactory{{- end }}{{- if .Values.xray.enabled }}, Xray {{- end }}{{- if .Values.distribution.enabled }}, Distribution{{- end }}{{- if index .Values "insight" "enabled" }}, Insight{{- end }}{{- if .Values.pipelines.enabled }}, Pipelines{{- end }}
+Congratulations, you have just deployed JFrog Platform Chart with the following products:
+{{- if .Values.artifactory.enabled }} Artifactory{{- end }}{{- if .Values.xray.enabled }}, Xray {{- end }}{{- if .Values.distribution.enabled }}, Distribution{{- end }}{{- if ((.Values.workers).enabled) }}, Workers{{- end }}{{- if ((.Values.catalog).enabled) }}, Catalog{{- end }} 
 {{- if .Values.artifactory.enabled }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 Instructions for accessing the JFrog Platform
@@ -55,5 +56,9 @@ Instructions for accessing the JFrog Platform
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
 Use an external PostgreSQL database for production deployments.
+{{- if eq .Values.postgresql.auth.postgresPassword "postgres" }}
+Currently, you are using the default password for postgresql user.
+It is recommended to change it by setting an explicit password with `postgresql.auth.postgresPassword`
+{{- end }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}

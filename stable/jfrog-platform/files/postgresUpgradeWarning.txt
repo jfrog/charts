@@ -1,0 +1,18 @@
+
+
+Before upgrading the JFrog Platform chart, ensure that you retain the same postgresql.image.tag. To do this, follow these steps:
+
+Note: This is necessary to avoid failures if the new release of the JFrog Platform chart includes an updated version of the PostgreSQL image.
+
+1. Get the current version of PostgreSQL in your installation,
+
+    $ kubectl get pod {{ .Release.Namespace }}-postgresql-0 --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.containers[*].image}";
+
+2. Copy the version from the output and set the following in your customvalues.yaml file,
+
+postgresql:
+  image:
+    tag: <postgres_version>
+
+databaseUpgradeReady: true
+

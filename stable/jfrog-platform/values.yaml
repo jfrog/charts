@@ -15,12 +15,6 @@ global:
   #   - myRegistryKeySecretName
   imageRegistry: releases-docker.jfrog.io
   jfrogUrl: '{{ include "jfrog-platform.jfrogUrl" . }}'
-  ## Artifactory UI URL - Mandatory
-  ## Update jfrogUrlUI before running builds on Pipelines
-  ## This must be the external URL of Artifactory that any service (such as scm provider) and buildnodes
-  ## that you're using can access, for example: https://artifactory.example.com
-  ## This can also be set through the UI Administration -> Settings -> custom base url
-  jfrogUrlUI: ""
   joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
   masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
   ## Chart.AppVersion for each product can be overidden using global.versions.<product>
@@ -31,18 +25,12 @@ global:
   #   artifactory:
   #   xray:
   #   distribution:
-  #   insight:
-  #   pipelines:
   database:
     host: "{{ .Release.Name }}-postgresql"
     port: 5432
     sslMode: disable
-    adminUsername: postgres
     adminPassword: postgres
     secrets: {}
-      # adminUsername:
-      #   name: "jp-database-creds"
-      #   key: "db-admin-user"
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
@@ -84,16 +72,55 @@ global:
 ## This Postgresql is used by all products , set postgresql.enabled: false, when you want to use external postgresql for all products
 postgresql:
   enabled: true
+  enablePostgresUser: true
   image:
     repository: bitnami/postgresql
-    tag: 15.6.0-debian-11-r16
-  postgresqlUsername: postgres
-  postgresqlPassword: postgres
-  postgresqlExtendedConf:
-    max_connections: 1000
-    max_wal_size: 1000MB
-  persistence:
-    size: 500Gi
+    tag: 16.6.0-debian-12-r2
+  auth:
+    postgresPassword: "postgres"
+  primary:
+    extendedConfiguration: |
+      max_connections = 1000
+      max_wal_size = 1000MB
+    persistence:
+      size: 500Gi
+
+  upgradeHookSTSDelete:
+    enabled: true
+    image:
+      registry: "{{ .Values.global.imageRegistry }}"
+      repository: bitnami/kubectl
+      tag: 1.31.2
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 5m
+        memory: 10Mi
+      limits:
+        cpu: 0.5
+        memory: 1Gi
+    tolerations: []
+    ## Service account for the pre-upgrade hook to perform rabbitmq migration
+    serviceAccount:
+      create: true
+      ## The name of the ServiceAccount to use.
+      ## If not set and create is true, a name is generated using the fullname template
+      name:
+      ## Explicitly mounts the API credentials for the Service Account
+      automountServiceAccountToken: true
+      rbac:
+        create: true
+        role:
+          ## Rules to create. It follows the role specification
+          rules:
+            - apiGroups:
+                - "apps"
+              resources:
+                - statefulsets
+              verbs:
+                - get
+                - delete
+                - list
 
 ## This Rabbitmq is used by Xray and Pipelines only, set rabbitmq.enabled: false, when Xray or Pipelines is not enabled
 rabbitmq:
@@ -102,7 +129,7 @@ rabbitmq:
   rabbitmqUpgradeReady: false
   image:
     repository: bitnami/rabbitmq
-    tag: 3.12.10-debian-11-r1
+    tag: 3.13.7-debian-12-r2
   auth:
   ## Enable encryption to rabbitmq
   ## ref: https://www.rabbitmq.com/ssl.html
@@ -224,16 +251,13 @@ rabbitmq:
                 - get
                 - list
 
-## Uncomment these two lines to enable Rabbitmq Management Portal in https mode.
-## If you are using pipelines then don't as pipelines are presently not supporting this feature.
-
-#  extraConfiguration: |-
-#    management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
+  extraConfiguration: |-
+    management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
 
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "10.20.4-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.0.0-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -290,6 +314,13 @@ xray:
       url: '{{ include "xray.rabbitmq.extRabbitmq.url" . }}'
       erlangCookie: secretcookie
 
+catalog:
+  enabled: false
+  database:
+    url: '{{ include "database.url" . }}'
+    user: catalog
+    password: catalog
+
 distribution:
   enabled: false
   unifiedUpgradeAllowed: true
@@ -302,62 +333,11 @@ distribution:
     user: distribution
     password: distribution
 
-insight:
-  enabled: false
-  unifiedUpgradeAllowed: true
-  insightServer:
-    unifiedSecretInstallation: true
-  postgresql:
-    enabled: false
-  database:
-    url: '{{ include "database.url" . }}'
-    user: insight
-    password: insight
-    name: '{{ include "database.name" . }}'
-  elasticsearch:
-    javaOpts:
-      xms: "2g"
-      xmx: "2g"
-
-pipelines:
-  enabled: false
-  unifiedUpgradeAllowed: true
-  postgresql:
-    enabled: false
-  global:
-    postgresql:
-      host: "{{ .Release.Name }}-postgresql"
-      port: 5432
-      database: "pipelinesdb"
-      user: "apiuser"
-      password: "pipeline"
-  pipelines:
-    unifiedSecretInstallation: true
-    msg:
-      uiUserPassword: password
-  redis:
-    enabled: true
-  rabbitmq:
-    enabled: false
-    internal_ip: "{{ .Release.Name }}-rabbitmq"
-    msg_hostname: "{{ .Release.Name }}-rabbitmq"
-    port: 5672
-    manager_port: 15672
-    ms_username: admin
-    ms_password: password
-    cp_username: admin
-    cp_password: password
-    root_vhost_exchange_name: rootvhost
-    erlang_cookie: secretcookie
-    build_vhost_name: pipelines
-    root_vhost_name: pipelinesRoot
-    protocol: amqp
-
 worker:
   enabled: false
 
 preUpgradeHook:
-  ## This is required to be performed to check if existing products like distribution, insight and pipelines already exists
+  ## This is required to be performed to check if existing products like distribution already exists
   enabled: true
   image:
     registry: "{{ .Values.global.imageRegistry }}"

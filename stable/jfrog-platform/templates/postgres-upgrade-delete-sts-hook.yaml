@@ -1,0 +1,119 @@
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled (.Values.postgresql.upgradeHookSTSDelete.enabled) }}
+{{- if .Values.postgresql.upgradeHookSTSDelete.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.serviceAccountName" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+automountServiceAccountToken: true
+{{- end }}
+---
+{{- if .Values.postgresql.upgradeHookSTSDelete.serviceAccount.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-15"
+rules:
+{{ toYaml .Values.postgresql.upgradeHookSTSDelete.serviceAccount.rbac.role.rules }}
+{{- end }}
+---
+{{- if .Values.postgresql.upgradeHookSTSDelete.serviceAccount.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+    labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        release: {{ .Release.Name | quote }}
+        heritage: {{ .Release.Service | quote }}
+    name: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" . }}
+    annotations:
+        helm.sh/hook: "pre-upgrade"
+        helm.sh/hook-weight: "-10"
+subjects:
+    - kind: ServiceAccount
+      name: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.serviceAccountName" . }}
+roleRef:
+    kind: Role
+    apiGroup: rbac.authorization.k8s.io
+    name: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" . }}
+{{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: {{ template "jfrog-platform.name" . }}
+    chart: {{ template "jfrog-platform.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "jfrog-platform.fullname" . }}-pre-upgrade-hook
+  annotations:
+    "helm.sh/hook": "pre-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.serviceAccountName" . }}
+      {{- if and .Values.postgresql.primary .Values.postgresql.primary.podSecurityContext .Values.postgresql.primary.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.postgresql.primary.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      {{- include "jfrog-platform.imagePullSecrets" . | indent 6 }}
+      {{- end }}
+      containers:
+        - name: pre-upgrade-container
+          image: "{{ tpl .Values.postgresql.upgradeHookSTSDelete.image.registry . }}/{{ .Values.postgresql.upgradeHookSTSDelete.image.repository }}:{{ .Values.postgresql.upgradeHookSTSDelete.image.tag }}"
+          imagePullPolicy: {{ .Values.postgresql.upgradeHookSTSDelete.image.pullPolicy }}
+          resources:
+{{ toYaml .Values.postgresql.upgradeHookSTSDelete.resources | indent 12 }}
+          {{- if .Values.postgresql.primary.containerSecurityContext.enabled }}
+          securityContext: {{- tpl (omit .Values.postgresql.primary.containerSecurityContext "enabled" | toYaml) . | nindent 12 }}
+          {{- end }}
+          command:
+            - bash
+            - -c
+            - |
+                #!/bin/bash
+                postgresChartVersion="$(kubectl get statefulset {{ .Release.Name }}-{{ template "postgresql.name" . }} -o jsonpath='{.metadata.labels.helm\.sh/chart}' -n {{ .Release.Namespace }})"
+                echo "postgres version : ${postgresChartVersion}"
+                if [[ "${postgresChartVersion}" == "postgresql-10."* ]]; then
+                  echo "Deleting postgres statefulset to support upgrade from postgres chart version 10.x to 15.x"
+                  if kubectl delete statefulset {{ .Release.Name }}-{{ template "postgresql.name" . }} -n {{ .Release.Namespace }} --cascade=orphan; then
+                    echo "Statefulset deletion succeded"
+                  else
+                    echo "Statefulset deletion failed, try deleting the postgresql stateful manually and proceed with the upgrade."
+                    exit 1
+                  fi
+                else
+                    echo "The postgresql chart version ${postgresChartVersion} does not need sts deletion, skipping this."
+                fi
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 0
+{{- with .Values.postgresql.upgradeHookSTSDelete.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- end }}

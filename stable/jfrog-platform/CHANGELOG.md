@@ -1,11 +1,25 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
-
-## [10.20.4] - January 07, 2025
-* Update dependency artifactory chart version
-* Update dependency xray chart version
-* Added `rabbitmq.tolerations`
+## [11.0.0] - Jan 30, 2025
+* **Important changes**
+* Upgrade rabbitmq chart version to 14.6.6
+* Upgrade rabbitmq image to 3.13.7-debian-12-r2
+* Upgrade postgres image to 16.6.0-debian-12-r2
+* Removed installation of Insight and Pipelines product. You can use 10.x version of Jfrog-Platform to continue to use these products
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+    * This has many changes related to key names and path in values yaml
+    * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+    * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+    * The statefulset will get deleted before upgrade through a preupgrade hook, as the updates on specific keys in sts is not allowed by kubernetes
+    * Support to change postgres admin password is removed, will be postgres
+* Added new dependency chart for catalog with version `101.11.1` and defaults to `false`
+* Update dependency artifactory chart version to 107.104.5
+* Update dependency xray chart version to 103.111.9
+* Update dependency distribution chart version to 102.28.1
+* Update dependency worker chart version to 101.118.0
+* Added rabbitmq tolerations on pre-upgrade-hook [GH-1939](https://github.com/jfrog/charts/pull/1939)
 
 ## [10.20.1] - Nov 25, 2024
 * Fix jfrog url with duplicate artifactory string when release name has artifactory
