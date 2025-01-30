@@ -36,12 +36,6 @@ spec:
     targetPort: {{ .Values.artifactory.internalPort }}
     protocol: TCP
     name: http-router
-  {{- if .Values.federation.enabled }}
-  - port: {{ .Values.federation.internalPort }}
-    targetPort: {{ .Values.federation.internalPort }}
-    protocol: TCP
-    name: http-rtfs
-  {{- end }}
   {{- if .Values.artifactory.ssh.enabled }}
   - port: {{ .Values.artifactory.ssh.externalPort }}
     targetPort: {{ .Values.artifactory.ssh.internalPort }}

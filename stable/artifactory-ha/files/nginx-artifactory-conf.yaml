@@ -88,6 +88,12 @@ location / {
   {{- end }}
   add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
   location /artifactory/ {
+    {{- if .Values.rtfs.enabled }}
+    if ($request_uri ~ ^/artifactory/service/rtfs/(.*)$ ) {
+      proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/service/rtfs/$1;
+      break;
+    }
+    {{- end }}
     if ( $request_uri ~ ^/artifactory/(.*)$ ) {
       proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
     }

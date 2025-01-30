@@ -312,6 +312,9 @@ Return the proper artifactory chart image names
     {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
         {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.versions.rtfs (eq $indexReference "rtfs") }}
+    {{- $tag = $dot.Values.global.versions.rtfs | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.versions.artifactory }}
         {{- if or (eq $indexReference "artifactory") (eq $indexReference "metadata") (eq $indexReference "nginx") (eq $indexReference "observability") }}
             {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
@@ -380,8 +383,14 @@ Resolve requiredServiceTypes value
 {{- if .Values.evidence.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevd" -}}
 {{- end -}}
+{{- if .Values.topology.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jftpl" -}}
+{{- end -}}
 {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
+{{- end -}}
+{{- if .Values.onemodel.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfomr" -}}
 {{- end -}}
 {{- $requiredTypes -}}
 {{- end -}}
@@ -586,4 +595,80 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "artifactory.serviceGrpc.fullname" -}}
 {{- printf "%s-%s" (include "artifactory-ha.fullname" .) .Values.artifactory.serviceGrpc.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "rtfs.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") .Values.rtfs.name -}}
+{{- else -}}
+{{- printf "%s-%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") $name .Values.rtfs.name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+    Resolve jfrogUrl value
+*/}}
+{{- define "rtfs.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.rtfs.jfrogUrl -}}
+{{- .Values.rtfs.jfrogUrl -}}
+{{- else -}}
+{{- printf "http://%s:8082" (include "artifactory-ha.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve RTFS customSidecarContainers value
+*/}}
+{{- define "artifactory.rtfs.customSidecarContainers" -}}
+{{- if .Values.rtfs.customSidecarContainers -}}
+{{- .Values.rtfs.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve RTFS customInitContainers value
+*/}}
+{{- define "artifactory.rtfs.customInitContainers" -}}
+{{- if .Values.rtfs.customInitContainers -}}
+{{- .Values.rtfs.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory.rtfs.customVolumes" -}}
+{{- if .Values.rtfs.customVolumes -}}
+{{- .Values.rtfs.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Rtfs command
+*/}}
+{{- define "rtfs.command" -}}
+{{- if .Values.rtfs.customCommand }}
+{{  toYaml .Values.rtfs.customCommand }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts rtfs value
+*/}}
+{{- define "artifactory.rtfs.customVolumeMounts" -}}
+{{- if .Values.rtfs.customVolumeMounts -}}
+{{- .Values.rtfs.customVolumeMounts -}}
+{{- end -}}
 {{- end -}}
