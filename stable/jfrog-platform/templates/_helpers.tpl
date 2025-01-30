@@ -112,13 +112,9 @@ Resolve unifiedSecretInstallation name
 {{- printf "%s-%s" (include "xray.name" .) "unified-secret" -}}
 {{- end }}
 {{- end -}}
-{{- if eq .Chart.Name "insight" -}}
-{{- if not .Values.insightServer.unifiedSecretInstallation }}
-{{- printf "%s-%s" (include "insight.fullname" . ) "database-creds" -}}
-{{- else }}
-{{- printf "%s-%s" (include "insight.name" .) "unified-secret" -}}
+{{- if eq .Chart.Name "catalog" -}}
+{{- printf "%s" (include "catalog.fullname" .)  -}}
 {{- end }}
-{{- end -}}
 {{- end -}}
 
 {{/*
@@ -141,51 +137,9 @@ Custom init container for Postgres setup
     - >
       echo "Running init db scripts";
       bash /scripts/setupPostgres.sh
-  {{- if eq .Chart.Name "pipelines" }}
   env:
     - name: PGUSERNAME
-    {{- if .Values.global.database.secrets.adminUsername }}
-      valueFrom:
-        secretKeyRef:
-          name: {{ tpl .Values.global.database.secrets.adminUsername.name . }}
-          key: {{ tpl .Values.global.database.secrets.adminUsername.key . }}
-    {{- else if .Values.global.database.adminUsername }}
-      value: {{ .Values.global.database.adminUsername }}
-    {{- end }}
-    - name: DB_HOST
-      value: {{ tpl .Values.global.database.host . }}
-    - name: DB_PORT
-      value: {{ .Values.global.database.port | quote }}
-    - name: DB_SSL_MODE
-      value: {{ .Values.global.database.sslMode | quote }}
-    - name: DB_NAME
-      value: {{ .Values.global.postgresql.database }}
-    - name: DB_USERNAME
-      value: {{ .Values.global.postgresql.user }}
-    - name: DB_PASSWORD
-      value: {{ .Values.global.postgresql.password }}
-    - name: PGPASSWORD
-    {{- if .Values.global.database.secrets.adminPassword }}
-      valueFrom:
-        secretKeyRef:
-          name: {{ tpl .Values.global.database.secrets.adminPassword.name . }}
-          key: {{ tpl .Values.global.database.secrets.adminPassword.key . }}
-    {{- else if .Values.global.database.adminPassword }}
-      value: {{ .Values.global.database.adminPassword }}
-    {{- end }}
-    - name: CHART_NAME
-      value: {{ .Chart.Name }}
-  {{- else if not (eq .Chart.Name "worker") }}
-  env:
-    - name: PGUSERNAME
-    {{- if .Values.global.database.secrets.adminUsername }}
-      valueFrom:
-        secretKeyRef:
-          name: {{ tpl .Values.global.database.secrets.adminUsername.name . }}
-          key: {{ tpl .Values.global.database.secrets.adminUsername.key . }}
-    {{- else if .Values.global.database.adminUsername }}
-      value: {{ .Values.global.database.adminUsername }}
-    {{- end }}
+      value: postgres
     - name: DB_HOST
       value: {{ tpl .Values.global.database.host . }}
     - name: DB_PORT
@@ -225,11 +179,10 @@ Custom init container for Postgres setup
     {{- end }}
     - name: CHART_NAME
       value: {{ .Chart.Name }}
-  {{- end }}
   volumeMounts:
     - name: postgres-setup-init-vol
       mountPath: "/scripts"
-{{- end }}
+  {{- end }}
 {{- end }}
 
 {{/*
@@ -292,6 +245,32 @@ Expand the name of rabbit chart.
 {{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- end -}}
 
+{{/*
+Expand the name of postgresql chart.
+*/}}
+{{- define "postgresql.name" -}}
+{{- default (printf "%s" "postgresql") .Values.postgresql.nameOverride -}}
+{{- end -}}
+
+{{- define "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" -}}
+{{- $name := default "postgresql-upgradestsdeletecheck" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for postgresql upgrade version check
+*/}}
+{{- define "jfrog-platform.postgresql.upgradeHookSTSDelete.serviceAccountName" -}}
+{{- if .Values.postgresql.upgradeHookSTSDelete.serviceAccount.create -}}
+{{ default (include "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" .) .Values.postgresql.upgradeHookSTSDelete.serviceAccount.name }}
+{{- else -}}
+{{ default "postgresql-upgradecheck" .Values.postgresql.upgradeHookSTSDelete.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
 
 {{- define "jfrog-platform.rabbitmq.migration.fullname" -}}
 {{- $name := default "rabbitmq-migration" -}}

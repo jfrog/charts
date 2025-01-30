@@ -1,5 +1,5 @@
 {{- if .Values.preUpgradeHook.enabled }}
-{{- if not (and .Values.insight.enabled .Values.pipelines.enabled .Values.distribution.enabled .Values.artifactory.mc.enabled) }}
+{{- if not (and .Values.distribution.enabled .Values.artifactory.mc.enabled) }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -111,39 +111,14 @@ spec:
                 if [ "$(kubectl get pods -l "statefulset.kubernetes.io/pod-name={{ .Release.Name }}-distribution-0" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
                     if [ "$?" -eq 0 ]; then
                       echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
-                      echo "From chart verison 10.18.x, Products - Distribution, Insight and Pipelines are disabled. If you are using these products in the previous release(s)."
-                      echo "Enable them using your custom-values.yaml file "
+                      echo "From chart verison 10.18.x, Products - Distribution is disabled. If you are using this product in the previous release(s)."
+                      echo "Enable it using your custom-values.yaml file "
                       exit 1
                     fi
                 else
                     echo "Distribution pod(s) don't exist. Allowing upgrade"
                 fi
                 {{- end }}
-                {{- if not .Values.insight.enabled }}
-                if [ "$(kubectl get pods -l "statefulset.kubernetes.io/pod-name={{ .Release.Name }}-insight-0" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
-                    if [ "$?" -eq 0 ]; then
-                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
-                      echo "From chart verison 10.18.x, Products - Distribution, Insight and Pipelines are disabled. If you are using these products in the previous release(s)."
-                      echo "Enable them using your custom-values.yaml file "
-                      exit 1
-                    fi
-                else
-                    echo "Insight pod(s) don't exist. Allowing upgrade"
-                fi
-                {{- end }}
-                {{- if not .Values.pipelines.enabled }}
-                if [ "$(kubectl get pods -l "statefulset.kubernetes.io/pod-name={{ .Release.Name }}-pipelines-0" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
-                    if [ "$?" -eq 0 ]; then
-                      echo "Failed to perform the upgrade. Refer to https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md#10180"
-                      echo "From chart verison 10.18.x, Products - Distribution, Insight and Pipelines are disabled. If you are using these products in the previous release(s)."
-                      echo "Enable them using your custom-values.yaml file "
-                      exit 1
-                    fi
-                else
-                    echo "Pipelines pod(s) don't exist. Allowing upgrade"
-                fi
-                {{- end }}
-
                 {{- if not .Values.artifactory.mc.enabled }}
                     systemYamlUnifiedSecret={{ include "jfrog-platform.artifactory.fullname" . }}-unified-secret
                     systemYamlSecret={{ include "jfrog-platform.artifactory.fullname" . }}-systemyaml
