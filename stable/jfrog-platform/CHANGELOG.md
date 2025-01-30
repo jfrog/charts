@@ -1,9 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+
 ## [10.20.4] - January 07, 2025
 * Update dependency artifactory chart version
 * Update dependency xray chart version
+* Added `rabbitmq.tolerations`
 
 ## [10.20.1] - Nov 25, 2024
 * Fix jfrog url with duplicate artifactory string when release name has artifactory
