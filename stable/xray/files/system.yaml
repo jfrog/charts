@@ -13,13 +13,13 @@ shared:
   logging:
     consoleLog:
       enabled: {{ .Values.xray.consoleLog }}
-  jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "xray.jfrogUrl" .)) . }}"
+  jfrogUrl: "{{ tpl (required "\n\nxray.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > Platform Security > General > Connection details" (include "xray.jfrogUrl" .)) . }}"
   database:
   {{- if .Values.postgresql.enabled }}
     type: "postgresql"
     driver: "org.postgresql.Driver"
-    username: "{{ .Values.postgresql.postgresqlUsername }}"
-    url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
+    username: "{{ .Values.postgresql.auth.username }}"
+    url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.primary.service.ports.postgresql }}/{{ .Values.postgresql.auth.database }}?sslmode=disable"
   {{- else }}
     type: {{ .Values.database.type }}
     driver: {{ .Values.database.driver }}
@@ -67,10 +67,6 @@ server:
     migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
   {{- end }}
 {{- end }}
-{{- if .Values.policyenforcer.enabled }}
-policyenforcer:
-  enabled: true
-{{- end }}
 {{- if (include "xray.imagePullSecretsStrList" .) }}
 executionService:
   pullSecret:
@@ -83,3 +79,8 @@ exposures:
   container:
     registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
     image: {{ .Values.exposures.image.repository }}
+{{- if .Values.jas.healthcheck.enabled }}
+jas:
+  healthCheckApi:
+    enabled: true
+{{- end }}

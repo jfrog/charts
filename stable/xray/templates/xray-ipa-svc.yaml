@@ -48,12 +48,10 @@ spec:
     protocol: TCP
     targetPort: {{ .Values.panoramic.internalPort }}
 {{- end }}
-{{- if .Values.policyenforcer.enabled }}
   - name: http-polenf
     port: {{ .Values.policyenforcer.externalPort }}
     protocol: TCP
     targetPort: {{ .Values.policyenforcer.internalPort }}
-{{- end }}
   selector:
     app: {{ template "xray.name" . }}
     component: {{ .Values.xray.name }}

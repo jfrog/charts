@@ -1,12 +1,29 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.98.7] - Oct 02, 2024
+## [107.104.5] - Jan 24, 2025
+* Added new RTFS service
+* Added new Topology service
+* Added new onemodel service
+* Added customVolumeMounts support for frontend,event,evidence,jfconnect,topology,observability containers
+* Added ingress and nginx routing support for rtfs service context
+* Added recommended sizing extraEnvironmentVariables for access container
+* Added default extra javaOpts support in system yaml for topology
+* Modified the RTFS chart and the topology probe values
+* Fixing secret based annotations for RTFS deployment
+
+## [107.102.0] - Nov 26, 2024
+* Remove the Xms and Xmx with InitialRAMPercentage and MaxRAMPercentage if they are available in extra_java_options
+
+## [107.98.0] - Nov 06, 2024
 * Add support for `extraEnvironmentVariables` on filebeat Sidecar [GH-1377](https://github.com/jfrog/charts/pull/1377)
 * Support for SSL offload HTTPS proto override in Nginx service (ClusterIP, LoadBalancer) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type. [GH-1906](https://github.com/jfrog/charts/pull/1906)
 * Enable Access workers integration when artifactory.worker.enabled is true
 * Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct` [GH-1858](https://github.com/jfrog/charts/pull/1858)
 * Added support to bootstrap jfconnect custom certs to jfconnect trusted directory
+* Fixed the type of `.Values.artifactory.persistence.googleStorage.signedUrlExpirySeconds` in binarystore.xml from boolean to integer
+* Added support for modifying `pathType` in ingress
+* Added fix for database credentials secret in non-unified secret installations
 
 ## [107.96.0] - Sep 18, 2024
 * Merged Artifactory sizing templates to a single file per size
@@ -29,7 +46,7 @@ All changes to this chart will be documented in this file
 ## [107.91.0] - July 18, 2024
 * Remove X-JFrog-Override-Base-Url port when using default `443/80` ports
 
-## [107.90.15] - July 18, 2024
+## [107.90.0] - July 18, 2024
 * Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 * Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
 * Added a deprecation notice of ingress.hosts when `ngnix.enabled` is true

@@ -1,0 +1,41 @@
+global:
+  imagePullSecrets:
+     - regsecret              ## credential for your local registry
+  imageRegistry: releases-docker.jfrog.io   ## local private registry
+  jfrogUrl: 'https://myjfrog.io'            ## The artifactory host url
+  joinKeySecretName: my-join-key
+  masterKeySecretName: my-master-key
+  database:
+    initDBCreation: false
+
+## This Postgresql is used by all products , set postgresql.enabled: false, when you want to use external postgresql for all products
+postgresql:
+  enabled: false
+
+## This Rabbitmq is used by Xray and Pipelines only, set rabbitmq.enabled: false, when Xray or Pipelines is not enabled
+rabbitmq:
+  enabled: false
+  
+## This Redis is used by pipelines only, set redis.enabled: false, when pipelines is not enabled
+redis:
+  enabled: false
+
+artifactory:
+  enabled: true
+  artifactory:
+    replicaCount: 3
+
+xray:
+  enabled: false
+
+distribution:
+  enabled: true
+  unifiedUpgradeAllowed: true
+  distribution:
+    unifiedSecretInstallation: false
+
+insight:
+  enabled: false
+
+pipelines:
+  enabled: false

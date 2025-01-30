@@ -47,6 +47,23 @@ spec:
       targetPort: {{ .Values.serviceMonitor.targetPort }}
       tlsConfig:
         insecureSkipVerify: true
+  {{- if .Values.serviceMonitor.observabilityEnabled }}
+    - path: /observability/api/v1/metrics
+      {{- if .Values.serviceMonitor.bearerTokenFile }}
+      bearerTokenFile: {{ .Values.serviceMonitor.bearerTokenFile }}
+      {{- else }}
+      bearerTokenSecret:
+        key: token
+        name: {{ .Values.serviceMonitor.tokenName }}
+      {{- end }}
+      honorLabels: true
+      interval: {{ .Values.serviceMonitor.interval }}
+      scheme: {{ .Values.serviceMonitor.scheme }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      targetPort: {{ .Values.serviceMonitor.targetPort }}
+      tlsConfig:
+        insecureSkipVerify: true
+  {{- end }}
   jobLabel: worker-metrics-monitor
   namespaceSelector:
 {{ toYaml .Values.serviceMonitor.namespaceSelector | indent 4 }}

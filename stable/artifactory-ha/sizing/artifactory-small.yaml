@@ -1,7 +1,7 @@
 ##############################################################################################
 # The small sizing
 # This is the size recommended for running Artifactory for small teams
-# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
 # hence this configuration will be overridden when enabling systemYamlOverride
 ##############################################################################################
 splitServicesToContainers: true
@@ -76,6 +76,11 @@ access:
     limits:
       # cpu: 1
       memory: 2Gi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "2"
+    - name: SKIP_WAIT_FOR_EXTERNAL_DB
+      value: "true"
 
 frontend:
   resources:
@@ -93,6 +98,15 @@ metadata:
     requests:
       cpu: 100m
       memory: 200Mi
+    limits:
+      # cpu: "2"
+      memory: 1Gi
+
+onemodel:
+  resources:
+    requests:
+      cpu: 125m
+      memory: 120Mi
     limits:
       # cpu: "2"
       memory: 1Gi
@@ -123,6 +137,17 @@ jfconnect:
     limits:
       # cpu: 500m
       memory: 250Mi
+
+topology:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 600Mi
+    limits:
+      memory: 900Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "2"
 
 nginx:
   replicaCount: 1

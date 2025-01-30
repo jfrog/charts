@@ -134,6 +134,28 @@ spec:
           mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
           echo ${XRAY_MASTER_KEY} > {{ .Values.xray.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
+          if set | grep -q "^XRAY_RABBITMQ_PASSWORD="; then
+          echo "Copy rabbitmq password to {{ .Values.xray.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
+          echo ${XRAY_RABBITMQ_PASSWORD} > {{ .Values.xray.persistence.mountPath }}/etc/security/rabbitmq.password;
+          else
+            if test -f "{{ .Values.xray.persistence.mountPath }}/etc/security/rabbitmq.password"; then
+            echo "XRAY_RABBITMQ_PASSWORD is not set, removing existing rabbitmq.password file.";
+            rm -f {{ .Values.xray.persistence.mountPath }}/etc/security/rabbitmq.password;
+            fi
+          fi
+        {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+          if set | grep -q "^XRAY_POSTGRES_PASSWORD="; then
+          echo "Copy postgres password to {{ .Values.xray.persistence.mountPath }}/etc/security";
+          mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security;
+          echo ${XRAY_POSTGRES_PASSWORD} > {{ .Values.xray.persistence.mountPath }}/etc/security/postgres.password;
+          else
+            if test -f "{{ .Values.xray.persistence.mountPath }}/etc/security/postgres.password"; then
+            echo "XRAY_POSTGRES_PASSWORD is not set, removing existing postgres.password file.";
+            rm -f {{ .Values.xray.persistence.mountPath }}/etc/security/postgres.password;
+            fi
+          fi
+        {{- end }}
         env:
         {{- if or .Values.xray.joinKey .Values.xray.joinKeySecretName .Values.global.joinKey .Values.global.joinKeySecretName }}
         - name: XRAY_JOIN_KEY
@@ -156,6 +178,39 @@ spec:
               name: "{{ template "xray.name" . }}-unified-secret"
               {{- end }}
               key: master-key
+        {{- end }}
+        {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: XRAY_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
+        {{- end }}
+        {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
+        - name: XRAY_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rabbitmq.passwordSecretName" .}}
+              key: rabbitmq-password
+        {{- end }}
+        {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: XRAY_POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.name" . }}-unified-secret"
+              {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: password
+        {{- end }}
         {{- end }}
         volumeMounts:
         - name: data-volume
@@ -216,7 +271,7 @@ spec:
           echo "Waiting for postgresql to come up"
           ready=false;
           while ! $ready; do echo waiting;
-            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.primary.service.ports.postgresql }}"; exit_status=$?;
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
       {{- end }}
@@ -432,11 +487,6 @@ spec:
             secretKeyRef:
               name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
               key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
-        - name: JF_SHARED_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
-              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
         - name: JF_SHARED_RABBITMQ_URL
           valueFrom:
             secretKeyRef:
@@ -475,25 +525,6 @@ spec:
               key: db-actualUsername
         {{- end }}
       {{- end }}
-      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
-        - name: JF_SHARED_DATABASE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.password }}
-              name: {{ tpl .Values.database.secrets.password.name . }}
-              key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}-database-creds
-              {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
-              {{- end }}
-              key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
-        {{- end }}
-      {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
@@ -515,11 +546,6 @@ spec:
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
           value: {{ include "rabbitmq.url" .}}
-        - name: JF_SHARED_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "rabbitmq.passwordSecretName" .}}
-              key: rabbitmq-password
       {{- end }}
         - name: XRAY_K8S_ENV
           value: "true"

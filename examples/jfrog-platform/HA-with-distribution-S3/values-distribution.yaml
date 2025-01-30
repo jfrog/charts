@@ -1,0 +1,16 @@
+distribution:
+  postgresql:
+    enabled: false
+  database:
+    type: "postgresql"
+    driver: org.postgresql.Driver
+    secrets: 
+      user:
+        name: "my-distribution-database"
+        key: "db-user"
+      password:
+        name: "my-distribution-database"
+        key: "db-password"
+      url:
+        name: "my-distribution-database"
+        key: "db-url"

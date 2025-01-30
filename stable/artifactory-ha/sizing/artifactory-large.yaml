@@ -1,7 +1,7 @@
 ##############################################################################################
 # The large sizing
 # This size is intended for large organizations. It can be increased with adding replicas or moving to the large sizing
-# [WARNING] Some of the the configuration mentioned in this file are taken inside system.yaml
+# [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
 # hence this configuration will be overridden when enabling systemYamlOverride
 ##############################################################################################
 splitServicesToContainers: true
@@ -68,6 +68,11 @@ access:
     limits:
       # cpu: 2
       memory: 3Gi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "8"
+    - name: SKIP_WAIT_FOR_EXTERNAL_DB
+      value: "true"
 
 router:
   resources:
@@ -98,6 +103,15 @@ metadata:
       # cpu: "4"
       memory: 1Gi
 
+onemodel:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 160Mi
+    limits:
+      # cpu: "1"
+      memory: 250Mi
+
 event:
   resources:
     requests:
@@ -124,6 +138,17 @@ jfconnect:
     limits:
       # cpu: 500m
       memory: 250Mi
+
+topology:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1000Mi
+    limits:
+      memory: 1500Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "8"
 
 nginx:
   replicaCount: 2

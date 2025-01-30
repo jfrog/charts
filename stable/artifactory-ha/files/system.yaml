@@ -144,22 +144,38 @@ jfconnect_service:
   enabled: false
 {{- end }}
 
-{{- if and .Values.federation.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
-federation:
-  enabled: true
-  embedded: {{ .Values.federation.embedded }}
-  extraJavaOpts: {{ .Values.federation.extraJavaOpts }}
-  port: {{ .Values.federation.internalPort }}
+onemodel:
+  enabled: {{ .Values.onemodel.enabled | default true }}
+  {{- if .Values.onemodel.apolloYaml }}
+  apolloYaml:
+{{ toYaml .Values.onemodel.apolloYaml | nindent 6 }}
+  {{- end}}
+{{- if and .Values.rtfs.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
 rtfs:
-  database:
-    driver: org.postgresql.Driver
-    type: postgresql
-    username: {{ .Values.federation.database.username }}
-    password: {{ .Values.federation.database.password }}
-    url: "jdbc:postgresql://{{ .Values.federation.database.host }}:{{ .Values.federation.database.port }}/{{ .Values.federation.database.name }}"
+  enabled: true
 {{- else }}
-federation:
+rtfs:
   enabled: false
+{{- end }}
+{{- if .Values.topology.enabled }}
+topology:
+  enabled: {{ .Values.topology.enabled }}
+  database:
+    maxOpenConnections: {{ .Values.topology.database.maxOpenConnections }}
+  port: {{ .Values.topology.internalPort }}
+  extraJavaOpts: >
+  {{- if .Values.splitServicesToContainers }}
+    -XX:InitialRAMPercentage=20
+    -XX:MaxRAMPercentage=70
+  {{- end }}
+  {{- with .Values.topology.javaOpts }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}
+{{- else }}
+topology:
+  enabled: {{ .Values.topology.enabled }}
 {{- end }}
 {{- if .Values.event.webhooks }}
 event:

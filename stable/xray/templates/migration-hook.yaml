@@ -16,6 +16,9 @@ metadata:
     annotations:
         helm.sh/hook: "pre-upgrade"
         helm.sh/hook-weight: "-10"
+{{- with .Values.rabbitmq.migration.serviceAccount.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
 automountServiceAccountToken: {{ .Values.rabbitmq.migration.serviceAccount.automountServiceAccountToken }}
 {{- end }}
 {{- end }}

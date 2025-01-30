@@ -1,0 +1,84 @@
+artifactory:
+  ingress:
+    enabled: false
+  router:
+    tlsEnabled: true
+
+  artifactory:
+    name: artifactory
+    admin:
+      secret: my-admin
+      dataKey: bootstrap.creds
+
+    service:
+      name: artifactory
+
+    replicator:
+      enabled: false
+      ingress:
+        enabled: false
+    
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::<ACCOUNT_ID>:role/<IAM_ROLE_NAME>
+
+    persistence:
+      enabled: true
+      accessMode: ReadWriteOnce
+      size: 100Gi
+      customBinarystoreXmlSecret: my-binarystore
+    
+  access:
+    enabled: true
+    accessConfig:
+      security:
+        tls: true
+
+  mc:
+    enabled: true
+
+  # Nginx
+  nginx:
+    enabled: true
+    labels: {}
+    service:
+      ## For minikube, set this to NodePort, elsewhere use LoadBalancer
+      type: LoadBalancer
+      ssloffload: false
+      ## For supporting whitelist on the Nginx LoadBalancer service
+      ## Set this to a list of IP CIDR ranges
+      ## Example: loadBalancerSourceRanges: ['10.10.10.5/32', '10.11.10.5/32']
+      ## or pass from helm command line
+      ## Example: helm install ... --set nginx.service.loadBalancerSourceRanges='{10.10.10.5/32,10.11.10.5/32}'
+      loadBalancerSourceRanges: []
+      ## Assuming ssl terminiation at load balancer
+      ## For example, on Eks , add annoation like 
+      ## service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:...
+      ## service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+      annotations: {}
+      ## Provide static ip address
+      loadBalancerIP:
+
+  # chose your selector/affinities/toleration strategy based on actual need 
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+
+  postgresql:
+    enabled: false
+  
+  database:
+    type: "postgresql"
+    driver: org.postgresql.Driver
+    secrets: 
+      user:
+        name: "my-database"
+        key: "db-user"
+      password:
+        name: "my-database"
+        key: "db-password"
+      url:
+        name: "my-database"
+        key: "db-url"
