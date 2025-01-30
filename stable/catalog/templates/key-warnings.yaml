@@ -1,0 +1,9 @@
+{{- if not (include "catalog.jfrogUrl" .) -}}
+{{- fail "\n\njfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > Platform Security > General > Connection details" }}
+{{- end -}}
+
+{{- if not (or .Values.joinKey .Values.global.joinKey) }}
+{{- if not (or .Values.joinKeySecretName .Values.global.joinKeySecretName) }}
+{{- fail "\n\n.Values.joinKey/joinKeySecretName or .Values.global.joinKey/joinKeySecretName is required!\n\n" }}
+{{- end }}
+{{- end }}

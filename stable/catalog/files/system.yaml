@@ -1,0 +1,12 @@
+configVersion: 1
+shared:
+  database:
+    type: {{ .Values.database.type }}
+    driver: {{ .Values.database.driver }}
+catalog:
+  mode: "singleTenant"
+  central:
+    url: "https://jfscatalogcentral.jfrog.io"
+  logging:
+    application:
+      level: "debug"

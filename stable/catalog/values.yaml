@@ -1,0 +1,514 @@
+## @section Global parameters
+## Global Docker image parameters
+## Please, note that this will override the image parameters, including dependencies, configured to use the global value
+## Current available global Docker image parameters: imageRegistry and imagePullSecrets
+##
+
+## @param global.imageRegistry Global Docker image registry
+## @param global.imagePullSecrets Global Docker registry secret names as an array
+##
+global:
+  # imageRegistry: releases-docker.jfrog.io
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+
+  # masterKey:
+  # joinKey:
+
+  systemYamlOverride:
+    ## You can use a pre-existing secret by specifying existingSecret
+    existingSecret: ""
+    ## The dataKey should be the name of the secret data key created.
+    dataKey:
+
+## @section catalog Image parameters
+## @param image.registry catalog image registry
+## @param image.repository catalog image repository
+## @param image.tag catalog image tag (immutable tags are recommended)
+## @param image.pullPolicy catalog image pull policy
+## @param image.pullSecrets Specify docker-registry secret names as an array
+## @param image.debug Set to true if you would like to see extra information on logs
+##
+image:
+  registry: releases-docker.jfrog.io
+  repository: jfrog/catalog
+  # tag:
+
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  ##
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## Example:
+  ## pullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  pullSecrets: []
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 5
+
+livenessProbe:
+  enabled: true
+  config: |
+    httpGet:
+      path: /api/v1/system/liveness
+      port: 8088
+    initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+    periodSeconds: 10
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+    failureThreshold: 3
+    successThreshold: 1
+
+startupProbe:
+  enabled: true
+  config: |
+    httpGet:
+      path: /api/v1/system/readiness
+      port: 8088
+    initialDelaySeconds: 30
+    failureThreshold: 30
+    periodSeconds: 5
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+database:
+  type: "postgresql"
+  driver: "pgx"
+  ## If you would like this chart to create the secret containing the database url, user, password - use these below values
+  url:
+  user:
+  password:
+  ## If you have existing Kubernetes secrets containing db credentials, use
+  ## these values
+  secrets: {}
+  #  user:
+  #    name: "catalog-database-creds"
+  #    key: "db-user"
+  #  password:
+  #    name: "catalog-database-creds"
+  #    key: "db-password"
+  #  url:
+  #    name: "catalog-database-creds"
+  #    key: "db-url"
+
+deployment:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+
+## @param extraEnvironmentVariables that can be used to tune catalog to your needs.
+## Example:
+## extraEnvironmentVariables:
+##   - name: MY_ENV_VAR
+##     value: ""
+extraEnvironmentVariables:
+
+## @param extraVolumeMounts Optionally specify extra list of additional volumeMounts
+## Examples:
+## extraVolumeMounts:
+##   - name: extras
+##     mountPath: /usr/share/extras
+##     readOnly: true
+##
+extraVolumeMounts: []
+## @param extraVolumes Optionally specify extra list of additional volumes .
+## Example:
+## extraVolumes:
+##   - name: extras
+##     emptyDir: {}
+##
+extraVolumes: []
+
+## @section Deployment parameters
+##
+
+## @param replicaCount Number of catalog replicas to deploy
+##
+replicaCount: 1
+
+## @param podLabels catalog Pod labels. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+podLabels: {}
+
+## @param podAnnotations catalog Pod annotations. Evaluated as a template
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+podAnnotations: {}
+
+## @param deploymentLabels catalog deployment labels. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+deploymentLabels: {}
+
+## @param nodeSelector Node labels for pod assignment. Evaluated as a template
+## ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+## @param tolerations Tolerations for pod assignment. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+## @param topologySpreadConstraints Topology Spread Constraints for pod assignment spread across your cluster among failure-domains. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
+##
+topologySpreadConstraints: []
+
+## @param podSecurityContext.enabled enable the pod's Security Context
+podSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 1030
+  runAsGroup: 1030
+  fsGroup: 1030
+  # fsGroupChangePolicy: "Always"
+  # seLinuxOptions: {}
+
+## @param containerSecurityContext.enabled enable the container's Security Context
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
+
+## catalog containers' resource requests and limits
+## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resources.limits The resources limits for catalog containers
+## @param resources.requests The requested resources for catalog containers
+##
+resources: {}
+  ## Example:
+  ## limits:
+  ##    cpu: 1000m
+  ##    memory: 2Gi
+  ##
+  ## Examples:
+  ## requests:
+  ##    cpu: 1000m
+  ##    memory: 2Gi
+  ##
+
+# Add lifecycle hooks for integration container
+lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+## @param initContainers Add init containers to the catalog pod
+## Example:
+## customInitContainers:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+# customInitContainers: []
+
+## @param sidecars Add sidecar containers to the catalog pod
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+sidecars: []
+
+## Artifactory URL . Mandatory"
+jfrogUrl:
+
+## catalog requires a unique master key.
+## You can generate one with the command: "openssl rand -hex 32"
+## An initial one is auto generated by Artifactory on first startup.
+masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+# masterKeySecretName:
+
+## Join Key to connect other services to Artifactory
+## IMPORTANT: Setting this value overrides the existing joinKey
+## IMPORTANT: You should NOT use the example joinKey for a production deployment!
+joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+# joinKeySecretName:
+
+## System YAML entries now reside under files/system.yaml.
+## You can provide the specific values that you want to add or override under 'catalog.extraSystemYaml'.
+## For example:
+## extraSystemYaml:
+##  shared:
+##    logging:
+##      consoleLog:
+##        enabled: true
+## The entries provided under 'catalog.extraSystemYaml' are merged with files/system.yaml to create the final system.yaml.
+## If you have already provided system.yaml under, 'catalog.systemYaml', the values in that entry take precedence over files/system.yaml
+## You can modify specific entries with your own value under `catalog.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'catalog.systemYaml' and files/system.yaml
+
+extraSystemYaml: {}
+    
+## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
+## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
+# systemYaml:
+
+
+## catalog systemYaml override
+## This is for advanced usecases where users wants to provide their own systemYaml for configuring artifactory
+## Refer: https://www.jfrog.com/confluence/display/JFROG/Artifactory+System+YAML
+## Note: This will override existing (default) .Values.artifactory.systemYaml in values.yaml
+## Alternatively, systemYaml can be overidden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+  ## You can use a pre-existing secret by specifying existingSecret
+  existingSecret: ""
+  ## The dataKey should be the name of the secret data key created.
+  dataKey:
+
+## Router
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    tag: 7.135.1
+    imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: false
+  internalPort: 8082
+  externalPort: 8082
+  tlsEnabled: false
+  resources: {}
+  #  requests:
+  #    memory: "100Mi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  ## @param router.extraEnvironmentVariables that can be used to tune router to your needs.
+  ## Example:
+  ## extraEnvironmentVariables:
+  ##   - name: MY_ENV_VAR
+  ##     value: ""
+  extraEnvironmentVariables: []
+
+  ## To use newProbes set .Values.newProbes to true
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "catalog.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "catalog.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "catalog.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+      initialDelaySeconds: 10
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  # Add lifecycle hooks for observability container
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
+
+## @section RBAC parameters
+##
+
+## catalog pods ServiceAccount
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
+serviceAccount:
+  ## @param serviceAccount.create Enable creation of ServiceAccount for catalog pods
+  ##
+  create: true
+  ## @param serviceAccount.name Name of the created serviceAccount
+  ## If not set and create is true, a name is generated using the catalog.fullname template
+  ##
+  name: ""
+  ## @param serviceAccount.automountServiceAccountToken Auto-mount the service account token in the pod
+  ##
+  automountServiceAccountToken: true
+
+## Role Based Access
+## ref: https://kubernetes.io/docs/admin/authorization/rbac/
+##
+rbac:
+  ## @param rbac.create Whether RBAC rules should be created
+  ## binding catalog ServiceAccount to a role
+  ## that allows catalog pods querying the K8s API
+  ##
+  create: true
+  ## @param rbac.rules Custom RBAC rules
+  ## Example:
+  ## rules:
+  ##   - apiGroups:
+  ##       - ""
+  ##     resources:
+  ##       - pods
+  ##     verbs:
+  ##       - get
+  ##       - list
+  ##
+  rules: []
+## @section Persistence parameters
+##
+
+## Autoscaling configuration
+##
+
+autoscaling:
+  ## @param autoscaling.enabled Enable replica autoscaling settings
+  ##
+  enabled: false
+  ## @param autoscaling.minReplicas Minimum replicas for the pod autoscaling
+  ##
+  minReplicas: 1
+  ## @param autoscaling.maxReplicas Maximum replicas for the pod autoscaling
+  ##
+  maxReplicas: 11
+  ## @param autoscaling.targetCPU Percentage of CPU to consider when autoscaling
+  ##
+  targetCPU: ""
+  ## @param autoscaling.targetMemory Percentage of Memory to consider when autoscaling
+  ##
+  targetMemory: ""
+
+## @section Persistence parameters
+##
+
+persistence:
+  ## @param persistence.mountPath The path the volume will be mounted at
+  ## Note: useful when using custom catalog images
+  ##
+  mountPath: /var/opt/jfrog/catalog
+  ## Container storage limit if persistence.enabled: false
+  ## Otherwise PVC size
+  # size: 50Gi
+
+## @section Exposure parameters
+##
+
+## Kubernetes service type
+##
+service:
+  ## @param service.type Kubernetes Service type
+  ##
+  type: ClusterIP
+
+  ## @param service.labels Service labels. Evaluated as a template
+  ##
+  labels: {}
+
+  ## @param service.annotations Service annotations. Evaluated as a template
+  ## Example:
+  ## annotations:
+  ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+  ##
+  annotations: {}
+
+## @section Init Container Parameters
+##
+
+## Init Container parameters
+
+initContainers:
+  ## @param volumePermissions.enabled Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`
+  ##
+  ## @param initContainers.image.registry Init container volume-permissions image registry
+  ## @param initContainers.image.repository Init container volume-permissions image repository
+  ## @param initContainers.image.tag Init container volume-permissions image tag
+  ## @param initContainers.image.pullPolicy Init container volume-permissions image pull policy
+  ## @param initContainers.image.pullSecrets Specify docker-registry secret names as an array
+  ##
+  image:
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.4.1134
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets (secrets must be manually created in the namespace)
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+  ## Init Container resource requests and limits
+  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param volumePermissions.resources.limits Init container volume-permissions resource limits
+  ## @param volumePermissions.resources.requests Init container volume-permissions resource requests
+  ##
+  resources:
+    ## Example:
+    ## limits:
+    ##    cpu: 100m
+    ##    memory: 128Mi
+    ##
+    limits: {}
+    ## Examples:
+    ## requests:
+    ##    cpu: 100m
+    ##    memory: 128Mi
+    ##
+    requests: {}

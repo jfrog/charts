@@ -1,0 +1,272 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "catalog.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.deploymentLabels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.deploymentLabels "context" $) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- with .Values.deployment.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/catalog-secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- if .Values.commonAnnotations }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if or .Values.podAnnotations }}
+        {{- include "catalog.podAnnotations" . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "catalog.imagePullSecrets" . | nindent 6 }}
+      serviceAccountName: {{ template "catalog.serviceAccountName" . }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.topologySpreadConstraints "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      initContainers:
+        {{- if or .Values.customInitContainersBegin .Values.global.customInitContainersBegin }}
+        {{ tpl (include "catalog.customInitContainersBegin" .) . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.customInitContainers }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.customInitContainers "context" $ ) | nindent 8 }}
+        {{- end }}
+        - name: 'copy-system-yaml'
+          image: {{ include "catalog.initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- toYaml (omit .Values.containerSecurityContext "enabled") | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            echo "Copy system.yaml to {{ .Values.persistence.mountPath }}/etc";
+            mkdir -p {{ .Values.persistence.mountPath }}/etc;
+            {{- if .Values.systemYamlOverride.existingSecret }}
+            cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- else if (tpl .Values.global.systemYamlOverride.existingSecret .) }}
+            cp -fv /tmp/etc/{{ .Values.global.systemYamlOverride.dataKey }} {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- else }}
+            cp -fv /tmp/etc/system.yaml {{ .Values.persistence.mountPath }}/etc/system.yaml;
+            {{- end }}
+          {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+          {{- if or .Values.joinKey .Values.global.joinKey .Values.joinKeySecretName .Values.global.joinKeySecretName }}
+            echo "Copy joinKey to {{ .Values.persistence.mountPath }}/etc/security";
+            mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
+            echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.persistence.mountPath }}/etc/security/join.key;
+          {{- end }}     
+          {{- if or .Values.masterKey .Values.global.masterKey .Values.masterKeySecretName .Values.global.masterKeySecretName }}
+            echo "Copy masterKey to {{ .Values.persistence.mountPath }}/etc/security";
+            mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
+            echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
+          {{- end }}
+          env:
+            {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+            {{- if or .Values.joinKey .Values.global.joinKey .Values.joinKeySecretName .Values.global.joinKeySecretName }}
+            - name: ARTIFACTORY_JOIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "catalog.joinKeySecretName" . }}
+                  key: join-key
+            {{- end }}   
+            {{- if or .Values.masterKey .Values.global.masterKey .Values.masterKeySecretName .Values.global.masterKeySecretName }}
+            - name: ARTIFACTORY_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "catalog.masterKeySecretName" . }}
+                  key: master-key
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+          {{- if or (tpl .Values.global.systemYamlOverride.existingSecret .) .Values.systemYamlOverride.existingSecret }}
+            - name: systemyaml
+              mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+              subPath: {{ .Values.systemYamlOverride.dataKey }}
+          {{- else }}
+            - name: systemyaml
+              mountPath: "/tmp/etc/system.yaml"
+              subPath: system.yaml
+          {{- end }}
+      containers:
+        - name: catalog
+          image: {{ include "catalog.getImageInfoByValue" (list . "catalog") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- toYaml (omit .Values.containerSecurityContext "enabled") | nindent 12 }}
+          {{- end }}
+{{- if .Values.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.startupProbe.config . | indent 12 }}
+{{- end }}
+{{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.livenessProbe.config . | indent 12 }}
+{{- end }}
+          env:
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+            - name: JF_SHARED_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.database.secrets.user }}
+                  name: {{ tpl .Values.database.secrets.user.name . }}
+                  key: {{ tpl .Values.database.secrets.user.key . }}
+            {{- else if .Values.database.user }}
+                  name: {{ template "catalog.fullname" . }}
+                  key: db-user
+            {{- end }}
+          {{- end }}
+          {{ if or .Values.database.secrets.password .Values.database.password }}
+            - name: JF_SHARED_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.database.secrets.password }}
+                  name: {{ tpl .Values.database.secrets.password.name . }}
+                  key: {{ tpl .Values.database.secrets.password.key . }}
+            {{- else if .Values.database.password }}
+                  name: {{ template "catalog.fullname" . }}
+                  key: db-password
+            {{- end }}
+          {{- end }}
+          {{- if or .Values.database.secrets.url .Values.database.url }}
+            - name: JF_SHARED_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.database.secrets.url }}
+                  name: {{ tpl .Values.database.secrets.url.name . }}
+                  key: {{ tpl .Values.database.secrets.url.key . }}
+            {{- else if .Values.database.url }}
+                  name: {{ template "catalog.fullname" . }}
+                  key: db-url
+            {{- end }}
+          {{- end }}
+{{- with .Values.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- with .Values.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+        - name: router
+          image: {{ template "router.image" . }}
+          imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- toYaml (omit .Values.containerSecurityContext "enabled") | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+          env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: "jfcatalog"
+            - name: JF_SHARED_JFROGURL
+              value: {{ tpl (include "catalog.jfrogUrl" .) . }}
+            {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "catalog.masterKeySecretName" . }}
+                  key: master-key
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "catalog.joinKeySecretName" . }}
+                  key: join-key
+            {{- end }}
+{{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.router.internalPort }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.router.persistence.mountPath | quote }}
+            {{- if .Values.router.extraVolumeMounts }}
+            {{- toYaml .Values.router.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.router.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.startupProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.router.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.readinessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.router.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.sidecars }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.sidecars "context" $) | nindent 8 }}
+        {{- end }}
+        {{- with .Values.router.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+        {{- end }}
+      volumes:
+      {{- if or .Values.customVolumes .Values.global.customVolumes }}
+      {{ tpl (include "catalog.customVolumes" .) . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.systemYamlOverride.existingSecret }}
+        - name: systemyaml
+          secret:
+            secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- else }}
+        - name: systemyaml
+          secret:
+            secretName: {{ include "catalog.fullname" . }}
+        {{- end }}
+        {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
+        {{- end }}
+        - name: data
+          emptyDir:
+            sizeLimit: {{ .Values.persistence.size }}
