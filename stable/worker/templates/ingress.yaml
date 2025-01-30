@@ -25,7 +25,7 @@ spec:
     - host: {{ .Values.ingress.hostname }}
       http:
         paths:
-            - path: /com.jfrog.worker.v1..*
+            - path: /com.jfrog.worker..*
               pathType: ImplementationSpecific
               backend:
                 service:

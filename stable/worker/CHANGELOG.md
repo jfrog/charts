@@ -1,7 +1,16 @@
 # JFrog Worker Chart Changelog
 All changes to this chart will be documented in this file
 
-## [101.95.1] - Sep 27, 2024
+## [101.118.0] - Nov 12, 2024
+* Add startup probe for worker container
+
+## [101.105.0] - Nov 5, 2024
+* Add pod disruption budget
+
+## [101.102.0] - Oct 22, 2024
+* Add service monitor for observability
+
+## [101.95.0] - Sep 27, 2024
 * Upgraded Observability version to 1.31.4
 
 ## [101.89.0] - Sep 02, 2024

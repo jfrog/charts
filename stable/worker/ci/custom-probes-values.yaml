@@ -60,6 +60,17 @@ customReadinessProbe:
   failureThreshold: 10
   successThreshold: 1
 
+## Worker custom startup probe configuration
+customStartupProbe:
+  httpGet:
+    path: /api/v1/system/readiness
+    port: 8098
+  initialDelaySeconds: 0
+  periodSeconds: 5
+  timeoutSeconds: 120
+  failureThreshold: 10
+  successThreshold: 1
+
 observability:
   customLivenessProbe:
     exec:
