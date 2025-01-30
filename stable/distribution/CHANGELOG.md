@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.27.3] - Oct 30, 2024
+## [102.28.1] - Oct 30, 2024
 * Updated redis multi-arch tag version to 7.2.5-debian-12-r6
 
 ## [102.27.1] - Oct 02, 2024
