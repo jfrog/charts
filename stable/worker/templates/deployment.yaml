@@ -68,7 +68,7 @@ spec:
               mountPath: "/opt/jfrog/worker/var"
             - name: systemyaml
               {{- if .Values.systemYamlOverride.existingSecret }}
-              mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey}}"
+              mountPath: "/tmp/etc/{{ .Values.systemYamlOverride.dataKey }}"
               subPath: {{ .Values.systemYamlOverride.dataKey }}
               {{- else }}
               mountPath: "/tmp/etc/system.yaml"
@@ -134,6 +134,16 @@ spec:
             timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
             httpGet:
               path: /api/v1/system/liveness
+              port: {{ .Values.service.port }}
+          {{- end }}
+          {{- if .Values.customStartupProbe }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customStartupProbe "context" $) | nindent 12 }}
+          {{- else if .Values.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.startupProbe "enabled") "context" $) | nindent 12 }}
+            initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" $.Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            httpGet:
+              path: /api/v1/system/readiness
               port: {{ .Values.service.port }}
           {{- end }}
           resources:
