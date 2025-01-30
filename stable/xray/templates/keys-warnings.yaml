@@ -1,3 +1,7 @@
+{{- if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "password") .Values.rabbitmq.enabled }}
+{{- fail "\n\n**************************************\nSTOP! INSTALLATION not allowed with the default RabbitMQ password!\nPlease change the RabbitMQ password from the default value before proceeding with the installation.\n**************************************\n" }}
+{{- end }}
+
 {{- if .Values.postgresql.enabled }}
     {{- if .Values.postgresql.postgresqlPassword  }}
         {{- fail "\n\nThe key 'postgresql.postgresqlPassword' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.postgresPassword' to proceed with installation.\n" }}

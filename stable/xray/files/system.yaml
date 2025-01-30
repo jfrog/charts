@@ -67,10 +67,6 @@ server:
     migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
   {{- end }}
 {{- end }}
-{{- if .Values.policyenforcer.enabled }}
-policyenforcer:
-  enabled: true
-{{- end }}
 {{- if (include "xray.imagePullSecretsStrList" .) }}
 executionService:
   pullSecret:

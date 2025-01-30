@@ -449,7 +449,7 @@ Return the proper xray chart image names
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "panoramic")) }}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer") (eq $indexReference "panoramic")) }}
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
@@ -459,7 +459,7 @@ Return the proper xray chart image names
     {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
     {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "panoramic")) }}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer") (eq $indexReference "panoramic")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
@@ -526,7 +526,7 @@ for file in $(ls * | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then c
 Resolve xray requiredServiceTypes value
 */}}
 {{- define "xray.router.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfxr,jfxana,jfxidx,jfxpst,jfob" -}}
+{{- $requiredTypes := "jfxr,jfxana,jfxidx,jfxpst,jfxpe,jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}
 
@@ -534,7 +534,7 @@ Resolve xray requiredServiceTypes value
 Resolve xray ipa requiredServiceTypes value
 */}}
 {{- define "xray.router.ipa.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfxana,jfxidx,jfxpst,jfob" -}}
+{{- $requiredTypes := "jfxana,jfxidx,jfxpst,jfxpe,jfob" -}}
 {{- $requiredTypes -}}
 {{- end -}}
 
@@ -624,6 +624,9 @@ Resolve autoscalingQueues value for ipa
     queueName: {{ .name }}
     mode: QueueLength
     value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
   authenticationRef:
     name: keda-trigger-auth-rabbitmq-conn-xray
 {{- end }}
@@ -643,6 +646,9 @@ Resolve autoscalingQueues value for server
     queueName: {{ .name }}
     mode: QueueLength
     value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
   authenticationRef:
     name: keda-trigger-auth-rabbitmq-conn-xray
 {{- end }}

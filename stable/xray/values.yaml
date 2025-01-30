@@ -54,6 +54,10 @@ global:
         waitForPreviousPodsOnInitialStartup: true
         vhost: xray_haq
 
+  autoscaling:
+    keda:
+      annotations: {}
+
 deployment:
   strategy:
     type: RollingUpdate
@@ -75,7 +79,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.5.1734497536
+    tag: 9.5.1736404155
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -322,6 +326,7 @@ autoscaling:
   ## Ref: https://keda.sh/docs/2.10/deploy/
   keda:
     enabled: false
+    annotations: {}
     scaleUp:
       stabilizationWindowSeconds: 90
       policies:
@@ -464,7 +469,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.13.6-debian-12-r1
+    tag: 3.13.7-debian-12-r5
   extraPlugins: "rabbitmq_management"
 
   auth:
@@ -650,7 +655,7 @@ rabbitmq:
     image:
       registry: releases-docker.jfrog.io
       repository: bitnami/kubectl
-      tag: 1.24.12
+      tag: 1.32.0
     ## Service account for the pre-upgrade hook to perform rabbitmq migration
     serviceAccount:
       create: true
@@ -1107,7 +1112,6 @@ panoramic:
   #    cpu: "1"
 
 policyenforcer:
-  enabled: false
   name: xray-policyenforcer
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1472,7 +1476,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.31.5
+    tag: 1.31.11
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1640,6 +1644,7 @@ autoscalingServer:
  ## Ref: https://keda.sh/docs/2.10/deploy/
  keda:
    enabled: false
+   annotations: {}
    scaleUp:
      stabilizationWindowSeconds: 90
      policies:
@@ -1654,9 +1659,7 @@ autoscalingServer:
          periodSeconds: 30
    pollingInterval: 10
    cooldownPeriod: 10
-   queues:
-     - name: policyEnforcer
-       value: "100"
+   queues: []
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -1671,6 +1674,7 @@ autoscalingIpa:
  ## Ref: https://keda.sh/docs/2.10/deploy/
  keda:
    enabled: false
+   annotations: {}
    scaleUp:
      stabilizationWindowSeconds: 90
      policies:
@@ -1696,6 +1700,14 @@ autoscalingIpa:
        value: "100"
      - name: policyEnforcer
        value: "100"
+
+ipa:
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
 ###################################################################################
 
 
