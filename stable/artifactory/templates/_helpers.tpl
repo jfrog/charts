@@ -472,7 +472,6 @@ Calculate the systemYaml from the unstructured text input
 Metrics enabled
 */}}
 {{- define "metrics.enabled" -}}
-shared:
   metrics:
     enabled: true
 {{- end }}

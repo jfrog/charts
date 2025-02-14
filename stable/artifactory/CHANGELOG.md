@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.104.5] - Jan 24, 2025
+## [107.104.7] - Feb 07, 2025
 * Added new RTFS service
 * Added new Topology service
 * Added new Onemodel service
@@ -12,6 +12,9 @@ All changes to this chart will be documented in this file.
 * Added default extra javaOpts support in system yaml for topology
 * Modified the RTFS chart and the topology probe values
 * Fixing secret based annotations for RTFS deployment
+* Fixed `shared` block in system.yaml to include all properties
+* Fixed RTFS jfrogUrl issue for platform chart
+* Fixed disabling onemodel using `onemodel.enabled=false`
 
 ## [107.102.0] - Nov 26, 2024
 * Remove the Xms and Xmx with InitialRAMPercentage and MaxRAMPercentage if they are available in extra_java_options
