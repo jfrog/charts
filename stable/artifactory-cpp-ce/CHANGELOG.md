@@ -1,7 +1,7 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.104.5] - Dec 5, 2024
+## [107.104.7] - Dec 5, 2024
 * Removed obsolete values [GH-1932](https://github.com/jfrog/charts/pull/1932)
 
 ## [107.81.0] - Feb 20, 2024

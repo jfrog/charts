@@ -10,7 +10,9 @@ shared:
   featureToggler:
     worker: true
 {{- end }}
-{{ tpl (include "artifactory.metrics" .) . }}
+{{- with include "artifactory.metrics" . }}
+  {{- . | nindent 2 }}
+{{- end }}
   logging:
     consoleLog:
       enabled: {{ .Values.artifactory.consoleLog }}
@@ -145,7 +147,7 @@ jfconnect_service:
 {{- end }}
 
 onemodel:
-  enabled: {{ .Values.onemodel.enabled | default true }}
+  enabled: {{ .Values.onemodel.enabled }}
   {{- if .Values.onemodel.apolloYaml }}
   apolloYaml:
 {{ toYaml .Values.onemodel.apolloYaml | nindent 6 }}

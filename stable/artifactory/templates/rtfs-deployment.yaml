@@ -242,7 +242,7 @@ spec:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfrtfs"
             - name: JF_SHARED_JFROGURL
-              value: {{ include "rtfs.jfrogUrl" . }}
+              value: {{ tpl (include "rtfs.jfrogUrl" .) . }}
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
