@@ -34,6 +34,15 @@ To install the chart with the release name `jfrog-platform`
 helm upgrade --install jfrog-platform jfrog/jfrog-platform --namespace jfrog-platform --create-namespace 
 ```
 
+### Apply Sizing configurations to the Chart
+The JFrog Platform deployment architecture and its sizing requirements are described [here](https://jfrog.com/help/r/jfrog-platform-reference-architecture/jfrog-platform-reference-architecture).
+Note that sizings with more than one replica (HA) require an E/E+ license.
+To apply the chart with recommended sizing configurations :
+For example , for small sizings :
+```bash
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f sizing/platform-small.yaml --namespace platform --create-namespace
+````
+
 ### Upgrade Chart
 **NOTE:** If you are using bundled PostgreSQL, before upgrading the JFrog Platform chart, follow these steps:
 

@@ -1,0 +1,416 @@
+artifactory:
+  ##############################################################################################
+  # The medium sizing
+  # This size is just 2 replicas of the small size. Vertical sizing of all services is not changed
+  # [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
+  # hence this configuration will be overridden when enabling systemYamlOverride
+  ##############################################################################################
+  splitServicesToContainers: true
+  artifactory:
+    # Enterprise and above licenses are required for setting replicaCount greater than 1.
+    # Count should be equal or above the total number of licenses available for artifactory.
+    replicaCount: 2
+  
+    # Require multiple Artifactory pods to run on separate nodes
+    podAntiAffinity:
+      type: "hard"
+  
+    resources:
+      requests:
+        cpu: "1"
+        memory: 4Gi
+      limits:
+        # cpu: "10"
+        memory: 5Gi
+  
+    javaOpts:
+      other: >
+        -XX:InitialRAMPercentage=40
+        -XX:MaxRAMPercentage=70
+        -Dartifactory.async.corePoolSize=40
+        -Dartifactory.async.poolMaxQueueSize=10000
+        -Dartifactory.http.client.max.total.connections=50
+        -Dartifactory.http.client.max.connections.per.route=50
+        -Dartifactory.access.client.max.connections=75
+        -Dartifactory.metadata.event.operator.threads=3
+        -XX:MaxMetaspaceSize=512m
+        -Djdk.nio.maxCachedBufferSize=262144
+        -XX:MaxDirectMemorySize=256m
+    tomcat:
+      connector:
+        maxThreads: 300
+        extraConfig: 'acceptCount="600" acceptorThreadCount="2" compression="off" connectionLinger="-1" connectionTimeout="120000" enableLookups="false"'
+  
+    database:
+      maxOpenConnections: 50
+  
+    extraEnvironmentVariables:
+      - name: MALLOC_ARENA_MAX
+        value: "2"
+      - name: SKIP_WAIT_FOR_EXTERNAL_DB
+        value: "true"
+  
+  access:
+    tomcat:
+      connector:
+        maxThreads: 75
+    javaOpts:
+      other: >
+        -XX:InitialRAMPercentage=20
+        -XX:MaxRAMPercentage=60
+    database:
+      maxOpenConnections: 50
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1.5Gi
+      limits:
+        # cpu: 1
+        memory: 2Gi
+    extraEnvironmentVariables:
+      - name: MALLOC_ARENA_MAX
+        value: "2"
+      - name: SKIP_WAIT_FOR_EXTERNAL_DB
+        value: "true"
+        
+  router:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
+  
+  frontend:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 150Mi
+      limits:
+        # cpu: "2"
+        memory: 250Mi
+  
+  metadata:
+    database:
+      maxOpenConnections: 50
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
+  
+  onemodel:
+    resources:
+      requests:
+        cpu: 175m
+        memory: 140Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
+  
+  event:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+      limits:
+        # cpu: 500m
+        memory: 250Mi
+  
+  observability:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+      limits:
+        # cpu: 500m
+        memory: 250Mi
+  
+  jfconnect:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 50Mi
+      limits:
+        # cpu: 500m
+        memory: 250Mi
+  
+  topology:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 600Mi
+      limits:
+        memory: 900Mi
+    extraEnvironmentVariables:
+      - name: MALLOC_ARENA_MAX
+        value: "2"
+  
+  nginx:
+    replicaCount: 2
+    disableProxyBuffering: true
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
+      limits:
+        # cpu: "2"
+        memory: "500Mi"
+  
+  postgresql:
+    postgresqlExtendedConf:
+      maxConnections: "200"
+    primary:
+      affinity:
+        # Require PostgreSQL pod to run on a different node than Artifactory pods
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - artifactory
+              topologyKey: kubernetes.io/hostname
+    resources:
+      requests:
+        memory: 32Gi
+        cpu: "8"
+      limits:
+        memory: 32Gi
+        # cpu: "16"
+xray:
+  ##############################################################
+  # The medium sizing
+  # This size is just more replicas of the small size. Vertical sizing of all services is not changed
+  ##############################################################
+  
+  replicaCount: 1
+  databaseUpgradeReady: true
+  waitForDatabase: true
+  unifiedUpgradeAllowed: true
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 200
+    targetMemoryUtilizationPercentage: 800
+  
+  xray:
+    podAntiAffinity:
+      ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+      type: "hard"
+      topologyKey: "kubernetes.io/hostname"
+  
+  analysis:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: 250Mi
+      limits:
+        # cpu: "4"
+        memory: 10Gi
+  
+  indexer:
+    resources:
+      requests:
+        cpu: "300m"
+        memory: 550Mi
+      limits:
+        # cpu: "6"
+        memory: 8Gi
+  
+  persist:
+    resources:
+      requests:
+        cpu: "100m"
+        memory: 250Mi
+      limits:
+        # cpu: "4"
+        memory: 8Gi
+  
+  server:
+    resources:
+      requests:
+        cpu: "200m"
+        memory: 500Mi
+      limits:
+        # cpu: "4"
+        memory: 6Gi
+  
+  router:
+    resources:
+      requests:
+        cpu: "60m"
+        memory: 100Mi
+      limits:
+        # cpu: "1"
+        memory: 1Gi
+  
+  observability:
+    resources:
+      requests:
+        cpu: "10m"
+        memory: 25Mi
+      limits:
+        # cpu: "1"
+        memory: 250Mi
+  
+  panoramic:
+    enabled: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: 250Mi
+      limits:
+        # cpu: "4"
+        memory: 8Gi
+  
+  sbom:
+    enabled: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: 250Mi
+      limits:
+        # cpu: "4"
+        memory: 10Gi
+  
+  # PostgreSQL
+  ## Configuration values for the postgresql dependency
+  ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+  ##
+  postgresql:
+    postgresqlExtendedConf:
+      listenAddresses: "*"
+      maxConnections: "500"
+    resources:
+      requests:
+        memory: 32Gi
+        cpu: "8"
+      limits:
+        memory: 32Gi
+        # cpu: "18"
+    primary:
+      affinity:
+        # Require PostgreSQL pod to run on a different node than Xray pods
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - xray
+              topologyKey: kubernetes.io/hostname
+  
+  rabbitmq:
+    extraConfiguration: |-
+      vm_memory_high_watermark.absolute = 3G
+      {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+      raft.wal_max_size_bytes = 1048576
+      {{- end }}
+    resources:
+      requests:
+        cpu: "100m"
+        memory: 500Mi
+      limits:
+        # cpu: "2"
+        memory: 4Gi
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - xray
+            topologyKey: kubernetes.io/hostname
+distribution:
+  ##############################################################
+  # The medium sizing
+  # This is identical to the small sizing
+  ##############################################################
+  
+  unifiedUpgradeAllowed: true
+  databaseUpgradeReady: true
+  
+  replicaCount: 1
+  
+  distribution:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 700Mi
+      limits:
+        # cpu: "3"
+        memory: 1200Mi
+  
+    extraEnvironmentVariables:
+      - name: MALLOC_ARENA_MAX
+        value: "2"
+  
+    javaOpts:
+      other: >
+        -XX:InitialRAMPercentage=30
+        -XX:MaxRAMPercentage=60
+        -XX:+UseStringDeduplication
+        -XX:MaxMetaspaceSize=300m
+        -Djdk.nio.maxCachedBufferSize=262144
+        -XX:MaxDirectMemorySize=256m
+  
+  router:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        # cpu: "1"
+        memory: 1Gi
+  
+  observability:
+    resources:
+      requests:
+        cpu: 30m
+        memory: 30Mi
+      limits:
+        # cpu: "1"
+        memory: 50Mi
+  
+  redis:
+    resources:
+      requests:
+        cpu: 30m
+        memory: 50Mi
+      limits:
+        # cpu: "1"
+        memory: 150Mi
+  
+  postgresql:
+    postgresqlExtendedConf:
+      maxConnections: "50"
+    primary:
+      affinity:
+        # Require PostgreSQL pod to run on a different node than distribution pods
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - distribution
+              topologyKey: kubernetes.io/hostname
+    resources:
+      requests:
+        cpu: "50m"
+        memory: 200Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
+
