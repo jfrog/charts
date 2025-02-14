@@ -1,6 +1,10 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.0.1] - Feb 14, 2025
+* Upgrade initContainerSetupDBImage to postgres 16.6-alpine
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+
 ## [11.0.0] - Jan 30, 2025
 * **Important changes**
 * Upgrade rabbitmq chart version to 14.6.6
@@ -13,7 +17,7 @@ All changes to this chart will be documented in this file.
     * The effected keys present in default yaml have been aligned to the new path in 15.5.20
     * if you have customised any keys, make sure to validate it with the 15.5.20 chart
     * The statefulset will get deleted before upgrade through a preupgrade hook, as the updates on specific keys in sts is not allowed by kubernetes
-    * Support to change postgres admin password is removed, will be postgres
+    * Support to change postgres admin username is removed in postgres chart, will be postgres
 * Added new dependency chart for catalog with version `101.11.1` and defaults to `false`
 * Update dependency artifactory chart version to 107.104.5
 * Update dependency xray chart version to 103.111.9
