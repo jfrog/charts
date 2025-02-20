@@ -237,8 +237,12 @@ variable "namespace" {
   default = "jfrog"
 }
 
+variable "jfrog_charts_repository" {
+  default = "https://charts.jfrog.io"
+}
+
 variable "jfrog_platform_chart_version" {
-  default = "11.0.0"
+  default = "11.0.1"
 }
 
 variable "deploy_metrics_server" {
