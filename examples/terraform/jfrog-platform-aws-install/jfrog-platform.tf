@@ -11,67 +11,14 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 }
 
-## Until sizing specs are part of the jfrog-platform chart, we pull them from the individual charts that are inside the platform chart
-# Fetch the JFrog Platform Helm chart and untar it to the current directory so we can use the sizing files to create the final values files
+# Fetch the JFrog Platform Helm chart and untar it to the current directory so we can use the sizing yaml files
 resource "null_resource" "fetch_platform_chart" {
   provisioner "local-exec" {
     command = "rm -rf jfrog-platform-*.tgz"
   }
   provisioner "local-exec" {
-    command = "helm fetch jfrog-platform --version ${var.jfrog_platform_chart_version} --repo https://charts.jfrog.io --untar"
+    command = "helm fetch jfrog-platform --version ${var.jfrog_platform_chart_version} --repo ${var.jfrog_charts_repository} --untar"
   }
-}
-
-################### Artifactory sizing
-## Prepare the final values files for the JFrog Platform sizing
-data "local_file" "artifactory_sizing" {
-  filename = "${path.module}/jfrog-platform/charts/artifactory/sizing/artifactory-${var.sizing}.yaml"
-  depends_on = [null_resource.fetch_platform_chart]
-}
-
-# Inject two spaces before all lines and load into a variable
-locals {
-  indented_artifactory_sizing = join("\n", [for line in split("\n", data.local_file.artifactory_sizing.content) : "  ${line}"])
-}
-
-# Create the new artifactory sizing YAML string
-locals {
-  new_artifactory_sizing = <<-EOT
-  artifactory:
-  ${local.indented_artifactory_sizing}
-  EOT
-}
-
-# Write the new Artifactory YAML to a file
-resource "local_file" "new_artifactory_sizing" {
-  filename = "${path.module}/jfrog-artifactory-${var.sizing}-adjusted.yaml"
-  content  = trimspace(local.new_artifactory_sizing)
-}
-
-################### Xray sizing
-## Prepare the final values files for the JFrog Platform sizing
-data "local_file" "xray_sizing" {
-  filename = "${path.module}/jfrog-platform/charts/xray/sizing/xray-${var.sizing}.yaml"
-  depends_on = [null_resource.fetch_platform_chart]
-}
-
-# Inject two spaces before all lines and load into a variable
-locals {
-  indented_xray_sizing = join("\n", [for line in split("\n", data.local_file.xray_sizing.content) : "  ${line}"])
-}
-
-# Create the new Xray sizing YAML string
-locals {
-  new_xray_sizing = <<-EOT
-  xray:
-  ${local.indented_xray_sizing}
-  EOT
-}
-
-# Write the new Xray YAML to a file
-resource "local_file" "new_xray_sizing" {
-  filename = "${path.module}/jfrog-xray-${var.sizing}-adjusted.yaml"
-  content  = trimspace(local.new_xray_sizing)
 }
 
 # Create an empty artifactory-license.yaml if missing
