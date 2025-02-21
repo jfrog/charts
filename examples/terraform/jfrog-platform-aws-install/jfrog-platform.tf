@@ -58,6 +58,12 @@ resource "local_file" "jfrog_platform_values" {
       user: "${var.xray_db_username}"
       password: "${var.xray_db_password}"
 
+  catalog:
+    database:
+      url: "postgres://${aws_db_instance.catalog_db.endpoint}/${var.catalog_db_name}?sslmode=require"
+      user: "${var.catalog_db_username}"
+      password: "${var.catalog_db_password}"
+
   EOT
   filename = "${path.module}/jfrog-custom.yaml"
 
