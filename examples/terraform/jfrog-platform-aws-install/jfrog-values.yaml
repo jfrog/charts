@@ -193,7 +193,7 @@ artifactory:
 
   databaseUpgradeReady: true
 
-# Enable Xray
+# Enable Xray and JAS 
 xray:
   enabled: true
   unifiedUpgradeAllowed: true
@@ -202,6 +202,10 @@ xray:
   common:
     persistence:
       enabled: false
+  serviceAccount: 
+    create: true
+  rbac: 
+    create: true
 
   ## Run on nodes marked with the label "group=xray"
   global:
@@ -220,6 +224,11 @@ rabbitmq:
   # Run on nodes marked with the label "group=xray"
   nodeSelector:
     group: "xray"
+
+
+# Catalog is enabled
+catalog:
+  enabled: true
 
 # Disable other services
 distribution:

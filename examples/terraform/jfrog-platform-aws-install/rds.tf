@@ -86,6 +86,35 @@ resource "aws_db_instance" "xray_db" {
   }
 }
 
+resource "aws_db_instance" "catalog_db" {
+  identifier       = "catalog-db"
+  engine           = "postgres"
+  engine_version   = var.rds_postgres_version
+  instance_class = (
+    var.catalog_rds_size_default
+  )
+
+  storage_type      = "gp3"
+  allocated_storage = (
+    var.catalog_rds_disk_size_default
+  )
+
+  max_allocated_storage  = var.catalog_rds_disk_max_size
+  storage_encrypted      = true
+
+  db_name                = var.catalog_db_name
+  username               = var.catalog_db_username
+  password               = var.catalog_db_password
+
+  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.jfrog_subnet_group.name
+  skip_final_snapshot    = true
+
+  tags = {
+    Group = var.common_tag
+  }
+}
+
 resource "aws_security_group" "rds_sg" {
   vpc_id = module.vpc.vpc_id
 

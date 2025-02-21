@@ -73,6 +73,18 @@ variable "artifactory_rds_disk_max_size" {
   default = 2000
 }
 
+variable "catalog_rds_size_default" {
+  default = "db.t4g.micro"
+}
+
+variable "catalog_rds_disk_size_default" {
+  default = 20
+}
+
+variable "catalog_rds_disk_max_size" {
+  default = 50
+}
+
 variable "xray_rds_size_default" {
   default = "db.m7g.xlarge"
 }
@@ -227,6 +239,22 @@ variable "xray_db_password" {
   description = "The password for the database"
   sensitive   = true
   default     = "PasswordX321"
+}
+
+variable "catalog_db_name" {
+  description = "The database name"
+  default     = "ctlg"
+}
+
+variable "catalog_db_username" {
+  description = "The username for the database"
+  default     = "ctlg"
+}
+
+variable "catalog_db_password" {
+  description = "The password for the database"
+  sensitive   = true
+  default     = "PasswordC321"
 }
 
 variable "cluster_name" {

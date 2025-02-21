@@ -73,8 +73,7 @@ helm upgrade --install jfrog jfrog/jfrog-platform \
   --namespace <namesapce>> --create-namespace \
   -f ./jfrog-values.yaml \
   -f ./artifactory-license.yaml \
-  -f ./jfrog-artifactory-<sizing>-adjusted.yaml \
-  -f ./jfrog-xray--<sizing>-adjusted.yaml \
+  -f ./jfrog-platform/sizing/platform-<sizing>-.yaml \
   -f ./jfrog-custom.yaml \
   --timeout 600s
 ```
