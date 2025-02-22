@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.111.14] - Feb 21, 2025
+* Fixed Xray chart indentation issue that occurs when setting external RabbitMQ credentials. 
+
 ## [103.111.13] - Jan 15, 2025
 * Fix an issue with a warning in the rabbitmq password check
 * Updated rabbitmq multi-arch tag version to to `3.13.7-debian-12-r5`
