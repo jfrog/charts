@@ -1027,16 +1027,16 @@ spec:
       {{ include "xray.envVariables" . | indent 8 }}
       {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
-          - name: JF_SHARED_RABBITMQ_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
-                key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
-          - name: JF_SHARED_RABBITMQ_URL
-            valueFrom:
-              secretKeyRef:
-                name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
-                key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
       {{- end }}
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
