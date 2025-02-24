@@ -25,7 +25,7 @@ metadata:
 {{- end }}
 spec:
 {{- if not .Values.autoscalingIpa.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCountIpa }}
 {{- end }}
 {{- with .Values.deployment.strategy }}
   strategy:
