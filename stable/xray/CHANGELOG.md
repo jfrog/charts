@@ -1,7 +1,6 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-
 ## [103.111.15] - Jan 15, 2025
 * Fix an issue with a warning in the rabbitmq password check
 * Updated rabbitmq multi-arch tag version to to `3.13.7-debian-12-r5`
