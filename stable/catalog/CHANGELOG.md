@@ -1,5 +1,5 @@
 # JFrog Catalog Chart Changelog
 All changes to this chart will be documented in this file.
 
-[101.0.0] - August 2, 2024
+[101.13.0] - Feb 26, 2025
 Initial release
