@@ -11,4 +11,4 @@ Some of the repository examples use JFrog Artifactory as the remote backend (com
 To set up Terraform with Artifactory, follow the instructions in the [Terraform Artifactory Backend](https://jfrog.com/help/r/jfrog-artifactory-documentation/terraform-backend-repository-structure) documentation.
 
 ## Examples
-1. Create the needed [AWS infrastructure for running JFrog Artifactory and Xray in AWS](jfrog-platform-aws-install) using RDS, S3, and EKS. This uses the [JFrog Platform Helm Chart](https://github.com/jfrog/charts/tree/master/stable/jfrog-platform) to install Artifactory and Xray
+1. Create the needed [AWS infrastructure for running JFrog Artifactory and Xray in AWS](jfrog-platform-aws-install) using RDS, S3, and EKS. This uses the [JFrog Platform Helm Chart](https://github.com/jfrog/charts/tree/master/stable/jfrog-platform) to install Artifactory , Catalog, Curation, Xray and JAS

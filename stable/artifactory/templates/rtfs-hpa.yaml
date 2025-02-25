@@ -1,0 +1,32 @@
+{{- if .Values.rtfs.autoscaling.enabled }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "artifactory.fullname" . }}
+    chart: {{ template "artifactory.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "rtfs.fullname" . }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "rtfs.fullname" . }}
+  minReplicas: {{ .Values.rtfs.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.rtfs.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.rtfs.autoscaling.targetCPUUtilizationPercentage }}
+      {{- if .Values.rtfs.autoscaling.metrics }}
+{{ tpl (include "rtfs.metrics" .) . | indent 4 }}
+      {{- end }}
+{{- end }}

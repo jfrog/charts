@@ -806,7 +806,7 @@ spec:
 {{ tpl .Values.metadata.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
-      {{- if .Values.onemodel.enabled }}
+      {{- if and .Values.onemodel.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
       - name: {{ .Values.onemodel.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}

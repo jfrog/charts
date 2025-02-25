@@ -671,3 +671,12 @@ Resolve customVolumeMounts rtfs value
 {{- .Values.rtfs.customVolumeMounts -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve RTFS autoscalling metrics
+*/}}
+{{- define "rtfs.metrics" -}}
+{{- if .Values.rtfs.autoscaling.metrics -}}
+{{- .Values.rtfs.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
