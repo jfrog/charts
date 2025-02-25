@@ -286,7 +286,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.149.0
+    tag: 7.149.1
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -1971,15 +1971,23 @@ rtfs:
   replicaCount: 1
   internalRestPort: 8025
   apiContext: artifactory/service/rtfs
-  database:
-    type: "postgresql"
-    driver: "org.postgresql.Driver"
-    url: ""
-    username: ""
-    password: ""
   persistence:
     mountPath: "/var/opt/jfrog/federation"
     federationProperties: {}
+  ## Apply horizontal pod auto scaling on distribution pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 75  # Target memory usage is 75% of the allocated memory per pod
   ## @param federationProperties Configuration to be added to the config map, overriding Spring configuration.
   ## @param customFederationPropertiesConfig Specifies the name of a custom configMap to use instead of the default one.
   ## The name of the custom configMap will be initialized from the value of customFederationPropertiesConfig.

@@ -636,3 +636,12 @@ Resolve RTFS customInitContainers value
 {{- .Values.rtfs.customInitContainers -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Resolve RTFS autoscalling metrics
+*/}}
+{{- define "rtfs.metrics" -}}
+{{- if .Values.rtfs.autoscaling.metrics -}}
+{{- .Values.rtfs.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
