@@ -1,5 +1,5 @@
 # JFrog Platform Installation in AWS with Terraform
-This example will prepare the AWS infrastructure and services required to run Artifactory and Xray (installed with the [jfrog-platform Helm Chart](https://github.com/jfrog/charts/tree/master/stable/jfrog-platform)) using Terraform:
+This example will prepare the AWS infrastructure and services required to run Artifactory , Catalog, Curation, Xray and JAS  (installed with the [jfrog-platform Helm Chart](https://github.com/jfrog/charts/tree/master/stable/jfrog-platform)) using Terraform:
 1. The AWS VPC
 2. RDS (PostgreSQL) as the database for each application
 2. S3 as the Artifactory object storage
