@@ -257,7 +257,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.0.1-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.0.3-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -313,6 +313,12 @@ xray:
       password: password
       url: '{{ include "xray.rabbitmq.extRabbitmq.url" . }}'
       erlangCookie: secretcookie
+  ## To enable JFrog Advanced Security(JAS), uncomment below section
+  ## https://jfrog.com/help/r/jfrog-installation-setup-documentation/install-jfrog-advanced-security-on-your-self-hosted-environment-with-helm
+  # serviceAccount:
+  #   create: true
+  # rbac:
+  #   create: true
 
 catalog:
   enabled: false

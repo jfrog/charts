@@ -12,7 +12,7 @@
 ## Chart Details
 This chart will do the following:
 
-* Deploy JFrog Platform (artifactory, xray, catalog, worker and distribution). Fully customizable.
+* Deploy JFrog Platform (Artifactory, Xray, Catalog, Curation, JAS, Worker and Distribution). Fully customizable.
 * Deploy a PostgreSQL database using the bitnami/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy a Rabbitmq using the bitnami/rabbitmq chart (can be changed)
 * Deploy an optional Nginx server
@@ -39,6 +39,7 @@ The JFrog Platform deployment architecture and its sizing requirements are descr
 Note that sizings with more than one replica (HA) require an E/E+ license.
 To apply the chart with recommended sizing configurations :
 For example , for small sizings :
+
 ```bash
 helm upgrade --install jfrog-platform jfrog/jfrog-platform -f sizing/platform-small.yaml --namespace platform --create-namespace
 ````
@@ -137,6 +138,10 @@ If you want to keep managing the artifactory license using the same method, you 
 This chart would provide flexibility to enable one or more of the jfrog products.
 1. Xray
 2. Distribution
+3. Worker
+4. Catalog
+5. Curation
+6. JAS
 
 For example to enable distribution with artifactory, you can refer the following yaml and pass it during install.
 customvalues.yaml
