@@ -1,6 +1,15 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.0.3] - Feb 26, 2025
+* Fixed sizing files
+
+## [11.0.2] - Feb 26, 2025
+* Added instructions to enable JFrog Advanced Security(JAS) in values.yaml
+* Update dependency artifactory chart version to 107.104.10
+* Update dependency xray chart version to 103.111.15
+* Update dependency catalog chart version to 101.13.0
+
 ## [11.0.1] - Feb 14, 2025
 * Upgrade initContainerSetupDBImage to postgres 16.6-alpine
 * Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)

@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 7.104.7
+appVersion: 7.104.10
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -12,15 +12,15 @@ dependencies:
 - condition: artifactory.enabled
   name: artifactory
   repository: https://charts.jfrog.io/
-  version: 107.104.7
+  version: 107.104.10
 - condition: xray.enabled
   name: xray
   repository: https://charts.jfrog.io/
-  version: 103.111.13
+  version: 103.111.15
 - condition: catalog.enabled
   name: catalog
   repository: https://charts.jfrog.io/
-  version: 101.11.1
+  version: 101.13.0
 - condition: distribution.enabled
   name: distribution
   repository: https://charts.jfrog.io/
@@ -41,6 +41,9 @@ keywords:
 - jfrog
 - devops
 - worker
+- catalog
+- curation
+- jas
 kubeVersion: '>= 1.19.0-0'
 maintainers:
 - email: installers@jfrog.com
@@ -49,4 +52,4 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 11.0.1
+version: 11.0.3
