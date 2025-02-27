@@ -63,7 +63,7 @@ helm repo update
 ```
 
 ### Install JFrog Platform
-Once done, install the JFrog Platform (Artifactory and Xray) using the Helm Chart with the following command.
+Once done, install the JFrog Platform (Artifactory, Catalog, Curation, Xray and JAS) using the Helm Chart with the following command.
 
 Terraform will create the needed configuration files to be used for the `helm install` command.
 This command will auto generate and be writen to the console when you run the `Terraform apply` command.
