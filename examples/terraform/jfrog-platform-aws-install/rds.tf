@@ -90,14 +90,11 @@ resource "aws_db_instance" "catalog_db" {
   identifier       = "catalog-db"
   engine           = "postgres"
   engine_version   = var.rds_postgres_version
-  instance_class = (
-    var.catalog_rds_size_default
-  )
+  instance_class   = var.catalog_rds_size_default
 
   storage_type      = "gp3"
-  allocated_storage = (
-    var.catalog_rds_disk_size_default
-  )
+  allocated_storage = var.catalog_rds_disk_size_default
+
 
   max_allocated_storage  = var.catalog_rds_disk_max_size
   storage_encrypted      = true

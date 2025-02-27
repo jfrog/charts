@@ -270,7 +270,7 @@ variable "jfrog_charts_repository" {
 }
 
 variable "jfrog_platform_chart_version" {
-  default = "11.0.1"
+  default = "11.0.3"
 }
 
 variable "deploy_metrics_server" {
