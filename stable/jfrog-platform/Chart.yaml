@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 7.104.10
+appVersion: 7.104.12
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -12,11 +12,11 @@ dependencies:
 - condition: artifactory.enabled
   name: artifactory
   repository: https://charts.jfrog.io/
-  version: 107.104.10
+  version: 107.104.12
 - condition: xray.enabled
   name: xray
   repository: https://charts.jfrog.io/
-  version: 103.111.15
+  version: 103.111.20
 - condition: catalog.enabled
   name: catalog
   repository: https://charts.jfrog.io/
@@ -52,4 +52,4 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 11.0.3
+version: 11.0.4

@@ -1,7 +1,7 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
-## [11.0.3] - Feb 26, 2025
+## [11.0.4] - March 12, 2025
 * Fixed sizing files
 
 ## [11.0.2] - Feb 26, 2025
