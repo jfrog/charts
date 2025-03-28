@@ -66,7 +66,7 @@ artifactory:
         cpu: 500m
         memory: 1.5Gi
       limits:
-        # cpu: 1
+        # cpu: "1"
         memory: 2Gi
     extraEnvironmentVariables:
       - name: MALLOC_ARENA_MAX
@@ -184,6 +184,23 @@ artifactory:
         memory: 8Gi
         # cpu: "8"
   
+  evidence:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        # cpu: "1"
+        memory: 1Gi
+  
+  rtfs:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 3500Mi
+      limits:
+        # cpu: "2"
+        memory: 3500Mi
 xray:
   ##############################################################
   # The xsmall sizing

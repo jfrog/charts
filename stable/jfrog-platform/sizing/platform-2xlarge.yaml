@@ -65,7 +65,7 @@ artifactory:
         cpu: 1
         memory: 2Gi
       limits:
-        # cpu: 2
+        # cpu: "2"
         memory: 4Gi
     extraEnvironmentVariables:
       - name: MALLOC_ARENA_MAX
@@ -181,6 +181,24 @@ artifactory:
       limits:
         memory: 256Gi
         # cpu: "128"
+  
+  evidence:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 4Gi
+      limits:
+        # cpu: "2"
+        memory: 4Gi
+  
+  rtfs:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 3500Mi
+      limits:
+        # cpu: "2"
+        memory: 3500Mi
 xray:
   ##############################################################
   # The 2xlarge sizing
