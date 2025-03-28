@@ -182,6 +182,24 @@ artifactory:
       limits:
         memory: 32Gi
         # cpu: "16"
+  
+  evidence:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 500Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
+  
+  rtfs:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 3500Mi
+      limits:
+        # cpu: "2"
+        memory: 3500Mi
 xray:
   ##############################################################
   # The medium sizing
