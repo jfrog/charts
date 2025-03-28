@@ -65,7 +65,7 @@ access:
       cpu: 1
       memory: 2Gi
     limits:
-      # cpu: 2
+      # cpu: "2"
       memory: 4Gi
   extraEnvironmentVariables:
     - name: MALLOC_ARENA_MAX
@@ -182,3 +182,21 @@ postgresql:
     limits:
       memory: 128Gi
       # cpu: "64"
+
+evidence:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 500Mi
+    limits:
+      # cpu: "2"
+      memory: 1Gi
+
+rtfs:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 3500Mi
+    limits:
+      # cpu: "2"
+      memory: 3500Mi
