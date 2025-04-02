@@ -197,8 +197,6 @@ router:
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
     insecure: true
-    url: http://tenant1-artifactory:8082
-    grpcUrl: tenant1-artifactory:8082
   internalPort: 8046
   externalPort: 8082
   tlsEnabled: false
@@ -230,7 +228,7 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -243,7 +241,7 @@ router:
   #       command:
   #         - sh
   #         - -c
-  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
   #     initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
   #     periodSeconds: 5
   #     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -256,7 +254,7 @@ router:
   #       command:
   #         - sh
   #         - -c
-  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
   #     initialDelaySeconds: 0
   #     failureThreshold: 60
   #     periodSeconds: 5
