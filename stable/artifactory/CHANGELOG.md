@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.104.14] - Feb 17, 2025
+## [107.104.15] - Feb 17, 2025
 * Added new RTFS service
 * Added new Topology service
 * Added new Onemodel service

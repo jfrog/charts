@@ -204,11 +204,9 @@ spec:
           {{- end }}
           env:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-              value: ""
-            - name: JF_ROUTER_SERVICEREGISTRY_URL
-              value: "{{ default (tpl (required "\n\njfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "worker.jfrogUrl" .)) .) .Values.router.serviceRegistry.url }}/access"
-            - name: JF_ROUTER_SERVICEREGISTRY_GRPCADDRESS
-              value: "{{ default (include "worker.jfrogUrlHost" .) .Values.router.serviceRegistry.grpcUrl }}"
+              value: {{ include "worker.router.requiredServiceTypes" . }}
+            - name: JF_SHARED_JFROGURL
+              value: "{{ tpl (required "\n\njfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "worker.jfrogUrl" .)) . }}"
             - name: JF_SHARED_NODE_ID
               valueFrom:
                 fieldRef:
@@ -247,7 +245,7 @@ spec:
               command:
                 - sh
                 - -c
-                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
           {{- end }}
           {{- if .Values.router.customReadinessProbe }}
           readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customReadinessProbe "context" $) | nindent 12 }}
@@ -259,7 +257,7 @@ spec:
               command:
                 - sh
                 - -c
-                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
           {{- end }}
           {{- if .Values.router.customLivenessProbe }}
           livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customLivenessProbe "context" $) | nindent 12 }}
@@ -269,7 +267,7 @@ spec:
               command:
                 - sh
                 - -c
-                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "worker.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+                - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
             initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
             timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
           {{- end }}

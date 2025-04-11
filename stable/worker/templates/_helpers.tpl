@@ -236,3 +236,14 @@ Calculate the systemYaml from the unstructured text input
 {{- define "worker.systemYaml" -}}
 {{ include (print $.Template.BasePath "/_system-yaml-render.tpl") . }}
 {{- end -}}
+
+{{/*
+Resolve worker requiredServiceTypes value
+*/}}
+{{- define "worker.router.requiredServiceTypes" -}}
+{{- $requiredTypes := "jfwks" -}}
+{{- if .Values.observability.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfob" -}}
+{{- end -}}
+{{- $requiredTypes -}}
+{{- end -}}

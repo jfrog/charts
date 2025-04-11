@@ -190,14 +190,11 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.149.0
+    tag: 7.155.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
     insecure: false
-    ## Service registry URL and gRPC URL use jfrogUrl by default. Override if needed
-    # url: https://workersvc-artifactory:8082
-    # grpcUrl: workersvc-artifactory:8082
   internalPort: 8046
   externalPort: 8082
   tlsEnabled: false
@@ -562,7 +559,7 @@ filebeat:
   name: worker-filebeat
   image:
     repository: docker.elastic.co/beats/filebeat
-    version: 7.17.26
+    version: 7.17.28
     pullPolicy: IfNotPresent
   logstashUrl: "logstash:5044"
 
@@ -628,7 +625,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.31.11
+    tag: 1.31.13
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
