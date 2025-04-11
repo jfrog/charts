@@ -1,7 +1,7 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.104.14] - Feb 14, 2024
+## [107.104.15] - Feb 14, 2024
 * Fixed an issue by disabling a pro-only service (Onemodel)
 * Updated federation key to rtfs in cpp, jcr and oss chart
 
