@@ -9,6 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: {{ template "artifactory.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "artifactory.serviceAccountName" . }}

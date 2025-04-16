@@ -4,6 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "artifactory.fullname" . }}-filebeat-config
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
