@@ -215,3 +215,13 @@ Return the proper catalog chart image names
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Custom certificate copy command
+*/}}
+{{- define "catalog.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.persistence.mountPath }}/etc/security/keys/trusted;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
+{{- end -}}

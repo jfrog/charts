@@ -15,6 +15,11 @@ global:
   # masterKey:
   # joinKey:
 
+  ## certificates added to this secret will be copied to $JFROG_HOME/catalog/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+
   systemYamlOverride:
     ## You can use a pre-existing secret by specifying existingSecret
     existingSecret: ""
@@ -47,6 +52,11 @@ image:
   ##   - myRegistryKeySecretName
   ##
   pullSecrets: []
+
+## certificates added to this secret will be copied to $JFROG_HOME/catalog/var/etc/security/keys/trusted directory
+customCertificates:
+  enabled: false
+  # certificateSecretName:
 
 ## Specify common probes parameters
 probes:
@@ -477,7 +487,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.4.1134
+    tag: 9.5.1742914212
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
