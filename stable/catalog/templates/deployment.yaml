@@ -120,6 +120,28 @@ spec:
               mountPath: "/tmp/etc/system.yaml"
               subPath: system.yaml
           {{- end }}
+        {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: copy-custom-certificates
+          image: {{ include "catalog.initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- toYaml (omit .Values.containerSecurityContext "enabled") | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+          - 'bash'
+          - '-c'
+          - >
+{{ include "catalog.copyCustomCerts" . | indent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+        {{- end }}
       containers:
         - name: catalog
           image: {{ include "catalog.getImageInfoByValue" (list . "catalog") }}
@@ -252,6 +274,12 @@ spec:
 {{ toYaml . | indent 12 }}
         {{- end }}
       volumes:
+      # ca-certs secret
+      {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.customCertificates.certificateSecretName }}
+      {{- end }}
       {{- if or .Values.customVolumes .Values.global.customVolumes }}
       {{ tpl (include "catalog.customVolumes" .) . | nindent 8 }}
       {{- end }}
