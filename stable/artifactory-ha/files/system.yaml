@@ -14,8 +14,14 @@ shared:
   {{- . | nindent 2 }}
 {{- end }}
   logging:
+    {{- if .Values.logging.logToStdoutJson }}
+    enableJsonConsoleLogAppenders: {{ .Values.logging.logToStdoutJson }}
+    {{- end }}
     consoleLog:
       enabled: {{ .Values.artifactory.consoleLog }}
+      {{- if .Values.logging.logToStdoutJson }}
+      format: json
+      {{- end }}
   extraJavaOpts: >
     -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.artifactory.terminationGracePeriodSeconds 1000 }}
     -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
@@ -58,10 +64,10 @@ shared:
     allowNonPostgresql: {{ .Values.database.allowNonPostgresql }}
   {{- if .Values.postgresql.enabled }}
     type: postgresql
-    url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+    url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.primary.service.ports.postgresql }}/{{ .Values.postgresql.auth.database }}"
     host: ""
     driver: org.postgresql.Driver
-    username: "{{ .Values.postgresql.postgresqlUsername }}"
+    username: "{{ .Values.postgresql.auth.username }}"
   {{ else }}
     type: "{{ .Values.database.type }}"
     driver: "{{ .Values.database.driver }}"
@@ -89,10 +95,8 @@ frontend:
   session:
     timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
 access:
-  runOnArtifactoryTomcat: {{ .Values.access.runOnArtifactoryTomcat | default false }}
   database:
     maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
-  {{- if not (.Values.access.runOnArtifactoryTomcat | default false) }}
   extraJavaOpts: >
   {{- if .Values.splitServicesToContainers }}
     -XX:InitialRAMPercentage=20
@@ -101,7 +105,6 @@ access:
   {{- with .Values.access.javaOpts }}
   {{- if .other }}
     {{ .other }}
-  {{- end }}
   {{- end }}
   {{- end }}
   tomcat:
@@ -178,6 +181,28 @@ topology:
 {{- else }}
 topology:
   enabled: {{ .Values.topology.enabled }}
+{{- end }}
+{{- if .Values.jfconfig.enabled }}
+jfconfig:
+  enabled: {{ .Values.jfconfig.enabled }}
+  database:
+    maxOpenConnections: {{ .Values.jfconfig.database.maxOpenConnections }}
+  port: {{ .Values.jfconfig.internalPort }}
+  extraJavaOpts: >
+    -XX:+UseStringDeduplication
+    -XX:+UseG1GC
+  {{- if .Values.splitServicesToContainers }}
+    -XX:InitialRAMPercentage=20
+    -XX:MaxRAMPercentage=70
+  {{- end }}
+  {{- with .Values.jfconfig.javaOpts }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}
+{{- else }}
+jfconfig:
+  enabled: {{ .Values.jfconfig.enabled }}
 {{- end }}
 {{- if .Values.event.webhooks }}
 event:

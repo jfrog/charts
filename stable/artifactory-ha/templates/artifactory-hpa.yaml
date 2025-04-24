@@ -7,16 +7,16 @@ apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
   labels:
-    app: {{ template "artifactory.name" . }}
-    chart: {{ template "artifactory.chart" . }}
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-  name: {{ template "artifactory.fullname" . }}
+  name: {{ template "artifactory-ha.fullname" . }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: StatefulSet
-    name: {{ template "artifactory.fullname" . }}
+    name: {{ template "artifactory-ha.primary.name" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
@@ -27,6 +27,6 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
       {{- if .Values.autoscaling.metrics }}
-{{ tpl (include "artifactory.hpametrics" .) . | indent 4 }}
+{{ tpl (include "artifactory-ha.hpametrics" .) . | indent 4 }}
       {{- end }}
 {{- end }}
