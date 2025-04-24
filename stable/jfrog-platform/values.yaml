@@ -87,6 +87,7 @@ postgresql:
 
   upgradeHookSTSDelete:
     enabled: true
+    annotations: {}
     image:
       registry: "{{ .Values.global.imageRegistry }}"
       repository: bitnami/kubectl
@@ -157,6 +158,9 @@ rabbitmq:
     username: admin
     password: password
     erlangCookie: secretcookie
+    ## Alternatively, you can use a pre-existing secret with a key called rabbitmq-password by specifying existingPasswordSecret.
+    ## By default, the secret name '{{ .Release.Name }}-xray-rabbitmq-creds' will be used and passed to the Xray section as an external RabbitMQ. Please avoid using the same name.
+    # existingPasswordSecret: <name-of-existing-secret>
   ## To support upgrade from 3.8.x to 3.11.x , featureFlags are needed
   ## ref: https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
   featureFlags: drop_unroutable_metric,empty_basic_get_metric,implicit_default_bindings,maintenance_mode_status,quorum_queue,stream_queue,user_limits,virtual_host_metadata
@@ -168,45 +172,8 @@ rabbitmq:
   extraEnvVars:
     - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
       value: "+S 2:2 +sbwt none +sbwtdcpu none +sbwtdio none"
-  extraSecretsPrependReleaseName: true
-  extraSecrets:
-    load-definition:
-      load_definition.json: |
-        {
-          "vhosts": [
-            {
-              "name": "xray"
-            }
-          ],
-          "users": [
-            {
-              "name": "{{ .Values.auth.username }}",
-              "password": "{{ .Values.auth.password }}",
-              "tags": "administrator"
-            }
-          ],
-          "permissions": [
-          {
-            "user": "admin",
-            "vhost": "xray",
-            "configure": ".*",
-            "write": ".*",
-            "read": ".*"
-          }
-          ],
-          "policies": [
-            {
-              "name": "ha-all",
-              "apply-to": "all",
-              "pattern": ".*",
-              "vhost": "xray",
-              "definition": {
-                "ha-mode": "all",
-                "ha-sync-mode": "automatic"
-              }
-            }
-          ]
-        }
+  ## Specifies the name of an existing Kubernetes Secret containing the RabbitMQ definition.
+  # The chart will create a secret named '{{ .Release.Name }}-load-definition' and load the definition from the file `files/load_definition.json`.
   loadDefinition:
     enabled: true
     existingSecret: '{{ .Release.Name }}-load-definition'
@@ -216,6 +183,7 @@ rabbitmq:
   migration:
     ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
     enabled: true
+    annotations: {}
     image:
       registry: "{{ .Values.global.imageRegistry }}"
       repository: bitnami/kubectl
@@ -257,7 +225,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.0.6-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.1.0-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -309,10 +277,19 @@ xray:
   rabbitmq:
     enabled: false
     external:
-      username: admin
-      password: password
-      url: '{{ include "xray.rabbitmq.extRabbitmq.url" . }}'
       erlangCookie: secretcookie
+      ## The chart will create a secret from the JFrog platform-specific RabbitMQ parameters and will use this secret to enable Xray to connect with RabbitMQ.
+      ## By default, the secret name will be '{{ .Release.Name }}-xray-rabbitmq-creds' and it will be passed to Xray as an external RabbitMQ.
+      secrets:
+        username:
+          name: '{{ .Release.Name }}-xray-rabbitmq-creds'
+          key: "username"
+        password:
+          name: '{{ .Release.Name }}-xray-rabbitmq-creds'
+          key: "password"
+        url:
+          name: '{{ .Release.Name }}-xray-rabbitmq-creds'
+          key: "url"
   ## To enable JFrog Advanced Security(JAS), uncomment below section
   ## https://jfrog.com/help/r/jfrog-installation-setup-documentation/install-jfrog-advanced-security-on-your-self-hosted-environment-with-helm
   # serviceAccount:
@@ -345,6 +322,7 @@ worker:
 preUpgradeHook:
   ## This is required to be performed to check if existing products like distribution already exists
   enabled: true
+  annotations: {}
   image:
     registry: "{{ .Values.global.imageRegistry }}"
     repository: bitnami/kubectl

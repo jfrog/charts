@@ -66,6 +66,9 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-upgrade"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.postgresql.upgradeHookSTSDelete.annotations }}
+{{ .Values.postgresql.upgradeHookSTSDelete.annotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   backoffLimit: 3
   template:
