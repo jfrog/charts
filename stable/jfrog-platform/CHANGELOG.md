@@ -1,6 +1,15 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.1.0] - Apr 24, 2025
+* Update dependency worker chart version to 101.133.0
+* Added support for the RabbitMQ password secret via `.Values.auth.existingPasswordSecret` [GH-1961](https://github.com/jfrog/charts/issues/1961)
+* Refactored rabbitmq's load_definition configuration (moved to files/load_definition.json instead of key in values.yaml)
+* Added support for annotations in hooks
+* Update dependency artifactory chart version to 107.111.4
+* Update dependency xray chart version to 103.111.25
+* Update dependency catalog chart version to 101.17.2
+
 ## [11.0.6] - Apr 10, 2025
 * Update dependency artifactory chart version to 107.104.15
 * Update dependency xray chart version to 103.111.23

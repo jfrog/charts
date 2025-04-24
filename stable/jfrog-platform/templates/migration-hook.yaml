@@ -80,6 +80,9 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-upgrade"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.rabbitmq.migration.annotations }}
+{{ .Values.rabbitmq.migration.annotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   template:
     metadata:

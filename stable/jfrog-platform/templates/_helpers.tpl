@@ -306,3 +306,32 @@ Create external Rabbitmq URL for platform chart scenario.
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create external Rabbitmq Username for platform chart scenario.
+*/}}
+{{- define "xray.rabbitmq.extRabbitmq.username" -}}
+{{- $username := .Values.rabbitmq.auth.username -}}
+{{- printf "%s" $username -}}
+{{- end -}}
+
+
+{{/*
+Create external Rabbitmq Password for platform chart scenario.
+*/}}
+{{- define "xray.rabbitmq.extRabbitmq.password" -}}
+{{- if not .Values.rabbitmq.auth.existingPasswordSecret -}}
+{{- $password := .Values.rabbitmq.auth.password -}}
+{{- printf "%s" $password -}}
+{{- else if .Values.rabbitmq.auth.existingPasswordSecret -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace .Values.rabbitmq.auth.existingPasswordSecret -}}
+{{- if $secret -}}
+{{- if index $secret.data "rabbitmq-password" -}}
+{{- $password := index $secret.data "rabbitmq-password" | b64dec -}}
+{{- printf "%s" $password -}}
+{{- else -}}
+{{- fail "Error: rabbitmq-password key not found in the Secret." -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}

@@ -76,6 +76,9 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-upgrade"
     "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded"
+    {{- if .Values.preUpgradeHook.annotations }}
+{{ .Values.preUpgradeHook.annotations  | toYaml | indent 4 }}
+    {{- end }}
 spec:
   backoffLimit: 0
   template:
