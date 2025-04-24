@@ -104,3 +104,22 @@ jconsole {{ template "artifactory.fullname" . }}:{{ .Values.artifactory.javaOpts
 * It is recommended to use nginx.hosts instead ingress.hosts 
 *******************************************************************************************************************************
 {{- end }}
+
+{{- if eq .Values.splitServicesToContainers false }}
+***************************************** WARNING *****************************************************************************
+* The value of 'splitServicesToContainers' is set to 'false'.                                                                 *
+* This configuration is being deprecated and will be removed in a future release.                                             *
+* To ensure compatibility with future updates, set the value to 'true'.                                                       *
+*******************************************************************************************************************************
+{{- end }}
+
+{{- if .Values.postgresql.enabled }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
+Use an external PostgreSQL database for production deployments.
+{{- if eq .Values.postgresql.auth.postgresPassword "postgres" }}
+Currently, you are using the default password for postgresql user.
+It is recommended to change it by setting an explicit password with `postgresql.auth.postgresPassword`
+{{- end }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+{{- end }}

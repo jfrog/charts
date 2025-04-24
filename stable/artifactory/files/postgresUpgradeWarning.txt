@@ -1,0 +1,14 @@
+Before upgrading the JFrog Artifactory chart, ensure you retain the same postgresql.image.tag. This is necessary to avoid failures if the new release includes an updated version of the PostgreSQL image.
+
+1. Get the current version of PostgreSQL in your installation:
+    $ kubectl get pod {{ .Release.Name }}-postgresql-0 --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.containers[*].image}";
+
+2. Copy the version from the output and set the following in your customvalues.yaml file:
+postgresql:
+  image:
+    tag: <postgres_version>
+
+3. If you are upgrading from a chart version earlier than 107.111.x, configure the PostgreSQL keys. For example, change postgresql.postgresqlPassword to postgresql.auth.password.
+
+4. Confirm the database upgrade readiness by setting databaseUpgradeReady in your customvalues.yaml file:
+databaseUpgradeReady: true

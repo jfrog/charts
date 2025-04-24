@@ -32,11 +32,14 @@ artifactory:
       artifactory: test
 
 postgresql:
-  postgresqlPassword: "password"
-  postgresqlExtendedConf:
-    maxConnections: "102"
-  persistence:
-    enabled: false
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+    extendedConfiguration: |
+      max_connections = 102
+
 rbac:
   create: true
 serviceAccount:
