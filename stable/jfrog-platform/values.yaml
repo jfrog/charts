@@ -87,7 +87,12 @@ postgresql:
 
   upgradeHookSTSDelete:
     enabled: true
+    # Anotations are added to spec.metadata.annotations (applies to POD)
     annotations: {}
+
+    # job.annotations are added to metadata.annotations (applies to JOB)
+    job:
+      annotations: {}
     image:
       registry: "{{ .Values.global.imageRegistry }}"
       repository: bitnami/kubectl
@@ -183,7 +188,12 @@ rabbitmq:
   migration:
     ## Migration is required to be performed only once hence this option can be disabled once the feature flags are enabled in rabbitmq.
     enabled: true
+    # Anotations are added to spec.metadata.annotations (applies to POD)
     annotations: {}
+
+    # job.annotations are added to metadata.annotations (applies to JOB)
+    job:
+      annotations: {}
     image:
       registry: "{{ .Values.global.imageRegistry }}"
       repository: bitnami/kubectl
@@ -322,7 +332,12 @@ worker:
 preUpgradeHook:
   ## This is required to be performed to check if existing products like distribution already exists
   enabled: true
+  # Anotations are added to spec.metadata.annotations (applies to POD)
   annotations: {}
+
+  # job.annotations are added to metadata.annotations (applies to JOB)
+  job:
+    annotations: {}
   image:
     registry: "{{ .Values.global.imageRegistry }}"
     repository: bitnami/kubectl
