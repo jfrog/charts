@@ -1,10 +1,25 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.111.25] - Jan 15, 2025
-* Fix an issue with a warning in the rabbitmq password check
+## [103.118.11] - April 2, 2025
+* Add affinity and tolerations to rabbitmq migration hook
+* Update rabbitmq tag version to `3.13.7-debian-12-r6`
+* Added support for json based console logging `.Values.logToStdoutJson`
+* Added support for the RabbitMQ password secret via `.Values.auth.existingPasswordSecret` [GH-1961](https://github.com/jfrog/charts/issues/1961)
+* Refactored rabbitmq's load_definition configuration (moved to files/load_definition.json instead of key in values.yaml)
+* **Important changes**
+* Upgrade rabbitmq chart version to 15.4.1
+* Update postgresql tag version to `16.6.0-debian-12-r2`
+
+## [103.117.0] - March 12, 2025
+* Added support for installing multiple Xray applications in a single namespace
+
+## [103.113.0] - Jan 14, 2025
 * Updated rabbitmq multi-arch tag version to to `3.13.7-debian-12-r5`
 * Updated bitnami kubectl multi-arch tag version to to `1.32.0`
+
+## [103.112.0] - Jan 2, 2025
+* Fix an issue with a warning in the rabbitmq password check
 
 ## [103.109.0] - Nov 27, 2024
 * **Important changes**
