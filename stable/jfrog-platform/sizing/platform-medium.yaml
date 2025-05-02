@@ -309,14 +309,20 @@ xray:
         # cpu: "4"
         memory: 10Gi
   
+  policyenforcer:
+    resources:
+      requests:
+        memory: "250Mi"
+        cpu: "60m"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+  
   # PostgreSQL
   ## Configuration values for the postgresql dependency
   ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
   ##
   postgresql:
-    postgresqlExtendedConf:
-      listenAddresses: "*"
-      maxConnections: "500"
     resources:
       requests:
         memory: 32Gi
@@ -325,6 +331,9 @@ xray:
         memory: 32Gi
         # cpu: "18"
     primary:
+      extendedConfiguration: |
+        max_connections = 500
+        listen_addresses = '*'
       affinity:
         # Require PostgreSQL pod to run on a different node than Xray pods
         podAntiAffinity:

@@ -109,7 +109,7 @@ Resolve unifiedSecretInstallation name
 {{- if not .Values.xray.unifiedSecretInstallation }}
 {{- printf "%s-%s" (include "xray.fullname" . ) "database-creds" -}}
 {{- else }}
-{{- printf "%s-%s" (include "xray.name" .) "unified-secret" -}}
+{{- printf "%s-%s" (include "xray.fullname" .) "unified-secret" -}}
 {{- end }}
 {{- end -}}
 {{- if eq .Chart.Name "catalog" -}}
