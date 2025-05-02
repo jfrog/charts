@@ -704,7 +704,7 @@ Set xray env variables if rabbitmq.tls is enabled.
 {{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName) -}}
 {{- include "xray.masterKeySecretName" . -}}
 {{- else -}}
-{{ template "xray.name" . }}-unified-secret
+{{ template "xray.fullname" . }}-unified-secret
 {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -714,7 +714,7 @@ Set xray env variables if rabbitmq.tls is enabled.
 {{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName) -}}
 {{- include "xray.joinKeySecretName" . -}}
 {{- else -}}
-{{ template "xray.name" . }}-unified-secret
+{{ template "xray.fullname" . }}-unified-secret
 {{- end -}}
 {{- end -}}
 {{- end -}}

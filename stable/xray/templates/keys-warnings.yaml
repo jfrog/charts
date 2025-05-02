@@ -1,5 +1,7 @@
-{{- if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "password") .Values.rabbitmq.enabled }}
+{{- if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "password") .Values.rabbitmq.enabled (not .Values.rabbitmq.external.secrets) (not .Values.rabbitmq.auth.existingPasswordSecret) }}
 {{- fail "\n\n**************************************\nSTOP! INSTALLATION not allowed with the default RabbitMQ password!\nPlease change the RabbitMQ password from the default value before proceeding with the installation.\n**************************************\n" }}
+{{- else if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "") .Values.rabbitmq.enabled (not .Values.rabbitmq.external.secrets) (not .Values.rabbitmq.auth.existingPasswordSecret) }}
+{{- fail "\n\n**************************************\nSTOP! INSTALLATION not allowed without RabbitMQ password!\nPlease provide the RabbitMQ password before proceeding with the installation.\n**************************************\n" }}
 {{- end }}
 
 {{- if .Values.postgresql.enabled }}
