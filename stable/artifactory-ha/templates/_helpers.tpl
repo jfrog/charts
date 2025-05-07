@@ -386,6 +386,9 @@ Resolve requiredServiceTypes value
 {{- if .Values.topology.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jftpl" -}}
 {{- end -}}
+{{- if .Values.jfconfig.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcfg" -}}
+{{- end -}}
 {{- if .Values.mc.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfmc" -}}
 {{- end -}}
@@ -594,6 +597,15 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "artifactory.serviceGrpc.fullname" -}}
 {{- printf "%s-%s" (include "artifactory-ha.fullname" .) .Values.artifactory.serviceGrpc.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Resolve Artifactory autoscalling metrics
+*/}}
+{{- define "artifactory-ha.hpametrics" -}}
+{{- if .Values.autoscaling.metrics -}}
+{{- .Values.autoscaling.metrics -}}
+{{- end -}}
 {{- end -}}
 
 {{/*

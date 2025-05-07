@@ -26,4 +26,7 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+      {{- if .Values.autoscaling.metrics }}
+{{ tpl (include "artifactory.hpametrics" .) . | indent 4 }}
+      {{- end }}
 {{- end }}

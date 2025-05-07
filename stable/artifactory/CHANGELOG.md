@@ -1,6 +1,31 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.111.4] - April 01, 2025
+* Added custom HPA metrics support for Artifactory service `autoscaling.metrics`
+* Updated rtfs version to `1.6.13`
+* Added a default resource preset for PostgreSQL as small
+* Updated postgresql upgrade warnings
+* Added new JFConfig service
+* Enabled Evidence service by default to true
+
+## [107.109.0] - March 04, 2025
+* Added a condition to enable evidence only on pro chart
+* Adjusted Nginx settings for better high-scale efficiency
+* Upgrade postgres image to 16.6.0-debian-12-r2
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+  * This has many changes related to key names and path in values yaml
+  * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+  * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+  * Support to change postgres admin username is removed in postgres chart, will be postgres
+  * Delete the postgresql statefulset and postgresql secret before the upgrade. for more information, please refer the postgresql upgrade [docs](https://github.com/bitnami/charts/tree/main/bitnami/postgresql#how-to-upgrade-to-version-1100)
+
+## [107.107.0] - Feb 17, 2025
+* Added support for json based console logging `.Values.logToStdoutJson`
+* Added `customPersistentVolumeClaim` as mount for all containers
+* Added a condition to enable onemodel only on pro chart
+
 ## [107.104.15] - Feb 17, 2025
 * Added new RTFS service
 * Added new Topology service

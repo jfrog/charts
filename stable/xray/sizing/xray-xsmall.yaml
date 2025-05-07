@@ -95,14 +95,19 @@ sbom:
       # cpu: "3"
       memory: 4Gi
 
+policyenforcer:
+  resources:
+    requests:
+      cpu: "30m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"
+
 # PostgreSQL
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
 ##
 postgresql:
-  postgresqlExtendedConf:
-    listenAddresses: "*"
-    maxConnections: "100"
   resources:
     requests:
       memory: 8Gi
@@ -111,6 +116,9 @@ postgresql:
       memory: 8Gi
       # cpu: "12"
   primary:
+    extendedConfiguration: |
+      max_connections = 100
+      listen_addresses = '*'
     affinity:
       # Require PostgreSQL pod to run on a different node than Xray pods
       podAntiAffinity:

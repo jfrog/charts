@@ -150,6 +150,17 @@ topology:
     - name: MALLOC_ARENA_MAX
       value: "8"
 
+jfconfig:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1000Mi
+    limits:
+      memory: 1500Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "8"
+
 nginx:
   replicaCount: 2
   disableProxyBuffering: true
@@ -162,9 +173,9 @@ nginx:
       memory: "1Gi"
 
 postgresql:
-  postgresqlExtendedConf:
-    maxConnections: "600"
   primary:
+    extendedConfiguration: |
+      max_connections = 600
     affinity:
       # Require PostgreSQL pod to run on a different node than Artifactory pods
       podAntiAffinity:
@@ -176,13 +187,13 @@ postgresql:
                   values:
                     - artifactory
             topologyKey: kubernetes.io/hostname
-  resources:
-    requests:
-      memory: 64Gi
-      cpu: "16"
-    limits:
-      memory: 64Gi
-      # cpu: "32"
+    resources:
+      requests:
+        memory: 64Gi
+        cpu: "16"
+      limits:
+        memory: 64Gi
+        # cpu: "32"
 
 evidence:
   resources:

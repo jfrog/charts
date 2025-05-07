@@ -26,11 +26,13 @@ artifactory:
         command: ["/bin/sh", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
 
 postgresql:
-  postgresqlPassword: password
-  postgresqlExtendedConf:
-    maxConnections: 100
-  persistence:
-    enabled: false
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+    extendedConfiguration: |
+      max_connections = 100
 
 rbac:
   create: true

@@ -5,6 +5,25 @@ ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
 ssl_session_cache shared:SSL:1m;
 ssl_prefer_server_ciphers   on;
 {{- end }}
+
+upstream router {
+  server {{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }};
+  keepalive 320;
+  keepalive_requests 10000;
+}
+
+upstream routerInternal {
+  server {{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+  keepalive 320;
+  keepalive_requests 10000;
+}
+
+upstream artifactory {
+  server {{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }};
+  keepalive 320;
+  keepalive_requests 10000;
+}
+
 ## server configuration
 server {
 {{- if .Values.nginx.internalPortHttps }}
@@ -61,7 +80,8 @@ location / {
   proxy_read_timeout  900;
   proxy_pass_header   Server;
   proxy_cookie_path   ~*^/.* /;
-  proxy_pass          {{ include "artifactory.scheme" . }}://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+  proxy_pass          {{ include "artifactory.scheme" . }}://router/;
+  proxy_set_header    Connection "";
   {{- if .Values.nginx.service.ssloffload}}
   {{- if .Values.nginx.service.ssloffloadForceHttps}}
   proxy_set_header    X-JFrog-Override-Base-Url https://$host;
@@ -90,24 +110,24 @@ location / {
   location /artifactory/ {
     {{- if .Values.rtfs.enabled }}
     if ($request_uri ~ ^/artifactory/service/rtfs/(.*)$ ) {
-      proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalPort }}/artifactory/service/rtfs/$1;
+      proxy_pass       http://router/artifactory/service/rtfs/$1;
       break;
     }
     {{- end }}
     if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-      proxy_pass       http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+      proxy_pass       http://artifactory/artifactory/$1;
     }
-    proxy_pass         http://{{ include "artifactory.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+    proxy_pass         http://artifactory/artifactory/;
   }
   location /pipelines/ {
     proxy_http_version 1.1;
+    proxy_set_header Connection "";
     proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
     proxy_set_header Host $http_host;
     {{- if .Values.router.tlsEnabled }}
-    proxy_pass  https://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+    proxy_pass  https://routerInternal;
     {{- else }}
-    proxy_pass  http://{{ include "artifactory.fullname" . }}:{{ .Values.router.internalPort }};
+    proxy_pass  http://routerInternal;
     {{- end }}
   }
 }

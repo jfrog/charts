@@ -38,6 +38,9 @@ global:
   ## Applies to xray pods
   nodeSelector: {}
 
+  security:
+    allowInsecureImages: true
+
   ## Applies to platform charts.
   rabbitmq:
     auth:
@@ -74,12 +77,16 @@ deployment:
 
 imagePullPolicy: IfNotPresent
 
+## Send all services logs to container STDOUT in JSON format
+logging:
+  logToStdoutJson: false
+
 # Init containers
 initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.5.1739420147
+    tag: 9.5.1742914212
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -342,12 +349,18 @@ autoscaling:
     pollingInterval: 10
     cooldownPeriod: 10
     queues:
-      - name: analysis
-        value: "100"
-      - name: index
-        value: "100"
-      - name: persist
-        value: "100"
+      - name: analysisRegular
+        value: "30"
+      - name: indexRegular
+        value: "30"
+      - name: persistRegular
+        value: "30"
+      - name: analysisRegularRetry-0
+        value: "30"
+      - name: indexRegularRetry-0
+        value: "30"
+      - name: persistRegularRetry-0
+        value: "30"
       - name: policyEnforcer
         value: "100"
       - name: impactAnalysis
@@ -396,7 +409,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 15.6.0-debian-11-r16
+    tag: 16.6.0-debian-12-r2
   auth:
     username: "xray"
     password: ""
@@ -469,7 +482,7 @@ rabbitmq:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/rabbitmq
-    tag: 3.13.7-debian-12-r5
+    tag: 3.13.7-debian-12-r6
   extraPlugins: "rabbitmq_management"
 
   auth:
@@ -557,6 +570,7 @@ rabbitmq:
       amqp: 5672
       amqpTls: 5671
       manager: 15672
+  ## Use this parameter to configure an external RabbitMQ instance. If you do not want to use the default RabbitMQ provided by the chart, set .Values.rabbitmq.enabled to false and .Values.common.rabbitmq.connectionConfigFromEnvironment to false, then provide the external RabbitMQ details (URL, username, password) below.
   external:
     username:
     password:
@@ -578,57 +592,9 @@ rabbitmq:
     size: 20Gi
   ## Load Definitions - https://www.rabbitmq.com/management.html#load-definitions
   # ref : https://github.com/bitnami/charts/tree/master/bitnami/rabbitmq#load-definitions
-  extraSecretsPrependReleaseName: true
-  extraSecrets:
-    load-definition:
-      load_definition.json: |
-        {
-          "permissions": [
-            {
-              "user": "{{ .Values.auth.username }}",
-              "vhost": "/",
-              "configure": ".*",
-              "write": ".*",
-              "read": ".*"
-            },
-            {
-              "user": "{{ .Values.auth.username }}",
-              "vhost": "{{ .Values.global.xray.rabbitmq.haQuorum.vhost }}",
-              "configure": ".*",
-              "write": ".*",
-              "read": ".*"
-            }
-          ],
-          "users": [
-            {
-              "name": "{{ .Values.auth.username }}",
-              "password": "{{ .Values.auth.password }}",
-              "tags": "administrator"
-            }
-          ],
-          "vhosts": [
-            {
-              "name": "/"
-            },
-            {
-              "name": "{{ .Values.global.xray.rabbitmq.haQuorum.vhost }}"
-            }
-          ],
-          "policies": [
-            {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
-            {
-              "name": "ha-all",
-              "apply-to": "all",
-              "pattern": ".*",
-              "vhost": "/",
-              "definition": {
-                "ha-mode": "all",
-                "ha-sync-mode": "automatic"
-              }
-            }
-            {{- end }}
-          ]
-        }
+  ## Specifies the name of an existing Kubernetes Secret containing the RabbitMQ definition.
+  # By default, the chart will create a secret named '{{ .Release.Name }}-load-definition' and load the definition from the file `files/load_definition.json`.
+  # To use a custom RabbitMQ definition, specify a different secret name. The chart will attempt to load the definition from that existing secret and will not create the default one.
   loadDefinition:
     enabled: true
     existingSecret: '{{ .Release.Name }}-load-definition'
@@ -691,6 +657,7 @@ rabbitmq:
 
 
   # This is automatically set based on rabbitmqTLS enabled flag.
+  # This value gets overridden completely by the same field in saas-helm-values. Please make changes there.
   extraConfiguration: |-
     management.listener.ssl = {{ template "xray.rabbitmq.isManagementListenerTlsEnabledInContext" . }}
 
@@ -738,7 +705,13 @@ rabbitmq:
           if [ -d "$RABBITMQ_MNESIA_DIR" ]; then
              exit 0
           fi
-    
+          # --erlang-cookie is not working with rabbitmqctl command, so we need to set it in the file.
+          # check if file exists and has the correct cookie, if not create or replace with the
+          # correct cookie set in environment variable and set read permission
+          if [ ! -f /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie ] || [ "$(cat /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie)" != "$RABBITMQ_ERL_COOKIE" ]; then
+              echo "$RABBITMQ_ERL_COOKIE" > /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie
+              chmod 600 /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie
+          fi
           # wait for zero pod to start running and accept requests
           zero_pod_name=$(echo $MY_POD_NAME | sed -E "s/-[[:digit:]]$/-0/")
           zero_pod_node_name=$(echo "$RABBITMQ_NODE_NAME" | sed -E "s/^rabbit@$MY_POD_NAME/rabbit@$zero_pod_name/")
@@ -755,14 +728,16 @@ rabbitmq:
           # node x waits for x previous nodes to join cluster (since node number is zero based)
           nodeSerialNum=$(echo "$MY_POD_NAME" | grep -o "[0-9]*$")
           timeoutSeconds=180
-          rabbitmqctl --erlang-cookie $RABBITMQ_ERL_COOKIE \
-                      --node $zero_pod_node_name --longnames  \
+          rabbitmqctl --node $zero_pod_node_name --longnames  \
                       await_online_nodes $nodeSerialNum \
                       --timeout $timeoutSeconds || exit 1
       {{- if .Values.containerSecurityContext.enabled }}
       securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
       {{- end }}
       volumeMounts:
+        - name: empty-dir
+          mountPath: /opt/bitnami/rabbitmq/.rabbitmq/
+          subPath: app-erlang-cookie
         - name: data
           mountPath: {{ .Values.persistence.mountPath }}
           {{- if .Values.persistence.subPath }}
@@ -803,7 +778,7 @@ common:
   preStartCommand:
 
   ## Add custom volumes
-  # If .Values.xray.unifiedSecretInstallation is true then secret name should be '{{ template "xray.name" . }}-unified-secret'.
+  # If .Values.xray.unifiedSecretInstallation is true then secret name should be '{{ template "xray.fullname" . }}-unified-secret'.
   customVolumes: |
   #  - name: custom-script
   #    configMap:
@@ -880,7 +855,7 @@ common:
   #        memory: "128Mi"
   #        cpu: "100m"
 
-  # If .Values.xray.unifiedSecretInstallation is true then secret name should be '{{ template "xray.name" . }}-unified-secret'.
+  # If .Values.xray.unifiedSecretInstallation is true then secret name should be '{{ template "xray.fullname" . }}-unified-secret'.
   customSecrets:
   #  - name: custom-secret
   #    key: custom-secret.yaml
@@ -1393,7 +1368,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.149.1
+    tag: 7.165.2
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1476,7 +1451,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.31.11
+    tag: 2.2.2
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1690,12 +1665,18 @@ autoscalingIpa:
    pollingInterval: 10
    cooldownPeriod: 10
    queues:
-     - name: analysis
-       value: "100"
-     - name: index
-       value: "100"
-     - name: persist
-       value: "100"
+     - name: analysisRegular
+       value: "30"
+     - name: indexRegular
+       value: "30"
+     - name: persistRegular
+       value: "30"
+     - name: analysisRegularRetry-0
+       value: "30"
+     - name: indexRegularRetry-0
+       value: "30"
+     - name: persistRegularRetry-0
+       value: "30"
      - name: impactAnalysis
        value: "100"
      - name: policyEnforcer
