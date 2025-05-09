@@ -1,6 +1,9 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.1.3] - May 09, 2025
+* Update dependency xray chart version to 103.118.13
+
 ## [11.1.2] - May 08, 2025
 * Update dependency artifactory chart version to 107.111.7
 * Fixed an issue with install when xray is disabled
