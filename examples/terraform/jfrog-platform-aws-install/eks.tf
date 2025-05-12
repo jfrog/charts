@@ -63,7 +63,7 @@ module "eks" {
 
     eks_managed_node_groups = {
         artifactory = {
-            name = "${var.env_name}-artifactory-node-group"
+            name = "${var.env_name}-artifactory"
 
             instance_types = [(
                 var.sizing == "large"   ? var.artifactory_node_size_large :
@@ -114,7 +114,7 @@ module "eks" {
         }
 
         nginx = {
-            name = "${var.env_name}-nginx-node-group"
+            name = "${var.env_name}-nginx"
 
             instance_types = [(
                 var.sizing == "xlarge"  ? var.nginx_node_size_large :
@@ -139,7 +139,7 @@ module "eks" {
         }
 
         xray = {
-            name = "${var.env_name}-xray-node-group"
+            name = "${var.env_name}-xray"
 
             instance_types = [(
                 var.sizing == "xlarge"  ? var.xray_node_size_xlarge :
@@ -190,7 +190,7 @@ module "eks" {
 
         ## Create an extra node group for testing
         extra = {
-            name = "${var.env_name}-extra-node-group"
+            name = "${var.env_name}-extra"
 
             instance_types = [var.extra_node_size]
 

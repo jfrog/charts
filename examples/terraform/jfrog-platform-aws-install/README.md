@@ -36,6 +36,9 @@ env_name = "staging"
 
 # AWS Region to be used
 region = "eu-central-1"
+
+# JFrog Platform version to be used
+jfrog_platform_chart_version = "11.1.3"
 ```
 
 ### Run Terraform
