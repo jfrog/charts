@@ -28,6 +28,17 @@ The sizing templates will be pulled from the [official Helm Charts](https://gith
 
 ## Terraform
 
+### Prepare the Terraform Configuration
+Prepare the local override of variables for the Terraform configuration by creating a `terraform.tfvars` file with the following variables
+```hcl
+# Environment name
+env_name = "staging"
+
+# AWS Region to be used
+region = "eu-central-1"
+```
+
+### Run Terraform
 
 1. Initialize the Terraform configuration by running the following command
 ```shell
@@ -54,6 +65,7 @@ To get the `kubectl` configuration for the EKS cluster, run the following comman
 ```shell
 aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
 ```
+
 ### Add JFrog Helm repository
 Before installing JFrog helm charts, you need to add the [JFrog helm repository](https://charts.jfrog.io) to your helm client
 
@@ -65,8 +77,8 @@ helm repo update
 ### Install JFrog Platform
 Once done, install the JFrog Platform (Artifactory, Catalog, Curation, Xray and JAS) using the Helm Chart with the following command.
 
-Terraform will create the needed configuration files to be used for the `helm install` command.
-This command will auto generate and be writen to the console when you run the `Terraform apply` command.
+Terraform will create the necessary configuration files to be used for the `helm install` command.
+This command will auto generate and be writen to the console when you run the `terraform apply` command.
 ```shell
 helm upgrade --install jfrog jfrog/jfrog-platform \
   --version <version> \

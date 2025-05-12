@@ -1,7 +1,7 @@
 # This file is used to create an AWS EKS cluster and the managed node group(s)
 
 locals {
-    cluster_name = "${var.cluster_name}-${random_pet.unique_name.id}"
+    cluster_name = "${var.env_name}-eks-cluster"
 }
 
 resource "aws_security_group_rule" "allow_management_from_my_ip" {
@@ -18,7 +18,7 @@ module "eks" {
     source  = "terraform-aws-modules/eks/aws"
 
     cluster_name    = local.cluster_name
-    cluster_version = "1.31"
+    cluster_version = var.kubernetes_version
 
     enable_cluster_creator_admin_permissions = true
     cluster_endpoint_public_access           = true
@@ -57,12 +57,13 @@ module "eks" {
         }
         tags = {
             Group = var.common_tag
+            Env   = var.env_name
         }
     }
 
     eks_managed_node_groups = {
         artifactory = {
-            name = "artifactory-node-group"
+            name = "${var.env_name}-artifactory-node-group"
 
             instance_types = [(
                 var.sizing == "large"   ? var.artifactory_node_size_large :
@@ -108,11 +109,12 @@ module "eks" {
             }
             labels = {
                 "group" = "artifactory"
+                "env"   = var.env_name
             }
         }
 
         nginx = {
-            name = "nginx-node-group"
+            name = "${var.env_name}-nginx-node-group"
 
             instance_types = [(
                 var.sizing == "xlarge"  ? var.nginx_node_size_large :
@@ -132,11 +134,12 @@ module "eks" {
 
             labels = {
                 "group" = "nginx"
+                "env"   = var.env_name
             }
         }
 
         xray = {
-            name = "xray-node-group"
+            name = "${var.env_name}-xray-node-group"
 
             instance_types = [(
                 var.sizing == "xlarge"  ? var.xray_node_size_xlarge :
@@ -181,27 +184,30 @@ module "eks" {
             }
             labels = {
                 "group" = "xray"
+                "env"   = var.env_name
             }
         }
 
         ## Create an extra node group for testing
         extra = {
-            name = "extra-node-group"
+            name = "${var.env_name}-extra-node-group"
 
             instance_types = [var.extra_node_size]
 
-            min_size     = 1
+            min_size     = 0
             max_size     = 3
             desired_size = var.extra_node_count
 
             labels = {
                 "group" = "extra"
+                "env"   = var.env_name
             }
         }
     }
 
     tags = {
         Group = var.common_tag
+        Env   = var.env_name
     }
 }
 

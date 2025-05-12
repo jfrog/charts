@@ -7,17 +7,10 @@ data "aws_availability_zones" "available" {
     }
 }
 
-resource "random_pet" "unique_name" {
-    keepers = {
-        # Generate a new pet name each time we switch to a new region
-        string = var.region
-    }
-}
-
 module "vpc" {
     source  = "terraform-aws-modules/vpc/aws"
 
-    name = "jfrog-vpc-${random_pet.unique_name.id}"
+    name = "${var.env_name}-vpc"
 
     cidr = var.vpc_cidr
     azs  = slice(data.aws_availability_zones.available.names, 0, 3)

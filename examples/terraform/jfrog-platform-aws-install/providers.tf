@@ -1,5 +1,10 @@
 # Setup the providers
 terraform {
+  # Use a local backend
+  backend "local" {
+    path = "./state/terraform.tfstate"
+  }
+
   ## Configure the remote backend (Artifactory)
   ## This will store the state file in Artifactory.
   ## Follow https://jfrog.com/help/r/jfrog-artifactory-documentation/terraform-backend-repository
