@@ -4,6 +4,10 @@ variable "region" {
   default = "us-east-1"
 }
 
+variable "env_name" {
+  default = "jfrog-platform"
+}
+
 # WARNING: CIDR "0.0.0.0/0" is full public access to the cluster. You should use a more restrictive CIDR
 variable "cluster_public_access_cidrs" {
   default = ["0.0.0.0/0"]
@@ -21,12 +25,12 @@ variable "private_subnet_cidrs" {
   default = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
-variable "rds_postgres_version" {
-  default     = "16.4"
+variable "kubernetes_version" {
+  default = "1.32"
 }
 
-variable "s3_bucket_name_suffix" {
-  default = "jfrog-demo"
+variable "rds_postgres_version" {
+  default = "16.4"
 }
 
 variable "artifactory_rds_size_default" {
@@ -257,20 +261,13 @@ variable "catalog_db_password" {
   default     = "PasswordC321"
 }
 
-variable "cluster_name" {
-  default = "jfrog"
-}
-
-variable "namespace" {
-  default = "jfrog"
-}
-
 variable "jfrog_charts_repository" {
   default = "https://charts.jfrog.io"
 }
 
 variable "jfrog_platform_chart_version" {
-  default = "11.0.3"
+  description = "The jfrog-platform chart version"
+  default = ""
 }
 
 variable "deploy_metrics_server" {
@@ -289,6 +286,6 @@ variable "sizing" {
 
   validation {
     condition     = contains(["small", "medium", "large", "xlarge", "2xlarge"], var.sizing)
-    error_message = "Invlid sizing set. Supported sizings are: 'small', 'medium', 'large', 'xlarge' or '2xlarge'"
+    error_message = "Invalid sizing set. Supported sizings are: 'small', 'medium', 'large', 'xlarge' or '2xlarge'"
   }
 }
