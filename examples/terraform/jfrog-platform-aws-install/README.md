@@ -2,8 +2,8 @@
 This example will prepare the AWS infrastructure and services required to run Artifactory , Catalog, Curation, Xray and JAS  (installed with the [jfrog-platform Helm Chart](https://github.com/jfrog/charts/tree/master/stable/jfrog-platform)) using Terraform:
 1. The AWS VPC
 2. RDS (PostgreSQL) as the database for each application
-2. S3 as the Artifactory object storage
-3. EKS as the Kubernetes cluster for running Artifactory and Xray with pre-defined node groups for the different services
+3. S3 as the Artifactory object storage
+4. EKS as the Kubernetes cluster for running Artifactory and Xray with pre-defined node groups for the different services
 
 The resources are split between individual files for easy and clear separation.
 
@@ -40,6 +40,8 @@ region = "eu-central-1"
 # JFrog Platform version to be used
 jfrog_platform_chart_version = "11.1.3"
 ```
+
+**NOTE:** Ensure you are using `jfrog_platform_chart_version` >= 11.0.3, as platform sizing files were introduced in this version. Using versions below 11.0.3 will result in installation without the sizing configuration.
 
 ### Run Terraform
 
