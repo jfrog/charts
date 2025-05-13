@@ -286,6 +286,6 @@ variable "sizing" {
 
   validation {
     condition     = contains(["small", "medium", "large", "xlarge", "2xlarge"], var.sizing)
-    error_message = "Invlid sizing set. Supported sizings are: 'small', 'medium', 'large', 'xlarge' or '2xlarge'"
+    error_message = "Invalid sizing set. Supported sizings are: 'small', 'medium', 'large', 'xlarge' or '2xlarge'"
   }
 }
