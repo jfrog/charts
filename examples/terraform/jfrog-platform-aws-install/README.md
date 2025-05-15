@@ -55,12 +55,12 @@ terraform init
 
 2. Plan the Terraform configuration by running the following command
 ```shell
-terraform plan'
+terraform plan
 ```
 
 3. Apply the Terraform configuration by running the following command
 ```shell
-terraform apply'
+terraform apply
 ```
 
 4. When you are done, you can destroy the resources by running the following command
