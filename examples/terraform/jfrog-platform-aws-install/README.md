@@ -24,7 +24,7 @@ If you plan on skipping the license key(s) for now, you can leave the `artifacto
 ## JFrog Platform Sizing
 Artifactory and Xray have pre-defined sizing templates that you can use to deploy them. The supported sizing templates in this project are `small`, `medium`, `large`, `xlarge`, and `2xlarge`.
 
-The sizing templates will be pulled from the [official Helm Charts](https://github.com/jfrog/charts) during the execution of the Terraform configuration.
+The sizing templates will be pulled from the [official JFrog Platform Helm Chart's Sizing](https://github.com/jfrog/charts/tree/master/stable/jfrog-platform/sizing) during the execution of the Terraform configuration.
 
 ## Terraform
 
@@ -39,6 +39,9 @@ region = "eu-central-1"
 
 # JFrog Platform version to be used
 jfrog_platform_chart_version = "11.1.3"
+
+# Set the desired sizing. If not set, the default is "small"
+sizing = "large"
 ```
 
 **NOTE:** Ensure you are using `jfrog_platform_chart_version` >= 11.0.3, as platform sizing files were introduced in this version. Using versions below 11.0.3 will result in installation without the sizing configuration.
@@ -52,12 +55,12 @@ terraform init
 
 2. Plan the Terraform configuration by running the following command
 ```shell
-terraform plan -var 'sizing=small'
+terraform plan
 ```
 
 3. Apply the Terraform configuration by running the following command
 ```shell
-terraform apply -var 'sizing=small'
+terraform apply
 ```
 
 4. When you are done, you can destroy the resources by running the following command
