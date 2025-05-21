@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.118.11] - May 21, 2025
+* Add starting slash to observability health-checks to fix an [issue with linkerd deployments](https://github.com/linkerd/linkerd2/issues/14034)
+
 ## [103.118.11] - April 2, 2025
 * Add affinity and tolerations to rabbitmq migration hook
 * Update rabbitmq tag version to `3.13.7-debian-12-r6`
