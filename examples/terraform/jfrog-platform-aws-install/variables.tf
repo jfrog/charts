@@ -34,23 +34,23 @@ variable "rds_postgres_version" {
 }
 
 variable "artifactory_rds_size_default" {
-  default = "db.m7g.2xlarge"
+  default = "db.m8g.2xlarge"
 }
 
 variable "artifactory_rds_size_medium" {
-  default = "db.m7g.4xlarge"
+  default = "db.m8g.4xlarge"
 }
 
 variable "artifactory_rds_size_large" {
-  default = "db.m7g.8xlarge"
+  default = "db.m8g.8xlarge"
 }
 
 variable "artifactory_rds_size_xlarge" {
-  default = "db.m7g.12xlarge"
+  default = "db.m8g.12xlarge"
 }
 
 variable "artifactory_rds_size_2xlarge" {
-  default = "db.m7g.16xlarge"
+  default = "db.m8g.16xlarge"
 }
 
 variable "artifactory_rds_disk_size_default" {
@@ -90,23 +90,23 @@ variable "catalog_rds_disk_max_size" {
 }
 
 variable "xray_rds_size_default" {
-  default = "db.m7g.xlarge"
+  default = "db.m8g.xlarge"
 }
 
 variable "xray_rds_size_medium" {
-  default = "db.m7g.2xlarge"
+  default = "db.m8g.2xlarge"
 }
 
 variable "xray_rds_size_large" {
-  default = "db.m7g.4xlarge"
+  default = "db.m8g.4xlarge"
 }
 
 variable "xray_rds_size_xlarge" {
-  default = "db.m7g.8xlarge"
+  default = "db.m8g.8xlarge"
 }
 
 variable "xray_rds_size_2xlarge" {
-  default = "db.m7g.12xlarge"
+  default = "db.m8g.12xlarge"
 }
 
 variable "xray_rds_disk_size_default" {
@@ -134,11 +134,11 @@ variable "xray_rds_disk_max_size" {
 }
 
 variable "artifactory_node_size_default" {
-  default = "m7g.2xlarge"
+  default = "m8g.2xlarge"
 }
 
 variable "artifactory_node_size_large" {
-  default = "m7g.4xlarge"
+  default = "m8g.4xlarge"
 }
 
 variable "artifactory_disk_size_default" {
@@ -166,11 +166,11 @@ variable "artifactory_disk_throughput_large" {
 }
 
 variable "xray_node_size_default" {
-  default = "c7g.2xlarge"
+  default = "c8g.2xlarge"
 }
 
 variable "xray_node_size_xlarge" {
-  default = "c7g.4xlarge"
+  default = "c8g.4xlarge"
 }
 
 variable "xray_disk_size_default" {
@@ -198,11 +198,11 @@ variable "xray_disk_throughput_large" {
 }
 
 variable "nginx_node_size_default" {
-  default = "c7g.xlarge"
+  default = "c8g.xlarge"
 }
 
 variable "nginx_node_size_large" {
-  default = "c7g.2xlarge"
+  default = "c8g.2xlarge"
 }
 
 variable "extra_node_count" {
@@ -210,7 +210,7 @@ variable "extra_node_count" {
 }
 
 variable "extra_node_size" {
-  default = "c7g.xlarge"
+  default = "c8g.xlarge"
 }
 
 variable "artifactory_db_name" {
