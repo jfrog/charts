@@ -1,9 +1,11 @@
 unifiedUpgradeAllowed: true
 databaseUpgradeReady: true
 postgresql:
-  postgresqlPassword: password
-  persistence:
-    enabled: false
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
 redis:
   persistence:
     enabled: false
