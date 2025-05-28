@@ -1183,6 +1183,13 @@ spec:
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
         volumeMounts:
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:

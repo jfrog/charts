@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.111.7] - April 01, 2025
+## [107.111.8] - May 15, 2025
 * Added HPA support for the Artifactory HA chart, but only for primary resources. Member resources are going to be deprecated
 * Updated rtfs version to `1.6.13`
 * Added a default resource preset for PostgreSQL as small
@@ -9,6 +9,7 @@ All changes to this chart will be documented in this file
 * Added custom HPA metrics support for Artifactory service `autoscaling.metrics`
 * Added new JFConfig service
 * Enabled Evidence service by default to true
+* Fixed an issue with JFConfig by adding a missing volumeMount
 
 ## [107.109.0] - March 04, 2025
 * Adjusted Nginx settings for better high-scale efficiency
