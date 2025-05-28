@@ -5,6 +5,7 @@ apiVersion: apps/v1
 kind: {{ .Values.nginx.kind }}
 metadata:
   name: {{ template "artifactory.nginx.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ template "artifactory.chart" . }}
