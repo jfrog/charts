@@ -58,9 +58,9 @@ redis:
       memory: 150Mi
 
 postgresql:
-  postgresqlExtendedConf:
-    maxConnections: "50"
   primary:
+    extendedConfiguration: |
+      max_connections = 50
     affinity:
       # Require PostgreSQL pod to run on a different node than distribution pods
       podAntiAffinity:
@@ -72,10 +72,10 @@ postgresql:
                   values:
                     - distribution
             topologyKey: kubernetes.io/hostname
-  resources:
-    requests:
-      cpu: "50m"
-      memory: 200Mi
-    limits:
-      # cpu: "2"
-      memory: 1Gi
+    resources:
+      requests:
+        cpu: "50m"
+        memory: 200Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi

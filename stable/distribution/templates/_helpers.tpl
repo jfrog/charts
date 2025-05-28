@@ -302,3 +302,13 @@ Resolve unified secret prepend release name
 {{- printf "%s" (include "distribution.name" .) -}}
 {{- end }}
 {{- end }}
+
+{{/*
+Resolve autoscalling metrics value
+*/}}
+{{- define "distribution.metrics" -}}
+{{- if .Values.autoscaling.metrics -}}
+{{- .Values.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
