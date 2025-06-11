@@ -1,0 +1,59 @@
+{
+    "permissions": [
+      {
+        "user": "{{ .Values.rabbitmq.auth.username }}",
+        "vhost": "/",
+        "configure": ".*",
+        "write": ".*",
+        "read": ".*"
+      },
+      {
+        "user": "{{ .Values.rabbitmq.auth.username }}",
+        "vhost": "{{ .Values.rabbitmq.global.xray.rabbitmq.haQuorum.vhost }}",
+        "configure": ".*",
+        "write": ".*",
+        "read": ".*"
+      }
+    ],
+    "users": [
+      {
+        "name": "{{ .Values.rabbitmq.auth.username }}",
+        {{- if not .Values.rabbitmq.auth.existingPasswordSecret }}
+        "password": "{{ .Values.rabbitmq.auth.password }}",
+        {{- else if .Values.rabbitmq.auth.existingPasswordSecret }}
+        {{ $secret := lookup "v1" "Secret" .Release.Namespace .Values.rabbitmq.auth.existingPasswordSecret }}
+        {{- if $secret }}
+        {{- if index $secret.data "rabbitmq-password" }}
+        {{- $password := index $secret.data "rabbitmq-password" | b64dec -}}
+        "password": "{{ $password }}",
+          {{- else }}
+          {{- fail "Error: rabbitmq-password key not found in the Secret." -}}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        "tags": "administrator"
+      }
+    ],
+    "vhosts": [
+      {
+        "name": "/"
+      },
+      {
+        "name": "{{ .Values.rabbitmq.global.xray.rabbitmq.haQuorum.vhost }}"
+      }
+    ],
+    "policies": [
+      {{- if not .Values.rabbitmq.global.xray.rabbitmq.haQuorum.enabled }}
+      {
+        "name": "ha-all",
+        "apply-to": "all",
+        "pattern": ".*",
+        "vhost": "/",
+        "definition": {
+          "ha-mode": "all",
+          "ha-sync-mode": "automatic"
+        }
+      }
+      {{- end }}
+    ]
+  }

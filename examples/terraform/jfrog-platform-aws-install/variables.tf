@@ -4,6 +4,10 @@ variable "region" {
   default = "us-east-1"
 }
 
+variable "env_name" {
+  default = "jfrog-platform"
+}
+
 # WARNING: CIDR "0.0.0.0/0" is full public access to the cluster. You should use a more restrictive CIDR
 variable "cluster_public_access_cidrs" {
   default = ["0.0.0.0/0"]
@@ -21,32 +25,32 @@ variable "private_subnet_cidrs" {
   default = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
-variable "rds_postgres_version" {
-  default     = "16.4"
+variable "kubernetes_version" {
+  default = "1.32"
 }
 
-variable "s3_bucket_name_suffix" {
-  default = "jfrog-demo"
+variable "rds_postgres_version" {
+  default = "16.4"
 }
 
 variable "artifactory_rds_size_default" {
-  default = "db.m7g.2xlarge"
+  default = "db.m8g.2xlarge"
 }
 
 variable "artifactory_rds_size_medium" {
-  default = "db.m7g.4xlarge"
+  default = "db.m8g.4xlarge"
 }
 
 variable "artifactory_rds_size_large" {
-  default = "db.m7g.8xlarge"
+  default = "db.m8g.8xlarge"
 }
 
 variable "artifactory_rds_size_xlarge" {
-  default = "db.m7g.12xlarge"
+  default = "db.m8g.12xlarge"
 }
 
 variable "artifactory_rds_size_2xlarge" {
-  default = "db.m7g.16xlarge"
+  default = "db.m8g.16xlarge"
 }
 
 variable "artifactory_rds_disk_size_default" {
@@ -86,23 +90,23 @@ variable "catalog_rds_disk_max_size" {
 }
 
 variable "xray_rds_size_default" {
-  default = "db.m7g.xlarge"
+  default = "db.m8g.xlarge"
 }
 
 variable "xray_rds_size_medium" {
-  default = "db.m7g.2xlarge"
+  default = "db.m8g.2xlarge"
 }
 
 variable "xray_rds_size_large" {
-  default = "db.m7g.4xlarge"
+  default = "db.m8g.4xlarge"
 }
 
 variable "xray_rds_size_xlarge" {
-  default = "db.m7g.8xlarge"
+  default = "db.m8g.8xlarge"
 }
 
 variable "xray_rds_size_2xlarge" {
-  default = "db.m7g.12xlarge"
+  default = "db.m8g.12xlarge"
 }
 
 variable "xray_rds_disk_size_default" {
@@ -130,11 +134,11 @@ variable "xray_rds_disk_max_size" {
 }
 
 variable "artifactory_node_size_default" {
-  default = "m7g.2xlarge"
+  default = "m8g.2xlarge"
 }
 
 variable "artifactory_node_size_large" {
-  default = "m7g.4xlarge"
+  default = "m8g.4xlarge"
 }
 
 variable "artifactory_disk_size_default" {
@@ -162,11 +166,11 @@ variable "artifactory_disk_throughput_large" {
 }
 
 variable "xray_node_size_default" {
-  default = "c7g.2xlarge"
+  default = "c8g.2xlarge"
 }
 
 variable "xray_node_size_xlarge" {
-  default = "c7g.4xlarge"
+  default = "c8g.4xlarge"
 }
 
 variable "xray_disk_size_default" {
@@ -194,11 +198,11 @@ variable "xray_disk_throughput_large" {
 }
 
 variable "nginx_node_size_default" {
-  default = "c7g.xlarge"
+  default = "c8g.xlarge"
 }
 
 variable "nginx_node_size_large" {
-  default = "c7g.2xlarge"
+  default = "c8g.2xlarge"
 }
 
 variable "extra_node_count" {
@@ -206,7 +210,7 @@ variable "extra_node_count" {
 }
 
 variable "extra_node_size" {
-  default = "c7g.xlarge"
+  default = "c8g.xlarge"
 }
 
 variable "artifactory_db_name" {
@@ -257,20 +261,13 @@ variable "catalog_db_password" {
   default     = "PasswordC321"
 }
 
-variable "cluster_name" {
-  default = "jfrog"
-}
-
-variable "namespace" {
-  default = "jfrog"
-}
-
 variable "jfrog_charts_repository" {
   default = "https://charts.jfrog.io"
 }
 
 variable "jfrog_platform_chart_version" {
-  default = "11.0.3"
+  description = "The jfrog-platform chart version"
+  default = ""
 }
 
 variable "deploy_metrics_server" {
@@ -289,6 +286,6 @@ variable "sizing" {
 
   validation {
     condition     = contains(["small", "medium", "large", "xlarge", "2xlarge"], var.sizing)
-    error_message = "Invlid sizing set. Supported sizings are: 'small', 'medium', 'large', 'xlarge' or '2xlarge'"
+    error_message = "Invalid sizing set. Supported sizings are: 'small', 'medium', 'large', 'xlarge' or '2xlarge'"
   }
 }

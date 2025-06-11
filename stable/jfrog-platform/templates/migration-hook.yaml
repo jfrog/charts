@@ -80,6 +80,9 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-upgrade"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.rabbitmq.migration.job.annotations }}
+{{ .Values.rabbitmq.migration.job.annotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   template:
     metadata:
@@ -88,6 +91,10 @@ spec:
         chart: {{ template "jfrog-platform.chart" . }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
+        {{- if .Values.rabbitmq.migration.annotations }}
+      annotations:
+{{ .Values.rabbitmq.migration.annotations | toYaml | indent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
       {{- if .Values.rabbitmq.podSecurityContext.enabled }}

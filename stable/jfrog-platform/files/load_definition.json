@@ -1,0 +1,35 @@
+{
+    "vhosts": [
+      {
+        "name": "xray"
+      }
+    ],
+    "users": [
+    {
+      "name": "{{ include "xray.rabbitmq.extRabbitmq.username" . }}",
+      "password": "{{ include "xray.rabbitmq.extRabbitmq.password" . }}",
+      "tags": "administrator"
+    }
+    ],
+    "permissions": [
+    {
+      "user": "{{ include "xray.rabbitmq.extRabbitmq.username" . }}",
+      "vhost": "xray",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+    ],
+    "policies": [
+      {
+        "name": "ha-all",
+        "apply-to": "all",
+        "pattern": ".*",
+        "vhost": "xray",
+        "definition": {
+          "ha-mode": "all",
+          "ha-sync-mode": "automatic"
+        }
+      }
+    ]
+  }

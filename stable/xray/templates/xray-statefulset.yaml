@@ -17,7 +17,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 or 15.2.0-debian-11-r23 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x or 15.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 or 15.2.0-debian-11-r23 or 15.10.0-debian-12-r2 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x or 15.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.server.statefulset.annotations }}
   annotations:
@@ -164,7 +164,7 @@ spec:
               {{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName) }}
               name: {{ include "xray.joinKeySecretName" . }}
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: join-key
         {{- end }}
@@ -175,7 +175,7 @@ spec:
               {{- if or (not .Values.xray.unifiedSecretInstallation) (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName) }}
               name: {{ include "xray.masterKeySecretName" . }}
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: master-key
         {{- end }}
@@ -204,7 +204,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-password
         {{- else if .Values.postgresql.enabled }}
@@ -504,7 +504,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -520,7 +520,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -536,7 +536,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -557,7 +557,7 @@ spec:
               {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
               name: {{ template "xray.executionServiceAesKeySecretName" . }}
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
@@ -637,7 +637,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -653,7 +653,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -669,7 +669,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -694,7 +694,7 @@ spec:
               {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
               name: {{ template "xray.executionServiceAesKeySecretName" . }}
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
@@ -775,7 +775,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -791,7 +791,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -807,7 +807,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -832,7 +832,7 @@ spec:
               {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
               name: {{ template "xray.executionServiceAesKeySecretName" . }}
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
@@ -914,7 +914,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -930,7 +930,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -946,7 +946,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -971,7 +971,7 @@ spec:
               {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
               name: {{ template "xray.executionServiceAesKeySecretName" . }}
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
@@ -1049,7 +1049,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -1065,7 +1065,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -1081,7 +1081,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -1175,7 +1175,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -1191,7 +1191,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -1207,7 +1207,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -1301,7 +1301,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-user
         {{- end }}
@@ -1317,7 +1317,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-actualUsername
         {{- end }}
@@ -1333,7 +1333,7 @@ spec:
               {{- if not .Values.xray.unifiedSecretInstallation }}
               name: {{ template "xray.fullname" . }}-database-creds
               {{- else }}
-              name: "{{ template "xray.name" . }}-unified-secret"
+              name: "{{ template "xray.fullname" . }}-unified-secret"
               {{- end }}
               key: db-url
         {{- end }}
@@ -1489,7 +1489,7 @@ spec:
       #########  unifiedSecretInstallation ###########
       - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
         secret:
-          secretName: {{ template "xray.name" . }}-unified-secret
+          secretName: {{ template "xray.fullname" . }}-unified-secret
       {{- else if not .Values.xray.unifiedSecretInstallation }}
       ######### Non unifiedSecretInstallation ###########
       {{- if not .Values.systemYamlOverride.existingSecret }}

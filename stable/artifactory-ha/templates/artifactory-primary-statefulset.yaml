@@ -10,7 +10,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/CHANGELOG.md) \nNote: This applies only when you are using bundled postgresql (postgresql.enabled=true) \nIf you are upgrading from a chart version (< 107.79.x) that has postgresql.image.tag of 9.x or 10.x or 12.x or 13.x, make sure to set the current postgresql.image.tag to the same tag and databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 107.79.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- if .Values.artifactory.postStartCommand }}
     {{- fail ".Values.artifactory.postStartCommand is not supported and should be replaced with .Values.artifactory.lifecycle.postStart.exec.command" }}
@@ -403,7 +403,7 @@ spec:
           echo "Waiting for postgresql to come up"
           ready=false;
           while ! $ready; do echo waiting;
-            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.primary.service.ports.postgresql }}"; exit_status=$?;
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1;
           done
         resources:
@@ -475,7 +475,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -528,6 +528,11 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
 
       ######################## Artifactory persistence nfs ##########################
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -637,6 +642,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
@@ -703,7 +712,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -734,6 +743,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
@@ -803,7 +816,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -829,6 +842,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           {{- if default false .Values.metadata.standaloneImageEnabled }}
           mountPath: {{ .Values.metadata.persistence.mountPath | quote }}
@@ -876,6 +893,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
@@ -921,6 +942,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
@@ -962,6 +987,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
@@ -1028,7 +1057,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -1057,6 +1086,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
@@ -1072,6 +1105,106 @@ spec:
       {{- if .Values.topology.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.topology.livenessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.jfconfig.enabled }}
+      - name: {{ .Values.jfconfig.name }}
+        image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
+        imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
+      {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+      {{- end }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+            exec /opt/jfrog/artifactory/app/jfconfig/bin/entrypoint-jfconfig.sh
+        {{- with .Values.jfconfig.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+            {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.password }}
+              name: {{ tpl .Values.database.secrets.password.name . }}
+              key: {{ tpl .Values.database.secrets.password.key . }}
+        {{- else if .Values.database.password }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+            {{- end }}
+              key: db-password
+        {{- else if .Values.postgresql.enabled }}
+              name: {{ .Release.Name }}-postgresql
+              key: password
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+            {{- if not .Values.artifactory.unifiedSecretInstallation }}
+              name: {{ template "artifactory-ha.fullname" . }}-database-creds
+            {{- else }}
+              name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+            {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+{{- with .Values.jfconfig.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
+        volumeMounts:
+      {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
+      {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
+        - name: volume
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        resources:
+{{ toYaml .Values.jfconfig.resources | indent 10 }}
+      {{- if .Values.jfconfig.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.jfconfig.startupProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.jfconfig.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.jfconfig.readinessProbe.config . | indent 10 }}
+      {{- end }}
+      {{- if .Values.jfconfig.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.jfconfig.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
       {{- if .Values.observability.enabled }}
@@ -1105,6 +1238,10 @@ spec:
       {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 8 }}
       {{- end }}
+       {{- if .Values.artifactory.customPersistentVolumeClaim }}
+        - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
+          mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
+       {{- end }}
         - name: volume
           {{- if default false .Values.observability.standaloneImageEnabled }}
           mountPath: {{ .Values.observability.persistence.mountPath | quote }}
@@ -1122,7 +1259,7 @@ spec:
 {{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
       {{- end }}
       {{- end }}
-      {{- if and .Values.access.enabled (not (.Values.access.runOnArtifactoryTomcat | default false)) }}
+      {{- if .Values.access.enabled }}
       - name: {{ .Values.access.name }}
         image: {{ include "artifactory-ha.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -1184,7 +1321,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
@@ -1340,6 +1477,8 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_RTFS_EMBEDDED_ENABLE
+          value: "false"
       {{- if .Values.aws.license.enabled }}
         - name: IS_AWS_LICENSE
           value: "true"
@@ -1376,12 +1515,12 @@ spec:
           value: "false"
         - name : JF_ONEMODEL_ENABLED
           value: "false"
-        {{- if not (.Values.access.runOnArtifactoryTomcat | default false) }}
         - name : JF_ACCESS_ENABLED
           value: "false"
-        {{- end}}
         - name: JF_TOPOLOGY_SPLIT_CONTAINER_ENABLED
           value: "true"
+        - name: JF_JFCONFIG_ENABLED
+          value: "false"
       {{- end }}
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
@@ -1419,7 +1558,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}

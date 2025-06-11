@@ -139,6 +139,17 @@ artifactory:
         # cpu: 500m
         memory: 250Mi
   
+  jfconfig:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 1000Mi
+      limits:
+        memory: 1500Mi
+    extraEnvironmentVariables:
+      - name: MALLOC_ARENA_MAX
+        value: "8"
+  
   topology:
     resources:
       requests:
@@ -162,9 +173,9 @@ artifactory:
         memory: "8Gi"
   
   postgresql:
-    postgresqlExtendedConf:
-      maxConnections: "2000"
     primary:
+      extendedConfiguration: |
+        max_connections = 2000
       affinity:
         # Require PostgreSQL pod to run on a different node than Artifactory pods
         podAntiAffinity:
@@ -176,13 +187,13 @@ artifactory:
                     values:
                       - artifactory
               topologyKey: kubernetes.io/hostname
-    resources:
-      requests:
-        memory: 128Gi
-        cpu: "32"
-      limits:
-        memory: 128Gi
-        # cpu: "64"
+      resources:
+        requests:
+          memory: 128Gi
+          cpu: "32"
+        limits:
+          memory: 128Gi
+          # cpu: "64"
   
   evidence:
     resources:
@@ -299,14 +310,20 @@ xray:
         # cpu: "4"
         memory: 10Gi
   
+  policyenforcer:
+    resources:
+      requests:
+        memory: "250Mi"
+        cpu: "60m"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+  
   # PostgreSQL
   ## Configuration values for the postgresql dependency
   ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
   ##
   postgresql:
-    postgresqlExtendedConf:
-      listenAddresses: "*"
-      maxConnections: "1200"
     resources:
       requests:
         memory: 64Gi
@@ -315,6 +332,9 @@ xray:
         memory: 64Gi
         # cpu: "32"
     primary:
+      extendedConfiguration: |
+        max_connections = 1200
+        listen_addresses = '*'
       affinity:
         # Require PostgreSQL pod to run on a different node than Xray pods
         podAntiAffinity:
@@ -411,9 +431,9 @@ distribution:
         memory: 1Gi
   
   postgresql:
-    postgresqlExtendedConf:
-      maxConnections: "200"
     primary:
+      extendedConfiguration: |
+        max_connections = 200
       affinity:
         # Require PostgreSQL pod to run on a different node than distribution pods
         podAntiAffinity:
@@ -425,11 +445,11 @@ distribution:
                     values:
                       - distribution
               topologyKey: kubernetes.io/hostname
-    resources:
-      requests:
-        cpu: "100m"
-        memory: 1Gi
-      limits:
-        # cpu: "2"
-        memory: 8Gi
+      resources:
+        requests:
+          cpu: "100m"
+          memory: 1Gi
+        limits:
+          # cpu: "2"
+          memory: 8Gi
 

@@ -6,7 +6,7 @@ Note: This is necessary to avoid failures if the new release of the JFrog Platfo
 
 1. Get the current version of PostgreSQL in your installation,
 
-    $ kubectl get pod {{ .Release.Namespace }}-postgresql-0 --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.containers[*].image}";
+    $ kubectl get pod {{ .Release.Name }}-postgresql-0 --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.containers[*].image}";
 
 2. Copy the version from the output and set the following in your customvalues.yaml file,
 

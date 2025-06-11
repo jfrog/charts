@@ -166,7 +166,7 @@ spec:
                   key: db-password
             {{- else if .Values.postgresql.enabled }}
                   name: {{ .Release.Name }}-postgresql
-                  key: postgresql-password
+                  key: password
             {{- end }}
           {{- end }}
           {{- if or .Values.database.secrets.url .Values.database.url }}

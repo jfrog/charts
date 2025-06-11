@@ -56,9 +56,9 @@ Instructions for accessing the JFrog Platform
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
 Use an external PostgreSQL database for production deployments.
-{{- if eq .Values.postgresql.auth.postgresPassword "postgres" }}
+{{- if or (eq .Values.global.database.adminPassword "postgres") (eq .Values.postgresql.auth.postgresPassword "postgres") }}
 Currently, you are using the default password for postgresql user.
-It is recommended to change it by setting an explicit password with `postgresql.auth.postgresPassword`
+It is recommended to change it by setting an explicit password with `postgresql.auth.postgresPassword` and `global.database.adminPassword`
 {{- end }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}

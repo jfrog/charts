@@ -66,6 +66,9 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-upgrade"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.postgresql.upgradeHookSTSDelete.job.annotations }}
+{{ .Values.postgresql.upgradeHookSTSDelete.job.annotations | toYaml | indent 4 }}
+    {{- end }}
 spec:
   backoffLimit: 3
   template:
@@ -75,6 +78,10 @@ spec:
         chart: {{ template "jfrog-platform.chart" . }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
+        {{- if .Values.postgresql.upgradeHookSTSDelete.annotations }}
+      annotations:
+{{ .Values.postgresql.upgradeHookSTSDelete.annotations | toYaml | indent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "jfrog-platform.postgresql.upgradeHookSTSDelete.serviceAccountName" . }}
       {{- if and .Values.postgresql.primary .Values.postgresql.primary.podSecurityContext .Values.postgresql.primary.podSecurityContext.enabled }}

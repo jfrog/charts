@@ -3,15 +3,21 @@ router:
     insecure: {{ .Values.router.serviceRegistry.insecure }}
 shared:
   logging:
+    {{- if .Values.logging.logToStdoutJson }}
+    enableJsonConsoleLogAppenders: {{ .Values.logging.logToStdoutJson }}
+    {{- end }}
     consoleLog:
       enabled: {{ .Values.distribution.consoleLog }}
+      {{- if .Values.logging.logToStdoutJson }}
+      format: json
+      {{- end }}
   jfrogUrl: "{{ tpl (required "\n\ndistribution.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (include "distribution.jfrogUrl" .)) . }}"
   database:
   {{- if .Values.postgresql.enabled }}
     type: "postgresql"
     driver: "org.postgresql.Driver"
-    username: "{{ .Values.postgresql.postgresqlUsername }}"
-    url: "postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+    username: "{{ .Values.postgresql.auth.username }}"
+    url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.primary.service.ports.postgresql }}/{{ .Values.postgresql.auth.database }}"
   {{ else }}
     type: "{{ .Values.database.type }}"
     driver: "{{ .Values.database.driver }}"

@@ -1,0 +1,28 @@
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+    {{- if  not (default .Values.databaseUpgradeReady false )  }}
+        {{- fail (tpl ( $.Files.Get "files/postgresUpgradeWarning.txt" ) .) }}
+    {{- end }}
+{{- end }}
+{{- if .Values.postgresql.enabled }}
+    {{- if .Values.postgresql.postgresqlPassword  }}
+        {{- fail "\n\nThe key 'postgresql.postgresqlPassword' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.password' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.postgresqlUsername  }}
+        {{- fail "\n\nThe key 'postgresql.postgresqlUsername' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.username' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.postgresqlDatabase  }}
+        {{- fail "\n\nThe key 'postgresql.postgresqlDatabase' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.database' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.postgresqlExtendedConf  }}
+        {{- fail "\n\nThe key 'postgresql.postgresqlExtendedConf' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.extendedConfiguration' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.persistence  }}
+        {{- fail "\n\nThe key 'postgresql.persistence' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.persistence' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.service  }}
+        {{- fail "\n\nThe key 'postgresql.service' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.service' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.resources  }}
+        {{- fail "\n\nThe key 'postgresql.resources' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.resources' to proceed with installation.\n" }}
+    {{- end }}
+{{- end }}

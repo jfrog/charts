@@ -35,13 +35,5 @@ spec:
         {{- .Values.autoscalingIpa.keda.scaleDown | toYaml | nindent 10 }}
   triggers:
   {{- include "xray.autoscalingQueuesIpa" . | indent 4 }}
-    - type: cpu
-      metricType: Utilization
-      metadata:
-        value: "{{ .Values.autoscalingIpa.targetCPUUtilizationPercentage }}"
-    - type: memory
-      metricType: Utilization
-      metadata:
-        value: "{{ .Values.autoscalingIpa.targetMemoryUtilizationPercentage }}"
 {{- end }}
 {{- end }}

@@ -304,6 +304,9 @@ Resolve requiredServiceTypes value
 {{- if .Values.jfconnect.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcon" -}}
 {{- end -}}
+{{- if .Values.jfconfig.enabled -}}
+  {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfcfg" -}}
+{{- end -}}
 {{- if .Values.evidence.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevd" -}}
 {{- end -}}
@@ -585,6 +588,16 @@ Resolve customVolumes value
 {{- define "artifactory.rtfs.customVolumes" -}}
 {{- if .Values.rtfs.customVolumes -}}
 {{- .Values.rtfs.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve Artifactory autoscalling metrics
+*/}}
+{{- define "artifactory.hpametrics" -}}
+{{- if .Values.autoscaling.metrics -}}
+{{- .Values.autoscaling.metrics -}}
 {{- end -}}
 {{- end -}}
 

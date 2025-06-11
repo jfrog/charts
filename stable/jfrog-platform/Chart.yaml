@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 7.104.15
+appVersion: 7.111.8
 dependencies:
 - condition: postgresql.enabled
   name: postgresql
@@ -12,23 +12,23 @@ dependencies:
 - condition: artifactory.enabled
   name: artifactory
   repository: https://charts.jfrog.io/
-  version: 107.104.15
+  version: 107.111.8
 - condition: xray.enabled
   name: xray
   repository: https://charts.jfrog.io/
-  version: 103.111.23
+  version: 103.118.17
 - condition: catalog.enabled
   name: catalog
   repository: https://charts.jfrog.io/
-  version: 101.13.0
+  version: 101.19.1
 - condition: distribution.enabled
   name: distribution
   repository: https://charts.jfrog.io/
-  version: 102.29.1
+  version: 102.30.1
 - condition: worker.enabled
   name: worker
   repository: https://charts.jfrog.io/
-  version: 101.118.0
+  version: 101.133.0
 description: The Helm chart for JFrog Platform (Universal, hybrid, end-to-end DevOps
   automation)
 home: https://jfrog.com/platform/
@@ -52,4 +52,4 @@ name: jfrog-platform
 sources:
 - https://github.com/jfrog/charts
 type: application
-version: 11.0.6
+version: 11.1.4

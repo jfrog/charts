@@ -76,6 +76,9 @@ metadata:
   annotations:
     "helm.sh/hook": "pre-upgrade"
     "helm.sh/hook-delete-policy": "before-hook-creation,hook-succeeded"
+    {{- if .Values.preUpgradeHook.job.annotations }}
+{{ .Values.preUpgradeHook.job.annotations  | toYaml | indent 4 }}
+    {{- end }}
 spec:
   backoffLimit: 0
   template:
@@ -85,6 +88,10 @@ spec:
         chart: {{ template "jfrog-platform.chart" . }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
+        {{- if .Values.preUpgradeHook.annotations }}
+      annotations:
+{{ .Values.preUpgradeHook.annotations  | toYaml | indent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ template "jfrog-platform.fullname" . }}
       {{- if .Values.preUpgradeHook.podSecurityContext.enabled }}
