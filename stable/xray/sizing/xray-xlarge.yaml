@@ -27,7 +27,7 @@ analysis:
       cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "4"
+      cpu: "4"
       memory: 10Gi
 
 indexer:
@@ -36,7 +36,7 @@ indexer:
       cpu: "300m"
       memory: 550Mi
     limits:
-      # cpu: "6"
+      cpu: "6"
       memory: 8Gi
 
 persist:
@@ -45,16 +45,16 @@ persist:
       cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "4"
+      cpu: "4"
       memory: 8Gi
 
 server:
   resources:
     requests:
-      cpu: "200m"
+      cpu: "300m"
       memory: 500Mi
     limits:
-      # cpu: "4"
+      cpu: "4"
       memory: 6Gi
 
 router:
@@ -76,23 +76,21 @@ observability:
       memory: 250Mi
 
 panoramic:
-  enabled: false
   resources:
     requests:
       cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "4"
+      cpu: "4"
       memory: 8Gi
 
 sbom:
-  enabled: false
   resources:
     requests:
       cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "4"
+      cpu: "4"
       memory: 10Gi
 
 policyenforcer:
@@ -109,17 +107,19 @@ policyenforcer:
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
 ##
 postgresql:
-  resources:
-    requests:
-      memory: 64Gi
-      cpu: "16"
-    limits:
-      memory: 64Gi
-      # cpu: "32"
+
   primary:
+    resources:
+      requests:
+        memory: 64Gi
+        cpu: "16"
+      limits:
+        memory: 64Gi
+        cpu: "32"
     extendedConfiguration: |
       max_connections = 1200
       listen_addresses = '*'
+      max_wal_size = '4GB'
     affinity:
       # Require PostgreSQL pod to run on a different node than Xray pods
       podAntiAffinity:
@@ -143,7 +143,7 @@ rabbitmq:
       cpu: "200m"
       memory: 500Mi
     limits:
-      # cpu: "4"
+      cpu: "4"
       memory: 5Gi
   affinity:
     podAntiAffinity:

@@ -24,44 +24,44 @@ xray:
 analysis:
   resources:
     requests:
-      cpu: "30m"
+      cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "3"
-      memory: 4Gi
+      cpu: "4"
+      memory: 10Gi
 
 indexer:
   resources:
     requests:
-      cpu: "40m"
-      memory: 250Mi
+      cpu: "300m"
+      memory: 550Mi
     limits:
-      # cpu: "4"
-      memory: 4Gi
+      cpu: "6"
+      memory: 8Gi
 
 persist:
   resources:
     requests:
-      cpu: "30m"
+      cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "3"
-      memory: 4Gi
+      cpu: "4"
+      memory: 8Gi
 
 server:
   resources:
     requests:
-      cpu: "60m"
-      memory: 250Mi
+      cpu: "300m"
+      memory: 500Mi
     limits:
-      # cpu: "3"
-      memory: 4Gi
+      cpu: "4"
+      memory: 6Gi
 
 router:
   resources:
     requests:
-      cpu: "20m"
-      memory: 50Mi
+      cpu: "60m"
+      memory: 100Mi
     limits:
       # cpu: "1"
       memory: 1Gi
@@ -76,49 +76,50 @@ observability:
       memory: 250Mi
 
 panoramic:
-  enabled: false
   resources:
     requests:
-      cpu: "30m"
+      cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "3"
-      memory: 4Gi
+      cpu: "4"
+      memory: 8Gi
 
 sbom:
-  enabled: false
   resources:
     requests:
-      cpu: "30m"
+      cpu: "100m"
       memory: 250Mi
     limits:
-      # cpu: "3"
-      memory: 4Gi
+      cpu: "4"
+      memory: 10Gi
 
 policyenforcer:
   resources:
     requests:
-      cpu: "30m"
+      memory: "250Mi"
+      cpu: "60m"
     limits:
-      memory: "4Gi"
-      cpu: "3"
+      memory: "8Gi"
+      cpu: "4"
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
 ##
 postgresql:
-  resources:
-    requests:
-      memory: 8Gi
-      cpu: "4"
-    limits:
-      memory: 8Gi
-      # cpu: "12"
+
   primary:
+    resources:
+      requests:
+        memory: 16Gi
+        cpu: "6"
+      limits:
+        memory: 16Gi
+        cpu: "18"
     extendedConfiguration: |
-      max_connections = 100
+      max_connections = 500
       listen_addresses = '*'
+      max_wal_size = '4GB'
     affinity:
       # Require PostgreSQL pod to run on a different node than Xray pods
       podAntiAffinity:
