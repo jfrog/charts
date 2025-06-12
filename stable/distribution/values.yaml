@@ -42,12 +42,15 @@ global:
 ## String to fully override distribution.fullname template
 # fullnameOverride:
 
+## Send all services logs to container STDOUT in JSON format
+logging:
+  logToStdoutJson: false
 ## Init containers
 initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.4.949.1716471857
+    tag: 9.5.1739420147
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -124,6 +127,20 @@ networkpolicy: []
 #         matchLabels:
 #           app: distribution
 
+## Apply horizontal pod auto scaling on distribution pods
+## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  metrics: |
+    # - type: Resource
+    #   resource:
+    #     name: memory
+    #     target:
+    #       type: Utilization
+    #       averageUtilization: 75  # Target memory usage is 75% of the allocated memory per pod
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -158,20 +175,30 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 15.6.0-debian-11-r16
-  postgresqlUsername: distribution
-  postgresqlPassword: ""
-  postgresqlDatabase: distribution
-  postgresqlExtendedConf:
-    listenAddresses: "*"
-    maxConnections: "1500"
-  service:
-    port: 5432
-  persistence:
-    enabled: true
-    size: 50Gi
-    # existingClaim:
+    tag: 16.6.0-debian-12-r2
+  auth:
+    username: "distribution"
+    password: ""
+    database: "distribution"
   primary:
+    extendedConfiguration: |
+      listen_addresses = '*'
+      max_connections = 1500
+    persistence:
+      enabled: true
+      size: 200Gi
+      # existingClaim:
+    service:
+      ports:
+        postgresql: 5432
+    resources: {}
+    # resources:
+    #   requests:
+    #     cpu: "2"
+    #     memory: 512Mi
+    #   limits:
+    #     cpu: "3"
+    #     memory: 1024Mi
     nodeSelector: {}
     affinity: {}
     tolerations: []
@@ -179,18 +206,10 @@ postgresql:
     nodeSelector: {}
     affinity: {}
     tolerations: []
-  resources: {}
-  ## Disable SecurityContext and containerSecurityContext for openshift
   securityContext:
     enabled: true
   containerSecurityContext:
     enabled: true
-    # requests:
-    #   memory: "1Gi"
-    #   cpu: "250m"
-    # limits:
-    #   memory: "2Gi"
-    #   cpu: "1"
 ## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
 ## specify custom/external database details here
 database:
@@ -220,7 +239,7 @@ redis:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
-    tag: 7.2.4-debian-11-r5
+    tag: 7.4.1-debian-12-r3
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
@@ -562,7 +581,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.118.0
+    tag: 7.165.2
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -599,7 +618,8 @@ router:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+          - >
+            curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} -H "X-Jfrog-Ignore-Unhealthy: true" {{ include "distribution.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -642,7 +662,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.29.0
+    tag: 2.4.0
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}

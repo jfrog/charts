@@ -1,6 +1,6 @@
 # JFrog Distribution Helm Chart
 
-**IMPORTANT!** Our Helm Chart docs have moved to our main documentation site. Below you will find the basic instructions for installing Distribution. For all other information, refer to [Installing Distribution](https://www.jfrog.com/confluence/display/JFROG/Installing+Distribution).
+**IMPORTANT!** Our Helm Chart docs have moved to our main documentation site. Below you will find the basic instructions for installing Distribution. For all other information, refer to [Installing Distribution](https://jfrog.com/help/r/jfrog-installation-setup-documentation/installing-distribution).
 
 ## Prerequisites Details
 * Kubernetes 1.19+

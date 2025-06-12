@@ -1,7 +1,83 @@
 # JFrog Artifactory-ha Chart Changelog
-All changes to this chart will be documented in this file.
+All changes to this chart will be documented in this file
 
-## [107.90.9] - July 18, 2024
+## [107.111.9] - Jun 12, 2025
+* Added HPA support for the Artifactory HA chart, but only for primary resources. Member resources are going to be deprecated
+* Updated rtfs version to `1.6.13`
+* Added a default resource preset for PostgreSQL as small
+* Updated postgresql upgrade warnings
+* Added custom HPA metrics support for Artifactory service `autoscaling.metrics`
+* Added new JFConfig service
+* Enabled Evidence service by default to true
+* Fixed an issue with JFConfig by adding a missing volumeMount
+
+## [107.109.0] - March 04, 2025
+* Adjusted Nginx settings for better high-scale efficiency
+* Upgrade postgres image to 16.6.0-debian-12-r2
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+  * This has many changes related to key names and path in values yaml
+  * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+  * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+  * Support to change postgres admin username is removed in postgres chart, will be postgres
+  * Delete the postgresql statefulset and postgresql secret before the upgrade. for more information, please refer the postgresql upgrade [docs](https://github.com/bitnami/charts/tree/main/bitnami/postgresql#how-to-upgrade-to-version-1100)
+
+## [107.107.0] - Feb 13, 2025
+* Added support for json based console logging `.Values.logToStdoutJson`
+* Added `customPersistentVolumeClaim` as mount for all containers
+
+## [107.104.0] - Feb 18, 2025
+* Added new RTFS service
+* Added new Topology service
+* Added new onemodel service
+* Added customVolumeMounts support for frontend,event,evidence,jfconnect,topology,observability containers
+* Added ingress and nginx routing support for rtfs service context
+* Added recommended sizing extraEnvironmentVariables for access container
+* Added default extra javaOpts support in system yaml for topology
+* Modified the RTFS chart and the topology probe values
+* Fixed secret based annotations for RTFS deployment
+* Fixed `shared` block in system.yaml to include all properties
+* Added size based resources for evidence service and rtfs service
+* Fixed RTFS jfrogUrl issue for platform chart
+* Added hpa support for RTFS service
+* Updated rtfs version to `1.5.26`
+* Fixed disabling onemodel using `onemodel.enabled=false`
+* Removed unwanted database support from rtfs
+## [107.102.0] - Nov 26, 2024
+* Remove the Xms and Xmx with InitialRAMPercentage and MaxRAMPercentage if they are available in extra_java_options
+
+## [107.98.0] - Nov 06, 2024
+* Add support for `extraEnvironmentVariables` on filebeat Sidecar [GH-1377](https://github.com/jfrog/charts/pull/1377)
+* Support for SSL offload HTTPS proto override in Nginx service (ClusterIP, LoadBalancer) layer. Introduced `nginx.service.ssloffloadForceHttps` field with boolean type. [GH-1906](https://github.com/jfrog/charts/pull/1906)
+* Enable Access workers integration when artifactory.worker.enabled is true
+* Added `signedUrlExpirySeconds` option to artifactory.persistence.type of `google-storage`, `google-storage-v2`, and `google-storage-v2-direct` [GH-1858](https://github.com/jfrog/charts/pull/1858)
+* Added support to bootstrap jfconnect custom certs to jfconnect trusted directory
+* Fixed the type of `.Values.artifactory.persistence.googleStorage.signedUrlExpirySeconds` in binarystore.xml from boolean to integer
+* Added support for modifying `pathType` in ingress
+* Added fix for database credentials secret in non-unified secret installations
+
+## [107.96.0] - Sep 18, 2024
+* Merged Artifactory sizing templates to a single file per size
+* Added metadata and observability standalone image support
+
+## [107.95.0] - Aug 26, 2024
+* Adding missing annotations to primary Artifactory Service [GH-1862](https://github.com/jfrog/charts/pull/1862)
+
+## [107.94.0] - Aug 14, 2024
+* Fixed #Expose rtfs port only when it is enabled
+
+## [107.93.0] - Aug 9, 2024
+* Added support for worker via `artifactory.worker.enabled` flag
+* Fixed creation of duplicate objects in statefulSet
+
+## [107.92.0] - July 31, 2024
+* Updating the example link for downloading the DB driver
+* Adding dedicated ingress and service path for GRPC protocol
+
+## [107.91.0] - July 18, 2024
+* Remove X-JFrog-Override-Base-Url port when using default `443/80` ports
+
+## [107.90.0] - July 18, 2024
 * Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
 * Added new `nginx.hosts` to use Nginx server_name directive instead of `ingress.hosts`
 * Added a deprecation notice of ingress.hosts when `ngnix.enabled` is true
@@ -15,7 +91,6 @@ All changes to this chart will be documented in this file.
     `access.javaOpts.other`
     `access.resources`
     `access.extraEnvironmentVariables`
-* Updating the example link for downloading the DB driver
 * Added Binary Provider recommendations
 
 ## [107.89.0] - May 30, 2024

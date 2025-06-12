@@ -1,0 +1,42 @@
+{{- if .Values.rtfs.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rtfs.fullname" . }}
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    component: {{ .Values.rtfs.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+{{- if .Values.rtfs.service.labels }}
+{{ toYaml .Values.rtfs.service.labels | indent 4 }}
+{{- end }}
+{{- with .Values.rtfs.service.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.rtfs.service.type }}
+  {{- if eq .Values.rtfs.service.type "LoadBalancer" }}
+  {{- if .Values.rtfs.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.rtfs.service.loadBalancerIP }}
+  {{- end }}
+  {{- if .Values.rtfs.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{- toYaml .Values.rtfs.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if (or (eq .Values.rtfs.service.type "LoadBalancer") (eq .Values.rtfs.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.rtfs.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.router.externalPort }}
+      targetPort: {{ .Values.router.internalPort }}
+      protocol: TCP
+      name: http-router
+  selector:
+    app: {{ template "artifactory.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.rtfs.name }}
+{{- end }}

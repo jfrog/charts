@@ -1,8 +1,33 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.26.1] - May 29, 2024
+## [102.30.1] - Mar 27, 2025
+* Upgrade postgres image to 16.6.0-debian-12-r2
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+  * This has many changes related to key names and path in values yaml
+  * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+  * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+  * Support to change postgres admin username is removed in postgres chart, will be postgres
+  * Delete the postgresql statefulset and postgresql secret before the upgrade. for more information, please refer the postgresql upgrade [docs](https://github.com/bitnami/charts/tree/main/bitnami/postgresql#how-to-upgrade-to-version-1100)
+* Updated postgresql upgrade warnings
+
+## [102.29.0] - Feb 28, 2025
+* Updated redis multi-arch tag version to 7.4.1-debian-12-r3
+* Added support for json based console logging `.Values.logToStdoutJson`
+* Adding HPA resource for Distribution chart
+* Added X-Jfrog-Ignore-Unhealthy header to router livenessProbe
+
+## [102.28.0] - Jan 14, 2025
+* Updated redis multi-arch tag version to 7.2.5-debian-12-r6
+
+## [102.27.0] - Oct 02, 2024
+* Adding distribution service with http-router port [GH-1872](https://github.com/jfrog/charts/pull/1872)
+
+## [102.26.0] - June 20, 2024
 * Fix the indentation of the commented-out sections in the values.yaml file
+* Fixed #adding colon in image registry which breaks deployment [GH-1892](https://github.com/jfrog/charts/pull/1892)
+* Fixed sizing file names
 
 ## [102.25.0] - May 16, 2024
 * Update postgresql tag version to `15.6.0-debian-12-r5`

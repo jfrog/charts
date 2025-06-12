@@ -5,6 +5,25 @@ ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
 ssl_session_cache shared:SSL:1m;
 ssl_prefer_server_ciphers   on;
 {{- end }}
+
+upstream router {
+  server {{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }};
+  keepalive 320;
+  keepalive_requests 10000;
+}
+
+upstream routerInternal {
+  server {{ include "artifactory-ha.fullname" . }}:{{ .Values.router.internalPort }};
+  keepalive 320;
+  keepalive_requests 10000;
+}
+
+upstream artifactory {
+  server {{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }};
+  keepalive 320;
+  keepalive_requests 10000;
+}
+
 ## server configuration
 server {
 {{- if .Values.nginx.internalPortHttps }}
@@ -61,14 +80,25 @@ location / {
   proxy_read_timeout  900;
   proxy_pass_header   Server;
   proxy_cookie_path   ~*^/.* /;
-  proxy_pass          {{ include "artifactory-ha.scheme" . }}://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalPort }}/;
+  proxy_pass          {{ include "artifactory-ha.scheme" . }}://router/;
+  proxy_set_header    Connection "";
   {{- if .Values.nginx.service.ssloffload}}
+  {{- if .Values.nginx.service.ssloffloadForceHttps}}
+  proxy_set_header    X-JFrog-Override-Base-Url https://$host;
+  proxy_set_header    X-Forwarded-Proto https;
+  {{- else }}
   proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+  {{- end }}
+  {{- else if or (eq (int .Values.nginx.https.internalPort) 80) (eq (int .Values.nginx.https.externalPort) 443)}}
+  proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+  proxy_set_header    X-Forwarded-Port  $server_port;
+  proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
   {{- else }}
   proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host:$host_port;
   proxy_set_header    X-Forwarded-Port  $server_port;
-  {{- end }}
   proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+  {{- end }}
   proxy_set_header    Host              $http_host;
   proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
   {{- if .Values.nginx.disableProxyBuffering}}
@@ -78,20 +108,26 @@ location / {
   {{- end }}
   add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
   location /artifactory/ {
-    if ( $request_uri ~ ^/artifactory/(.*)$ ) {
-      proxy_pass       http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/$1;
+    {{- if .Values.rtfs.enabled }}
+    if ($request_uri ~ ^/artifactory/service/rtfs/(.*)$ ) {
+      proxy_pass       http://router/artifactory/service/rtfs/$1;
+      break;
     }
-    proxy_pass         http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.artifactory.externalArtifactoryPort }}/artifactory/;
+    {{- end }}
+    if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+      proxy_pass       http://artifactory/artifactory/$1;
+    }
+    proxy_pass         http://artifactory/artifactory/;
   }
   location /pipelines/ {
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
+    proxy_set_header Connection "";
     proxy_set_header Host $http_host;
     {{- if .Values.router.tlsEnabled }}
-    proxy_pass  https://{{ include "artifactory-ha.fullname" . }}:{{ .Values.router.internalPort }};
+    proxy_pass  https://routerInternal;
     {{- else }}
-    proxy_pass  http://{{ include "artifactory-ha.fullname" . }}:{{ .Values.router.internalPort }};
+    proxy_pass  http://routerInternal;
     {{- end }}
   }
 }

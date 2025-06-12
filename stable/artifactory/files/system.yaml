@@ -2,17 +2,32 @@ router:
   serviceRegistry:
     insecure: {{ .Values.router.serviceRegistry.insecure }}
 shared:
-{{- if  .Values.artifactory.coldStorage.enabled }}
+{{- if .Values.artifactory.coldStorage.enabled }}
   jfrogColdStorage:
     coldInstanceEnabled: true
 {{- end }}
-{{ tpl (include "artifactory.metrics" .) . }}
+{{- if .Values.artifactory.worker.enabled }}
+  featureToggler:
+    worker: true
+{{- end }}
+{{- with include "artifactory.metrics" . }}
+  {{- . | nindent 2 }}
+{{- end }}
   logging:
+    {{- if .Values.logging.logToStdoutJson }}
+    enableJsonConsoleLogAppenders: {{ .Values.logging.logToStdoutJson }}
+    {{- end }}
     consoleLog:
       enabled: {{ .Values.artifactory.consoleLog }}
+      {{- if .Values.logging.logToStdoutJson }}
+      format: json
+      {{- end }}
   extraJavaOpts: >
     -Dartifactory.graceful.shutdown.max.request.duration.millis={{ mul .Values.artifactory.terminationGracePeriodSeconds 1000 }}
     -Dartifactory.access.client.max.connections={{ .Values.access.tomcat.connector.maxThreads }}
+{{- if .Values.artifactory.worker.enabled }}
+    -Dartifactory.workers.addon.support=true
+{{- end }}
   {{- with .Values.artifactory.javaOpts }}
     {{- if .corePoolSize }}
     -Dartifactory.async.corePoolSize={{ .corePoolSize }}
@@ -50,9 +65,9 @@ shared:
     allowNonPostgresql: {{ .Values.database.allowNonPostgresql }}
     {{- if .Values.postgresql.enabled }}
     type: postgresql
-    url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}"
+    url: "jdbc:postgresql://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.primary.service.ports.postgresql }}/{{ .Values.postgresql.auth.database }}"
     driver: org.postgresql.Driver
-    username: "{{ .Values.postgresql.postgresqlUsername }}"
+    username: "{{ .Values.postgresql.auth.username }}"
     {{- else }}
     type: "{{ .Values.database.type }}"
     driver: "{{ .Values.database.driver }}"
@@ -81,10 +96,8 @@ frontend:
   session:
     timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
 access:
-  runOnArtifactoryTomcat: {{ .Values.access.runOnArtifactoryTomcat | default false }}
   database:
     maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
-  {{- if not (.Values.access.runOnArtifactoryTomcat | default false) }}
   extraJavaOpts: >
   {{- if .Values.splitServicesToContainers }}
     -XX:InitialRAMPercentage=20
@@ -95,12 +108,15 @@ access:
     {{ .other }}
   {{- end }}
   {{- end }}
-  {{- end }}
   tomcat:
     connector:
       maxThreads: {{ .Values.access.tomcat.connector.maxThreads }}
       sendReasonPhrase: {{ .Values.access.tomcat.connector.sendReasonPhrase }}
       extraConfig: {{ .Values.access.tomcat.connector.extraConfig }}
+{{- if .Values.artifactory.worker.enabled }}
+  worker:
+    enabled: true
+{{- end }}
 {{- if .Values.mc.enabled }}
 mc:
   enabled: true
@@ -126,22 +142,60 @@ jfconnect:
 jfconnect_service:
   enabled: false
 {{- end }}
-{{- if and .Values.federation.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
-federation:
-  enabled: true
-  embedded: {{ .Values.federation.embedded }}
-  extraJavaOpts: {{ .Values.federation.extraJavaOpts }}
-  port: {{ .Values.federation.internalPort }}
-rtfs:
+{{- if .Values.jfconfig.enabled }}
+jfconfig:
+  enabled: {{ .Values.jfconfig.enabled }}
   database:
-    driver: org.postgresql.Driver
-    type: postgresql
-    username: {{ .Values.federation.database.username }}
-    password: {{ .Values.federation.database.password }}
-    url: jdbc:postgresql://{{ .Values.federation.database.host }}:{{ .Values.federation.database.port }}/{{ .Values.federation.database.name }}
+    maxOpenConnections: {{ .Values.jfconfig.database.maxOpenConnections }}
+  port: {{ .Values.jfconfig.internalPort }}
+  extraJavaOpts: >
+    -XX:+UseStringDeduplication
+    -XX:+UseG1GC
+  {{- if .Values.splitServicesToContainers }}
+    -XX:InitialRAMPercentage=20
+    -XX:MaxRAMPercentage=70
+  {{- end }}
+  {{- with .Values.jfconfig.javaOpts }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}  
 {{- else }}
-federation:
+jfconfig:
+  enabled: {{ .Values.jfconfig.enabled }}
+{{- end }}
+onemodel:
+  enabled: {{ .Values.onemodel.enabled }}
+  {{- if .Values.onemodel.apolloYaml }}
+  apolloYaml:
+{{ toYaml .Values.onemodel.apolloYaml | nindent 6 }}
+  {{- end}}
+{{- if and .Values.rtfs.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+rtfs:
+  enabled: true
+{{- else }}
+rtfs:
   enabled: false
+{{- end }}
+{{- if .Values.topology.enabled }}
+topology:
+  enabled: {{ .Values.topology.enabled }}
+  database:
+    maxOpenConnections: {{ .Values.topology.database.maxOpenConnections }}
+  port: {{ .Values.topology.internalPort }}
+  extraJavaOpts: >
+  {{- if .Values.splitServicesToContainers }}
+    -XX:InitialRAMPercentage=20
+    -XX:MaxRAMPercentage=70
+  {{- end }}
+  {{- with .Values.topology.javaOpts }}
+  {{- if .other }}
+    {{ .other }}
+  {{- end }}
+  {{- end }}
+{{- else }}
+topology:
+  enabled: {{ .Values.topology.enabled }}
 {{- end }}
 {{- if .Values.event.webhooks }}
 event:

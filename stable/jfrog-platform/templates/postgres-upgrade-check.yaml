@@ -1,5 +1,0 @@
-{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    {{- if  not (default .Values.databaseUpgradeReady false )  }}
-        {{- fail "\n\nUPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/jfrog-platform/CHANGELOG.md) \nIf you are upgrading from a chart version (< 10.18.x) that has postgresql.image.tag of 13.x, make sure to set the current postgresql.image.tag to the same tag and databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 10.18.x), just set databaseUpgradeReady=true. \n" }}
-    {{- end }}
-{{- end }}

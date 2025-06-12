@@ -1,5 +1,5 @@
 # Main Nginx configuration file
-worker_processes  4;
+worker_processes  auto;
 
 {{- if .Values.nginx.logs.stderr }}
 error_log  stderr {{ .Values.nginx.logs.level }};
@@ -23,7 +23,9 @@ stream {
 {{- end }}
 
 events {
-  worker_connections  1024;
+  worker_connections  8192;
+  use epoll;
+  multi_accept on;
 }
 
 http {

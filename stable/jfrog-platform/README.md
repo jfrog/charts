@@ -2,6 +2,8 @@
 
 **NOTE:** This is the **GA** release of the JFrog Platform chart (Backward compatibility with versions < 10.0.0 is not supported)
 
+**NOTE:** From 11.x, Insights and Pipelines are no longer part of the JFrog Platform chart. To continue using these products, use the 10.x version of the Jfrog Platform chart.
+
 ## Prerequisites Details
 
 * Kubernetes 1.19+
@@ -10,7 +12,7 @@
 ## Chart Details
 This chart will do the following:
 
-* Deploy JFrog Platform (artifactory, xray, distribution, insight and pipelines). Fully customizable.
+* Deploy JFrog Platform (Artifactory, Xray, Catalog, Curation, JAS, Worker and Distribution). Fully customizable.
 * Deploy a PostgreSQL database using the bitnami/postgresql chart (can be changed) **NOTE:** For production grade installations it is recommended to use an external PostgreSQL.
 * Deploy a Rabbitmq using the bitnami/rabbitmq chart (can be changed)
 * Deploy an optional Nginx server
@@ -30,6 +32,36 @@ helm repo update
 To install the chart with the release name `jfrog-platform`
 ```bash
 helm upgrade --install jfrog-platform jfrog/jfrog-platform --namespace jfrog-platform --create-namespace 
+```
+
+### Apply Sizing configurations to the Chart
+The JFrog Platform deployment architecture and its sizing requirements are described [here](https://jfrog.com/help/r/jfrog-platform-reference-architecture/jfrog-platform-reference-architecture).
+Note that sizings with more than one replica (HA) require an E/E+ license.
+To apply the chart with recommended sizing configurations :
+For example , for small sizings :
+
+```bash
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f sizing/platform-small.yaml --namespace platform --create-namespace
+````
+
+### Upgrade Chart
+**NOTE:** If you are using bundled PostgreSQL, before upgrading the JFrog Platform chart, follow these steps:
+
+1. Get the current version of PostgreSQL in your installation,
+```yaml
+kubectl get pod jfrog-platform-postgresql-0 -n jfrog-platform -o jsonpath="{.spec.containers[*].image}";
+```
+2. Copy the version from the output and set the following in your customvalues.yaml file,
+```yaml
+postgresql:
+  image:
+    tag: <postgres_version>
+
+databaseUpgradeReady: true
+```
+3. Run the upgrade command using your customvalues.yaml file,
+```bash
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f customvalues.yaml --namespace jfrog-platform --create-namespace
 ```
 
 ### High Availability
@@ -106,17 +138,15 @@ If you want to keep managing the artifactory license using the same method, you 
 This chart would provide flexibility to enable one or more of the jfrog products.
 1. Xray
 2. Distribution
-3. Insight
-4. Pipelines
+3. Worker
+4. Catalog
+5. Curation
+6. JAS
 
-For example to enable distribution, insight and pipelines with artifactory, you can refer the following yaml and pass it during install.
+For example to enable distribution with artifactory, you can refer the following yaml and pass it during install.
 customvalues.yaml
 ```yaml
 distribution:
-  enabled: true
-insight:
-  enabled: true
-pipelines:
   enabled: true
 ````
 ```bash

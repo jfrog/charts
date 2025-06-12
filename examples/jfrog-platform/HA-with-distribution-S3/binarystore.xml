@@ -1,0 +1,21 @@
+<config version="2">
+   <chain>
+        <provider id="cache-fs" type="cache-fs">
+            <provider id="s3-storage-v3" type="s3-storage-v3"/>
+        </provider>
+   </chain>
+   <provider id="s3-storage-v3" type="s3-storage-v3">
+       <endpoint>s3.amazonaws.com</endpoint>
+       <bucketName>bucketName</bucketName>
+       <path>pathPrefix</path>
+       <credential>yourCredentials</credential>
+       <usePresigning>true</usePresigning>
+       <signatureExpirySeconds>600</signatureExpirySeconds>
+       <maxConnections>50</maxConnections>
+       <connectionTimeout>10000</connectionTimeout>
+       <useInstanceCredentials>true</useInstanceCredentials>
+   </provider>
+   <provider type="cache-fs" id="cache-fs">
+       <maxCacheSize>5000000000</maxCacheSize>
+   </provider>
+</config>

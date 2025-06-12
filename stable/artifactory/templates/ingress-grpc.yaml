@@ -1,0 +1,80 @@
+{{- if .Values.ingressGrpc.enabled -}}
+{{- $serviceName := include "artifactory.serviceGrpc.fullname" . -}}
+{{- $servicePort := .Values.artifactory.externalPort -}}
+{{- $ingressName := include "artifactory.ingressGrpc.fullname" . -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+apiVersion: networking.k8s.io/v1
+{{- else if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
+apiVersion: networking.k8s.io/v1beta1
+{{- else }}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $ingressName }}
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.ingressGrpc.labels }}
+{{ .Values.ingressGrpc.labels | toYaml | trimSuffix "\n"| indent 4 -}}
+{{- end}}
+{{- if .Values.ingressGrpc.annotations }}
+  annotations:
+{{ .Values.ingressGrpc.annotations | toYaml | trimSuffix "\n" | indent 4 -}}
+{{- end }}
+spec:
+  {{- if and .Values.ingressGrpc.className (semverCompare ">=1.18.0-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingressGrpc.className }}
+  {{- end }}
+  {{- if .Values.ingressGrpc.defaultBackend.enabled }}
+    {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+  defaultBackend:
+    service:
+      name: {{ $serviceName }}
+      port:
+        number: {{ $servicePort }}
+    {{- else }}
+  backend:
+    serviceName: {{ $serviceName }}
+    servicePort: {{ $servicePort }}
+    {{- end }}
+  {{- end }}
+  rules:
+{{- if .Values.ingressGrpc.hosts }}
+  {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
+    {{- range $host := .Values.ingressGrpc.hosts }}
+  - host: {{ $host | quote }}
+    http:
+      paths:
+        - path: {{ $.Values.ingressGrpc.grpcPath }}
+          pathType: {{ $.Values.ingressGrpc.pathType | default "ImplementationSpecific" }}
+          backend:
+            service:
+              name: {{ $serviceName }}
+              port:
+                number: {{ $servicePort }}
+    {{- end }}
+  {{- else }}
+    {{- range $host := .Values.ingressGrpc.hosts }}
+  - host: {{ $host | quote }}
+    http:
+      paths:
+        - path: {{ $.Values.ingressGrpc.grpcPath }}
+          backend:
+            serviceName: {{ $serviceName }}
+            servicePort: {{ $servicePort }}
+    {{- end }}
+  {{- end }}
+{{- end -}}
+  {{- with .Values.ingressGrpc.additionalRules }}
+{{ tpl . $ | indent 2 }}
+  {{- end }}
+
+  {{- if .Values.ingressGrpc.tls }}
+  tls:
+{{ toYaml .Values.ingressGrpc.tls | indent 4 }}
+  {{- end -}}
+
+{{- end -}}

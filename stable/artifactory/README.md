@@ -32,10 +32,11 @@ helm upgrade --install artifactory jfrog/artifactory --namespace artifactory --c
 ```
 
 ### Apply Sizing configurations to the Chart
+Note that sizings with more than one replica require an enterprise license for HA . Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/high-availability)
 To apply the chart with recommended sizing configurations :
 For small configurations :
 ```bash
-helm upgrade --install artifactory jfrog/artifactory -f sizing/artifactory-small-extra-config.yaml -f sizing/artifactory-small.yaml --namespace artifactory --create-namespace
+helm upgrade --install artifactory jfrog/artifactory -f sizing/artifactory-small.yaml --namespace artifactory --create-namespace
 ```
 
 ## Uninstalling Artifactory

@@ -7,6 +7,19 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Handle uscases where the release name contains artifactory as part of it
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "jfrog-platform.artifactory.fullname" -}}
+{{- $name := "artifactory" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -96,16 +109,12 @@ Resolve unifiedSecretInstallation name
 {{- if not .Values.xray.unifiedSecretInstallation }}
 {{- printf "%s-%s" (include "xray.fullname" . ) "database-creds" -}}
 {{- else }}
-{{- printf "%s-%s" (include "xray.name" .) "unified-secret" -}}
+{{- printf "%s-%s" (include "xray.fullname" .) "unified-secret" -}}
 {{- end }}
 {{- end -}}
-{{- if eq .Chart.Name "insight" -}}
-{{- if not .Values.insightServer.unifiedSecretInstallation }}
-{{- printf "%s-%s" (include "insight.fullname" . ) "database-creds" -}}
-{{- else }}
-{{- printf "%s-%s" (include "insight.name" .) "unified-secret" -}}
+{{- if eq .Chart.Name "catalog" -}}
+{{- printf "%s" (include "catalog.fullname" .)  -}}
 {{- end }}
-{{- end -}}
 {{- end -}}
 
 {{/*
@@ -128,51 +137,9 @@ Custom init container for Postgres setup
     - >
       echo "Running init db scripts";
       bash /scripts/setupPostgres.sh
-  {{- if eq .Chart.Name "pipelines" }}
   env:
     - name: PGUSERNAME
-    {{- if .Values.global.database.secrets.adminUsername }}
-      valueFrom:
-        secretKeyRef:
-          name: {{ tpl .Values.global.database.secrets.adminUsername.name . }}
-          key: {{ tpl .Values.global.database.secrets.adminUsername.key . }}
-    {{- else if .Values.global.database.adminUsername }}
-      value: {{ .Values.global.database.adminUsername }}
-    {{- end }}
-    - name: DB_HOST
-      value: {{ tpl .Values.global.database.host . }}
-    - name: DB_PORT
-      value: {{ .Values.global.database.port | quote }}
-    - name: DB_SSL_MODE
-      value: {{ .Values.global.database.sslMode | quote }}
-    - name: DB_NAME
-      value: {{ .Values.global.postgresql.database }}
-    - name: DB_USERNAME
-      value: {{ .Values.global.postgresql.user }}
-    - name: DB_PASSWORD
-      value: {{ .Values.global.postgresql.password }}
-    - name: PGPASSWORD
-    {{- if .Values.global.database.secrets.adminPassword }}
-      valueFrom:
-        secretKeyRef:
-          name: {{ tpl .Values.global.database.secrets.adminPassword.name . }}
-          key: {{ tpl .Values.global.database.secrets.adminPassword.key . }}
-    {{- else if .Values.global.database.adminPassword }}
-      value: {{ .Values.global.database.adminPassword }}
-    {{- end }}
-    - name: CHART_NAME
-      value: {{ .Chart.Name }}
-  {{- else }}
-  env:
-    - name: PGUSERNAME
-    {{- if .Values.global.database.secrets.adminUsername }}
-      valueFrom:
-        secretKeyRef:
-          name: {{ tpl .Values.global.database.secrets.adminUsername.name . }}
-          key: {{ tpl .Values.global.database.secrets.adminUsername.key . }}
-    {{- else if .Values.global.database.adminUsername }}
-      value: {{ .Values.global.database.adminUsername }}
-    {{- end }}
+      value: postgres
     - name: DB_HOST
       value: {{ tpl .Values.global.database.host . }}
     - name: DB_PORT
@@ -212,11 +179,10 @@ Custom init container for Postgres setup
     {{- end }}
     - name: CHART_NAME
       value: {{ .Chart.Name }}
-  {{- end }}
   volumeMounts:
     - name: postgres-setup-init-vol
       mountPath: "/scripts"
-{{- end }}
+  {{- end }}
 {{- end }}
 
 {{/*
@@ -269,7 +235,7 @@ Define database name
 Resolve jfrog url
 */}}
 {{- define "jfrog-platform.jfrogUrl" -}}
-{{- printf "http://%s-artifactory:8082" .Release.Name -}}
+{{- printf "http://%s:8082" (include "jfrog-platform.artifactory.fullname" .) -}}
 {{- end -}}
 
 {{/*
@@ -279,6 +245,32 @@ Expand the name of rabbit chart.
 {{- default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- end -}}
 
+{{/*
+Expand the name of postgresql chart.
+*/}}
+{{- define "postgresql.name" -}}
+{{- default (printf "%s" "postgresql") .Values.postgresql.nameOverride -}}
+{{- end -}}
+
+{{- define "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" -}}
+{{- $name := default "postgresql-upgradestsdeletecheck" -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use for postgresql upgrade version check
+*/}}
+{{- define "jfrog-platform.postgresql.upgradeHookSTSDelete.serviceAccountName" -}}
+{{- if .Values.postgresql.upgradeHookSTSDelete.serviceAccount.create -}}
+{{ default (include "jfrog-platform.postgresql.upgradeHookSTSDelete.fullname" .) .Values.postgresql.upgradeHookSTSDelete.serviceAccount.name }}
+{{- else -}}
+{{ default "postgresql-upgradecheck" .Values.postgresql.upgradeHookSTSDelete.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
 
 {{- define "jfrog-platform.rabbitmq.migration.fullname" -}}
 {{- $name := default "rabbitmq-migration" -}}
@@ -312,5 +304,34 @@ Create external Rabbitmq URL for platform chart scenario.
 {{- $rabbitmqPort := .Values.rabbitmq.service.ports.amqp -}}
 {{- $name := default (printf "%s" "rabbitmq") .Values.rabbitmq.nameOverride -}}
 {{- printf "%s://%s-%s:%g/" "amqp" .Release.Name $name $rabbitmqPort -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create external Rabbitmq Username for platform chart scenario.
+*/}}
+{{- define "xray.rabbitmq.extRabbitmq.username" -}}
+{{- $username := .Values.rabbitmq.auth.username -}}
+{{- printf "%s" $username -}}
+{{- end -}}
+
+
+{{/*
+Create external Rabbitmq Password for platform chart scenario.
+*/}}
+{{- define "xray.rabbitmq.extRabbitmq.password" -}}
+{{- if not .Values.rabbitmq.auth.existingPasswordSecret -}}
+{{- $password := .Values.rabbitmq.auth.password -}}
+{{- printf "%s" $password -}}
+{{- else if .Values.rabbitmq.auth.existingPasswordSecret -}}
+{{- $secret := lookup "v1" "Secret" .Release.Namespace .Values.rabbitmq.auth.existingPasswordSecret -}}
+{{- if $secret -}}
+{{- if index $secret.data "rabbitmq-password" -}}
+{{- $password := index $secret.data "rabbitmq-password" | b64dec -}}
+{{- printf "%s" $password -}}
+{{- else -}}
+{{- fail "Error: rabbitmq-password key not found in the Secret." -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

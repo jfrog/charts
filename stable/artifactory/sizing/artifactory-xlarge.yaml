@@ -1,7 +1,9 @@
-##############################################################
+##############################################################################################
 # The xlarge sizing
 # This size is intended for very large organizations. It can be increased with adding replicas
-##############################################################
+# [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
+# hence this configuration will be overridden when enabling systemYamlOverride
+##############################################################################################
 splitServicesToContainers: true
 artifactory:
   # Enterprise and above licenses are required for setting replicaCount greater than 1.
@@ -20,15 +22,43 @@ artifactory:
       # cpu: "14"
       memory: 16Gi
 
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=40
+      -XX:MaxRAMPercentage=65
+      -Dartifactory.async.corePoolSize=160
+      -Dartifactory.async.poolMaxQueueSize=50000
+      -Dartifactory.http.client.max.total.connections=150
+      -Dartifactory.http.client.max.connections.per.route=150
+      -Dartifactory.access.client.max.connections=150
+      -Dartifactory.metadata.event.operator.threads=5
+      -XX:MaxMetaspaceSize=512m
+      -Djdk.nio.maxCachedBufferSize=1048576
+      -XX:MaxDirectMemorySize=1024m
+  tomcat:
+    connector:
+      maxThreads: 600
+      extraConfig: 'acceptCount="1200" acceptorThreadCount="2" compression="off" connectionLinger="-1" connectionTimeout="120000" enableLookups="false"'
+
+  database:
+    maxOpenConnections: 150
+
   extraEnvironmentVariables:
     - name: MALLOC_ARENA_MAX
       value: "16"
-    - name : JF_SHARED_NODE_HAENABLED
-      value: "true"
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
 
 access:
+  tomcat:
+    connector:
+      maxThreads: 150
+  javaOpts:
+    other: >
+      -XX:InitialRAMPercentage=20
+      -XX:MaxRAMPercentage=60
+  database:
+    maxOpenConnections: 150
   resources:
     requests:
       cpu: 500m
@@ -36,15 +66,21 @@ access:
     limits:
       # cpu: 1
       memory: 3Gi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "16"
+    - name: SKIP_WAIT_FOR_EXTERNAL_DB
+      value: "true"
+
 
 router:
   resources:
     requests:
-      cpu: 200m
-      memory: 500Mi
-    limits:
-      # cpu: "4"
+      cpu: 400m
       memory: 1Gi
+    limits:
+      # cpu: "8"
+      memory: 2Gi
 
 frontend:
   resources:
@@ -56,9 +92,20 @@ frontend:
       memory: 1Gi
 
 metadata:
+  database:
+    maxOpenConnections: 150
   resources:
     requests:
       cpu: 200m
+      memory: 200Mi
+    limits:
+      # cpu: "4"
+      memory: 1Gi
+
+onemodel:
+  resources:
+    requests:
+      cpu: 250m
       memory: 200Mi
     limits:
       # cpu: "4"
@@ -91,6 +138,28 @@ jfconnect:
       # cpu: 500m
       memory: 250Mi
 
+jfconfig:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1000Mi
+    limits:
+      memory: 1500Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "8"
+
+topology:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1000Mi
+    limits:
+      memory: 1500Mi
+  extraEnvironmentVariables:
+    - name: MALLOC_ARENA_MAX
+      value: "8"
+
 nginx:
   replicaCount: 2
   disableProxyBuffering: true
@@ -103,9 +172,9 @@ nginx:
       memory: "8Gi"
 
 postgresql:
-  postgresqlExtendedConf:
-    maxConnections: "2000"
   primary:
+    extendedConfiguration: |
+      max_connections = 2000
     affinity:
       # Require PostgreSQL pod to run on a different node than Artifactory pods
       podAntiAffinity:
@@ -117,10 +186,28 @@ postgresql:
                   values:
                     - artifactory
             topologyKey: kubernetes.io/hostname
+    resources:
+      requests:
+        memory: 128Gi
+        cpu: "32"
+      limits:
+        memory: 128Gi
+        # cpu: "64"
+
+evidence:
   resources:
     requests:
-      memory: 128Gi
-      cpu: "32"
+      cpu: 200m
+      memory: 500Mi
     limits:
-      memory: 128Gi
-      # cpu: "64"
+      # cpu: "2"
+      memory: 1Gi
+
+rtfs:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 3500Mi
+    limits:
+      # cpu: "2"
+      memory: 3500Mi

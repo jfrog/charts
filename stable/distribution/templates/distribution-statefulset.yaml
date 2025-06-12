@@ -8,6 +8,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.distribution.name }}
+    version: {{ include "distribution.app.version" . }}
     {{- with .Values.distribution.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
@@ -15,7 +16,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Distribution 1.x currently not supported!\nIf this is an upgrade over an existing Distribution 2.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/distribution/CHANGELOG.md)\nNote: If you are upgrading from a chart version (< 102.23.x) that has postgresql.image.tag of 9.x or 10.x or 12.x or 13.x, make sure to set the current postgresql.image.tag to the same tag and databaseUpgradeReady=true \nOR \nIf you are upgrading from a chart version (>= 102.23.x), just set databaseUpgradeReady=true \n" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.distribution.statefulset.annotations }}
   annotations:
@@ -199,7 +200,7 @@ spec:
           echo "Waiting for postgresql to come up"
           ready=false;
           while ! $ready; do echo waiting;
-            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.service.port }}"; exit_status=$?;
+            timeout 2s bash -c "</dev/tcp/{{ .Release.Name }}-postgresql/{{ .Values.postgresql.primary.service.ports.postgresql }}"; exit_status=$?;
             if [[ $exit_status -eq 0 ]]; then ready=true; echo "database ok"; fi; sleep 1; 
           done
       {{- end }}
@@ -301,7 +302,7 @@ spec:
               key: db-password
         {{- else if .Values.postgresql.enabled }}
               name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
+              key: password
         {{- end }}
       {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}

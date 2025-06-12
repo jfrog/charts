@@ -1,6 +1,104 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.1.5] - Jun 12, 2025
+* Update dependency artifactory chart version to 107.111.9
+* Update dependency xray chart version to 103.118.20
+* Update dependency catalog chart version to 101.21.1
+
+## [11.1.4] - May 27, 2025
+* Update dependency artifactory chart version to 107.111.8
+* Update dependency xray chart version to 103.118.17
+* Update dependency distribution chart version to 102.30.1
+* Update dependency catalog chart version to 101.19.1
+
+## [11.1.3] - May 09, 2025
+* Update dependency xray chart version to 103.118.13
+
+## [11.1.2] - May 5, 2025
+* Fixed an issue with install when xray is disabled
+* Update dependency distribution chart version to 102.30.0
+* Update dependency catalog chart version to 101.18.0
+
+## [11.1.1] - Apr 30, 2025
+* Update dependency xray chart version to 103.118.11
+
+## [11.1.0] - Apr 30, 2025
+* Update dependency worker chart version to 101.133.0
+* Added support for the RabbitMQ password secret via `.Values.auth.existingPasswordSecret` [GH-1961](https://github.com/jfrog/charts/issues/1961)
+* Refactored rabbitmq's load_definition configuration (moved to files/load_definition.json instead of key in values.yaml)
+* Update dependency artifactory chart version to 107.111.4
+* Update dependency xray chart version to 103.111.25
+* Update dependency catalog chart version to 101.17.2
+* Added `job.annotations` for Jobs and updated `annotations` to apply for pods in hooks
+
+## [11.0.6] - Apr 10, 2025
+* Update dependency artifactory chart version to 107.104.15
+* Update dependency xray chart version to 103.111.23
+* Update dependency distribution chart version to 102.29.1
+
+## [11.0.3] - March 27, 2025
+* Fixed sizing files
+
+## [11.0.2] - Feb 26, 2025
+* Added instructions to enable JFrog Advanced Security(JAS) in values.yaml
+* Update dependency artifactory chart version to 107.104.10
+* Update dependency xray chart version to 103.111.15
+* Update dependency catalog chart version to 101.13.0
+
+## [11.0.1] - Feb 14, 2025
+* Upgrade initContainerSetupDBImage to postgres 16.6-alpine
+* Added recommended sizing configurations under sizing directory, please refer [here](README.md/#apply-sizing-configurations-to-the-chart)
+
+## [11.0.0] - Jan 30, 2025
+* **Important changes**
+* Upgrade rabbitmq chart version to 14.6.6
+* Upgrade rabbitmq image to 3.13.7-debian-12-r2
+* Upgrade postgres image to 16.6.0-debian-12-r2
+* Removed installation of Insight and Pipelines product. You can use 10.x version of Jfrog-Platform to continue to use these products
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+    * This has many changes related to key names and path in values yaml
+    * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+    * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+    * The statefulset will get deleted before upgrade through a preupgrade hook, as the updates on specific keys in sts is not allowed by kubernetes
+    * Support to change postgres admin username is removed in postgres chart, will be postgres
+* Added new dependency chart for catalog with version `101.11.1` and defaults to `false`
+* Update dependency artifactory chart version to 107.104.5
+* Update dependency xray chart version to 103.111.9
+* Update dependency distribution chart version to 102.28.1
+* Update dependency worker chart version to 101.118.0
+* Added rabbitmq tolerations on pre-upgrade-hook [GH-1939](https://github.com/jfrog/charts/pull/1939)
+
+## [10.20.1] - Nov 25, 2024
+* Fix jfrog url with duplicate artifactory string when release name has artifactory
+* Updated kubectl image to version `1.31.2`
+* Update dependency artifactory chart version to 107.98.9
+* Update dependency xray chart version to 103.107.11
+
+## [10.20.0] - Oct 29, 2024
+* **IMPORTANT**
+* Added new dependency chart `worker` which is disabled by default and set `worker.enabled: true` to enable it. More info [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/installing-jfrog-worker)
+* Commented `global.versions.router` to enable latest router version to picked from corresponding products
+* Update dependency artifactory chart version to 107.98.7
+* Update dependency distribution chart version to 102.27.2
+* Update dependency worker chart version to 101.95.1
+
+## [10.19.7] - Oct 23, 2024
+* Added podSecurityContext and containerSecurityContext for pre-upgrade-check migration hook container. [GH-1929](https://github.com/jfrog/charts/pull/1929)
+* Update dependency artifactory chart version to 107.90.15
+* Update dependency xray chart version to 103.104.18
+
+## [10.19.6] - Oct 8, 2024
+* Fixed typo to get fourth parameter for setupPostgres.sh [GH-1992](https://github.com/jfrog/charts/pull/1992)
+* Added `preUpgradeHook.tolerations`
+* Update dependency artifactory chart version to 107.90.14
+* Update dependency xray chart version to 103.104.17
+
+## [10.19.5] - Sep 11, 2024
+* Update dependency artifactory chart version to 107.90.10
+* Update dependency xray chart version to 103.104.8
+
 ## [10.19.4] - Aug 28, 2024
 * Update dependency artifactory chart version to 107.90.9
 * Update dependency xray chart version to 103.103.6

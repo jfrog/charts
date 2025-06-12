@@ -1,0 +1,47 @@
+{{- if and ( .Values.autoscaling.enabled ) ( eq .Values.autoscaling.kind "keda" ) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "worker.fullname" . }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+
+spec:
+  minReplicaCount: {{ .Values.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.autoscaling.maxReplicas }}
+  pollingInterval: {{ .Values.autoscaling.pollingInterval }}
+  cooldownPeriod: {{ .Values.autoscaling.cooldownPeriod }}
+  scaleTargetRef:
+    name: {{ include "worker.fullname" . }}
+  triggers:
+    - type: prometheus
+      metricType: {{ .Values.autoscaling.keda.metricType | quote }}
+      metadata:
+        serverAddress: {{ .Values.autoscaling.keda.prometheusServerAddress }}
+        threshold: {{ .Values.autoscaling.keda.threshold | quote }}
+        query: {{ .Values.autoscaling.keda.query | quote }}
+      {{- if .Values.autoscaling.keda.clusterTriggerAuthentication }}
+        authModes: "bearer"
+      authenticationRef:
+        kind: ClusterTriggerAuthentication
+        name: {{ .Values.autoscaling.keda.clusterTriggerAuthentication | quote }}
+      {{- end }}
+  {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: {{ .Values.autoscaling.targetCPUUtilizationPercentage | quote }}
+  {{- end }}
+  {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: memory
+      metricType: Utilization
+      metadata:
+        value: {{ .Values.autoscaling.targetMemoryUtilizationPercentage | quote }}
+  {{- end }}
+{{- end }}

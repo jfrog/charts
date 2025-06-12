@@ -1,0 +1,19 @@
+{{- if not .Values.systemYamlOverride.existingSecret}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "worker.fullname" . }}-systemyaml
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+type: Opaque
+stringData:
+  system.yaml: |
+{{ include "worker.finalSystemYaml" . | nindent 4 }}
+{{- end }}

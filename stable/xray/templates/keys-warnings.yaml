@@ -1,0 +1,17 @@
+{{- if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "password") .Values.rabbitmq.enabled (not .Values.rabbitmq.external.secrets) (not .Values.rabbitmq.auth.existingPasswordSecret) }}
+{{- fail "\n\n**************************************\nSTOP! INSTALLATION not allowed with the default RabbitMQ password!\nPlease change the RabbitMQ password from the default value before proceeding with the installation.\n**************************************\n" }}
+{{- else if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "") .Values.rabbitmq.enabled (not .Values.rabbitmq.external.secrets) (not .Values.rabbitmq.auth.existingPasswordSecret) }}
+{{- fail "\n\n**************************************\nSTOP! INSTALLATION not allowed without RabbitMQ password!\nPlease provide the RabbitMQ password before proceeding with the installation.\n**************************************\n" }}
+{{- end }}
+
+{{- if .Values.postgresql.enabled }}
+    {{- if .Values.postgresql.postgresqlPassword  }}
+        {{- fail "\n\nThe key 'postgresql.postgresqlPassword' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.password' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.postgresql.postgresqlExtendedConf  }}
+        {{- fail "\n\nThe key 'postgresql.postgresqlExtendedConf' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.extendedConfiguration' to proceed with installation.\n" }}
+    {{- end }}
+    {{- if .Values.global.postgresqlPassword  }}
+        {{- fail "\n\nThe key 'global.postgresqlPassword' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'global.auth.password' to proceed with installation.\n" }}
+    {{- end }}
+{{- end }}

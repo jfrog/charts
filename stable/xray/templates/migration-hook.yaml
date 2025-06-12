@@ -16,6 +16,9 @@ metadata:
     annotations:
         helm.sh/hook: "pre-upgrade"
         helm.sh/hook-weight: "-10"
+{{- with .Values.rabbitmq.migration.serviceAccount.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
 automountServiceAccountToken: {{ .Values.rabbitmq.migration.serviceAccount.automountServiceAccountToken }}
 {{- end }}
 {{- end }}
@@ -98,6 +101,15 @@ spec:
       {{- include "xray.imagePullSecrets" . | indent 6 }}
       {{- end }}
       serviceAccountName: {{ template "xray.rabbitmq.migration.serviceAccountName" . }}
+      {{- if .Values.rabbitmq.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.affinity "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.tolerations "context" .) | nindent 8 }}
+      {{- end }}
       containers:
         - name: pre-upgrade-container
           image: "{{ include "xray.getRegistryByService" (list . "migrationHook") }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
@@ -163,12 +175,19 @@ spec:
             {{- end }}
             
             {{- if .Values.rabbitmq.migration.deleteStatefulSetToAllowFieldUpdate.enabled }}
-            if [ -n "{{ .Values.rabbitmq.podManagementPolicy }}" ]; then
-              rabbitMqStatefulSetName=$(kubectl get statefulsets -n {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o=jsonpath='{.items[0].metadata.name}')
-              if [ $? -ne 0 ]; then
-                echo "Failed to get current rabbitmq statefulset name"
-                exit 1
-              fi
+            # Checking whether RMQ sts exist as we delete it with --cascade=orphan during upgrade
+            # If it exists proceed with the deletion and update the podManagementPolicy field
+            # else do nothing as the sts will be automatically created with updated podManagementPolicy during upgrade
+            rabbitMqStatefulSetsName=$(kubectl get statefulsets -n {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+            if [ $? -ne 0 ]; then
+              echo "Failed to get rabbitmq statefulset name"
+              exit 1
+            fi
+            rabbitMqStatefulSetName=$(echo $rabbitMqStatefulSetsName | head -n 1)
+            if [ -z "$rabbitMqStatefulSetName" ]; then
+              echo "Rabbitmq statefulset does not exist"
+            fi
+            if [ -n "$rabbitMqStatefulSetName" ] && [ -n "{{ .Values.rabbitmq.podManagementPolicy }}" ]; then
               currPodManagementPolicy=$(kubectl get statefulset $rabbitMqStatefulSetName -n {{ .Release.Namespace }} -o=jsonpath='{.spec.podManagementPolicy}')
               if [ $? -ne 0 ]; then
                 echo "Failed to get current pod management policy definition"
@@ -188,6 +207,142 @@ spec:
               echo "rabbitmq.podManagementPolicy is not set"
             fi
             {{- end }}
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 0
+{{- end }}
+---
+{{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-post-upgrade-hook
+  annotations:
+    "helm.sh/hook": "post-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "xray.name" . }}
+        chart: {{ template "xray.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+    spec:
+      {{- if .Values.rabbitmq.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.rabbitmq.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+      {{- include "xray.imagePullSecrets" . | indent 6 }}
+      {{- end }}
+      serviceAccountName: {{ template "xray.rabbitmq.migration.serviceAccountName" . }}
+      {{- if .Values.rabbitmq.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.affinity "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: post-upgrade-container
+          image: "{{ include "xray.getRegistryByService" (list . "migrationHook") }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          {{- if .Values.rabbitmq.resources }}
+          resources:
+            {{- toYaml .Values.rabbitmq.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - bash
+            - -c
+            - |
+              #!/bin/bash
+              rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
+
+              # Sleep for 2 minutes to ensure that all pods are scheduled so that they don't get missed out while checking the pod status.
+              # This is needed as the RabbitMQ cluster needs to be up and running before we can perform any operations on it.
+              # Based on extensive experimentation, it can take some time before all pods are up and running.
+              echo "Sleeping for 2 minutes to ensure all pods are scheduled"
+              sleep 120
+
+              maxRetries=10
+
+              for (( retryCount=0; retryCount<maxRetries; retryCount++ )); do
+                podStatuses=$(kubectl get pods -l app.kubernetes.io/name=rabbitmq-ha -l app.kubernetes.io/instance={{ .Release.Namespace }}-xray -o json | jq '[.items[].status.phase]')
+                podStatuses=($(echo "$podStatuses" | jq -r '.[]'))
+
+                numPods=${#podStatuses[@]}
+
+                if [ $numPods -eq 0 ]; then
+                  echo "No pods found. Exiting with status code 1"
+                  exit 1
+                fi
+
+                allRunning=true
+                for status in "${podStatuses[@]}"; do
+                  if [[ "$status" != "Running" ]]; then
+                    allRunning=false
+                    break
+                  fi
+                done
+
+                if $allRunning; then
+                  echo "All pods are running. Exiting loop."
+                  break
+                fi
+
+                echo "Not all pods are 'Running'. Retrying in 1 minute..."
+                sleep 60
+              done
+
+              if [[ $retryCount -eq $maxRetries ]]; then
+                  echo "Max retries reached while waiting for all pods to run."
+                  exit 1
+              fi
+
+              # runningNodeCount returns the number of RabbitMQ nodes running in the cluster
+              runningNodeCount=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl cluster_status --formatter=json" | jq .running_nodes | jq '. | length')
+              if [ $? -ne 0 ]; then
+                echo "Failed to get the number of running nodes in the cluster"
+                exit 1
+              fi
+
+              echo $runningNodeCount
+
+              # queueReplicaCount returns the number of replicas for the queue 'indexRegular'. 'indexRegular' is used as it is a permanent queue.
+              # This is used to determine the number of replicas for all the queues. Based on this number and the runningNodeCount,
+              # the script will either shrink or grow the number of replicas for the queues.
+              queueReplicaCount=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl list_queues name,type,leader,members --vhost={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --formatter=json" | jq '.[] | select(.name | test("^indexRegular$")) | .members | length')
+              if [ $? -ne 0 ]; then
+                echo "Failed to get the number of running replicas for the queues"
+                exit 1
+              fi
+              echo $queueReplicaCount
+
+              if [ "$queueReplicaCount" -gt "$runningNodeCount" ]; then
+                echo "Needed to shrink quorum queues before scaling down nodes. Please scale up the nodes, shrink the queues and then scale down the nodes"
+              elif [ "$queueReplicaCount" -lt "$runningNodeCount" ]; then
+                echo "Need to grow quorum queues on scaled up nodes"
+
+                for ((i = (queueReplicaCount + 1); i <= runningNodeCount; i++)); do
+                  echo "Growing node rabbit@{{ .Release.Namespace }}-xray-rabbitmq-ha-$(($i-1))"
+                  kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmq-queues grow rabbit@{{ .Release.Namespace }}-xray-rabbitmq-ha-$(($i-1)).{{ .Release.Namespace }}-xray-rabbitmq-ha-headless.{{ .Release.Namespace }}.svc.cluster.local all --vhost-pattern={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --queue-pattern \"(.*)\""
+                  if [ $? -ne 0 ]; then
+                    echo "Failed to grow queues on node rabbit@{{ .Release.Namespace }}-xray-rabbitmq-ha-$(($i-1))"
+                    exit 1
+                  fi
+                done
+              else
+                echo "Growing or shrinking of queues not needed as queue replica count matches the number of nodes"
+              fi
       restartPolicy: Never
       terminationGracePeriodSeconds: 0
 {{- end }}

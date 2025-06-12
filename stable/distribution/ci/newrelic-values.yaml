@@ -22,9 +22,11 @@ distribution:
       cpu: "2"
 
 postgresql:
-  postgresqlPassword: password
-  persistence:
-    enabled: false
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
 
 redis:
   persistence:

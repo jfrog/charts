@@ -1,7 +1,50 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.103.6] - July 17, 2024
+## [103.118.11] - April 2, 2025
+* Add affinity and tolerations to rabbitmq migration hook
+* Update rabbitmq tag version to `3.13.7-debian-12-r6`
+* Added support for json based console logging `.Values.logToStdoutJson`
+* Added support for the RabbitMQ password secret via `.Values.auth.existingPasswordSecret` [GH-1961](https://github.com/jfrog/charts/issues/1961)
+* Refactored rabbitmq's load_definition configuration (moved to files/load_definition.json instead of key in values.yaml)
+* **Important changes**
+* Upgrade rabbitmq chart version to 15.4.1
+* Update postgresql tag version to `16.6.0-debian-12-r2`
+
+## [103.117.0] - March 12, 2025
+* Added support for installing multiple Xray applications in a single namespace
+
+## [103.113.0] - Jan 14, 2025
+* Updated rabbitmq multi-arch tag version to to `3.13.7-debian-12-r5`
+* Updated bitnami kubectl multi-arch tag version to to `1.32.0`
+
+## [103.112.0] - Jan 2, 2025
+* Fix an issue with a warning in the rabbitmq password check
+
+## [103.109.0] - Nov 27, 2024
+* **Important changes**
+* Upgrade rabbitmq chart version to 14.6.6
+* Added catalog as a dependency chart
+* **Breaking changes**
+* Upgrade postgres chart version to 15.5.20
+    * This has many changes related to key names and path in values yaml
+    * The effected keys present in default yaml have been aligned to the new path in 15.5.20
+    * if you have customised any keys, make sure to validate it with the 15.5.20 chart
+    * Delete the postgresql statefulset and postgresql secret before the upgrade. for more information, please refer the [xray upgrade docs](https://jfrog.com/help/r/jfrog-installation-setup-documentation/upgrading-xray)
+
+## [103.108.0] - Nov 11, 2024
+* Introduced a validation check in the template to warn users against using the default RabbitMQ password. If a default password is found, the installation will be paused, prompting users to update their credentials before proceeding.
+* Fix for panoramic env indentation [GH-1919](https://github.com/jfrog/charts/pull/1919)
+* Added memory metric targetMemoryUtilizationPercentage to Xray Horizontal Pod Scaler
+
+## [103.107.0] - September 26, 2024
+* Added support to read rabbitmq and database secrets from mounted secret files
+
+## [103.105.0] - August 22, 2024
+* Added support for `serviceAccount.annotations`to be passed to chart [GH-1841](https://github.com/jfrog/charts/pull/1841)
+* Updated rabbitmq multi-arch tag version to to `3.13.6-debian-12-r1`
+
+## [103.102.0] - July 17, 2024
 * Added support of specifying resources constraints for RabbitMQ's pre-upgrade-hook job
 * Fixed formatting error associated to the `volumeMounts` for the `panoramic` microservice [GH-1895](https://github.com/jfrog/charts/issues/1895)
 

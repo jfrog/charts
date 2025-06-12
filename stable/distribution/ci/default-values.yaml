@@ -18,9 +18,11 @@ distribution:
     xmx: "3g"
 # To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
 postgresql:
-  postgresqlPassword: password
-  persistence:
-    enabled: false
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
 redis:
   persistence:
     enabled: false

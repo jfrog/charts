@@ -1,0 +1,73 @@
+{{- if .Values.serviceMonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  namespace: {{ .Values.serviceMonitor.kubePromFullName }}
+  name: {{ printf "%s-worker-service-monitor" .Release.Namespace | quote }}
+  labels:
+    {{- include "common.labels.standard" . | nindent 4 }}
+    {{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    app: {{ .Values.serviceMonitor.kubePromApp }}
+    release: {{ .Values.serviceMonitor.kubePromFullName }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+
+spec:
+  endpoints:
+    - path: /worker/api/v1/metrics
+      {{- if .Values.serviceMonitor.bearerTokenFile }}
+      bearerTokenFile: {{ .Values.serviceMonitor.bearerTokenFile }}
+      {{- else }}
+      bearerTokenSecret:
+        key: token
+        name: {{ .Values.serviceMonitor.tokenName }}
+      {{- end }}
+      honorLabels: true
+      interval: {{ .Values.serviceMonitor.interval }}
+      scheme: {{ .Values.serviceMonitor.scheme }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      targetPort: {{ .Values.serviceMonitor.targetPort }}
+      tlsConfig:
+        insecureSkipVerify: true
+    - path: /router/api/v1/metrics
+      {{- if .Values.serviceMonitor.bearerTokenFile }}
+      bearerTokenFile: {{ .Values.serviceMonitor.bearerTokenFile }}
+      {{- else }}
+      bearerTokenSecret:
+        key: token
+        name: {{ .Values.serviceMonitor.tokenName }}
+      {{- end }}
+      honorLabels: true
+      interval: {{ .Values.serviceMonitor.interval }}
+      scheme: {{ .Values.serviceMonitor.scheme }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      targetPort: {{ .Values.serviceMonitor.targetPort }}
+      tlsConfig:
+        insecureSkipVerify: true
+  {{- if .Values.serviceMonitor.observabilityEnabled }}
+    - path: /observability/api/v1/metrics
+      {{- if .Values.serviceMonitor.bearerTokenFile }}
+      bearerTokenFile: {{ .Values.serviceMonitor.bearerTokenFile }}
+      {{- else }}
+      bearerTokenSecret:
+        key: token
+        name: {{ .Values.serviceMonitor.tokenName }}
+      {{- end }}
+      honorLabels: true
+      interval: {{ .Values.serviceMonitor.interval }}
+      scheme: {{ .Values.serviceMonitor.scheme }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+      targetPort: {{ .Values.serviceMonitor.targetPort }}
+      tlsConfig:
+        insecureSkipVerify: true
+  {{- end }}
+  jobLabel: worker-metrics-monitor
+  namespaceSelector:
+{{ toYaml .Values.serviceMonitor.namespaceSelector | indent 4 }}
+  selector:
+    matchLabels:
+      metricsName: worker
+{{- end }}
