@@ -1,4 +1,7 @@
 configVersion: 1
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
 shared:
   database:
     type: {{ .Values.database.type }}
