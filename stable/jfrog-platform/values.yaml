@@ -11,6 +11,10 @@ gaUpgradeReady: false
 databaseUpgradeReady: false
 
 global:
+  # Allows skipping image verification, applicable to bitnami chart images only
+  security:
+    allowInsecureImages: true
+
   # imagePullSecrets:
   #   - myRegistryKeySecretName
   imageRegistry: releases-docker.jfrog.io
@@ -68,6 +72,16 @@ global:
         ## If you want to provide self generated certs as a secret, Uncomment the below line and provide the secret name.
         ## **NOTE**: Please uncomment line rabbitmq.auth.tls.existingSecret as well.
         # existingSecret:
+  xray:
+    # Rabbitmq settings that are specific to Xray
+    rabbitmq:
+      vhost: xray
+      replicaCount: 1
+      haQuorum:
+        enabled: false
+        waitForPreviousPodsOnInitialStartup: true
+        vhost: xray_haq
+
 
 ## This Postgresql is used by all products , set postgresql.enabled: false, when you want to use external postgresql for all products
 postgresql:
@@ -133,9 +147,11 @@ rabbitmq:
   enabled: true
   ## Enable the flag if the feature flags in rabbitmq is enabled manually
   rabbitmqUpgradeReady: false
+  replicaCount: 1
   image:
     repository: bitnami/rabbitmq
-    tag: 3.13.7-debian-12-r2
+    tag: 3.13.7-debian-12-r6
+  extraPlugins: "rabbitmq_management"
   auth:
   ## Enable encryption to rabbitmq
   ## ref: https://www.rabbitmq.com/ssl.html
@@ -194,6 +210,14 @@ rabbitmq:
     # job.annotations are added to metadata.annotations (applies to JOB)
     job:
       annotations: {}
+    ## Another uses of migration hook are:
+    ## - Deleting StatefulSet for allowing updating certain fields that require it:
+    ##   Changing podManagementPolicy OrderedReady -> Parallel requires deleting stateful set
+    ## - Deleting ha-all mirror policy on migrating to Quorum Queues
+    deleteStatefulSetToAllowFieldUpdate:
+      enabled: false
+    removeHaPolicyOnMigrationToHaQuorum:
+      enabled: false
     image:
       registry: "{{ .Values.global.imageRegistry }}"
       repository: bitnami/kubectl
@@ -228,14 +252,25 @@ rabbitmq:
                 - create
                 - get
                 - list
+            - apiGroups:
+                - "apps"
+              resources:
+                - statefulsets
+              verbs:
+                - get
+                - list
+                - delete
 
   extraConfiguration: |-
     management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
 
+  initContainers: |
+    {{ template "waitForPreviousPods" . }}
+
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.1.5-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.1.7-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -282,8 +317,10 @@ xray:
     rabbitmq:
       connectionConfigFromEnvironment: false
     extraEnvVars: |
+      {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
       - name: "JF_SHARED_RABBITMQ_VHOST"
         value: "xray"
+      {{- end }}
   rabbitmq:
     enabled: false
     external:

@@ -64,12 +64,21 @@ databaseUpgradeReady: true
 helm upgrade --install jfrog-platform jfrog/jfrog-platform -f customvalues.yaml --namespace jfrog-platform --create-namespace
 ```
 
+
 ### High Availability
 
-For **high availability** of Artifactory, set the replica count to be equal or higher than **2**. Recommended is **3**.
+Note: High availability is only supported with an Artifactory Enterprise license.
+
+To enable high availability (HA) in Artifactory, set the artifactory.artifactory.replicaCount to 2 or more. A replica count of 3 is recommended for optimal performance and redundancy.
+
+When deploying with artifactory.artifactory.replicaCount > 1, avoid using artifactory.artifactory.persistence.type=file-system for the filestore configuration in HA setups, as it may cause data inconsistency.
+
+For more details on configuring the filestore, Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/filestore-configuration)
+
+
 ```bash
-# Start artifactory with 3 replicas per service
-helm upgrade --install jfrog-platform --set artifactory.artifactory.replicaCount=3 --namespace jfrog-platform --create-namespace
+# Start artifactory with 3 replicas
+helm upgrade --install jfrog-platform jfrog/jfrog-platform --set artifactory.artifactory.replicaCount=3,artifactory.artifactory.persistence.type=cluster-file-system --namespace jfrog-platform --create-namespace
 ```
 
 ### Install Artifactory license
@@ -151,6 +160,26 @@ distribution:
 ````
 ```bash
 helm upgrade --install jfrog-platform jfrog/jfrog-platform -f customvalues.yaml --namespace jfrog-platform --create-namespace
+```
+
+### RabbitMQ Quorum Queues Setup
+
+Currently, Xray uses RabbitMQ with mirrored classic queues. Classic queues will be deprecated in an upcoming version of Xray, and quorum queues will become the default.
+
+#### Fresh Install: RabbitMQ and Xray in Quorum Mode
+
+To install RabbitMQ and Xray with quorum queues enabled from the start, use:
+
+```bash
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f rabbitmq/ha-quorum.yaml --namespace platform --create-namespace
+```
+
+#### Upgrade: Migrate Existing Setup to Quorum Queues
+
+To upgrade an existing installation to use quorum queues, run:
+
+```bash
+helm upgrade --install jfrog-platform jfrog/jfrog-platform -f rabbitmq/ha-quorum.yaml -f rabbitmq/migration-to-ha-quorum.yaml --namespace platform --create-namespace
 ```
 
 ### Uninstalling Jfrog Platform chart.

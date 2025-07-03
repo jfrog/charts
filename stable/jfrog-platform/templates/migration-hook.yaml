@@ -1,8 +1,23 @@
 {{- if .Values.rabbitmq.enabled }}
+
+{{- if and (not .Release.IsUpgrade) (not .Values.global.xray.rabbitmq.haQuorum.enabled) (hasPrefix "4." .Values.rabbitmq.image.tag) }}
+{{- fail "ERROR: Fresh install with RabbitMQ 4.x requires haQuorum to be enabled.\nPlease refer the official documentation to enable quorum queues and retry." }}
+{{- end }}
+
+{{- if .Values.global.xray.rabbitmq.haQuorum.enabled }}
+  {{- if ne .Values.rabbitmq.replicaCount .Values.global.xray.rabbitmq.replicaCount }}
+    {{- fail (printf "Both 'rabbitmq.replicaCount' (%d) and 'global.xray.rabbitmq.replicaCount' (%d) must be equal when haQuorum (.Values.global.xray.rabbitmq.haQuorum.enabled) is enabled." (int .Values.rabbitmq.replicaCount) (int .Values.global.xray.rabbitmq.replicaCount)) }}
+  {{- end }}
+  {{- $rabbitmqReplicaCount := .Values.global.xray.rabbitmq.replicaCount | int }}
+  {{- if eq (mod $rabbitmqReplicaCount 2) 0 }}
+    {{- fail (printf "'global.xray.rabbitmq.replicaCount' must be an odd number, but got: %d" $rabbitmqReplicaCount) }}
+  {{- end }}
+{{- end }}
+
 {{- if and (not .Values.rabbitmq.migration.enabled) (not .Values.rabbitmq.rabbitmqUpgradeReady)  }}
     {{- fail "Rabbitmq migration flag is disabled. Please enable the rabbitmq.rabbitmqUpgradeReady flag after manually enabling the feature flags in rabbitmq" }}
 {{- end }}
-{{- if .Values.rabbitmq.migration.enabled }}
+{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
 {{- if .Values.rabbitmq.migration.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
@@ -16,12 +31,16 @@ metadata:
     annotations:
         helm.sh/hook: "pre-upgrade"
         helm.sh/hook-weight: "-10"
+{{- with .Values.rabbitmq.migration.serviceAccount.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
 automountServiceAccountToken: {{ .Values.rabbitmq.migration.serviceAccount.automountServiceAccountToken }}
 {{- end }}
 {{- end }}
 {{- end }}
 ---
-{{- if .Values.rabbitmq.migration.enabled }}
+{{- if .Values.rabbitmq.enabled }}
+{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
 {{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -39,9 +58,10 @@ rules:
 {{ toYaml .Values.rabbitmq.migration.serviceAccount.rbac.role.rules }}
 {{- end }}
 {{- end }}
+{{- end }}
 ---
 {{- if .Values.rabbitmq.enabled }}
-{{- if .Values.rabbitmq.migration.enabled }}
+{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
 {{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -67,7 +87,7 @@ roleRef:
 {{- end }}
 ---
 {{- if .Values.rabbitmq.enabled }}
-{{- if .Values.rabbitmq.migration.enabled }}
+{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -96,12 +116,21 @@ spec:
 {{ .Values.rabbitmq.migration.annotations | toYaml | indent 8 }}
         {{- end }}
     spec:
-      serviceAccountName: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
       {{- if .Values.rabbitmq.podSecurityContext.enabled }}
       securityContext: {{- omit .Values.rabbitmq.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       {{- if .Values.global.imagePullSecrets }}
       {{- include "jfrog-platform.imagePullSecrets" . | indent 6 }}
+      {{- end }}
+      serviceAccountName: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
+      {{- if .Values.rabbitmq.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.affinity "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.tolerations "context" .) | nindent 8 }}
       {{- end }}
       containers:
         - name: pre-upgrade-container
@@ -113,26 +142,76 @@ spec:
           securityContext: {{- tpl (omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml) . | nindent 12 }}
           {{- end }}
           command:
-            - sh
+            - bash
             - -c
             - |
-                #!/bin/sh
-                if [ "$(kubectl get pods -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }}" -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')" = "True" ]; then
-                    kubectl exec -it {{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0 -- rabbitmqctl enable_feature_flag all
-                    if [ "$?" -ne 0 ]; then
-                      echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] "
-                      exit 1
-                    else
-                      echo Feature flags executed successfully!
-                    fi
-                else
-                    echo "Rabbitmq pod is not in running state. Ignoring feature flag migration for rabbitmq"
-                fi
+              {{ tpl ( .Files.Get "files/xray_pre_upgrade_script.sh" ) . | nindent 14 }}
       restartPolicy: Never
       terminationGracePeriodSeconds: 0
-{{- with .Values.rabbitmq.tolerations }}
-      tolerations:
-{{ toYaml . | indent 8 }}
 {{- end }}
+---
+{{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    app: {{ template "jfrog-platform.name" . }}
+    chart: {{ template "jfrog-platform.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "jfrog-platform.fullname" . }}-post-upgrade-hook
+  annotations:
+    "helm.sh/hook": "post-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- if .Values.rabbitmq.migration.job.annotations }}
+{{ .Values.rabbitmq.migration.job.annotations | toYaml | indent 4 }}
+    {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "jfrog-platform.name" . }}
+        chart: {{ template "jfrog-platform.chart" . }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+        {{- if .Values.rabbitmq.migration.annotations }}
+      annotations:
+{{ .Values.rabbitmq.migration.annotations | toYaml | indent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.rabbitmq.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.rabbitmq.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      {{- include "jfrog-platform.imagePullSecrets" . | indent 6 }}
+      {{- end }}
+      serviceAccountName: {{ template "jfrog-platform.rabbitmq.migration.serviceAccountName" . }}
+      {{- if .Values.rabbitmq.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.affinity "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.nodeSelector "context" .) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.rabbitmq.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.rabbitmq.tolerations "context" .) | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: post-upgrade-container
+          image: "{{ tpl .Values.rabbitmq.migration.image.registry . }}/{{ .Values.rabbitmq.migration.image.repository }}:{{ .Values.rabbitmq.migration.image.tag }}"
+          imagePullPolicy: {{ .Values.rabbitmq.migration.image.pullPolicy }}
+          {{- if .Values.rabbitmq.resources }}
+          resources:
+            {{- toYaml .Values.rabbitmq.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.rabbitmq.containerSecurityContext.enabled }}
+          securityContext: {{- tpl (omit .Values.rabbitmq.containerSecurityContext "enabled" | toYaml) . | nindent 12 }}
+          {{- end }}
+          command:
+            - bash
+            - -c
+            - |
+              {{ tpl ( .Files.Get "files/xray_post_upgrade_script.sh" ) . | nindent 14 }}
+      restartPolicy: Never
+      terminationGracePeriodSeconds: 0
 {{- end }}
 {{- end }}

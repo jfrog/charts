@@ -335,3 +335,99 @@ Create external Rabbitmq Password for platform chart scenario.
 {{- end -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Check for pre-upgrade-hook to be ran
+*/}}
+{{- define "xray.rabbitmq.migration.isHookRegistered" }}
+{{- or .Values.rabbitmq.migration.enabled .Values.rabbitmq.migration.deleteStatefulSetToAllowFieldUpdate.enabled .Values.rabbitmq.migration.removeHaPolicyOnMigrationToHaQuorum.enabled }}
+{{- end }}
+
+
+{{/*
+extra init container for rabbitmq quorum
+*/}}
+{{- define "waitForPreviousPods" -}}
+{{- if and .Values.global.xray.rabbitmq.haQuorum.enabled .Values.global.xray.rabbitmq.haQuorum.waitForPreviousPodsOnInitialStartup }}
+- name: "wait-for-previous-pods"
+  image: "{{ template "rabbitmq.image" . }}"
+  imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+  env:
+    - name: RABBITMQ_ERL_COOKIE
+      valueFrom:
+        secretKeyRef:
+          name: {{ template "rabbitmq.secretErlangName" . }}
+          key: rabbitmq-erlang-cookie
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+    - name: K8S_SERVICE_NAME
+      value: {{ printf "%s-%s" (include "common.names.fullname" .) (default "headless" .Values.servicenameOverride) }}
+    {{- if (eq "hostname" .Values.clustering.addressType) }}
+    - name: RABBITMQ_NODE_NAME
+      value: "rabbit@$(MY_POD_NAME).$(K8S_SERVICE_NAME).$(MY_POD_NAMESPACE).svc.{{ .Values.clusterDomain }}"
+    - name: K8S_HOSTNAME_SUFFIX
+      value: ".$(K8S_SERVICE_NAME).$(MY_POD_NAMESPACE).svc.{{ .Values.clusterDomain }}"
+    {{- else }}
+    - name: RABBITMQ_NODE_NAME
+      value: "rabbit@$(MY_POD_NAME)"
+    {{- end }}
+    - name: RABBITMQ_MNESIA_DIR
+      value: "{{ .Values.persistence.mountPath }}/$(RABBITMQ_NODE_NAME)"
+  command:
+    - /bin/bash
+  args:
+    - -ecx
+    - |
+      echo $HOSTNAME
+      if [[ $HOSTNAME == *-0 ]]; then
+          exit 0
+      fi
+      if [ -d "$RABBITMQ_MNESIA_DIR" ]; then
+          exit 0
+      fi
+      # --erlang-cookie is not working with rabbitmqctl command, so we need to set it in the file.
+      # check if file exists and has the correct cookie, if not create or replace with the
+      # correct cookie set in environment variable and set read permission
+      if [ ! -f /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie ] || [ "$(cat /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie)" != "$RABBITMQ_ERL_COOKIE" ]; then
+          echo "$RABBITMQ_ERL_COOKIE" > /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie
+          chmod 600 /opt/bitnami/rabbitmq/.rabbitmq/.erlang.cookie
+      fi
+      # wait for zero pod to start running and accept requests
+      zero_pod_name=$(echo $MY_POD_NAME | sed -E "s/-[[:digit:]]$/-0/")
+      zero_pod_node_name=$(echo "$RABBITMQ_NODE_NAME" | sed -E "s/^rabbit@$MY_POD_NAME/rabbit@$zero_pod_name/")
+      maxIterations=60
+      i=1
+      while true; do
+          rabbitmq-diagnostics -q check_running -n $zero_pod_node_name --longnames --erlang-cookie $RABBITMQ_ERL_COOKIE && \
+          rabbitmq-diagnostics -q check_local_alarms -n $zero_pod_node_name --longnames --erlang-cookie $RABBITMQ_ERL_COOKIE && \
+          break || sleep 5;
+          if [ "$i" == "$maxIterations" ]; then exit 1; fi
+          i=$((i+1))
+      done;
+
+      # node x waits for x previous nodes to join cluster (since node number is zero based)
+      nodeSerialNum=$(echo "$MY_POD_NAME" | grep -o "[0-9]*$")
+      timeoutSeconds=180
+      rabbitmqctl --node $zero_pod_node_name --longnames  \
+                  await_online_nodes $nodeSerialNum \
+                  --timeout $timeoutSeconds || exit 1
+  {{- if .Values.containerSecurityContext.enabled }}
+  securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+  {{- end }}
+  volumeMounts:
+    - name: empty-dir
+      mountPath: /opt/bitnami/rabbitmq/.rabbitmq/
+      subPath: app-erlang-cookie
+    - name: data
+      mountPath: {{ .Values.persistence.mountPath }}
+      {{- if .Values.persistence.subPath }}
+      subPath: {{ .Values.persistence.subPath }}
+      {{- end }}
+{{- end }}
+{{- end }}
