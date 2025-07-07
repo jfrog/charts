@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.118.20] - April 2, 2025
+## [103.118.22] - April 2, 2025
 * Add affinity and tolerations to rabbitmq migration hook
 * Update rabbitmq tag version to `3.13.7-debian-12-r6`
 * Added support for json based console logging `.Values.logToStdoutJson`

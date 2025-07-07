@@ -1,7 +1,17 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
-## [11.1.5] - Jun 12, 2025
+## [11.1.7] - Jul 2, 2025
+* Update dependency artifactory chart version to 107.111.10
+* Update dependency xray chart version to 103.118.22
+* Update dependency distribution chart version to 102.31.2
+* Update dependency catalog chart version to 101.22.3
+* Updated High Availability section in README.md related to persistence
+* Added extra validation checks for rabbitmq quorum queues
+
+## [11.1.5] - Jun 10, 2025
+* Added support for migrating rabbitmq to high-availability quorum queues setup
+* Added support for rabbitmq high-availability quorum queues clean install setup, please refer [here](README.md/#rabbitmq-quorum-queues-setup)
 * Update dependency artifactory chart version to 107.111.9
 * Update dependency xray chart version to 103.118.20
 * Update dependency catalog chart version to 101.21.1
