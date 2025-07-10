@@ -12,6 +12,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ $ingressName }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ template "artifactory.chart" . }}
