@@ -1390,7 +1390,7 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
-        - name: JF_RTFS_EMBEDDED_ENABLED
+        - name: JF_RTFS_EMBEDDED_ENABLE
           value: "false"
       {{- if and (gt (.Values.artifactory.replicaCount | int64) 1) (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false") }}
         - name : JF_SHARED_NODE_HAENABLED

@@ -62,3 +62,13 @@ It is recommended to change it by setting an explicit password with `postgresql.
 {{- end }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}
+
+
+{{- if and .Values.rabbitmq.enabled .Values.global.xray.rabbitmq.haQuorum.enabled }}
+  {{- if eq (int .Values.rabbitmq.replicaCount) 1 }}
+************************************* Please note *****************************************
+  'rabbitmq.replicaCount' is set to 1.                                                *
+  To achieve High Availability (HA) with quorum queues, it is recommended to set this to 3.
+***************************************************************************************
+  {{- end }}
+{{- end }}
