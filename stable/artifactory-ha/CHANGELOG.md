@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.111.11] - May 15, 2025
+## [107.111.12] - May 15, 2025
 * Added HPA support for the Artifactory HA chart, but only for primary resources. Member resources are going to be deprecated
 * Updated rtfs version to `1.6.13`
 * Added a default resource preset for PostgreSQL as small
