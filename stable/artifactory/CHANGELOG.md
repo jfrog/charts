@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.111.11] - April 01, 2025
+## [107.111.12] - April 01, 2025
 * Added custom HPA metrics support for Artifactory service `autoscaling.metrics`
 * Updated rtfs version to `1.6.13`
 * Added a default resource preset for PostgreSQL as small
