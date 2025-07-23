@@ -1,14 +1,17 @@
 # JFrog Worker Chart Changelog
 All changes to this chart will be documented in this file
 
-## [101.133.0] - Feb 24, 2025
+## [101.153.0] - Apr 17, 2025
+* Updated ubi-minimal version to 9.5.1742914212
+
+## [101.128.0] - Feb 24, 2025
 * Update required services in router configuration
 * Use shared.jfrogUrl instead of deprecated router.serviceRegistryUrl and router.serviceRegistry.grpcAddress
 
 ## [101.126.0] - Feb 14, 2025
 * Change scheme in default router probes
 
-## [101.118.0] - Nov 12, 2024
+## [101.106.0] - Nov 12, 2024
 * Add startup probe for worker container
 
 ## [101.105.0] - Nov 5, 2024

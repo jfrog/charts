@@ -139,10 +139,12 @@ Scheme (http/https) based on Access TLS enabled/disabled
 Custom certificate copy command
 */}}
 {{- define "worker.copyCustomCerts" -}}
-echo "Copy custom certificates to /opt/jfrog/worker/var/data/router/keys/trusted";
+echo "Copy custom certificates to /opt/jfrog/worker/var/data/router/keys/trusted and /opt/jfrog/worker/var/etc/security/keys/trusted";
 mkdir -p /opt/jfrog/worker/var/data/router/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} /opt/jfrog/worker/var/data/router/keys/trusted; fi done;
+mkdir -p /opt/jfrog/worker/var/etc/security/keys/trusted;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} /opt/jfrog/worker/var/data/router/keys/trusted;cp -v ${file} /opt/jfrog/worker/var/etc/security/keys/trusted; fi done;
 if [ -f /opt/jfrog/worker/var/data/router/keys/trusted/tls.crt ]; then mv -v /opt/jfrog/worker/var/data/router/keys/trusted/tls.crt /opt/jfrog/worker/var/data/router/keys/trusted/ca.crt; fi;
+if [ -f /opt/jfrog/worker/var/etc/security/keys/trusted/tls.crt ]; then mv -v /opt/jfrog/worker/var/etc/security/keys/trusted/tls.crt /opt/jfrog/worker/var/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
 {{/*
