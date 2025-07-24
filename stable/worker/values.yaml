@@ -122,6 +122,7 @@ ingress:
   clientBodyTimeout: 43200s
   backendTls: false
   backendPortName: http-router
+  useAnnotationForTimeouts: false
 
 
 ## Worker container resources
@@ -190,7 +191,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.155.0
+    tag: 7.165.4
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -292,7 +293,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.4.949.1716471857
+    tag: 9.6.1749489516
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -559,7 +560,7 @@ filebeat:
   name: worker-filebeat
   image:
     repository: docker.elastic.co/beats/filebeat
-    version: 7.17.28
+    version: 7.17.29
     pullPolicy: IfNotPresent
   logstashUrl: "logstash:5044"
 
@@ -625,7 +626,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.31.13
+    tag: 1.31.14
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
