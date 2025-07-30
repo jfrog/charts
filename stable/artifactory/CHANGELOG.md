@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.111.13] - July 30, 2025
+* Fix default value for `customIngress` to address helm warnings. [GH-2020](https://github.com/jfrog/charts/issues/2020)
+
 ## [107.111.12] - April 01, 2025
 * Added custom HPA metrics support for Artifactory service `autoscaling.metrics`
 * Updated rtfs version to `1.6.13`
