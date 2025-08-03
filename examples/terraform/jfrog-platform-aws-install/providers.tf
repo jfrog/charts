@@ -1,5 +1,6 @@
 # Setup the providers
 terraform {
+  required_version = ">= 1.0"
   # Use a local backend
   backend "local" {
     path = "./state/terraform.tfstate"
@@ -18,17 +19,20 @@ terraform {
   # }
 
   required_providers {
-    # Kubernetes provider
+    # AWS provider
     aws = {
       source  = "hashicorp/aws"
+      version = "~> 5.0"
     }
     # Kubernetes provider
     kubernetes = {
       source  = "hashicorp/kubernetes"
+      version = "~> 2.23"
     }
     # Helm provider
     helm = {
       source  = "hashicorp/helm"
+      version = "~> 2.11"
     }
   }
 }

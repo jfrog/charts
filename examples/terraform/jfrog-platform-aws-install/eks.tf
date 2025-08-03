@@ -16,6 +16,7 @@ resource "aws_security_group_rule" "allow_management_from_my_ip" {
 
 module "eks" {
     source  = "terraform-aws-modules/eks/aws"
+    version = "~> 20.0"
 
     cluster_name    = local.cluster_name
     cluster_version = var.kubernetes_version
@@ -230,6 +231,7 @@ resource "kubernetes_storage_class" "gp3_storage_class" {
 
 module "ebs_csi_irsa_role" {
     source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+    version = "~> 5.0"
 
     role_name             = "ebs-csi-${module.eks.cluster_name}-${var.region}"
     attach_ebs_csi_policy = true
