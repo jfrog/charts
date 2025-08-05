@@ -267,7 +267,7 @@ xray:
   server:
     resources:
       requests:
-        cpu: "200m"
+        cpu: "300m"
         memory: 500Mi
       limits:
         # cpu: "4"
@@ -292,7 +292,6 @@ xray:
         memory: 250Mi
   
   panoramic:
-    enabled: false
     resources:
       requests:
         cpu: "100m"
@@ -302,7 +301,6 @@ xray:
         memory: 8Gi
   
   sbom:
-    enabled: false
     resources:
       requests:
         cpu: "100m"
@@ -318,24 +316,26 @@ xray:
         cpu: "60m"
       limits:
         memory: "8Gi"
-        cpu: "4"
+        # cpu: "4"
   
   # PostgreSQL
   ## Configuration values for the postgresql dependency
   ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
   ##
   postgresql:
-    resources:
-      requests:
-        memory: 32Gi
-        cpu: "16"
-      limits:
-        memory: 32Gi
-        # cpu: "32"
+  
     primary:
+      resources:
+        requests:
+          memory: 32Gi
+          cpu: "16"
+        limits:
+          memory: 32Gi
+          # cpu: "32"
       extendedConfiguration: |
         max_connections = 600
         listen_addresses = '*'
+        max_wal_size = '4GB'
       affinity:
         # Require PostgreSQL pod to run on a different node than Xray pods
         podAntiAffinity:

@@ -32,8 +32,8 @@ spec:
   ports:
   - port: {{ .Values.artifactory.externalPort }}
     targetPort: {{ .Values.artifactory.internalPort }}
-    {{- if .Values.artifactory.nodePort }}
-    nodePort: {{ .Values.artifactory.nodePort }}
+    {{- if .Values.artifactory.serviceGrpc.nodePort }}
+    nodePort: {{ .Values.artifactory.serviceGrpc.nodePort }}
     {{- end }}
     protocol: TCP
     name: http-router
