@@ -1,5 +1,6 @@
 # Setup the providers
 terraform {
+  required_version = ">= 1.0"
   # Use a local backend
   backend "local" {
     path = "./state/terraform.tfstate"
@@ -18,21 +19,32 @@ terraform {
   # }
 
   required_providers {
-    # Kubernetes provider
+    # AWS provider
     aws = {
       source  = "hashicorp/aws"
+      version = "~> 5.0"
     }
     # Kubernetes provider
     kubernetes = {
       source  = "hashicorp/kubernetes"
+      version = "~> 2.23"
     }
     # Helm provider
     helm = {
       source  = "hashicorp/helm"
+      version = "~> 3.0"
     }
   }
 }
 
 provider "aws" {
   region = var.region
+}
+
+provider "helm" {
+  kubernetes = {
+    host                   = module.eks.cluster_endpoint
+    token                  = data.aws_eks_cluster_auth.jfrog_cluster.token
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  }
 }

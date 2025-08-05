@@ -1,13 +1,4 @@
-# Configure the Helm provider to use the EKS cluster
-provider "helm" {
-  kubernetes {
-    host                   = module.eks.cluster_endpoint
-    token                  = data.aws_eks_cluster_auth.jfrog_cluster.token
-    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-  }
-}
-
-# Install the metrics server
+# Install the metrics server if the deploy_metrics_server variable is true
 resource "helm_release" "metrics_server" {
   count = var.deploy_metrics_server ? 1 : 0
 
