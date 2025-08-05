@@ -595,14 +595,26 @@ _createConsoleLog(){
     if [ -z "${JF_PRODUCT_HOME}" ]; then
         return
     fi
+    
+    getSystemValue "shared.env.UMASK" "NOT_SET"
+
+    if [[ "${YAML_VALUE}" != "NOT_SET" ]]; then
+        echo "Setting umask to ${YAML_VALUE} for console.log"
+        umask ${YAML_VALUE}
+    fi
+
+
     local targetFile="${JF_PRODUCT_HOME}/var/log/console.log"
     mkdir -p "${JF_PRODUCT_HOME}/var/log" || true
     if [ ! -f ${targetFile} ]; then
         touch $targetFile > /dev/null 2>&1 || true
     fi
-    chmod 640 $targetFile > /dev/null 2>&1 || true
-}
 
+    if [[ "${YAML_VALUE}" == "NOT_SET" ]]; then
+        chmod 640 $targetFile > /dev/null 2>&1 || true
+    fi
+
+}
 # Output from application's logs are piped to this method. It checks a configuration variable to determine if content should be logged to 
 # the common console.log file
 redirectServiceLogsToFile() {
