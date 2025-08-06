@@ -86,7 +86,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.5.1742914212
+    tag: 9.6.1747218906
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -125,7 +125,7 @@ xray:
     mountPath: /var/opt/jfrog/xray
 
   # adding minAvailable for Xray Pod Disruption Budget
-  # minAvailable: 1
+  minAvailable: 1
 
   # unifiedSecretInstallation flag enables single unified secret holding all the xray internal(chart) secrets, It won't be affecting external secrets.
   ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 103.91.x, Users can switch to false to continue with the old way of secret creation.
@@ -362,9 +362,9 @@ autoscaling:
       - name: persistRegularRetry-0
         value: "30"
       - name: policyEnforcer
-        value: "100"
+        value: "30"
       - name: impactAnalysis
-        value: "100"
+        value: "30"
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -621,7 +621,7 @@ rabbitmq:
     image:
       registry: releases-docker.jfrog.io
       repository: bitnami/kubectl
-      tag: 1.32.0
+      tag: 1.33.1
     ## Service account for the pre-upgrade hook to perform rabbitmq migration
     serviceAccount:
       create: true
@@ -654,6 +654,17 @@ rabbitmq:
                 - get
                 - list
                 - delete
+  networkPolicy:
+    enabled: true
+    extraIngress: |
+      - ports:
+          - port: 35672
+            endPort: 35682
+            protocol: TCP
+        from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: {{ .Release.Namespace }}
 
 
   # This is automatically set based on rabbitmqTLS enabled flag.
@@ -907,6 +918,50 @@ analysis:
   externalPort: 7000
   annotations: {}
   extraEnvVars:
+  replicaCount: 1
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues:
+        - name: analysisRegular
+          value: "30"
+        - name: analysisRegularRetry-0
+          value: "30"
+        - name: impactAnalysis
+          value: "30"
 
   # Add lifecycle hooks for the analysis pod
   lifecycle: {}
@@ -922,6 +977,9 @@ analysis:
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  deployment:
+    annotations: {}
 
   livenessProbe:
     enabled: true
@@ -968,6 +1026,50 @@ sbom:
   externalPort: 7006
   annotations: {}
   extraEnvVars:
+  replicaCount: 1
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues:
+        - name: sbom
+          value: "30"
+        - name: sbomImpactAnalysis
+          value: "30"
+        - name: usercatalog
+          value: "30"
 
   # Add lifecycle hooks for the indexer pod
   lifecycle: {}
@@ -983,6 +1085,9 @@ sbom:
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  deployment:
+    annotations: {}
 
   livenessProbe:
     enabled: true
@@ -1033,6 +1138,44 @@ panoramic:
   externalPort: 7007
   annotations: {}
   extraEnvVars:
+  replicaCount: 1
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues: []
 
   # Add lifecycle hooks for the indexer pod
   lifecycle: {}
@@ -1048,6 +1191,9 @@ panoramic:
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  deployment:
+    annotations: {}
 
   livenessProbe:
     enabled: true
@@ -1096,6 +1242,46 @@ policyenforcer:
   externalPort: 7009
   annotations: {}
   extraEnvVars:
+  replicaCount: 1
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues:
+        - name: policyEnforcer
+          value: "30"
 
   # Add lifecycle hooks for the indexer pod
   lifecycle: {}
@@ -1111,6 +1297,9 @@ policyenforcer:
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  deployment:
+    annotations: {}
 
   livenessProbe:
     enabled: true
@@ -1161,6 +1350,9 @@ indexer:
   externalPort: 7002
   annotations: {}
   extraEnvVars:
+  replicaCount: 1
+  persistence:
+    size: 50Gi
 
   # Add lifecycle hooks for the indexer pod
   lifecycle: {}
@@ -1171,11 +1363,53 @@ indexer:
     #   exec:
     #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues:
+        - name: indexRegular
+          value: "30"
+        - name: indexRegularRetry-0
+          value: "30"
+
   ## Add custom volumesMounts
   customVolumeMounts: |
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  deployment:
+    annotations: {}
 
   livenessProbe:
     enabled: true
@@ -1222,6 +1456,48 @@ persist:
   externalPort: 7003
   annotations: {}
   extraEnvVars:
+  replicaCount: 1
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues:
+        - name: persistRegular
+          value: "30"
+        - name: persistRegularRetry-0
+          value: "30"
 
   # Add lifecycle hooks for the persist pod
   lifecycle: {}
@@ -1237,6 +1513,9 @@ persist:
   #  - name: custom-script
   #    mountPath: /scripts/script.sh
   #    subPath: script.sh
+
+  deployment:
+    annotations: {}
 
   livenessProbe:
     enabled: true
@@ -1283,6 +1562,7 @@ server:
   externalPort: 80
   annotations: {}
   extraEnvVars:
+  replicaCount: 2
   # Add lifecycle hooks for the insight pods
   lifecycle: {}
     # postStart:
@@ -1294,6 +1574,43 @@ server:
 
   # mailServer: ""
   # indexAllBuilds: false
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues: []
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -1313,6 +1630,9 @@ server:
     additionalSpec: |
 
   statefulset:
+    annotations: {}
+
+  deployment:
     annotations: {}
 
   livenessProbe:
@@ -1368,7 +1688,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.165.4
+    tag: 7.179.0
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1406,6 +1726,9 @@ router:
     enabled: true
     config: |
       httpGet:
+        httpHeaders:
+          - name: X-Jfrog-Ignore-Unhealthy
+            value: "true"
         path: /router/api/v1/system/liveness
         port: {{ .Values.router.internalPort }}
         scheme: {{ include "xray.scheme" . | upper }}
@@ -1427,18 +1750,6 @@ router:
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
       successThreshold: 1
-
-  startupProbe:
-    enabled: true
-    config: |
-      httpGet:
-        path: /router/api/v1/system/readiness
-        port: {{ .Values.router.internalPort }}
-        scheme: {{ include "xray.scheme" . | upper }}
-      initialDelaySeconds: 30
-      failureThreshold: 30
-      periodSeconds: 5
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
   persistence:
     mountPath: "/var/opt/jfrog/router"
@@ -1601,12 +1912,14 @@ quota:
 ## Separate Xray into distinct pods
 ## (Enabling this setting will divide the Xray pod into two deployments: xray-server and xray-ipa)
 splitXraytoSeparateDeployments:
- enabled: false
- ## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
+ ipa: false
+## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
  gradualUpgrade: false
+ fullSplit: false
 replicaCountServer: 2
+replicaCountIpa: 2
 ## Apply horizontal pod auto scaling on Xray server pods
-## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
+## Only applicable when (splitXraytoSeparateDeployments.ipa) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscalingServer:
  enabled: false
@@ -1635,8 +1948,9 @@ autoscalingServer:
    pollingInterval: 10
    cooldownPeriod: 10
    queues: []
+ 
 ## Apply horizontal pod auto scaling on Xray ipa pods
-## Only applicable when (splitXraytoSeparateDeployments.enabled) is set to true
+## Only applicable when (splitXraytoSeparateDeployments.ipa) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscalingIpa:
  enabled: false
@@ -1678,9 +1992,9 @@ autoscalingIpa:
      - name: persistRegularRetry-0
        value: "30"
      - name: impactAnalysis
-       value: "100"
+       value: "30"
      - name: policyEnforcer
-       value: "100"
+       value: "30"
 
 ipa:
   affinity: {}
@@ -1690,7 +2004,6 @@ ipa:
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
 ###################################################################################
-
 
 # This will install catalog chart as a dependency chart in xray.
 catalog:

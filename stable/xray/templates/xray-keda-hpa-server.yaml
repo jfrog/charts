@@ -1,4 +1,4 @@
-{{- if and  (not .Values.splitXraytoSeparateDeployments.gradualUpgrade)  .Values.splitXraytoSeparateDeployments.enabled  }}
+{{- if and  (not .Values.splitXraytoSeparateDeployments.gradualUpgrade)  .Values.splitXraytoSeparateDeployments.ipa  (not .Values.splitXraytoSeparateDeployments.fullSplit )}}
 {{- if and (.Values.autoscalingServer.enabled) (eq .Values.autoscalingServer.keda.enabled true) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject

@@ -1,0 +1,201 @@
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-indexer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-indexer
+  minReplicas: {{ .Values.indexer.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.indexer.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.indexer.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-persist
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-persist
+  minReplicas: {{ .Values.persist.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.persist.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.persist.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-analysis
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-analysis
+  minReplicas: {{ .Values.analysis.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.analysis.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.analysis.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-policyenforcer
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-policyenforcer
+  minReplicas: {{ .Values.policyenforcer.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.policyenforcer.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.policyenforcer.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.sbom.autoscaling.enabled) (.Values.sbom.enabled) (eq .Values.sbom.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-sbom
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-sbom
+  minReplicas: {{ .Values.sbom.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.sbom.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.sbom.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.panoramic.autoscaling.enabled) (.Values.panoramic.enabled) (eq .Values.panoramic.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-panoramic
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-panoramic
+  minReplicas: {{ .Values.panoramic.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.panoramic.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.panoramic.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}

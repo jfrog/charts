@@ -1,4 +1,4 @@
-{{- if .Values.splitXraytoSeparateDeployments.enabled  }}
+{{- if and (.Values.splitXraytoSeparateDeployments.ipa) (not .Values.splitXraytoSeparateDeployments.fullSplit)  }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,7 +25,7 @@ metadata:
 {{- end }}
 spec:
 {{- if not .Values.autoscalingIpa.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.replicaCountIpa }}
 {{- end }}
 {{- with .Values.deployment.strategy }}
   strategy:
@@ -410,10 +410,6 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
-{{- if .Values.router.startupProbe.enabled }}
-        startupProbe:
-{{ tpl .Values.router.startupProbe.config . | indent 10 }}
-{{- end }}
 {{- if .Values.router.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}

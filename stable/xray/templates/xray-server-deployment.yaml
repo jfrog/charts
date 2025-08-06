@@ -1,4 +1,4 @@
-{{- if .Values.splitXraytoSeparateDeployments.enabled  }}
+{{- if and .Values.splitXraytoSeparateDeployments.ipa (not .Values.splitXraytoSeparateDeployments.fullSplit ) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -407,10 +407,6 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
-{{- if .Values.router.startupProbe.enabled }}
-        startupProbe:
-{{ tpl .Values.router.startupProbe.config . | indent 10 }}
-{{- end }}
 {{- if .Values.router.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}
