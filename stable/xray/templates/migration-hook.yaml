@@ -1,4 +1,16 @@
 {{- if .Values.rabbitmq.enabled }}
+{{- if and (not .Release.IsUpgrade) (not .Values.global.xray.rabbitmq.haQuorum.enabled) (hasPrefix "4." .Values.rabbitmq.image.tag) }}
+{{- fail "ERROR: Fresh install with RabbitMQ 4.x requires haQuorum to be enabled.\nPlease enable quorum queues and retry." }}
+{{- end }}
+{{- if .Values.global.xray.rabbitmq.haQuorum.enabled }}
+  {{- if ne .Values.rabbitmq.replicaCount .Values.global.xray.rabbitmq.replicaCount }}
+    {{- fail (printf "Both 'rabbitmq.replicaCount' (%d) and 'global.xray.rabbitmq.replicaCount' (%d) must be equal when haQuorum (.Values.global.xray.rabbitmq.haQuorum.enabled) is enabled." (int .Values.rabbitmq.replicaCount) (int .Values.global.xray.rabbitmq.replicaCount)) }}
+  {{- end }}
+  {{- $rabbitmqReplicaCount := .Values.global.xray.rabbitmq.replicaCount | int }}
+  {{- if eq (mod $rabbitmqReplicaCount 2) 0 }}
+    {{- fail (printf "'global.xray.rabbitmq.replicaCount' must be an odd number, but got: %d" $rabbitmqReplicaCount) }}
+  {{- end }}
+{{- end }}
 {{- if and (not .Values.rabbitmq.migration.enabled) (not .Values.rabbitmq.rabbitmqUpgradeReady)  }}
     {{- fail "Rabbitmq migration flag is disabled. Please enable the rabbitmq.rabbitmqUpgradeReady flag after manually enabling the feature flags in rabbitmq" }}
 {{- end }}
@@ -128,7 +140,44 @@ spec:
             #!/bin/bash
             rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
             rabbitMqZeroPodStatus=$(kubectl get pods $rabbitMqZeroPodName -n {{ .Release.Namespace }} -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')
-            
+
+            {{- if not .Values.rabbitmq.disableRabbitmqchecks }}
+              {{- if hasPrefix "4." .Values.rabbitmq.image.tag }}
+                  {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+                    echo -e "ERROR: Upgrade to RabbitMQ 4.x requires haQuorum to be enabled.\nPlease enable quorum queues and retry."
+                    exit 1
+                  {{- else }}
+                    echo "Checking for classic queue messages in vhost / ..."
+                    total_messages=$(kubectl exec -i "$rabbitMqZeroPodName" -n {{ .Release.Namespace }} -- bash -c "rabbitmqctl list_queues -p / name messages type | awk '\$3 == \"classic\" && \$1 != \"aliveness-test\" { sum += \$2 } END { print sum+0 }'" 2>/dev/null) || { echo "ERROR: Failed to fetch classic queue message count (kubectl or rabbitmqctl failed)"; exit 1; }
+                    echo "Total messages in classic queues (excluding aliveness-test): $total_messages"
+                    if [[ "$total_messages" -gt 0 ]]; then
+                      echo "ERROR: You are upgrading to RabbitMQ 4.x, but classic queues in vhost '/' still contain messages.\nPlease migrate to quorum queues before upgrading."
+                      exit 1
+                    else
+                      echo "All classic queues are empty in vhost '/'. Proceeding with the RabbitMQ 4.x upgrade."
+                    fi
+                  {{- end }}
+              {{- end }}
+            {{- else }}
+              echo "Rabbitmq 4 checks are disabled."
+            {{- end }}
+
+            {{- if not .Values.rabbitmq.disableRabbitmqchecks }}
+              {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+              echo "Checking for quorum queues in vhost {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}..."
+              count=$(kubectl exec -i "$rabbitMqZeroPodName" -n {{ .Release.Namespace }} -- bash -c "rabbitmqctl list_queues -p {{ .Values.global.xray.rabbitmq.haQuorum.vhost }} name type | awk '\$2 == \"quorum\" { c++ } END { print c+0 }'" 2>/dev/null) || { echo "ERROR: Failed to count quorum queues in vhost '{{ .Values.global.xray.rabbitmq.haQuorum.vhost }}' (kubectl or rabbitmqctl failed)"; exit 1; }
+              echo "Quorum queue count: $count"
+              if [[ "$count" -gt 0 ]]; then
+                echo -e "ERROR: Existing quorum queues found in vhost '{{ .Values.global.xray.rabbitmq.haQuorum.vhost }}'.\n'.Values.global.xray.rabbitmq.haQuorum.enabled' is not set to true.\nPlease enable it to continue. Rollback to classic queues is not allowed."
+                exit 1
+              else
+                echo "No quorum queues found in vhost '{{ .Values.global.xray.rabbitmq.haQuorum.vhost }}'. Proceeding with  the upgrade."
+              fi
+              {{- end }}
+            {{- else }}
+              echo "Roll back to classic queues checks are disabled."
+            {{- end }}
+
             {{- if and .Values.global.xray.rabbitmq.haQuorum.enabled .Values.rabbitmq.migration.removeHaPolicyOnMigrationToHaQuorum.enabled }}
             for (( i=1; i<=6; i++ ))
             do 
@@ -265,25 +314,35 @@ spec:
             - -c
             - |
               #!/bin/bash
+              # This script is used to grow the quorum queues across all the replicas of RabbitMQ. In case the replica
+              # count is scaled up, the quorum queues need to be manually "grown" to the new nodes.
+
+              # A retry mechanism has been added to all the places where executing on the zeroth pod to account for
+              # scenarios where it is not running for any reason. This ensures that the job can complete successfully
+              # in the first attempt.
+
               rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
 
-              # Sleep for 2 minutes to ensure that all pods are scheduled so that they don't get missed out while checking the pod status.
-              # This is needed as the RabbitMQ cluster needs to be up and running before we can perform any operations on it.
-              # Based on extensive experimentation, it can take some time before all pods are up and running.
-              echo "Sleeping for 2 minutes to ensure all pods are scheduled"
-              sleep 120
+              # Sleep for 30 seconds to ensure that all pods are scheduled by the k8s controller so that they don't get
+              # missed out while checking the pod status.
+              echo "Sleeping for 30 seconds to ensure all pods are scheduled"
+              sleep 30
 
-              maxRetries=10
+              # Getting the replica count from statefulset
+              replicaCount=$(kubectl get statefulset {{ .Release.Name }}-{{ template "rabbitmq.name" . }} -o jsonpath='{.spec.replicas}')
 
+              maxRetries=5
+
+              # Waiting for all pods to be in a running state
               for (( retryCount=0; retryCount<maxRetries; retryCount++ )); do
-                podStatuses=$(kubectl get pods -l app.kubernetes.io/name=rabbitmq-ha -l app.kubernetes.io/instance={{ .Release.Namespace }}-xray -o json | jq '[.items[].status.phase]')
+                podStatuses=$(kubectl get pods -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o json | jq '[.items[].status.phase]')
                 podStatuses=($(echo "$podStatuses" | jq -r '.[]'))
 
                 numPods=${#podStatuses[@]}
-
-                if [ $numPods -eq 0 ]; then
-                  echo "No pods found. Exiting with status code 1"
-                  exit 1
+                if [ "$numPods" -ne "$replicaCount" ]; then
+                  echo "Not all pods are scheduled. Retrying in 30 seconds..."
+                  sleep 30
+                  continue
                 fi
 
                 allRunning=true
@@ -299,8 +358,8 @@ spec:
                   break
                 fi
 
-                echo "Not all pods are 'Running'. Retrying in 1 minute..."
-                sleep 60
+                echo "Not all pods are 'Running'. Retrying in 30 seconds..."
+                sleep 30
               done
 
               if [[ $retryCount -eq $maxRetries ]]; then
@@ -308,41 +367,90 @@ spec:
                   exit 1
               fi
 
-              # runningNodeCount returns the number of RabbitMQ nodes running in the cluster
-              runningNodeCount=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl cluster_status --formatter=json" | jq .running_nodes | jq '. | length')
-              if [ $? -ne 0 ]; then
-                echo "Failed to get the number of running nodes in the cluster"
+              # Waiting for the RabbitMQ server in the zeroth pod to start as we want to execute all rabbitmqctl commands on it
+              for (( retryCount=0; retryCount<maxRetries; retryCount++ )); do
+                pingStatus=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl ping" | grep "Ping succeeded")
+
+                if [ -n "$pingStatus" ]; then
+                  echo "Received ping from rabbitmq"
+                  break
+                fi
+
+                echo "RabbitMQ server not running in zeroth pod. Retrying in 30 seconds..."
+                sleep 30
+              done
+
+              if [[ $retryCount -eq $maxRetries ]]; then
+                echo "Max retries reached while waiting for RabbitMQ server to run in the zeroth pod"
                 exit 1
               fi
 
-              echo $runningNodeCount
+              # Waiting for RabbitMQ server to start running in all expected replicas and be a part of the cluster.
+              for (( retryCount=0; retryCount<maxRetries; retryCount++ )); do
+                runningNodeCount=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl cluster_status --formatter=json" | jq .running_nodes | jq '. | length')
 
-              # queueReplicaCount returns the number of replicas for the queue 'indexRegular'. 'indexRegular' is used as it is a permanent queue.
-              # This is used to determine the number of replicas for all the queues. Based on this number and the runningNodeCount,
-              # the script will either shrink or grow the number of replicas for the queues.
-              queueReplicaCount=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl list_queues name,type,leader,members --vhost={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --formatter=json" | jq '.[] | select(.name | test("^indexRegular$")) | .members | length')
-              if [ $? -ne 0 ]; then
-                echo "Failed to get the number of running replicas for the queues"
+                if [ "$replicaCount" -eq "$runningNodeCount" ]; then
+                  echo "RabbitMQ server running on expected number of replicas"
+                  break
+                fi
+
+                echo "RabbitMQ server not running in expected number of replicas. Retrying in 30 seconds..."
+                sleep 30
+              done
+
+              if [[ $retryCount -eq $maxRetries ]]; then
+                echo "Max retries reached while waiting for RabbitMQ server to run in all replicas"
                 exit 1
               fi
-              echo $queueReplicaCount
 
-              if [ "$queueReplicaCount" -gt "$runningNodeCount" ]; then
-                echo "Needed to shrink quorum queues before scaling down nodes. Please scale up the nodes, shrink the queues and then scale down the nodes"
-              elif [ "$queueReplicaCount" -lt "$runningNodeCount" ]; then
-                echo "Need to grow quorum queues on scaled up nodes"
+              # Getting the queues which are not replicated across all nodes
+              for (( retryCount=0; retryCount<maxRetries; retryCount++ )); do
+                queuesInfo=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl list_queues name,members --vhost={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --formatter=json")
+                if [ $? -ne 0 ]; then
+                  echo "Failed to exec rabbitmqctl command to get minimum member count for queues. Retrying in 30 seconds..."
+                  sleep 30
+                  continue
+                fi
 
-                for ((i = (queueReplicaCount + 1); i <= runningNodeCount; i++)); do
-                  echo "Growing node rabbit@{{ .Release.Namespace }}-xray-rabbitmq-ha-$(($i-1))"
-                  kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmq-queues grow rabbit@{{ .Release.Namespace }}-xray-rabbitmq-ha-$(($i-1)).{{ .Release.Namespace }}-xray-rabbitmq-ha-headless.{{ .Release.Namespace }}.svc.cluster.local all --vhost-pattern={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --queue-pattern \"(.*)\""
+                minMemberCount=$(echo $queuesInfo | jq '[.[] | .members | length] | min')
+                # queuesInfo can return an empty array if rabbitmq is not started yet
+                # In that case minMemberCount will be null. This handles that scenario
+                if [[ "$minMemberCount" -eq "null" ]]; then
+                  echo "Failed to get minimum member count for queues. Retrying in 30 seconds..."
+                  sleep 30
+                  continue
+                fi
+
+                echo "Minimum member count for queues is $minMemberCount, expected is $replicaCount"
+                break
+              done
+
+              if [[ $retryCount -eq $maxRetries ]]; then
+                echo "Max retries reached while waiting for minimum member count for queues"
+                exit 1
+              fi
+
+              if [ "$minMemberCount" -eq "$replicaCount" ]; then
+                echo "All queues are running with the expected number of replicas. No queues to grow. Exiting."
+                exit 0
+              fi
+
+              echo "Need to grow the queues as minimum replica count for queues is $minMemberCount"
+
+              for ((i = $minMemberCount + 1; i <= runningNodeCount && i <= 3; i++)); do
+                echo "Growing node rabbit@{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-$(($i-1))"
+
+                for ((j = 0; j < 5; j++)); do
+                  kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmq-queues grow rabbit@{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-$(($i-1)).{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-headless.{{ .Release.Namespace }}.svc.cluster.local all --vhost-pattern={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --queue-pattern \"(.*)\""
                   if [ $? -ne 0 ]; then
-                    echo "Failed to grow queues on node rabbit@{{ .Release.Namespace }}-xray-rabbitmq-ha-$(($i-1))"
-                    exit 1
+                    echo "Error growing queues on node rabbit@{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-$(($i-1)), retrying in 30 seconds"
+                    sleep 30
+                  else
+                    echo "Queues grown successfully on node rabbit@{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-$(($i-1))"
+                    break
                   fi
                 done
-              else
-                echo "Growing or shrinking of queues not needed as queue replica count matches the number of nodes"
-              fi
+              done
       restartPolicy: Never
       terminationGracePeriodSeconds: 0
 {{- end }}

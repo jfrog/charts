@@ -1,0 +1,300 @@
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "xray.fullname" . }}-server
+  labels:
+{{ include "xray.labels" . | indent 4 }}
+    heritage: {{ .Release.Service }}
+    servicename: server
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+{{- with .Values.server.deployment.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+{{- if not .Values.server.autoscaling.enabled }}
+  replicas: {{ .Values.server.replicaCount }}
+{{- end }}
+{{- with .Values.deployment.strategy }}
+  strategy:
+{{ toYaml . | indent 4 }}
+{{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "xray.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.xray.name }}
+      servicename: server
+  template:
+    metadata:
+      labels:
+{{ include "xray.labels" . | indent 8 }}
+        servicename: server
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      annotations:
+{{- include "xray.annotations" . | indent 8 }}
+        {{- with .Values.server.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+        {{- with .Values.xray.annotations }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
+    spec:
+{{- include "xray.spec" . | indent 6 }}
+      initContainers:
+{{- include "xray.initContainers" . | indent 6 }}
+      containers:
+{{- include "xray.observabilityContainer" . | nindent 6 }}
+{{- include "xray.routerContainer" (list . "server") | indent 6 }}
+      - name: {{ .Values.server.name }}
+        image: {{ include "xray.getImageInfoByValue" (list . "server") }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
+        {{- end }}
+        command:
+          - '/bin/bash'
+          - '-c'
+          - >
+          {{- with .Values.common.preStartCommand }}
+            echo "Running custom common preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+          {{- with .Values.server.preStartCommand }}
+            echo "Running custom Server preStartCommand command";
+            {{ tpl . $ }};
+          {{- end }}
+            exec /opt/jfrog/xray/app/bin/wrapper.sh;
+        {{- with .Values.server.lifecycle }}
+        lifecycle:
+{{ toYaml . | indent 10 }}
+        {{- end }}
+        env:
+      {{ include "xray.envVariables" . | indent 8 }}
+      {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
+      {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
+        - name: JF_SHARED_RABBITMQ_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ tpl .Values.rabbitmq.external.secrets.url.name . }}
+              key: {{ tpl .Values.rabbitmq.external.secrets.url.key . }}
+      {{- end }}
+      {{- if or .Values.database.secrets.user .Values.database.user }}
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.user }}
+              name: {{ tpl .Values.database.secrets.user.name . }}
+              key: {{ tpl .Values.database.secrets.user.key . }}
+        {{- else if .Values.database.user }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.fullname" . }}-unified-secret"
+              {{- end }}
+              key: db-user
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.actualUsername .Values.database.actualUsername }}
+        - name: JF_SHARED_DATABASE_ACTUALUSERNAME
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.actualUsername }}
+              name: {{ tpl .Values.database.secrets.actualUsername.name . }}
+              key: {{ tpl .Values.database.secrets.actualUsername.key . }}
+        {{- else if .Values.database.actualUsername }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.fullname" . }}-unified-secret"
+              {{- end }}
+              key: db-actualUsername
+        {{- end }}
+      {{- end }}
+      {{- if or .Values.database.secrets.url .Values.database.url }}
+        - name: JF_SHARED_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+        {{- if .Values.database.secrets.url }}
+              name: {{ tpl .Values.database.secrets.url.name . }}
+              key: {{ tpl .Values.database.secrets.url.key . }}
+        {{- else if .Values.database.url }}
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.fullname" . }}-database-creds
+              {{- else }}
+              name: "{{ template "xray.fullname" . }}-unified-secret"
+              {{- end }}
+              key: db-url
+        {{- end }}
+      {{- end }}
+      {{- if .Values.common.rabbitmq.connectionConfigFromEnvironment }}
+        - name: JF_SHARED_RABBITMQ_USERNAME
+          value: {{ include "rabbitmq.user" .}}
+        - name: JF_SHARED_RABBITMQ_URL
+          value: {{ include "rabbitmq.url" .}}
+      {{- end }}
+        - name: XRAY_K8S_ENV
+          value: "true"
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.fullname" . }}-unified-secret"
+              {{- end }}
+              key: execution-service-aes-key
+        {{- if .Values.common.extraEnvVars }}
+        {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.server.extraEnvVars }}
+        {{- tpl .Values.server.extraEnvVars . | nindent 8 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.server.internalPort }}
+          name: http-server
+        volumeMounts:
+        - name: data-volume
+          mountPath: "{{ .Values.xray.persistence.mountPath }}"
+{{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
+{{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
+{{- end }}
+{{- with .Values.server.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.server.resources | indent 10 }}
+{{- if .Values.server.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.server.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.server.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.server.livenessProbe.config . | indent 10 }}
+{{- end }}
+      {{- $mountPath := .Values.xray.persistence.mountPath }}
+      {{- range .Values.xray.loggers }}
+      - name: {{ . | replace "_" "-" | replace "." "-" }}
+        image: {{ include "xray.getImageInfoByValue" (list $ "initContainers") }}
+        imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy }}
+        {{- if $.Values.containerSecurityContext.enabled }}
+        securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
+        {{- end }}
+        command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        volumeMounts:
+        - name: data-volume
+          mountPath: {{ $mountPath }}
+        - name: tail-logger-script
+          mountPath: /scripts/tail-log.sh
+          subPath: tail-log.sh
+        resources:
+{{ toYaml $.Values.xray.loggersResources | indent 10 }}
+      {{- end }}
+      {{- if .Values.filebeat.enabled }}
+{{ include "xray.filebeat" . | nindent 6 }}
+      {{- end }}
+{{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
+{{ tpl (include "xray.customSidecarContainers" .) . | indent 6 }}
+{{- end }}
+    {{- if or .Values.xray.nodeSelector .Values.global.nodeSelector }}
+{{ tpl (include "xray.nodeSelector" .) . | indent 6 }}
+    {{- end }}
+    {{- if .Values.server.affinity }}
+    {{- with .Values.server.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if eq .Values.server.podAntiAffinity.type "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: {{ .Values.server.podAntiAffinity.topologyKey }}
+                labelSelector:
+                  matchLabels:
+                    app: {{ template "xray.name" . }}
+                    release: {{ .Release.Name }}
+    {{- else if eq .Values.xray.podAntiAffinity.type "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.server.podAntiAffinity.topologyKey }}
+              labelSelector:
+                matchLabels:
+                  app: {{ template "xray.name" . }}
+                  release: {{ .Release.Name }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+      ########## External secrets ###########
+      {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled }}
+      - name: ca-certs
+        secret:
+          secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.xray.customCertificates.certificateSecretName }}
+      {{- end }}
+      {{- if .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ .Values.systemYamlOverride.existingSecret }}
+      {{- end }}
+      ############ Config map, Volumes and Custom Volumes ##############
+      {{- if .Values.xray.loggers }}
+      - name: tail-logger-script
+        configMap:
+          name: {{ template "xray.fullname" . }}-logger
+      {{- end }}
+      - name: data-volume
+        emptyDir:
+          sizeLimit: {{ .Values.server.persistence.size }}
+      {{- if and .Values.xray.unifiedSecretInstallation (eq (include "xray.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      #########  unifiedSecretInstallation ###########
+      - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
+        secret:
+          secretName: {{ template "xray.fullname" . }}-unified-secret
+      {{- else if not .Values.xray.unifiedSecretInstallation }}
+      ######### Non unifiedSecretInstallation ###########
+      {{- if not .Values.systemYamlOverride.existingSecret }}
+      - name: systemyaml
+        secret:
+          secretName: {{ printf "%s-%s" (include "xray.fullname" .) "system-yaml" }}
+      {{- end }}
+      {{- end }}
+      {{- if or .Values.global.rabbitmq.auth.tls.enabled .Values.rabbitmq.auth.tls.enabled }}
+      - name: rabbitmq-ca-certs
+        secret:
+          secretName: {{ template "xray.rabbitmqCustomCertificateshandler" . }}
+      {{- end }}
+
+{{- if or .Values.common.customVolumes .Values.global.customVolumes }}
+{{ tpl (include "xray.customVolumes" .) . | indent 6 }}
+{{- end }}
+      {{- if .Values.filebeat.enabled }}
+      - name: filebeat-config
+        configMap:
+          name: {{ template "xray.fullname" . }}-filebeat-config
+      {{- end }}
+      {{- if .Values.common.configMaps }}
+      - name: xray-configmaps
+        configMap:
+          name: {{ template "xray.fullname" . }}-configmaps
+      {{- end }}
+{{- end }}

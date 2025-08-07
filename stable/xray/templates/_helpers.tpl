@@ -539,14 +539,6 @@ Resolve xray ipa requiredServiceTypes value
 {{- end -}}
 
 {{/*
-Resolve xray server requiredServiceTypes value
-*/}}
-{{- define "xray.router.server.requiredServiceTypes" -}}
-{{- $requiredTypes := "jfxr,jfob" -}}
-{{- $requiredTypes -}}
-{{- end -}}
-
-{{/*
 Resolve Xray pod node selector value
 */}}
 {{- define "xray.nodeSelector" -}}
@@ -634,28 +626,6 @@ Resolve autoscalingQueues value for ipa
 {{- end -}}
 
 {{/*
-Resolve autoscalingQueues value for server
-*/}}
-{{- define "xray.autoscalingQueuesServer" -}}
-{{- if .Values.autoscalingServer.keda.queues }}
-{{- range .Values.autoscalingServer.keda.queues }}
-- type: rabbitmq
-  metadata:
-    name: "{{- .name -}}-queue"
-    protocol: amqp
-    queueName: {{ .name }}
-    mode: QueueLength
-    value: "{{ .value }}"
-{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
-    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
-{{- end }}
-  authenticationRef:
-    name: keda-trigger-auth-rabbitmq-conn-xray
-{{- end }}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the secret name of rabbitmq TLS certs.
 */}}
 {{- define "xray.rabbitmqCustomCertificateshandler" -}}
@@ -677,8 +647,15 @@ Prints value of Values.rabbitmq.auth.tls.enabled.
 {{- printf "%t" $.Values.auth.tls.enabled -}}
 {{- end -}}
 
+{{/*
+Returns true if either local or global RabbitMQ TLS is enabled.
+*/}}
 {{- define "xray.rabbitmq.isManagementListenerTlsEnabled" -}}
-{{- printf "%t" $.Values.rabbitmq.auth.tls.enabled -}}
+{{- if or .Values.rabbitmq.auth.tls.enabled  .Values.global.rabbitmq.auth.tls.enabled -}}
+true
+{{- else -}}
+false
+{{- end -}}
 {{- end -}}
 
 {{/*
