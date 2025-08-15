@@ -12,6 +12,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
   name: {{ template "rtfs.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
