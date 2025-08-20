@@ -66,15 +66,6 @@ spec:
               port:
                 number: {{ $artifactoryServicePort }}
         {{- end }}
-        {{- if and $.Values.rtfs.enabled $.Values.ingress.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" $.Values.artifactory.image.repository)) }}
-        - path: {{ $.Values.ingress.rtfsPath }}
-          pathType: {{ $.Values.ingress.pathType | default "ImplementationSpecific" }}
-          backend:
-            service:
-              name: {{ $serviceRTFSName }}
-              port:
-                name: http-router
-        {{- end }}
     {{- end }}
   {{- else }}
     {{- range $host := .Values.ingress.hosts }}

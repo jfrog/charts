@@ -1,7 +1,7 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.111.7] - Feb 17, 2024
+## [107.117.14] - Feb 17, 2024
 * Fixed an issue by disabling a pro-only service (Onemodel)
 * Disabling a pro-only service (Evidence)
 * Updated federation key to rtfs in cpp, jcr and oss chart

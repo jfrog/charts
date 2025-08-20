@@ -31,6 +31,22 @@ To install the chart with the release name `artifactory`:
 helm upgrade --install artifactory jfrog/artifactory --namespace artifactory --create-namespace
 ```
 
+### High Availability
+
+Note: High availability is only supported with an Artifactory Enterprise license.
+
+To enable high availability (HA) in Artifactory, set the artifactory.replicaCount to 2 or more. A replica count of 3 is recommended for optimal performance and redundancy.
+
+When deploying with artifactory.replicaCount > 1, avoid using artifactory.persistence.type=file-system for the filestore configuration in HA setups, as it may cause data inconsistency.
+
+For more details on configuring the filestore, Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/filestore-configuration)
+
+
+```bash
+# Start artifactory with 3 replicas
+helm upgrade --install artifactory jfrog/artifactory --set artifactory.replicaCount=3,artifactory.persistence.type=cluster-file-system --namespace artifactory --create-namespace
+```
+
 ### Apply Sizing configurations to the Chart
 Note that sizings with more than one replica require an enterprise license for HA . Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/high-availability)
 To apply the chart with recommended sizing configurations :

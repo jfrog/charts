@@ -49,7 +49,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.5.1742914212
+    tag: 9.6.1749489516
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -118,7 +118,6 @@ ingress:
   pathType: ImplementationSpecific
   routerPath: /
   artifactoryPath: /artifactory/
-  rtfsPath: /artifactory/service/rtfs/
   className: ""
   annotations: {}
   # nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -241,7 +240,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.165.3
+    tag: 7.177.4
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -794,6 +793,7 @@ artifactory:
     ## A manually managed Persistent Volume and Claim
     ## Requires persistence.enabled: true
     ## If defined, PVC must be created manually before volume will be bound
+    ## Note: existingClaim is supported only in standalone mode. It is not supported in HA mode with the Artifactory chart.
     # existingClaim:
 
     accessMode: ReadWriteOnce
@@ -888,6 +888,14 @@ artifactory:
       testConnection: false
       identity:
       credential:
+      ## AWS S3 credentials from Kubernetes secrets
+      ## When using these secret configurations, the identity and credential above will be ignored
+      # identitySecret:
+      #   name:
+      #   key:
+      # credentialSecret:
+      #   name:
+      #   key:
       region:
       bucketName: artifactory-aws
       path: artifactory/filestore
@@ -915,6 +923,15 @@ artifactory:
     azureBlob:
       accountName:
       accountKey:
+      ## Azure Blob credentials from Kubernetes secrets
+      ## When using these secret configurations, the accountName and accountKey above will be ignored
+      ## Set these to use external secrets instead of plain text credentials
+      # accountNameSecret:
+      #   name:
+      #   key:
+      # accountKeySecret:
+      #   name:
+      #   key:
       endpoint:
       containerName:
       multiPartLimit: 100000000
@@ -1962,11 +1979,11 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 1.7.8
+    tag: 1.8.21
   jfrogUrl: ""
   replicaCount: 1
   internalRestPort: 8025
-  apiContext: artifactory/service/rtfs
+  apiContext: rtfs
   persistence:
     mountPath: "/var/opt/jfrog/federation"
     federationProperties: {}
@@ -2123,7 +2140,8 @@ hostAliases: []
 #     - "foo.remote"
 #     - "bar.remote"
 
-## Toggling this feature is seamless and requires helm upgrade
+## Note 'splitServicesToContainers: true' has been the default setting and is already the standard behavior in Helm charts.
+## Starting with releases after September 2025, the Helm Chart will no longer support toggling this setting off.
 ## will enable all microservices to run in different containers in a single pod (by default it is true)
 splitServicesToContainers: true
 ## Specify common probes parameters
