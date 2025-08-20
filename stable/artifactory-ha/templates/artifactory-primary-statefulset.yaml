@@ -1077,6 +1077,8 @@ spec:
        {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: /tmp
         resources:
 {{ toYaml .Values.jfconnect.resources | indent 10 }}
       {{- if .Values.jfconnect.startupProbe.enabled }}
@@ -1176,6 +1178,8 @@ spec:
        {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: /tmp
         resources:
 {{ toYaml .Values.topology.resources | indent 10 }}
       {{- if .Values.topology.startupProbe.enabled }}
@@ -1276,6 +1280,8 @@ spec:
        {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: /tmp
         resources:
 {{ toYaml .Values.jfconfig.resources | indent 10 }}
       {{- if .Values.jfconfig.startupProbe.enabled }}
@@ -1331,7 +1337,7 @@ spec:
           mountPath: {{ .Values.observability.persistence.mountPath | quote }}
           {{- else }}
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-          {{- end }}
+          {{- end }}        
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
       {{- if .Values.observability.startupProbe.enabled }}
@@ -1442,6 +1448,8 @@ spec:
         {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        - name: tmp-volume
+          mountPath: /tmp
 
       ######################## Artifactory persistence fs ##########################
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -1703,6 +1711,8 @@ spec:
         {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        - name: tmp-volume
+          mountPath: /tmp
 
       ######################## Artifactory persistence fs ##########################
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -2044,6 +2054,8 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+      - name: tmp-volume
+        emptyDir: {}
 
       #########  unifiedSecretInstallation ###########
     {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
