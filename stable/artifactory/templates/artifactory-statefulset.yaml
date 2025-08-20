@@ -701,7 +701,7 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
       {{- end }}
         - name: artifactory-volume
-          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}    
         resources:
 {{ toYaml .Values.frontend.resources | indent 10 }}
       {{- if .Values.frontend.startupProbe.enabled }}
@@ -1040,6 +1040,8 @@ spec:
       {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
         resources:
 {{ toYaml .Values.jfconnect.resources | indent 10 }}
       {{- if .Values.jfconnect.startupProbe.enabled }}
@@ -1146,6 +1148,8 @@ spec:
       {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
 
       ######################## Artifactory persistence nfs ##########################
       {{- if eq .Values.artifactory.persistence.type "nfs" }}
@@ -1272,6 +1276,8 @@ spec:
       {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
         resources:
 {{ toYaml .Values.topology.resources | indent 10 }}
       {{- if .Values.topology.startupProbe.enabled }}
@@ -1372,6 +1378,8 @@ spec:
       {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
         resources:
 {{ toYaml .Values.jfconfig.resources | indent 10 }}
       {{- if .Values.jfconfig.startupProbe.enabled }}
@@ -1616,6 +1624,9 @@ spec:
       {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        
+        - name: tmp-volume
+          mountPath: "/tmp"
 
       ######################## Artifactory config map ##########################
       {{- if .Values.artifactory.configMapName }}
@@ -1940,6 +1951,8 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
       {{- end }}
+      - name: tmp-volume
+        emptyDir: {}
       {{- if .Values.filebeat.enabled }}
       - name: filebeat-config
         configMap:

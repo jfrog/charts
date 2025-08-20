@@ -118,7 +118,6 @@ ingress:
   pathType: ImplementationSpecific
   routerPath: /
   artifactoryPath: /artifactory/
-  rtfsPath: /artifactory/service/rtfs/
   className: ""
   annotations: {}
   # nginx.ingress.kubernetes.io/configuration-snippet: |
@@ -241,7 +240,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.177.2
+    tag: 7.177.4
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -1980,11 +1979,11 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 1.8.17
+    tag: 1.8.21
   jfrogUrl: ""
   replicaCount: 1
   internalRestPort: 8025
-  apiContext: artifactory/service/rtfs
+  apiContext: rtfs
   persistence:
     mountPath: "/var/opt/jfrog/federation"
     federationProperties: {}
