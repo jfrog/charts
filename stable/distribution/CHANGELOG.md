@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.32.0] - Mar 27, 2025
+## [102.33.0] - Mar 27, 2025
 * Upgrade postgres image to 16.6.0-debian-12-r2
 * **Breaking changes**
 * Upgrade postgres chart version to 15.5.20
