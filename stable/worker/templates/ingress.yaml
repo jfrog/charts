@@ -5,10 +5,17 @@ metadata:
   name: {{ include "worker.fullname" . }}
   annotations:
     nginx.ingress.kubernetes.io/load-balance: ewma
+    {{ if .Values.ingress.useAnnotationForTimeouts }}
+    nginx.ingress.kubernetes.io/proxy-send-timeout: {{ .Values.ingress.grpcSendTimeout }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: {{ .Values.ingress.grpcReadTimeout }}
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      client_body_timeout {{ .Values.ingress.clientBodyTimeout }};
+    {{ else }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       grpc_read_timeout {{ .Values.ingress.grpcReadTimeout }};
       grpc_send_timeout {{ .Values.ingress.grpcSendTimeout }};
       client_body_timeout {{ .Values.ingress.clientBodyTimeout }};
+    {{ end}}
     {{ if .Values.ingress.backendTls }}
     nginx.ingress.kubernetes.io/backend-protocol: "GRPCS"
     {{ else }}
