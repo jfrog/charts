@@ -227,10 +227,9 @@ spec:
             echo "Creation of versions.properties Done";
           fi
         env:
-        {{- range .Values.distribution.extraEnvironmentVariables }}
-        - name: {{ .name }}
-          value: '{{ tpl .value $ }}'
-        {{- end }}
+{{- with .Values.distribution.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
@@ -334,10 +333,9 @@ spec:
               key: redis-password
         - name: JF_SHARED_REDIS_CONNECTIONSTRING
           value: '{{ printf "redis://localhost:%g"  .Values.redis.port }}'
-        {{- range .Values.distribution.extraEnvironmentVariables }}
-        - name: {{ .name }}
-          value: '{{ tpl .value $ }}'
-        {{- end }}
+{{- with .Values.distribution.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 8 }}
+{{- end }}
         volumeMounts:
         - name: distribution-data
           mountPath: {{ .Values.distribution.persistence.mountPath | quote }}
