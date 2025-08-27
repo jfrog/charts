@@ -1,0 +1,47 @@
+{{- if and (not .Values.splitXraytoSeparateDeployments.gradualUpgrade) .Values.splitXraytoSeparateDeployments.fullSplit }}
+{{- if and (.Values.server.autoscaling.enabled) (eq .Values.server.autoscaling.keda.enabled true) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-server
+  {{- if or .Values.global.autoscaling.keda.annotations .Values.server.autoscaling.keda.annotations }}
+  annotations:
+    {{- with .Values.global.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- with .Values.server.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-server
+  minReplicaCount: {{ .Values.server.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.server.autoscaling.maxReplicas }}
+  pollingInterval: {{ .Values.server.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.server.autoscaling.keda.cooldownPeriod }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+        {{- .Values.server.autoscaling.keda.scaleUp | toYaml | nindent 10 }}
+        scaleDown:
+        {{- .Values.server.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
+  triggers:
+  {{- include "xray.autoscalingQueuesServer" . | indent 4 }}
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: "{{ .Values.server.autoscaling.targetCPUUtilizationPercentage }}"
+    - type: memory
+      metricType: Utilization
+      metadata:
+        value: "{{ .Values.server.autoscaling.targetMemoryUtilizationPercentage }}"
+{{- end }}
+{{- end }}

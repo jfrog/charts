@@ -268,6 +268,11 @@ variable "jfrog_charts_repository" {
 variable "jfrog_platform_chart_version" {
   description = "The jfrog-platform chart version"
   default = ""
+  
+  validation {
+    condition     = var.jfrog_platform_chart_version != null && var.jfrog_platform_chart_version != ""
+    error_message = "The jfrog_platform_chart_version variable must be set. Specify a valid chart version in a terraform.tfvars file (e.g., 'jfrog_platform_chart_version = \"11.1.9\"')."
+  }
 }
 
 variable "deploy_metrics_server" {

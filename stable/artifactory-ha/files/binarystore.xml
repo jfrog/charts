@@ -270,10 +270,10 @@
         <maxCacheSize>{{ .Values.artifactory.persistence.maxCacheSize | int64 }}</maxCacheSize>
         <cacheProviderDir>{{ .Values.artifactory.persistence.cacheProviderDir }}</cacheProviderDir>
         {{- if .Values.artifactory.persistence.maxFileSizeLimit }}
-        <maxFileSizeLimit>{{.Values.artifactory.persistence.maxFileSizeLimit | int64}}</maxFileSizeLimit>
+        <maxFileSizeLimit>{{ .Values.artifactory.persistence.maxFileSizeLimit | int64 }}</maxFileSizeLimit>
         {{- end }}
         {{- if .Values.artifactory.persistence.skipDuringUpload }}
-        <skipDuringUpload>{{.Values.artifactory.persistence.skipDuringUpload}}</skipDuringUpload>
+        <skipDuringUpload>{{ .Values.artifactory.persistence.skipDuringUpload }}</skipDuringUpload>
         {{- end }}
     </provider>
     {{- end }}
@@ -283,9 +283,13 @@
         <testConnection>{{ .testConnection }}</testConnection>
         {{- if .identity }}
         <identity>{{ .identity }}</identity>
+        {{- else if .identitySecret }}
+        <identity>${AWS_S3_V3_IDENTITY}</identity>
         {{- end }}
         {{- if .credential }}
         <credential>{{ .credential }}</credential>
+        {{- else if .credentialSecret }}
+        <credential>${AWS_S3_V3_CREDENTIAL}</credential>
         {{- end }}
         <region>{{ .region }}</region>
         <bucketName>{{ .bucketName }}</bucketName>
@@ -406,8 +410,16 @@
 
     <!--cluster eventual template-->
     <provider id="azure-blob-storage" type="azure-blob-storage">
+       {{- if .Values.artifactory.persistence.azureBlob.accountName }}
         <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
+        {{- else if .and .Values.artifactory.persistence.azureBlob.accountNameSecret }}
+        <accountName>${AZURE_ACCOUNT_NAME}</accountName>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.azureBlob.accountKey }}
         <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
+        {{- else if .and .Values.artifactory.persistence.azureBlob.accountKeySecret }}
+        <accountKey>${AZURE_ACCOUNT_KEY}</accountKey>
+        {{- end }}
         <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
         <containerName>{{ .Values.artifactory.persistence.azureBlob.containerName }}</containerName>
         <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>
@@ -430,8 +442,16 @@
         {{- end }}
     </provider>
     <provider id="azure-blob-storage-v2" type="azure-blob-storage-v2">
+       {{- if .Values.artifactory.persistence.azureBlob.accountName }}
         <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
+        {{- else if .and .Values.artifactory.persistence.azureBlob.accountNameSecret }}
+        <accountName>${AZURE_ACCOUNT_NAME}</accountName>
+        {{- end }}
+        {{- if .Values.artifactory.persistence.azureBlob.accountKey }}
         <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
+        {{- else if .and .Values.artifactory.persistence.azureBlob.accountKeySecret }}
+        <accountKey>${AZURE_ACCOUNT_KEY}</accountKey>
+        {{- end }}
         <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
         <container>{{ .Values.artifactory.persistence.azureBlob.containerName }}</container> 
         <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>

@@ -15,6 +15,15 @@ Congratulations! JFrog Xray services are deployed!
 ***************************************************************************************
 {{- end }}
 
+{{- if and (not .Values.isJfrogSaas) .Values.rabbitmq.enabled .Values.global.xray.rabbitmq.haQuorum.enabled }}
+  {{- if eq (int .Values.rabbitmq.replicaCount) 1 }}
+************************************* Please note *****************************************
+  'rabbitmq.replicaCount' is set to 1.                                                *
+  To achieve High Availability (HA) with quorum queues, it is recommended to set this to 3.
+***************************************************************************************
+  {{- end }}
+{{- end }}
+
 {{- if and (or (or (or .Values.systemYamlOverride.existingSecret (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName)) .Values.database.secrets) .Values.xray.unifiedSecretInstallation }}
 ****************************************** WARNING **************************************************************************************************
 * The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*

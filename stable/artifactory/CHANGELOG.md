@@ -1,13 +1,23 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.111.12] - April 01, 2025
+## [107.117.14] - August 05, 2025
+* Added support for AWS S3 V3 credentials (identity and credential) from a Kubernetes Secret
+* Added support for Azure credentials (accountName and accountKey) from a Kubernetes Secret
+* Fixed Artifactory nodePort misplaced
+* Added High Availability section to README.md
+* Note: `splitServicesToContainers: true` has been the default setting, and starting with releases after september 2025, the helm chart will no longer support disabling this option
+* Added emptyDir for /tmp and updated java cert dir to var/ in compliance with readOnly mode
+* Changed apiContext path from '/artifactory/service/rtfs' to '/rtfs' for rtfs
+
+## [107.111.0] - April 15, 2025
 * Added custom HPA metrics support for Artifactory service `autoscaling.metrics`
 * Updated rtfs version to `1.6.13`
 * Added a default resource preset for PostgreSQL as small
 * Updated postgresql upgrade warnings
 * Added new JFConfig service
 * Enabled Evidence service by default to true
+* Note added: `artifactory.persistence.existingClaim` is supported only in standalone mode. It is not supported in HA mode with the Artifactory chart.
 
 ## [107.109.0] - March 04, 2025
 * Added a condition to enable evidence only on pro chart

@@ -19,5 +19,8 @@ spec:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
       component: {{ .Values.xray.name }}
+{{- if or .Values.splitXraytoSeparateDeployments.ipa .Values.splitXraytoSeparateDeployments.fullSplit }}
+      servicename: server
+{{- end }}
   minAvailable: {{ .Values.xray.minAvailable }}
 {{- end }}

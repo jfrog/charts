@@ -658,3 +658,42 @@ Resolve RTFS autoscalling metrics
 {{- .Values.rtfs.autoscaling.metrics -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Return true if both AWS S3 V3 identitySecret and credentialSecret are configured with non-empty values
+*/}}
+{{- define "artifactory.awsS3V3SecretsConfigured" -}}
+{{- $s3 := .Values.artifactory.persistence.awsS3V3 | default dict -}}
+{{- $identity := $s3.identitySecret | default dict -}}
+{{- $credential := $s3.credentialSecret | default dict -}}
+{{- if and (kindIs "map" $identity)
+           (kindIs "map" $credential)
+           $identity.name
+           $identity.key
+           $credential.name
+           $credential.key -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end }}
+
+{{/*
+Return true if both Azure Blob accountNameSecret and accountKeySecret are properly configured with non-empty values
+*/}}
+{{- define "artifactory.azureBlobSecretsConfigured" -}}
+{{- $blob := .Values.artifactory.persistence.azureBlob | default dict -}}
+{{- $accountNameSecret := $blob.accountNameSecret | default dict -}}
+{{- $accountKeySecret := $blob.accountKeySecret | default dict -}}
+{{- if and 
+      (kindIs "map" $accountNameSecret)
+      (kindIs "map" $accountKeySecret)
+      $accountNameSecret.name
+      $accountNameSecret.key
+      $accountKeySecret.name
+      $accountKeySecret.key -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end }}

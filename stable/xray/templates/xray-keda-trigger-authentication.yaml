@@ -1,4 +1,4 @@
-{{- if or .Values.autoscaling.keda.enabled .Values.autoscalingServer.keda.enabled .Values.autoscalingIpa.keda.enabled }}
+{{- if or .Values.autoscaling.keda.enabled  .Values.autoscalingIpa.keda.enabled .Values.server.autoscaling.keda.enabled .Values.indexer.autoscaling.keda.enabled .Values.persist.autoscaling.keda.enabled .Values.analysis.autoscaling.keda.enabled .Values.policyenforcer.autoscaling.keda.enabled .Values.sbom.autoscaling.keda.enabled }}
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:

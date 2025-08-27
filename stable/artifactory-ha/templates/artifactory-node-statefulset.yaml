@@ -161,6 +161,19 @@ spec:
           echo "Copy binarystore.xml file";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory;
           cp -fv /tmp/etc/artifactory/binarystore.xml {{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml;
+          {{- if not .Values.artifactory.persistence.customBinarystoreXmlSecret }}
+          XML_FILE="{{ .Values.artifactory.persistence.mountPath }}/etc/artifactory/binarystore.xml"
+            {{- if eq (include "artifactory-ha.awsS3V3SecretsConfigured" .) "true" }}
+            echo "Replacing AWS S3 v3 credentials from secrets..."
+            sed -i 's|<identity>\${AWS_S3_V3_IDENTITY}</identity>|<identity>'"$AWS_S3_V3_IDENTITY"'</identity>|' "$XML_FILE" > /dev/null 2>&1
+            sed -i 's|<credential>\${AWS_S3_V3_CREDENTIAL}</credential>|<credential>'"$AWS_S3_V3_CREDENTIAL"'</credential>|' "$XML_FILE" > /dev/null 2>&1
+            {{- end }}
+            {{- if eq (include "artifactory-ha.azureBlobSecretsConfigured" .) "true" }}
+            echo "Replacing Azure Blob credentials from secrets..."
+            sed -i 's|<accountName>\${AZURE_ACCOUNT_NAME}</accountName>|<accountName>'"$AZURE_ACCOUNT_NAME"'</accountName>|' "$XML_FILE" > /dev/null 2>&1
+            sed -i 's|<accountKey>\${AZURE_ACCOUNT_KEY}</accountKey>|<accountKey>'"$AZURE_ACCOUNT_KEY"'</accountKey>|' "$XML_FILE" > /dev/null 2>&1
+            {{- end }}
+          {{- end }}
           echo "Removing join.key file";
           rm -fv {{ .Values.artifactory.persistence.mountPath }}/etc/security/join.key;
         {{- if .Values.access.resetAccessCAKeys }}
@@ -187,6 +200,34 @@ spec:
             {{- end }}
               key: master-key
         {{- end }}
+        {{- if and (eq (include "artifactory-ha.awsS3V3SecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+        - name: AWS_S3_V3_IDENTITY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.artifactory.persistence.awsS3V3.identitySecret.name }}
+              key: {{ .Values.artifactory.persistence.awsS3V3.identitySecret.key }}
+        - name: AWS_S3_V3_CREDENTIAL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.artifactory.persistence.awsS3V3.credentialSecret.name }}
+              key: {{ .Values.artifactory.persistence.awsS3V3.credentialSecret.key }}
+      {{- end }}
+        {{- if and (eq (include "artifactory-ha.azureBlobSecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+          {{- with .Values.artifactory.persistence.azureBlob.accountNameSecret }}
+        - name: AZURE_ACCOUNT_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .name }}
+              key: {{ .key }}
+          {{- end }}
+          {{- with .Values.artifactory.persistence.azureBlob.accountKeySecret }}
+        - name: AZURE_ACCOUNT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .name }}
+              key: {{ .key }}
+          {{- end }}
+        {{- end }}
         resources:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         volumeMounts:
@@ -207,6 +248,8 @@ spec:
           subPath: system.yaml
           {{- end }}
 
+
+
         ######################## Binarystore  ##########################
         {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.persistence.customBinarystoreXmlSecret }}
         - name: binarystore-xml
@@ -215,6 +258,37 @@ spec:
         {{- end }}
           mountPath: "/tmp/etc/artifactory/binarystore.xml"
           subPath: binarystore.xml
+
+     ######################## AWS S3 V3 Creds  ##########################
+
+        {{- if and (eq (include "artifactory-ha.awsS3V3SecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+        {{- with .Values.artifactory.persistence.awsS3V3.identitySecret }}
+        - name: aws-s3-v3-cred
+          mountPath: {{ printf "/tmp/%s/%s" .name .key }}
+          subPath: {{ .key }}
+        {{- end }}
+        {{- with .Values.artifactory.persistence.awsS3V3.credentialSecret }}
+        - name: aws-s3-v3-cred
+          mountPath: {{ printf "/tmp/%s/%s" .name .key }}
+          subPath: {{ .key }}
+        {{- end }}
+      {{- end }}
+
+        ######################## Azure Blob Creds  ##########################
+
+      {{- if and (eq (include "artifactory-ha.azureBlobSecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+        {{- with .Values.artifactory.persistence.azureBlob.accountNameSecret }}
+        - name: azure-blob-cred
+          mountPath: {{ printf "/tmp/%s/%s" .name .key }}
+          subPath: {{ .key }}
+        {{- end }}
+
+        {{- with .Values.artifactory.persistence.azureBlob.accountKeySecret }}
+        - name: azure-blob-cred
+          mountPath: {{ printf "/tmp/%s/%s" .name .key }}
+          subPath: {{ .key }}
+        {{- end }}
+      {{- end }}
 
       ######################## CustomCertificates  ##########################
       {{- if or .Values.artifactory.customCertificates.enabled .Values.global.customCertificates.enabled }}
@@ -803,7 +877,7 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
        {{- end }}
         - name: volume
-          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}        
         resources:
 {{ toYaml .Values.event.resources | indent 10 }}
       {{- if .Values.event.startupProbe.enabled }}
@@ -849,6 +923,8 @@ spec:
        {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
         resources:
 {{ toYaml .Values.jfconnect.resources | indent 10 }}
       {{- if .Values.jfconnect.startupProbe.enabled }}
@@ -948,6 +1024,8 @@ spec:
        {{- end }}
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
         resources:
 {{ toYaml .Values.topology.resources | indent 10 }}
       {{- if .Values.topology.startupProbe.enabled }}
@@ -1041,6 +1119,8 @@ spec:
         volumeMounts:
         - name: volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        - name: tmp-volume
+          mountPath: "/tmp"
         resources:
 {{ toYaml .Values.jfconfig.resources | indent 10 }}
       {{- if .Values.jfconfig.startupProbe.enabled }}
@@ -1200,6 +1280,8 @@ spec:
         {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        - name: tmp-volume
+          mountPath: "/tmp"
 
       ######################## Artifactory persistence fs ##########################
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -1312,7 +1394,7 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
-        - name: JF_RTFS_EMBEDDED_ENABLE
+        - name: JF_RTFS_EMBEDDED_ENABLED
           value: "false"
       {{- if .Values.aws.license.enabled }}
         - name: IS_AWS_LICENSE
@@ -1445,6 +1527,8 @@ spec:
         {{- end }}
         - name: volume
           mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+        - name: tmp-volume
+          mountPath: "/tmp"
 
       ######################## Artifactory persistence fs ##########################
       {{- if eq .Values.artifactory.persistence.type "file-system" }}
@@ -1750,6 +1834,8 @@ spec:
         emptyDir:
           sizeLimit: {{ .Values.artifactory.persistence.size }}
   {{- end }}
+      - name: tmp-volume
+        emptyDir: {}
 
       #########  unifiedSecretInstallation ###########
     {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
@@ -1781,6 +1867,23 @@ spec:
       - name: binarystore-xml
         secret:
           secretName: {{ template "artifactory-ha.fullname" . }}-binarystore
+      {{- end }}
+       # aws-s3-v3-cred secret
+      {{- if and (eq (include "artifactory-ha.awsS3V3SecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+        {{- with .Values.artifactory.persistence.awsS3V3.identitySecret }}
+      - name: aws-s3-v3-cred
+        secret:
+          secretName: {{ .name }}
+        {{- end }}
+      {{- end }}
+
+      # azure-blob-cred secret
+      {{- if and (eq (include "artifactory-ha.azureBlobSecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+        {{- with .Values.artifactory.persistence.azureBlob.accountNameSecret }}
+      - name: azure-blob-cred
+        secret:
+          secretName: {{ .name }}
+        {{- end }}
       {{- end }}
     {{- end }}
 

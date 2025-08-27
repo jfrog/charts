@@ -1,0 +1,36 @@
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "xray.fullname" . }}-analysis-headless
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    component: {{ .Values.xray.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    servicename: analysis
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+spec:
+  clusterIP: None
+  type: ClusterIP
+  {{- if .additionalSpec }}
+{{ tpl .additionalSpec $ | indent 2 }}
+  {{- end }}
+  ports:
+  - name: http-analysis
+    port: {{ .Values.analysis.externalPort }}
+    protocol: TCP
+    targetPort: {{ .Values.analysis.internalPort }}
+  - name: http-router
+    port: {{ .Values.router.externalPort }}
+    protocol: TCP
+    targetPort: {{ .Values.router.internalPort }}
+  selector:
+    app: {{ template "xray.name" . }}
+    component: {{ .Values.xray.name }}
+    release: {{ .Release.Name }}
+    servicename: analysis
+{{- end }}
