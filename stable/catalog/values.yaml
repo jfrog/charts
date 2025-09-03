@@ -53,6 +53,14 @@ image:
   ##
   pullSecrets: []
 
+## This will be used to enable the cache feature.
+## If you want to use the cache feature, you need to enable cache, set the password and set the connectionString.
+## The connectionString is the connection string for the cache database. Example: redis:/catalog-valkey-primary:6379
+cache:
+  enabled: false
+  connectionString: ""
+  password: ""
+
 ## certificates added to this secret will be copied to $JFROG_HOME/catalog/var/etc/security/keys/trusted directory
 customCertificates:
   enabled: false
@@ -298,7 +306,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.165.2
+    tag: 7.179.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
