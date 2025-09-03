@@ -136,7 +136,7 @@ ingress:
   ## This is an experimental feature, enabling this feature will route all traffic through the Router.
   disableRouterBypass: false
 ## Allows to add custom ingress
-customIngress: ""
+customIngress: {}
 ## There is a need to separate HTTP1.1 traffic from gRPC (HTTP2) to benefit
 ## 1. Use the Nginx keepalive for HTTP1.1
 ## 2. Keep gRPC over the HTTP2 connections only
@@ -2073,7 +2073,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 1.8.21
+    tag: 1.8.22
   jfrogUrl: ""
   replicaCount: 1
   internalRestPort: 8025
