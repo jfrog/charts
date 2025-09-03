@@ -9,6 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     version: {{ include "artifactory.app.version" . }}
+    role: {{ template "artifactory.name" . }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     databaseUpgradeReady: {{ .Values.databaseUpgradeReady | quote }}
 {{- end }}
