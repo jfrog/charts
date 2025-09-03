@@ -6,6 +6,22 @@ shared:
   database:
     type: {{ .Values.database.type }}
     driver: {{ .Values.database.driver }}
+{{- if .Values.cache.enabled }}
+  cache:
+    enabled: {{ .Values.cache.enabled }}
+    connectionString: {{ tpl .Values.cache.connectionString . | quote }}
+{{- if .Values.global.valkey.password }}
+    parameters: mode=single;password={{ .Values.global.valkey.password }}
+{{- else }}
+    parameters: mode=single;password={{ .Values.cache.password }}
+{{- end }}
+    defaultKeyExpirationSecs: 3600
+    maxWarmupKeys: 1000
+    warmupPoolSize: 10
+    warmupDBMaxOpenConns: 10
+    warmupDBMaxIdleConns: 5
+    invalidationIntervalSecs: 60
+{{- end }}
 catalog:
   mode: "singleTenant"
   central:
