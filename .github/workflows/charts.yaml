@@ -1,0 +1,210 @@
+name: Auto Update JFrog Helm Charts
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      chart_name:
+        description: 'Comma-separated charts to update (optional, leave empty for all)'
+        required: false
+        type: string
+      force_update:
+        description: 'Force update even if versions are the same'
+        required: false
+        default: false
+        type: boolean
+      create_release:
+        description: 'Create GitHub release for updated charts'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  HELM_EXPERIMENTAL_OCI: 1
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-for-updates:
+    runs-on: ubuntu-latest
+    outputs:
+      updates-available: ${{ steps.check-updates.outputs.updates-available }}
+      update-summary: ${{ steps.check-updates.outputs.update-summary }}
+      updated-charts: ${{ steps.check-updates.outputs.updated-charts }}
+      updated-chart-versions: ${{ steps.check-updates.outputs.updated-chart-versions }}
+      updated-app-versions: ${{ steps.check-updates.outputs.updated-app-versions }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Install yq
+        run: |
+          sudo curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: latest
+
+      - name: Add JFrog Helm repository
+        run: |
+          helm repo add jfrog https://charts.jfrog.io/
+          helm repo update jfrog
+
+      - name: Check for chart updates
+        id: check-updates
+        run: |
+          chmod +x .github/workflows/check_updates.sh
+          .github/workflows/check_updates.sh
+        env:
+          CHART_NAME: ${{ inputs.chart_name }}
+          FORCE_UPDATE: ${{ inputs.force_update }}
+
+  update-charts:
+    needs: check-for-updates
+    if: ${{ (needs.check-for-updates.outputs.updates-available == 'true') && needs.check-for-updates.outputs.skip-update != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git Config
+        run: |
+          git config --global user.name "IN-Automation"
+          git config --global user.email "in-automation@jfrog.com"
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: latest
+
+      - name: Add JFrog Helm repository
+        run: |
+          helm repo add jfrog https://charts.jfrog.io/
+          helm repo update jfrog
+
+      - name: Set variables
+        id: set-vars
+        run: |
+            echo "timestamp=$(TZ='Asia/Kolkata' date +%Y%m%d-%H%M%S)" >> "$GITHUB_OUTPUT"
+            echo "products=${{ needs.check-for-updates.outputs.updated-charts }}" >> $GITHUB_OUTPUT
+            echo "versions=${{ needs.check-for-updates.outputs.updated-app-versions }}" >> $GITHUB_OUTPUT
+            echo "chart_versions=${{ needs.check-for-updates.outputs.updated-chart-versions }}" >> $GITHUB_OUTPUT
+
+      - name: Update and create PRs for charts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PRODUCTS="${{ steps.set-vars.outputs.products }}"
+          VERSIONS="${{ steps.set-vars.outputs.versions }}"
+          CHART_VERSIONS="${{ steps.set-vars.outputs.chart_versions }}"
+          TIMESTAMP="${{ steps.set-vars.outputs.timestamp }}"
+          
+          # Create labels if they don't exist
+          gh label create automated --color "0E8A16" --description "Automated changes" || true
+          gh label create update --color "1D76DB" --description "Update pull request" || true
+          
+          # Parse arrays
+          IFS=',' read -r -a PRODUCT_ARRAY <<< "$PRODUCTS"
+          IFS=',' read -r -a VERSION_ARRAY <<< "$VERSIONS"
+          IFS=',' read -r -a CHART_VERSION_ARRAY <<< "$CHART_VERSIONS"
+          
+          for i in "${!PRODUCT_ARRAY[@]}"; do
+            PRODUCT="${PRODUCT_ARRAY[$i]}"
+            VERSION="${VERSION_ARRAY[$i]}"
+            CHART_VERSION="${CHART_VERSION_ARRAY[$i]}"
+            
+            if [ -z "$VERSION" ]; then
+              echo "Warning: Version for $PRODUCT is empty, skipping."
+              continue
+            fi
+            
+            echo "Processing $PRODUCT version $VERSION"
+            
+            # Create a new branch for this product
+            BRANCH="$PRODUCT-$VERSION-$TIMESTAMP"
+            git checkout -b "$BRANCH" "${{ github.event.repository.default_branch }}"
+            
+            WORKSPACE_DIR="$PWD"
+            
+            # Clean and update chart
+            cd stable
+            rm -fr "${PRODUCT}"
+            
+            # Pull the new chart
+            helm pull jfrog/$PRODUCT --untar --version "$CHART_VERSION"
+            
+            # Return to workspace root for git operations
+            cd "$WORKSPACE_DIR"
+
+            # Add all files except those in charts directories
+            find "stable/$PRODUCT" -type f ! -path "*/charts/*" -exec git add {} +
+            if git commit -m "[$PRODUCT] $VERSION release"; then
+              # Create and push tag
+              RAW_TAG="$PRODUCT/$CHART_VERSION"
+              TAG="${RAW_TAG//\//-}"
+              git tag "$TAG"
+              
+              # Push branch and tag
+              git push origin "$BRANCH"
+              git push origin "$TAG"
+              
+              # Create PR for this product
+              TITLE="[$PRODUCT] $CHART_VERSION release"
+              BODY="## Chart Update Details
+              
+              🔄 Updating $PRODUCT
+              - Chart version: $CHART_VERSION
+              - App version: $VERSION
+              
+              This is an automated update by the JFrog Charts update workflow."
+              
+              gh pr create \
+                --title "$TITLE" \
+                --body "$BODY" \
+                --base "${{ github.event.repository.default_branch }}" \
+                --head "$BRANCH" \
+                --label "automated" \
+                --label "update"
+              
+              echo "✓ Successfully created PR for $PRODUCT"
+            else
+              echo "No changes detected for $PRODUCT"
+              # Clean up the branch if no changes
+              git checkout "${{ github.event.repository.default_branch }}"
+              git branch -D "$BRANCH"
+            fi
+            
+            # Return to default branch for next iteration
+            git checkout "${{ github.event.repository.default_branch }}"
+          done
+
+
+      - name: Create GitHub Releases (if enabled)
+        if: ${{ inputs.create_release == 'true' }}
+        run: |
+          PRODUCTS="${{ steps.set-vars.outputs.products }}"
+          VERSIONS="${{ steps.set-vars.outputs.versions }}"
+
+          IFS=',' read -r -a PRODUCT_ARRAY <<< "$PRODUCTS"
+          IFS=',' read -r -a VERSION_ARRAY <<< "$VERSIONS"
+
+          for i in "${!PRODUCT_ARRAY[@]}"; do
+            PRODUCT="${PRODUCT_ARRAY[$i]}"
+            VERSION="${VERSION_ARRAY[$i]}"
+            TAG="$PRODUCT/$VERSION"
+            gh release create $TAG --title "$PRODUCT $VERSION" --notes "Release for $PRODUCT $VERSION" || echo "Release already exists"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
