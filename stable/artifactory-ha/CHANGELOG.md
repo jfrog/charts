@@ -1,13 +1,16 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.117.15] - August 27, 2025
+## [107.117.17] - Sep 19, 2025
 * Added support for AWS S3 V3 credentials (identity and credential) from a Kubernetes Secret
 * Added support for Azure credentials (accountName and accountKey) from a Kubernetes Secret
 * Note: `splitServicesToContainers: true` has been the default setting, and starting with releases after september 2025, the helm chart will no longer support disabling this option
 * Added emptyDir for /tmp and updated java cert dir to var/ in compliance with readOnly mode
+  Note:  Be aware that /tmp is now backed by an emptyDir volume, so any 
+  directories or files created in /tmp will persist across container restarts. Modify preStartCommand or other custom commands accordingly   
 * Changed apiContext path from '/artifactory/service/rtfs' to '/rtfs' for rtfs
 * Fix default value for `customIngress` to address helm warnings [GH-2020](https://github.com/jfrog/charts/issues/2020)
+* Fix an issue with AWS S3 V3 credentials secret
 
 ## [107.111.0] - May 15, 2025
 * Added HPA support for the Artifactory HA chart, but only for primary resources. Member resources are going to be deprecated
