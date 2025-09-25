@@ -1,7 +1,7 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.117.15] - Feb 17, 2024
+## [107.117.17] - Feb 17, 2024
 * Fixed an issue by disabling a pro-only service (Onemodel)
 * Disabling a pro-only service (Evidence)
 * Updated federation key to rtfs in cpp, jcr and oss chart
