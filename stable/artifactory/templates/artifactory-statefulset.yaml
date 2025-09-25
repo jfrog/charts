@@ -348,13 +348,14 @@ spec:
 
         ######################## AWS S3 V3 Creds  ##########################
 
-      {{- if and (eq (include "artifactory.awsS3V3SecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}        {{- with .Values.artifactory.persistence.awsS3V3.identitySecret }}
-        - name: aws-s3-v3-cred
+      {{- if and (eq (include "artifactory.awsS3V3SecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
+        {{- with .Values.artifactory.persistence.awsS3V3.identitySecret }}
+        - name: aws-s3-v3-identity-cred
           mountPath: {{ printf "/tmp/%s/%s" .name .key }}
           subPath: {{ .key }}
         {{- end }}
         {{- with .Values.artifactory.persistence.awsS3V3.credentialSecret }}
-        - name: aws-s3-v3-cred
+        - name: aws-s3-v3-credential-cred
           mountPath: {{ printf "/tmp/%s/%s" .name .key }}
           subPath: {{ .key }}
         {{- end }}
@@ -364,13 +365,13 @@ spec:
 
       {{- if and (eq (include "artifactory.azureBlobSecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
         {{- with .Values.artifactory.persistence.azureBlob.accountNameSecret }}
-        - name: azure-blob-cred
+        - name: azure-blob-accountname-cred
           mountPath: {{ printf "/tmp/%s/%s" .name .key }}
           subPath: {{ .key }}
         {{- end }}
 
         {{- with .Values.artifactory.persistence.azureBlob.accountKeySecret }}
-        - name: azure-blob-cred
+        - name: azure-blob-accountkey-cred
           mountPath: {{ printf "/tmp/%s/%s" .name .key }}
           subPath: {{ .key }}
         {{- end }}
@@ -1835,19 +1836,27 @@ spec:
           secretName: {{ .Values.artifactory.persistence.customBinarystoreXmlSecret }}
       {{- end }}
 
-      # aws-s3-v3-cred secret
       {{- if and (eq (include "artifactory.awsS3V3SecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
         {{- with .Values.artifactory.persistence.awsS3V3.identitySecret }}
-      - name: aws-s3-v3-cred
+      - name: aws-s3-v3-identity-cred
+        secret:
+          secretName: {{ .name }}
+        {{- end }}
+        {{- with .Values.artifactory.persistence.awsS3V3.credentialSecret }}
+      - name: aws-s3-v3-credential-cred
         secret:
           secretName: {{ .name }}
         {{- end }}
       {{- end }}
 
-      # azure-blob-cred secret
       {{- if and (eq (include "artifactory.azureBlobSecretsConfigured" .) "true") (not .Values.artifactory.persistence.customBinarystoreXmlSecret) }}
         {{- with .Values.artifactory.persistence.azureBlob.accountNameSecret }}
-      - name: azure-blob-cred
+      - name: azure-blob-accountname-cred
+        secret:
+          secretName: {{ .name }}
+        {{- end }}
+        {{- with .Values.artifactory.persistence.azureBlob.accountKeySecret }}
+      - name: azure-blob-accountkey-cred
         secret:
           secretName: {{ .name }}
         {{- end }}
