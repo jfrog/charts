@@ -150,7 +150,13 @@ jobs:
 
             # Add all files except those in charts directories
             find "stable/$PRODUCT" -type f ! -path "*/charts/*" -exec git add {} +
-            if git commit -m "[$PRODUCT] $VERSION release"; then
+            # Use CHART_VERSION for jfrog-platform, VERSION for others
+            COMMIT_VERSION="$VERSION"
+            if [ "$PRODUCT" = "jfrog-platform" ]; then
+              COMMIT_VERSION="$CHART_VERSION"
+            fi
+            
+            if git commit -m "[$PRODUCT] $COMMIT_VERSION release"; then
               # Create and push tag
               RAW_TAG="$PRODUCT/$CHART_VERSION"
               TAG="${RAW_TAG//\//-}"
