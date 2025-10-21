@@ -1,8 +1,8 @@
 # JFrog Worker Chart Changelog
 All changes to this chart will be documented in this file
 
-## [101.153.0] - Apr 17, 2025
-* Updated ubi-minimal version to 9.6.1749489516
+## [101.167.0] - Apr 17, 2025
+* Updated ubi-minimal version to 9.5.1742914212
 
 ## [101.128.0] - Feb 24, 2025
 * Update required services in router configuration
