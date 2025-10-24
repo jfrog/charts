@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.117.18] - Sep 19, 2025
+## [107.117.19] - Sep 19, 2025
 * Added support for AWS S3 V3 credentials (identity and credential) from a Kubernetes Secret
 * Added support for Azure credentials (accountName and accountKey) from a Kubernetes Secret
 * Fixed Artifactory nodePort misplaced
