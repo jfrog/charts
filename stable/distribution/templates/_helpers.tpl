@@ -195,7 +195,7 @@ Resolve customSidecarContainers value
 Return the proper distribution app version
 */}}
 {{- define "distribution.app.version" -}}
-{{- $tag := (splitList ":" ((include "distribution.getImageInfoByValue" (list . "distribution" )))) | last | toString -}}
+{{- $tag := .Chart.Version | toString -}}
 {{- printf "%s" $tag -}}
 {{- end -}}
 
@@ -207,24 +207,67 @@ Return the proper distribution chart image names
 {{- $indexReference := index . 1 }}
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
-{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- $image := index $dot.Values $indexReference "image" }}
+{{- $tag := "" -}}
+{{- $digest := "" -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.digests.router (eq $indexReference "router") }}
+    {{- $digest = $dot.Values.global.digests.router | toString -}}
+    {{- end }}
     {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
     {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.digests.initContainers (eq $indexReference "initContainers") }}
+    {{- $digest = $dot.Values.global.digests.initContainers | toString -}}
+    {{- end }}
     {{- if and $dot.Values.global.versions.distribution (eq $indexReference "distribution") }}
     {{- $tag = $dot.Values.global.versions.distribution | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.digests.distribution (eq $indexReference "distribution") }}
+    {{- $digest = $dot.Values.global.digests.distribution | toString -}}
+    {{- end }}
+    {{- if and $dot.Values.global.versions.observability (eq $indexReference "observability") }}
+    {{- $tag = $dot.Values.global.versions.observability | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.observability (eq $indexReference "observability") }}
+    {{- $digest = $dot.Values.global.digests.observability | toString -}}
+    {{- end }}
+    {{- if and $dot.Values.global.versions.redis (eq $indexReference "redis") }}
+    {{- $tag = $dot.Values.global.versions.redis | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.redis (eq $indexReference "redis") }}
+    {{- $digest = $dot.Values.global.digests.redis | toString -}}
+    {{- end }}
+    {{- if and (eq $digest "") (eq $tag "") }}
+    {{- $digest = $image.digest }}
+    {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
+      {{- if $digest }}
+          {{- printf "%s/%s@%s" $dot.Values.global.imageRegistry $repositoryName $digest -}}
+      {{- else -}}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+      {{- end -}}
     {{- else -}}
+      {{- if $digest }}
+        {{- printf "%s/%s@%s" $registryName $repositoryName $digest -}}
+      {{- else -}}
         {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+      {{- end -}}
     {{- end -}}
 {{- else -}}
+  {{- if and (eq $digest "") (eq $tag "") }}
+  {{- $digest = $image.digest }}
+  {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+  {{- end -}}
+  {{- if $digest }}
+    {{- printf "%s/%s@%s" $registryName $repositoryName $digest -}}
+  {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+  {{- end -}}
 {{- end -}}
 {{- end -}}
 

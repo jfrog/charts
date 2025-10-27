@@ -4,6 +4,9 @@
 ## Access the values with {{ .Values.key.subkey }}
 
 global:
+  # Allows skipping image verification, applicable to bitnami chart images only
+  security:
+    allowInsecureImages: true
   # imageRegistry:
   # imagePullSecrets:
   #   - myRegistryKeySecretName
@@ -13,6 +16,15 @@ global:
   # distribution:
   # router:
   # initContainers:
+  # observability:
+  # redis:
+  digests: {}
+  # distribution:
+  # router:
+  # initContainers:
+  # observability:
+  # redis:
+
   # jfrogUrl:
   # joinKey:
   # masterKey:
@@ -50,7 +62,8 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.6.1754584681
+    tag: 9.6.1758184547
+    # digest:
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -175,7 +188,8 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 16.6.0-debian-12-r2
+    tag: 17.6.0-debian-12-r2
+    # digest:
   auth:
     username: "distribution"
     password: ""
@@ -240,6 +254,7 @@ redis:
     registry: releases-docker.jfrog.io
     repository: bitnami/redis
     tag: 7.4.1-debian-12-r3
+    # digest:
     pullPolicy: IfNotPresent
   port: 6379
   password: ""
@@ -374,6 +389,7 @@ distribution:
     registry: releases-docker.jfrog.io
     repository: jfrog/distribution-distribution
     # tag:
+    # digest:
     pullPolicy: IfNotPresent
   ## unifiedSecretInstallation flag enables single unified secret holding all the distribution internal(chart) secrets, It won't be affecting external secrets.
   ## Note: unifiedSecretInstallation flag is enabled by true by default from chart version 102.23.0, Users can switch to false to continue with the old way of secret creation.
@@ -582,6 +598,7 @@ router:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
     tag: 7.179.1
+    # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -662,7 +679,8 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.13.0
+    tag: 2.18.0
+    # digest:
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -720,6 +738,7 @@ filebeat:
   image:
     repository: docker.elastic.co/beats/filebeat
     version: 7.16.2
+    # digest:
   logstashUrl: "logstash:5044"
   terminationGracePeriod: 10
   livenessProbe:
