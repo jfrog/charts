@@ -8,7 +8,7 @@ metadata:
     component: {{ .Values.artifactory.name }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    version: {{ include "artifactory.app.version" . }}
+    version: {{ include "artifactory.application.version" . }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     databaseUpgradeReady: {{ .Values.databaseUpgradeReady | quote }}
 {{- end }}
@@ -51,7 +51,13 @@ metadata:
     {{- fail "\n .Values.initContainerImage is no longer supported. Replace it with .Values.initContainers.image.registry .Values.initContainers.image.repository and .Values.initContainers.image.tag" }}
 {{- end }}
 {{- if and (eq .Values.rtfs.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
-    {{- fail "\n RTFS supports only PostgreSQL databases and is not compatible with other databases. If you are currently using a different database, disable RTFS." }}
+    {{- fail "\n RTFS supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable RTFS." }}
+{{- end }}
+{{- if and (eq .Values.unifiedpolicy.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+    {{- fail "\n Unified Policy supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable Unified Policy." }}
+{{- end }}
+{{- if and (eq .Values.platformfederation.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+    {{- fail "\n Platform Federation supports only PostgreSQL databases and is not compatible with other databases. If you are currently using a different database, disable PlatformFederation." }}
 {{- end }}
 {{- with .Values.artifactory.labels }}
 {{ toYaml . | indent 4 }}
@@ -215,16 +221,27 @@ spec:
             sed -i 's|<accountName>\${AZURE_ACCOUNT_NAME}</accountName>|<accountName>'"$AZURE_ACCOUNT_NAME"'</accountName>|' "$XML_FILE" > /dev/null 2>&1
             sed -i 's|<accountKey>\${AZURE_ACCOUNT_KEY}</accountKey>|<accountKey>'"$AZURE_ACCOUNT_KEY"'</accountKey>|' "$XML_FILE" > /dev/null 2>&1
             {{- end }}
-          {{- end }}   
+          {{- end }}
         {{- if .Values.access.accessConfig }}
           echo "Copy access.config.patch.yml to {{ .Values.artifactory.persistence.mountPath }}/etc/access";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access;
           cp -fv /tmp/etc/access.config.patch.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.patch.yml;
         {{- end }}
         {{- if .Values.access.resetAccessCAKeys }}
-          echo "Resetting Access CA Keys";
-          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys;
-          touch {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/reset_ca_keys;
+        {{- $newReplicaCount := int .Values.artifactory.replicaCount }}
+        {{- $stsName := include "artifactory.fullname" . }}
+        {{- $existing := lookup "apps/v1" "StatefulSet" .Release.Namespace $stsName -}}
+        {{- $oldReplicaCount := 0 }}
+        {{- if $existing }}
+          {{- $oldReplicaCount = $existing.spec.replicas }}
+        {{- end }}
+        {{- $lastIndex := 0 }}
+        {{- if (gt $newReplicaCount $oldReplicaCount) }}
+          {{- $lastIndex = $oldReplicaCount }}
+        {{- else }}
+          {{- $lastIndex = sub $newReplicaCount 1 }}
+        {{- end }}
+          if [[ "$POD_NAME" == *-{{ $lastIndex }} ]]; then echo "Resetting Access CA Keys" && mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys && touch {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/reset_ca_keys; fi;
         {{- end }}
         {{- if .Values.access.customCertificatesSecretName }}
           echo "Copying custom certificates to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys";
@@ -256,6 +273,10 @@ spec:
           echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
         - name: ARTIFACTORY_JOIN_KEY
           valueFrom:
@@ -1398,7 +1419,7 @@ spec:
       {{- end }}
       {{- if .Values.observability.enabled }}
       - name: {{ .Values.observability.name }}
-        image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
+        image: {{ include "artifactory.getImageInfoByValue" (list . "observability") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
@@ -1407,7 +1428,7 @@ spec:
           - '/bin/bash'
           - '-c'
           - >
-            exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+            exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh
         {{- with .Values.observability.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
@@ -1429,7 +1450,10 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
       {{- end }}
         - name: artifactory-volume
-          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+          mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
       {{- if .Values.observability.startupProbe.enabled }}
@@ -1442,7 +1466,6 @@ spec:
       {{- end }}
       {{- end }}
     {{- end }}
-
       - name: {{ .Values.artifactory.name }}
         image: {{ include "artifactory.getImageInfoByValue" (list . "artifactory") }}
         imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
@@ -1487,6 +1510,10 @@ spec:
         {{- end }}
         env:
         - name: JF_RTFS_EMBEDDED_ENABLED
+          value: "false"
+        - name: JF_APPTRUST_EMBEDDED_ENABLED
+          value: "false"
+        - name: JF_UNIFIEDPOLICY_EMBEDDED_ENABLED
           value: "false"
       {{- if and (gt (.Values.artifactory.replicaCount | int64) 1) (eq (include "artifactory.isImageProType" .) "true") (eq (include "artifactory.isUsingDerby" .) "false") }}
         - name : JF_SHARED_NODE_HAENABLED
@@ -1745,6 +1772,7 @@ spec:
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
         image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        image: '{{ include "artifactory.getImageInfoByValue" (list . "filebeat") }}'
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
@@ -1967,11 +1995,6 @@ spec:
         configMap:
           name: {{ template "artifactory.fullname" . }}-filebeat-config
       {{- end }}
-  {{- if not .Values.artifactory.persistence.enabled }}
-      - name: volume
-        emptyDir:
-          sizeLimit: {{ .Values.artifactory.persistence.size }}
-  {{- end }}
 
     #########  unifiedSecretInstallation ###########
     {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.checkDuplicateUnifiedCustomVolume" .) "false" ) }}

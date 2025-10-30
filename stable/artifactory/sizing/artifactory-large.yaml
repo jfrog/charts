@@ -85,11 +85,11 @@ router:
 frontend:
   resources:
     requests:
-      cpu: 200m
-      memory: 300Mi
-    limits:
-      # cpu: "3"
+      cpu: "1"
       memory: 1Gi
+    limits:
+      # cpu: "5"
+      memory: 2Gi
 
 metadata:
   database:
@@ -212,3 +212,21 @@ rtfs:
     limits:
       # cpu: "2"
       memory: 3500Mi
+
+jfbus:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 3500Mi
+    limits:
+      # cpu: "2"
+      memory: 3500Mi
+
+platformfederation:
+  resources:
+    requests:
+      cpu: 150m
+      memory: 160Mi
+    limits:
+      # cpu: "1"
+      memory: 1.5Gi
