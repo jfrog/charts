@@ -1146,8 +1146,11 @@ spec:
         command:
           - '/bin/bash'
           - '-c'
-          - >
-            exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+        {{- if contains "observability" (default "" .Values.observability.image.repository) }}
+          - exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh
+        {{- else }}
+          - exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
+        {{- end }}
         {{- with .Values.observability.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
@@ -1169,7 +1172,14 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
        {{- end }}
         - name: volume
+        {{- if contains "observability" (default "" .Values.observability.image.repository) }}
+          mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+        {{- else }}
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
+        {{- end }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
       {{- if .Values.observability.startupProbe.enabled }}
@@ -1395,6 +1405,10 @@ spec:
         {{- end }}
         env:
         - name: JF_RTFS_EMBEDDED_ENABLED
+          value: "false"
+        - name: JF_APPTRUST_EMBEDDED_ENABLED
+          value: "false"
+        - name: JF_UNIFIEDPOLICY_EMBEDDED_ENABLED
           value: "false"
       {{- if .Values.aws.license.enabled }}
         - name: IS_AWS_LICENSE
@@ -1658,7 +1672,7 @@ spec:
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
-        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        image: '{{ include "artifactory-ha.getImageInfoByValue" (list . "filebeat") }}'
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
@@ -1892,7 +1906,7 @@ spec:
         secret:
           secretName: {{ template "artifactory-ha.fullname" . }}-binarystore
       {{- end }}
-
+    {{- end }}
   volumeClaimTemplates:
   {{- if .Values.artifactory.persistence.enabled }}
   - metadata:
@@ -1930,6 +1944,5 @@ spec:
       resources:
         requests:
           storage: {{ .Values.artifactory.customPersistentPodVolumeClaim.size }}
-  {{- end }}
   {{- end }}
 {{- end -}}

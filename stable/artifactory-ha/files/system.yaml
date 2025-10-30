@@ -215,3 +215,17 @@ evidence:
 evidence:
   enabled: false
 {{- end }}
+{{- if and .Values.jfbus.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+jfbus:
+  enabled: true
+{{- else }}
+jfbus:
+  enabled: false
+{{- end }}
+{{- if and .Values.platformfederation.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+platformFederation:
+  enabled: true
+{{- else }}
+platformFederation:
+  enabled: false
+{{- end }}

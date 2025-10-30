@@ -62,7 +62,7 @@ echo ${DB_PASSWORD}
 {{- end }}
 
 SETUP:
-1. Get the Artifactory IP and URL
+1. Get the Artifactory IP/Hostname and URL
 
    {{- if contains "NodePort" .Values.nginx.service.type }}
    export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "artifactory-ha.nginx.fullname" . }})
@@ -70,11 +70,11 @@ SETUP:
    echo http://$NODE_IP:$NODE_PORT/
 
    {{- else if contains "LoadBalancer" .Values.nginx.service.type }}
-   NOTE: It may take a few minutes for the LoadBalancer public IP to be available!
+   NOTE: It may take a few minutes for the LoadBalancer public hostname to be available!
 
    You can watch the status of the service by running 'kubectl get svc -w {{ template "artifactory-ha.nginx.fullname" . }}'
-   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.nginx.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-   echo http://$SERVICE_IP/
+   export SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.nginx.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+   echo http://$SERVICE_HOSTNAME/
 
    {{- else if contains "ClusterIP" .Values.nginx.service.type }}
    export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "component={{ .Values.nginx.name }}" -o jsonpath="{.items[0].metadata.name}")
@@ -106,20 +106,20 @@ JMX configuration:
 If you want to access JMX from you computer with jconsole, you should set ".Values.artifactory.service.type=LoadBalancer" !!!
 {{ end }}
 
-1. Get the Artifactory service IP:
+1. Get the Artifactory service hostname:
 {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
-export PRIMARY_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.primary.name" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+export PRIMARY_SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.primary.name" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 {{- end }}
 {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
-export MEMBER_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+export MEMBER_SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 {{- end }}
 
-2. Map the service name to the service IP in /etc/hosts:
+2. Map the service name to the service hostname in /etc/hosts:
 {{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
-sudo sh -c "echo \"${PRIMARY_SERVICE_IP}    {{ template "artifactory-ha.primary.name" . }}\" >> /etc/hosts"
+sudo sh -c "echo \"${PRIMARY_SERVICE_HOSTNAME}    {{ template "artifactory-ha.primary.name" . }}\" >> /etc/hosts"
 {{- end }}
 {{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
-sudo sh -c "echo \"${MEMBER_SERVICE_IP}    {{ template "artifactory-ha.fullname" . }}\" >> /etc/hosts"
+sudo sh -c "echo \"${MEMBER_SERVICE_HOSTNAME}    {{ template "artifactory-ha.fullname" . }}\" >> /etc/hosts"
 {{- end }}
 
 3. Launch jconsole:

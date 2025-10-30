@@ -6,7 +6,7 @@ metadata:
     app: {{ template "artifactory-ha.name" . }}
     chart: {{ template "artifactory-ha.chart" . }}
     component: {{ .Values.artifactory.name }}
-    version: {{ include "artifactory-ha.app.version" . }}
+    version: {{ include "artifactory-ha.application.version" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
@@ -48,7 +48,16 @@ metadata:
     {{- fail "\n .Values.initContainerImage is no longer supported. Replace it with .Values.initContainers.image.registry .Values.initContainers.image.repository and .Values.initContainers.image.tag" }}
 {{- end }}
 {{- if and (eq .Values.rtfs.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
-    {{- fail "\n RTFS supports only PostgreSQL databases and is not compatible with other databases. If you are currently using a different database, disable RTFS." }}
+    {{- fail "\n RTFS supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable RTFS." }}
+{{- end }}
+{{- if and (eq .Values.unifiedpolicy.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+    {{- fail "\n Unified Policy supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable Unified Policy." }}
+{{- end }}
+{{- if and (eq .Values.platformfederation.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+    {{- fail "\n Platform Federation supports only PostgreSQL databases and is not compatible with other databases. If you are currently using a different database, disable PlatformFederation." }}
+{{- end }}
+{{- if and (eq .Values.jfbus.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+    {{- fail "\n JFbus supports only PostgreSQL databases and is not compatible with other databases. If you are currently using a different database, disable jfbus." }}
 {{- end }}
 {{- with .Values.artifactory.primary.labels }}
 {{ toYaml . | indent 4 }}
@@ -239,9 +248,20 @@ spec:
           cp -fv /tmp/etc/access.config.patch.yml {{ .Values.artifactory.persistence.mountPath }}/etc/access/access.config.patch.yml;
         {{- end }}
         {{- if .Values.access.resetAccessCAKeys }}
-          echo "Resetting Access CA Keys";
-          mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys;
-          touch {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/reset_ca_keys;
+        {{- $newReplicaCount := int .Values.artifactory.primary.replicaCount }}
+        {{- $stsName := include "artifactory-ha.primary.name" . }}
+        {{- $existing := lookup "apps/v1" "StatefulSet" .Release.Namespace $stsName -}}
+        {{- $oldReplicaCount := 0 }}
+        {{- if $existing }}
+          {{- $oldReplicaCount = $existing.spec.replicas }}
+        {{- end }}
+        {{- $lastIndex := 0 }}
+        {{- if (gt $newReplicaCount $oldReplicaCount) }}
+          {{- $lastIndex = $oldReplicaCount }}
+        {{- else }}
+          {{- $lastIndex = sub $newReplicaCount 1 }}
+        {{- end }}
+          if [[ "$POD_NAME" == *-{{ $lastIndex }} ]]; then echo "Resetting Access CA Keys" && mkdir -p {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys && touch {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys/reset_ca_keys; fi;
         {{- end }}
         {{- if .Values.access.customCertificatesSecretName }}
           echo "Copying custom certificates to {{ .Values.artifactory.persistence.mountPath }}/bootstrap/etc/access/keys";
@@ -273,6 +293,10 @@ spec:
           echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.artifactory.persistence.mountPath }}/etc/security/master.key;
         {{- end }}
         env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
         - name: ARTIFACTORY_JOIN_KEY
           valueFrom:
@@ -1307,11 +1331,11 @@ spec:
         command:
           - '/bin/bash'
           - '-c'
-          {{- if default false .Values.observability.standaloneImageEnabled }}
+        {{- if contains "observability" (default "" .Values.observability.image.repository) }}
           - exec /opt/jfrog/observability/app/bin/entrypoint-observability.sh
-          {{- else }}
+        {{- else }}
           - exec /opt/jfrog/artifactory/app/observability/bin/jf-observability start
-          {{- end }}
+        {{- end }}
         {{- with .Values.observability.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
@@ -1333,11 +1357,14 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
        {{- end }}
         - name: volume
-          {{- if default false .Values.observability.standaloneImageEnabled }}
+        {{- if contains "observability" (default "" .Values.observability.image.repository) }}
           mountPath: {{ .Values.observability.persistence.mountPath | quote }}
-          {{- else }}
+        {{- else }}
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-          {{- end }}        
+        {{- end }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 8 }}
+{{- end }}
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
       {{- if .Values.observability.startupProbe.enabled }}
@@ -1570,6 +1597,10 @@ spec:
         {{- end }}
         env:
         - name: JF_RTFS_EMBEDDED_ENABLED
+          value: "false"
+        - name: JF_APPTRUST_EMBEDDED_ENABLED
+          value: "false"
+        - name: JF_UNIFIEDPOLICY_EMBEDDED_ENABLED
           value: "false"
       {{- if .Values.aws.license.enabled }}
         - name: IS_AWS_LICENSE
@@ -1843,7 +1874,7 @@ spec:
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
-        image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
+        image: '{{ include "artifactory-ha.getImageInfoByValue" (list . "filebeat") }}'
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
