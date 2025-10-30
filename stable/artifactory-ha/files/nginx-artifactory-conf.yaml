@@ -80,7 +80,11 @@ location / {
   proxy_read_timeout  900;
   proxy_pass_header   Server;
   proxy_cookie_path   ~*^/.* /;
+  {{- if .Values.nginx.preserveEncodedSlashes }}
+  proxy_pass          {{ include "artifactory-ha.scheme" . }}://router$request_uri;
+  {{- else }}
   proxy_pass          {{ include "artifactory-ha.scheme" . }}://router/;
+  {{- end }}
   proxy_set_header    Connection "";
   {{- if .Values.nginx.service.ssloffload}}
   {{- if .Values.nginx.service.ssloffloadForceHttps}}
@@ -109,9 +113,17 @@ location / {
   add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
   location /artifactory/ {
     if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+      {{- if .Values.nginx.preserveEncodedSlashes }}
+      proxy_pass       http://artifactory$request_uri;
+      {{- else }}
       proxy_pass       http://artifactory/artifactory/$1;
+      {{- end }}
     }
+    {{- if .Values.nginx.preserveEncodedSlashes }}
+    proxy_pass         http://artifactory$request_uri;
+    {{- else }}
     proxy_pass         http://artifactory/artifactory/;
+    {{- end }}
   }
   location /pipelines/ {
     proxy_http_version 1.1;
