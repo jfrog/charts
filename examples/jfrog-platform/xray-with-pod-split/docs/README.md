@@ -1,6 +1,6 @@
 # Deploying JFrog Xray
 
-To deploy Xray, you can create a new custom-values.yaml file with the following content and then pass it during installation with the Helm upgrade command.
+To deploy JFrog Xray, you should create a new custom-values.yaml file with the following content and then pass it during installation with the Helm upgrade command.
 
 ```yaml
 xray:
@@ -29,7 +29,7 @@ helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namesp
 <img src="./images/non-split-architecture.png" alt="Non Split Architecture" width="400">
 
 - All Xray services are running as separate containers in a single pod
-- Please find the example custom values file here: [values-artifactory-xray.yaml](../../jfrog-platform/values/values-artifactory-xray.yaml)
+- Please find the example custom values file here: [values-artifactory-xray.yaml](../values/values-artifactory-xray.yaml)
 
 ### Pod Split ( Xray Version 3.124.x and above )
 
