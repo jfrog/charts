@@ -223,35 +223,115 @@ Resolve customSidecarContainers value
 {{- end -}}
 
 {{/*
-Return the proper artifactory chart image names
+Return the proper artifactory chart image names, with support for digest
 */}}
 {{- define "artifactory.getImageInfoByValue" -}}
 {{- $dot := index . 0 }}
 {{- $indexReference := index . 1 }}
+{{- $image := index $dot.Values $indexReference "image" }}
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
-{{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+{{- $digest := "" -}}
+{{- $tag := "" -}}
 {{- if $dot.Values.global }}
     {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.versions.router (eq $indexReference "router") }}
     {{- $tag = $dot.Values.global.versions.router | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.splitServicesToContainers $dot.Values.global.digests.router (eq $indexReference "router") }}
+    {{- $digest = $dot.Values.global.digests.router | toString -}}
+    {{- end }}
     {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
     {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.initContainers (eq $indexReference "initContainers") }}
+    {{- $digest = $dot.Values.global.digests.initContainers | toString -}}
     {{- end -}}
     {{- if and $dot.Values.global.versions.artifactory (or (eq $indexReference "artifactory") (eq $indexReference "nginx") ) }}
     {{- $tag = $dot.Values.global.versions.artifactory | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.digests.artifactory (eq $indexReference "artifactory") }}
+    {{- $digest = $dot.Values.global.digests.artifactory | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.nginx (eq $indexReference "nginx") }}
+    {{- $digest = $dot.Values.global.digests.nginx | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.rtfs (eq $indexReference "rtfs") }}
     {{- $tag = $dot.Values.global.versions.rtfs | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.digests.rtfs (eq $indexReference "rtfs") }}
+    {{- $digest = $dot.Values.global.digests.rtfs | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.apptrust (eq $indexReference "apptrust") }}
+    {{- $tag = $dot.Values.global.versions.apptrust | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.apptrust (eq $indexReference "apptrust") }}
+    {{- $digest = $dot.Values.global.digests.apptrust | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.jfbus (eq $indexReference "jfbus") }}
+    {{- $tag = $dot.Values.global.versions.jfbus | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.jfbus (eq $indexReference "jfbus") }}
+    {{- $digest = $dot.Values.global.digests.jfbus | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.unifiedpolicy (eq $indexReference "unifiedpolicy") }}
+    {{- $tag = $dot.Values.global.versions.unifiedpolicy | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.unifiedpolicy (eq $indexReference "unifiedpolicy") }}
+    {{- $digest = $dot.Values.global.digests.unifiedpolicy | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.observability (eq $indexReference "observability") }}
+    {{- $tag = $dot.Values.global.versions.observability | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.observability (eq $indexReference "observability") }}
+    {{- $digest = $dot.Values.global.digests.observability | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.filebeat (eq $indexReference "filebeat") }}
+    {{- $tag = $dot.Values.global.versions.filebeat | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.filebeat (eq $indexReference "filebeat") }}
+    {{- $digest = $dot.Values.global.digests.filebeat | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.platformfederation (eq $indexReference "platformfederation") }}
+    {{- $tag = $dot.Values.global.versions.platformfederation | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.platformfederation (eq $indexReference "platformfederation") }}
+    {{- $digest = $dot.Values.global.digests.platformfederation | toString -}}
+    {{- end -}}
+    {{- if and (eq $digest "") (eq $tag "") }}
+    {{- $digest = $image.digest }}
+    {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+    {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
+      {{- if $digest }}
+          {{- printf "%s/%s@%s" $dot.Values.global.imageRegistry $repositoryName $digest -}}
+      {{- else -}}
         {{- printf "%s/%s:%s" $dot.Values.global.imageRegistry $repositoryName $tag -}}
+      {{- end -}}
     {{- else -}}
+      {{- if $digest }}
+        {{- printf "%s/%s@%s" $registryName $repositoryName $digest -}}
+      {{- else -}}
         {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+      {{- end -}}
     {{- end -}}
 {{- else -}}
+  {{- if and (eq $digest "") (eq $tag "") }}
+  {{- $digest = $image.digest }}
+  {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
+  {{- end -}}
+  {{- if $digest }}
+    {{- printf "%s/%s@%s" $registryName $repositoryName $digest -}}
+  {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
+  {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper artifactory app version
+*/}}
+{{- define "artifactory.application.version" -}}
+{{- printf "%s" .Chart.AppVersion -}}
 {{- end -}}
 
 {{/*
@@ -591,16 +671,6 @@ Resolve customVolumes value
 {{- end -}}
 {{- end -}}
 
-
-{{/*
-Resolve Artifactory autoscalling metrics
-*/}}
-{{- define "artifactory.hpametrics" -}}
-{{- if .Values.autoscaling.metrics -}}
-{{- .Values.autoscaling.metrics -}}
-{{- end -}}
-{{- end -}}
-
 {{/*
 Rtfs command
 */}}
@@ -660,6 +730,175 @@ Resolve RTFS autoscalling metrics
 {{- end -}}
 
 {{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "apptrust.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") .Values.apptrust.name -}}
+{{- else -}}
+{{- printf "%s-%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") $name .Values.apptrust.name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory.apptrust.customVolumes" -}}
+{{- if .Values.apptrust.customVolumes -}}
+{{- .Values.apptrust.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+AppTrust command
+*/}}
+{{- define "apptrust.command" -}}
+{{- if .Values.apptrust.customCommand }}
+{{  toYaml .Values.apptrust.customCommand }}
+{{- end }}
+{{- end -}}
+
+{{/*
+    Resolve jfrogUrl value
+*/}}
+{{- define "apptrust.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.apptrust.jfrogUrl -}}
+{{- .Values.apptrust.jfrogUrl -}}
+{{- else -}}
+{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts apptrust value
+*/}}
+{{- define "artifactory.apptrust.customVolumeMounts" -}}
+{{- if .Values.apptrust.customVolumeMounts -}}
+{{- .Values.apptrust.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve AppTrust customSidecarContainers value
+*/}}
+{{- define "artifactory.apptrust.customSidecarContainers" -}}
+{{- if .Values.apptrust.customSidecarContainers -}}
+{{- .Values.apptrust.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve AppTrust customInitContainers value
+*/}}
+{{- define "artifactory.apptrust.customInitContainers" -}}
+{{- if .Values.apptrust.customInitContainers -}}
+{{- .Values.apptrust.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve AppTrust autoscalling metrics
+*/}}
+{{- define "apptrust.metrics" -}}
+{{- if .Values.apptrust.autoscaling.metrics -}}
+{{- .Values.apptrust.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "unifiedpolicy.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") .Values.unifiedpolicy.name -}}
+{{- else -}}
+{{- printf "%s-%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") $name .Values.unifiedpolicy.name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumes value
+*/}}
+{{- define "artifactory.unifiedpolicy.customVolumes" -}}
+{{- if .Values.unifiedpolicy.customVolumes -}}
+{{- .Values.unifiedpolicy.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+unifiedpolicy command
+*/}}
+{{- define "unifiedpolicy.command" -}}
+{{- if .Values.unifiedpolicy.customCommand }}
+{{  toYaml .Values.unifiedpolicy.customCommand }}
+{{- end }}
+{{- end -}}
+
+{{/*
+    Resolve jfrogUrl value
+*/}}
+{{- define "unifiedpolicy.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.unifiedpolicy.jfrogUrl -}}
+{{- .Values.unifiedpolicy.jfrogUrl -}}
+{{- else -}}
+{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts unifiedpolicy value
+*/}}
+{{- define "artifactory.unifiedpolicy.customVolumeMounts" -}}
+{{- if .Values.unifiedpolicy.customVolumeMounts -}}
+{{- .Values.unifiedpolicy.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedpolicy customSidecarContainers value
+*/}}
+{{- define "artifactory.unifiedpolicy.customSidecarContainers" -}}
+{{- if .Values.unifiedpolicy.customSidecarContainers -}}
+{{- .Values.unifiedpolicy.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedpolicy customInitContainers value
+*/}}
+{{- define "artifactory.unifiedpolicy.customInitContainers" -}}
+{{- if .Values.unifiedpolicy.customInitContainers -}}
+{{- .Values.unifiedpolicy.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve unifiedpolicy autoscalling metrics
+*/}}
+{{- define "unifiedpolicy.metrics" -}}
+{{- if .Values.unifiedpolicy.autoscaling.metrics -}}
+{{- .Values.unifiedpolicy.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return true if both AWS S3 V3 identitySecret and credentialSecret are configured with non-empty values
 */}}
 {{- define "artifactory.awsS3V3SecretsConfigured" -}}
@@ -697,3 +936,185 @@ true
 false
 {{- end -}}
 {{- end }}
+
+{{/*
+Create a default fully qualified JFbus name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "jfbus.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") .Values.jfbus.name -}}
+{{- else -}}
+{{- printf "%s-%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") $name .Values.jfbus.name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve JFbus customVolumes value
+*/}}
+{{- define "artifactory.jfbus.customVolumes" -}}
+{{- if .Values.jfbus.customVolumes -}}
+{{- .Values.jfbus.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
+Resolve Artifactory autoscalling metrics
+*/}}
+{{- define "artifactory.hpametrics" -}}
+{{- if .Values.autoscaling.metrics -}}
+{{- .Values.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+JFbus command
+*/}}
+{{- define "jfbus.command" -}}
+{{- if .Values.jfbus.customCommand }}
+{{ toYaml .Values.jfbus.customCommand }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Resolve jfrogUrl for JFbus service
+*/}}
+{{- define "jfbus.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.jfbus.jfrogUrl -}}
+{{- .Values.jfbus.jfrogUrl -}}
+{{- else -}}
+{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts jfbus value
+*/}}
+{{- define "artifactory.jfbus.customVolumeMounts" -}}
+{{- if .Values.jfbus.customVolumeMounts -}}
+{{- .Values.jfbus.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve JFbus customSidecarContainers value
+*/}}
+{{- define "artifactory.jfbus.customSidecarContainers" -}}
+{{- if .Values.jfbus.customSidecarContainers -}}
+{{- .Values.jfbus.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve JFbus customInitContainers value
+*/}}
+{{- define "artifactory.jfbus.customInitContainers" -}}
+{{- if .Values.jfbus.customInitContainers -}}
+{{- .Values.jfbus.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve JFbus autoscalling metrics
+*/}}
+{{- define "jfbus.metrics" -}}
+{{- if .Values.jfbus.autoscaling.metrics -}}
+{{- .Values.jfbus.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/* PlatformFederation */}}
+{{/*
+Create a default fully qualified PlatformFederation name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "platformfederation.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") .Values.platformfederation.name -}}
+{{- else -}}
+{{- printf "%s-%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") $name .Values.platformfederation.name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve PlatformFederation customVolumes value
+*/}}
+{{- define "artifactory.platformfederation.customVolumes" -}}
+{{- if .Values.platformfederation.customVolumes -}}
+{{- .Values.platformfederation.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+
+
+{{/*
+PlatformFederation command
+*/}}
+{{- define "platformfederation.command" -}}
+{{- if .Values.platformfederation.customCommand }}
+{{ toYaml .Values.platformfederation.customCommand }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Resolve jfrogUrl for PlatformFederation service
+*/}}
+{{- define "platformfederation.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.platformfederation.jfrogUrl -}}
+{{- .Values.platformfederation.jfrogUrl -}}
+{{- else -}}
+{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve customVolumeMounts platformfederation value
+*/}}
+{{- define "artifactory.platformfederation.customVolumeMounts" -}}
+{{- if .Values.platformfederation.customVolumeMounts -}}
+{{- .Values.platformfederation.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve PlatformFederation customSidecarContainers value
+*/}}
+{{- define "artifactory.platformfederation.customSidecarContainers" -}}
+{{- if .Values.platformfederation.customSidecarContainers -}}
+{{- .Values.platformfederation.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve PlatformFederation customInitContainers value
+*/}}
+{{- define "artifactory.platformfederation.customInitContainers" -}}
+{{- if .Values.platformfederation.customInitContainers -}}
+{{- .Values.platformfederation.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve PlatformFederation autoscalling metrics
+*/}}
+{{- define "platformfederation.metrics" -}}
+{{- if .Values.platformfederation.autoscaling.metrics -}}
+{{- .Values.platformfederation.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}

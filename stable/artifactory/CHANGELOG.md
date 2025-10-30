@@ -1,16 +1,47 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.117.19] - Sep 19, 2025
+## [107.125.4] - Oct 14, 2025
+* Updated observability container to use a dedicated service image
+* Removed unused volume names when persistence is disabled [GH-1681](https://github.com/jfrog/charts/issues/1681)
+* Fix a newline issue with customSecrets [GH-2036](https://github.com/jfrog/charts/issues/2036)
+* Added validations for Apptrust and Unified Policy startup
+* Added support for `global.digests`
+* Added `global.digests` for all `global.versions` related to image digests
+* Example: `global.digests.artifactory` to override Example: `artifactory.image.digest`
+* Added support for `unifiedpolicy`, `jfbus`, `apptrust`, and `rtfs` in `global.verisons` to override `image.tag`
+* Added new PlatformFederation service
+* Added serviceAccountName support for apptrust, unifiedpolicy and rtfs
+* Added sizing resources for platform federation and JFBus
+* Fixed sizing for Frontend container (2xlarge and large)
+* Added `wait-for-artifactory` initContainer for jfbus and rtfs service
+* Updated command to use hostname to get artifactory url in the installation summary
+* Removing service templates for RTFS and aligning the template directory.
+
+## [107.123.0] - Sept 19, 2025
+* **Important changes**
+* Added min kubeVersion ">= 1.21.0-0" in chart.yaml
+* Upgrade postgres chart version to `16.7.26`
+* Upgrade postgres image to `17.6.0-debian-12-r2`
+* Added `global.security.allowInsecureImages=true` Enables skipping image verification (applies only to Bitnami chart images)
+* Added new UnifiedPolicy service
+
+## [107.118.0] - Sep 19, 2025
+* Added new AppTrust service
+* Added new JFBus service
+* Fixed the issue of resetting access CA keys during multi-replica and upgrade scenarios.
+* Added flag for NGINX proxy pass to properly handle builds with slashes in their names `preserveEncodedSlashes: false`
+
+## [107.117.0] - Sep 19, 2025
 * Added support for AWS S3 V3 credentials (identity and credential) from a Kubernetes Secret
 * Added support for Azure credentials (accountName and accountKey) from a Kubernetes Secret
 * Fixed Artifactory nodePort misplaced
 * Added High Availability section to README.md
 * Note: `splitServicesToContainers: true` has been the default setting, and starting with releases after september 2025, the helm chart will no longer support disabling this option
+* Changed apiContext path from '/artifactory/service/rtfs' to '/rtfs' for rtfs
 * Added emptyDir for /tmp and updated java cert dir to var/ in compliance with readOnly mode
   Note:  Be aware that /tmp is now backed by an emptyDir volume, so any 
   directories or files created in /tmp will persist across container restarts. Modify preStartCommand or other custom commands accordingly   
-* Changed apiContext path from '/artifactory/service/rtfs' to '/rtfs' for rtfs
 * Fix default value for `customIngress` to address helm warnings [GH-2020](https://github.com/jfrog/charts/issues/2020)
 * Fix an issue with AWS S3 V3 credentials secret
 

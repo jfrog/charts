@@ -3,6 +3,9 @@
 ## Beware when changing values here. You should know what you are doing!
 ## Access the values with {{ .Values.key.subkey }}
 global:
+  # Allows skipping image verification, applicable to bitnami chart images only
+  security:
+    allowInsecureImages: true
   # imageRegistry: releases-docker.jfrog.io
   # imagePullSecrets:
   #   - myRegistryKeySecretName
@@ -13,6 +16,24 @@ global:
   # artifactory:
   # initContainers:
   # rtfs:
+  # jfbus:
+  # observability:
+  # router:
+  # nginx:
+  # unifiedpolicy:
+  # apptrust:
+  # platformfederation:
+  digests: {}
+  # artifactory:
+  # initContainers:
+  # rtfs:
+  # jfbus:
+  # nginx:
+  # router:
+  # unifiedpolicy:
+  # apptrust:
+  # observability:
+  # platformfederation:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -49,7 +70,8 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.6.1749489516
+    tag: 9.6.1760515502
+    # digest:
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -240,7 +262,8 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.177.11
+    tag: 7.193.1
+    # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -335,6 +358,7 @@ artifactory:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-pro
     # tag:
+    # digest:
     pullPolicy: IfNotPresent
   labels: {}
   updateStrategy:
@@ -1551,6 +1575,14 @@ observability:
   name: observability
   enabled: true
   internalPort: 8036
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/observability
+    tag: 2.18.0
+    # digest:
+    pullPolicy: IfNotPresent
+  persistence:
+    mountPath: "/var/opt/jfrog/observability"
   ## Extra environment variables that can be used to tune observability to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
@@ -1599,6 +1631,8 @@ observability:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  # customVolumeMounts can be used to add additional volumeMounts to the observability container
+  customVolumeMounts: ""
 ## MISSION_CONTROL
 mc:
   enabled: false
@@ -1638,6 +1672,8 @@ nginx:
   annotations: {}
   terminationGracePeriodSeconds: 30
   disableProxyBuffering: false
+  ## preserveEncodedSlashes will allow nginx to pass encoded slashes in the request URI to the upstream server.
+  preserveEncodedSlashes: false
   ## singleStackIPv6Cluster flag, which manages the Nginx configuration to enable listening on IPv6 and proxy.
   ## If .Values.nginx.service.ipFamilies and .Values.artifactory.service.ipFamilies is configured for only IPv6, users need to enable this flag.
   singleStackIPv6Cluster: false
@@ -1648,6 +1684,7 @@ nginx:
     registry: releases-docker.jfrog.io
     repository: jfrog/nginx-artifactory-pro
     # tag:
+    # digest:
     pullPolicy: IfNotPresent
   ## Priority Class name to be used in deployment if provided
   priorityClassName:
@@ -1847,7 +1884,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 16.6.0-debian-12-r2
+    tag: 17.6.0-debian-12-r2
   auth:
     username: "artifactory"
     password: ""
@@ -1914,8 +1951,10 @@ filebeat:
   enabled: false
   name: artifactory-filebeat
   image:
-    repository: "docker.elastic.co/beats/filebeat"
-    version: 7.16.2
+    registry: docker.elastic.co
+    repository: beats/filebeat
+    tag: 7.16.2
+    # digest:
   logstashUrl: "logstash:5044"
   livenessProbe:
     exec:
@@ -1979,9 +2018,14 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 1.8.26
+    tag: 1.11.10
+    # digest:
   jfrogUrl: ""
   replicaCount: 1
+  serviceAccountName: ""
+  # If set to true, Service will wait until Artifactory is available before starting.
+  # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
+  waitForArtifactory: true
   internalRestPort: 8025
   apiContext: rtfs
   persistence:
@@ -2006,34 +2050,6 @@ rtfs:
   ## The name of the custom configMap will be initialized from the value of customFederationPropertiesConfig.
   #  customFederationPropertiesConfig:
   javaOpts: ""
-  service:
-    type: ClusterIP
-    restPort: 8025
-    grpcPort: 8026
-    ## @param service.loadBalancerSourceRanges Address(es) that are allowed when service is `LoadBalancer`
-    ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
-    ## e.g:
-    ## loadBalancerSourceRanges:
-    ## - 10.10.10.0/24
-    ##
-    loadBalancerSourceRanges: []
-    ## @param service.externalIPs Set the ExternalIPs
-    ##
-    externalIPs: []
-    ## @param service.externalTrafficPolicy Enable client source IP preservation
-    ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
-    ##
-    externalTrafficPolicy: Cluster
-    ## @param service.loadBalancerIP Set the LoadBalancerIP
-    ##
-    loadBalancerIP: ""
-    ## @param service.labels Service labels. Evaluated as a template
-    labels: {}
-    ## @param service.annotations Service annotations. Evaluated as a template
-    ## Example:
-    ## annotations:
-    ##   service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
-    annotations: {}
   livenessProbe:
     enabled: true
     config: |
@@ -2041,7 +2057,7 @@ rtfs:
         path: /{{ .Values.rtfs.apiContext }}/api/v1/system/liveness
         port: {{ .Values.rtfs.internalRestPort }}
         scheme: HTTP
-      initialDelaySeconds: 10
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
@@ -2053,7 +2069,7 @@ rtfs:
         path: /router/api/v1/system/readiness
         port: {{ .Values.router.internalPort }}
         scheme: HTTP
-      initialDelaySeconds: 10
+      initialDelaySeconds: 0
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 30
@@ -2065,7 +2081,7 @@ rtfs:
         path: /{{ .Values.rtfs.apiContext }}/api/v1/system/readiness
         port: {{ .Values.rtfs.internalRestPort }}
         scheme: HTTP
-      initialDelaySeconds: 120
+      initialDelaySeconds: 0
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 30
@@ -2147,3 +2163,498 @@ splitServicesToContainers: true
 ## Specify common probes parameters
 probes:
   timeoutSeconds: 5
+## AppTrust deployment
+apptrust:
+  name: apptrust
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/apptrust
+    pullPolicy: IfNotPresent
+    tag: 1.7.0
+    # digest:
+  jfrogUrl: ""
+  replicaCount: 1
+  internalRestPort: 8013
+  apiContext: apptrust
+  serviceAccountName: ""
+  persistence:
+    mountPath: "/var/opt/jfrog/apptrust"
+  ## Apply horizontal pod auto scaling on rtfs pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 70  # Target memory usage is 70% of the allocated memory per pod
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.apptrust.internalRestPort }}/api/v1/system/liveness
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.apptrust.internalRestPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.apptrust.internalRestPort }}/api/v1/system/readiness
+      initialDelaySeconds: 120
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for observability container
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  fullnameOverride: ""
+  annotations: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1117
+    runAsGroup: 1117
+    fsGroup: 1117
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customInitContainers: ""
+  customSidecarContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
+  ## @param extraEnvironmentVariables that can be used to add extra environment variables.
+  ## Example:
+  ## extraEnvironmentVariables:
+  ##   - name: MY_ENV_VAR
+  ##     value: ""
+  extraEnvironmentVariables: []
+## JFBus Service
+jfbus:
+  name: jfbus
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/jfbus-service
+    pullPolicy: IfNotPresent
+    tag: 1.12.0
+    # digest:
+  replicaCount: 1
+  # If set to true, Service will wait until Artifactory is available before starting.
+  # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
+  waitForArtifactory: true
+  internalRestPort: 8057
+  grpcPort: 8058
+  apiContext: jfbus
+  activeProfile: postgres
+  persistence:
+    mountPath: "/var/opt/jfrog/jfbus"
+    federationProperties: {}
+  ## Apply horizontal pod auto scaling on jfbus pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 70  # Target memory usage is 70% of the allocated memory per pod
+  javaOpts: ""
+  serviceAccountName: ""
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    # By default, liveness will fail after 60 seconds of failing readiness (from system.yaml).
+    # Container will be restarted after 50 additional seconds.
+    enabled: true
+    config: |
+      httpGet:
+        path: /{{ .Values.jfbus.apiContext }}/system/health/liveness
+        port: {{ .Values.jfbus.internalRestPort }}
+        scheme: HTTP
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 5
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /{{ .Values.jfbus.apiContext }}/system/health/readiness
+        port: {{ .Values.jfbus.internalRestPort }}
+        scheme: HTTP
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 0
+      periodSeconds: 5
+      failureThreshold: 12
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /{{ .Values.jfbus.apiContext }}/system/health/readiness
+        port: {{ .Values.jfbus.internalRestPort }}
+        scheme: HTTP
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 5
+      successThreshold: 1
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 800Mi
+  # requests:
+  #   cpu: 300m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for observability container
+  lifecycle:
+    preStop:
+      exec:
+        command: ["sleep", "15"]
+        # postStart:
+        #   exec:
+        #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  pod:
+    annotations: {}
+    labels: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1030
+    runAsGroup: 1030
+    fsGroup: 1030
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customInitContainers: ""
+  customSidecarContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
+  customCommand:
+  extraEnvironmentVariables: []
+unifiedpolicy:
+  name: unifiedpolicy
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/unifiedpolicy
+    pullPolicy: IfNotPresent
+    tag: 1.16.0
+    # digest:
+  jfrogUrl: ""
+  replicaCount: 1
+  serviceAccountName: ""
+  internalRestPort: 8027
+  apiContext: unifiedpolicy
+  persistence:
+    mountPath: "/var/opt/jfrog/unifiedpolicy"
+  ## Apply horizontal pod auto scaling on distribution pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 70  # Target memory usage is 70% of the allocated memory per pod
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.unifiedpolicy.internalRestPort }}/api/v1/system/liveness
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.unifiedpolicy.internalRestPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.unifiedpolicy.internalRestPort }}/api/v1/system/readiness
+      initialDelaySeconds: 120
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for observability container
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+
+  fullnameOverride: ""
+  annotations: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1117
+    runAsGroup: 1117
+    fsGroup: 1117
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customInitContainers: ""
+  customSidecarContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
+  ## @param extraEnvironmentVariables that can be used to add extra environment variables.
+  ## Example:
+  ## extraEnvironmentVariables:
+  ##   - name: MY_ENV_VAR
+  ##     value: ""
+  extraEnvironmentVariables: []
+## Platformfederation Service
+platformfederation:
+  name: platformfederation
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/platformfederation
+    pullPolicy: IfNotPresent
+    tag: 1.231.0
+    # digest:
+  port: 8017
+  grpcPort: 8018
+  replicaCount: 1
+  # Default is empty string which means it will try use internal artifactory URL
+  # If url is external then it should be set to the external URL of the JFrog Platform instance
+  jfrogUrl: ""
+  apiContext: pfed
+  persistence:
+    mountPath: "/var/opt/jfrog/platformfederation"
+  ## Apply horizontal pod auto scaling on jfbus pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 70  # Target memory usage is 70% of the allocated memory per pod
+  serviceAccountName: ""
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.platformfederation.port }}/api/v1/system/liveness
+      initialDelaySeconds: 0
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.platformfederation.port }}/api/v1/system/readiness
+      initialDelaySeconds: 0
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.platformfederation.port }}/api/v1/system/readiness
+      initialDelaySeconds: 120
+      failureThreshold: 5
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 800Mi
+  # requests:
+  #   cpu: 300m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for platformfederation container
+  lifecycle:
+    preStop:
+      exec:
+        command: ["sleep", "15"]
+        # postStart:
+        #   exec:
+        #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  pod:
+    annotations: {}
+    labels: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    fsGroup: 1117
+    runAsUser: 1117
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customSidecarContainers: ""
+  customCommand:
+  extraEnvironmentVariables: []
+  customInitContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
