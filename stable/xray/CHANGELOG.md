@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.124.31] - Jun 13, 2025
+## [103.124.32] - Jun 13, 2025
 * Fix the xray xsmall sizing issue that caused problems with DB sync.
 * Added extra validation checks for quorum queues
 * Added Rabbitmq 4 validation checks
