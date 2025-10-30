@@ -1,7 +1,13 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.117.19] - Feb 17, 2024
+## [107.125.4] - Oct 14, 2025
+* Disabling pro-only service (AppTrust, UnifiedPolicy)
+* Disabling pro-only service (JFbus, PlatformFederation)
+* **Important changes**
+* Added min kubeVersion ">= 1.21.0-0" in chart.yaml
+
+## [107.104.0] - Feb 17, 2024
 * Fixed an issue by disabling a pro-only service (Onemodel)
 * Disabling a pro-only service (Evidence)
 * Updated federation key to rtfs in cpp, jcr and oss chart
