@@ -6,7 +6,7 @@
 
 ## Prerequisites Details
 
-* Kubernetes 1.19+
+* Kubernetes 1.23+
 * Artifactory Enterprise(+) trial license [get one from here](https://jfrog.com/platform/free-trial/) or Pro trial license [get one from here](https://www.jfrog.com/artifactory/free-trial/)
 
 ## Chart Details

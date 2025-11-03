@@ -86,10 +86,10 @@ artifactory:
     resources:
       requests:
         cpu: "1"
-        memory: 500Mi
+        memory: 1Gi
       limits:
         # cpu: "5"
-        memory: 1Gi
+        memory: 2Gi
   
   metadata:
     database:
@@ -211,6 +211,24 @@ artifactory:
       limits:
         # cpu: "2"
         memory: 3500Mi
+  
+  jfbus:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 3500Mi
+      limits:
+        # cpu: "2"
+        memory: 3500Mi
+  
+  platformfederation:
+    resources:
+      requests:
+        cpu: 225m
+        memory: 180Mi
+      limits:
+        # cpu: "1"
+        memory: 2Gi
 xray:
   ##############################################################
   # The 2xlarge sizing

@@ -1,6 +1,15 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.3.0] - November 03, 2025
+* **Important changes**
+* Set minimal Kubernetes version to 1.23.0
+* Upgrade postgres chart version to `16.7.26`
+* Upgrade postgres image to `17.6.0-debian-12-r2`
+* Update dependency artifactory chart version to 107.125.4
+* Update dependency catalog chart version to 101.26.6
+* Update dependency distribution chart version to 102.34.2
+
 ## [11.2.5] - October 23, 2025
 * Update dependency artifactory chart version to 107.117.19
 * Update dependency xray chart version to 103.124.31
