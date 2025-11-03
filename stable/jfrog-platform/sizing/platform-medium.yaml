@@ -211,6 +211,24 @@ artifactory:
       limits:
         # cpu: "2"
         memory: 3500Mi
+  
+  jfbus:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 3500Mi
+      limits:
+        # cpu: "2"
+        memory: 3500Mi
+  
+  platformfederation:
+    resources:
+      requests:
+        cpu: 150m
+        memory: 150Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
 xray:
   ##############################################################
   # The medium sizing

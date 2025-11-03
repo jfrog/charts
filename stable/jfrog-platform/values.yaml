@@ -38,7 +38,7 @@ global:
       # adminPassword:
       #   name: "jp-database-creds"
       #   key: "db-admin-password"
-    initContainerSetupDBImage: "{{ .Values.global.imageRegistry }}/postgres:16.6-alpine"
+    initContainerSetupDBImage: "{{ .Values.global.imageRegistry }}/bitnami/postgresql:17.6.0-debian-12-r2"
     # Run the postgres init container as a non-default uid
     initContainerSetupDBUser:
     initContainerImagePullPolicy: IfNotPresent
@@ -89,7 +89,7 @@ postgresql:
   enablePostgresUser: true
   image:
     repository: bitnami/postgresql
-    tag: 16.6.0-debian-12-r2
+    tag: 17.6.0-debian-12-r2
   auth:
     postgresPassword: "postgres"
   primary:
@@ -270,7 +270,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.2.5-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.3.0-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
