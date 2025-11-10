@@ -1,7 +1,18 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.124.32] - Jun 13, 2025
+## [103.131.15] - Sep 22, 2025
+* Add existingContent queues to keda - Xray should scale up replicas based on existingContent queues size
+* Add env variable `JF_SHARED_NODE_IP` to router container
+* Add support for Xray full split pod. Enabling this setting will divide the Xray pod into multiple deployments: xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom
+
+
+## [103.130.0] - Sep 9, 2025
+* **Important changes**
+* Update postgresql tag version to `17.6.0-debian-12-r2`
+* Set resourcesPreset to none for bitnami charts
+
+## [103.124.0] - Jun 13, 2025
 * Fix the xray xsmall sizing issue that caused problems with DB sync.
 * Added extra validation checks for quorum queues
 * Added Rabbitmq 4 validation checks
