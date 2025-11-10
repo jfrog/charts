@@ -378,6 +378,10 @@ Common router container for the pods
 {{ toYaml . | indent 4 }}
   {{- end }}
   env:
+  - name: JF_SHARED_NODE_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
   - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
 {{- if eq $indexReference "indexer" }}
     value: "jfxidx"
