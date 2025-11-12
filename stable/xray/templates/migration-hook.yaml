@@ -260,7 +260,7 @@ spec:
       terminationGracePeriodSeconds: 0
 {{- end }}
 ---
-{{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) }}
+{{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) (gt (int .Values.global.xray.rabbitmq.replicaCount) 1) }}
 apiVersion: batch/v1
 kind: Job
 metadata:
