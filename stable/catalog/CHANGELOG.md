@@ -1,7 +1,7 @@
 # JFrog Catalog Chart Changelog
 All changes to this chart will be documented in this file.
 
-[101.26.8] - May 5, 2025
+[101.27.0] - May 5, 2025
 Updated router version to 7.165.2
 Fix the issue where `router.serviceRegistry.insecure` is not being applied in the system yaml.
 
