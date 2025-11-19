@@ -1,7 +1,7 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.125.6] - Oct 14, 2025
+## [107.125.7] - Oct 14, 2025
 * Disabling pro-only service (AppTrust, UnifiedPolicy)
 * Disabling pro-only service (JFbus, PlatformFederation)
 * **Important changes**
