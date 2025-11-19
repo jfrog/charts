@@ -37,6 +37,9 @@ shared:
     vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
     replicasCount: {{ .Values.global.xray.rabbitmq.replicaCount }}
   {{- end }}
+  {{- if .Values.global.xray.rabbitmq.cmr.enabled }}
+    cmrEnabled: true
+  {{- end }}
     erlangCookie:
       value: "{{ .Values.rabbitmq.external.erlangCookie }}"
   {{- if not .Values.rabbitmq.external.secrets }}
@@ -49,6 +52,9 @@ shared:
     ha_quorum: true
     vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
     replicasCount: {{ .Values.rabbitmq.replicaCount }}
+  {{- if .Values.global.xray.rabbitmq.cmr.enabled }}
+    cmrEnabled: true
+  {{- end }}
   {{- end }}
   {{- if .Values.xray.mongoUrl }}
   mongo:
@@ -73,10 +79,33 @@ server:
     migrate_msgs_from_other_rabbitmq: {{ toYaml .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq | nindent 6 }}
   {{- end }}
 {{- end }}
-{{- if (include "xray.imagePullSecretsStrList" .) }}
+{{- if or .Values.jas.executionService.affinityLabelKey .Values.jas.executionService.affinityLabelValue .Values.jas.executionService.nodeAffinityKey .Values.jas.executionService.cpuLimit .Values.jas.executionService.memLimit .Values.jas.executionService.cpuRequest .Values.jas.executionService.memRequest (include "xray.imagePullSecretsStrList" .) }}
 executionService:
+  {{- if .Values.jas.executionService.affinityLabelKey }}
+  affinityLabelKey: {{ .Values.jas.executionService.affinityLabelKey | quote }}
+  {{- end }}
+  {{- if .Values.jas.executionService.affinityLabelValue }}
+  affinityLabelValue: {{ .Values.jas.executionService.affinityLabelValue | quote }}
+  {{- end }}
+  {{- if .Values.jas.executionService.nodeAffinityKey }}
+  nodeAffinityKey: {{ .Values.jas.executionService.nodeAffinityKey | quote }}
+  {{- end }}
+  {{- if .Values.jas.executionService.cpuLimit }}
+  cpuLimit: {{ .Values.jas.executionService.cpuLimit }}
+  {{- end }}
+  {{- if .Values.jas.executionService.memLimit }}
+  memLimit: {{ .Values.jas.executionService.memLimit | quote }}
+  {{- end }}
+  {{- if .Values.jas.executionService.cpuRequest }}
+  cpuRequest: {{ .Values.jas.executionService.cpuRequest }}
+  {{- end }}
+  {{- if .Values.jas.executionService.memRequest }}
+  memRequest: {{ .Values.jas.executionService.memRequest | quote }}
+  {{- end }}
+  {{- if (include "xray.imagePullSecretsStrList" .) }}
   pullSecret:
   {{- include "xray.imagePullSecretsStrList" . | indent 4 }}
+  {{- end }}
 {{- end }}
 contextualAnalysis:
   registry: {{ include "xray.getRegistryByService" (list . "contextualAnalysis") }}
