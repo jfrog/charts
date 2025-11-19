@@ -56,10 +56,16 @@ global:
         enabled: false
         waitForPreviousPodsOnInitialStartup: true
         vhost: xray_haq
+      cmr:
+        enabled: false
 
   autoscaling:
     keda:
       annotations: {}
+
+  ## Applies to Catalog Chart
+  valkey:
+    password: "password"
 
 deployment:
   strategy:
@@ -86,7 +92,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.6.1747218906
+    tag: 9.6.1758184547
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -365,6 +371,22 @@ autoscaling:
         value: "30"
       - name: impactAnalysis
         value: "30"
+      - name: analysisExistingContent
+        value: "30"
+      - name: persistExistingContent
+        value: "30"
+      - name: indexExistsContent
+        value: "30"
+      - name: sbomExistingContent
+        value: "30"
+      - name: userCatalogExistingContent
+        value: "30"
+      - name: sbom
+        value: "30"
+      - name: usercatalog
+        value: "30"
+      - name: sbomImpactAnalysis
+        value: "30"
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -409,15 +431,17 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 16.6.0-debian-12-r2
+    tag: 17.6.0-debian-12-r2
   auth:
     username: "xray"
     password: ""
     database: "xraydb"
   primary:
+    resourcesPreset: "none"
     extendedConfiguration: |
       max_connections = 1500
       listen_addresses = '*'
+      max_wal_size = '4GB'
     persistence:
       size: 300Gi
     service:
@@ -474,6 +498,7 @@ database:
 ##
 rabbitmq:
   enabled: true
+  resourcesPreset: "none"
   ## Enable the flag if the feature flags in rabbitmq is enabled manually
   rabbitmqUpgradeReady: false
   replicaCount: 1
@@ -756,6 +781,25 @@ rabbitmq:
           {{- end }}
     {{- end }}
 
+# Valkey
+valkey:
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/valkey
+    tag: 8.1.2-debian-12-r0
+  auth:
+    enabled: true
+  architecture: standalone
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+  replica:
+    replicaCount: 0
+  metrics:
+    enabled: false
+
 # Common Xray settings
 common:
   ## Note that by default we use appVersion to get image tag
@@ -962,6 +1006,16 @@ analysis:
           value: "30"
         - name: impactAnalysis
           value: "30"
+        - name: ticketing
+          value: "5000"
+        - name: ticketingRetry-1
+          value: "5000"
+        - name: ticketingJobs
+          value: "1000"
+        - name: ticketingJobsRetry-1
+          value: "1000"
+        - name: analysisExistingContent
+          value: "30"
 
   # Add lifecycle hooks for the analysis pod
   lifecycle: {}
@@ -1069,6 +1123,10 @@ sbom:
         - name: sbomImpactAnalysis
           value: "30"
         - name: usercatalog
+          value: "30"
+        - name: sbomExistingContent
+          value: "30"
+        - name: userCatalogExistingContent
           value: "30"
 
   # Add lifecycle hooks for the indexer pod
@@ -1401,6 +1459,8 @@ indexer:
           value: "30"
         - name: indexRegularRetry-0
           value: "30"
+        - name: indexExistsContent
+          value: "30"
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -1497,6 +1557,8 @@ persist:
         - name: persistRegular
           value: "30"
         - name: persistRegularRetry-0
+          value: "30"
+        - name: persistExistingContent
           value: "30"
 
   # Add lifecycle hooks for the persist pod
@@ -1673,6 +1735,34 @@ server:
 jas:
   healthcheck:
     enabled: false
+  executionService:
+    # -------------------------------------------------------------------
+    # Node scheduling settings for Execution Service (JAS jobs)
+    #
+    # PURPOSE:
+    #   These fields control which nodes the JAS jobs run on. Xray reads
+    #   these values from system.yaml and internally generates the
+    #   required Kubernetes affinity and toleration settings for the JAS jobs.
+    #
+    # WHAT TO SET:
+    #   affinityLabelKey   - Taint/toleration key on the target node (e.g. "node-type")
+    #   affinityLabelValue - Value used for both the taint/toleration and node label (e.g. "jas")
+    #   nodeAffinityKey    - Node label key used for scheduling (e.g. "k8s.jfrog.com/app_type")
+    #
+    # BEFORE YOU DEPLOY:
+    #   Label and taint the target node so JAS jobs are scheduled there:
+    #   eg:
+    #     kubectl taint nodes <node-name> node-type=jas:NoSchedule
+    #     kubectl label nodes <node-name> k8s.jfrog.com/app_type=jas
+    # -------------------------------------------------------------------
+    affinityLabelKey: ""    # Toleration key, e.g. "node-type"
+    affinityLabelValue: ""  # Toleration value & nodeAffinity.values, e.g. "jas"
+    nodeAffinityKey: ""     # Node affinity key, e.g. "k8s.jfrog.com/app_type"
+    cpuLimit: ""
+    memLimit: ""
+    cpuRequest: ""
+    memRequest: ""
+
 contextualAnalysis:
   image:
     registry: releases-docker.jfrog.io
@@ -1688,7 +1778,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.179.1
+    tag: 7.193.1
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
@@ -1907,94 +1997,109 @@ quota:
   enabled: true
   jobCount: 100
 
-###################################################################################
-## At present, this feature is not available for onprem installations.
-## Separate Xray into distinct pods
-## (Enabling this setting will divide the Xray pod into two deployments: xray-server and xray-ipa)
 splitXraytoSeparateDeployments:
- ipa: false
+## Deploy each Xray service as a separate, dedicated deployment
+## Enabling this setting will divide the Xray pod into multiple deployments: xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom)
+  fullSplit: false
 ## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
- gradualUpgrade: false
- fullSplit: false
-replicaCountServer: 2
-replicaCountIpa: 2
+  gradualUpgrade: false
+
+###################################################################################
+## This feature is not available for onprem installations.
+## Separate Xray into two distinct pods
+## (Enabling this setting will divide the Xray pod into two deployments: xray-server and xray-ipa)
+  ipa: false
+
 ## Apply horizontal pod auto scaling on Xray server pods
 ## Only applicable when (splitXraytoSeparateDeployments.ipa) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+replicaCountServer: 2
+replicaCountIpa: 2
+
 autoscalingServer:
- enabled: false
- minReplicas: 2
- maxReplicas: 3
- targetCPUUtilizationPercentage: 70
- targetMemoryUtilizationPercentage: 90
- ## Specify if using the keda hpa or regular basic hpa
- ## Note: keda should be installed on the target cluster
- ## Ref: https://keda.sh/docs/2.10/deploy/
- keda:
-   enabled: false
-   annotations: {}
-   scaleUp:
-     stabilizationWindowSeconds: 90
-     policies:
-       - type: Pods
-         value: 3
-         periodSeconds: 30
-   scaleDown:
-     stabilizationWindowSeconds: 90
-     policies:
-       - type: Pods
-         value: 1
-         periodSeconds: 30
-   pollingInterval: 10
-   cooldownPeriod: 10
-   queues: []
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 90
+  ## Specify if using the keda hpa or regular basic hpa
+  ## Note: keda should be installed on the target cluster
+  ## Ref: https://keda.sh/docs/2.10/deploy/
+  keda:
+    enabled: false
+    annotations: {}
+    scaleUp:
+      stabilizationWindowSeconds: 90
+      policies:
+        - type: Pods
+          value: 3
+          periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 90
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 30
+    pollingInterval: 10
+    cooldownPeriod: 10
+    queues: []
  
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.ipa) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscalingIpa:
- enabled: false
- minReplicas: 1
- maxReplicas: 3
- targetCPUUtilizationPercentage: 70
- targetMemoryUtilizationPercentage: 90
- ## Specify if using the keda hpa or regular basic hpa
- ## Note: keda should be installed on the target cluster
- ## Ref: https://keda.sh/docs/2.10/deploy/
- keda:
-   enabled: false
-   annotations: {}
-   scaleUp:
-     stabilizationWindowSeconds: 90
-     policies:
-       - type: Pods
-         value: 3
-         periodSeconds: 30
-   scaleDown:
-     stabilizationWindowSeconds: 90
-     policies:
-       - type: Pods
-         value: 1
-         periodSeconds: 30
-   pollingInterval: 10
-   cooldownPeriod: 10
-   queues:
-     - name: analysisRegular
-       value: "30"
-     - name: indexRegular
-       value: "30"
-     - name: persistRegular
-       value: "30"
-     - name: analysisRegularRetry-0
-       value: "30"
-     - name: indexRegularRetry-0
-       value: "30"
-     - name: persistRegularRetry-0
-       value: "30"
-     - name: impactAnalysis
-       value: "30"
-     - name: policyEnforcer
-       value: "30"
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 90
+  ## Specify if using the keda hpa or regular basic hpa
+  ## Note: keda should be installed on the target cluster
+  ## Ref: https://keda.sh/docs/2.10/deploy/
+  keda:
+    enabled: false
+    annotations: {}
+    scaleUp:
+      stabilizationWindowSeconds: 90
+      policies:
+        - type: Pods
+          value: 3
+          periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 90
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 30
+    pollingInterval: 10
+    cooldownPeriod: 10
+    queues:
+      - name: analysisRegular
+        value: "30"
+      - name: indexRegular
+        value: "30"
+      - name: persistRegular
+        value: "30"
+      - name: analysisRegularRetry-0
+        value: "30"
+      - name: indexRegularRetry-0
+        value: "30"
+      - name: persistRegularRetry-0
+        value: "30"
+      - name: impactAnalysis
+        value: "30"
+      - name: policyEnforcer
+        value: "30"
+      - name: analysisExistingContent
+        value: "30"
+      - name: persistExistingContent
+        value: "30"
+      - name: indexExistsContent
+        value: "30"
+      - name: sbomExistingContent
+        value: "30"
+      - name: userCatalogExistingContent
+        value: "30"
 
 ipa:
   affinity: {}
@@ -2060,3 +2165,6 @@ catalog:
     url: "postgres://{{ .Release.Name }}-postgresql:5432/catalogdb?sslmode=disable"
     user: xray
     password: ""
+  cache:
+    enabled: false
+    connectionString: "redis://{{ .Release.Name }}-valkey-primary:6379"
