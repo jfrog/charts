@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.125.6] - Oct 14, 2025
+## [107.125.7] - Oct 14, 2025
 * Updated observability container to use a dedicated service image
 * Removed unused volume names when persistence is disabled [GH-1681](https://github.com/jfrog/charts/issues/1681)
 * Fix a newline issue with customSecrets [GH-2036](https://github.com/jfrog/charts/issues/2036)
