@@ -26,11 +26,11 @@ variable "private_subnet_cidrs" {
 }
 
 variable "kubernetes_version" {
-  default = "1.32"
+  default = "1.34"
 }
 
 variable "rds_postgres_version" {
-  default = "16.4"
+  default = "17.7"
 }
 
 variable "artifactory_rds_size_default" {
