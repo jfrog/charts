@@ -261,6 +261,15 @@ variable "catalog_db_password" {
   default     = "PasswordC321"
 }
 
+# The AMI type for the EKS Managed Node Groups. 
+# Currently using Graviton (ARM64) instances, with the AL2023_ARM_64_STANDARD image type.
+# For AMD64 instances, use the AL2023_x86_64_STANDARD image type.
+# Make sure to adjust the instance types accordingly.
+variable "ami_type" {
+  description = "The AMI type for the EKS Managed Node Groups."
+  default = "AL2023_ARM_64_STANDARD"
+}
+
 variable "jfrog_charts_repository" {
   default = "https://charts.jfrog.io"
 }
