@@ -11,7 +11,7 @@ terraform {
   ## Follow https://jfrog.com/help/r/jfrog-artifactory-documentation/terraform-backend-repository
   ## Create a new terraform workspace in Artifactory named "jfrog"
   # backend "remote" {
-  #   hostname = "eldada.jfrog.io"
+  #   hostname = "acme.jfrog.io"
   #   organization = "terraform-backend"
   #   workspaces {
   #     prefix = "jfrog"
