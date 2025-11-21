@@ -1,0 +1,23 @@
+# An example of installing Xray
+
+### Install
+# helm repo add jfrog https://charts.jfrog.io
+# helm repo update
+# helm upgrade --install jfp jfrog/jfrog-platform -f ./values-xray.yaml
+
+### Uninstall
+# helm uninstall jfp
+# kubectl get pvc ...
+# kubectl delete pvc ...
+
+xray:
+  enabled: true
+  ## Deploy each Xray service as a separate, dedicated deployment. Enabling splitXraytoSeparateDeployments.fullSplit will divide the Xray pod into multiple deployments: ( xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom )
+  splitXraytoSeparateDeployments:
+    fullSplit: true
+    ## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
+    gradualUpgrade: false
+
+# If enabling Xray, rabbitmq should also be enabled
+rabbitmq:
+  enabled: true
