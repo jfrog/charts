@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.34.2] - Sep 22, 2025
+## [102.35.0] - Sep 22, 2025
 * **Important changes**
 * Added min kubeVersion ">= 1.21.0-0" in chart.yaml
 * Upgrade postgres chart version to `16.7.26`
