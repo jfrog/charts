@@ -52,15 +52,15 @@ validate_manifests() {
         rm -rf stable
         mkdir stable
         pwd
-        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable --set distribution.jfrogUrl=http://artifactory-artifactory.rt:8082,missionControl.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrlUI=http://artifactory-artifactory.rt:8082,xray.jfrogUrl=http://artifactory-artifactory.rt:8082,postgresql.postgresqlPassword=password > /dev/null 2>&1
+        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable --set distribution.jfrogUrl=http://artifactory-artifactory.rt:8082,missionControl.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrlUI=http://artifactory-artifactory.rt:8082,xray.jfrogUrl=http://artifactory-artifactory.rt:8082,postgresql.auth.password=password,rabbitmq.auth.password=rabbitmqpass > /dev/null 2>&1
         TEMPLATE_FILES="${chart_name}/templates"
-        if [ -d "${TEMPLATE_FILES}" ] 
+        if [ -d "${TEMPLATE_FILES}" ]
         then
             echo "------------------------------------------------------------------------------------------------------------------------"
             echo "==> Processing with default values..."
             echo "------------------------------------------------------------------------------------------------------------------------"
             # shellcheck disable=SC2086
-            kubeval -d ${TEMPLATE_FILES}
+            kubeconform ${TEMPLATE_FILES}
             if [ -d "${REPO_ROOT}/${chart_name}/ci" ]
             then
                 FILES="${REPO_ROOT}/${chart_name}/ci/*"
@@ -72,9 +72,9 @@ validate_manifests() {
                     rm -rf stable
                     mkdir stable
                     helm template "${REPO_ROOT}/${chart_name}" -f "$file" --output-dir stable > /dev/null 2>&1
-                    TEMPLATE_FILES="${chart_name}/templates/*" 
+                    TEMPLATE_FILES="${chart_name}/templates/*"
                     # shellcheck disable=SC2086
-                    kubeval ${TEMPLATE_FILES}
+                    kubeconform ${TEMPLATE_FILES}
                 done
             fi
         fi
@@ -86,7 +86,7 @@ validate_manifests() {
 
 main() {
     mkdir -p tmp
-    install_kubeval
+    install_kubeconform
     install_helm
     ## git_fetch
     # Lint helm charts
