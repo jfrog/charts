@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "artifactory.fullname" . }}-nginx-artifactory-conf
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ template "artifactory.chart" . }}
