@@ -253,7 +253,7 @@ lifecycle: {}
 sidecars: []
 
 ## Artifactory URL . Mandatory"
-jfrogUrl:
+jfrogUrl: ""
 
 ## catalog requires a unique master key.
 ## You can generate one with the command: "openssl rand -hex 32"
@@ -282,7 +282,7 @@ joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 ## You can modify specific entries with your own value under `catalog.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'catalog.systemYaml' and files/system.yaml
 
 extraSystemYaml: {}
-    
+
 ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
 ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
 # systemYaml:
@@ -424,6 +424,11 @@ rbac:
   rules: []
 ## @section Persistence parameters
 ##
+
+## PodDisruptionBudget configuration
+##
+
+minAvailable: 1
 
 ## Autoscaling configuration
 ##

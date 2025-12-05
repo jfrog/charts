@@ -16,11 +16,11 @@ endif
 # check for binaries
 HELM_CMD := $(shell command -v helm 2> /dev/null)
 KUBECTL_CMD := $(shell command -v kubectl 2> /dev/null)
-KUBEVAL_CMD := $(shell command -v kubeval 2> /dev/null)
+KUBECONFORM_CMD := $(shell command -v kubeconform 2> /dev/null)
 GCLOUD_CMD := $(shell command -v gcloud 2> /dev/null)
 
 .PHONY: check-cli
-check-cli: check-helm check-kubectl check-kubeval
+check-cli: check-helm check-kubectl check-kubeconform
 
 .PHONY: check-helm
 check-helm:
@@ -34,10 +34,10 @@ ifndef KUBECTL_CMD
 	$(error "$n$nNo kubectl command found! $n$nPlease download required kubectl binary.$n$n")
 endif
 
-.PHONY: check-kubeval
-check-kubeval:
-ifndef KUBEVAL_CMD
-	$(error "$n$nNo kubeval command found! $n$nPlease install: brew tap instrumenta/instrumenta && brew install kubeval $n$n")
+.PHONY: check-kubeconform
+check-kubeconform:
+ifndef KUBECONFORM_CMD
+	$(error "$n$nNo kubeconform command found! $n$nPlease install: brew install kubeconform $n$n")
 endif
 
 .PHONY: check-gcloud

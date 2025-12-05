@@ -57,16 +57,16 @@ install_helm() {
     fi
 }
 
-install_kubeval() {
-    echo 'Installing kubeval...'
+install_kubeconform() {
+    echo 'Installing kubeconform...'
 
     if [[ "${LOCAL_RUN}" = "true" ]]
     then
-        echo "Local run, not downloading kubeval cli..."
+        echo "Local run, not downloading kubeconform cli..."
     else
-        echo "CI run, downloading kubeval cli..."
-        curl -sSLo tmp/kubeval.tar.gz "https://github.com/instrumenta/kubeval/releases/download/$KUBEVAL_VERSION/kubeval-linux-amd64.tar.gz"
-        tar xf tmp/kubeval.tar.gz -C tmp && chmod +x tmp/kubeval
-        sudo mv tmp/kubeval /usr/local/bin/kubeval
+        echo "CI run, downloading kubeconform cli..."
+        curl -sSLo tmp/kubeconform.tar.gz "https://github.com/instrumenta/kubeconform/releases/download/$KUBECONFORM_VERSION/kubeconform-linux-amd64.tar.gz"
+        tar xf tmp/kubeconform.tar.gz -C tmp && chmod +x tmp/kubeconform
+        sudo mv tmp/kubeconform /usr/local/bin/kubeconform
     fi
 }
