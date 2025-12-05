@@ -84,7 +84,7 @@ spec:
             echo "Copy joinKey to {{ .Values.persistence.mountPath }}/etc/security";
             mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
             echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.persistence.mountPath }}/etc/security/join.key;
-          {{- end }}     
+          {{- end }}
           {{- if or .Values.masterKey .Values.global.masterKey .Values.masterKeySecretName .Values.global.masterKeySecretName }}
             echo "Copy masterKey to {{ .Values.persistence.mountPath }}/etc/security";
             mkdir -p {{ .Values.persistence.mountPath }}/etc/security;
@@ -99,7 +99,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "catalog.joinKeySecretName" . }}
                   key: join-key
-            {{- end }}   
+            {{- end }}
             {{- if or .Values.masterKey .Values.global.masterKey .Values.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: ARTIFACTORY_MASTER_KEY
               valueFrom:
@@ -296,6 +296,8 @@ spec:
         {{- if .Values.extraVolumes }}
         {{- toYaml .Values.extraVolumes | nindent 8 }}
         {{- end }}
+        {{- if .Values.persistence.size }}
         - name: data
           emptyDir:
-            sizeLimit: {{ .Values.persistence.size }}
+            sizeLimit: "{{ .Values.persistence.size }}"
+        {{- end }}
