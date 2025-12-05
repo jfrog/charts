@@ -52,7 +52,15 @@ validate_manifests() {
         rm -rf stable
         mkdir stable
         pwd
-        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable --set distribution.jfrogUrl=http://artifactory-artifactory.rt:8082,missionControl.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrl=http://artifactory-artifactory.rt:8082,pipelines.jfrogUrlUI=http://artifactory-artifactory.rt:8082,xray.jfrogUrl=http://artifactory-artifactory.rt:8082,postgresql.auth.password=password,rabbitmq.auth.password=rabbitmqpass > /dev/null 2>&1
+        helm template "${REPO_ROOT}/${chart_name}" --output-dir stable \
+        --set distribution.jfrogUrl=http://artifactory-artifactory.rt:8082 \
+        --set missionControl.jfrogUrl=http://artifactory-artifactory.rt:8082 \
+        --set pipelines.jfrogUrl=http://artifactory-artifactory.rt:8082 \
+        --set pipelines.jfrogUrlUI=http://artifactory-artifactory.rt:8082 \
+        --set xray.jfrogUrl=http://artifactory-artifactory.rt:8082 \
+        --set jfrogUrl=http://artifactory-artifactory.rt:8082 \
+        --set postgresql.auth.password=password \
+        --set rabbitmq.auth.password=rabbitmqpass > /dev/null 2>&1
         TEMPLATE_FILES="${chart_name}/templates"
         if [ -d "${TEMPLATE_FILES}" ]
         then
