@@ -270,7 +270,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.3.2-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.3.3-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -302,6 +302,14 @@ artifactory:
 
 xray:
   enabled: true
+  splitXraytoSeparateDeployments:
+  ## Deploy each Xray service as a separate, dedicated deployment
+  ## Enabling this setting will divide the Xray pod into multiple deployments: ( xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom )
+  ## By default, autoscaling is disabled for Xray services. To enable autoscaling, set the xray.<service>.autoscaling.enabled values to true per service.
+  ## For detailed instructions please visit https://github.com/jfrog/charts/tree/master/examples/jfrog-platform/xray-with-pod-split.
+    fullSplit: false
+  ## To prevent downtime, both the statefulset pod and deployment pods are kept together initially controlled by the `splitXraytoSeparateDeployments.gradualUpgrade` flag.
+    gradualUpgrade: false
   unifiedUpgradeAllowed: true
   xray:
     unifiedSecretInstallation: true
