@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.125.7] - Oct 14, 2025
+## [107.125.8] - Oct 14, 2025
 * Fix a newline issue with customSecrets [GH-2036](https://github.com/jfrog/charts/issues/2036)
 * Updated observability container to use a dedicated service image
 * Added validations for Apptrust and Unified Policy startup
