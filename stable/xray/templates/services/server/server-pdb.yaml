@@ -1,4 +1,4 @@
-{{- if and .Values.xray.minAvailable (not .Values.splitXraytoSeparateDeployments.fullSplit) -}}
+{{- if and .Values.splitXraytoSeparateDeployments.fullSplit .Values.xray.minAvailable -}}
 {{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: policy/v1beta1
 {{- else }}
@@ -6,7 +6,7 @@ apiVersion: policy/v1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
-  name: {{ template "xray.fullname" . }}-pdb
+  name: {{ template "xray-server.fullname" . }}-pdb
   labels:
     app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
@@ -19,8 +19,6 @@ spec:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
       component: {{ .Values.xray.name }}
-{{- if or .Values.splitXraytoSeparateDeployments.ipa .Values.splitXraytoSeparateDeployments.fullSplit }}
       servicename: server
-{{- end }}
   minAvailable: {{ .Values.xray.minAvailable }}
 {{- end }}

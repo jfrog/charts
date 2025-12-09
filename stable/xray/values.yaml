@@ -130,7 +130,8 @@ xray:
   persistence:
     mountPath: /var/opt/jfrog/xray
 
-  # adding minAvailable for Xray Pod Disruption Budget
+  # adding minAvailable for Xray Pod Disruption Budget on StatefulSet
+  # This value will also be used when splitXraytoSeparateDeployments.fullSplit is true
   minAvailable: 1
 
   # unifiedSecretInstallation flag enables single unified secret holding all the xray internal(chart) secrets, It won't be affecting external secrets.
@@ -225,7 +226,7 @@ xray:
   ## You can modify specific entries with your own value under `xray.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'xray.systemYaml' and files/system.yaml
 
   extraSystemYaml: {}
-      
+
   ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
   ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
   # systemYaml:
@@ -737,7 +738,7 @@ rabbitmq:
           echo $HOSTNAME
           if [[ $HOSTNAME == *-0 ]]; then
              exit 0
-          fi  
+          fi
           if [ -d "$RABBITMQ_MNESIA_DIR" ]; then
              exit 0
           fi
@@ -759,8 +760,8 @@ rabbitmq:
               break || sleep 5;
               if [ "$i" == "$maxIterations" ]; then exit 1; fi
               i=$((i+1))
-          done;   
-    
+          done;
+
           # node x waits for x previous nodes to join cluster (since node number is zero based)
           nodeSerialNum=$(echo "$MY_POD_NAME" | grep -o "[0-9]*$")
           timeoutSeconds=180
@@ -1394,8 +1395,7 @@ policyenforcer:
   #    cpu: "100m"
   #  limits:
   #    memory: "2Gi"
-  #    cpu: "1" 
-
+  #    cpu: "1"
 
 indexer:
   name: xray-indexer
@@ -1830,7 +1830,7 @@ router:
 
   readinessProbe:
     enabled: true
-    config: | 
+    config: |
       httpGet:
         path: /router/api/v1/system/readiness
         port: {{ .Values.router.internalPort }}
@@ -2043,7 +2043,7 @@ autoscalingServer:
     pollingInterval: 10
     cooldownPeriod: 10
     queues: []
- 
+
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.ipa) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -2132,7 +2132,7 @@ catalog:
         echo "Waiting for PostgreSQL and catalogdb to become available"
         ready=false
         start_time=$(date +%s)
-        while ! $ready; do 
+        while ! $ready; do
             echo "Checking PostgreSQL connection and database availability..."
             psql "postgres://{{ .Values.database.user }}:{{ .Values.database.password }}@{{ .Release.Name }}-postgresql:5432/catalogdb?sslmode=disable" -c "\q" 2>/dev/null
             exit_status=$?
@@ -2158,7 +2158,7 @@ catalog:
     enabled: true
     image: releases-docker.jfrog.io/postgres:15.6-alpine
   ## Change database connection details to external database. Bundled postgresql is not recomended for production use.
-  ## When using bundled postgresql, provide the same credentials as used by xray. 
+  ## When using bundled postgresql, provide the same credentials as used by xray.
   ## Xray post upgrade hook will create the catalog db in the bundled postgresql.
   ## Catalog customInitContainers will wait for the database to be available before starting the catalog. (Only applicable for bundled postgresql)
   database:
