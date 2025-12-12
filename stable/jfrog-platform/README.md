@@ -44,6 +44,32 @@ For example , for small sizings :
 helm upgrade --install jfrog-platform jfrog/jfrog-platform -f sizing/platform-small.yaml --namespace platform --create-namespace
 ````
 
+### OpenShift Deployment
+For OpenShift deployments, security contexts must be disabled because OpenShift manages pod security policies automatically.
+An OpenShift-optimized values file is provided that disables all security contexts for the platform’s products and services.
+For additional background on OpenShift's handling of pod security, refer to Red Hat’s [documentation](https://docs.redhat.com/en/documentation/openshift_container_platform/4.10/html/authentication_and_authorization/managing-pod-security-policies)
+
+To deploy JFrog Platform on OpenShift:
+
+```bash
+helm upgrade --install jfrog-platform jfrog/jfrog-platform \
+  -f values.yaml \
+  -f openshift-values.yaml \
+  --namespace jfrog-platform \
+  --create-namespace
+```
+
+* Important:
+openshift-values.yaml must be applied last. When using multiple -f flags in Helm, later files override earlier ones.
+This guarantees that the OpenShift-specific settings take precedence.
+
+The openshift-values.yaml file disables the following for all products and services deployed using this Helm chart:
+ - Pod security contexts
+ - Container security contexts
+
+This ensures compatibility with OpenShift’s built-in security model and allows the platform to operate under OpenShift’s default pod security enforcement.
+
+
 ### Upgrade Chart
 **NOTE:** If you are using bundled PostgreSQL, before upgrading the JFrog Platform chart, follow these steps:
 

@@ -1,0 +1,98 @@
+# artifactory subchart
+artifactory:
+  containerSecurityContext:
+    enabled: false
+  apptrust:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  artifactory:
+    podSecurityContext:
+      enabled: false
+  jfbus:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  nginx:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  platformfederation:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  rtfs:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  unifiedpolicy:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+
+# catalog subchart
+catalog:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+# distribution subchart
+distribution:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+  redis:
+    containerSecurityContext:
+      enabled: false
+
+# postgresql subchart
+postgresql:
+  primary:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  readReplicas:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+
+# rabbitmq subchart
+rabbitmq:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+# worker subchart
+worker:
+  podSecurityContext:
+    enabled: false
+  securityContext:
+    enabled: false
+
+# xray subchart
+xray:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+  catalog:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  valkey:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
