@@ -32,19 +32,18 @@ Instructions for accessing the JFrog Platform
 
      Extract the LoadBalancer IP / Hostname:
 
-     $ export SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} --template "{{ "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}" }}")
+     $ export SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
      $ echo http://$SERVICE_HOSTNAME/
 
    - Method 2: Port Forwarding
 
-     $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} 8080:{{ .Values.artifactory.nginx.http.internalPort }} &
-     $ echo http://localhost:8080/
+     $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} {{ default 80 .Values.artifactory.nginx.http.externalPort }}:{{ default 8080 .Values.artifactory.nginx.http.internalPort }} &
+     $ echo http://localhost:{{ default 80 .Values.artifactory.nginx.http.externalPort }}/
 
-   {{- else if contains "ClusterIP" .Values.artifactory.nginx.service.type }}
-   $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} 8080:{{ .Values.artifactory.nginx.http.internalPort }} &
-   $ echo http://localhost:8080/
-   {{- end }}
-
+  {{- else if contains "ClusterIP" .Values.artifactory.nginx.service.type }}
+    $ kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "call-nested" (list . "artifactory" "artifactory.nginx.fullname") }} {{ default 8082 .Values.artifactory.nginx.http.externalPort }}:{{ default 8082 .Values.artifactory.nginx.http.internalPort }} &
+    $ echo http://localhost:{{ default 8082 .Values.artifactory.nginx.http.externalPort }}/
+  {{- end }}
 
 3. Once you have the URL, open your preferred web browser and access the JFrog Platform.
    Default credentials for Artifactory:
