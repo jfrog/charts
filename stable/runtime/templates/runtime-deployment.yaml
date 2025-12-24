@@ -1,0 +1,271 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "runtime.fullname" . }}
+spec:
+  replicas: {{ .Values.runtime.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "runtime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "runtime.name" $ }}
+        #subsystem: {{ template "runtime.name" $ }}
+        #{{- include "runtime.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.commonAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if .Values.affinity }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- else if .Values.enableNodeAffinity }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: k8s.jfrog.com/pool_type
+                operator: In
+                values:
+                - xray
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{ toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+      - name: {{ .Values.runtime.AppName | default "runtime-service"}}
+        image: "{{ .Values.runtime.image.registry }}/{{ .Values.runtime.image.repository }}:{{ .Values.runtime.image.tag | default .Chart.AppVersion }}"
+        env:
+        {{- with .Values.extraEnvironmentVariables }}
+        {{- tpl (toYaml .) $ | nindent 8 -}}
+        {{- end }}
+        - name: JF_RUNTIMEAUDIT_SERVER_HOST
+          value: "{{ .Values.runtime.serverHost}}"
+        - name: JF_RUNTIME_AUDIT_SERVER_TENANT_DOMAIN
+          value: "{{ .Values.subdomain }}"
+        - name: JF_SHARED_NODE_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: JF_SHARED_LOGGING_ENABLEJSONCONSOLELOGAPPENDERS
+          value: 'true'
+        - name: JF_SHARED_LOGGING_APPLICATION_LEVEL
+          value: 'info'
+        {{- if .Values.runtime.unifiedSecretInstallation }}
+        - name: JF_SHARED_DATABASE_HOST
+          valueFrom:
+            secretKeyRef:
+              key: db-url
+              name: {{ template "runtime.fullname" . }}-unified-secret
+        - name: JF_SHARED_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              key: db-user
+              name: {{ template "runtime.fullname" . }}-unified-secret
+        - name: JF_SHARED_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: db-user
+              name: {{ template "runtime.fullname" . }}-unified-secret
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: db-password
+              name: {{ template "runtime.fullname" . }}-unified-secret
+        - name: JF_SHARED_SECURITY_JOINKEY
+          valueFrom:
+            secretKeyRef:
+              key: join-key
+              name: {{ include "runtime.joinKeySecretName" . }}
+        - name: JF_SHARED_SECURITY_MASTERKEY
+          valueFrom:
+            secretKeyRef:
+              key: master-key
+              name: {{ include "runtime.masterKeySecretName" . }}
+        {{ else }}
+        - name: JF_SHARED_DATABASE_HOST
+          value: "{{ .Release.Namespace }}-{{ .Values.postgresql.service.name }}"
+        - name: JF_SHARED_DATABASE_NAME
+          value: "{{ .Values.postgresql.postgresqlDatabase }}"
+        - name: JF_SHARED_DATABASE_USERNAME
+          value: "{{ .Values.postgresql.postgresqlUsername }}"
+        - name: JF_SHARED_DATABASE_PASSWORD
+          value: "{{ .Values.postgresql.postgresqlPassword }}"
+        - name: JF_SHARED_SECURITY_JOINKEY
+          valueFrom:
+            secretKeyRef:
+              key: join-key
+              name: "{{ .Release.Namespace }}-artifactory-unified-secret"
+        - name: JF_SHARED_SECURITY_MASTERKEY
+          valueFrom:
+            secretKeyRef:
+              key: master-key
+              name: "{{ .Release.Namespace }}-artifactory-unified-secret"
+        {{- end }}
+        - name: JF_SHARED_DATABASE_PORT
+          value: "{{ .Values.postgresql.service.port }}"
+        - name: JF_RUNTIMEAUDIT_CACHING_QUERYARTIFACTXRAYDATAINTERVALMINUTES
+          value: "{{ .Values.runtime.caching.queryArtifactXrayDataIntervalMinutes }}"
+        - name: JF_RUNTIMEAUDIT_CACHING_QUERYARTIFACTORYITEMSINTERVALMINUTES
+          value: "{{ .Values.runtime.caching.queryArtifactoryItemsIntervalMinutes }}"
+        - name: JF_RUNTIMEAUDIT_XRAYSCANNING_CRON
+          value: "{{ .Values.runtime.xrayScanning.cron }}"
+        - name: JF_RUNTIMEAUDIT_XRAYSCANNING_MAXPATTERNS
+          value: "{{ .Values.runtime.xrayScanning.maxPatterns }}"
+        - name: JF_RUNTIMEAUDIT_XRAYSCANNING_MAXARTIFACTS
+          value: "{{ .Values.runtime.xrayScanning.maxArtifacts }}"
+        - name: JF_RUNTIMEAUDIT_JFROGWORKERS_ENABLED
+          value: "{{ .Values.runtime.jfrogWorkers.enabled }}"
+        - name: JF_RUNTIMEAUDIT_DEV_ACCESSCLIENT_ENABLED
+          value: "true"
+        - name: JF_RUNTIMEAUDIT_ENABLEGRPCGATEWAY
+          value: "{{ .Values.runtime.enableGrpcGateway }}"
+        - name: JF_RUNTIMEAUDIT_DISABLEPROJECTFILTERING
+          value: "{{ .Values.runtime.disableProjectFiltering }}"
+        imagePullPolicy: {{ .Values.runtime.image.imagePullPolicy }}
+        volumeMounts:
+        - name: data-volume
+          mountPath: /var/opt/jfrog/runtime
+        - name: systemyaml
+          mountPath: /tmp/etc/system.yaml
+          subPath: system.yaml
+        resources:
+{{ toYaml .Values.runtime.resources | indent 10 }}
+{{- if .Values.runtime.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.runtime.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.runtime.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.runtime.livenessProbe.config . | indent 10 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.runtime.port }}
+          protocol: TCP
+        - containerPort: {{ .Values.runtime.gatewayPort }}
+          protocol: TCP
+        - containerPort: {{ .Values.runtime.metricsPort }}
+          protocol: TCP
+        securityContext:
+          allowPrivilegeEscalation: false
+      - name: {{ .Values.router.name | default "router"}}
+        image: {{ .Values.router.image.registry }}/{{ .Values.router.image.repository }}:{{ .Values.router.image.tag }}
+        command:
+        - /bin/sh
+        - -c
+        - |
+          exec /opt/jfrog/router/app/bin/entrypoint-router.sh;
+        env:
+        - name: JF_ROUTER_ENTRYPOINTS_EXTERNALPORT
+          value: "{{ .Values.router.externalPort }}"
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+          value: "jfrun"
+        - name: JF_SHARED_JFROGURL
+          value: "{{ .Values.router.jfrogUrl }}"
+        {{- with .Values.router.extraEnvironmentVariables }}
+        {{ tpl (toYaml .) $ | indent 8 }}
+        {{- end }}
+        imagePullPolicy: {{ .Values.router.image.imagePullPolicy}}
+        ports:
+        - containerPort: {{ .Values.router.externalPort }}
+          name: http-router
+          protocol: TCP
+        resources:
+{{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.livenessProbe.enabled }}
+        livenessProbe:
+{{ tpl .Values.router.livenessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.router.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.router.readinessProbe.config . | indent 10 }}
+{{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - NET_RAW
+          runAsNonRoot: true
+          runAsUser: {{ .Values.common.runtimeUserId }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/opt/jfrog/router
+          name: data-volume
+      initContainers:
+      - command:
+        - bash
+        - -c
+        - |
+          if [[ -e "/var/opt/jfrog/runtime/etc/filebeat.yaml" ]]; then chmod 644 /var/opt/jfrog/runtime/etc/filebeat.yaml; fi; echo "Copy system.yaml to /var/opt/jfrog/runtime/etc"; mkdir -p /var/opt/jfrog/runtime/etc; cp -fv /tmp/etc/system.yaml /var/opt/jfrog/runtime/etc/system.yaml; echo "Remove /var/opt/jfrog/runtime/lost+found folder if exists"; rm -rfv /var/opt/jfrog/runtime/lost+found; echo "Copy joinKey to /var/opt/jfrog/runtime/etc/security"; mkdir -p /var/opt/jfrog/runtime/etc/security; echo ${RUNTIME_JOIN_KEY} > /var/opt/jfrog/runtime/etc/security/join.key; echo "Copy masterKey to /var/opt/jfrog/runtime/etc/security"; mkdir -p /var/opt/jfrog/runtime/etc/security; echo ${RUNTIME_MASTER_KEY} > /var/opt/jfrog/runtime/etc/security/master.key;
+        env:
+        - name: RUNTIME_JOIN_KEY
+          valueFrom:
+            secretKeyRef:
+              key: join-key
+              name: {{ include "runtime.joinKeySecretName" . }}
+        - name: RUNTIME_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              key: master-key
+              name: {{ include "runtime.masterKeySecretName" . }}
+        image: {{ .Values.runtime.initContainerImage.registry }}/{{ .Values.runtime.initContainerImage.repository }}:{{ .Values.runtime.initContainerImage.tag }}
+        name: "copy-system-yaml"
+        imagePullPolicy: {{ .Values.initContainers.imagePullPolicy }}
+        resources:
+          requests:
+            memory: "50Mi"
+            cpu: "10m"
+          limits:
+            memory: "1Gi"
+            cpu: "1"
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - NET_RAW
+          runAsNonRoot: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - name: data-volume
+          mountPath: /var/opt/jfrog/runtime
+        - name: systemyaml
+          mountPath: /tmp/etc/system.yaml
+          subPath: system.yaml
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: {{ .Values.common.runtimeGroupId }}
+        runAsUser: {{ .Values.common.runtimeUserId }}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir:
+          sizeLimit: 100Gi
+        name: data-volume
+      - name: systemyaml
+        secret:
+          {{- if .Values.runtime.unifiedSecretInstallation }}
+          secretName: {{ template "runtime.fullname" . }}-unified-secret
+          defaultMode: 420
+          {{ else }}
+          secretName: {{ .Release.Namespace }}-runtime-system-yaml
+          defaultMode: 420
+          {{- end }}

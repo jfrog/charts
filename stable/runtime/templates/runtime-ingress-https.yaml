@@ -1,0 +1,37 @@
+# This resource should not be deployed in environments other than 'dev'.
+{{- if and (.Values.ingress.enabled) (eq .Values.global.deployEnv "dev") (not .Values.isMultiTenant) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    alb.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/enable-underscores-in-headers: "true"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  labels:
+    app: {{ template "runtime.name" $ }}
+  name: runtime-ingress-https
+  namespace: {{ .Release.Namespace }}
+spec:
+  defaultBackend:
+    service:
+      name: "{{ .Release.Namespace }}-artifactory"
+      port:
+        number: {{ .Values.global.artifactoryPort }}
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  rules:
+    - host: {{ tpl .Values.global.jfrogUrl . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Release.Namespace }}-artifactory
+                port:
+                  number: {{ .Values.global.artifactoryPort }}  
+  tls:
+    - hosts:
+        - {{ tpl .Values.global.jfrogUrl . | quote }}
+{{- end }}

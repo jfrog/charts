@@ -1,0 +1,15 @@
+{{- if and (not .Values.systemYamlOverride.existingSecret) (not .Values.runtime.unifiedSecretInstallation) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ template "runtime.fullname" . }}-system-yaml
+  labels:
+    app: {{ template "runtime.name" $ }}
+    chart: {{ template "runtime.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+type: Opaque
+stringData:
+  system.yaml: |
+{{ tpl .Values.systemYaml . | indent 4 }}
+{{- end }}

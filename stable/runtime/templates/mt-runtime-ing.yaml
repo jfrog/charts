@@ -1,0 +1,25 @@
+{{- if .Values.isMultiTenant }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: GRPC
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  name: {{ template "runtime.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ingressClassName: nginx-internal
+  rules:
+  - host: mt-runtime-ep.{{ .Release.Namespace }}.svc.cluster.local
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ template "runtime.fullname" . }}
+            port:
+              name: grpc-server
+        path: /
+        pathType: ImplementationSpecific
+{{- end }}

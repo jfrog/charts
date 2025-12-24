@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "runtime.fullname" . }}
+  labels:
+    app: {{ template "runtime.name" $ }}
+    chart: {{ template "runtime.chart" . }}
+    component: {{ .Values.runtime.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+{{- with .Values.runtime.service }}
+{{- if .annotations }}
+  annotations:
+    {{- range $key, $value := .annotations }}
+      {{ $key }}: {{ $value | quote }}
+    {{- end }}
+{{- end }}
+spec:
+  type: {{ .type }}
+  {{- if .additionalSpec }}
+{{ tpl .additionalSpec $ | indent 2 }}
+  {{- end }}
+{{- end }}
+  ports:
+  - port: {{ .Values.runtime.runtimeServicePort }}
+    protocol: TCP
+    name: grpc-server
+    targetPort: {{ .Values.router.externalPort }}
+  - port: {{ .Values.runtime.metricsPort }}
+    protocol: TCP
+    name: metrics
+    targetPort: {{ .Values.runtime.metricsPort }}
+  selector:
+    app.kubernetes.io/name: {{ include "runtime.name" . }}

@@ -1,0 +1,24 @@
+apiVersion: v2
+appVersion: 1.9.2
+dependencies:
+- condition: postgresql.enabled
+  name: postgresql
+  repository: https://charts.jfrog.io/
+  version: 10.3.18
+description: Enables Security and DevOps teams to monitor Kubernetes clusters in real
+  time, identify, prioritize, and remediate security incidents based on actual risk,
+  verify image integrity, and meet compliance requirements.
+home: https://jfrog.com/runtime
+icon: https://raw.githubusercontent.com/jfrog/charts/master/stable/runtime/icon/runtime-icon.png
+keywords:
+- runtime
+- jfrog
+kubeVersion: '>= 1.19.0-0'
+maintainers:
+- email: installers@jfrog.com
+  name: Chart Maintainers at JFrog
+name: runtime
+sources:
+- https://github.com/jfrog/charts/blob/master/stable/runtime
+type: application
+version: 101.9.2

@@ -1,0 +1,10 @@
+{{- if .Values.isMultiTenant }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: mt-runtime-ep
+  namespace: {{ .Release.Namespace }}
+spec:
+  externalName: jfrog-saas-{{ .Values.region }}-nginx-internal-controller-internal.jfrog-saas-{{ .Values.region }}-nginx-internal.svc.cluster.local
+  type: ExternalName
+{{- end }}

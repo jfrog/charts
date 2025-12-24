@@ -1,0 +1,36 @@
+{{- if and (.Values.ingress.enabled) (not .Values.isMultiTenant) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    {{- with .Values.ingress.grpc.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/backend-protocol: {{ .Values.ingress.grpc.securedBackendProtocol | ternary "GRPCS" "GRPC" | quote }}
+    nginx.ingress.kubernetes.io/enable-underscores-in-headers: "true"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    nginx.ingress.kubernetes.io/server-alias: {{ tpl (default .Values.global.jfrogUrl .Values.global.jpdBaseName) . | quote }}
+  labels:
+    app: {{ template "runtime.name" $ }}
+  name: runtime-ingress-grpcs
+  namespace: {{ .Release.Namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  rules:
+    - host: {{ tpl .Values.global.jfrogUrl . | quote }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.grpc.path }}
+            pathType: {{ .Values.ingress.grpc.pathType }}
+            backend:
+              service:
+                name: {{ template "runtime.fullname" . }}
+                port:
+                  number: {{ .Values.runtime.runtimeServicePort }}
+  tls:
+    - hosts:
+        - {{ tpl .Values.global.jfrogUrl . | quote }}
+      secretName: {{ .Values.ingress.grpc.tlsSecretName }}
+{{- end }}

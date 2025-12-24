@@ -1,0 +1,709 @@
+# Default values for runtime-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+imagePullSecrets: 
+  - name: "docker-jfrog-io-pull-secret"
+nameOverride: "runtime"
+# fullnameOverride: ""
+subdomain: "jfrogdev.org"
+
+isMultiTenant: false
+
+global:
+  deployEnv: dev #determines environment specific configuration
+  artifactoryPort: 8082
+  jfrogUrl: "{{ .Release.Namespace }}.{{ .Values.subdomain }}"
+  jpdBaseName: "{{ .Release.Namespace }}.{{ .Values.subdomain }}"
+  # imageRegistry: releases-docker.jfrog.io
+  # imagePullSecrets:
+  #   - myRegistryKeySecretName
+  ## Chart.AppVersion can be overidden using global.versions.runtime, common.runtimeVersion or image tags
+  ## Note: Order of preference is 1) global.versions 2) common.runtimeVersion 3) image tags 4) Chart.AppVersion
+  # versions: {}
+  # runtime:
+  # router:
+  # joinKey:
+  # masterKey:
+  # joinKeySecretName:
+  # masterKeySecretName:
+  # executionServiceAesKey:
+  # executionServiceAesKeySecretName:
+
+  ## Note: tags customInitContainersBegin,customInitContainers,customVolumes,customVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
+  # customInitContainersBegin: |
+
+  # customInitContainers: |
+
+  # customVolumes: |
+
+  # customVolumeMounts: |
+
+  # customSidecarContainers: |
+
+  ## certificates added to this secret will be copied to $JFROG_HOME/runtime/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+  ## Applies to runtime pods
+  nodeSelector: {}
+
+
+imagePullPolicy: IfNotPresent
+# Init containers
+initContainers:
+  imagePullPolicy: IfNotPresent
+
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+systemYamlOverride:
+  ## You can use a pre-existing secret by specifying existingSecret
+  existingSecret:
+  ## The dataKey should be the name of the secret data key created.
+  dataKey:
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+## @param extraEnvironmentVariables that can be used to tune event to your needs.
+## Example:
+## extraEnvironmentVariables:
+##   - name: MY_ENV_VAR
+##     value: ""
+extraEnvironmentVariables: []
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+runtime:
+  image:
+    registry: docker.jfrog.io
+    repository: jfrog/runtime-service
+    imagePullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  AppName: "runtime"
+  artifactoryPort: 8082
+  runtimeServicePort: 8082
+  port: 9999
+  gatewayPort: 9998
+  metricsPort: 2112
+  replicaCount: 1
+  serverHost: 0.0.0.0
+  name: runtime
+  labels: {}
+  resources:
+    limits:
+      cpu: '5'
+      memory: 10Gi
+    requests:
+      cpu: 500m
+      memory: 5Gi
+  service:
+    type: ClusterIP
+    name: runtime
+    annotations: {}
+    ## Provide additional spec to runtime service
+    ## Example:
+    ## additionalSpec: |
+    ##   customKey: customVal
+    ##
+    additionalSpec: ""
+  persistence:
+    mountPath: /var/opt/jfrog/runtime
+  # adding minAvailable for runtime Pod Disruption Budget
+  minAvailable: 1
+  # unifiedSecretInstallation flag enables single unified secret holding all runtime secrets
+  unifiedSecretInstallation: true
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  schedulerName:
+  # Create a priority class for the runtime pod or use an existing one
+  # NOTE - Maximum allowed value of a user defined priority is 1000000000
+  priorityClass:
+    create: false
+    value: 1000000000
+    ## Override default name
+    # name:
+    ## Use an existing priority class
+    # existingPriorityClass:
+  ## certificates added to this secret will be copied to $JFROG_HOME/runtime/var/etc/security/keys/trusted directory
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+  ## Add custom annotations for runtime pods
+  annotations: {}
+  ## runtime requires a unique master key
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 32'
+  ## Pass it to helm with '--set runtime.masterKey=${MASTER_KEY}'
+  ## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+  # masterKeySecretName:
+  initContainerImage: 
+    registry: releases-docker.jfrog.io
+    repository: ubi9/ubi-minimal
+    tag: 9.1.0.1793
+    imagePullPolicy: Always
+  ## Join Key to connect to main Artifactory. Mandatory
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  ## runtime AES key used by execution server to the runtime server and analysis containers.
+  ## You can generate one with the command:
+  ## 'openssl rand -hex 16'
+  # executionServiceAesKey:
+  ## Alternatively, you can use a pre-existing secret with a key called execution-service-aes-key by specifying executionServiceAesKeySecretName
+  # executionServiceAesKeySecretName:
+
+  ## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+  # joinKeySecretName:
+  ## If false, all service console logs will not redirect to a common console.log
+  consoleLog: false
+  ## Artifactory URL . Mandatory
+  jfrogUrl: "{{ .Release.Namespace }}.{{ .Values.subdomain }}"
+  ## Mongo details are used only for Manual migration of data from Mongo to Postgres in runtime 2.x to 3.x
+  # mongoUrl:
+  # mongoUsername:
+  # mongoPassword:
+
+  enableGrpcGateway: true
+  disableProjectFiltering: true
+
+  caching:
+    queryArtifactXrayDataIntervalMinutes: 60
+    queryArtifactoryItemsIntervalMinutes: 30
+
+  xrayScanning:
+    cron: "0 2 * * *"  # Daily at 2 AM
+    maxPatterns: 100   # Max patterns before converting to scan_all mode
+    maxArtifacts: 100  # Max artifacts per scan session
+
+  jfrogWorkers:
+    enabled: true
+
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+  # To enable set `.Values.runtime.openMetrics.enabled` to `true`
+  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  openMetrics:
+    enabled: false
+    ## Settings for pushing metrics to Insight - enable filebeat to true
+    filebeat:
+      enabled: false
+      log:
+        enabled: false
+        ## Log level for filebeat. Possible values: debug, info, warning, or error.
+        level: "info"
+  # Sidecar containers for tailing runtime logs
+  loggers: []
+  # - router-request.log
+  # - router-service.log
+  # - router-traefik.log
+  # - runtime-request.log
+  # - runtime-analysis-service.log
+  # - runtime-analysis-metrics.log
+  # - runtime-server-service.log
+  # - runtime-server-metrics.log
+  # - runtime-indexer-service.log
+  # - runtime-indexer-metrics.log
+  # - runtime-analysis-stack.log
+  # - runtime-indexer-stack.log
+  # - runtime-persist-stack.log
+  # - runtime-persist-metrics.log
+  # - runtime-server-stack.log
+  # - observability-metrics.log
+  # - observability-request.log
+  # - observability-service.log
+
+  # Loggers containers resources
+  loggersResources: {}
+  #   requests:
+  #     memory: "64Mi"
+  #     cpu: "25m"
+  #   limits:
+  #     memory: "128Mi"
+  #     cpu: "50m"
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.runtime.port }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.runtime.port }}
+      initialDelaySeconds: {{ .Values.probes.runtimeStartup.initialDelaySeconds }}
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+systemYaml: |
+    configVersion: 1
+    router:
+      serviceRegistry:
+        insecure: {{ .Values.router.serviceRegistry.insecure }}
+    shared:
+    {{- if .Values.runtime.openMetrics.enabled }}
+      metrics:
+        enabled: true
+      {{- if .Values.runtime.openMetrics.filebeat.enabled }}
+        filebeat: {{ toYaml .Values.runtime.openMetrics.filebeat | nindent 6 }}
+      {{- end }}
+    {{- end }}
+      logging:
+        consoleLog:
+          enabled: {{ .Values.runtime.consoleLog }}
+      jfrogUrl: "{{ tpl (required "\n\nruntime.jfrogUrl or global.jfrogUrl is required! This allows to connect to Artifactory.\nYou can copy the JFrog URL from Administration > User Management > Settings > Connection details" (print "https://" .Release.Namespace "-artifactory" "." .Values.subdomain ":" .Values.runtime.artifactoryPort)) . }}"
+      database:
+      {{- if .Values.postgresql.enabled }}
+        type: "postgresql"
+        driver: "org.postgresql.Driver"
+        username: "{{ .Values.postgresql.postgresqlUsername }}"
+        url: "postgres://{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresqlDatabase }}?sslmode=disable"
+      {{- else }}
+        type: {{ .Values.database.type }}
+        driver: {{ .Values.database.driver }}
+      {{- end }}
+      {{- if .Values.runtime.mongoUrl }}
+      mongo:
+        url: "{{ .Values.runtime.mongoUrl }}"
+        username: "{{ .Values.runtime.mongoUsername }}"
+        password: "{{ .Values.runtime.mongoPassword }}"
+      {{- end }}
+common:
+  ## Note that by default we use appVersion to get image tag
+  # runtimeVersion:
+  runtimeUserId: 1035
+  runtimeGroupId: 1035
+  # fsGroupChangePolicy: "Always"
+
+  # Spread runtime pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+  # - maxSkew: 1
+  #   topologyKey: kubernetes.io/hostname
+  #   whenUnsatisfiable: DoNotSchedule
+  #   labelSelector:
+  #     matchLabels:
+  #       app: '{{ template "runtime.name" $ }}'
+  #       role: '{{ template "runtime.name" $ }}'
+  #       release: "{{ .Release.Name }}"
+
+  # runtime configuration to be written to runtime_config.yaml
+  runtimeConfig:
+    stdOutEnabled: true
+    indexAllBuilds: false
+    support-router: true
+  ## Custom command to run before runtime startup. Runs BEFORE any microservice-specific preStartCommand
+  preStartCommand:
+  ## Add custom volumes
+  # If .Values.runtime.unifiedSecretInstallation is true then secret name should be '{{ template "runtime.name" $ }}-unified-secret'.
+  customVolumes: ""
+  #  - name: custom-script
+  #    configMap:
+  #      name: custom-script
+
+  ## Add custom volumesMounts
+  customVolumeMounts: ""
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  # Add any list of configmaps to runtime
+  configMaps: ""
+  #  posthook-start.sh: |-
+  #    echo "This is a post start script"
+  #  posthook-end.sh: |-
+  #    echo "This is a post end script"
+
+  ## Add custom init containers execution before predefined init containers
+  customInitContainersBegin: ""
+  #  - name: "custom-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'touch {{ .Values.common.runtimeConfigPath }}/example-custom-setup'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.common.runtimeConfigPath }}"
+  #        name: data-volume
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: ""
+  #  - name: "custom-systemyaml-setup"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'wget -O {{ .Values.runtime.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.runtime.persistence.mountPath }}"
+  #        name: data-volume
+
+  ## Add custom sidecar containers
+  # - The provided example uses a custom volume (customVolumes)
+  # - The provided example shows running container as root (id 0)
+  customSidecarContainers: ""
+  #  - name: "sidecar-list-etc"
+  #    image: "{{ .Values.initContainerImage }}"
+  #    imagePullPolicy: "{{ .Values.imagePullPolicy }}"
+  #    securityContext:
+  #      runAsNonRoot: true
+  #      allowPrivilegeEscalation: false
+  #      capabilities:
+  #        drop:
+  #          - NET_RAW
+  #    command:
+  #      - 'sh'
+  #      - '-c'
+  #      - 'sh /scripts/script.sh'
+  #    volumeMounts:
+  #      - mountPath: "{{ .Values.runtime.persistence.mountPath }}"
+  #        name: volume
+  #      - mountPath: "/scripts/script.sh"
+  #        name: custom-script
+  #        subPath: script.sh
+  #    resources:
+  #      requests:
+  #        memory: "32Mi"
+  #        cpu: "50m"
+  #      limits:
+  #        memory: "128Mi"
+  #        cpu: "100m"
+
+  # If .Values.runtime.unifiedSecretInstallation is true then secret name should be '{{ template "runtime.name" $ }}-unified-secret'.
+  customSecrets:
+  #  - name: custom-secret
+  #    key: custom-secret.yaml
+  #    data: >
+  #      custom_secret_config:
+  #        parameter1: value1
+  #        parameter2: value2
+  #  - name: custom-secret2
+  #    key: custom-secret2.config
+  #    data: |
+  #      here the custom secret 2 config
+
+  persistence:
+    enabled: true
+    ## A manually managed Persistent Volume and Claim
+    ## Requires persistence.enabled: true
+    ## If defined, PVC must be created manually before volume will be bound
+    # existingClaim:
+
+    accessMode: ReadWriteOnce
+    ## Container storage limit if persistence.enabled: false
+    ## Otherwise PVC size
+    size: 50Gi
+    ## server data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+  ## @param extraEnvVars Extra environment variables to add to runtime containers
+  ## E.g:
+  ## extraEnvVars:
+  ##   - name: FOO
+  ##     value: BAR
+  ##
+  extraEnvVars: |
+    - name: RUNTIME_CHART_FULL_NAME
+      value: '{{ include "runtime.fullname" . }}'
+    - name: RUNTIME_CHART_NAME
+      value: '{{ include "runtime.name" . }}'
+    - name: RUNTIME_CHART_UNIFIED_SECRET_INSTALLATION
+      value: "{{ .Values.runtime.unifiedSecretInstallation }}"
+    - name: RUNTIME_CHART_SYSTEM_YAML_OVERRIDE_EXISTING_SECRET
+      value: "{{ .Values.systemYamlOverride.existingSecret }}"
+    - name: RUNTIME_CHART_SYSTEM_YAML_OVERRIDE_DATA_KEY
+      value: "{{ .Values.systemYamlOverride.dataKey }}"
+
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    tag: 7.135.1
+    imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: true
+  internalPort: 8082
+  externalPort: 8082
+  tlsEnabled: false
+  resources:
+    limits:
+      cpu: '2'
+      memory: 4Gi
+    requests:
+      cpu: 800m
+      memory: 400Mi
+
+  extraEnvironmentVariables: []
+  # Add lifecycle hooks for the router pod
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
+  annotations: {}
+  ## Add custom volumesMounts
+  customVolumeMounts: ""
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "runtime.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "runtime.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "runtime.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
+  # Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+  loggers: []
+service:
+  type: ClusterIP
+  port: 80
+
+networkpolicy: 
+# Allows all ingress and egress
+- name: runtime
+  podSelector:
+    matchLabels:
+      app: runtime
+  egress:
+    - {}
+  ingress:
+    - {}
+
+postgresql:
+  app: runtime-postgres
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/postgresql
+    tag: 15.6.0-debian-11-r16
+  postgresqlUsername: postgres
+  postgresqlPassword: "runtimepassword"
+  postgresqlExtendedConf:
+    listenAddresses: "*"
+    maxConnections: "1500"
+  service:
+    port: 5432
+  persistence:
+    enabled: true
+    size: 300Gi
+    # existingClaim:
+  primary:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  readReplicas:
+    nodeSelector: {}
+    affinity: {}
+    tolerations: []
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "250m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+
+ingress:
+  enabled: true
+  className: nginx  # Default class name, can be overridden
+  grpc:
+    path: /com.jfrog.runtime
+    pathType: ImplementationSpecific
+    tlsSecretName: ""
+    securedBackendProtocol: true
+
+    annotations: {}
+    # Amazon ALB annotations:
+    # alb.ingress.kubernetes.io/backend-protocol: HTTP
+    # alb.ingress.kubernetes.io/backend-protocol-version: GRPC
+    # alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    # alb.ingress.kubernetes.io/healthcheck-interval-seconds: "5"
+    # alb.ingress.kubernetes.io/healthcheck-path: /com.jfrog.runtime.v1
+    # alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "2"
+    #
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    # alb.ingress.kubernetes.io/scheme: "internet-facing"
+    # alb.ingress.kubernetes.io/ssl-redirect: "443"
+    # alb.ingress.kubernetes.io/target-type: ip
+    # alb.ingress.kubernetes.io/load-balancer-attributes: "routing.http2.enabled=true"
+
+    # ARN of the certificate to use. This should be taken from AWS Certificate Manager console
+    # alb.ingress.kubernetes.io/certificate-arn: ""
+    # alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-2016-08"
+
+
+## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
+# database:
+# Uncomment to allow only runtime pods to communicate with postgresql (if postgresql.enabled is true)
+# - name: postgres
+#   podSelector:
+#     matchLabels:
+#       app.kubernetes.io/name: postgresql
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app: runtime
+# database:
+#   type: "postgresql"
+#   driver: "org.postgresql.Driver"
+#   ## If you would like this chart to create the secret containing the database url, user, password - use these below values
+#   url:
+#   user: 
+#   password: 
+#   ## When working with Azure managed PG you have to provide the actualUsername. The application will pick actualUsername and will use it in some cases where it is needed
+#   actualUsername:
+#   ## If you have existing Kubernetes secrets containing db credentials, use
+#   ## these values
+#   secrets: 
+#    user:
+#      name: "runtime-database-creds"
+#      key: "postgres"
+#    password:
+#      name: "runtime-database-creds"
+#      key: "runtimepassword"
+#    url:
+#      name: "runtime-database-creds"
+#      key: "runtime"
+#    actualUsername:
+#      name: "runtime-database-creds"
+#      key: "postgres"
+  
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+database:
+  type: "postgresql"
+  driver: "org.postgresql.Driver"
+  username: "{{ .Values.postgresql.postgresqlUsername }}"
+  url: "{{ .Release.Name }}-postgresql"
+  password: "{{ .Values.postgresql.postgresqlPassword }}"
+  secrets: {} # If you have existing Kubernetes secrets containing db credentials, use these values
+  
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 40
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Pods
+        value: 3
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 360
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 5
+  runtimeStartup:
+    initialDelaySeconds: 30
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+commonAnnotations: {}

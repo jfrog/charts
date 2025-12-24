@@ -1,0 +1,2 @@
+Runtime service v{{ .Values.runtime.image.tag | default .Chart.AppVersion }} has been deployed successfully on {{ .Release.Namespace }} namespace!
+Visit {{ tpl .Values.global.jfrogUrl . }}/ui/admin/runtime/sensor-management to manage your runtime sensors.
