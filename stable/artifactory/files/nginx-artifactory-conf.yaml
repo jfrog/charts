@@ -28,31 +28,31 @@ upstream artifactory {
 server {
 {{- if .Values.nginx.internalPortHttps }}
 {{- if .Values.nginx.singleStackIPv6Cluster }}
-listen [::]:{{ .Values.nginx.internalPortHttps }} ssl;
+listen [::]:{{ .Values.nginx.internalPortHttps }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- else -}}
-listen {{ .Values.nginx.internalPortHttps }} ssl;
+listen {{ .Values.nginx.internalPortHttps }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- end }}
 {{- else -}}
 {{- if .Values.nginx.https.enabled }}
 {{- if .Values.nginx.singleStackIPv6Cluster }}
-listen [::]:{{ .Values.nginx.https.internalPort }} ssl;
+listen [::]:{{ .Values.nginx.https.internalPort }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- else -}}
-listen {{ .Values.nginx.https.internalPort }} ssl;
+listen {{ .Values.nginx.https.internalPort }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.nginx.internalPortHttp }}
 {{- if .Values.nginx.singleStackIPv6Cluster }}
-listen [::]:{{ .Values.nginx.internalPortHttp }};
+listen [::]:{{ .Values.nginx.internalPortHttp }} {{ if .Values.nginx.httpUseProxyProtocol }}proxy_protocol{{ end }};
 {{- else -}}
-listen {{ .Values.nginx.internalPortHttp }};
+listen {{ .Values.nginx.internalPortHttp }} {{ if .Values.nginx.httpUseProxyProtocol }}proxy_protocol{{ end }};
 {{- end }}
 {{- else -}}
 {{- if .Values.nginx.http.enabled }}
 {{- if .Values.nginx.singleStackIPv6Cluster }}
-listen [::]:{{ .Values.nginx.http.internalPort }};
+listen [::]:{{ .Values.nginx.http.internalPort }} {{ if .Values.nginx.httpUseProxyProtocol }}proxy_protocol{{ end }};
 {{- else -}}
-listen {{ .Values.nginx.http.internalPort }};
+listen {{ .Values.nginx.http.internalPort }} {{ if .Values.nginx.httpUseProxyProtocol }}proxy_protocol{{ end }};
 {{- end }}
 {{- end }}
 {{- end }}
