@@ -1851,6 +1851,12 @@ nginx:
   ##  allows overwriting the command for the nginx container.
   ##  defaults to [ 'nginx', '-g', 'daemon off;' ]
 
+  customConfFile: ""
+    # custom.conf: |
+    #   log_format ningxartifactory '$proxy_protocol_addr - $remote_user [$time_local] "$request"';
+  customServerSnippet: ""
+    # access_log /dev/stdout ningxartifactory;
+
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
     type: LoadBalancer
