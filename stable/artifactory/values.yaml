@@ -1795,6 +1795,8 @@ nginx:
   ssh:
     internalPort: 1339
     externalPort: 1339
+  httpUseProxyProtocol: false
+  httpsUseProxyProtocol: false
   ## DEPRECATED: The following will be removed in a future release
   # externalPortHttp: 8080
   # internalPortHttp: 8080
@@ -1809,7 +1811,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
+          - curl {{ if .Values.nginx.httpUseProxyProtocol }}--haproxy-protocol{{ end }} -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1822,7 +1824,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
+          - curl {{ if .Values.nginx.httpUseProxyProtocol }}--haproxy-protocol{{ end }} -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1835,7 +1837,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
+          - curl {{ if .Values.nginx.httpUseProxyProtocol }}--haproxy-protocol{{ end }} -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: 3
       failureThreshold: 90
       periodSeconds: 5
