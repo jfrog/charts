@@ -1,6 +1,9 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.125.11]
+* allow to use proxy protocol for nginx
+
 ## [107.125.10] - Oct 14, 2025
 * Updated observability container to use a dedicated service image
 * Removed unused volume names when persistence is disabled [GH-1681](https://github.com/jfrog/charts/issues/1681)
