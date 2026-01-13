@@ -10,6 +10,9 @@ metadata:
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
+{{- if .Values.securityContext }}
+    {{- fail ".Values.securityContext is no longer supported and should be replaced with .Values.containerSecurityContext" }}
+{{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
@@ -43,8 +46,8 @@ spec:
         - name: 'copy-system-yaml'
           image: {{ template "initContainers.image" . }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
-          {{- if .Values.securityContext.enabled }}
-          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.initContainers.resources }}
           resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
@@ -78,8 +81,8 @@ spec:
         - name: copy-custom-certificates
           image: {{ template "initContainers.image" . }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
-          {{- if .Values.securityContext.enabled }}
-          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.initContainers.resources }}
           resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
@@ -104,8 +107,8 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
-          {{- if .Values.securityContext.enabled }}
-          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           image: {{ template "worker.image" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -190,8 +193,8 @@ spec:
         - name: {{ .Values.router.name }}
           image: {{ template "router.image" . }}
           imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-          {{- if .Values.securityContext.enabled }}
-          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           volumeMounts:
             - name: data
@@ -282,8 +285,8 @@ spec:
         - name: {{ .Values.observability.name }}
           image: {{ template "observability.image" . }}
           imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
-          {{- if .Values.securityContext.enabled }}
-          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           command:
             - '/bin/sh'
@@ -348,8 +351,8 @@ spec:
         - name: {{ . | replace "_" "-" | replace "." "-" }}
           image: {{ template "initContainers.image" $ }}
           imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
-          {{- if $.Values.securityContext.enabled }}
-          securityContext: {{- omit $.Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if $.Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           resources:
 {{ toYaml $.Values.loggersResources | indent 12 }}
@@ -368,8 +371,8 @@ spec:
         - name: {{ .Values.filebeat.name }}
           image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.version }}"
           imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
-          {{- if .Values.securityContext.enabled }}
-          securityContext: {{- omit .Values.securityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           args:
             - "-e"

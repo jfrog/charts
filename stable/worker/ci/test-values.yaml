@@ -88,8 +88,8 @@ podSecurityContext:
   runAsUser: 1131
 
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-## Disable securityContext for openshift
-securityContext:
+## Disable containerSecurityContext for openshift
+containerSecurityContext:
   enabled: true
   runAsNonRoot: true
   allowPrivilegeEscalation: false
