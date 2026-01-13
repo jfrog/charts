@@ -219,8 +219,8 @@ spec:
         - name: router
           image: {{ template "router.image" . }}
           imagePullPolicy: {{ .Values.router.image.imagePullPolicy }}
-          {{- if .Values.containerSecurityContext.enabled }}
           resources: {{- toYaml .Values.router.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
           securityContext:
             {{- toYaml (omit .Values.containerSecurityContext "enabled") | nindent 12 }}
           {{- end }}
