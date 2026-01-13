@@ -67,7 +67,7 @@ fullnameOverride: ""
 
 ## Specify common probes parameters
 probes:
-  timeoutSeconds: 120
+  timeoutSeconds: 5
 
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
@@ -91,8 +91,8 @@ podSecurityContext:
   runAsUser: 1131
 
 ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-## Disable securityContext for openshift
-securityContext:
+## Disable containerSecurityContext for openshift
+containerSecurityContext:
   enabled: true
   runAsNonRoot: true
   allowPrivilegeEscalation: false
@@ -191,7 +191,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.179.1
+    tag: 7.193.7
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -293,7 +293,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.6.1758184547
+    tag: 9.7.1764794109
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -626,7 +626,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 1.31.14
+    tag: 2.24.0
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -661,7 +661,7 @@ observability:
   livenessProbe:
     enabled: true
     failureThreshold: 5
-    periodSeconds: 10
+    periodSeconds: 5
     successThreshold: 1
 
   # customStartupProbe:

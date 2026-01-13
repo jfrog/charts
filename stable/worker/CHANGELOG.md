@@ -1,7 +1,14 @@
 # JFrog Worker Chart Changelog
 All changes to this chart will be documented in this file
 
-## [101.167.0] - Apr 17, 2025
+## [101.179.0] - Dec 16, 2025
+* Upgrade Observability version to 2.x
+* **Breaking changes**
+* Change securityContext to containerSecurityContext in values.yaml
+  * Key was renamed to unify with other charts
+  * If you have customized securityContext in your values.yaml, make sure to rename the key to containerSecurityContext
+
+## [101.137.0] - Apr 17, 2025
 * Updated ubi-minimal version to 9.6.1758184547
 
 ## [101.128.0] - Feb 24, 2025
