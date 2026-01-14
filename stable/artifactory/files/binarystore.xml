@@ -399,12 +399,12 @@
     <provider id="azure-blob-storage" type="azure-blob-storage">
        {{- if .Values.artifactory.persistence.azureBlob.accountName }}
         <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
-        {{- else if .and .Values.artifactory.persistence.azureBlob.accountNameSecret }}
+        {{- else if .Values.artifactory.persistence.azureBlob.accountNameSecret }}
         <accountName>${AZURE_ACCOUNT_NAME}</accountName>
         {{- end }}
         {{- if .Values.artifactory.persistence.azureBlob.accountKey }}
         <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
-        {{- else if .and .Values.artifactory.persistence.azureBlob.accountKeySecret }}
+        {{- else if .Values.artifactory.persistence.azureBlob.accountKeySecret }}
         <accountKey>${AZURE_ACCOUNT_KEY}</accountKey>
         {{- end }}
         <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
