@@ -1,7 +1,7 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.125.10] - Oct 14, 2025
+## [107.125.11] - Dec 31, 2025
 * Fix a newline issue with customSecrets [GH-2036](https://github.com/jfrog/charts/issues/2036)
 * Updated observability container to use a dedicated service image
 * Added validations for Apptrust and Unified Policy startup
@@ -15,7 +15,8 @@ All changes to this chart will be documented in this file
 * Fixed sizing for Frontend container (2xlarge and large)
 * Added `wait-for-artifactory` initContainer for jfbus and rtfs service
 * Updated command to use hostname to get artifactory url in the installation summary
-* Removing service templates for RTFS and aligning the template directory.
+* Removing service templates for RTFS and aligning the template directory
+* Fixed syntax issue for new azure blob secrets [GH-2145](https://github.com/jfrog/charts/issues/2145)
 
 ## [107.123.0] - Sept 19, 2025
 * **Important changes**
