@@ -91,9 +91,6 @@ spec:
         - '/bin/bash'
         - '-c'
         - |
-            if [[ -e "{{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml" ]]; then
-                chmod 644 {{ .Values.distribution.persistence.mountPath }}/etc/filebeat.yaml
-            fi
             echo "Copy system.yaml to {{ .Values.distribution.persistence.mountPath }}/etc"
             mkdir -p {{ .Values.distribution.persistence.mountPath }}/etc
             {{- if .Values.systemYamlOverride.existingSecret }}
@@ -375,6 +372,10 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_SHARED_NODE_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "distribution.router.requiredServiceTypes" . }}
         ports:
