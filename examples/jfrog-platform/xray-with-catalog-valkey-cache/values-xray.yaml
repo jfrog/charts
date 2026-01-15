@@ -1,0 +1,24 @@
+# An example of installing Xray
+
+### Install
+# helm repo add jfrog https://charts.jfrog.io
+# helm repo update
+# helm upgrade --install jfp jfrog/jfrog-platform -f ./values-xray.yaml
+
+### Uninstall
+# helm uninstall jfp
+# kubectl get pvc ...
+# kubectl delete pvc ...
+
+catalog:
+  enabled: true
+  cache:
+    enabled: true
+
+xray:
+  valkey:
+    enabled: true
+
+# If enabling Xray, rabbitmq should also be enabled
+rabbitmq:
+  enabled: true
