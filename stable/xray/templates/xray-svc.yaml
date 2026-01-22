@@ -37,6 +37,6 @@ spec:
     app: {{ template "xray.name" . }}
     component: {{ .Values.xray.name }}
     release: {{ .Release.Name }}
-{{- if or .Values.splitXraytoSeparateDeployments.ipa .Values.splitXraytoSeparateDeployments.fullSplit }}
+    {{- if or .Values.splitXraytoSeparateDeployments.ipa .Values.splitXraytoSeparateDeployments.fullSplit }}
     servicename: server
-{{- end }}
+    {{- end }}
