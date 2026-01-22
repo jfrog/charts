@@ -1,6 +1,9 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [103.131.34] - Jan 22, 2026
+* Fix broken identation in xray-service which causes some missplaced selector keys 
+
 ## [103.131.33] - Sep 22, 2025
 * Add existingContent queues to keda - Xray should scale up replicas based on existingContent queues size
 * Add env variable `JF_SHARED_NODE_IP` to router container
