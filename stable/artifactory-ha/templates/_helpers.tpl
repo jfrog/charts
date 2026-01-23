@@ -420,7 +420,27 @@ Return the proper artifactory app version
 {{- end -}}
 
 {{/*
-Custom certificate copy command
+Custom certificate copy command for jfbus
+*/}}
+{{- define "jfbus.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
+{{- end -}}
+
+{{/*
+Custom certificate copy command for rtfs
+*/}}
+{{- define "rtfs.copyCustomCerts" -}}
+echo "Copy custom certificates to {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted";
+mkdir -p {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted;
+for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+if [ -f {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
+{{- end -}}
+
+{{/*
+Custom certificate copy command for artifactory
 */}}
 {{- define "artifactory-ha.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted";
@@ -612,24 +632,10 @@ Resolve artifactory metrics
 {{- if .Values.artifactory.openMetrics -}} 
 {{- if .Values.artifactory.openMetrics.enabled -}}
 {{ include "metrics.enabled" . }}
-{{- if .Values.artifactory.openMetrics.filebeat }}
-{{- if .Values.artifactory.openMetrics.filebeat.enabled }}
-{{ include "metrics.enabled" . }}
-    filebeat:
-{{ tpl (.Values.artifactory.openMetrics.filebeat | toYaml) . | indent 6 }}
-{{- end -}}
-{{- end -}}
 {{- end -}}
 {{- else if .Values.artifactory.metrics -}}
 {{- if .Values.artifactory.metrics.enabled -}}
 {{ include "metrics.enabled" . }}
-{{- if .Values.artifactory.metrics.filebeat }}
-{{- if .Values.artifactory.metrics.filebeat.enabled }}
-{{ include "metrics.enabled" . }}
-    filebeat:
-{{ tpl (.Values.artifactory.metrics.filebeat | toYaml) . | indent 6 }}
-{{- end -}}
-{{- end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

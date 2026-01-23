@@ -85,7 +85,7 @@ spec:
 
               echo "Copy certificate access-root-ca.crt to {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted if needed";
               mkdir -p {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted;
-              cp /tmp/etc/trusted/access-root-ca.crt {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted/access-root-ca.crt || echo "Could not copy certificate";
+              cp -fv /tmp/etc/trusted/access-root-ca.crt {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted/access-root-ca.crt || echo "Could not copy certificate";
               echo "Remove {{ .Values.jfbus.persistence.mountPath }}/lost+found folder if exists";
               rm -rfv {{ .Values.jfbus.persistence.mountPath }}/lost+found;
           {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
@@ -97,6 +97,9 @@ spec:
               echo "Copy masterKey to {{ .Values.jfbus.persistence.mountPath }}/etc/security";
               mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc/security;
               echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.jfbus.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
+          {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}
+{{ include "jfbus.copyCustomCerts" . | indent 14 }}
           {{- end }}
           env:
           {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
@@ -136,6 +139,10 @@ spec:
               mountPath: "/tmp/etc/system.yaml"
               subPath: "system.yaml"
               {{- end }}
+            {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+            {{- end }}
         {{- if .Values.jfbus.waitForArtifactory }}
         - name: wait-for-artifactory
           image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
@@ -310,6 +317,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: JF_SHARED_NODE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfbus"
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
@@ -387,6 +398,12 @@ spec:
       {{- end }}
         {{- if .Values.jfbus.customVolumes }}
 {{ tpl (include "artifactory.jfbus.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        # jfbus-certs secrets
+        {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.jfbus.customCertificates.certificateSecretName }}
         {{- end }}
         - name: data
           emptyDir: {}

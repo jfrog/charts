@@ -442,7 +442,10 @@
         {{- end }}
     </provider>
     <provider id="azure-blob-storage-v2" type="azure-blob-storage-v2">
-       {{- if .Values.artifactory.persistence.azureBlob.accountName }}
+        {{- if .Values.artifactory.persistence.azureBlob.useInstanceCredentials }}
+        <useInstanceCredentials>true</useInstanceCredentials>
+        {{- else }}
+        {{- if .Values.artifactory.persistence.azureBlob.accountName }}
         <accountName>{{ .Values.artifactory.persistence.azureBlob.accountName }}</accountName>
         {{- else if .Values.artifactory.persistence.azureBlob.accountNameSecret }}
         <accountName>${AZURE_ACCOUNT_NAME}</accountName>
@@ -451,6 +454,7 @@
         <accountKey>{{ .Values.artifactory.persistence.azureBlob.accountKey }}</accountKey>
         {{- else if .Values.artifactory.persistence.azureBlob.accountKeySecret }}
         <accountKey>${AZURE_ACCOUNT_KEY}</accountKey>
+        {{- end }}
         {{- end }}
         <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
         <container>{{ .Values.artifactory.persistence.azureBlob.containerName }}</container> 
