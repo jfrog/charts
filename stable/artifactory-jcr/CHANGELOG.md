@@ -1,7 +1,10 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.125.11] - Oct 14, 2025
+## [107.133.3] - Jan 06, 2026
+* JFbus service is disabled by default, no explicit disablement is needed
+
+## [107.123.0] - Oct 14, 2025
 * Disabling pro-only service (AppTrust, UnifiedPolicy)
 * Disabling pro-only service (JFbus, PlatformFederation)
 * **Important changes**
