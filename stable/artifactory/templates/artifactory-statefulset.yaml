@@ -197,7 +197,6 @@ spec:
         - '/bin/bash'
         - '-c'
         - >
-          if [[ -e "{{ .Values.artifactory.persistence.mountPath }}/etc/filebeat.yaml" ]]; then chmod 644 {{ .Values.artifactory.persistence.mountPath }}/etc/filebeat.yaml; fi;
           echo "Copy system.yaml to {{ .Values.artifactory.persistence.mountPath }}/etc";
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc;
           mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/access/keys/trusted;
@@ -661,6 +660,10 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
+        - name: JF_SHARED_NODE_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "artifactory.router.requiredServiceTypes" . }}
 {{- with .Values.router.extraEnvironmentVariables }}
@@ -711,6 +714,8 @@ spec:
         - name : JF_SHARED_NODE_HAENABLED
           value: "true"
       {{- end }}
+        - name: JF_FRONTEND_LISTENADDR
+          value: "0.0.0.0"
 {{- with .Values.frontend.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}   
@@ -857,6 +862,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: JF_METADATA_LISTENADDR
+          value: "0.0.0.0"
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -1004,6 +1011,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: JF_EVENT_LISTENADDR
+          value: "0.0.0.0"
 {{- with .Values.event.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
@@ -1049,6 +1058,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: JF_JFCONNECT_LISTENADDR
+          value: "0.0.0.0"
 {{- with .Values.jfconnect.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
 {{- end }}
@@ -1231,6 +1242,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: JF_TOPOLOGY_LISTENADDR
+          value: "0.0.0.0"
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -1336,6 +1349,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        - name: JF_JFCONFIG_LISTENADDR
+          value: "0.0.0.0"
       {{- if or .Values.database.secrets.user .Values.database.user }}
         - name: JF_SHARED_DATABASE_USERNAME
           valueFrom:
@@ -1561,7 +1576,11 @@ spec:
           value: "false"
         - name: JF_TOPOLOGY_SPLIT_CONTAINER_ENABLED
           value: "true"
+        - name: JF_PLATFORMFEDERATION_ENABLED
+          value: "false"
       {{- end}}
+        - name: JF_ARTIFACTORY_TOMCAT_MAINTENANCECONNECTOR_HOST
+          value: "0.0.0.0"
       {{- if and (not .Values.waitForDatabase) (not .Values.postgresql.enabled) }}
         - name: SKIP_WAIT_FOR_EXTERNAL_DB
           value: "true"
@@ -1716,12 +1735,10 @@ spec:
         startupProbe:
 {{ tpl .Values.artifactory.startupProbe.config . | indent 10 }}
         {{- end }}
-    {{- if and (not .Values.splitServicesToContainers) (semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version) }}   
         {{- if .Values.artifactory.readinessProbe.enabled }}
         readinessProbe:
 {{ tpl .Values.artifactory.readinessProbe.config . | indent 10 }}
         {{- end }}
-    {{- end }}
       {{- if .Values.artifactory.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.artifactory.livenessProbe.config . | indent 10 }}
@@ -1821,6 +1838,7 @@ spec:
                   matchLabels:
                     app: {{ template "artifactory.name" . }}
                     release: {{ .Release.Name }}
+                    component: {{ .Values.artifactory.name }}
     {{- else if eq .Values.artifactory.podAntiAffinity.type "hard" }}
       affinity:
         podAntiAffinity:
@@ -1830,6 +1848,7 @@ spec:
                 matchLabels:
                   app: {{ template "artifactory.name" . }}
                   release: {{ .Release.Name }}
+                  component: {{ .Values.artifactory.name }}
     {{- end }}
     {{- with .Values.artifactory.tolerations }}
       tolerations:

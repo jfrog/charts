@@ -311,6 +311,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: JF_SHARED_NODE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfpfed"
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}

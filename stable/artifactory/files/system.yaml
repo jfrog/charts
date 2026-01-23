@@ -88,6 +88,11 @@ artifactory:
   tomcat:
     maintenanceConnector:
       port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+      {{- if and .Values.artifactory.livenessProbe.config (contains "httpGet" .Values.artifactory.livenessProbe.config) }}
+      host: "0.0.0.0"
+      {{- else if .Values.artifactory.tomcat.maintenanceConnector.host }}
+      host: {{ .Values.artifactory.tomcat.maintenanceConnector.host | quote }}
+      {{- end }}
     connector:
       maxThreads: {{ .Values.artifactory.tomcat.connector.maxThreads }}
       sendReasonPhrase: {{ .Values.artifactory.tomcat.connector.sendReasonPhrase }}
@@ -208,7 +213,7 @@ evidence:
 evidence:
   enabled: false
 {{- end }}
-{{- if and .Values.jfbus.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
+{{- if .Values.jfbus.enabled }}
 jfbus:
   enabled: true
 {{- else }}

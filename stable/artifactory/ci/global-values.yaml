@@ -205,7 +205,6 @@ nginx:
       ## Application specific logs
       ## access_log /var/log/nginx/artifactory-access.log timing;
       ## error_log /var/log/nginx/artifactory-error.log;
-      rewrite ^/artifactory/?$ / redirect;
       if ( $repo != "" ) {
         rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
       }

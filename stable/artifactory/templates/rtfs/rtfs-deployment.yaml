@@ -94,7 +94,10 @@ spec:
               if [ "$found" = false ]; then
                   echo "No matching files found, creating an empty artifactory-federation.properties file";
                   touch {{ .Values.rtfs.persistence.mountPath }}/etc/artifactory-federation.properties;
-              fi
+              fi;
+              {{- if or .Values.rtfs.customCertificates.enabled .Values.global.customCertificates.enabled }}
+{{ include "rtfs.copyCustomCerts" . | indent 14 }}
+              {{- end }}
           volumeMounts:
             - name: data
               mountPath: {{ .Values.rtfs.persistence.mountPath | quote }}
@@ -113,6 +116,10 @@ spec:
             {{- if or .Values.rtfs.persistence.federationProperties .Values.rtfs.persistence.customFederationPropertiesConfig }}
             - name: federationproperties
               mountPath: /tmp/etc/properties
+            {{- end }}
+            {{- if or .Values.rtfs.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: ca-certs
+              mountPath: "/tmp/certs"
             {{- end }}
         {{- if .Values.rtfs.waitForArtifactory }}
         - name: wait-for-artifactory
@@ -266,6 +273,10 @@ spec:
           env:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfrtfs"
+            - name: JF_SHARED_NODE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: JF_SHARED_JFROGURL
               value: {{ tpl (include "rtfs.jfrogUrl" .) . }}
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
@@ -345,6 +356,12 @@ spec:
         {{- if .Values.rtfs.customVolumes }}
 {{ tpl (include "artifactory.rtfs.customVolumes" .)  . | indent 8 }}
         {{- end }}
+        # rtfs-certs secrets
+        {{- if or .Values.rtfs.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.rtfs.customCertificates.certificateSecretName }}
+          {{- end }}
         - name: data
           emptyDir: {}
         {{- if and (.Values.rtfs.persistence.federationProperties) (not .Values.rtfs.persistence.customFederationPropertiesConfig) }}
