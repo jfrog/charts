@@ -219,6 +219,10 @@ spec:
           env:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfup"
+            - name: JF_SHARED_NODE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: JF_SHARED_JFROGURL
               value: {{ tpl (include "unifiedpolicy.jfrogUrl" .) . }}
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}

@@ -217,6 +217,10 @@ spec:
             - >
               exec /opt/jfrog/router/app/bin/entrypoint-router.sh
           env:
+            - name: JF_SHARED_NODE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfapp"
             - name: JF_SHARED_JFROGURL

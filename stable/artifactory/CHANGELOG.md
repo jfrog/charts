@@ -1,7 +1,31 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.125.11] - Dec 31, 2025
+## [107.133.3] - Jan 06, 2026
+* Added Azure Workload Identity Support. Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/azure-workload-identity)
+* Added `JF_ARTIFACTORY_TOMCAT_MAINTENANCECONNECTOR_HOST` to support httpGet probes for artifactory container
+* Added the jfbus service for all flavors OSS, JCR, and CPP, not limited to Pro
+* Added support for custom certificates using secrets in JFBus and RTFs
+
+## [107.131.0] - Jan 05, 2026
+* Updated Artifactory, Frontend, Metadata, Event, JFConnect, JFConfig probes from exec to httpGet
+* Added `nginx.portInRedirect` and `nginx.absoluteRedirect` to the NGINX config (commented by default) to give users control over redirect behavior.
+Uncomment `nginx.portInRedirect` to omit the port from redirect URLs, and nginx.absoluteRedirect to make NGINX send relative redirects instead of absolute URLs.
+* Added env `JF_PLATFORMFEDERATION_ENABLED` to disable platformfederation in artifactory container
+
+## [107.129.0] - Dec 31, 2025
+* Added support for the environment variable `JF_SHARED_NODE_POD_IP`. Its value will be used for `shared.node.ip` if a specific `shared.node.ip` is not provided
+* Added header to router's readiness and startup probe to allow faster startup
+* Added readiness probe to artifactory container
+* Removed filebeat metrics configuration
+
+## [107.128.0] - Dec 31, 2025
+* Updated router container probes to httpGet
+
+## [107.127.0] - Dec 31, 2025
+* Added a `component` label to the Artifactory `podAntiAffinity` rules to prevent scheduling conflicts with NGINX and other service pods. [GH-1590](https://github.com/jfrog/charts/issues/1590)
+
+## [107.124.0] - Dec 31, 2025
 * Updated observability container to use a dedicated service image
 * Removed unused volume names when persistence is disabled [GH-1681](https://github.com/jfrog/charts/issues/1681)
 * Fix a newline issue with customSecrets [GH-2036](https://github.com/jfrog/charts/issues/2036)
