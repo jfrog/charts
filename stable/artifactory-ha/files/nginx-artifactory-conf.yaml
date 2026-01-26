@@ -69,7 +69,14 @@ if ( $scheme = "http" ) {
 ## Application specific logs
 ## access_log /var/log/nginx/artifactory-access.log timing;
 ## error_log /var/log/nginx/artifactory-error.log;
-rewrite ^/artifactory/?$ / redirect;
+
+{{- if .Values.nginx.portInRedirect }}
+port_in_redirect {{ .Values.nginx.portInRedirect }};
+{{- end }}
+{{- if .Values.nginx.absoluteRedirect }}
+absolute_redirect {{ .Values.nginx.absoluteRedirect }};
+{{- end }}
+
 if ( $repo != "" ) {
   rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
 }

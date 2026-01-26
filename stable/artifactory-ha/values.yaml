@@ -73,7 +73,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1762956380
+    tag: 9.7.1764794109
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -333,7 +333,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.193.7
+    tag: 7.205.0
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -372,41 +372,41 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
-      periodSeconds: 10
+      httpGet:
+        httpHeaders:
+          - name: X-Jfrog-Ignore-Unhealthy
+            value: "true"
+        path: /router/api/v1/system/liveness
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "artifactory-ha.scheme" . | upper }}
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 10
+      periodSeconds: 10
       failureThreshold: 5
       successThreshold: 1
   readinessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
-      periodSeconds: 10
+      httpGet:
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "artifactory-ha.scheme" . | upper }}
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 10
+      periodSeconds: 10
       failureThreshold: 5
       successThreshold: 1
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "artifactory-ha.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
-      initialDelaySeconds: 10
-      failureThreshold: 90
-      periodSeconds: 5
+      httpGet:
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "artifactory-ha.scheme" . | upper }}
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      failureThreshold: 90
   persistence:
     mountPath: "/var/opt/jfrog/router"
 ## Artifactory
@@ -460,18 +460,6 @@ artifactory:
   ## Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
   metrics:
     enabled: false
-    ## Settings for pushing metrics to Insight - enable filebeat to true
-    filebeat:
-      enabled: false
-      log:
-        enabled: false
-        ## Log level for filebeat. Possible values: debug, info, warning, or error.
-        level: "info"
-      ## Elasticsearch details for filebeat to connect
-      elasticsearch:
-        url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
-        username: ""
-        password: ""
   ## Support for Cold Artifact Storage
   ## set 'coldStorage.enabled' to 'true' only for Artifactory instance that you are designating as the Cold instance
   ## Refer - https://jfrog.com/help/r/jfrog-platform-administration-documentation/setting-up-cold-artifact-storage
@@ -790,12 +778,10 @@ artifactory:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      httpGet:
+        path: /artifactory/api/v1/system/liveness
+        port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
@@ -803,12 +789,10 @@ artifactory:
   readinessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      httpGet:
+        path: /artifactory/api/v1/system/readiness
+        port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
@@ -816,12 +800,10 @@ artifactory:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.artifactory.tomcat.maintenanceConnector.port }}/artifactory/api/v1/system/readiness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      httpGet:
+        path: /artifactory/api/v1/system/readiness
+        port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+      initialDelaySeconds: 0
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -983,6 +965,10 @@ artifactory:
       # accountKeySecret:
       #   name:
       #   key:
+      ## Azure Workload Identity Support (Requires Azure Blob Storage V2 and Artifactory 7.125.4+)
+      ## Enable this to use Azure Workload Identity for secret-less authentication
+      ## When enabled, accountName and accountKey are not required
+      useInstanceCredentials: false
       endpoint:
       containerName:
       multiPartLimit: 100000000
@@ -1196,12 +1182,10 @@ frontend:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.frontend.internalPort }}
+      initialDelaySeconds: 0
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
@@ -1209,11 +1193,9 @@ frontend:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.frontend.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.frontend.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1339,7 +1321,7 @@ evidence:
           - sh
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.evidence.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      initialDelaySeconds: 0
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
@@ -1393,12 +1375,10 @@ metadata:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.metadata.internalPort }}
+      initialDelaySeconds: 0
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
@@ -1406,11 +1386,9 @@ metadata:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.metadata.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.metadata.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1449,12 +1427,10 @@ event:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.event.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.event.internalPort }}
+      initialDelaySeconds: 0
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
@@ -1462,11 +1438,9 @@ event:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.event.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.event.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1505,12 +1479,10 @@ jfconnect:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.jfconnect.internalPort }}
+      initialDelaySeconds: 0
       failureThreshold: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       periodSeconds: 10
@@ -1518,11 +1490,9 @@ jfconnect:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.jfconnect.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.jfconnect.internalPort }}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
@@ -1742,7 +1712,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.18.2
+    tag: 2.24.2
     pullPolicy: IfNotPresent
     # digest:
   persistence:
@@ -1773,7 +1743,7 @@ observability:
           - sh
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      initialDelaySeconds: 0
       failureThreshold: 5
       timeoutSeconds: 5
       periodSeconds: 10
@@ -1972,7 +1942,7 @@ nginx:
           - sh
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}180{{ else }}0{{ end }}
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 5
@@ -1985,7 +1955,7 @@ nginx:
           - sh
           - -c
           - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 5
@@ -2037,6 +2007,13 @@ nginx:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  # # port_in_redirect controls whether NGINX adds the port number to URLs it generates in redirects.
+  # # When on (default), non-standard ports (like 8080) are included; when off, the port is omitted.
+  # portInRedirect: "off"
+# ## absolute_redirect controls whether NGINX converts relative redirects to absolute ones.
+# ## When on, relative redirects are converted to absolute using the host and port of the original request.
+# absoluteRedirect: "off"
+
 ## Filebeat Sidecar container
 ## The provided filebeat configuration is for Artifactory logs. It assumes you have a logstash installed and configured properly.
 filebeat:
@@ -2111,7 +2088,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 1.12.4
+    tag: 1.14.0
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2143,6 +2120,11 @@ rtfs:
   ## The name of the custom configMap will be initialized from the value of customFederationPropertiesConfig.
   #  customFederationPropertiesConfig:
   javaOpts: ""
+  ## You can use a pre-existing secret by specifying certificateSecretName
+  ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=<tls.crt|tls.cer|tls.pem> --key=tls.key`
+  customCertificates:
+    enabled: false
+    # certificateSecretName: ""
   livenessProbe:
     enabled: true
     config: |
@@ -2263,7 +2245,7 @@ apptrust:
     registry: releases-docker.jfrog.io
     repository: jfrog/apptrust
     pullPolicy: IfNotPresent
-    tag: 1.16.17
+    tag: 1.18.0
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2387,7 +2369,7 @@ jfbus:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfbus-service
     pullPolicy: IfNotPresent
-    tag: 1.12.0
+    tag: 1.27.0
     # digest:
   replicaCount: 1
   internalRestPort: 8057
@@ -2416,6 +2398,11 @@ jfbus:
             averageUtilization: 70  # Target memory usage is 75% of the allocated memory per pod
   javaOpts: ""
   serviceAccountName: ""
+  ## You can use a pre-existing secret by specifying certificateSecretName
+  ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=<tls.crt|tls.cer|tls.pem> --key=tls.key`
+  customCertificates:
+    enabled: false
+    # certificateSecretName: ""
   livenessProbe:
     enabled: true
     config: |
@@ -2510,7 +2497,7 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.26.2
+    tag: 1.27.0
     # digest:
   jfrogUrl: ""
   replicaCount: 1
