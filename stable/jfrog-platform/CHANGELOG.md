@@ -1,6 +1,17 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.4.0] - Jan 27, 2025
+* Update dependency artifactory chart version to 107.133.3
+* Update dependency xray chart version to 103.131.35
+* Update dependency distribution chart version to 102.36.2
+* Update dependency catalog chart version to 101.30.7
+* Update dependency worker chart version to 101.179.0
+
+## [11.3.7] - Jan 12, 2025
+* Added support for using catalog with valkey cache, For configuration details, please see [Xray with catalog and valkey enabled](https://github.com/jfrog/charts/tree/master/examples/jfrog-platform/xray-with-catalog-valkey-cache)
+* Update dependency catalog chart version to 101.30.4
+
 ## [11.3.6] - January 02, 2026
 * Update dependency artifactory chart version to 107.125.10
 * Update dependency xray chart version to 103.131.31

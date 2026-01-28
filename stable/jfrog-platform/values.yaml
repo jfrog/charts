@@ -81,6 +81,9 @@ global:
         enabled: false
         waitForPreviousPodsOnInitialStartup: true
         vhost: xray_haq
+  ## Applies to Catalog Chart
+  valkey:
+    password: "password"
 
 ## This Postgresql is used by all products , set postgresql.enabled: false, when you want to use external postgresql for all products
 postgresql:
@@ -269,7 +272,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.3.6-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.3.4-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
@@ -301,6 +304,9 @@ artifactory:
 
 xray:
   enabled: true
+  ## Enables Valkey caching for JFrog Catalog to improve performance (to be used with catalog.enabled: true and catalog.cache.enabled: true)
+  valkey:
+    enabled: false
   splitXraytoSeparateDeployments:
   ## Deploy each Xray service as a separate, dedicated deployment
   ## Enabling this setting will divide the Xray pod into multiple deployments: ( xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom )
@@ -357,6 +363,9 @@ catalog:
     url: '{{ include "database.url" . }}'
     user: catalog
     password: catalog
+  cache:
+    enabled: false
+    connectionString: "redis://{{ .Release.Name }}-valkey-primary:6379"
 
 distribution:
   enabled: false
