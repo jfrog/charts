@@ -81,7 +81,7 @@ rabbitmq:
 worker:
   podSecurityContext:
     enabled: false
-  securityContext:
+  containerSecurityContext:
     enabled: false
 
 # xray subchart
@@ -100,4 +100,3 @@ xray:
       enabled: false
     containerSecurityContext:
       enabled: false
-
