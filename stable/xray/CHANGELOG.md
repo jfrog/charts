@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.131.35] - Sep 22, 2025
+## [103.131.37] - Sep 22, 2025
 * Add existingContent queues to keda - Xray should scale up replicas based on existingContent queues size
 * Add env variable `JF_SHARED_NODE_IP` to router container
 * Add support for Xray full split pod. Enabling this setting will divide the Xray pod into multiple deployments: xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom
