@@ -1,8 +1,9 @@
 # JFrog Artifactory CE for C++ Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.133.3] - Jan 06, 2026
+## [107.133.6] - Jan 28, 2026
 * JFbus service is disabled by default, no explicit disablement is needed
+* Fixed README: Updated PostgreSQL password parameter from `artifactory.postgresql.postgresqlPassword` to `artifactory.postgresql.auth.password` in installation command [GH-2177](https://github.com/jfrog/charts/pull/2177)
 
 ## [107.123.0] - Oct 14, 2025
 * Disabling pro-only service (AppTrust, UnifiedPolicy)
