@@ -85,6 +85,7 @@ roleRef:
 ---
 {{- if .Values.rabbitmq.enabled }}
 {{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
+{{- if not .Values.disablePreUpgradeHook }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -141,21 +142,19 @@ spec:
             rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
             rabbitMqZeroPodStatus=$(kubectl get pods $rabbitMqZeroPodName -n {{ .Release.Namespace }} -o jsonpath='{..status.conditions[?(@.type=="Ready")].status}')
 
+            rabbitMqStatefulSetsName=$(kubectl get statefulsets -n {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+            if [ $? -ne 0 ]; then
+              echo "Failed to get rabbitmq statefulset name"
+              exit 1
+            fi
+            rabbitMqStatefulSetName=$(echo $rabbitMqStatefulSetsName | head -n 1)
+            
+
             {{- if not .Values.rabbitmq.disableRabbitmqchecks }}
               {{- if hasPrefix "4." .Values.rabbitmq.image.tag }}
                   {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
                     echo -e "ERROR: Upgrade to RabbitMQ 4.x requires haQuorum to be enabled.\nPlease enable quorum queues and retry."
                     exit 1
-                  {{- else }}
-                    echo "Checking for classic queue messages in vhost / ..."
-                    total_messages=$(kubectl exec -i "$rabbitMqZeroPodName" -n {{ .Release.Namespace }} -- bash -c "rabbitmqctl list_queues -p / name messages type | awk '\$3 == \"classic\" && \$1 != \"aliveness-test\" { sum += \$2 } END { print sum+0 }'" 2>/dev/null) || { echo "ERROR: Failed to fetch classic queue message count (kubectl or rabbitmqctl failed)"; exit 1; }
-                    echo "Total messages in classic queues (excluding aliveness-test): $total_messages"
-                    if [[ "$total_messages" -gt 0 ]]; then
-                      echo "ERROR: You are upgrading to RabbitMQ 4.x, but classic queues in vhost '/' still contain messages.\nPlease migrate to quorum queues before upgrading."
-                      exit 1
-                    else
-                      echo "All classic queues are empty in vhost '/'. Proceeding with the RabbitMQ 4.x upgrade."
-                    fi
                   {{- end }}
               {{- end }}
             {{- else }}
@@ -208,31 +207,43 @@ spec:
               fi
             fi
             {{- end }}
-            
+
             {{- if .Values.rabbitmq.migration.enabled }}
-            if [ "$rabbitMqZeroPodStatus" = "True" ]; then
-                kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -- rabbitmqctl enable_feature_flag all
-                if [ "$?" -ne 0 ]; then
-                    echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all] " 
-                    exit 1
-                else
-                    echo Feature flags executed successfully!
+                # Check if RabbitMQ image tag has changed before running feature flag migration
+                currentImage=$(kubectl get statefulset $rabbitMqStatefulSetName -n {{ .Release.Namespace }} -o jsonpath='{.spec.template.spec.containers[?(@.name=="rabbitmq")].image}')
+                if [ $? -ne 0 ]; then
+                  echo "Failed to get current RabbitMQ image from StatefulSet"
+                  exit 1
                 fi
-            else
-                echo "Rabbitmq zero pod is not in running state. Ignoring feature flag migration for rabbitmq"
-            fi
+                currentImageTag="${currentImage##*:}"
+                newImageTag="{{ .Values.rabbitmq.image.tag }}"
+                
+                echo "Current RabbitMQ image tag: $currentImageTag"
+                echo "New RabbitMQ image tag: $newImageTag"
+                
+                if [ "$currentImageTag" != "$newImageTag" ]; then
+                  echo "RabbitMQ image tag has changed. Running feature flag migration..."
+                  if [ "$rabbitMqZeroPodStatus" = "True" ]; then
+                      kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -- rabbitmqctl enable_feature_flag all
+                      if [ "$?" -ne 0 ]; then
+                          echo "Failed to perform the migration. Please make sure to enable the feature flag in rabbitmq manually [rabbitmqctl enable_feature_flag all]"
+                          exit 1
+                      else
+                          echo "Feature flags executed successfully!"
+                      fi
+                  else
+                      echo "Rabbitmq zero pod is not in running state. Ignoring feature flag migration for rabbitmq"
+                  fi
+                else
+                  echo "RabbitMQ image tag has not changed. Skipping feature flag migration."
+                fi
             {{- end }}
-            
+
             {{- if .Values.rabbitmq.migration.deleteStatefulSetToAllowFieldUpdate.enabled }}
             # Checking whether RMQ sts exist as we delete it with --cascade=orphan during upgrade
             # If it exists proceed with the deletion and update the podManagementPolicy field
             # else do nothing as the sts will be automatically created with updated podManagementPolicy during upgrade
-            rabbitMqStatefulSetsName=$(kubectl get statefulsets -n {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
-            if [ $? -ne 0 ]; then
-              echo "Failed to get rabbitmq statefulset name"
-              exit 1
-            fi
-            rabbitMqStatefulSetName=$(echo $rabbitMqStatefulSetsName | head -n 1)
+
             if [ -z "$rabbitMqStatefulSetName" ]; then
               echo "Rabbitmq statefulset does not exist"
             fi
@@ -256,8 +267,40 @@ spec:
               echo "rabbitmq.podManagementPolicy is not set"
             fi
             {{- end }}
+
+            echo "Creating ConfigMap with current RabbitMQ StatefulSet replica count"
+
+            if [ -z "$rabbitMqStatefulSetName" ]; then
+              echo "Rabbitmq statefulset does not exist, skipping ConfigMap creation"
+            else
+              currentReplicaCount=$(kubectl get statefulset $rabbitMqStatefulSetName -n {{ .Release.Namespace }} -o=jsonpath='{.spec.replicas}')
+              if [ $? -ne 0 ]; then
+                echo "Failed to get current replica count from statefulset $rabbitMqStatefulSetName"
+                exit 1
+              fi
+              configMapName="{{ template "xray.fullname" . }}-rabbitmq-deployment-status"
+              # Check if ConfigMap already exists
+              if kubectl get configmap $configMapName -n {{ .Release.Namespace }} &>/dev/null; then
+                # Update existing ConfigMap
+                kubectl patch configmap $configMapName -n {{ .Release.Namespace }} --type merge -p "{\"data\":{\"replicaCountBeforeUpgrade\":\"$currentReplicaCount\"}}"
+                if [ $? -ne 0 ]; then
+                  echo "Failed to update ConfigMap $configMapName"
+                  exit 1
+                fi
+                echo "Updated ConfigMap $configMapName with replica count before upgrade: $currentReplicaCount"
+              else
+                # Create new ConfigMap
+                kubectl create configmap $configMapName -n {{ .Release.Namespace }} --from-literal=replicaCountBeforeUpgrade=$currentReplicaCount
+                if [ $? -ne 0 ]; then
+                  echo "Failed to create ConfigMap $configMapName"
+                  exit 1
+                fi
+                echo "Created ConfigMap $configMapName with replica count before upgrade: $currentReplicaCount"
+              fi
+            fi
       restartPolicy: Never
       terminationGracePeriodSeconds: 0
+{{- end }}
 {{- end }}
 ---
 {{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) (gt (int .Values.global.xray.rabbitmq.replicaCount) 1) }}
@@ -322,14 +365,46 @@ spec:
               # in the first attempt.
 
               rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
+              configMapName="{{ template "xray.fullname" . }}-rabbitmq-deployment-status"
+
+              # Getting the replica count from statefulset
+              replicaCount=$(kubectl get statefulset {{ .Release.Name }}-{{ template "rabbitmq.name" . }} -o jsonpath='{.spec.replicas}')
+              if [ $? -ne 0 ]; then
+                echo "Failed to get replica count from statefulset."
+                exit 1
+              fi
+
+              # Check if forceGrow is enabled
+              forceGrow={{ .Values.rabbitmq.migration.forceGrow | default false }}
+
+              if [ "$forceGrow" = "true" ]; then
+                echo "forceGrow is enabled. Proceeding with queue growth regardless of replica count change."
+              else
+                # Read the replica count before upgrade from ConfigMap
+                replicaCountBeforeUpgrade=$(kubectl get configmap $configMapName -n {{ .Release.Namespace }} -o jsonpath='{.data.replicaCountBeforeUpgrade}' 2>/dev/null)
+
+                if [ -z "$replicaCountBeforeUpgrade" ]; then
+                  echo "ConfigMap $configMapName not found or replicaCountBeforeUpgrade not set."
+                  echo "This may happen on first upgrade or if pre-upgrade hook did not run. Treating replica count before upgrade as 0."
+                  replicaCountBeforeUpgrade=0
+                fi
+
+                echo "Replica count before upgrade: $replicaCountBeforeUpgrade"
+                echo "Replica count after upgrade: $replicaCount"
+
+                # Only grow queues if replica count increased
+                if [ "$replicaCountBeforeUpgrade" -ge "$replicaCount" ]; then
+                  echo "Replica count did not increase (before: $replicaCountBeforeUpgrade, after: $replicaCount). No need to grow queues. Exiting."
+                  exit 0
+                fi
+
+                echo "Replica count increased from $replicaCountBeforeUpgrade to $replicaCount. Proceeding with queue growth."
+              fi
 
               # Sleep for 30 seconds to ensure that all pods are scheduled by the k8s controller so that they don't get
               # missed out while checking the pod status.
               echo "Sleeping for 30 seconds to ensure all pods are scheduled"
               sleep 30
-
-              # Getting the replica count from statefulset
-              replicaCount=$(kubectl get statefulset {{ .Release.Name }}-{{ template "rabbitmq.name" . }} -o jsonpath='{.spec.replicas}')
 
               maxRetries=5
 
@@ -405,14 +480,14 @@ spec:
 
               # Getting the queues which are not replicated across all nodes
               for (( retryCount=0; retryCount<maxRetries; retryCount++ )); do
-                queuesInfo=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl list_queues name,members --vhost={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --formatter=json")
+                queuesInfo=$(kubectl exec -i $rabbitMqZeroPodName -n {{ .Release.Namespace }} -c rabbitmq -- bash -c "rabbitmqctl list_queues name,members,type --vhost={{ .Values.global.xray.rabbitmq.haQuorum.vhost }} --formatter=json")
                 if [ $? -ne 0 ]; then
                   echo "Failed to exec rabbitmqctl command to get minimum member count for queues. Retrying in 30 seconds..."
                   sleep 30
                   continue
                 fi
 
-                minMemberCount=$(echo $queuesInfo | jq '[.[] | .members | length] | min')
+                minMemberCount=$(echo $queuesInfo | jq '[.[] | select(.type=="quorum") | .members | length] | min')
                 # queuesInfo can return an empty array if rabbitmq is not started yet
                 # In that case minMemberCount will be null. This handles that scenario
                 if [[ "$minMemberCount" -eq "null" ]]; then
@@ -451,6 +526,8 @@ spec:
                   fi
                 done
               done
+
+              echo "Queue growth completed."
       restartPolicy: Never
       terminationGracePeriodSeconds: 0
 {{- end }}
