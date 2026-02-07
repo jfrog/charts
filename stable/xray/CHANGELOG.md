@@ -1,7 +1,15 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.131.35] - Sep 22, 2025
+## [103.137.17] - Dec 23, 2025
+* Optimized xray pre upgrade hook
+* Fix RabbitMQ post-update hook fails during upgrade due to non-replicated 'aliveness-test' queue
+* Removed `.Values.xray.openMetrics.enabled` flag to remove support for metrics.
+
+## [103.136.0] - Dec 09, 2025
+* Added support for the environment variable `JF_SHARED_NODE_POD_IP`. Its value will be used for `shared.node.ip` if a specific `shared.node.ip` is not provided
+
+## [103.131.0] - Sep 22, 2025
 * Add existingContent queues to keda - Xray should scale up replicas based on existingContent queues size
 * Add env variable `JF_SHARED_NODE_IP` to router container
 * Add support for Xray full split pod. Enabling this setting will divide the Xray pod into multiple deployments: xray-server, xray-indexer, xray-persist, xray-analysis, xray-policyenforcer, xray-sbom

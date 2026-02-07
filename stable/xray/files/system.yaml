@@ -3,13 +3,6 @@ router:
   serviceRegistry:
     insecure: {{ .Values.router.serviceRegistry.insecure }}
 shared:
-{{- if .Values.xray.openMetrics.enabled }}
-  metrics:
-    enabled: true
-  {{- if .Values.xray.openMetrics.filebeat.enabled }}
-    filebeat: {{ toYaml .Values.xray.openMetrics.filebeat | nindent 6 }}
-  {{- end }}
-{{- end }}
   logging:
     {{- if .Values.logging.logToStdoutJson }}
     enableJsonConsoleLogAppenders: {{ .Values.logging.logToStdoutJson }}
@@ -36,9 +29,7 @@ shared:
     ha_quorum: true
     vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
     replicasCount: {{ .Values.global.xray.rabbitmq.replicaCount }}
-  {{- end }}
-  {{- if .Values.global.xray.rabbitmq.cmr.enabled }}
-    cmrEnabled: true
+    waitForQuorumOnly: {{ .Values.global.xray.rabbitmq.waitForQuorumOnly | default true }}
   {{- end }}
     erlangCookie:
       value: "{{ .Values.rabbitmq.external.erlangCookie }}"
@@ -52,8 +43,9 @@ shared:
     ha_quorum: true
     vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
     replicasCount: {{ .Values.rabbitmq.replicaCount }}
-  {{- if .Values.global.xray.rabbitmq.cmr.enabled }}
-    cmrEnabled: true
+    waitForQuorumOnly: {{ .Values.global.xray.rabbitmq.waitForQuorumOnly | default true }}
+  {{- if and .Values.rabbitmq.enabled .Values.global.xray.rabbitmq.producerConnectionBlockAware.enabled }}
+    producerConnectionBlockAware: true
   {{- end }}
   {{- end }}
   {{- if .Values.xray.mongoUrl }}
