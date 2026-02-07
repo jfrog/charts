@@ -391,7 +391,7 @@ spec:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
-        - name: JF_SHARED_NODE_IP
+        - name: JF_SHARED_NODE_POD_IP
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
