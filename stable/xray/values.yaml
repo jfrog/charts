@@ -56,9 +56,12 @@ global:
         enabled: false
         waitForPreviousPodsOnInitialStartup: true
         vhost: xray_haq
-      cmr:
+      # waitForQuorumOnly: When enabled (default true), only checks that quorum nodes are up during bootstrap.
+      # This allows Xray to start even if one node is down in a 3-node HA setup, as queues are created with 3 replicas.
+      # When a node rejoins, RabbitMQ automatically replicates data to it.
+      waitForQuorumOnly: true
+      producerConnectionBlockAware:
         enabled: false
-
   autoscaling:
     keda:
       annotations: {}
@@ -92,7 +95,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1762956380
+    tag: 9.7.1764794109
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -194,23 +197,6 @@ xray:
     ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
-
-  # To enable set `.Values.xray.openMetrics.enabled` to `true`
-  # Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
-  openMetrics:
-    enabled: false
-    ## Settings for pushing metrics to Insight - enable filebeat to true
-    filebeat:
-      enabled: false
-      log:
-        enabled: false
-        ## Log level for filebeat. Possible values: debug, info, warning, or error.
-        level: "info"
-      ## Elasticsearch details for filebeat to connect
-      elasticsearch:
-        url: "Elasticsearch url where JFrog Insight is installed For example, http://<ip_address>:8082"
-        username: ""
-        password: ""
 
   ## System YAML entries now reside under files/system.yaml.
   ## You can provide the specific values that you want to add or override under 'xray.extraSystemYaml'.
@@ -643,6 +629,9 @@ rabbitmq:
       enabled: false
     removeHaPolicyOnMigrationToHaQuorum:
       enabled: false
+    ## forceGrow: When set to true, forces queue growth in post-upgrade hook even if replica count didn't increase.
+    ## This is useful for manually triggering queue growth after node recovery or other maintenance scenarios.
+    forceGrow: false
     image:
       registry: releases-docker.jfrog.io
       repository: bitnami/kubectl
@@ -678,6 +667,15 @@ rabbitmq:
               verbs:
                 - get
                 - list
+                - delete
+            - apiGroups:
+                - ""
+              resources:
+                - configmaps
+              verbs:
+                - create
+                - get
+                - patch
                 - delete
   networkPolicy:
     enabled: true
@@ -1852,7 +1850,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.8.0
+    tag: 2.25.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
