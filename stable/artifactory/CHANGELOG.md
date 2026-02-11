@@ -1,11 +1,12 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.133.3] - Jan 06, 2026
+## [107.133.8] - Jan 06, 2026
 * Added Azure Workload Identity Support. Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/azure-workload-identity)
 * Added `JF_ARTIFACTORY_TOMCAT_MAINTENANCECONNECTOR_HOST` to support httpGet probes for artifactory container
 * Added the jfbus service for all flavors OSS, JCR, and CPP, not limited to Pro
 * Added support for custom certificates using secrets in JFBus and RTFs
+* JFConfig resource values have been updated in the 2X-Large sizing file
 
 ## [107.131.0] - Jan 05, 2026
 * Updated Artifactory, Frontend, Metadata, Event, JFConnect, JFConfig probes from exec to httpGet
