@@ -378,7 +378,7 @@ Common router container for the pods
 {{ toYaml . | indent 4 }}
   {{- end }}
   env:
-  - name: JF_SHARED_NODE_IP
+  - name: JF_SHARED_NODE_POD_IP
     valueFrom:
       fieldRef:
         fieldPath: status.podIP
