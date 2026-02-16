@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.137.18] - Dec 23, 2025
+## [103.137.20] - Dec 23, 2025
 * Optimized xray pre upgrade hook
 * Fix RabbitMQ post-update hook fails during upgrade due to non-replicated 'aliveness-test' queue
 * Removed `.Values.xray.openMetrics.enabled` flag to remove support for metrics.
