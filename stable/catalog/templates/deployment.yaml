@@ -159,6 +159,10 @@ spec:
           livenessProbe:
 {{ tpl .Values.livenessProbe.config . | indent 12 }}
 {{- end }}
+{{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.readinessProbe.config . | indent 12 }}
+{{- end }}
           env:
             - name: JF_SHARED_NODE_ID
               valueFrom:
@@ -232,6 +236,8 @@ spec:
           env:
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
               value: "jfcatalog"
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_ENABLEUNHEALTHYONSERVICEDOWN
+              value: {{ include "router.topology.local.enableUnhealthyOnServiceDown" . }}
             - name: JF_SHARED_JFROGURL
               value: {{ tpl (include "catalog.jfrogUrl" .) . }}
             {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
