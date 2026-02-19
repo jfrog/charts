@@ -93,6 +93,18 @@ startupProbe:
     periodSeconds: 5
     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
+readinessProbe:
+  enabled: true
+  config: |
+    httpGet:
+      path: /api/v1/system/readiness
+      port: 8088
+    initialDelaySeconds: 30
+    failureThreshold: 3
+    periodSeconds: 10
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+    successThreshold: 1
+
 database:
   type: "postgresql"
   driver: "pgx"
@@ -311,6 +323,9 @@ router:
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
     insecure: false
+  topology:
+    local:
+      enableUnhealthyOnServiceDown: false
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
@@ -333,12 +348,14 @@ router:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "catalog.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      httpGet:
+        httpHeaders:
+          - name: X-Jfrog-Ignore-Unhealthy
+            value: "true"
+        path: /router/api/v1/system/liveness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "catalog.scheme" . | upper }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       failureThreshold: 5
@@ -346,28 +363,32 @@ router:
 
   readinessProbe:
     enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "catalog.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+    config: | 
+      httpGet:
+        httpHeaders:
+          - name: X-Jfrog-Ignore-Unhealthy
+            value: "true"
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "catalog.scheme" . | upper}}
+      initialDelaySeconds: 30
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
-      failureThreshold: 5
+      failureThreshold: 3
       successThreshold: 1
 
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "catalog.scheme" . }}://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
-      initialDelaySeconds: 10
-      failureThreshold: 90
+      httpGet:
+        httpHeaders:
+          - name: X-Jfrog-Ignore-Unhealthy
+            value: "true"
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "catalog.scheme" . | upper }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
