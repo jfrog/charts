@@ -136,6 +136,14 @@ Resolve catalog requiredServiceTypes value
 {{- end -}}
 
 {{/*
+Resolve router topology enableUnhealthyOnServiceDown value
+*/}}
+{{- define "router.topology.local.enableUnhealthyOnServiceDown" -}}
+{{- $enableUnhealthyOnServiceDown := .Values.router.topology.local.enableUnhealthyOnServiceDown | default false | toString -}}
+{{- quote $enableUnhealthyOnServiceDown -}}
+{{- end -}}
+
+{{/*
 Resolve jfrogUrl value
 */}}
 {{- define "catalog.jfrogUrl" -}}
