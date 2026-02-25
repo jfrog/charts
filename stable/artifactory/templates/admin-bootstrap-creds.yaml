@@ -4,6 +4,7 @@ kind: Secret
 apiVersion: v1
 metadata:
   name: {{ template "artifactory.fullname" . }}-bootstrap-creds
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ template "artifactory.chart" . }}
