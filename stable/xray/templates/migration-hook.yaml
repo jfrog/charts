@@ -148,7 +148,15 @@ spec:
               exit 1
             fi
             rabbitMqStatefulSetName=$(echo $rabbitMqStatefulSetsName | head -n 1)
-            
+
+            # Check if RabbitMQ image tag has changed before running feature flag migration
+            currentImage=$(kubectl get statefulset $rabbitMqStatefulSetName -n {{ .Release.Namespace }} -o jsonpath='{.spec.template.spec.containers[?(@.name=="rabbitmq")].image}')
+            if [ $? -ne 0 ]; then
+              echo "Failed to get current RabbitMQ image from StatefulSet"
+              exit 1
+            fi
+            currentImageTag="${currentImage##*:}"
+            newImageTag="{{ .Values.rabbitmq.image.tag }}"
 
             {{- if not .Values.rabbitmq.disableRabbitmqchecks }}
               {{- if hasPrefix "4." .Values.rabbitmq.image.tag }}
@@ -156,6 +164,19 @@ spec:
                     echo -e "ERROR: Upgrade to RabbitMQ 4.x requires haQuorum to be enabled.\nPlease enable quorum queues and retry."
                     exit 1
                   {{- end }}
+                  {{- if not .Values.isJfrogSaas }}
+                  if [[ "$currentImageTag" == 3.* ]]; then
+                    for i in {1..12}; do
+                      queue_list=$(kubectl exec -i "$rabbitMqZeroPodName" -n {{ .Release.Namespace }} -- bash -c 'rabbitmqctl list_queues -p "/" --quiet 2>/dev/null')
+                      [ $? -ne 0 ] && echo "ERROR: Failed to list queues (kubectl or rabbitmqctl failed)." && exit 1
+                      queue_count=$(printf '%s\n' "$queue_list" | awk 'NF{c++} END{print c+0}')
+                      [ "${queue_count:-0}" -eq 0 ] && echo "No queues on vhost \"/\". Migration check passed." && break
+                      echo "Waiting 2m for quorum migration to complete"
+                      [ $i -eq 12 ] && echo -e "ERROR: Migration not complete ($queue_count queues on \"/\").\nSee: https://jfrog.com/help/r/jfrog-installation-setup-documentation/quorum-queue-enablement-for-xray-and-platform-helm-charts" && exit 1
+                      sleep 10
+                    done
+                  fi
+                  {{- end }}       
               {{- end }}
             {{- else }}
               echo "Rabbitmq 4 checks are disabled."
@@ -209,14 +230,6 @@ spec:
             {{- end }}
 
             {{- if .Values.rabbitmq.migration.enabled }}
-                # Check if RabbitMQ image tag has changed before running feature flag migration
-                currentImage=$(kubectl get statefulset $rabbitMqStatefulSetName -n {{ .Release.Namespace }} -o jsonpath='{.spec.template.spec.containers[?(@.name=="rabbitmq")].image}')
-                if [ $? -ne 0 ]; then
-                  echo "Failed to get current RabbitMQ image from StatefulSet"
-                  exit 1
-                fi
-                currentImageTag="${currentImage##*:}"
-                newImageTag="{{ .Values.rabbitmq.image.tag }}"
                 
                 echo "Current RabbitMQ image tag: $currentImageTag"
                 echo "New RabbitMQ image tag: $newImageTag"
