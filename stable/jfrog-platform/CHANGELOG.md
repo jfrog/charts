@@ -1,6 +1,13 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.4.4] - March 04, 2026
+* Update dependency artifactory chart version to 107.133.12
+* Update dependency xray chart version to 103.137.23
+* Update dependency catalog chart version to 101.32.6
+* Updated Xray pre-upgrade hooks to wait for quorum queue migration before upgrading to RabbitMQ 4.x
+* Upgrade rabbitmq image to 3.13.7-debian-12-r8
+
 ## [11.4.3] - February 20, 2026
 * Update dependency artifactory chart version to 107.133.10
 * Update dependency xray chart version to 103.137.21
