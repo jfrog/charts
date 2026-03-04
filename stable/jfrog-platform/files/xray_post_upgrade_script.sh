@@ -121,7 +121,11 @@ exit 0
 fi
 
 echo "Need to grow the queues as minimum replica count for queues is $minMemberCount"
-
+kubectl rollout status statefulsets/{{ .Release.Name }}-{{ template "rabbitmq.name" . }}
+if [ $? -ne 0 ]; then
+echo "StatefulSet rollout did not complete successfully. Aborting queue growth."
+exit 1
+fi
 for ((i = $minMemberCount + 1; i <= runningNodeCount && i <= 3; i++)); do
 echo "Growing node rabbit@{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-$(($i-1))"
 

@@ -152,7 +152,7 @@ rabbitmq:
   replicaCount: 1
   image:
     repository: bitnami/rabbitmq
-    tag: 3.13.7-debian-12-r6
+    tag: 3.13.7-debian-12-r8
   extraPlugins: "rabbitmq_management"
   auth:
   ## Enable encryption to rabbitmq
@@ -262,17 +262,29 @@ rabbitmq:
                 - get
                 - list
                 - delete
+                - watch
 
   extraConfiguration: |-
     management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
 
   initContainers: |
     {{ template "waitForPreviousPods" . }}
+  networkPolicy:
+    enabled: true
+    extraIngress: |
+      - ports:
+          - port: 35672
+            endPort: 35682
+            protocol: TCP
+        from:
+          - namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: {{ .Release.Namespace }}
 
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.4.3-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.4.4-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
