@@ -1,0 +1,19 @@
+# An example of migrating Xray from Classic Queues to Quorum Queues
+
+global:
+  xray:
+    rabbitmq:
+      replicaCount: 3
+      haQuorum:
+        enabled: true
+      migrateMessagesFromXrayDefaultVhost: true
+
+rabbitmq:
+  replicaCount: 3
+  podManagementPolicy: Parallel
+  extraPlugins: "rabbitmq_shovel rabbitmq_shovel_management"
+  migration:
+    deleteStatefulSetToAllowFieldUpdate:
+      enabled: true
+    removeHaPolicyOnMigrationToHaQuorum:
+      enabled: true
