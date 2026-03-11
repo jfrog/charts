@@ -1,0 +1,30 @@
+# An example of installing Xray with Catalog Valkey Caching on OpenShift
+
+catalog:
+  enabled: true
+  cache:
+    enabled: true
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+xray:
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
+  serviceAccount:
+    create: true
+  rbac:
+    create: true
+  valkey:
+    enabled: true
+
+# If enabling Xray, rabbitmq should also be enabled
+rabbitmq:
+  enabled: true
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
