@@ -1,10 +1,13 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
+## [102.37.0] - Jan 19, 2026
+* Removed Redis - no longer part of Distribution
+
 ## [102.35.0] - Dec 02, 2025
 * Added support for the environment variable `JF_SHARED_NODE_POD_IP`. Its value will be used for `shared.node.ip` if a specific `shared.node.ip` is not provided
 
-## [102.36.2] - Sep 22, 2025
+## [102.34.0] - Sep 22, 2025
 * **Important changes**
 * Added min kubeVersion ">= 1.21.0-0" in chart.yaml
 * Upgrade postgres chart version to `16.7.26`

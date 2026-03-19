@@ -8,7 +8,6 @@
 ## Chart Details
 This chart does the following:
 * Deploy PostgreSQL database
-* Deploy Redis
 * Deploy distribution
 
 ## Requirements

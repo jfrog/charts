@@ -17,18 +17,6 @@ postgresql:
     persistence:
       enabled: false
 
-redis:
-  password: "password"
-  persistence:
-    enabled: true
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "1"
-    limits:
-      memory: "1Gi"
-      cpu: "1"
-
 distribution:
   jfrogUrl: http://artifactory.rt:8082
   unifiedSecretInstallation: false
