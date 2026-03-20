@@ -1,0 +1,115 @@
+{{- $currentSts := (lookup "apps/v1" "StatefulSet" .Release.Namespace (include "distribution.fullname" .)) -}}
+{{- $currentVersion := "" -}}
+{{- if $currentSts -}}
+  {{- $currentVersion = index $currentSts.metadata.labels "version" | default "" -}}
+{{- end -}}
+{{- $needsUpgradeHook := false -}}
+{{- if and .Release.IsUpgrade (semverCompare ">= 102.37.0" .Chart.Version) -}}
+  {{- if or (eq $currentVersion "") (semverCompare "< 102.37.0" $currentVersion) -}}
+    {{- $needsUpgradeHook = true -}}
+  {{- end -}}
+{{- end -}}
+{{- if $needsUpgradeHook }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "distribution.fullname" . }}-upgrade-hook
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    component: {{ .Values.distribution.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "distribution.fullname" . }}-upgrade-hook
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    component: {{ .Values.distribution.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+rules:
+{{ toYaml .Values.rbac.role.rules }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "distribution.fullname" . }}-upgrade-hook
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    component: {{ .Values.distribution.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "distribution.fullname" . }}-upgrade-hook
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  apiGroup: rbac.authorization.k8s.io
+  name: {{ template "distribution.fullname" . }}-upgrade-hook
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "distribution.fullname" . }}-upgrade-hook
+  labels:
+    app: {{ template "distribution.name" . }}
+    chart: {{ template "distribution.chart" . }}
+    component: {{ .Values.distribution.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: {{ template "distribution.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "distribution.fullname" . }}-upgrade-hook
+      restartPolicy: Never
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: upgrade-hook
+          image: {{ .Values.upgradeHook.image.registry }}/{{ .Values.upgradeHook.image.repository }}:{{ .Values.upgradeHook.image.tag }}
+          imagePullPolicy: {{ .Values.upgradeHook.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/sh'
+            - '-c'
+            - |
+              echo "Upgrading from version < 102.37.0. Redis is no longer part of Distribution."
+              echo "Deleting StatefulSet with cascade=orphan to allow spec changes..."
+              kubectl delete statefulset {{ template "distribution.fullname" . }} --cascade=orphan --ignore-not-found=true -n {{ .Release.Namespace }}
+              if [ $? -ne 0 ]; then
+                echo "Failed to delete StatefulSet"
+                exit 1
+              fi
+              echo "StatefulSet deleted successfully"
+{{- end }}
+

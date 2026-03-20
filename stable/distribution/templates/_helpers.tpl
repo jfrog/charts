@@ -235,12 +235,6 @@ Return the proper distribution chart image names
     {{- if and $dot.Values.global.digests.observability (eq $indexReference "observability") }}
     {{- $digest = $dot.Values.global.digests.observability | toString -}}
     {{- end }}
-    {{- if and $dot.Values.global.versions.redis (eq $indexReference "redis") }}
-    {{- $tag = $dot.Values.global.versions.redis | toString -}}
-    {{- end -}}
-    {{- if and $dot.Values.global.digests.redis (eq $indexReference "redis") }}
-    {{- $digest = $dot.Values.global.digests.redis | toString -}}
-    {{- end }}
     {{- if and (eq $digest "") (eq $tag "") }}
     {{- $digest = $image.digest }}
     {{- $tag = default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}

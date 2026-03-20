@@ -17,13 +17,11 @@ global:
   # router:
   # initContainers:
   # observability:
-  # redis:
   digests: {}
   # distribution:
   # router:
   # initContainers:
   # observability:
-  # redis:
 
   # jfrogUrl:
   # joinKey:
@@ -62,7 +60,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1764794109
+    tag: 9.7.1770267347
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -72,6 +70,13 @@ initContainers:
     limits:
       memory: "1Gi"
       cpu: "1"
+## Upgrade hook - used for pre-upgrade job to delete StatefulSet with cascade orphan
+upgradeHook:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: bitnami/kubectl
+    tag: 1.33.1
+    pullPolicy: IfNotPresent
 ## For supporting pulling from private registries
 imagePullSecrets:
 # - myRegistryKeySecretName
@@ -109,6 +114,13 @@ rbac:
           - get
           - watch
           - list
+      - apiGroups:
+          - "apps"
+        resources:
+          - statefulsets
+        verbs:
+          - delete
+          - watch
 networkpolicy: []
 ## Allows all ingress and egress
 # - name: distribution
@@ -124,16 +136,6 @@ networkpolicy: []
 #   podSelector:
 #     matchLabels:
 #       app: postgresql
-#   ingress:
-#   - from:
-#     - podSelector:
-#         matchLabels:
-#           app: distribution
-## Uncomment to allow only distribution pods to communicate with redis
-# - name: redis
-#   podSelector:
-#     matchLabels:
-#       app: redis
 #   ingress:
 #   - from:
 #     - podSelector:
@@ -246,46 +248,6 @@ database:
   # url:
   #   name: "dis-database-creds"
   #   key: "db-url"
-## Configuration values for the redis dependency
-## ref: https://github.com/helm/charts/blob/master/stable/redis/README.md
-##
-redis:
-  image:
-    registry: releases-docker.jfrog.io
-    repository: bitnami/redis
-    tag: 7.4.1-debian-12-r3
-    # digest:
-    pullPolicy: IfNotPresent
-  port: 6379
-  password: ""
-  ## Alternatively, you can use a pre-existing secret with a key called redis-password by specifying existingSecret
-  # existingSecret: <name-of-existing-secret>
-  disableCommands: "FLUSHDB,FLUSHALL"
-  persistence:
-    enabled: true
-    path: /bitnami/redis/data
-    size: 10Gi
-    ## A manually managed Persistent Volume and Claim
-    ## Requires redis.persistence.enabled: true
-    ## If defined, PVC must be created manually before volume will be bound
-    # existingClaim:
-    accessMode: ReadWriteOnce
-  ## Disable containerSecurityContext for openshift
-  containerSecurityContext:
-    enabled: true
-    runAsUser: 1001
-    runAsGroup: 0
-  resources: {}
-  # requests:
-  #   memory: "256Mi"
-  #   cpu: "100m"
-  # limits:
-  #   memory: "2Gi"
-  #   cpu: "250m"
-
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
 common:
   ## Spread Distribution pods evenly across your nodes or some other topology
   topologySpreadConstraints: []
@@ -597,7 +559,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.193.7
+    tag: 7.205.4
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -679,7 +641,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.24.0
+    tag: 2.27.0
     # digest:
     pullPolicy: IfNotPresent
   internalPort: 8036
