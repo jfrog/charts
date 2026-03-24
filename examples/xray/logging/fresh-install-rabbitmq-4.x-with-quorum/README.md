@@ -5,18 +5,25 @@ This example shows how to perform a fresh installation of JFrog Xray with Rabbit
 ## Configuration
 
 ```yaml
-rabbitmq:
-  image:
-    tag: 4.1.5-debian-12-r1
-  replicaCount: 3
-  podManagementPolicy: Parallel
-
 global:
   xray:
     rabbitmq:
       replicaCount: 3
       haQuorum:
         enabled: true
+      migrateMessagesFromXrayDefaultVhost: true
+
+rabbitmq:
+  image:
+    tag: 4.1.5-debian-12-r1
+  replicaCount: 3
+  podManagementPolicy: Parallel
+  extraPlugins: "rabbitmq_shovel rabbitmq_shovel_management"
+  migration:
+    deleteStatefulSetToAllowFieldUpdate:
+      enabled: true
+    removeHaPolicyOnMigrationToHaQuorum:
+      enabled: true
 ```
 
 ## Deployment
