@@ -456,6 +456,15 @@ nginx scheme (http/https)
 {{- end -}}
 
 {{/*
+Check usage of curl --haproxy-protocol flag
+*/}}
+{{- define "curl.haproxyprotocol" -}}
+{{ if or (and .Values.nginx.http.enabled .Values.nginx.httpUseProxyProtocol) (and (not .Values.nginx.http.enabled) .Values.nginx.httpsUseProxyProtocol) }}
+{{- printf "%s" "--haproxy-protocol" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 nginx command
 */}}
 {{- define "nginx.command" -}}
