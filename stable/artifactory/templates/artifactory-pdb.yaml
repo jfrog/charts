@@ -21,4 +21,7 @@ spec:
       role: {{ template "artifactory.name" . }}
       release: {{ .Release.Name }}
   minAvailable: {{ .Values.artifactory.minAvailable }}
+  {{- if eq .Values.artifactory.podManagementPolicy "Parallel" }}
+  maxUnavailable: {{ .Values.artifactory.maxUnavailable }}
+  {{- end }}
 {{- end }}
