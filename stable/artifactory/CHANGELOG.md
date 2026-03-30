@@ -1,6 +1,10 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
+## [107.133.16] - Mar 11, 2026
+* Exposed `artifactory.podManagementPolicy` in values.yaml (default: `OrderedReady`). Set to `Parallel` to allow independent pod scaling without waiting for each pod to become Ready
+* Updated `artifactory-pdb.yaml`: a PDB is now created when any of `podManagementPolicy: Parallel`, `artifactory.minAvailable`, or `artifactory.maxUnavailable` is set. When `Parallel` is set or `maxUnavailable` is explicitly provided, the PDB uses `maxUnavailable` (defaulting to `1` if not set). Otherwise `minAvailable` is used. A PDB spec cannot have both fields set simultaneously
+
 ## [107.133.15] - Mar 11, 2026
 * Added Azure Workload Identity Support. Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/azure-workload-identity)
 * Added `JF_ARTIFACTORY_TOMCAT_MAINTENANCECONNECTOR_HOST` to support httpGet probes for artifactory container

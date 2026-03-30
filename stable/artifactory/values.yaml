@@ -363,9 +363,9 @@ artifactory:
   labels: {}
   updateStrategy:
     type: RollingUpdate
-  podManagementPolicy: OrderedReady # When set to Parallel, the default maxUnavailable is 1 by default, otherwise it's unset.
+  podManagementPolicy: OrderedReady
   # minAvailable: 1
-  maxUnavailable: 1
+  # maxUnavailable: 1  # When podManagementPolicy is Parallel and maxUnavailable is not set, defaults to 1
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
   ## Create a priority class for the Artifactory pod or use an existing one
