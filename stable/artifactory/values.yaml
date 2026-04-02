@@ -1765,6 +1765,10 @@ nginx:
   ssh:
     internalPort: 1339
     externalPort: 1339
+  # If proxy protocol is enabled, all connections to the particular scheme/port
+  # must use the proxy protocol, (including for example load balancer health checks).
+  httpUseProxyProtocol: false
+  httpsUseProxyProtocol: false
   ## DEPRECATED: The following will be removed in a future release
   # externalPortHttp: 8080
   # internalPortHttp: 8080
@@ -1779,7 +1783,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
+          - curl -s -k --fail {{ include "curl.haproxyprotocol" . }} --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/
       initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1792,7 +1796,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
+          - curl -s -k --fail {{ include "curl.haproxyprotocol" . }} --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: 0
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1805,7 +1809,7 @@ nginx:
         command:
           - sh
           - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
+          - curl -s -k --fail {{ include "curl.haproxyprotocol" . }} --max-time {{ .Values.probes.timeoutSeconds }} {{ include "nginx.scheme" . }}://localhost:{{ include "nginx.port" . }}/router/api/v1/system/readiness
       initialDelaySeconds: 3
       failureThreshold: 90
       periodSeconds: 5
