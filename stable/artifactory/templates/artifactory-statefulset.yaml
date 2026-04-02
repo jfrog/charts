@@ -70,6 +70,7 @@ spec:
   serviceName: {{ template "artifactory.servicePrependReleaseName" . }}
   replicas: {{ .Values.artifactory.replicaCount }}
   updateStrategy: {{- toYaml .Values.artifactory.updateStrategy | nindent 4 }}
+  podManagementPolicy: {{ .Values.artifactory.podManagementPolicy }}
   selector:
     matchLabels:
       app: {{ template "artifactory.name" . }}
@@ -718,7 +719,7 @@ spec:
           value: "0.0.0.0"
 {{- with .Values.frontend.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 8 }}
-{{- end }}   
+{{- end }}
         volumeMounts:
         {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "artifactory.customVolumeMounts" .) . | indent 8 }}
@@ -728,7 +729,7 @@ spec:
           mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
       {{- end }}
         - name: artifactory-volume
-          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}    
+          mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
         resources:
 {{ toYaml .Values.frontend.resources | indent 10 }}
       {{- if .Values.frontend.startupProbe.enabled }}
@@ -1210,7 +1211,7 @@ spec:
         startupProbe:
 {{ tpl .Values.access.startupProbe.config . | indent 10 }}
         {{- end }}
-    {{- if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}   
+    {{- if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}
         {{- if .Values.access.readinessProbe.enabled }}
         readinessProbe:
 {{ tpl .Values.access.readinessProbe.config . | indent 10 }}
@@ -1671,7 +1672,7 @@ spec:
       {{- end }}
         - name: artifactory-volume
           mountPath: {{ .Values.artifactory.persistence.mountPath | quote }}
-        
+
         - name: tmp-volume
           mountPath: "/tmp"
 
@@ -1936,7 +1937,7 @@ spec:
         secret:
           secretName: {{ .Values.artifactory.license.secret }}
       {{- end }}
-      
+
       # user Plugin Secrets
       {{- if .Values.artifactory.userPluginSecrets }}
       - name: bootstrap-plugins

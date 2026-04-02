@@ -1,4 +1,4 @@
-{{- if .Values.artifactory.minAvailable -}}
+{{- if or (eq .Values.artifactory.podManagementPolicy "Parallel") .Values.artifactory.minAvailable .Values.artifactory.maxUnavailable -}}
 {{- if semverCompare "<v1.21.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: policy/v1beta1
 {{- else }}
@@ -20,5 +20,9 @@ spec:
       app: {{ template "artifactory.name" . }}
       role: {{ template "artifactory.name" . }}
       release: {{ .Release.Name }}
+  {{- if or (eq .Values.artifactory.podManagementPolicy "Parallel") .Values.artifactory.maxUnavailable }}
+  maxUnavailable: {{ .Values.artifactory.maxUnavailable | default 1 }}
+  {{- else }}
   minAvailable: {{ .Values.artifactory.minAvailable }}
+  {{- end }}
 {{- end }}

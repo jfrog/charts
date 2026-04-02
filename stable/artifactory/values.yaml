@@ -351,7 +351,7 @@ artifactory:
   unifiedSecretPrependReleaseName: true
   ## For HA installation, set this value > 1. This is only supported in Artifactory 7.25.x (appVersions) and above.
   replicaCount: 1
-  # minAvailable: 1
+
 
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -363,6 +363,9 @@ artifactory:
   labels: {}
   updateStrategy:
     type: RollingUpdate
+  podManagementPolicy: OrderedReady
+  # minAvailable: 1
+  # maxUnavailable: 1  # When podManagementPolicy is Parallel and maxUnavailable is not set, defaults to 1
   ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
   schedulerName:
   ## Create a priority class for the Artifactory pod or use an existing one

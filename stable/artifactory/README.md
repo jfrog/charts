@@ -47,6 +47,22 @@ For more details on configuring the filestore, Refer [here](https://jfrog.com/he
 helm upgrade --install artifactory jfrog/artifactory --set artifactory.replicaCount=3,artifactory.persistence.type=cluster-file-system --namespace artifactory --create-namespace
 ```
 
+#### Pod Management Policy
+By default the Artifactory StatefulSet uses `OrderedReady` pod management, meaning pods start sequentially and each must be `Ready` before the next begins. In HA deployments this can slow down scale-up and rolling restarts. Set `artifactory.podManagementPolicy` to `Parallel` to allow all pods to start and stop independently:
+```bash
+helm upgrade --install artifactory jfrog/artifactory --set artifactory.podManagementPolicy=Parallel --namespace artifactory
+```
+> **Note:** `podManagementPolicy` is an immutable StatefulSet field. Changing it on an existing deployment requires deleting the StatefulSet with `--cascade=orphan` before upgrading.
+
+#### Pod Disruption Budget
+A PodDisruptionBudget is created when `artifactory.minAvailable` is set. When `artifactory.podManagementPolicy` is `Parallel`, the PDB switches to `maxUnavailable` (controlled by `artifactory.maxUnavailable`, default: `1`) instead:
+```bash
+helm upgrade --install artifactory jfrog/artifactory --set artifactory.podManagementPolicy=Parallel,artifactory.maxUnavailable=1 --namespace artifactory
+```
+
+
+```
+
 ### Apply Sizing configurations to the Chart
 Note that sizings with more than one replica require an enterprise license for HA . Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/high-availability)
 To apply the chart with recommended sizing configurations :
