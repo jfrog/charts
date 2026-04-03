@@ -151,7 +151,14 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 10
   pollingInterval: 30
-  cooldownPeriod: 300
+  scaleDown:
+    nbReplicas: 1
+    periodSeconds: 120
+    stabilizationWindowSeconds: 300
+  scaleUp:
+    nbReplicas: 2
+    periodSeconds: 15
+    stabilizationWindowSeconds: 15
   # targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
   keda:

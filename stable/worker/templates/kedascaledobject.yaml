@@ -13,10 +13,24 @@ metadata:
   {{- end }}
 
 spec:
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          policies:
+            - type: Pods
+              value: {{ .Values.autoscaling.scaleDown.nbReplicas  }}
+              periodSeconds: {{ .Values.autoscaling.scaleDown.periodSeconds  }}
+          stabilizationWindowSeconds: {{ .Values.autoscaling.scaleDown.stabilizationWindowSeconds  }}
+        scaleUp:
+          policies:
+            - type: Pods
+              value: {{ .Values.autoscaling.keda.scaleUp.nbReplicas  }}
+              periodSeconds: {{ .Values.autoscaling.keda.scaleUp.periodSeconds  }}
+          stabilizationWindowSeconds: {{ .Values.autoscaling.keda.scaleUp.stabilizationWindowSeconds  }}
   minReplicaCount: {{ .Values.autoscaling.minReplicas }}
   maxReplicaCount: {{ .Values.autoscaling.maxReplicas }}
   pollingInterval: {{ .Values.autoscaling.pollingInterval }}
-  cooldownPeriod: {{ .Values.autoscaling.cooldownPeriod }}
   scaleTargetRef:
     name: {{ include "worker.fullname" . }}
   triggers:

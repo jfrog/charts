@@ -147,7 +147,10 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 10
   pollingInterval: 30
-  cooldownPeriod: 300
+  scaleDown:
+    nbReplicas: 1
+    periodSeconds: 120
+    stabilizationWindowSeconds: 300
   # targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
   keda:
@@ -155,6 +158,10 @@ autoscaling:
     query: sum(avg_over_time(jfwks_execution_processing_count{service="{{ .Release.Name }}", namespace="{{ .Release.Namespace }}"}[1m]))
     metricType: AverageValue
     prometheusServerAddress: http://prometheus-server.monitoring.svc.cluster.local:9090
+    scaleUp:
+      nbReplicas: 2
+      periodSeconds: 15
+      stabilizationWindowSeconds: 15
 
 ## @param serviceMonitor Declaratively specifies how groups of Kubernetes services should be monitored.
 ## Ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md
@@ -191,7 +198,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.193.7
+    tag: 7.205.10
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -293,7 +300,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1764794109
+    tag: 9.7.1773939694
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -626,7 +633,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.24.0
+    tag: 2.32.0
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
