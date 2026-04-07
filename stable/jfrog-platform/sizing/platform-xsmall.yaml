@@ -361,29 +361,20 @@ xray:
                       - xray
               topologyKey: kubernetes.io/hostname
   
-  rabbitmq:
-    extraConfiguration: |-
-      vm_memory_high_watermark.absolute = 2G
-      {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
-      raft.wal_max_size_bytes = 1048576
-      {{- end }}
-    resources:
-      requests:
-        cpu: "50m"
-        memory: 300Mi
-      limits:
-        # cpu: "2"
-        memory: 3Gi
-    affinity:
-      podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - xray
-            topologyKey: kubernetes.io/hostname
+rabbitmq:
+  extraConfiguration: |-
+    vm_memory_high_watermark.absolute = 2G
+    {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+    raft.wal_max_size_bytes = 1048576
+    {{- end }}
+  resources:
+    requests:
+      cpu: "50m"
+      memory: 300Mi
+    limits:
+      # cpu: "2"
+      memory: 3Gi
+
 distribution:
   ##############################################################
   # The xsmall sizing
@@ -434,15 +425,6 @@ distribution:
       limits:
         # cpu: "1"
         memory: 50Mi
-  
-  redis:
-    resources:
-      requests:
-        cpu: 20m
-        memory: 20Mi
-      limits:
-        # cpu: "1"
-        memory: 100Mi
   
   postgresql:
     primary:

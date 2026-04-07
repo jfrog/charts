@@ -360,29 +360,20 @@ xray:
                       - xray
               topologyKey: kubernetes.io/hostname
   
-  rabbitmq:
-    extraConfiguration: |-
-      vm_memory_high_watermark.absolute = 6G
-      {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
-      raft.wal_max_size_bytes = 1048576
-      {{- end }}
-    resources:
-      requests:
-        cpu: "500m"
-        memory: 1Gi
-      limits:
-        # cpu: "8"
-        memory: 7Gi
-    affinity:
-      podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                    - xray
-            topologyKey: kubernetes.io/hostname
+rabbitmq:
+  extraConfiguration: |-
+    vm_memory_high_watermark.absolute = 6G
+    {{- if not .Values.global.xray.rabbitmq.haQuorum.enabled }}
+    raft.wal_max_size_bytes = 1048576
+    {{- end }}
+  resources:
+    requests:
+      cpu: "500m"
+      memory: 1Gi
+    limits:
+      # cpu: "8"
+      memory: 7Gi
+
 distribution:
   ##############################################################
   # The 2xlarge sizing
@@ -433,15 +424,6 @@ distribution:
       limits:
         # cpu: "1"
         memory: 250Mi
-  
-  redis:
-    resources:
-      requests:
-        cpu: 50m
-        memory: 100Mi
-      limits:
-        # cpu: "1"
-        memory: 1Gi
   
   postgresql:
     primary:
