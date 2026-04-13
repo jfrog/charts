@@ -7,9 +7,9 @@ global:
   security:
     allowInsecureImages: true
 
-  # imageRegistry: releases-docker.jfrog.io
-  # imagePullSecrets:
-  #   - myRegistryKeySecretName
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
   ## Chart.AppVersion can be overidden using global.versions.artifactory or .Values.artifactory.image.tag
   ## Note: Order of preference is 1) global.versions 2) .Values.artifactory.image.tag 3) Chart.AppVersion
   ## This applies also for nginx images (.Values.nginx.image.tag)
