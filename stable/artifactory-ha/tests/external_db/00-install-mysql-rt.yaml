@@ -1,0 +1,12 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # MYSQL
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic mysql-secret --from-literal=username=artifactory --from-literal=password=password --namespace ${NAMESPACE}
+  - command: kubectl apply -f my-sql-5.7.yaml --namespace ${NAMESPACE}
+  - command: kubectl rollout status statefulset/my-mysql -w -n ${NAMESPACE}
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f mysql-values.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: helm uninstall rt -n ${NAMESPACE}
+timeout: 1200

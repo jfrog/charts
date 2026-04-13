@@ -1,0 +1,11 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 120
+    script: |
+      echo "Checking Gateway and HTTPRoute exist after install"
+      kubectl get gateway rtgatewayapi-artifactory-ha-gateway -n ${NAMESPACE} || { echo "Gateway rtgatewayapi-artifactory-ha-gateway not found"; exit 1; }
+      kubectl get httproute rtgatewayapi-artifactory-ha-httproute -n ${NAMESPACE} || { echo "HTTPRoute rtgatewayapi-artifactory-ha-httproute not found"; exit 1; }
+      echo "Gateway API install check passed"
+  - timeout: 60
+    script: kubectl get statefulset rtgatewayapi-artifactory-ha-primary -n ${NAMESPACE} -o jsonpath='{.status.readyReplicas}' | grep -q 1 || exit 1

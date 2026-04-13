@@ -1,0 +1,55 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+## This is an exception here because HA needs masterKey to connect with other node members and it is commented in values to support 6.x to 7.x Migration
+## Please refer https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/README.md#special-upgrade-notes-1
+artifactory:
+
+  customVolumes: |
+    - name: custom-script
+      secret:
+       secretName: '{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret'
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+    - name: custom-script
+      mountPath: "script.sh"
+      subPath: script.sh
+
+  customSecrets:
+   - name: '{{ template "artifactory-ha.fullname" . }}-unified-secret'
+     key: script.sh
+     data: |
+       here the custom secret script
+
+postgresql:
+  image:
+    tag: 15.6.0-debian-11-r16
+
+frontend:
+  asPod: false
+
+rtfs:
+  enabled: true
+  customCertificates:
+    enabled: true
+    certificateSecretName: cert-secret
+
+jfbus:
+  enabled: true
+  customCertificates:
+    enabled: true
+    certificateSecretName: cert-secret
+
+unifiedpolicy:
+  enabled: true
+
+platformfederation:
+  enabled: true
+  customVolumes: |
+    - name: custom-script
+      secret:
+       secretName: '{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret'

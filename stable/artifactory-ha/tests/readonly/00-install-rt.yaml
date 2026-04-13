@@ -1,0 +1,16 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  # Self signed certificate for testing purposes
+  - command: kubectl create secret generic test-cert --from-file=./sample.crt --namespace ${NAMESPACE}
+  - command: helm upgrade --install rt-readonly ../../ --namespace ${NAMESPACE} -f customvalues-readonly.yaml
+  - command: kubectl rollout status statefulset/rt-readonly-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl cp ./readOnly.sh ${NAMESPACE}/rt-readonly-artifactory-ha-primary-0:/opt/jfrog/artifactory/var/readOnly.sh -c artifactory-ha
+  - command: kubectl cp ./readOnly.sh ${NAMESPACE}/rt-readonly-artifactory-ha-primary-1:/opt/jfrog/artifactory/var/readOnly.sh -c artifactory-ha
+
+  # testing /tmp related incident fix
+  # restarts only artifactory container to simulate production incident
+  - command: kubectl exec rt-readonly-artifactory-ha-primary-0 -c artifactory-ha -n ${NAMESPACE} -- /bin/pkill java
+  - command: kubectl rollout status statefulset/rt-readonly-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1400

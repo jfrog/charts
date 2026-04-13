@@ -1,0 +1,13 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+      # To check custom secrets
+       ../../../../test/scripts/checkForCustomSecrets.sh "here the custom secret script" "artifactory-ha" "statefulset.kubernetes.io/pod-name=rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary" "rt-artifactory-ha-primary"
+
+      # To check mount paths
+       ../../../../test/scripts/checkSecretMount.sh "artifactory-ha-unified-secret-volume" "artifactory-ha" "statefulset.kubernetes.io/pod-name=rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary" "rt-artifactory-ha-primary" "rt-artifactory-ha-unified-secret"
+
+      # To check image tags
+       ../../../../test/scripts/checkImageTagOrDigest.sh digests rt-artifactory-ha-primary ${NAMESPACE} "app=artifactory-ha"

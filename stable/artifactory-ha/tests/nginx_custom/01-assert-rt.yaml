@@ -1,0 +1,31 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+      kubectl port-forward svc/rt-nginx -n ${NAMESPACE} 8084:8084 &
+      PF_PID=$!
+      sleep 5
+      cleanup() { kill "${PF_PID}" 2>/dev/null; }
+      trap cleanup EXIT
+
+      # No GNU `timeout` in minimal images; -m caps total time per curl.
+      deadline=$(( $(date +%s) + 100 ))
+
+      while [ "$(date +%s)" -lt "${deadline}" ]; do
+        headers=$(curl -I -s -m 30 "http://localhost:8084")
+        is_artifactory_header=$(echo "${headers}" | awk -F': ' '/X-Artifactory-Custom-Header/{print $2}' | tr -d '\n\r')
+        echo "Artifactory Header - ${is_artifactory_header}"
+        is_nginx_header=$(echo "${headers}" | awk -F': ' '/X-Nginx-Main-Header/{print $2}' | tr -d '\n\r')
+        echo "Nginx Header - ${is_nginx_header}"
+        if [ "${is_artifactory_header}" = "This is a test header from application Conf" ] && [ "${is_nginx_header}" = "This is from nginx main Conf" ]; then
+          echo "Artifactory header is present"
+          echo "Nginx header is present"
+          exit 0
+        fi
+        echo "Waiting for custom nginx headers..."
+        sleep 3
+      done
+
+      echo "❌ Custom nginx headers did not match within 100s"
+      exit 1

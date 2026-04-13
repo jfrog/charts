@@ -1,0 +1,38 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+
+artifactory:
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  primary:
+    replicaCount: 2
+    existingClaim: true
+  persistence:
+    enabled: true
+  license:
+    secret: rt-secret
+    dataKey: artifactory.lic
+
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+
+access:
+  enabled: true
+  accessConfig:
+    token: 
+      allow-basic-auth: true
+
+frontend:
+  asPod: false
+
+nginx: 
+  enabled: true
+

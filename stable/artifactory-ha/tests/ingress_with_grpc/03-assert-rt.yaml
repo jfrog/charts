@@ -1,0 +1,9 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+      echo "Checking ingress template renders additionalDirectRoutes"
+      # Verify the third path in spec.rules[0].http.paths is /test/ (additionalDirectRoutes)
+      ../../../../test/scripts/checkTemplateValue.sh additionalDirectRoutesValues.yaml templates/ingress.yaml ../.. "" '.spec.rules[0].http.paths' '.[2].path' '/test/'
+      echo "additionalDirectRoutes template check passed"

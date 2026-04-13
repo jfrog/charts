@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rt-artifactory-ha-primary
+status:
+  replicas: 2
+  readyReplicas: 2
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 600
+    script: |
+      hostname=$(kubectl get svc rt-nginx -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+      token=$(curl -s -u "admin:password" -XPOST "http://$hostname/access/api/v1/tokens" -d "scope=applied-permissions/user" | grep -o '"access_token":"[^"]*' |  cut -d'"' -f4)
+
+      # Verify user creation with a preDefined password policy
+      response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $token" -XPOST "http://$hostname/access/api/v2/users" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"username\": \"robin\", \"email\": \"robind@jfrog.com\", \"password\":\"Password1\"}" -vk)
+      if [ "$response" -eq 400 ]; then
+          continue
+      else
+          echo "Was able to create user with bad password policy - failure - exiting"
+          exit 1
+      fi
+
+      response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $token" -XPOST "http://$hostname/access/api/v2/users" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"username\": \"robin\", \"email\": \"robind@jfrog.com\", \"password\":\"PAssword@123\"}" -vk)
+      if [ "$response" -eq 201 ]; then
+          echo "User created successfully with a valid password"
+      else
+          echo "Unable to create user with expected password policy - something wrong - exiting"
+          exit 1
+      fi

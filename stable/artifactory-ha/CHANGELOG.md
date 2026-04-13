@@ -1,7 +1,30 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.133.17] - Jan 06, 2026
+## [107.147.0] - Apr 2, 2026
+* Added support for Gateway API (Gateway, HTTPRoute)
+
+## [107.146.0] - Mar 30, 2026
+* Added support for configuring a dedicated PostgreSQL database for RTFS, separate from the main Artifactory database, using `rtfs.database.type: postgresql`
+* Added support for providing RTFS database credentials inline or via an external Kubernetes secret using `rtfs.database.secrets`
+* Added new AWS SDK v2 parameters to `awsS3V3` binarystore configuration
+
+## [107.143.0] - Mar 30, 2026
+* Fixing duplicate volume names in the unified volume configuration
+
+## [107.142.0] - Mar 30, 2026
+* Added support for frontend as Pod and not enabled by default
+* Remove memberNode configuration
+* Fixed `jfrogUrl` helpers to respect Access/Router TLS settings and use `router.externalPort` instead of hardcoded port
+
+## [107.140.0] - Feb 20, 2026
+* Added support for `ingress.additionalDirectRoutes` to append extra path routes to the ingress for each host (networking.k8s.io/v1 format)
+
+
+## [107.134.0] - Jan 19, 2026
+* Updated `apptrust` tag to 1.23.2 and `unifiedpolicy` tag to 1.27.0
+
+## [107.133.0] - Jan 06, 2026
 * Added Azure Workload Identity Support. Refer [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/azure-workload-identity)
 * Added `JF_ARTIFACTORY_TOMCAT_MAINTENANCECONNECTOR_HOST` to support httpGet probes for artifactory container
 * Added the jfbus service for all flavors OSS, JCR, and CPP, not limited to Pro

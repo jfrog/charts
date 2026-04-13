@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rt-readonly-artifactory-ha-primary
+spec:
+  template:
+    spec:
+      containers:
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true
+      - securityContext:
+          readOnlyRootFilesystem: true  
+status:
+  replicas: 3
+  readyReplicas: 3
+
+---
+
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+        echo "Verifying certificates are in var and java utilities work with readOnly enabled"
+        kubectl exec rt-readonly-artifactory-ha-primary-0 -n $NAMESPACE -c artifactory-ha -- /opt/jfrog/artifactory/var/readOnly.sh
+        if [ $? -ne 0 ]; then
+          echo "ReadOnly test failed for primary-0"
+          exit 1
+        else
+          echo "ReadOnly test passed for primary-0"
+        fi
+
+        kubectl exec rt-readonly-artifactory-ha-primary-1 -n $NAMESPACE -c artifactory-ha -- /opt/jfrog/artifactory/var/readOnly.sh
+        if [ $? -ne 0 ]; then
+          echo "ReadOnly test failed for primary-1"
+          exit 1
+        else
+          echo "ReadOnly test passed for primary-1"
+        fi

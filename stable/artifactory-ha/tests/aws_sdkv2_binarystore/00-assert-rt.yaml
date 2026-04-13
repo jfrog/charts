@@ -1,0 +1,49 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+      echo "Checking binarystore.xml template renders AWS SDK v2 parameters"
+
+      RENDERED=$(helm template rt ../../ -f customvalues.yaml -s templates/artifactory-unified-secret.yaml 2>&1)
+      if [ $? -ne 0 ]; then
+        echo "helm template failed:"
+        echo "$RENDERED"
+        exit 1
+      fi
+
+      ERRORS=0
+      check_element() {
+        local element="$1"
+        local expected="$2"
+        if echo "$RENDERED" | grep -Fq "<${element}>${expected}</${element}>"; then
+          echo "PASS: <${element}>${expected}</${element}>"
+        else
+          echo "FAIL: expected <${element}>${expected}</${element}> not found"
+          ERRORS=$((ERRORS + 1))
+        fi
+      }
+
+      check_element "awsSdkV2" "true"
+      check_element "connectionAcquisitionTimeout" "5000"
+      check_element "proxyHost" "proxy.example.com"
+      check_element "proxyPort" "8080"
+      check_element "nonProxyHost" "localhost|*.internal.example.com"
+      check_element "proxyIdentity" "proxyuser"
+      check_element "proxyCredential" "proxypass"
+      check_element "disableChecksumValidation" "true"
+      check_element "disableChunkedEncoding" "false"
+      check_element "crtTargetThroughputInGbps" "10"
+      check_element "crtEnableConnectionHealth" "true"
+      check_element "crtMinimumThroughputTimeoutSeconds" "5"
+      check_element "crtMinimumThroughputInBps" "1048576"
+      check_element "kmsClientSideEncryptionKeyId" "arn:aws:kms:us-east-1:123456789012:key/test-key-id"
+      check_element "server-side-encryption-aws-kms" "true"
+      check_element "encryptionFormat" "REQUIRE_ENCRYPT_REQUIRE_DECRYPT"
+
+      if [ $ERRORS -ne 0 ]; then
+        echo "Total failures: $ERRORS"
+        exit 1
+      fi
+
+      echo "All AWS SDK v2 binarystore parameter checks passed"

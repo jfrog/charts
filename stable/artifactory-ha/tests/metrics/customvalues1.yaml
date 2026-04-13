@@ -1,0 +1,19 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+
+artifactory:
+    masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+    migration:
+        enabled: false
+    persistence:
+        enabled: false
+    coldStorage:
+        enabled: true
+    worker:
+        enabled: true
+    metrics:
+        enabled: true

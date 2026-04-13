@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: kubectl create secret generic gateway-tls-secret --from-file=tls.crt=../unified_secret/dummy_cert.dummy_crt --from-file=tls.key=../unified_secret/dummy_key.dummy_key -n ${NAMESPACE}
+  - command: helm upgrade --install rtgwapi ../../ --namespace ${NAMESPACE} -f customvalues.yaml -f gatewayApiTlsValues.yaml
+  - command: kubectl rollout status statefulset/rtgwapi-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1200

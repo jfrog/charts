@@ -1,0 +1,13 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+
+  # Upgrading Artifactory with split containers, including evidence service and jfconfig
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f services.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+
+  # Upgrading Artifactory with split containers, including evidence service and jfconfig
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f topology_disabled.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+
+timeout: 1400

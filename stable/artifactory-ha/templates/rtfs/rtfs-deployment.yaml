@@ -1,4 +1,9 @@
 {{- if .Values.rtfs.enabled -}}
+{{- if or
+    (and (not .Values.rtfs.database.type) (ne .Values.database.type "postgresql") (not (empty .Values.database.type)))
+    (and .Values.rtfs.database.type (ne .Values.rtfs.database.type "postgresql")) }}
+    {{- fail "\n RTFS requires PostgreSQL (database.type when shared, rtfs.database.type when dedicated). Or disable RTFS." }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,8 +34,13 @@ spec:
     metadata:
       annotations:
       {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        {{- if not .Values.rtfs.database.type }}
         checksum/database-secrets: {{ include (print $.Template.BasePath "/artifactory-database-secrets.yaml") . | sha256sum }}
+        {{- end }}
         checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
+        {{- if .Values.rtfs.database.type }}
+        checksum/rtfs-database-secrets: {{ include (print $.Template.BasePath "/rtfs/artifactory-rtfs-database-secrets.yaml") . | sha256sum }}
+        {{- end }}
       {{- else }}
         checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
       {{- end }}
@@ -139,7 +149,7 @@ spec:
             echo "Waiting for Artifactory service to be ready..."
             ready=false;
             while ! $ready; do echo waiting;
-              curl --silent --output /dev/null --max-time 3 --fail http://{{ template "artifactory-ha.fullname" . }}:{{ .Values.artifactory.internalPort }}/artifactory/api/v1/system/readiness; exit_status=$?;
+              curl -k --silent --output /dev/null --max-time 3 --fail "{{ tpl (include "artifactory-ha.jfrogUrl" .) . }}/artifactory/api/v1/system/readiness"; exit_status=$?;
               if [[ $exit_status -eq 0 ]]; then ready=true; echo "Artifactory is ready. Proceeding..."; fi; sleep 1;
             done
         {{- end }}
@@ -165,6 +175,7 @@ spec:
             - name: EXTRA_JAVA_OPTS
               value: {{ .Values.rtfs.javaOpts }}
             {{- end }}
+          {{- if not .Values.rtfs.database.type }}
           {{- if or .Values.database.secrets.user .Values.database.user }}
             - name: JF_SHARED_DATABASE_USERNAME
               valueFrom:
@@ -215,6 +226,54 @@ spec:
                   {{- end }}
                   key: db-url
             {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.rtfs.database.type }}
+          {{- if or .Values.rtfs.database.url (and .Values.rtfs.database.secrets .Values.rtfs.database.secrets.url) }}
+            - name: JF_RTFS_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.rtfs.database.secrets.url }}
+                  name: {{ tpl .Values.rtfs.database.secrets.url.name . }}
+                  key: {{ tpl .Values.rtfs.database.secrets.url.key . }}
+            {{- else if .Values.artifactory.unifiedSecretInstallation }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                  key: rtfs-db-url
+            {{- else }}
+                  name: {{ template "artifactory-ha.fullname" . }}-rtfs-database-creds
+                  key: rtfs-db-url
+            {{- end }}
+          {{- end }}
+          {{- if or .Values.rtfs.database.user (and .Values.rtfs.database.secrets .Values.rtfs.database.secrets.user) }}
+            - name: JF_RTFS_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.rtfs.database.secrets.user }}
+                  name: {{ tpl .Values.rtfs.database.secrets.user.name . }}
+                  key: {{ tpl .Values.rtfs.database.secrets.user.key . }}
+            {{- else if .Values.artifactory.unifiedSecretInstallation }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                  key: rtfs-db-user
+            {{- else }}
+                  name: {{ template "artifactory-ha.fullname" . }}-rtfs-database-creds
+                  key: rtfs-db-user
+            {{- end }}
+          {{- end }}
+          {{- if or .Values.rtfs.database.password (and .Values.rtfs.database.secrets .Values.rtfs.database.secrets.password) }}
+            - name: JF_RTFS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.rtfs.database.secrets.password }}
+                  name: {{ tpl .Values.rtfs.database.secrets.password.name . }}
+                  key: {{ tpl .Values.rtfs.database.secrets.password.key . }}
+            {{- else if .Values.artifactory.unifiedSecretInstallation }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                  key: rtfs-db-password
+            {{- else }}
+                  name: {{ template "artifactory-ha.fullname" . }}-rtfs-database-creds
+                  key: rtfs-db-password
+            {{- end }}
+          {{- end }}
           {{- end }}
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: JF_SHARED_SECURITY_MASTERKEY
@@ -341,7 +400,7 @@ spec:
         {{- end }}
 
         #########  unifiedSecretInstallation ###########
-      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.rtfs.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
           secret:
             secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"

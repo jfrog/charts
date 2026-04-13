@@ -1,0 +1,22 @@
+# RTFS + non-PostgreSQL: chart must fail at template time (no cluster resources required)
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+  versions:
+    artifactory: 7.133.3
+    nginx: 7.125.9
+
+postgresql:
+  enabled: false
+
+database:
+  allowNonPostgresql: true
+  type: mariadb
+  driver: org.mariadb.jdbc.Driver
+  url: jdbc:mariadb://mariadb:3306/artifactory?characterEncoding=UTF-8&elideSetAutoCommits=true&useSSL=false&useMysqlMetadata=true
+  user: artifactory
+  password: password
+
+rtfs:
+  enabled: true

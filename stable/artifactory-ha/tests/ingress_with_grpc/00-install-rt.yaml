@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic rt-secret  --from-file=../unified_secret/artifactory.lic -n ${NAMESPACE}
+  - command: kubectl create secret generic cert-secret --from-file=../unified_secret/dummy_cert.dummy_crt --from-file=../unified_secret/dummy_key.dummy_key -n ${NAMESPACE}
+  - command: helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+  - command: helm repo update
+  - command: helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace --version 4.13.1
+    ignoreFailure: true
+  - command: kubectl rollout status deployment/ingress-nginx-controller -n ingress-nginx
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f customvalues.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1200

@@ -1,0 +1,188 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 30 
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-rtfs
+spec:
+  template:
+    spec:
+      containers:
+      - name: rtfs
+        resources:
+          limits:
+            memory: 3500Mi
+          requests:
+            cpu: 500m
+            memory: 3500Mi
+      - name: router
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rt-artifactory-ha-primary
+spec:
+  template:
+    spec:
+      containers:
+      - name: router
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 500Mi
+
+      - name: evidence
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 500Mi
+
+      - name: metadata
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+      - name: onemodel
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 125m
+            memory: 120Mi
+          
+      - name: event
+        resources:
+          limits:
+            memory: 250Mi
+          requests:
+            cpu: 100m
+            memory: 50Mi
+
+      - name: jfconnect
+
+      - name: topology
+        resources:
+          limits:
+            memory: 900Mi
+          requests:
+            cpu: 50m
+            memory: 600Mi
+
+      - name: jfconfig
+        resources:
+          limits:
+            memory: 900Mi
+          requests:
+            cpu: 50m
+            memory: 600Mi
+
+      - name: observability
+        resources:
+          limits:
+            memory: 250Mi
+          requests:
+            cpu: 100m
+            memory: 50Mi
+
+      - name: access
+        resources:
+          limits:
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1536Mi
+        env:
+        - name: JF_SHARED_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: rt-postgresql
+        - name: MALLOC_ARENA_MAX
+          value: "2"
+        - name: SKIP_WAIT_FOR_EXTERNAL_DB
+          value: "true"
+
+      - name: artifactory-ha
+        resources:
+          limits:
+            memory: 5Gi
+          requests:
+            cpu: "1"
+            memory: 4Gi
+
+status:
+  replicas: 1
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-platformfederation
+spec:
+  template:
+    spec:
+      containers:
+      - name: observability
+      - name: platformfederation
+        resources:
+          requests:
+            cpu: 125m
+            memory: 120Mi
+          limits:
+            memory: 1Gi
+      - name: router
+status:
+  replicas: 1
+  readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-jfbus
+spec:
+  template:
+    spec:
+      containers:
+      - name: jfbus
+        resources:
+          requests:
+            cpu: 500m
+            memory: 3500Mi
+          limits:
+            memory: 3500Mi
+      - name: router
+status:
+  replicas: 1
+  readyReplicas: 1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-frontend
+spec:
+  template:
+    spec:
+      containers:
+      - name: observability
+      - name: frontend
+        resources:
+          requests:
+            cpu: 100m
+            memory: 250Mi
+          limits:
+            memory: 500Mi
+      - name: router
+status:
+  replicas: 1
+  readyReplicas: 1

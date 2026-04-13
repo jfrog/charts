@@ -1,0 +1,224 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rt-artifactory-ha-primary
+spec:
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                app: artifactory-ha
+                component: artifactory-ha
+                release: rt
+            topologyKey: kubernetes.io/hostname
+status:
+  replicas: 3
+  readyReplicas: 3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-nginx
+status:
+  replicas: 1
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-rtfs
+spec:
+  template:
+    spec:
+      containers:
+      - name: rtfs
+        volumeMounts:
+        - mountPath: /var/opt/jfrog/federation
+          name: data
+        - mountPath: custom.sh
+          name: custom-secret
+      - name: router
+      initContainers:
+      - name: custom-systemyaml-setup
+      - name: copy-configs
+      - name: wait-for-artifactory
+      volumes:
+      - name: artifactory-ha-unified-secret-volume
+        secret:
+          defaultMode: 420
+          secretName: rt-artifactory-ha-unified-secret
+      - emptyDir: {}
+        name: custom-secret
+      - emptyDir: {}
+        name: data
+status:
+  replicas: 2
+  readyReplicas: 2
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rt-artifactory-ha-rtfs
+spec:
+  maxReplicas: 3
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rt-artifactory-ha-rtfs
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rt-artifactory-ha
+spec:
+  maxReplicas: 3
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  minReplicas: 3
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet
+    name: rt-artifactory-ha-primary
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-jfbus
+spec:
+  template:
+    spec:
+      containers:
+      - name: jfbus
+        volumeMounts:
+        - mountPath: /var/opt/jfrog/jfbus
+          name: data
+        - mountPath: custom.sh
+          name: custom-secret
+      - name: router
+      initContainers:
+      - name: custom-systemyaml-setup
+      - name: copy-system-yaml
+      - name: wait-for-artifactory
+      volumes:
+      - name: artifactory-ha-unified-secret-volume
+        secret:
+          defaultMode: 420
+          secretName: rt-artifactory-ha-unified-secret
+      - emptyDir: {}
+        name: custom-secret
+      - emptyDir: {}
+        name: data
+status:
+  replicas: 2
+  readyReplicas: 2
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rt-artifactory-ha-jfbus
+spec:
+  maxReplicas: 3
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rt-artifactory-ha-jfbus
+---
+################# Platform Federation Deployment and HPA #############
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-platformfederation
+spec:
+  template:
+    spec:
+      containers:
+      - name: observability
+      - name: platformfederation
+        volumeMounts:
+        - mountPath: /var/opt/jfrog/platformfederation
+          name: data
+        - mountPath: custom.sh
+          name: custom-secret
+      - name: router
+      initContainers:
+      - name: custom-systemyaml-setup
+      - name: copy-system-yaml
+      volumes:
+      - name: artifactory-ha-unified-secret-volume
+        secret:
+          defaultMode: 420
+          secretName: rt-artifactory-ha-unified-secret
+      - emptyDir: {}
+        name: custom-secret
+      - emptyDir: {}
+        name: data
+status:
+  replicas: 2
+  readyReplicas: 2
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rt-artifactory-ha-platformfederation
+spec:
+  maxReplicas: 3
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 70
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rt-artifactory-ha-platformfederation

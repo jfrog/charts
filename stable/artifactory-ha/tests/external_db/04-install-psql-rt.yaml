@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # PSQL
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: helm repo add bitnami https://charts.bitnami.com/bitnami 
+  - command: helm repo update
+  - command: helm install postgres bitnami/postgresql -f psql.yaml -n ${NAMESPACE}
+  - command: helm upgrade --install rta ../../ --namespace ${NAMESPACE} -f psql-values.yaml
+  - command: kubectl rollout status statefulset/rta-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rta-artifactory-ha-jfbus -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rta-artifactory-ha-unifiedpolicy -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rta-artifactory-ha-platformfederation -w -n ${NAMESPACE}
+  - command: helm uninstall rta -n ${NAMESPACE}
+timeout: 2000

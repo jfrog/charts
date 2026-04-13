@@ -298,17 +298,17 @@
         {{- with .port }}
         <port>{{ . }}</port>
         {{- end }}
-        {{- with .useHttp }}
-        <useHttp>{{ . }}</useHttp>
+        {{- if hasKey . "useHttp" }}
+        <useHttp>{{ .useHttp }}</useHttp>
         {{- end }}
-        {{- with .maxConnections }}
-        <maxConnections>{{ . }}</maxConnections>
+        {{- if hasKey . "maxConnections" }}
+        <maxConnections>{{ .maxConnections | int64 }}</maxConnections>
         {{- end }}
-        {{- with .connectionTimeout }}
-        <connectionTimeout>{{ . }}</connectionTimeout>
+        {{- if hasKey . "connectionTimeout" }}
+        <connectionTimeout>{{ .connectionTimeout | int64 }}</connectionTimeout>
         {{- end }}
-        {{- with .socketTimeout }}
-        <socketTimeout>{{ . }}</socketTimeout>
+        {{- if hasKey . "socketTimeout" }}
+        <socketTimeout>{{ .socketTimeout | int64 }}</socketTimeout>
         {{- end }}
         {{- with .kmsServerSideEncryptionKeyId }}
         <kmsServerSideEncryptionKeyId>{{ . }}</kmsServerSideEncryptionKeyId>
@@ -336,17 +336,65 @@
         {{- with .cloudFrontPrivateKey }}
         <cloudFrontPrivateKey>{{ . }}</cloudFrontPrivateKey>
         {{- end }}
-        {{- with .enableSignedUrlRedirect }}
-        <enableSignedUrlRedirect>{{ . }}</enableSignedUrlRedirect>
+        {{- if hasKey . "enableSignedUrlRedirect" }}
+        <enableSignedUrlRedirect>{{ .enableSignedUrlRedirect }}</enableSignedUrlRedirect>
         {{- end }}
-        {{- with .enablePathStyleAccess }}
-        <enablePathStyleAccess>{{ . }}</enablePathStyleAccess>
+        {{- if hasKey . "enablePathStyleAccess" }}
+        <enablePathStyleAccess>{{ .enablePathStyleAccess }}</enablePathStyleAccess>
         {{- end }}
-        {{- with .multiPartLimit }}
-        <multiPartLimit>{{ . | int64 }}</multiPartLimit>
+        {{- if hasKey . "multiPartLimit" }}
+        <multiPartLimit>{{ .multiPartLimit | int64 }}</multiPartLimit>
         {{- end }}
-        {{- with .multipartElementSize }}
-        <multipartElementSize>{{ . | int64 }}</multipartElementSize>
+        {{- if hasKey . "multipartElementSize" }}
+        <multipartElementSize>{{ .multipartElementSize | int64 }}</multipartElementSize>
+        {{- end }}
+        {{- if hasKey . "awsSdkV2" }}
+        <awsSdkV2>{{ .awsSdkV2 }}</awsSdkV2>
+        {{- end }}
+        {{- if hasKey . "connectionAcquisitionTimeout" }}
+        <connectionAcquisitionTimeout>{{ .connectionAcquisitionTimeout | int64 }}</connectionAcquisitionTimeout>
+        {{- end }}
+        {{- with .proxyHost }}
+        <proxyHost>{{ . }}</proxyHost>
+        {{- end }}
+        {{- if hasKey . "proxyPort" }}
+        <proxyPort>{{ .proxyPort | int64 }}</proxyPort>
+        {{- end }}
+        {{- with .nonProxyHost }}
+        <nonProxyHost>{{ . }}</nonProxyHost>
+        {{- end }}
+        {{- with .proxyIdentity }}
+        <proxyIdentity>{{ . }}</proxyIdentity>
+        {{- end }}
+        {{- with .proxyCredential }}
+        <proxyCredential>{{ . }}</proxyCredential>
+        {{- end }}
+        {{- if hasKey . "disableChecksumValidation" }}
+        <disableChecksumValidation>{{ .disableChecksumValidation }}</disableChecksumValidation>
+        {{- end }}
+        {{- if hasKey . "disableChunkedEncoding" }}
+        <disableChunkedEncoding>{{ .disableChunkedEncoding }}</disableChunkedEncoding>
+        {{- end }}
+        {{- if hasKey . "crtTargetThroughputInGbps" }}
+        <crtTargetThroughputInGbps>{{ .crtTargetThroughputInGbps }}</crtTargetThroughputInGbps>
+        {{- end }}
+        {{- if hasKey . "crtEnableConnectionHealth" }}
+        <crtEnableConnectionHealth>{{ .crtEnableConnectionHealth }}</crtEnableConnectionHealth>
+        {{- end }}
+        {{- if hasKey . "crtMinimumThroughputTimeoutSeconds" }}
+        <crtMinimumThroughputTimeoutSeconds>{{ .crtMinimumThroughputTimeoutSeconds | int64 }}</crtMinimumThroughputTimeoutSeconds>
+        {{- end }}
+        {{- if hasKey . "crtMinimumThroughputInBps" }}
+        <crtMinimumThroughputInBps>{{ .crtMinimumThroughputInBps | int64 }}</crtMinimumThroughputInBps>
+        {{- end }}
+        {{- with .kmsClientSideEncryptionKeyId }}
+        <kmsClientSideEncryptionKeyId>{{ . }}</kmsClientSideEncryptionKeyId>
+        {{- end }}
+        {{- if hasKey . "server-side-encryption-aws-kms" }}
+        <server-side-encryption-aws-kms>{{ index . "server-side-encryption-aws-kms" }}</server-side-encryption-aws-kms>
+        {{- end }}
+        {{- with .encryptionFormat }}
+        <encryptionFormat>{{ . }}</encryptionFormat>
         {{- end }}
     </provider>
     {{- end }}

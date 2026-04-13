@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic rt-secret  --from-file=../unified_secret/artifactory.lic -n ${NAMESPACE}
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f customvalues.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-frontend -w -n ${NAMESPACE}
+timeout: 1400

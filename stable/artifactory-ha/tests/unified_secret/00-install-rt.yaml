@@ -1,0 +1,32 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic keys --from-literal=join-key=67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780 --from-literal=master-key=7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e -n ${NAMESPACE}
+  - command: kubectl create secret generic rt-secret --from-file=./access.config.patch.yml  --from-file=./binarystore.xml --from-file=./system.yaml  --from-file=./artifactory.lic -n ${NAMESPACE}
+  - command: kubectl create secret generic cert-secret --from-file=dummy_cert.dummy_crt --from-file=dummy_key.dummy_key -n ${NAMESPACE}
+  # Upgrading Artifactory-ha with unified secret installation as false and external secrets
+  - command: helm upgrade --install rt jfrog/artifactory-ha --namespace ${NAMESPACE} --set "artifactory.unifiedSecretInstallation=false" --set "postgresql.postgresqlPassword=password" --set "postgresql.persistence.enabled=false" --set "artifactory.node.replicaCount=1" -f customvalues_external_secrets.yaml -f customvolume.yaml --version 107.104.10
+  - command: ../../../../test/scripts/checkImageTagOrDigest.sh tags rt-artifactory-ha-primary ${NAMESPACE} "app=artifactory-ha"
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  # Deleting old sts and secret of psql, due to breaking changes of psql secret key
+  - command: kubectl delete secret rt-postgresql -n ${NAMESPACE}
+  - command: kubectl delete sts rt-postgresql -n ${NAMESPACE} --cascade=orphan
+  # Cleaning up orphaned member StatefulSet from old chart
+  - command: kubectl delete sts rt-artifactory-ha-member -n ${NAMESPACE}
+    ignoreFailure: true
+  # Upgrading Artifactory-ha with unified secret installation as non prerelease name
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} --set "artifactory.unifiedSecretInstallation=true,artifactory.unifiedSecretPrependReleaseName=false" -f customvalues_external_secrets.yaml -f customvolume_unified.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-unifiedpolicy -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-platformfederation -w -n ${NAMESPACE}
+  # Upgrading Artifactory-ha with unified secret installation as true and external secrets
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} --set "artifactory.unifiedSecretInstallation=true" -f customvalues_external_secrets.yaml -f customvolume_unified.yaml -f imageDigestWithGlobal.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-jfbus -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-unifiedpolicy -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-platformfederation -w -n ${NAMESPACE}
+timeout: 1700

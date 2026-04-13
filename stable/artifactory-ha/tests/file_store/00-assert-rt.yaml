@@ -1,0 +1,32 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+      scPrimary=$(kubectl get pvc volume-rt-artifactory-ha-primary-0 -n ${NAMESPACE} -ojsonpath='{.spec.storageClassName}')
+      if [ "${scPrimary}" = "testing-sc" ]; then
+          echo "Custom StorageClass for Primary Node Verified"
+      else
+          echo "Failed to verify StorageClass for Primary Node, will try again until timeout"
+          exit 1
+      fi
+
+      # Custom BinarystoreXml
+      binaryStoreXML=$(kubectl exec -c artifactory-ha -n ${NAMESPACE} rt-artifactory-ha-primary-0 -- cat /opt/jfrog/artifactory/var/etc/artifactory/binarystore.xml)
+      echo "value is $binaryStoreXML"
+      if echo "$binaryStoreXML" | grep -q "Artifactory Custom XML"; then
+          echo "Custom BinarystoreXml Verified"
+      else
+          echo "Failed to verify BinarystoreXml, will try again until timeout"
+          exit 1
+      fi
+
+      # ExistingClaim
+      isPrimaryBound=$(kubectl get pvc volume-rtt-artifactory-ha-primary-0 -n ${NAMESPACE} -ojsonpath={.status.phase})
+      echo "is primary bound: $isPrimaryBound"
+      if [ "${isPrimaryBound}" = "Bound" ]; then
+          echo "ExistingClaim Primary Node Verified"
+      else
+          echo "Failed to verify ExistingClaim for Primary Node, will try again until timeout"
+          exit 1
+      fi

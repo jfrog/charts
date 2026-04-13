@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-rtfs
+spec:
+  template:
+    spec:
+      containers:
+        - name: rtfs
+          env:
+            - name: JF_SHARED_NODE_ID
+            - name: JF_SHARED_DATABASE_USERNAME
+            - name: JF_SHARED_DATABASE_PASSWORD
+            - name: JF_SHARED_DATABASE_URL
+            - name: JF_SHARED_SECURITY_MASTERKEY
+            - name: JF_SHARED_SECURITY_JOINKEY
+        - name: router
+status:
+  replicas: 1
+  readyReplicas: 1

@@ -1,0 +1,13 @@
+# Values for helm template test: verify ingress.additionalDirectRoutes is rendered
+ingress:
+  enabled: true
+  hosts:
+    - test.ingress.artifactory.jfrog.org
+  additionalDirectRoutes: |
+    - path: /test/
+      pathType: "ImplementationSpecific"
+      backend:
+        service:
+          name: {{ include "artifactory-ha.fullname" . }}
+          port:
+            number: 8082

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      containers:
+      - name: mssql
+        image: mcr.microsoft.com/mssql/server:2019-CU27-ubuntu-20.04
+        ports:
+        - containerPort: 1433
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: MSSQL_ENABLE_HADR
+          value: "1"
+        - name: MSSQL_AGENT_ENABLED
+          value: "1"
+        - name: MSSQL_SA_PASSWORD
+          value: "Testing@123"
+      - name: mssql-init
+        image: mcr.microsoft.com/mssql-tools:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Waiting for SQL Server to be available..."
+          until /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P 'Testing@123' -Q "SELECT 1" &> /dev/null
+          do
+              sleep 5
+          done
+          echo "SQL Server is ready, running initialization..."
+          /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P 'Testing@123' -C -Q "CREATE DATABASE artifactorydb; CREATE LOGIN artifactory WITH PASSWORD = 'Password@123';"
+          /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P 'Testing@123' -C -d artifactorydb -Q "CREATE USER artifactory FOR LOGIN artifactory; ALTER ROLE db_owner ADD MEMBER artifactory;"
+          tail -f /dev/null
+        volumeMounts:
+        - name: mssql-data
+          mountPath: /var/opt/mssql  # Default path for SQL Server data
+      volumes:
+        - name: mssql-data
+          emptyDir: {}
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+spec:
+  type: ClusterIP
+  ports:
+    - port: 1433
+  selector:
+    app: mssql

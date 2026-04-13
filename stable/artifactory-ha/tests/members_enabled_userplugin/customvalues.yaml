@@ -1,0 +1,103 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+
+artifactory:
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+    javaOpts:
+      xms: "4g"
+      xmx: "6g"
+      jmx:
+        enabled: true
+        port: 9010
+    replicaCount: 1
+  persistence:
+    enabled: false
+  license:
+    secret: rt-secret
+    dataKey: artifactory.lic
+  userPluginSecrets:
+   - hello-world-plugin-secrets
+
+access:
+  database:
+    maxOpenConnections: 80
+  tomcat:
+    connector:
+      maxThreads: 50
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+frontend:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+metadata:
+  database:
+    maxOpenConnections: 80
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+event:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+jfconnect:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+observability:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+  image:
+    tag: 15.6.0-debian-11-r16
+rtfs:
+  enabled: true
+
+jfbus:
+  enabled: true

@@ -1,0 +1,74 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 120
+    script: |
+      echo "=== Validating Gateway resource ==="
+      kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o yaml || { echo "FAIL: Gateway rtgwapi-artifactory-ha-gateway not found"; exit 1; }
+
+      gwclass=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.gatewayClassName}')
+      if [ "$gwclass" != "nginx" ]; then
+        echo "FAIL: Expected gatewayClassName=nginx, got=$gwclass"; exit 1
+      fi
+
+      http_listener=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[0].name}')
+      if [ "$http_listener" != "http" ]; then
+        echo "FAIL: Expected first listener name=http, got=$http_listener"; exit 1
+      fi
+
+      http_port=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[0].port}')
+      if [ "$http_port" != "80" ]; then
+        echo "FAIL: Expected HTTP listener port=80, got=$http_port"; exit 1
+      fi
+
+      https_check=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[?(@.name=="https")].name}')
+      if [ -n "$https_check" ]; then
+        echo "FAIL: HTTPS listener should not exist without TLS config"; exit 1
+      fi
+
+      echo "Gateway basic validation passed"
+
+  - timeout: 120
+    script: |
+      echo "=== Validating HTTPRoute resource ==="
+      kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o yaml || { echo "FAIL: HTTPRoute rtgwapi-artifactory-ha-httproute not found"; exit 1; }
+
+      hostname=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.hostnames[0]}')
+      if [ "$hostname" != "test.gateway.artifactory.jfrog.org" ]; then
+        echo "FAIL: Expected hostname=test.gateway.artifactory.jfrog.org, got=$hostname"; exit 1
+      fi
+
+      parentRef=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.parentRefs[0].name}')
+      if [ "$parentRef" != "rtgwapi-artifactory-ha-gateway" ]; then
+        echo "FAIL: Expected parentRef=rtgwapi-artifactory-ha-gateway, got=$parentRef"; exit 1
+      fi
+
+      routerPath=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.rules[0].matches[0].path.value}')
+      if [ "$routerPath" != "/" ]; then
+        echo "FAIL: Expected routerPath=/, got=$routerPath"; exit 1
+      fi
+
+      routerBackend=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.rules[0].backendRefs[0].name}')
+      if [ "$routerBackend" != "rtgwapi-artifactory-ha" ]; then
+        echo "FAIL: Expected router backendRef=rtgwapi-artifactory-ha, got=$routerBackend"; exit 1
+      fi
+
+      routerPort=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.rules[0].backendRefs[0].port}')
+      if [ "$routerPort" != "8082" ]; then
+        echo "FAIL: Expected router port=8082, got=$routerPort"; exit 1
+      fi
+
+      artPath=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.rules[1].matches[0].path.value}')
+      if [ "$artPath" != "/artifactory/" ]; then
+        echo "FAIL: Expected artifactoryPath=/artifactory/, got=$artPath"; exit 1
+      fi
+
+      artPort=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.spec.rules[1].backendRefs[0].port}')
+      if [ "$artPort" != "8081" ]; then
+        echo "FAIL: Expected artifactory port=8081, got=$artPort"; exit 1
+      fi
+
+      echo "HTTPRoute validation passed"
+
+  - timeout: 60
+    script: kubectl get statefulset rtgwapi-artifactory-ha-primary -n ${NAMESPACE} -o jsonpath='{.status.readyReplicas}' | grep -q 1 || exit 1

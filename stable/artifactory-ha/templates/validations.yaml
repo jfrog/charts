@@ -1,3 +1,14 @@
+{{- if and .Values.enforceClusterKeysValidation .Values.jfbus.enabled }}
+{{- if ne (include "artifactory-ha.clusterKeysConfigurationValid" .) "true" }}
+{{- fail (include "artifactory-ha.clusterKeysValidationFailMessage" .) }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.gatewayApi.enabled }}
+    {{- if not (or (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1beta1")) }}
+        {{- fail "\n\ngatewayApi.enabled is true but Gateway API CRDs (gateway.networking.k8s.io) are not installed in the cluster.\n" }}
+    {{- end }}
+{{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     {{- if  not (default .Values.databaseUpgradeReady false )  }}
         {{- fail (tpl ( $.Files.Get "files/postgresUpgradeWarning.txt" ) .) }}

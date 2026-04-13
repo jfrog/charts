@@ -1,0 +1,15 @@
+# Overrides for install test: use Gateway API instead of Ingress (use with customvalues.yaml)
+ingress:
+  enabled: false
+
+artifactory:
+  primary:
+    replicaCount: 1
+
+gatewayApi:
+  enabled: true
+  gatewayClassName: nginx
+  hosts:
+    - test.ingress.artifactory.jfrog.org
+  routerPath: /
+  artifactoryPath: /artifactory/

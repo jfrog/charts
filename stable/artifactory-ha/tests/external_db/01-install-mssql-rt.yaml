@@ -1,0 +1,11 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # MSSQL
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  # - command: kubectl apply -f mssql-2019.yaml --namespace ${NAMESPACE}
+  # - command: kubectl rollout status statefulset/mssql -w -n ${NAMESPACE}
+  # - command: helm upgrade --install rtmssql ../../ --namespace ${NAMESPACE} -f mssql-values.yaml
+  # - command: kubectl rollout status statefulset/rtmssql-artifactory-ha-primary -w -n ${NAMESPACE}
+  # - command: helm uninstall rtmssql -n ${NAMESPACE}
+timeout: 600

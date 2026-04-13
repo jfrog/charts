@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 500
+    script: |
+      hostname=$(kubectl get svc rt-nginx -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+      echo "Received hostname is $hostname"
+      token=$(curl -s -u "admin:password" -XPOST "http://$hostname/access/api/v1/tokens" -d "scope=applied-permissions/user" | grep -o '"access_token":"[^"]*' |  cut -d'"' -f4)
+      response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $token" -XPOST "http://$hostname/access/api/v1/system/federation/validate_server" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"url\": \"http://rtt-artifactory-ha:8082/access\"}" -vk)
+      if [ "$response" -eq 204 ]; then
+          echo "Target Instance is successfully validated"
+      else
+          echo "Failed to verify server"
+          exit 1
+      fi

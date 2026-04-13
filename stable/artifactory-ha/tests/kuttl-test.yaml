@@ -1,0 +1,12 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+startKIND: false
+name: tests_rt_ha
+testDirs:
+  - .
+commands:
+  - command: chmod 600 kubeconfig
+  - command: helm repo add --force-update jfrog https://charts.jfrog.io
+  - command: helm repo update jfrog
+  - command: helm dep up ../../artifactory-ha
+timeout: 2700

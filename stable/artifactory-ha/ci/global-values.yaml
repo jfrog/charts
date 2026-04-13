@@ -13,14 +13,6 @@ artifactory:
     javaOpts:
       xms: "4g"
       xmx: "4g"
-  node:
-    resources:
-      requests:
-        memory: "4Gi"
-        cpu: "2"
-      limits:
-        memory: "6Gi"
-        cpu: "4"
   customInitContainersBegin: |
    - name: "custom-init-begin-local"
      image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}

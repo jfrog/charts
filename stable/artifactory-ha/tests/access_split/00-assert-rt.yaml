@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+      # To check service container health status
+       ../../../../test/scripts/checkContainerIsHealthy.sh "access" "rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary"

@@ -1,0 +1,58 @@
+global:
+  imagePullSecrets:
+    - entplus
+
+artifactory:
+  image:
+    digest: sha256:02495c5fca83b98ca7a2a58e0191ec67ede51ec7aecf2fc7ccd7ab63a06300a8
+
+## Init containers
+initContainers:
+  image:
+    digest: sha256:de64170a844b3e64a7296257916ae1ab9fe0730f01c2eb8fbadc98d5cc28e982
+
+router:
+  image:
+    digest: sha256:9782f7fc8703935fb72ca972fe86f7d0cc3818d430a1b2b48a740c100ec151d7
+
+frontend:
+  asPod: false
+
+rtfs:
+  enabled: true
+  image:
+    digest: sha256:ecfc6471593650c680dc59bd4da860706c5e5787a6679dc8a6c60e85a3052611
+
+jfbus:
+  enabled: true
+  image:
+    digest: sha256:46abff3d4c9c4ff41787d2ac756741f1a5feb9d154e306f2acda098d5427fe1c
+
+nginx:
+  image:
+    digest: sha256:b206b453797e08e7c47b91de500beb32925f4a3eec8f628d553735ff73b9b43e
+
+unifiedpolicy:
+  enabled: true
+  image:
+    digest: sha256:c2ee2f2d23056389cd3ef1a8de44bded963600ac266af4baf7a190bb71c9130b
+
+metadata:
+  enabled: true
+  image:
+    digest: sha256:02495c5fca83b98ca7a2a58e0191ec67ede51ec7aecf2fc7ccd7ab63a06300a8
+
+observability:
+  enabled: true
+  image:
+    digest: sha256:8a6d5632a8a9c2dd0d6540c316f4a4a3fca9913621bb2176465a476c03c6f2a4
+
+apptrust:
+  enabled: true
+  image:
+    digest: sha256:b1ff186a1f9d3b7f7a9dee6b3531973c59aa5eb520fdddec8dbbc0110de24494
+
+platformfederation:
+  enabled: true
+  image:
+    digest: sha256:42ce0723cea4c9f3cf9060c7f9323b54a1543e8f726c4bbea887fa7420bdd22f

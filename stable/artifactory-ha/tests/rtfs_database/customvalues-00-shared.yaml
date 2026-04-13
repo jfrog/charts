@@ -1,0 +1,31 @@
+# RTFS using shared Artifactory PostgreSQL (no dedicated rtfs.database.type)
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+  versions:
+    artifactory: 7.133.3
+    nginx: 7.125.9
+
+postgresql:
+  enabled: false
+
+waitForDatabase: true
+
+database:
+  allowNonPostgresql: false
+  type: postgresql
+  driver: org.postgresql.Driver
+  url: jdbc:postgresql://postgres-postgresql:5432/artifactory
+  user: artifactory
+  password: password
+
+artifactory:
+  unifiedSecretInstallation: false
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  primary:
+    replicaCount: 2
+
+rtfs:
+  enabled: true

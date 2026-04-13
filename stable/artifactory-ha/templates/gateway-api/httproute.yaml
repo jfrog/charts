@@ -1,0 +1,76 @@
+{{- if and .Values.gatewayApi.enabled .Values.gatewayApi.httpRoute.enabled (or (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1beta1")) -}}
+{{- $serviceName := include "artifactory-ha.fullname" . -}}
+{{- $servicePort := .Values.artifactory.externalPort -}}
+{{- $artifactoryServicePort := .Values.artifactory.externalArtifactoryPort -}}
+{{- $gatewayName := default (printf "%s-gateway" $serviceName) .Values.gatewayApi.name -}}
+{{- $httpRouteName := default (printf "%s-httproute" $serviceName) .Values.gatewayApi.httpRoute.name -}}
+{{- $pathType := .Values.gatewayApi.pathType | default "PathPrefix" -}}
+{{- $extensionFilterName := default (printf "%s-extension-filter" $serviceName) .Values.gatewayApi.extensionFilter.name -}}
+{{- $apiVersion := "gateway.networking.k8s.io/v1" -}}
+{{- if not (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") -}}
+{{- $apiVersion = "gateway.networking.k8s.io/v1beta1" -}}
+{{- end }}
+apiVersion: {{ $apiVersion }}
+kind: HTTPRoute
+metadata:
+  name: {{ $httpRouteName }}
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.gatewayApi.httpRoute.labels }}
+{{ toYaml .Values.gatewayApi.httpRoute.labels | indent 4 }}
+{{- end }}
+{{- if .Values.gatewayApi.httpRoute.annotations }}
+  annotations:
+{{ toYaml .Values.gatewayApi.httpRoute.annotations | indent 4 }}
+{{- end }}
+spec:
+  parentRefs:
+  - name: {{ $gatewayName }}
+  {{- if .Values.gatewayApi.hosts }}
+  hostnames:
+  {{- range .Values.gatewayApi.hosts }}
+  - {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  rules:
+  - matches:
+    - path:
+        type: {{ $pathType }}
+        value: {{ .Values.gatewayApi.routerPath | quote }}
+    {{- if or .Values.gatewayApi.httpRoute.filters .Values.gatewayApi.extensionFilter.enabled }}
+    filters:
+    {{- if .Values.gatewayApi.extensionFilter.enabled }}
+    - type: ExtensionRef
+      extensionRef:
+        group: {{ .Values.gatewayApi.extensionFilter.apiVersion | splitList "/" | first }}
+        kind: {{ .Values.gatewayApi.extensionFilter.kind }}
+        name: {{ $extensionFilterName }}
+    {{- end }}
+    {{- if .Values.gatewayApi.httpRoute.filters }}
+{{ toYaml .Values.gatewayApi.httpRoute.filters | indent 4 }}
+    {{- end }}
+    {{- end }}
+    backendRefs:
+    - name: {{ $serviceName }}
+      port: {{ $servicePort }}
+  {{- if not .Values.gatewayApi.disableRouterBypass }}
+  - matches:
+    - path:
+        type: {{ $pathType }}
+        value: {{ .Values.gatewayApi.artifactoryPath | quote }}
+    backendRefs:
+    - name: {{ $serviceName }}
+      port: {{ $artifactoryServicePort }}
+  {{- end }}
+  {{- with .Values.gatewayApi.additionalDirectRoutes }}
+  {{- range ternary . (list .) (kindIs "slice" .) }}
+{{ tpl . $ | indent 2 }}
+  {{- end }}
+  {{- end }}
+  {{- with .Values.gatewayApi.additionalRules }}
+{{ tpl . $ | indent 2 }}
+  {{- end }}
+{{- end }}

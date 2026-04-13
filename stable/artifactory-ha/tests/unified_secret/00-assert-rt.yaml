@@ -1,0 +1,34 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+      # To check custom secrets
+       ../../../../test/scripts/checkForCustomSecrets.sh "here the custom secret script" "artifactory-ha" "statefulset.kubernetes.io/pod-name=rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary" "rt-artifactory-ha-primary"
+
+      # To check mount paths
+       ../../../../test/scripts/checkSecretMount.sh "artifactory-ha-unified-secret-volume" "artifactory-ha" "statefulset.kubernetes.io/pod-name=rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary" "rt-artifactory-ha-primary" "rt-artifactory-ha-unified-secret"
+
+      # To check mount paths
+       ../../../../test/scripts/checkSecretMount.sh "systemyaml" "artifactory-ha" "statefulset.kubernetes.io/pod-name=rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary" "rt-artifactory-ha-primary" "rt-secret"
+
+      # To check image tags
+       ../../../../test/scripts/checkImageTagOrDigest.sh digests rt-artifactory-ha-primary ${NAMESPACE} "app=artifactory-ha"
+
+      # To check custom certs are present in jfbus container
+      JFBUS_POD=$(kubectl get pods -n ${NAMESPACE} -l component=jfbus -o jsonpath='{.items[0].metadata.name}')
+      kubectl exec -n "$NAMESPACE" "$JFBUS_POD" -c jfbus -- sh -c '
+        if [ ! -f /var/opt/jfrog/jfbus/etc/security/keys/trusted/dummy_cert.dummy_crt ]; then
+          echo "dummy_cert.dummy_crt not found in jfbus container"
+          exit 1
+        fi
+      '
+
+      # To check custom certs are present in rtfs container
+      RTFS_POD=$(kubectl get pods -n ${NAMESPACE} -l component=rtfs -o jsonpath='{.items[0].metadata.name}')
+       kubectl exec -n "$NAMESPACE" "$RTFS_POD" -c rtfs -- sh -c '
+        if [ ! -f /var/opt/jfrog/federation/etc/security/keys/trusted/dummy_cert.dummy_crt ]; then
+          echo "dummy_cert.dummy_crt not found in rtfs container"
+          exit 1
+        fi
+      '

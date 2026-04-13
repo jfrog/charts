@@ -1,0 +1,19 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+      # To check service container health status
+       ../../../../test/scripts/checkContainerIsHealthy.sh "evidence" "rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary"
+
+      # To check topology container is healthy 
+       ../../../../test/scripts/healthcheck.sh rt-artifactory-ha-primary-0 ${NAMESPACE} rt-artifactory-ha-primary
+
+      # To check jfconfig container is healthy 
+       ../../../../test/scripts/healthcheck.sh rt-artifactory-ha-primary-0 ${NAMESPACE} rt-artifactory-ha-primary
+
+      # To check extra jave opts
+       ../../../../test/scripts/checkSystemYamlKeyValue.sh "rt-artifactory-ha-unified-secret" "-XX:InitialRAMPercentage=21 -XX:MaxRAMPercentage=71"
+
+      # To check reset CA certs check
+       ../../../../test/scripts/checkForResetRootCA.sh "router" "rt-artifactory-ha-primary"

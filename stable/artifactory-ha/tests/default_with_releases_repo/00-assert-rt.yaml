@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+      # To check image registry
+       ../../../../test/scripts/checkImageRegistry.sh rt-nginx rt-artifactory-ha-primary ${NAMESPACE}

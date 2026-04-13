@@ -1,0 +1,23 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic rt-secret  --from-file=../unified_secret/artifactory.lic -n ${NAMESPACE}
+    ignoreFailure: true
+  - command: kubectl create secret generic hello-world-plugin-secrets --from-file=helloWorld.groovy -n ${NAMESPACE}
+  - command: helm upgrade --install rt jfrog/artifactory-ha --namespace ${NAMESPACE} --set "postgresql.postgresqlPassword=password" --set "postgresql.persistence.enabled=false" --set "artifactory.node.replicaCount=1" -f customvalues.yaml --version 107.104.10
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  # Deleting old sts and secret of psql, due to breaking changes of psql secret key
+  - command: kubectl delete secret rt-postgresql -n ${NAMESPACE}
+  - command: kubectl delete sts rt-postgresql -n ${NAMESPACE} --cascade=orphan
+  # Cleaning up orphaned member StatefulSet from old chart
+  - command: kubectl delete sts rt-artifactory-ha-member -n ${NAMESPACE}
+    ignoreFailure: true
+  # Upgrading Artifactory-ha to latest changes
+  - command: helm upgrade --install rt ../../  --namespace ${NAMESPACE} -f customvalues.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-nginx -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-jfbus -w -n ${NAMESPACE}
+timeout: 1400

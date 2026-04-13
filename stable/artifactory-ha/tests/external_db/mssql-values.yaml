@@ -1,0 +1,24 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+postgresql:
+  enabled: false
+
+waitForDatabase: true
+
+database:
+  allowNonPostgresql: true
+  type: mssql
+  driver: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  url: jdbc:sqlserver://mssql:1433;databaseName=artifactorydb;trustServerCertificate=true;sendStringParametersAsUnicode=false;
+  user: artifactory
+  password: Password@123
+
+artifactory:
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -L -o mssql-jdbc.jar https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/12.8.1.jre11/mssql-jdbc-12.8.1.jre11.jar"
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  primary:
+    replicaCount: 2

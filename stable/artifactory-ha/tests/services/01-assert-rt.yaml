@@ -1,0 +1,11 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+
+      # To check service container health status
+       ../../../../test/scripts/checkContainerIsHealthy.sh "artifactory-ha" "rt-artifactory-ha-primary-0" "rt-artifactory-ha-primary"
+
+      # To check extra jave opts
+       ../../../../test/scripts/checkSystemYamlKeyValue.sh "rt-artifactory-ha-unified-secret" "-XX:InitialRAMPercentage=21 -XX:MaxRAMPercentage=71"

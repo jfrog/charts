@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f customvalues.yaml -f ../../sizing/artifactory-small.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-jfbus -w -n ${NAMESPACE}
+timeout: 1400

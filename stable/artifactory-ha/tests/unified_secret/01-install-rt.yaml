@@ -1,0 +1,30 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  # Upgrading Artifactory-ha with unified secret installation as false and external secrets
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} --set "artifactory.unifiedSecretInstallation=false" -f customvalues_external_secrets.yaml -f customvolume.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-jfbus -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-unifiedpolicy -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-platformfederation -w -n ${NAMESPACE}
+  # Upgrading Artifactory with unified secret installation as false and custom licence key
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} --set "artifactory.unifiedSecretInstallation=false" -f customvalues_unified_false_keys_true.yaml -f customvolume.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-jfbus -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-unifiedpolicy -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-platformfederation -w -n ${NAMESPACE}
+  # Upgrading Artifactory-ha with unified secret installation as true
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} --set "artifactory.unifiedSecretInstallation=true" -f customvalues.yaml -f customvolume_unified.yaml  -f imageDigest.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+  - script: |
+      kubectl patch deployment rt-artifactory-ha-jfbus -n ${NAMESPACE} -p '{"spec":{"progressDeadlineSeconds": 1200}}'
+      kubectl patch deployment rt-artifactory-ha-unifiedpolicy -n ${NAMESPACE} -p '{"spec":{"progressDeadlineSeconds": 1200}}'
+  - command: kubectl rollout status deployment/rt-artifactory-ha-jfbus -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-unifiedpolicy -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-platformfederation -w -n ${NAMESPACE}
+timeout: 1700

@@ -1,0 +1,15 @@
+{{- if and .Values.gatewayApi.enabled .Values.gatewayApi.httpRoute.enabled .Values.gatewayApi.extensionFilter.enabled -}}
+{{- $serviceName := include "artifactory-ha.fullname" . -}}
+{{- $filterName := default (printf "%s-extension-filter" $serviceName) .Values.gatewayApi.extensionFilter.name -}}
+apiVersion: {{ required "gatewayApi.extensionFilter.apiVersion is required" .Values.gatewayApi.extensionFilter.apiVersion }}
+kind: {{ required "gatewayApi.extensionFilter.kind is required" .Values.gatewayApi.extensionFilter.kind }}
+metadata:
+  name: {{ $filterName }}
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+{{ toYaml .Values.gatewayApi.extensionFilter.spec | indent 2 }}
+{{- end }}

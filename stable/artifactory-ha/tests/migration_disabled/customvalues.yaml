@@ -1,0 +1,29 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+artifactory:
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  migration:
+    enabled: false
+  persistence:
+    enabled: false
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "6Gi"
+        cpu: "4"
+    javaOpts:
+      xms: "4g"
+      xmx: "4g"

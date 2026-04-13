@@ -1,0 +1,13 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic rt-secret  --from-file=../unified_secret/artifactory.lic -n ${NAMESPACE}
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f customvalues.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl cp ${NAMESPACE}/rt-artifactory-ha-primary-0:/opt/jfrog/artifactory/var/etc/access/keys/root.crt edge-root.crt -c artifactory-ha
+  - command: kubectl create secret generic edge-root-crt --from-file=./edge-root.crt -n ${NAMESPACE}
+  - command: helm upgrade --install rtt ../../ --namespace ${NAMESPACE} -f circleOfTrustValues.yaml
+  - command: kubectl rollout status statefulset/rtt-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1200

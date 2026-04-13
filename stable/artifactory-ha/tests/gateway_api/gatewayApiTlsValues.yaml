@@ -1,0 +1,12 @@
+gatewayApi:
+  tls:
+    - secretName: gateway-tls-secret
+  annotations:
+    gateway-test: "true"
+  labels:
+    test-label: gateway
+  httpRoute:
+    annotations:
+      httproute-test: "true"
+    labels:
+      test-label: httproute

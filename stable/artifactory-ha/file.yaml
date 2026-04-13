@@ -1,0 +1,70 @@
+
+access:
+  database:
+    maxOpenConnections: 80
+  extraJavaOpts: |
+    -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=70
+  tomcat:
+    connector:
+      extraConfig: acceptCount="100"
+      maxThreads: 50
+      sendReasonPhrase: false
+artifactory:
+  database:
+    maxOpenConnections: 80
+  tomcat:
+    connector:
+      extraConfig: acceptCount="400"
+      maxThreads: 200
+      sendReasonPhrase: false
+    maintenanceConnector:
+      host: 0.0.0.0
+      port: 8091
+evidence:
+  enabled: true
+frontend:
+  session:
+    timeMinutes: "30"
+jfbus:
+  enabled: true
+jfconfig:
+  database:
+    maxOpenConnections: 80
+  enabled: true
+  extraJavaOpts: |
+    -XX:+UseStringDeduplication -XX:+UseG1GC -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=70
+  port: 8010
+jfconnect:
+  enabled: true
+metadata:
+  database:
+    maxOpenConnections: 80
+onemodel:
+  enabled: true
+platformFederation:
+  enabled: false
+router:
+  serviceRegistry:
+    insecure: false
+rtfs:
+  enabled: false
+shared:
+  database:
+    allowNonPostgresql: false
+    driver: org.postgresql.Driver
+    host: ""
+    type: postgresql
+    url: jdbc:postgresql://rt-postgresql:5432/artifactory
+    username: artifactory
+  extraJavaOpts: |
+    -Dartifactory.graceful.shutdown.max.request.duration.millis=30000 -Dartifactory.access.client.max.connections=50
+  logging:
+    consoleLog:
+      enabled: false
+topology:
+  database:
+    maxOpenConnections: 80
+  enabled: true
+  extraJavaOpts: |
+    -XX:InitialRAMPercentage=20 -XX:MaxRAMPercentage=70
+  port: 8020

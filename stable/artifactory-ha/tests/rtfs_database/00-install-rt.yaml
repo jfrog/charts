@@ -1,0 +1,38 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Same namespace as the rest of this test: reject RTFS + non-PostgreSQL before any infra install
+  - script: |
+      output=$(helm upgrade --install rtfs-chart-validate-fail ../../ --namespace ${NAMESPACE} -f customvalues-negative-nonpostgresql.yaml 2>&1)
+      exitcode=$?
+      if [ "$exitcode" -eq 0 ]; then
+        echo "Expected helm to fail: RTFS requires PostgreSQL when database.type is not postgresql"
+        exit 1
+      fi
+      if ! echo "$output" | grep -q "RTFS requires PostgreSQL"; then
+        echo "Helm failed but not with expected RTFS PostgreSQL validation:"
+        echo "$output"
+        exit 1
+      fi
+      echo "Validation OK: RTFS + non-PostgreSQL rejected"
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: helm repo add bitnami https://charts.bitnami.com/bitnami
+  - command: helm repo update
+  - command: helm install postgres bitnami/postgresql -f psql.yaml -n ${NAMESPACE}
+  - command: kubectl rollout status statefulset/postgres-postgresql -w -n ${NAMESPACE}
+  - script: |
+      PGPASSWORD=$(kubectl get secret -n ${NAMESPACE} postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+      echo "Waiting for PostgreSQL to accept connections..."
+      until kubectl exec -n ${NAMESPACE} postgres-postgresql-0 -- pg_isready -U postgres; do
+        echo "PostgreSQL not ready yet, retrying in 3s..."
+        sleep 3
+      done
+      echo "PostgreSQL is ready."
+      kubectl exec -n ${NAMESPACE} postgres-postgresql-0 -- env PGPASSWORD=${PGPASSWORD} psql -U postgres -c "CREATE DATABASE rtfs;"
+      kubectl exec -n ${NAMESPACE} postgres-postgresql-0 -- env PGPASSWORD=${PGPASSWORD} psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE rtfs TO artifactory;"
+      kubectl exec -n ${NAMESPACE} postgres-postgresql-0 -- env PGPASSWORD=${PGPASSWORD} psql -U postgres -d rtfs -c "GRANT USAGE, CREATE ON SCHEMA public TO artifactory;"
+  - command: kubectl create secret generic rtfs-db-creds --from-literal=rtfs-db-url="jdbc:postgresql://postgres-postgresql:5432/rtfs" --from-literal=rtfs-db-user=artifactory --from-literal=rtfs-db-password=password -n ${NAMESPACE}
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f customvalues-00-shared.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+timeout: 900

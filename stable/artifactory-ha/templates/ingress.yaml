@@ -66,6 +66,11 @@ spec:
               port:
                 number: {{ $artifactoryServicePort }}
         {{- end }}
+        {{- with $.Values.ingress.additionalDirectRoutes }}
+        {{- range ternary . (list .) (kindIs "slice" .) }}
+{{ tpl . $ | indent 8 }}
+        {{- end }}
+        {{- end }}
     {{- end }}
   {{- else }}
     {{- range $host := .Values.ingress.hosts }}

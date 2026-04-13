@@ -1,0 +1,31 @@
+artifactory:
+  persistence:
+    type: aws-s3-v3
+    awsS3V3:
+      testConnection: false
+      region: us-east-1
+      bucketName: test-bucket
+      path: artifactory/filestore
+      useInstanceCredentials: true
+      usePresigning: false
+      signatureExpirySeconds: 300
+      signedUrlExpirySeconds: 30
+      enableSignedUrlRedirect: false
+      enablePathStyleAccess: false
+      maxConnections: 50
+      awsSdkV2: true
+      connectionAcquisitionTimeout: 5000
+      proxyHost: proxy.example.com
+      proxyPort: 8080
+      nonProxyHost: "localhost|*.internal.example.com"
+      proxyIdentity: proxyuser
+      proxyCredential: proxypass
+      disableChecksumValidation: true
+      disableChunkedEncoding: false
+      crtTargetThroughputInGbps: 10.0
+      crtEnableConnectionHealth: true
+      crtMinimumThroughputTimeoutSeconds: 5
+      crtMinimumThroughputInBps: 1048576
+      kmsClientSideEncryptionKeyId: arn:aws:kms:us-east-1:123456789012:key/test-key-id
+      server-side-encryption-aws-kms: true
+      encryptionFormat: REQUIRE_ENCRYPT_REQUIRE_DECRYPT

@@ -1,0 +1,16 @@
+gatewayApi:
+  extensionFilter:
+    enabled: true
+    apiVersion: gateway.nginx.org/v1alpha1
+    kind: SnippetsFilter
+    spec:
+      snippets:
+        - context: http.server
+          value: |
+            client_max_body_size 0;
+            proxy_read_timeout 600;
+            proxy_send_timeout 600;
+        - context: http.server.location
+          value: |
+            rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+            rewrite ^/(v2)/([^\/]*)(/.*) /artifactory/api/docker/$2/$1$3;

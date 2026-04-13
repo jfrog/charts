@@ -1,0 +1,26 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+containerSecurityContext:
+  enabled: true
+  readOnlyRootFilesystem: true
+
+databaseUpgradeReady: true
+## This is an exception here because HA needs masterKey to connect with other node members and it is commented in values to support 6.x to 7.x Migration
+## Please refer https://github.com/jfrog/charts/blob/master/stable/artifactory-ha/README.md#special-upgrade-notes-1
+artifactory:
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  joinKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  preStartCommand: "echo \"testing preStartCommand with readOnly after\" > /tmp/test.txt" 
+  customCertificates:
+      enabled: true
+      certificateSecretName: test-cert
+  
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false

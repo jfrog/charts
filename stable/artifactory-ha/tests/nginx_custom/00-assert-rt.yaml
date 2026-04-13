@@ -1,0 +1,47 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 100
+    script: |
+      kubectl port-forward svc/rt-nginx -n ${NAMESPACE} 8084:8084 8085:8085 &
+      PF_PID=$!
+      sleep 5
+      cleanup() { kill "${PF_PID}" 2>/dev/null; }
+      trap cleanup EXIT
+
+      # No GNU `timeout` or curl --connect-timeout in minimal images; -m caps total time per curl.
+      CURL_OPTS="-s -o /dev/null -m 30"
+      deadline=$(( $(date +%s) + 100 ))
+
+      while [ "$(date +%s)" -lt "${deadline}" ]; do
+        response=$(curl ${CURL_OPTS} -w "%{http_code}" -XGET "http://localhost:8084/artifactory/api/system/ping" -vk)
+        if [ "${response}" != "200" ]; then
+          echo "Waiting for nginx http (8084) ping... got ${response:-empty}"
+          sleep 3
+          continue
+        fi
+        echo "Updating external port for nginx worked!"
+
+        response=$(curl ${CURL_OPTS} -w "%{http_code}" -XGET "http://localhost:8085/artifactory/api/system/ping" -vk)
+        if [ "${response}" != "200" ]; then
+          echo "Waiting for custom port (8085) ping... got ${response:-empty}"
+          sleep 3
+          continue
+        fi
+        echo "Custom port for nginx worked!"
+
+        echo "Checking health of /artifactory endpoint"
+        STATUS_CODE=$(curl -L -s -o /dev/null -m 60 -w "%{http_code}" "http://localhost:8084/artifactory")
+        echo "URL: http://localhost:8084/artifactory"
+        echo "HTTP Status Code: ${STATUS_CODE}"
+
+        if [ "${STATUS_CODE}" = "200" ]; then
+          echo "✅ Endpoint is healthy"
+          exit 0
+        fi
+        echo "Waiting for /artifactory... got ${STATUS_CODE:-empty}"
+        sleep 3
+      done
+
+      echo "❌ Assertions did not pass within 100s"
+      exit 1

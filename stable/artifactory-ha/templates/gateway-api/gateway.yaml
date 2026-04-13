@@ -1,0 +1,60 @@
+{{- if and .Values.gatewayApi.enabled (or (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1beta1")) -}}
+{{- $serviceName := include "artifactory-ha.fullname" . -}}
+{{- $gatewayName := default (printf "%s-gateway" $serviceName) .Values.gatewayApi.name -}}
+{{- $apiVersion := "gateway.networking.k8s.io/v1" -}}
+{{- if not (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") -}}
+{{- $apiVersion = "gateway.networking.k8s.io/v1beta1" -}}
+{{- end }}
+apiVersion: {{ $apiVersion }}
+kind: Gateway
+metadata:
+  name: {{ $gatewayName }}
+  labels:
+    app: {{ template "artifactory-ha.name" . }}
+    chart: {{ template "artifactory-ha.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.gatewayApi.labels }}
+{{ toYaml .Values.gatewayApi.labels | indent 4 }}
+{{- end }}
+{{- if .Values.gatewayApi.annotations }}
+  annotations:
+{{ toYaml .Values.gatewayApi.annotations | indent 4 }}
+{{- end }}
+spec:
+  gatewayClassName: {{ required "gatewayApi.gatewayClassName is required when gatewayApi.enabled is true" .Values.gatewayApi.gatewayClassName }}
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: {{ .Values.gatewayApi.httpExternalPort }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+{{- $ctx := dict "n" 0 -}}
+{{- range $tls := .Values.gatewayApi.tls }}
+{{- $hosts := $tls.hosts -}}
+{{- if not $hosts -}}
+{{-   $hosts = $.Values.gatewayApi.hosts -}}
+{{- end -}}
+{{- if not $hosts -}}
+{{-   $hosts = list "" -}}
+{{- end -}}
+{{- range $host := $hosts }}
+  - name: {{ if eq (index $ctx "n") 0 }}https{{ else }}{{ printf "https-%d" (index $ctx "n") }}{{ end }}
+    protocol: HTTPS
+    port: {{ $.Values.gatewayApi.httpsExternalPort }}
+{{- if $host }}
+    hostname: {{ $host | quote }}
+{{- end }}
+    allowedRoutes:
+      namespaces:
+        from: Same
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        name: {{ required "gatewayApi.tls[].secretName is required for each TLS entry" $tls.secretName }}
+{{- $_ := set $ctx "n" (add1 (index $ctx "n")) -}}
+{{- end }}
+{{- end }}
+{{- end }}

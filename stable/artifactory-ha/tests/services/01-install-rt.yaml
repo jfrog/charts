@@ -1,0 +1,13 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+
+  # Upgrading Artifactory with non split containers, including evidence, jfconfig and excluding topology service
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f services_nonsplit_topology_disabled.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+
+  # Upgrading Artifactory with non split containers, including evidence, jfconfig and topology service
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f evidence_nonsplit.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+
+timeout: 1400

@@ -1,0 +1,34 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+postgresql:
+  enabled: false
+
+waitForDatabase: true
+
+metadata:
+  extraEnvironmentVariables:
+    - name: LD_LIBRARY_PATH
+      value: /opt/jfrog/artifactory/app/artifactory/libaio/:/opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
+
+evidence:
+  extraEnvironmentVariables:
+    - name: LD_LIBRARY_PATH
+      value: /opt/jfrog/artifactory/app/artifactory/libaio/:/opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib
+
+database:
+  allowNonPostgresql: true
+  type: oracle
+  driver: oracle.jdbc.OracleDriver
+  url: jdbc:oracle:thin:@db19c-oracle-db23c-free:1521/ARTIFACTORYPDB
+  user: artifactoryuser
+  password: password
+
+artifactory:
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl -L -o oracle-jdbc.jar https://repo1.maven.org/maven2/com/oracle/ojdbc/ojdbc8/19.3.0.0/ojdbc8-19.3.0.0.jar; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl https://download.oracle.com/otn_software/linux/instantclient/2111000/instantclient-basic-linux.x64-21.11.0.0.0dbru.zip -o instantclient-basic-linux.x64-21.11.0.0.0dbru.zip && unzip -jn instantclient-basic-linux.x64-21.11.0.0.0dbru.zip && cp instantclient_21_11/ojdbc8.jar . && cp /opt/jfrog/artifactory/app/artifactory/libaio/*."
+  primary:
+    replicaCount: 2

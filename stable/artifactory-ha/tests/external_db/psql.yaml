@@ -1,0 +1,13 @@
+global:
+  postgresql:
+    auth:
+      password: password
+
+primary:
+  extraEnvVars:
+  - name: POSTGRES_USER
+    value: "artifactory"
+  - name: POSTGRES_PASSWORD
+    value: "password"
+  - name: POSTGRES_DB
+    value: "artifactory"

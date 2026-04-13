@@ -1,0 +1,78 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 120
+    script: |
+      echo "=== Validating extension filter template rendering ==="
+      output=$(helm template rtgwapi ../../ \
+        -f customvalues.yaml \
+        -f gatewayApiExtFilterValues.yaml \
+        --api-versions "gateway.networking.k8s.io/v1" \
+        --show-only templates/gateway-api/snippetsfilter.yaml 2>&1)
+      echo "$output"
+      echo "$output" | grep -q "kind: SnippetsFilter" || { echo "FAIL: SnippetsFilter kind not found in template output"; exit 1; }
+      echo "$output" | grep -q "rtgwapi-artifactory-ha-extension-filter" || { echo "FAIL: Extension filter name not found"; exit 1; }
+      echo "$output" | grep -q "client_max_body_size 0" || { echo "FAIL: SnippetsFilter spec not rendered correctly"; exit 1; }
+
+      echo "=== Validating extension filter is wired into HTTPRoute ==="
+      output=$(helm template rtgwapi ../../ \
+        -f customvalues.yaml \
+        -f gatewayApiExtFilterValues.yaml \
+        --api-versions "gateway.networking.k8s.io/v1" \
+        --show-only templates/gateway-api/httproute.yaml 2>&1)
+      echo "$output"
+      echo "$output" | grep -q "ExtensionRef" || { echo "FAIL: ExtensionRef filter not found in HTTPRoute"; exit 1; }
+      echo "$output" | grep -q "rtgwapi-artifactory-ha-extension-filter" || { echo "FAIL: Extension filter not referenced in HTTPRoute"; exit 1; }
+
+      echo "Extension filter template validation passed"
+
+  - timeout: 120
+    script: |
+      echo "=== Validating disableRouterBypass removes artifactory path rule ==="
+      output=$(helm template rtgwapi ../../ \
+        -f customvalues.yaml \
+        --set gatewayApi.disableRouterBypass=true \
+        --api-versions "gateway.networking.k8s.io/v1" \
+        --show-only templates/gateway-api/httproute.yaml 2>&1)
+      echo "$output"
+      if echo "$output" | grep -q "/artifactory/"; then
+        echo "FAIL: Router bypass should be disabled but /artifactory/ path found"; exit 1
+      fi
+      echo "disableRouterBypass validation passed"
+
+  - timeout: 120
+    script: |
+      echo "=== Validating httpRoute.enabled=false disables HTTPRoute ==="
+      output=$(helm template rtgwapi ../../ \
+        -f customvalues.yaml \
+        --set gatewayApi.httpRoute.enabled=false \
+        --api-versions "gateway.networking.k8s.io/v1" \
+        --show-only templates/gateway-api/httproute.yaml 2>&1 || true)
+      if echo "$output" | grep -q "kind: HTTPRoute"; then
+        echo "FAIL: HTTPRoute should not be rendered when httpRoute.enabled=false"; exit 1
+      fi
+      echo "httpRoute.enabled=false validation passed"
+
+  - timeout: 120
+    script: |
+      echo "=== Validating gatewayApi.enabled=false disables all Gateway API resources ==="
+      output=$(helm template rtgwapi ../../ \
+        -f customvalues.yaml \
+        --set gatewayApi.enabled=false \
+        --api-versions "gateway.networking.k8s.io/v1" \
+        --show-only templates/gateway-api/gateway.yaml 2>&1 || true)
+      if echo "$output" | grep -q "kind: Gateway"; then
+        echo "FAIL: Gateway should not be rendered when gatewayApi.enabled=false"; exit 1
+      fi
+
+      output=$(helm template rtgwapi ../../ \
+        -f customvalues.yaml \
+        --set gatewayApi.enabled=false \
+        --api-versions "gateway.networking.k8s.io/v1" \
+        --show-only templates/gateway-api/httproute.yaml 2>&1 || true)
+      if echo "$output" | grep -q "kind: HTTPRoute"; then
+        echo "FAIL: HTTPRoute should not be rendered when gatewayApi.enabled=false"; exit 1
+      fi
+
+      echo "gatewayApi.enabled=false validation passed"
+      echo "=== All template-based validations passed ==="

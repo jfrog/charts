@@ -1,0 +1,6 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: helm upgrade --install rtaccesstls ../../ --namespace ${NAMESPACE} -f accessTLScustomvalues.yaml
+timeout: 1400

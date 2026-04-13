@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rt-artifactory-ha-primary
+status:
+  replicas: 3
+  readyReplicas: 3
+
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+        echo "Checking systemYaml template with unifiedSecretInstallation disabled"
+        ../../../../test/scripts/checkTemplateValue.sh ../metrics/customvalues3.yaml templates/artifactory-system-yaml.yaml ../../.  "--set artifactory.unifiedSecretInstallation=false" '.stringData."system.yaml"' '.shared.metrics.enabled' "true"
+        ../../../../test/scripts/checkTemplateValue.sh ../metrics/customvalues3.yaml templates/artifactory-system-yaml.yaml ../../.  "--set artifactory.unifiedSecretInstallation=false" '.stringData."system.yaml"' '.shared.featureToggler.worker' "true"
+        ../../../../test/scripts/checkTemplateValue.sh ../metrics/customvalues3.yaml templates/artifactory-system-yaml.yaml ../../.  "--set artifactory.unifiedSecretInstallation=false" '.stringData."system.yaml"' '.shared.jfrogColdStorage.coldInstanceEnabled' "true"

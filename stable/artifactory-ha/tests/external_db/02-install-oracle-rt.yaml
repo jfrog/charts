@@ -1,0 +1,11 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # ORACLE
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl apply -f oracle-23.4.0.0.yaml --namespace ${NAMESPACE}
+  - command: kubectl rollout status statefulset/db19c-oracle-db23c-free -w -n ${NAMESPACE}
+  - command: helm upgrade --install rtoracle ../../ --namespace ${NAMESPACE} -f oracle-values.yaml
+  - command: kubectl rollout status statefulset/rtoracle-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: helm uninstall rtoracle -n ${NAMESPACE}
+timeout: 1200

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-rtfs
+spec:
+  template:
+    spec:
+      containers:
+        - name: rtfs
+          env:
+            - name: JF_SHARED_NODE_ID
+            - name: JF_RTFS_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rt-artifactory-ha-rtfs-database-creds
+                  key: rtfs-db-url
+            - name: JF_RTFS_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: rt-artifactory-ha-rtfs-database-creds
+                  key: rtfs-db-user
+            - name: JF_RTFS_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rt-artifactory-ha-rtfs-database-creds
+                  key: rtfs-db-password
+            - name: JF_SHARED_SECURITY_MASTERKEY
+            - name: JF_SHARED_SECURITY_JOINKEY
+        - name: router
+status:
+  replicas: 1
+  readyReplicas: 1

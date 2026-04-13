@@ -1,0 +1,63 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+
+artifactory:
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  primary:
+    replicaCount: 2
+  license:
+    secret: rt-secret
+    dataKey: artifactory.lic
+  loggers:
+  - access-audit.log
+  - access-request.log
+  - access-security-audit.log
+  - access-service.log
+  - artifactory-access.log
+  - artifactory-event.log
+  - artifactory-import-export.log
+  - artifactory-request.log
+  - artifactory-service.log
+  - frontend-request.log
+  - frontend-service.log
+  - metadata-request.log
+  - metadata-service.log
+  - router-request.log
+  - router-service.log
+  - router-traefik.log
+  - jfconfig-service.log
+  - jfconfig-request.log
+
+  catalinaLoggers:
+  - tomcat-catalina.log
+  - tomcat-localhost.log
+
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: true
+
+access:
+  enabled: true
+  accessConfig:
+    token: 
+      allow-basic-auth: true
+    security:
+      password-policy:
+        uppercase: 2
+        lowercase: 2
+        special-char: 1
+        digit: 1
+        length: 8
+        cannot-match-username: true
+        not-match-old: true
+      audit:
+        enabled: true 
+      tls: true

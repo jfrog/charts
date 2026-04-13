@@ -1,0 +1,30 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+
+platformfederation:
+  enabled: true
+jfbus:
+  enabled: true
+rtfs:
+  enabled: true
+evidence:
+  enabled: true
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+artifactory:
+  migration:
+    enabled: false
+  worker:
+    enabled: true
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  persistence:
+    enabled: false

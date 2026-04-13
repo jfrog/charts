@@ -1,0 +1,59 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 120
+    script: |
+      echo "=== Validating Gateway TLS configuration ==="
+
+      https_listener=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[?(@.name=="https")].name}')
+      if [ "$https_listener" != "https" ]; then
+        echo "FAIL: HTTPS listener not found on Gateway"; exit 1
+      fi
+
+      https_port=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[?(@.name=="https")].port}')
+      if [ "$https_port" != "443" ]; then
+        echo "FAIL: Expected HTTPS port=443, got=$https_port"; exit 1
+      fi
+
+      tls_mode=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[?(@.name=="https")].tls.mode}')
+      if [ "$tls_mode" != "Terminate" ]; then
+        echo "FAIL: Expected TLS mode=Terminate, got=$tls_mode"; exit 1
+      fi
+
+      cert_ref=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.spec.listeners[?(@.name=="https")].tls.certificateRefs[0].name}')
+      if [ "$cert_ref" != "gateway-tls-secret" ]; then
+        echo "FAIL: Expected certificateRef=gateway-tls-secret, got=$cert_ref"; exit 1
+      fi
+
+      echo "Gateway TLS validation passed"
+
+  - timeout: 120
+    script: |
+      echo "=== Validating Gateway annotations and labels ==="
+
+      ann=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.metadata.annotations.gateway-test}')
+      if [ "$ann" != "true" ]; then
+        echo "FAIL: Expected annotation gateway-test=true, got=$ann"; exit 1
+      fi
+
+      lbl=$(kubectl get gateway rtgwapi-artifactory-ha-gateway -n ${NAMESPACE} -o jsonpath='{.metadata.labels.test-label}')
+      if [ "$lbl" != "gateway" ]; then
+        echo "FAIL: Expected label test-label=gateway, got=$lbl"; exit 1
+      fi
+
+      echo "=== Validating HTTPRoute annotations and labels ==="
+
+      rt_ann=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.metadata.annotations.httproute-test}')
+      if [ "$rt_ann" != "true" ]; then
+        echo "FAIL: Expected HTTPRoute annotation httproute-test=true, got=$rt_ann"; exit 1
+      fi
+
+      rt_lbl=$(kubectl get httproute rtgwapi-artifactory-ha-httproute -n ${NAMESPACE} -o jsonpath='{.metadata.labels.test-label}')
+      if [ "$rt_lbl" != "httproute" ]; then
+        echo "FAIL: Expected HTTPRoute label test-label=httproute, got=$rt_lbl"; exit 1
+      fi
+
+      echo "Annotations and labels validation passed"
+
+  - timeout: 60
+    script: kubectl get statefulset rtgwapi-artifactory-ha-primary -n ${NAMESPACE} -o jsonpath='{.status.readyReplicas}' | grep -q 1 || exit 1

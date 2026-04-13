@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rt-artifactory-ha-primary
+status:
+  replicas: 2
+  readyReplicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rt-artifactory-ha-frontend
+status:
+  replicas: 3
+  readyReplicas: 3

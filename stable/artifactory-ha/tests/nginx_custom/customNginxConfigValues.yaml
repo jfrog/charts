@@ -1,0 +1,167 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+
+artifactory:
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  primary:
+    replicaCount: 2
+  persistence:
+    enabled: false
+  license:
+    secret: rt-secret
+    dataKey: artifactory.lic
+
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+
+access:
+  enabled: true
+  accessConfig:
+    token: 
+      allow-basic-auth: true
+
+nginx: 
+  enabled: true
+  http:
+    enabled: true
+    externalPort: 8084
+  https:
+    enabled: true
+    externalPort: 8089
+  customPorts:
+    - containerPort: 8085
+      name: artv2
+  service:
+    customPorts:
+      - port: 8085
+        targetPort: 8080
+        protocol: TCP
+        name: artv2
+  mainConf: |
+    # Main Nginx configuration file
+    worker_processes  4;error_log  /var/opt/jfrog/nginx/logs/error.log warn;
+    pid        /var/run/nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      variables_hash_max_size 1024;
+      variables_hash_bucket_size 64;
+      server_names_hash_max_size 4096;
+      server_names_hash_bucket_size 128;
+      types_hash_max_size 2048;
+      types_hash_bucket_size 64;
+      proxy_read_timeout 2400s;
+      client_header_timeout 2400s;
+      client_body_timeout 2400s;
+      proxy_connect_timeout 75s;
+      proxy_send_timeout 2400s;
+      proxy_buffer_size 128k;
+      proxy_buffers 40 128k;
+      proxy_busy_buffers_size 128k;
+      proxy_temp_file_write_size 250m;
+      proxy_http_version 1.1;
+      client_body_buffer_size 128k;
+
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+      '$status $body_bytes_sent "$http_referer" '
+      '"$http_user_agent" "$http_x_forwarded_for"';
+
+      log_format timing 'ip = $remote_addr '
+      'user = \"$remote_user\" '
+      'local_time = \"$time_local\" '
+      'host = $host '
+      'request = \"$request\" '
+      'status = $status '
+      'bytes = $body_bytes_sent '
+      'upstream = \"$upstream_addr\" '
+      'upstream_time = $upstream_response_time '
+      'request_time = $request_time '
+      'referer = \"$http_referer\" '
+      'UA = \"$http_user_agent\"';access_log /var/opt/jfrog/nginx/logs/access.log timing;
+
+      sendfile        on;
+      #tcp_nopush     on;
+
+      keepalive_timeout  65;
+
+      #gzip  on;
+
+      map $http_host $nginx_main_header {
+          default "This is from nginx main Conf";
+      }
+
+      include /etc/nginx/conf.d/*.conf;
+
+    }
+  artifactoryConf: |
+  
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_certificate  /var/opt/jfrog/nginx/ssl/tls.crt;
+    ssl_certificate_key  /var/opt/jfrog/nginx/ssl/tls.key;
+    ssl_session_cache shared:SSL:1m;
+    ssl_prefer_server_ciphers   on;
+    ## server configuration
+    server {listen 8443 ssl;listen 8080;
+    server_name ~(?<repo>.+)\.rt-artifactory-ha rt-artifactory-ha
+    ;
+
+    if ($http_x_forwarded_proto = '') {
+    set $http_x_forwarded_proto  $scheme;
+    }
+    set $host_port 443;
+    if ( $scheme = "http" ) {
+    set $host_port 80;
+    }
+    ## Application specific logs
+    ## access_log /var/log/nginx/artifactory-access.log timing;
+    ## error_log /var/log/nginx/artifactory-error.log;
+
+    if ( $repo != "" ) {
+    rewrite ^/(v1|v2)/(.*) /artifactory/api/docker/$repo/$1/$2 break;
+    }
+    chunked_transfer_encoding on;
+    client_max_body_size 0;
+
+    location / {
+    proxy_read_timeout  900;
+    proxy_pass_header   Server;
+    proxy_cookie_path   ~*^/.* /;
+    proxy_pass          http://rt-artifactory-ha:8082/;
+    proxy_set_header    X-JFrog-Override-Base-Url $http_x_forwarded_proto://$host;
+    proxy_set_header    X-Forwarded-Port  $server_port;
+    proxy_set_header    X-Forwarded-Proto $http_x_forwarded_proto;
+    proxy_set_header    Host              $http_host;
+    proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Artifactory-Custom-Header "This is a test header from application Conf";
+    add_header X-Nginx-Main-Header $nginx_main_header;
+    location /artifactory/ {
+        if ( $request_uri ~ ^/artifactory/(.*)$ ) {
+        proxy_pass       http://rt-artifactory-ha:8081/artifactory/$1;
+        }
+        proxy_pass         http://rt-artifactory-ha:8081/artifactory/;
+    }
+    location /pipelines/ {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $http_host;
+        proxy_pass  http://rt-artifactory-ha:8082;
+    }
+    }
+    }

@@ -1,0 +1,6 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: helm upgrade --install rtgrpc ../../ --namespace ${NAMESPACE} -f customValuesGrpc.yaml
+  - command: kubectl rollout status statefulset/rtgrpc-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1200

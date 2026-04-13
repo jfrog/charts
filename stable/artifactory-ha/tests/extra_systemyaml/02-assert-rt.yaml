@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 1400
+    script: |
+        echo "Checking systemYaml template with unifiedSecretInstallation enabled"
+        ../../../../test/scripts/checkTemplateValue.sh ../extra_systemyaml/customvalues2.yaml templates/artifactory-unified-secret.yaml ../../.  " " '.stringData."system.yaml"' '.shared.node.id' "my-node-merge"
+        ../../../../test/scripts/checkTemplateValue.sh ../extra_systemyaml/customvalues2.yaml templates/artifactory-unified-secret.yaml ../../.  " " '.stringData."system.yaml"' '.shared.node.ip' "10.0.0.1"
+        ../../../../test/scripts/checkTemplateValue.sh ../extra_systemyaml/customvalues2.yaml templates/artifactory-unified-secret.yaml ../../.  " " '.stringData."system.yaml"' '.shared.security.joinKey' "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+        ../../../../test/scripts/checkTemplateValue.sh ../extra_systemyaml/customvalues2.yaml templates/artifactory-unified-secret.yaml ../../.  " " '.stringData."system.yaml"' '.shared.database.type' "postgresql"

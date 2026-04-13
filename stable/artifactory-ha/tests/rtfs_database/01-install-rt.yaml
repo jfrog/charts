@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - command: helm upgrade rt ../../ --namespace ${NAMESPACE} -f customvalues-01-dedicated-inline.yaml
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+  - command: kubectl rollout status deployment/rt-artifactory-ha-rtfs -w -n ${NAMESPACE}
+timeout: 600

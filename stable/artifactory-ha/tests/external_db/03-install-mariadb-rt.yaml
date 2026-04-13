@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+ # MariaDB
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl apply -f mariadb-10.6.19-ubi9.yaml --namespace ${NAMESPACE}
+  - command: kubectl rollout status statefulset/mariadb -w -n ${NAMESPACE}
+  - command: helm upgrade --install rtmariadb ../../ --namespace ${NAMESPACE} -f mariadb-values.yaml
+  - command: kubectl rollout status statefulset/rtmariadb-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1200

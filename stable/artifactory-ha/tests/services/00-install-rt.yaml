@@ -1,0 +1,25 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  # Creating required secrets
+  - command: ../../../../test/scripts/createEntplusSecret.sh
+  - command: kubectl create secret generic rt-secret  --from-file=../unified_secret/artifactory.lic -n ${NAMESPACE}
+
+  # Installing artifactory for upgrade test
+  - command: helm upgrade --install rt jfrog/artifactory-ha --namespace ${NAMESPACE} -f customvalues.yaml --version 107.104.10
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+
+  # Deleting old sts and secret of psql
+  - command: kubectl delete secret rt-postgresql -n ${NAMESPACE}
+  - command: kubectl delete sts rt-postgresql -n ${NAMESPACE} --cascade=orphan
+  # Cleaning up orphaned member StatefulSet from old chart
+  - command: kubectl delete sts rt-artifactory-ha-member -n ${NAMESPACE}
+    ignoreFailure: true
+
+  # Upgrading Artifactory with split containers, including evidence service and jfconfig
+  - command: helm upgrade --install rt ../../ --namespace ${NAMESPACE} -f services.yaml
+  # Force-recreate old primary-0 pod so it picks up the new spec (postgresql secret key changed from postgresql-password to password)
+  - command: kubectl delete pod rt-artifactory-ha-primary-0 -n ${NAMESPACE}
+    ignoreFailure: true
+  - command: kubectl rollout status statefulset/rt-artifactory-ha-primary -w -n ${NAMESPACE}
+timeout: 1400

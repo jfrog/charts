@@ -1,0 +1,46 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+databaseUpgradeReady: true
+artifactory:
+  customVolumes: |
+    - name: custom-script
+      secret:
+       secretName: '{{ template "artifactory-ha.fullname" . }}-custom-secret'
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+    - name: custom-script
+      mountPath: "script.sh"
+      subPath: script.sh
+
+  customSecrets:
+   - name: custom-secret
+     key: script.sh
+     data: |
+       here the custom secret script
+
+frontend:
+  asPod: false
+
+rtfs:
+  enabled: true
+
+jfbus:
+  enabled: true
+
+unifiedpolicy:
+  enabled: true
+
+platformfederation:
+  enabled: true
+  customVolumes: |
+    - name: custom-script
+      secret:
+       secretName: '{{ template "artifactory-ha.fullname" . }}-custom-secret'
+
+postgresql:
+  image:
+    tag: 15.6.0-debian-11-r16

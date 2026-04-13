@@ -1,0 +1,24 @@
+global:
+  imageRegistry: docker.jfrog.io
+  imagePullSecrets:
+    - entplus
+
+postgresql:
+  enabled: false
+waitForDatabase: true
+database:
+  allowNonPostgresql: true
+  type: mysql
+  driver: com.mysql.jdbc.Driver
+  url: 'jdbc:mysql://my-mysql:3306/artifactory?characterEncoding=UTF-8&elideSetAutoCommits=true&useSSL=false'
+  user: artifactory
+  password: password
+shared:
+  database:
+    allowNonPostgresql: true
+artifactory:
+  masterKey: 7d5cbd4dfbaf266d76a603bead1cf6987020ebf22f73f740c1486a498702d58e
+  joinKey: 67aa87fbf0d7fdb3dc94bf5be6333e5eb8716f7b6151e2d4e4c80b7dec510780
+  preStartCommand: "mkdir -p /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib; cd /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib && curl https://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar -o /opt/jfrog/artifactory/var/bootstrap/artifactory/tomcat/lib/mysql-connector-java-5.1.41.jar; chmod 644 mysql-connector-java-5.1.41.jar"
+  primary:
+    replicaCount: 2

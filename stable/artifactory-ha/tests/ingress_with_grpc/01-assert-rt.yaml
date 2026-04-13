@@ -1,0 +1,39 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+commands:
+  - timeout: 200
+    script: |
+      kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8081:80 &
+      PF_PID=$!
+      sleep 5
+      cleanup() { kill "${PF_PID}" 2>/dev/null; }
+      trap cleanup EXIT
+
+      # No GNU `timeout` in minimal images; -m caps total time per curl.
+      CURL_OPTS="-s -o /dev/null -m 30"
+      deadline=$(( $(date +%s) + 100 ))
+      success=false
+
+      while [ "$(date +%s)" -lt "${deadline}" ]; do
+        response=$(curl ${CURL_OPTS} -w "%{http_code}" -H "Host: test.ingressgrpc.artifactory.jfrog.org" -XGET "http://localhost:8081/artifactory/api/system/ping" -vk)
+        if [ "${response}" != "200" ]; then
+          echo "Waiting for gRPC ingress ping... got ${response:-empty}"
+          sleep 3
+          continue
+        fi
+        echo "GRPC Ingress has been successfully created "
+
+        secretName=$(kubectl get ing rtgrpc-artifactory-ha-grpc -n ${NAMESPACE} -o jsonpath='{.spec.tls[0].secretName}')
+        if [ "${secretName}" = "cert-secret" ]; then
+          echo "TLS is enabled on the GRPC ingress"
+          success=true
+          break
+        fi
+        echo "TLS is not enabled on the GRPC ingress yet, secretName=${secretName:-empty}"
+        sleep 3
+      done
+
+      if [ "${success}" != "true" ]; then
+        echo "❌ gRPC ingress ping or TLS did not pass within 100s"
+        exit 1
+      fi
