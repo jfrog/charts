@@ -280,6 +280,9 @@
 
     {{- with .Values.artifactory.persistence.awsS3V3 }}
     <provider id="s3-storage-v3" type="s3-storage-v3">
+        {{- if .awssdkv2}}
+        <awsSdkV2>true</awsSdkV2>
+        {{- end }}
         <testConnection>{{ .testConnection }}</testConnection>
         {{- if .identity }}
         <identity>{{ .identity }}</identity>
@@ -457,10 +460,10 @@
         {{- end }}
         {{- end }}
         <endpoint>{{ .Values.artifactory.persistence.azureBlob.endpoint }}</endpoint>
-        <container>{{ .Values.artifactory.persistence.azureBlob.containerName }}</container> 
+        <container>{{ .Values.artifactory.persistence.azureBlob.containerName }}</container>
         <multiPartLimit>{{ .Values.artifactory.persistence.azureBlob.multiPartLimit | int64 }}</multiPartLimit>
         <multipartElementSize>{{ .Values.artifactory.persistence.azureBlob.multipartElementSize | int64 }}</multipartElementSize>
         <testConnection>{{ .Values.artifactory.persistence.azureBlob.testConnection }}</testConnection>
-    </provider>   
+    </provider>
 </config>
 {{- end }}
