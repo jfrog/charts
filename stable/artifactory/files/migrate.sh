@@ -70,7 +70,6 @@ XRAY_LABEL="Xray"
 POSTGRES_CONTAINER="postgres"
 ELASTICSEARCH_CONTAINER="elasticsearch"
 RABBITMQ_CONTAINER="rabbitmq"
-REDIS_CONTAINER="redis"
 
 #Adding a small timeout before a read ensures it is positioned correctly in the screen
 read_timeout=0.5
@@ -921,7 +920,6 @@ POSTGRES_USER=999
 NGINX_USER=104
 NGINX_GROUP=107
 ES_USER=1000
-REDIS_USER=999
 MONGO_USER=999
 RABBITMQ_USER=999
 LOG_FILE_PERMISSION=640
@@ -1739,24 +1737,6 @@ io_createElasticSearchDir() {
 
     createDir "${ELASTIC_DATA_ROOT}/data"
     io_setOwnership  "${ELASTIC_DATA_ROOT}" "${ES_USER}" "${ES_USER}" || errorExit "Setting ownership of [${ELASTIC_DATA_ROOT}] to [${ES_USER}:${ES_USER}] failed"
-}
-
-## Utility method to create third party folder structure necessary for Redis
-## Failure conditions:
-## If creation of directory or assigning permissions fails
-## Parameters: none
-## Globals:
-## REDIS_DATA_ROOT
-## Returns: none
-## NOTE: The method does NOTHING if the folder already exists
-io_createRedisDir() {
-    logDebug "Method ${FUNCNAME[0]}"
-    [ -z "${REDIS_DATA_ROOT}" ] && return 0
-
-    logDebug "Property [${REDIS_DATA_ROOT}] exists. Proceeding"
-
-    createDir "${REDIS_DATA_ROOT}"
-    io_setOwnership  "${REDIS_DATA_ROOT}" "${REDIS_USER}" "${REDIS_USER}" || errorExit "Setting ownership of [${REDIS_DATA_ROOT}] to [${REDIS_USER}:${REDIS_USER}] failed"
 }
 
 ## Utility method to create third party folder structure necessary for Mongo
@@ -2872,14 +2852,13 @@ updateConnectionString () {
     local mongoPath="shared.mongo.url"
     local rabbitmqPath="shared.rabbitMq.url"
     local postgresPath="shared.database.url"
-    local redisPath="shared.redis.connectionString"
     local mongoConnectionString="mongo.connectionString"
     local sourceKey=
     local hostIp=$(io_getPublicHostIP)
     local hostKey=
     
     if [[ "${INSTALLER}" == "${COMPOSE_TYPE}" || "${INSTALLER}" == "${HELM_TYPE}" ]]; then 
-    # Replace @postgres:,@mongodb:,@rabbitmq:,@redis: to @{hostIp}: (Compose Installer)
+    # Replace @postgres:,@mongodb:,@rabbitmq: to @{hostIp}: (Compose Installer)
         hostKey="@${hostIp}:"
         case $yamlPath in
             ${postgresPath})
@@ -2892,10 +2871,6 @@ updateConnectionString () {
             ;;
             ${rabbitmqPath})
                 sourceKey="@rabbitmq:"
-                value=$(io_replaceString "${value}" "${sourceKey}" "${hostKey}")
-            ;;
-            ${redisPath})
-                sourceKey="@redis:"
                 value=$(io_replaceString "${value}" "${sourceKey}" "${hostKey}")
             ;;
             ${mongoConnectionString})

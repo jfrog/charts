@@ -161,7 +161,7 @@ spec:
             echo "Waiting for Artifactory service to be ready..."
             ready=false;
             while ! $ready; do echo waiting;
-              curl --silent --output /dev/null --max-time 3 --fail http://{{ template "artifactory.fullname" . }}:{{ .Values.artifactory.internalPort }}/artifactory/api/v1/system/readiness; exit_status=$?;
+              curl -k --silent --output /dev/null --max-time 3 --fail "{{ tpl (include "artifactory.jfrogUrl" .) . }}/artifactory/api/v1/system/readiness"; exit_status=$?;
               if [[ $exit_status -eq 0 ]]; then ready=true; echo "Artifactory is ready. Proceeding..."; fi; sleep 1;
             done
         {{- end }}
@@ -384,7 +384,7 @@ spec:
         {{- end }}
 
         #########  unifiedSecretInstallation ###########
-      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.jfbus.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
         - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
           secret:
             secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"

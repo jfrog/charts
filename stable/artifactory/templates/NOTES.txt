@@ -123,3 +123,22 @@ It is recommended to change it by setting an explicit password with `postgresql.
 {{- end }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}
+
+{{- if and .Values.rtfs.enabled (eq .Values.rtfs.database.type "postgresql") }}
+  {{- $hasManualCreds := and .Values.rtfs.database.url .Values.rtfs.database.user .Values.rtfs.database.password -}}
+  {{- $hasSecrets := .Values.rtfs.database.secrets -}}
+  {{- if not (or $hasManualCreds $hasSecrets) }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+***WARNING*** RTFS is configured to use a dedicated PostgreSQL database but no credentials are provided.
+RTFS will fail to connect at startup. Supply credentials using one of the following methods:
+  1. Inline values: `rtfs.database.url`, `rtfs.database.user`, and `rtfs.database.password` must all be set.
+  2. Kubernetes Secrets: rtfs.database.secrets (url, user, password — each requires name and key)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+  {{- end }}
+{{- else if and .Values.rtfs.enabled (ne .Values.rtfs.database.type "postgresql") }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+NOTE: RTFS is using the shared Artifactory PostgreSQL database. This is suitable for standard
+deployments. For workload isolation or independent scaling, configure a dedicated RTFS database:
+set rtfs.database.type: postgresql with credentials via rtfs.database.url/user/password or rtfs.database.secrets.
+---------------------------------------------------------------------------------------------------------------------------------------------------
+{{- end }}

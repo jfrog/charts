@@ -1,0 +1,74 @@
+databaseUpgradeReady: true
+artifactory:
+  replicaCount: 1
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      memory: "4Gi"
+      cpu: "2"
+    limits:
+      memory: "6Gi"
+      cpu: "4"
+  javaOpts:
+    xms: "4g"
+    xmx: "4g"
+
+postgresql:
+  auth:
+    password: "password"
+  primary:
+    persistence:
+      enabled: false
+    extendedConfiguration: |
+      max_connections = 100
+
+frontend:
+  enabled: true
+  asPod: true
+  replicaCount: 1
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo Hello from the frontend preStop handler >> /tmp/message"]
+  autoscaling:
+    enabled: false
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+observability:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+nginx:
+  enabled: false
+
+ingress:
+  enabled: true
+  className: "testclass"
+  hosts:
+    - demonow.xyz

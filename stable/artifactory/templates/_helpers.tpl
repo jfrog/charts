@@ -285,6 +285,12 @@ Return the proper artifactory chart image names, with support for digest
     {{- if and $dot.Values.global.digests.observability (eq $indexReference "observability") }}
     {{- $digest = $dot.Values.global.digests.observability | toString -}}
     {{- end -}}
+    {{- if and $dot.Values.global.versions.frontend (eq $indexReference "frontend") }}
+    {{- $tag = $dot.Values.global.versions.frontend | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.digests.frontend (eq $indexReference "frontend") }}
+    {{- $digest = $dot.Values.global.digests.frontend | toString -}}
+    {{- end -}}
     {{- if and $dot.Values.global.versions.filebeat (eq $indexReference "filebeat") }}
     {{- $tag = $dot.Values.global.versions.filebeat | toString -}}
     {{- end -}}
@@ -398,7 +404,7 @@ Resolve requiredServiceTypes value
 {{- if .Values.event.enabled -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jfevt" -}}
 {{- end -}}
-{{- if .Values.frontend.enabled -}}
+{{- if and .Values.frontend.enabled (not .Values.frontend.asPod) -}}
   {{- $requiredTypes = printf "%s,%s" $requiredTypes "jffe" -}}
 {{- end -}}
 {{- if .Values.jfconnect.enabled -}}
@@ -452,6 +458,15 @@ nginx scheme (http/https)
 {{- printf "%s" "http" -}}
 {{- else -}}
 {{- printf "%s" "https" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check usage of curl --haproxy-protocol flag
+*/}}
+{{- define "curl.haproxyprotocol" -}}
+{{ if or (and .Values.nginx.http.enabled .Values.nginx.httpUseProxyProtocol) (and (not .Values.nginx.http.enabled) .Values.nginx.httpsUseProxyProtocol) }}
+{{- printf "%s" "--haproxy-protocol" -}}
 {{- end -}}
 {{- end -}}
 
@@ -678,6 +693,18 @@ Resolve customVolumes value
 {{- end -}}
 
 {{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory.rtfs.checkDuplicateUnifiedCustomVolume" -}}
+{{- if .Values.rtfs.customVolumes -}}
+{{- $val := (tpl (include "artifactory.rtfs.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Rtfs command
 */}}
 {{- define "rtfs.command" -}}
@@ -695,7 +722,7 @@ Rtfs command
 {{- else if .Values.rtfs.jfrogUrl -}}
 {{- .Values.rtfs.jfrogUrl -}}
 {{- else -}}
-{{- printf "http://%s:8082" (include "artifactory.fullname" .) -}}
+{{- printf "%s://%s:%v" (include "artifactory.scheme" .) (include "artifactory.fullname" .) .Values.artifactory.externalPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -771,6 +798,18 @@ AppTrust command
 {{- end -}}
 
 {{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory.apptrust.checkDuplicateUnifiedCustomVolume" -}}
+{{- if .Values.apptrust.customVolumes -}}
+{{- $val := (tpl (include "artifactory.apptrust.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
     Resolve jfrogUrl value
 */}}
 {{- define "apptrust.jfrogUrl" -}}
@@ -779,7 +818,7 @@ AppTrust command
 {{- else if .Values.apptrust.jfrogUrl -}}
 {{- .Values.apptrust.jfrogUrl -}}
 {{- else -}}
-{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- printf "%s://%s:%v" (include "artifactory.scheme" .) (include "artifactory.fullname" .) .Values.artifactory.externalPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -847,6 +886,18 @@ Resolve customVolumes value
 {{- end -}}
 
 {{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory.unifiedpolicy.checkDuplicateUnifiedCustomVolume" -}}
+{{- if .Values.unifiedpolicy.customVolumes -}}
+{{- $val := (tpl (include "artifactory.unifiedpolicy.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 unifiedpolicy command
 */}}
 {{- define "unifiedpolicy.command" -}}
@@ -864,7 +915,7 @@ unifiedpolicy command
 {{- else if .Values.unifiedpolicy.jfrogUrl -}}
 {{- .Values.unifiedpolicy.jfrogUrl -}}
 {{- else -}}
-{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- printf "%s://%s:%v" (include "artifactory.scheme" .) (include "artifactory.fullname" .) .Values.artifactory.externalPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -969,6 +1020,18 @@ Resolve JFbus customVolumes value
 {{- end -}}
 {{- end -}}
 
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory.jfbus.checkDuplicateUnifiedCustomVolume" -}}
+{{- if .Values.jfbus.customVolumes -}}
+{{- $val := (tpl (include "artifactory.jfbus.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
 
 {{/*
 Resolve Artifactory autoscalling metrics
@@ -997,7 +1060,7 @@ Resolve jfrogUrl for JFbus service
 {{- else if .Values.jfbus.jfrogUrl -}}
 {{- .Values.jfbus.jfrogUrl -}}
 {{- else -}}
-{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- printf "%s://%s:%v" (include "artifactory.scheme" .) (include "artifactory.fullname" .) .Values.artifactory.externalPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -1065,7 +1128,17 @@ Resolve PlatformFederation customVolumes value
 {{- end -}}
 {{- end -}}
 
-
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory.platformfederation.checkDuplicateUnifiedCustomVolume" -}}
+{{- if .Values.platformfederation.customVolumes -}}
+{{- $val := (tpl (include "artifactory.platformfederation.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
 
 {{/*
 PlatformFederation command
@@ -1085,7 +1158,7 @@ Resolve jfrogUrl for PlatformFederation service
 {{- else if .Values.platformfederation.jfrogUrl -}}
 {{- .Values.platformfederation.jfrogUrl -}}
 {{- else -}}
-{{- printf "http://%s:%s" (include "artifactory.fullname" .) (toString .Values.router.externalPort) -}}
+{{- printf "%s://%s:%v" (include "artifactory.scheme" .) (include "artifactory.fullname" .) .Values.artifactory.externalPort -}}
 {{- end -}}
 {{- end -}}
 
@@ -1122,5 +1195,116 @@ Resolve PlatformFederation autoscalling metrics
 {{- define "platformfederation.metrics" -}}
 {{- if .Values.platformfederation.autoscaling.metrics -}}
 {{- .Values.platformfederation.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+#############################
+## Frontend Pod Helpers
+#############################
+*/}}
+
+{{/*
+Create a default fully qualified app name for frontend.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "frontend.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- printf "%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") .Values.frontend.name -}}
+{{- else -}}
+{{- printf "%s-%s-%s" (.Release.Name | trunc 63 | trimSuffix "-") $name .Values.frontend.name -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve frontend customInitContainers value
+*/}}
+{{- define "artifactory.frontend.customInitContainers" -}}
+{{- if .Values.frontend.customInitContainers -}}
+{{- .Values.frontend.customInitContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve frontend customSidecarContainers value
+*/}}
+{{- define "artifactory.frontend.customSidecarContainers" -}}
+{{- if .Values.frontend.customSidecarContainers -}}
+{{- .Values.frontend.customSidecarContainers -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve frontend customVolumes value
+*/}}
+{{- define "artifactory.frontend.customVolumes" -}}
+{{- if .Values.frontend.customVolumes -}}
+{{- .Values.frontend.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check the Duplication of volume names for secrets. If unifiedSecretInstallation is enabled then the method is checking for volume names,
+if the volume exists in customVolume then an extra volume with the same name will not be getting added in unifiedSecretInstallation case.*/}}
+{{- define "artifactory.frontend.checkDuplicateUnifiedCustomVolume" -}}
+{{- if .Values.frontend.customVolumes -}}
+{{- $val := (tpl (include "artifactory.frontend.customVolumes" .) .) | toJson -}}
+{{- contains (include "artifactory.unifiedCustomSecretVolumeName" .) $val | toString -}}
+{{- else -}}
+{{- printf "%s" "false" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve frontend customVolumeMounts value
+*/}}
+{{- define "artifactory.frontend.customVolumeMounts" -}}
+{{- if .Values.frontend.customVolumeMounts -}}
+{{- .Values.frontend.customVolumeMounts -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve frontend autoscaling metrics
+*/}}
+{{- define "frontend.metrics" -}}
+{{- if .Values.frontend.autoscaling.metrics -}}
+{{- .Values.frontend.autoscaling.metrics -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve jfrogUrl value
+*/}}
+{{- define "artifactory.jfrogUrl" -}}
+{{- if .Values.global.jfrogUrl -}}
+{{- .Values.global.jfrogUrl -}}
+{{- else if .Values.jfrogUrl -}}
+{{- .Values.jfrogUrl -}}
+{{- else -}}
+{{- printf "%s://%s:%v" (include "artifactory.scheme" .) (include "artifactory.fullname" .) .Values.artifactory.externalPort -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve observability customVolumes value
+*/}}
+{{- define "artifactory.observability.customVolumes" -}}
+{{- if .Values.observability.customVolumes -}}
+{{- .Values.observability.customVolumes -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve router customVolumes value
+*/}}
+{{- define "artifactory.router.customVolumes" -}}
+{{- if .Values.router.customVolumes -}}
+{{- .Values.router.customVolumes -}}
 {{- end -}}
 {{- end -}}
