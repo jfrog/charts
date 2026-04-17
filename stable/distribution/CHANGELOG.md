@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.37.0] - Jan 19, 2026
+## [102.38.0] - Jan 19, 2026
 * Removed Redis - no longer part of Distribution
 
 ## [102.35.0] - Dec 02, 2025
