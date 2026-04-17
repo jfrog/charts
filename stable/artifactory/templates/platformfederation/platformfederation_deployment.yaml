@@ -390,7 +390,7 @@ spec:
             secretName: {{ .Values.systemYamlOverride.existingSecret }}
         {{- end }}
         #########  unifiedSecretInstallation ###########
-      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.platformfederation.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
         - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
           secret:
             secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
