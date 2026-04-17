@@ -4,6 +4,19 @@ This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** f
 
 For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
+> [!IMPORTANT]
+> ### Container Image Migration Notice
+>
+> To ensure long-term sustainability following recent pricing model changes from our current image provider, **we are migrating our container images to a new vendor.**
+>
+> | | |
+> |---|---|
+> | ✅ **Zero Disruption** | Your existing upstream charts will continue to work exactly as they do today — no modifications required on your end. |
+> | 🔄 **What Is Changing** | Only the image registries and tags will be updated. Chart structures and underlying functionality remain completely untouched. |
+> | 📅 **Timeline** | New images are currently under internal testing. Phased rollout targeted towards end of **Q2 2026**. Updated tag documentation will be shared well in advance. |
+>
+> Thank you for your patience — feel free to drop any questions in the [issues section](https://github.com/jfrog/charts/issues).
+
 ## Install Helm (only V3 is supported)
 
 Get the latest [Helm release](https://github.com/helm/helm#install).
