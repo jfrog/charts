@@ -100,45 +100,20 @@ SETUP:
 
    {{- end }}
 
-{{ if or .Values.artifactory.primary.javaOpts.jmx.enabled .Values.artifactory.node.javaOpts.jmx.enabled }}
+{{ if .Values.artifactory.primary.javaOpts.jmx.enabled }}
 JMX configuration:
 {{- if not (contains "LoadBalancer"  .Values.artifactory.service.type) }}
 If you want to access JMX from you computer with jconsole, you should set ".Values.artifactory.service.type=LoadBalancer" !!!
 {{ end }}
 
 1. Get the Artifactory service hostname:
-{{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
 export PRIMARY_SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.primary.name" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-{{- end }}
-{{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
-export MEMBER_SERVICE_HOSTNAME=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "artifactory-ha.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-{{- end }}
 
 2. Map the service name to the service hostname in /etc/hosts:
-{{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
 sudo sh -c "echo \"${PRIMARY_SERVICE_HOSTNAME}    {{ template "artifactory-ha.primary.name" . }}\" >> /etc/hosts"
-{{- end }}
-{{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
-sudo sh -c "echo \"${MEMBER_SERVICE_HOSTNAME}    {{ template "artifactory-ha.fullname" . }}\" >> /etc/hosts"
-{{- end }}
 
 3. Launch jconsole:
-{{- if .Values.artifactory.primary.javaOpts.jmx.enabled }}
 jconsole {{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.primary.javaOpts.jmx.port }}
-{{- end }}
-{{- if .Values.artifactory.node.javaOpts.jmx.enabled }}
-jconsole {{ template "artifactory-ha.fullname" . }}:{{ .Values.artifactory.node.javaOpts.jmx.port }}
-{{- end }}
-{{- end }}
-
-
-{{- if ge (.Values.artifactory.node.replicaCount | int) 1 }}
-***************************************** WARNING *****************************************************************************
-* Currently member node(s) are enabled, will be deprecated in upcoming releases                                              *
-* It is recommended to upgrade from primary-members to primary-only.                                                          *
-* It can be done by deploying the chart ( >=107.59.x) with the new values. Also, please refer to changelog of 107.59.x chart  *
-* More Info: https://jfrog.com/help/r/jfrog-installation-setup-documentation/cloud-native-high-availability                   *
-*******************************************************************************************************************************
 {{- end }}
 
 {{- if and .Values.nginx.enabled .Values.ingress.hosts }}
@@ -156,6 +131,15 @@ jconsole {{ template "artifactory-ha.fullname" . }}:{{ .Values.artifactory.node.
 *******************************************************************************************************************************
 {{- end }}
 
+{{- if .Values.artifactory.node }}
+***************************************** WARNING *****************************************************************************
+* 'artifactory.node' configuration is set but member nodes have been removed from this chart.                                 *
+* The 'artifactory.node' block is ignored. Please remove it from your values.                                                 *
+* Use 'artifactory.primary.replicaCount' to scale primary nodes instead.                                                      *
+* More Info: https://jfrog.com/help/r/jfrog-installation-setup-documentation/cloud-native-high-availability                   *
+*******************************************************************************************************************************
+{{- end }}
+
 {{- if .Values.postgresql.enabled }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
@@ -164,5 +148,24 @@ Use an external PostgreSQL database for production deployments.
 Currently, you are using the default password for postgresql user.
 It is recommended to change it by setting an explicit password with `postgresql.auth.postgresPassword`
 {{- end }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+{{- end }}
+
+{{- if and .Values.rtfs.enabled (eq .Values.rtfs.database.type "postgresql") }}
+  {{- $hasManualCreds := and .Values.rtfs.database.url .Values.rtfs.database.user .Values.rtfs.database.password -}}
+  {{- $hasSecrets := .Values.rtfs.database.secrets -}}
+  {{- if not (or $hasManualCreds $hasSecrets) }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+***WARNING*** RTFS is configured to use a dedicated PostgreSQL database but no credentials are provided.
+RTFS will fail to connect at startup. Supply credentials using one of the following methods:
+  1. Inline values: `rtfs.database.url`, `rtfs.database.user`, and `rtfs.database.password` must all be set.
+  2. Kubernetes Secrets: rtfs.database.secrets (url, user, password — each requires name and key)
+---------------------------------------------------------------------------------------------------------------------------------------------------
+  {{- end }}
+{{- else if and .Values.rtfs.enabled (ne .Values.rtfs.database.type "postgresql") }}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+NOTE: RTFS is using the shared Artifactory PostgreSQL database. This is suitable for standard
+deployments. For workload isolation or independent scaling, configure a dedicated RTFS database:
+set rtfs.database.type: postgresql with credentials via rtfs.database.url/user/password or rtfs.database.secrets.
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 {{- end }}

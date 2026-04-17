@@ -26,7 +26,7 @@
         "featureId": "Filebeat_Enabled/{{ .Values.filebeat.enabled }}"
       },
       {
-        "featureId": "ReplicaCount/{{ add .Values.artifactory.primary.replicaCount .Values.artifactory.node.replicaCount }}"
+        "featureId": "ReplicaCount/{{ .Values.artifactory.primary.replicaCount }}"
       }
     ]
 }
