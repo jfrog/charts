@@ -1,5 +1,8 @@
 # JFrog Container Registry Helm Chart
 
+> [!NOTE]
+> See the [JFrog Helm Charts README](https://github.com/jfrog/charts#container-image-migration-notice) for important notices including the container image migration.
+
 JFrog Container Registry is a free Artifactory edition with Docker and Helm repositories support.
 
 **Heads up: Our Helm Chart docs are moving to our main documentation site. For Artifactory installers, see [Installing Artifactory](https://www.jfrog.com/confluence/display/JFROG/Installing+Artifactory).**
