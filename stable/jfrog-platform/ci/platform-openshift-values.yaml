@@ -77,7 +77,14 @@ rabbitmq:
 worker:
   podSecurityContext:
     enabled: false
-  securityContext:
+  containerSecurityContext:
+    enabled: false
+
+# bridge subchart
+bridge:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
     enabled: false
 
 # xray subchart
