@@ -40,6 +40,13 @@ artifactory:
     containerSecurityContext:
       enabled: false
 
+# bridge subchart
+bridge:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
 # catalog subchart
 catalog:
   podSecurityContext:
@@ -100,3 +107,4 @@ xray:
       enabled: false
     containerSecurityContext:
       enabled: false
+

@@ -1,6 +1,13 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.5.0] - April 17, 2026
+* Update dependency artifactory chart version to 107.146.7
+* Update dependency catalog chart version to 101.35.2
+* Update dependency distribution chart version to 102.38.0
+* **IMPORTANT**
+* Added new dependency chart `bridge` which is disabled by default and set `bridge.enabled: true` to enable it. More info [here](https://jfrog.com/help/r/jfrog-installation-setup-documentation/install-bridge-client-service)
+
 ## [11.4.6] - April 06, 2026
 * Update dependency artifactory chart version to 107.133.17
 * Update dependency xray chart version to 103.137.27
