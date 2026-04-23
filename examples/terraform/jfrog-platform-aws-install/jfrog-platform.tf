@@ -13,6 +13,9 @@ provider "kubernetes" {
 
 # Fetch the JFrog Platform Helm chart and untar it to the current directory so we can use the sizing yaml files
 resource "null_resource" "fetch_platform_chart" {
+  triggers = {
+    version = var.jfrog_platform_chart_version
+  }
   provisioner "local-exec" {
     command = "rm -rf jfrog-platform-*.tgz"
   }
@@ -23,17 +26,9 @@ resource "null_resource" "fetch_platform_chart" {
 
 # Create an empty artifactory-license.yaml if missing
 resource "local_file" "empty_license" {
-  count = fileexists("${path.module}/artifactory-license.yaml") ? 0 : 1
+  count    = fileexists("${path.module}/artifactory-license.yaml") ? 0 : 1
   filename = "${path.module}/artifactory-license.yaml"
-  content = "## Empty file to satisfy Helm requirements"
-}
-
-# Set the cache-fs-size based on the sizing variable to 80% of the disk size
-locals {
-  cache-fs-size = (var.sizing == "large"  ? var.artifactory_disk_size_large * 0.8 :
-                  var.sizing == "xlarge"  ? var.artifactory_disk_size_large * 0.8 :
-                  var.sizing == "2xlarge" ? var.artifactory_disk_size_large * 0.8 :
-                  var.artifactory_disk_size_default * 0.8)
+  content  = "## Empty file to satisfy Helm requirements"
 }
 
 # Write the artifactory-custom.yaml file with the variables needed
@@ -42,7 +37,7 @@ resource "local_file" "jfrog_platform_values" {
   artifactory:
     artifactory:
       persistence:
-        maxCacheSize: "${local.cache-fs-size}000000000"
+        maxCacheSize: "${local.cache_fs_size}000000000"
         awsS3V3:
           region: "${var.region}"
           bucketName: "${local.artifactory_s3_bucket_name}"

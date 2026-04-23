@@ -4,6 +4,7 @@ resource "helm_release" "metrics_server" {
 
   name       = "metrics-server"
   chart      = "metrics-server"
+  version    = var.metrics_server_chart_version
   namespace  = "kube-system"
 
   # Repository to install the chart from

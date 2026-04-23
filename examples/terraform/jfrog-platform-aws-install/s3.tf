@@ -6,8 +6,9 @@ locals {
 resource "aws_s3_bucket" "artifactory_binarystore" {
   bucket = local.artifactory_s3_bucket_name
 
-  # WARNING: This will force the bucket to be destroyed even if it's not empty
-  force_destroy = true
+  # WARNING: force_destroy = true allows the bucket to be destroyed even if it contains objects.
+  # Set s3_force_destroy = false in terraform.tfvars to protect against accidental data loss.
+  force_destroy = var.s3_force_destroy
 
   tags = {
     Group = var.common_tag

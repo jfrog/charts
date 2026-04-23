@@ -38,7 +38,7 @@ module "eks" {
     eks_managed_node_group_defaults = {
         ami_type = var.ami_type
         iam_role_additional_policies = {
-            AmazonS3FullAccess = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+            AmazonS3FullAccess       = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
             AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
         }
         pre_bootstrap_user_data = <<-EOF
@@ -49,9 +49,9 @@ module "eks" {
             xvda = {
                 device_name = "/dev/xvda"
                 ebs = {
-                    volume_type = "gp3"
-                    volume_size = 50
-                    throughput  = 125
+                    volume_type           = "gp3"
+                    volume_size           = var.eks_root_volume_size
+                    throughput            = var.eks_root_throughput
                     delete_on_termination = true
                 }
             }
@@ -66,44 +66,19 @@ module "eks" {
         artifactory = {
             name = "${var.env_name}-artifactory"
 
-            instance_types = [(
-                var.sizing == "large"   ? var.artifactory_node_size_large :
-                var.sizing == "xlarge"  ? var.artifactory_node_size_large :
-                var.sizing == "2xlarge" ? var.artifactory_node_size_large :
-                var.artifactory_node_size_default
-            )]
-            min_size     = 1
-            max_size     = 10
-            desired_size = (
-                var.sizing == "medium"  ? 2 :
-                var.sizing == "large"   ? 3 :
-                var.sizing == "xlarge"  ? 4 :
-                var.sizing == "2xlarge" ? 6 :
-                1
-            )
+            instance_types = [local.s.artifactory_instance]
+            min_size       = 1
+            max_size       = 10
+            desired_size   = local.s.artifactory_desired
+
             block_device_mappings = {
                 xvda = {
                     device_name = "/dev/xvda"
                     ebs = {
-                        volume_type = "gp3"
-                        volume_size = (
-                            var.sizing == "large"   ? var.artifactory_disk_size_large :
-                            var.sizing == "xlarge"  ? var.artifactory_disk_size_large :
-                            var.sizing == "2xlarge" ? var.artifactory_disk_size_large :
-                            var.artifactory_disk_size_default
-                        )
-                        iops = (
-                            var.sizing == "large"   ? var.artifactory_disk_iops_large :
-                            var.sizing == "xlarge"  ? var.artifactory_disk_iops_large :
-                            var.sizing == "2xlarge" ? var.artifactory_disk_iops_large :
-                            var.artifactory_disk_iops_default
-                        )
-                        throughput = (
-                            var.sizing == "large"   ? var.artifactory_disk_throughput_large :
-                            var.sizing == "xlarge"  ? var.artifactory_disk_throughput_large :
-                            var.sizing == "2xlarge" ? var.artifactory_disk_throughput_large :
-                            var.artifactory_disk_throughput_default
-                        )
+                        volume_type           = "gp3"
+                        volume_size           = local.s.artifactory_disk_size
+                        iops                  = local.s.artifactory_disk_iops
+                        throughput            = local.s.artifactory_disk_throughput
                         delete_on_termination = true
                     }
                 }
@@ -117,21 +92,10 @@ module "eks" {
         nginx = {
             name = "${var.env_name}-nginx"
 
-            instance_types = [(
-                var.sizing == "xlarge"  ? var.nginx_node_size_large :
-                var.sizing == "2xlarge" ? var.nginx_node_size_large :
-                var.nginx_node_size_default
-            )]
-
-            min_size     = 1
-            max_size     = 10
-            desired_size = (
-                var.sizing == "medium"  ? 2 :
-                var.sizing == "large"   ? 2 :
-                var.sizing == "xlarge"  ? 2 :
-                var.sizing == "2xlarge" ? 3 :
-                1
-            )
+            instance_types = [local.s.nginx_instance]
+            min_size       = 1
+            max_size       = 10
+            desired_size   = local.s.nginx_desired
 
             labels = {
                 "group" = "nginx"
@@ -142,43 +106,19 @@ module "eks" {
         xray = {
             name = "${var.env_name}-xray"
 
-            instance_types = [(
-                var.sizing == "xlarge"  ? var.xray_node_size_xlarge :
-                var.sizing == "2xlarge" ? var.xray_node_size_xlarge :
-                var.xray_node_size_default
-            )]
-            min_size     = 1
-            max_size     = 10
-            desired_size = (
-                var.sizing == "medium"  ? 2 :
-                var.sizing == "large"   ? 3 :
-                var.sizing == "xlarge"  ? 4 :
-                var.sizing == "2xlarge" ? 6 :
-                1
-            )
+            instance_types = [local.s.xray_instance]
+            min_size       = 1
+            max_size       = 10
+            desired_size   = local.s.xray_desired
+
             block_device_mappings = {
                 xvda = {
                     device_name = "/dev/xvda"
                     ebs = {
-                        volume_type = "gp3"
-                        volume_size = (
-                            var.sizing == "large"   ? var.xray_disk_size_large :
-                            var.sizing == "xlarge"  ? var.xray_disk_size_large :
-                            var.sizing == "2xlarge" ? var.xray_disk_size_large :
-                            var.xray_disk_size_default
-                        )
-                        iops = (
-                            var.sizing == "large"   ? var.xray_disk_iops_large :
-                            var.sizing == "xlarge"  ? var.xray_disk_iops_large :
-                            var.sizing == "2xlarge" ? var.xray_disk_iops_large :
-                            var.xray_disk_iops_default
-                        )
-                        throughput = (
-                            var.sizing == "large"   ? var.xray_disk_throughput_large :
-                            var.sizing == "xlarge"  ? var.xray_disk_throughput_large :
-                            var.sizing == "2xlarge" ? var.xray_disk_throughput_large :
-                            var.xray_disk_throughput_default
-                        )
+                        volume_type           = "gp3"
+                        volume_size           = local.s.xray_disk_size
+                        iops                  = local.s.xray_disk_iops
+                        throughput            = local.s.xray_disk_throughput
                         delete_on_termination = true
                     }
                 }
@@ -194,10 +134,9 @@ module "eks" {
             name = "${var.env_name}-extra"
 
             instance_types = [var.extra_node_size]
-
-            min_size     = 0
-            max_size     = 3
-            desired_size = var.extra_node_count
+            min_size       = 0
+            max_size       = 3
+            desired_size   = var.extra_node_count
 
             labels = {
                 "group" = "extra"
@@ -220,17 +159,17 @@ resource "kubernetes_storage_class" "gp3_storage_class" {
             "storageclass.kubernetes.io/is-default-class" = "true"
         }
     }
-    storage_provisioner = "ebs.csi.aws.com"
-    volume_binding_mode = "WaitForFirstConsumer"
+    storage_provisioner    = "ebs.csi.aws.com"
+    volume_binding_mode    = "WaitForFirstConsumer"
     allow_volume_expansion = true
     parameters = {
         "fsType" = "ext4"
-        "type" = "gp3"
+        "type"   = "gp3"
     }
 }
 
 module "ebs_csi_irsa_role" {
-    source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+    source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
     version = "~> 5.0"
 
     role_name             = "ebs-csi-${module.eks.cluster_name}-${var.region}"
