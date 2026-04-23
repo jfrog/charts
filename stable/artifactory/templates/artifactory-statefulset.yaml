@@ -2062,6 +2062,10 @@ spec:
   {{- if and .enabled (not .existingClaim) }}
   - metadata:
       name: artifactory-volume
+    {{- with .annotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
     spec:
       {{- if .storageClassName }}
       {{- if (eq "-" .storageClassName) }}
