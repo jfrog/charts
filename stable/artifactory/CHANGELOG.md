@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.146.7] - Apr 14, 2026
+## [107.146.8] - Apr 14, 2026
 * Added support for configuring a dedicated PostgreSQL database for RTFS, separate from the main Artifactory database, using `rtfs.database.type: postgresql`
 * Added support for providing RTFS database credentials inline or via an external Kubernetes secret using `rtfs.database.secrets`
 * Added new AWS SDK v2 parameters to `awsS3V3` binarystore configuration
