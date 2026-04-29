@@ -3,6 +3,10 @@ router:
   serviceRegistry:
     insecure: {{ .Values.router.serviceRegistry.insecure }}
 shared:
+  {{- if .Values.xray.metrics.enabled }}
+  metrics:
+    enabled: true
+  {{- end }}
   logging:
     {{- if .Values.logging.logToStdoutJson }}
     enableJsonConsoleLogAppenders: {{ .Values.logging.logToStdoutJson }}

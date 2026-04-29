@@ -1,0 +1,42 @@
+{{- if and .Values.curation.separateRoute .Values.splitXraytoSeparateDeployments.fullSplit }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "xray.fullname" . }}-curation-headless
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    component: {{ .Values.xray.name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    {{- with .Values.xray.labels }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+{{- with .Values.curation.service }}
+{{- if .annotations }}
+  annotations:
+    {{- with .annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+{{- end }}
+spec:
+  type: {{ .type }}
+  {{- if .additionalSpec }}
+{{ tpl .additionalSpec $ | indent 2 }}
+  {{- end }}
+{{- end }}
+  ports:
+  - port: {{ .Values.curation.externalPort }}
+    protocol: TCP
+    name: http
+    targetPort: {{ .Values.curation.internalPort }}
+  - port: {{ .Values.router.externalPort }}
+    protocol: TCP
+    name: http-router
+    targetPort: {{ .Values.router.internalPort }}
+  selector:
+    app: {{ template "xray.name" . }}
+    component: {{ .Values.xray.name }}
+    release: {{ .Release.Name }}
+    servicename: curation
+{{- end }}

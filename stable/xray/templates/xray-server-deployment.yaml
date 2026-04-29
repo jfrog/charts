@@ -17,7 +17,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 or 15.2.0-debian-11-r23 or 15.10.0-debian-12-r2 or 16.6.0-debian-12-r2 and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x or 15.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 or 15.2.0-debian-11-r23 or 15.10.0-debian-12-r2 or 16.6.0-debian-12-r2 or 17.6.0-debian-12-r2 or 17.8.0-debian and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x or 15.x or 17.x" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.server.statefulset.annotations }}
   annotations:
@@ -55,22 +55,7 @@ spec:
       {{- else }}
         checksum/xray-unified-secret: {{ include (print $.Template.BasePath "/xray-unified-secret.yaml") . | sha256sum }}
       {{- end }}
-        {{- with .Values.analysis.annotations }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.indexer.annotations }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.persist.annotations }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
         {{- with .Values.server.annotations }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.router.annotations }}
-{{ toYaml . | indent 8 }}
-        {{- end }}
-        {{- with .Values.filebeat.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
       {{- with .Values.xray.annotations }}
@@ -394,6 +379,8 @@ spec:
               fieldPath: status.podIP
         - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
           value: {{ include "xray.router.server.requiredServiceTypes" . }}
+        - name: JF_ROUTER_TOPOLOGY_LOCAL_ENABLEUNHEALTHYONSERVICEDOWN
+          value: {{ include "router.topology.local.enableUnhealthyOnServiceDown" . }}
         {{- if .Values.router.extraEnvVars }}
         {{- tpl .Values.router.extraEnvVars . | nindent 8 }}
         {{- end }}
@@ -411,6 +398,10 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.router.resources | indent 10 }}
+{{- if .Values.router.startupProbe.enabled }}
+        startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.router.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.router.livenessProbe.config . | indent 10 }}
@@ -447,14 +438,18 @@ spec:
           mountPath: "{{ .Values.observability.persistence.mountPath }}"
         resources:
 {{ toYaml .Values.observability.resources | indent 10 }}
-      {{- if .Values.observability.startupProbe.enabled }}
+{{- if .Values.observability.startupProbe.enabled }}
         startupProbe:
 {{ tpl .Values.observability.startupProbe.config . | indent 10 }}
-      {{- end }}
-      {{- if .Values.observability.livenessProbe.enabled }}
+{{- end }}
+{{- if .Values.observability.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.observability.readinessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.observability.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.observability.livenessProbe.config . | indent 10 }}
-      {{- end }}
+{{- end }}
       - name: {{ .Values.server.name }}
         image: {{ include "xray.getImageInfoByValue" (list . "server") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -583,6 +578,10 @@ spec:
 {{- if .Values.server.startupProbe.enabled }}
         startupProbe:
 {{ tpl .Values.server.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.server.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.server.readinessProbe.config . | indent 10 }}
 {{- end }}
 {{- if .Values.server.livenessProbe.enabled }}
         livenessProbe:

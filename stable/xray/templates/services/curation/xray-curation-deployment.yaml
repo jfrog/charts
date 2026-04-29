@@ -1,22 +1,22 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and .Values.curation.separateRoute .Values.splitXraytoSeparateDeployments.fullSplit }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "xray.fullname" . }}-indexer
+  name: {{ template "xray.fullname" . }}-curation
   labels:
 {{ include "xray.labels" . | indent 4 }}
     heritage: {{ .Release.Service }}
-    servicename: indexer
+    servicename: curation
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
-{{- with .Values.indexer.deployment.annotations }}
+{{- with .Values.curation.deployment.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-{{- if not .Values.indexer.autoscaling.enabled }}
-  replicas: {{ .Values.indexer.replicaCount }}
+{{- if not .Values.curation.autoscaling.enabled }}
+  replicas: {{ .Values.curation.replicaCount }}
 {{- end }}
 {{- with .Values.deployment.strategy }}
   strategy:
@@ -27,18 +27,18 @@ spec:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
       component: {{ .Values.xray.name }}
-      servicename: indexer
+      servicename: curation
   template:
     metadata:
       labels:
 {{ include "xray.labels" . | indent 8 }}
-        servicename: indexer
+        servicename: curation
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 8 }}
     {{- end }}
       annotations:
 {{- include "xray.annotations" . | indent 8 }}
-        {{- with .Values.indexer.annotations }}
+        {{- with .Values.curation.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
         {{- with .Values.xray.annotations }}
@@ -50,9 +50,9 @@ spec:
 {{- include "xray.initContainers" . | indent 6 }}
       containers:
 {{- include "xray.observabilityContainer" . | nindent 6 }}
-{{- include "xray.routerContainer" (list . "indexer") | indent 6 }}
-      - name: {{ .Values.indexer.name }}
-        image: {{ include "xray.getImageInfoByValue" (list . "indexer") }}
+{{- include "xray.routerContainer" (list . "curation") | indent 6 }}
+      - name: {{ .Values.curation.name }}
+        image: {{ include "xray.getImageInfoByValue" (list . "curation") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
@@ -65,18 +65,16 @@ spec:
             echo "Running custom common preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-          {{- with .Values.indexer.preStartCommand }}
-            echo "Running custom Indexer preStartCommand command";
+          {{- with .Values.curation.preStartCommand }}
+            echo "Running custom curation preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
-        {{- with .Values.indexer.lifecycle }}
+        {{- with .Values.curation.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
         {{- end }}
         env:
-        - name: JF_SKIPENTLICCHECKFORCLOUD
-          value: "true"
       {{ include "xray.envVariables" . | indent 8 }}
       {{ include "xray.rabbitmqTlsEnvVariables" . | indent 8 }}
       {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
@@ -145,43 +143,50 @@ spec:
         - name: JF_SHARED_RABBITMQ_URL
           value: {{ include "rabbitmq.url" .}}
       {{- end }}
-        - name: XRAY_HA_NODE_ID
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
         - name: XRAY_K8S_ENV
           value: "true"
+        - name: EXECUTION_JOB_AES_KEY
+          valueFrom:
+            secretKeyRef:
+              {{- if not .Values.xray.unifiedSecretInstallation }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else if and .Values.xray.unifiedSecretInstallation (or .Values.xray.executionServiceAesKeySecretName .Values.global.executionServiceAesKeySecretName) }}
+              name: {{ template "xray.executionServiceAesKeySecretName" . }}
+              {{- else }}
+              name: "{{ template "xray.fullname" . }}-unified-secret"
+              {{- end }}
+              key: execution-service-aes-key
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
-        {{- if .Values.indexer.extraEnvVars }}
-        {{- tpl .Values.indexer.extraEnvVars . | nindent 8 }}
+        {{- if .Values.curation.extraEnvVars }}
+        {{- tpl .Values.curation.extraEnvVars . | nindent 8 }}
         {{- end }}
         ports:
-        - containerPort: {{ .Values.indexer.internalPort }}
-          name: http-indexer
+        - containerPort: {{ .Values.curation.internalPort }}
+          name: http-server
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
 {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
-{{- with .Values.indexer.customVolumeMounts }}
+{{- with .Values.curation.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
         resources:
-{{ toYaml .Values.indexer.resources | indent 10 }}
-{{- if .Values.indexer.startupProbe.enabled }}
+{{ toYaml .Values.curation.resources | indent 10 }}
+{{- if .Values.curation.startupProbe.enabled }}
         startupProbe:
-{{ tpl .Values.indexer.startupProbe.config . | indent 10 }}
+{{ tpl .Values.curation.startupProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.indexer.readinessProbe.enabled }}
+{{- if .Values.curation.readinessProbe.enabled }}
         readinessProbe:
-{{ tpl .Values.indexer.readinessProbe.config . | indent 10 }}
+{{ tpl .Values.curation.readinessProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.indexer.livenessProbe.enabled }}
+{{- if .Values.curation.livenessProbe.enabled }}
         livenessProbe:
-{{ tpl .Values.indexer.livenessProbe.config . | indent 10 }}
+{{ tpl .Values.curation.livenessProbe.config . | indent 10 }}
 {{- end }}
       {{- $mountPath := .Values.xray.persistence.mountPath }}
       {{- range .Values.xray.loggers }}
@@ -203,7 +208,7 @@ spec:
           subPath: tail-log.sh
         resources:
 {{ toYaml $.Values.xray.loggersResources | indent 10 }}
-{{- end }}
+      {{- end }}
       {{- if .Values.filebeat.enabled }}
 {{ include "xray.filebeat" . | nindent 6 }}
       {{- end }}
@@ -213,33 +218,31 @@ spec:
     {{- if or .Values.xray.nodeSelector .Values.global.nodeSelector }}
 {{ tpl (include "xray.nodeSelector" .) . | indent 6 }}
     {{- end }}
-    {{- if .Values.indexer.affinity }}
-    {{- with .Values.indexer.affinity }}
+    {{- if .Values.curation.affinity }}
+    {{- with .Values.curation.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- else if eq .Values.indexer.podAntiAffinity.type "soft" }}
+    {{- else if eq .Values.curation.podAntiAffinity.type "soft" }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
-                topologyKey: {{ .Values.indexer.podAntiAffinity.topologyKey }}
+                topologyKey: {{ .Values.curation.podAntiAffinity.topologyKey }}
                 labelSelector:
                   matchLabels:
                     app: {{ template "xray.name" . }}
                     release: {{ .Release.Name }}
-                    servicename: indexer
-    {{- else if eq .Values.indexer.podAntiAffinity.type "hard" }}
+    {{- else if eq .Values.curation.podAntiAffinity.type "hard" }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: {{ .Values.indexer.podAntiAffinity.topologyKey }}
+            - topologyKey: {{ .Values.curation.podAntiAffinity.topologyKey }}
               labelSelector:
                 matchLabels:
                   app: {{ template "xray.name" . }}
                   release: {{ .Release.Name }}
-                  servicename: indexer
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
@@ -265,7 +268,7 @@ spec:
       {{- end }}
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.indexer.persistence.size }}
+          sizeLimit: {{ .Values.curation.persistence.size }}
       {{- if and .Values.xray.unifiedSecretInstallation (eq (include "xray.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       #########  unifiedSecretInstallation ###########
       - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}

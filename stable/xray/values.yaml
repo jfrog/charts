@@ -12,6 +12,7 @@ global:
     # xray:
     # initContainers:
     # router:
+    # observability:
   # joinKey:
   # masterKey:
   # joinKeySecretName:
@@ -197,6 +198,13 @@ xray:
     ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
     type: "soft"
     topologyKey: "kubernetes.io/hostname"
+
+  ## Support for metrics is only.
+  ## To enable set `.Values.xray.metrics.enabled` to `true`
+  ## Note : Depricated openMetrics and renamed to `metrics`
+  ## Refer - https://www.jfrog.com/confluence/display/JFROG/Open+Metrics
+  metrics:
+    enabled: false
 
   ## System YAML entries now reside under files/system.yaml.
   ## You can provide the specific values that you want to add or override under 'xray.extraSystemYaml'.
@@ -417,7 +425,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: bitnami/postgresql
-    tag: 17.6.0-debian-12-r2
+    tag: 17.8.0-debian
   auth:
     username: "xray"
     password: ""
@@ -668,6 +676,7 @@ rabbitmq:
                 - get
                 - list
                 - delete
+                - watch
             - apiGroups:
                 - ""
               resources:
@@ -677,6 +686,14 @@ rabbitmq:
                 - get
                 - patch
                 - delete
+            - apiGroups:
+                - ""
+              resources:
+                - persistentvolumeclaims
+              verbs:
+                - get
+                - list
+                - patch
   networkPolicy:
     enabled: true
     extraIngress: |
@@ -1014,6 +1031,8 @@ analysis:
           value: "1000"
         - name: analysisExistingContent
           value: "30"
+        - name: rpc_analysis
+          value: "30"
 
   # Add lifecycle hooks for the analysis pod
   lifecycle: {}
@@ -1055,6 +1074,18 @@ analysis:
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.analysis.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
 
   ## Custom command to run before Xray Analysis startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -1126,6 +1157,8 @@ sbom:
           value: "30"
         - name: userCatalogExistingContent
           value: "30"
+        - name: rpc_sbom
+          value: "30"
 
   # Add lifecycle hooks for the indexer pod
   lifecycle: {}
@@ -1148,11 +1181,9 @@ sbom:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.sbom.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.sbom.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1162,121 +1193,26 @@ sbom:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.sbom.internalPort }}/api/v1/system/readiness
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.sbom.internalPort }}
       initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
-  ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
-  preStartCommand:
-
-  resources: {}
-  #  requests:
-  #    memory: "1Gi"
-  #    cpu: "100m"
-  #  limits:
-  #    memory: "2Gi"
-  #    cpu: "1"
-
-panoramic:
-  enabled: false
-  name: xray-panoramic
-  ## Note that by default we use appVersion to get image tag/version
-  image:
-    registry: releases-docker.jfrog.io
-    repository: jfrog/xray-panoramic
-  internalPort: 7007
-  externalPort: 7007
-  annotations: {}
-  extraEnvVars:
-  replicaCount: 1
-  persistence:
-    size: 50Gi
-
-  affinity: {}
-  ## Only used if "affinity" is empty
-  podAntiAffinity:
-    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
-    type: "soft"
-    topologyKey: "kubernetes.io/hostname"
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 70
-    targetMemoryUtilizationPercentage: 90
-    ## Specify if using the keda hpa or regular basic hpa
-    ## Note: keda should be installed on the target cluster
-    ## Ref: https://keda.sh/docs/2.10/deploy/
-    keda:
-      enabled: false
-      annotations: {}
-      scaleUp:
-        stabilizationWindowSeconds: 90
-        policies:
-          - type: Pods
-            value: 3
-            periodSeconds: 30
-      scaleDown:
-        stabilizationWindowSeconds: 90
-        policies:
-          - type: Pods
-            value: 1
-            periodSeconds: 30
-      pollingInterval: 10
-      cooldownPeriod: 10
-      queues: []
-
-  # Add lifecycle hooks for the indexer pod
-  lifecycle: {}
-    # postStart:
-    #   exec:
-    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
-    # preStop:
-    #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
-
-  ## Add custom volumesMounts
-  customVolumeMounts: |
-  #  - name: custom-script
-  #    mountPath: /scripts/script.sh
-  #    subPath: script.sh
-
-  deployment:
-    annotations: {}
-
-  livenessProbe:
+  readinessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.panoramic.internalPort }}/api/v1/system/liveness
-      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
-      periodSeconds: 10
-      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.sbom.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 3
-      successThreshold: 1
-
-  startupProbe:
-    enabled: true
-    config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.panoramic.internalPort }}/api/v1/system/readiness
-      initialDelaySeconds: 30
-      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
+
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -1338,6 +1274,8 @@ policyenforcer:
       queues:
         - name: policyEnforcer
           value: "30"
+        - name: rpc_policyenforcer
+          value: "30"
 
   # Add lifecycle hooks for the indexer pod
   lifecycle: {}
@@ -1360,11 +1298,9 @@ policyenforcer:
   livenessProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.policyenforcer.internalPort }}/api/v1/system/liveness
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.policyenforcer.internalPort }}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
       periodSeconds: 10
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
@@ -1374,15 +1310,26 @@ policyenforcer:
   startupProbe:
     enabled: true
     config: |
-      exec:
-        command:
-          - sh
-          - -c
-          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.policyenforcer.internalPort }}/api/v1/system/readiness
-      initialDelaySeconds: 30
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.policyenforcer.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.policyenforcer.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
+
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -1459,6 +1406,8 @@ indexer:
           value: "30"
         - name: indexExistsContent
           value: "30"
+        - name: rpc_indexer
+          value: "30"
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -1491,6 +1440,18 @@ indexer:
       failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.indexer.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
 
   ## Custom command to run before Xray Indexer startup. Runs AFTER the common.preStartCommand
   preStartCommand:
@@ -1558,6 +1519,8 @@ persist:
           value: "30"
         - name: persistExistingContent
           value: "30"
+        - name: rpc_persist
+          value: "30"
 
   # Add lifecycle hooks for the persist pod
   lifecycle: {}
@@ -1600,7 +1563,150 @@ persist:
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.persist.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
+
   ## Custom command to run before Xray Persist startup. Runs AFTER the common.preStartCommand
+  preStartCommand:
+
+  resources: {}
+  #  requests:
+  #    memory: "1Gi"
+  #    cpu: "100m"
+  #  limits:
+  #    memory: "2Gi"
+  #    cpu: "1"
+
+curation:
+  name: xray-curation
+  separateRoute: false
+  ## Note that by default we use appVersion to get image tag/version
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/xray-curation
+    # tag:
+  internalPort: 7008
+  externalPort: 7008
+  annotations: {}
+  extraEnvVars:
+  replicaCount: 2
+  # Add lifecycle hooks for the insight pods
+  lifecycle: {}
+    # postStart:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+    # preStop:
+    #   exec:
+    #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+
+  # mailServer: ""
+  # indexAllBuilds: false
+  persistence:
+    size: 50Gi
+
+  affinity: {}
+  ## Only used if "affinity" is empty
+  podAntiAffinity:
+    ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
+    type: "soft"
+    topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 90
+    ## Specify if using the keda hpa or regular basic hpa
+    ## Note: keda should be installed on the target cluster
+    ## Ref: https://keda.sh/docs/2.10/deploy/
+    keda:
+      enabled: false
+      annotations: {}
+      scaleUp:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 3
+            periodSeconds: 30
+      scaleDown:
+        stabilizationWindowSeconds: 90
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 30
+      pollingInterval: 10
+      cooldownPeriod: 10
+      queues: []
+
+  ## Add custom volumesMounts
+  customVolumeMounts: |
+  #  - name: custom-script
+  #    mountPath: /scripts/script.sh
+  #    subPath: script.sh
+
+  service:
+    type: ClusterIP
+    name: xray
+    annotations: {}
+    ## Provide additional spec to xray service
+    ## Example:
+    ## additionalSpec: |
+    ##   customKey: customVal
+    ##
+    additionalSpec: |
+
+  statefulset:
+    annotations: {}
+
+  deployment:
+    annotations: {}
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.curation.internalPort }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.curation.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.curation.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
+
+  ## Custom command to run before Xray Curation startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
   resources: {}
@@ -1718,6 +1824,18 @@ server:
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
 
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.server.internalPort }}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
+
   ## Custom command to run before Xray Server startup. Runs AFTER the common.preStartCommand
   preStartCommand:
 
@@ -1776,12 +1894,17 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.205.10
+    tag: 7.320.13
     imagePullPolicy: IfNotPresent
+
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled.
     ## Set to true in case access cert is self signed and routertlsEnabled flag is true.
     insecure: false
+  ## Router topology local: mark router unhealthy when a service is down (default: false)
+  topology:
+    local:
+      enableUnhealthyOnServiceDown: false
   internalPort: 8082
   externalPort: 8082
   tlsEnabled: false
@@ -1826,6 +1949,21 @@ router:
       failureThreshold: 5
       successThreshold: 1
 
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        httpHeaders:
+          - name: X-Jfrog-Ignore-Unhealthy
+            value: "true"
+        path: /router/api/v1/system/readiness
+        port: {{ .Values.router.internalPort }}
+        scheme: {{ include "xray.scheme" . | upper }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      failureThreshold: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
   readinessProbe:
     enabled: true
     config: | 
@@ -1850,7 +1988,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.31.0
+    tag: 2.35.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -1875,7 +2013,7 @@ observability:
     enabled: true
     config: |
       httpGet:
-        path: observability/api/v1/system/liveness
+        path: /observability/api/v1/system/liveness
         port: 8082
         scheme: {{ include "xray.scheme" . | upper}}
       initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
@@ -1888,13 +2026,26 @@ observability:
     enabled: true
     config: |
       httpGet:
-        path: observability/api/v1/system/readiness
+        path: /observability/api/v1/system/readiness
         port: 8082
         scheme: {{ include "xray.scheme" . | upper}}
       initialDelaySeconds: 30
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /observability/api/v1/system/readiness
+        port: 8082
+        scheme: {{ include "xray.scheme" . | upper}}
+      initialDelaySeconds: {{ .Values.probes.xrayStartup.initialDelaySeconds }}
+      failureThreshold: 3
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      successThreshold: 1
 
   persistence:
     mountPath: "/var/opt/jfrog/observability"
@@ -2001,6 +2152,10 @@ splitXraytoSeparateDeployments:
   fullSplit: false
 ## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
   gradualUpgrade: false
+## When kedaJobs is true, KEDA ScaledJobs are used instead of Deployments for services (indexer, persist, analysis, sbom, policyenforcer)
+## ScaledJobs allow services to shut down gracefully when not processing messages
+## Requires: fullSplit=true, kedaJobs=true, and service-specific autoscaling.keda.enabled=true
+  kedaJobs: false
 
 ###################################################################################
 ## This feature is not available for onprem installations.

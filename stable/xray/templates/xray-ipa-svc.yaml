@@ -42,12 +42,6 @@ spec:
     protocol: TCP
     targetPort: {{ .Values.sbom.internalPort }}
 {{- end }}
-{{- if .Values.panoramic.enabled }}
-  - name: http-panoramic
-    port: {{ .Values.panoramic.externalPort }}
-    protocol: TCP
-    targetPort: {{ .Values.panoramic.internalPort }}
-{{- end }}
   - name: http-polenf
     port: {{ .Values.policyenforcer.externalPort }}
     protocol: TCP

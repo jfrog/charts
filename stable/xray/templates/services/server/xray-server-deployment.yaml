@@ -180,6 +180,10 @@ spec:
         startupProbe:
 {{ tpl .Values.server.startupProbe.config . | indent 10 }}
 {{- end }}
+{{- if .Values.server.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.server.readinessProbe.config . | indent 10 }}
+{{- end }}
 {{- if .Values.server.livenessProbe.enabled }}
         livenessProbe:
 {{ tpl .Values.server.livenessProbe.config . | indent 10 }}

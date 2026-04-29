@@ -21,17 +21,10 @@ The xray-sbom name
 {{- end -}}
 
 {{/*
-The xray-panoramic name
-*/}}
-{{- define "xray-panoramic.name" -}}
-{{- default .Chart.Name .Values.panoramic.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
 The xray-policyenforcer name
 */}}
 {{- define "xray-policyenforcer.name" -}}
-{{- default .Chart.Name .Values.panoramic.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- default .Chart.Name .Values.policyenforcer.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -53,6 +46,13 @@ The xray-server name
 */}}
 {{- define "xray-server.name" -}}
 {{- default .Chart.Name .Values.server.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The xray-curation name
+*/}}
+{{- define "xray-curation.name" -}}
+{{- default .Chart.Name .Values.curation.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -184,6 +184,24 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "xray-curation.fullname" -}}
+{{- if .Values.curation.fullnameOverride -}}
+{{- .Values.curation.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.curation.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "xray.serviceAccountName" -}}
@@ -194,6 +212,7 @@ Create the name of the service account to use
 {{- end -}}
 {{- end -}}
 
+{{/*
 Create the name of the service account to use for rabbitmq migration
 */}}
 {{- define "xray.rabbitmq.migration.serviceAccountName" -}}
@@ -449,7 +468,7 @@ Return the proper xray chart image names
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer") (eq $indexReference "panoramic")) }}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "curation") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer")) }}
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
@@ -459,7 +478,10 @@ Return the proper xray chart image names
     {{- if and $dot.Values.global.versions.initContainers (eq $indexReference "initContainers") }}
     {{- $tag = $dot.Values.global.versions.initContainers | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer") (eq $indexReference "panoramic")) }}
+    {{- if and $dot.Values.global.versions.observability (eq $indexReference "observability") }}
+    {{- $tag = $dot.Values.global.versions.observability | toString -}}
+    {{- end -}}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "curation") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
@@ -536,6 +558,14 @@ Resolve xray ipa requiredServiceTypes value
 {{- define "xray.router.ipa.requiredServiceTypes" -}}
 {{- $requiredTypes := "jfxana,jfxidx,jfxpst,jfxpe,jfob" -}}
 {{- $requiredTypes -}}
+{{- end -}}
+
+{{/*
+Resolve router topology enableUnhealthyOnServiceDown value
+*/}}
+{{- define "router.topology.local.enableUnhealthyOnServiceDown" -}}
+{{- $enableUnhealthyOnServiceDown := .Values.router.topology.local.enableUnhealthyOnServiceDown | default false | toString -}}
+{{- quote $enableUnhealthyOnServiceDown -}}
 {{- end -}}
 
 {{/*

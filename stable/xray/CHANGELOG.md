@@ -1,7 +1,17 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.137.27] - Dec 23, 2025
+## [103.143.6] - Mar 17, 2026
+* Add support to set observability tag from global.versions
+
+## [103.141.0] - TBD
+* Update postgresql tag version to `17.8.0-debian`
+* Added `.Values.xray.metrics.enabled` flag to expose Xray metrics.
+
+## [103.140.0] - Feb 13, 2026
+* Remove support for panoramic service.
+
+## [103.137.0] - Dec 23, 2025
 * Optimized xray pre upgrade hook
 * Fix RabbitMQ post-update hook fails during upgrade due to non-replicated 'aliveness-test' queue
 * Removed `.Values.xray.openMetrics.enabled` flag to remove support for metrics.
