@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: {{ template "xray.fullname" . }}-sbom-headless
   labels:
-    app: {{ template "xray.fullname" . }}
+    app: {{ template "xray.name" . }}
     chart: {{ template "xray.chart" . }}
     component: {{ .Values.xray.name }}
     heritage: {{ .Release.Service }}

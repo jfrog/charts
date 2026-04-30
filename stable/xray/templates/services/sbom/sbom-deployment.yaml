@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.sbom.enabled) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.sbom.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -186,6 +186,10 @@ spec:
 {{- if .Values.sbom.startupProbe.enabled }}
         startupProbe:
 {{ tpl .Values.sbom.startupProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.sbom.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.sbom.readinessProbe.config . | indent 10 }}
 {{- end }}
 {{- if .Values.sbom.livenessProbe.enabled }}
         livenessProbe:

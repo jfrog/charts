@@ -69,17 +69,6 @@ sbom:
       memory: "4Gi"
       cpu: "3"
 
-panoramic:
-  enabled: false
-  resources:
-    requests:
-      memory: "300Mi"
-      cpu: "50m"
-    limits:
-      memory: "4Gi"
-      cpu: "3"
-
-
 policyenforcer:
   resources:
     requests:
@@ -88,3 +77,17 @@ policyenforcer:
     limits:
       memory: "4Gi"
       cpu: "3"
+
+curation:
+  separateRoute: true
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "100m"
+    limits:
+      memory: "4Gi"
+      cpu: "3"
+
+splitXraytoSeparateDeployments:
+  fullSplit: true
+  ipa: true

@@ -1,0 +1,31 @@
+{{- if and .Values.curation.separateRoute .Values.splitXraytoSeparateDeployments.fullSplit }}
+{{- if and (.Values.curation.autoscaling.enabled) (eq .Values.curation.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-curation
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-curation
+  minReplicas: {{ .Values.curation.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.curation.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.curation.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}

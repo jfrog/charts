@@ -14,7 +14,7 @@
 {{- if and (not .Values.rabbitmq.migration.enabled) (not .Values.rabbitmq.rabbitmqUpgradeReady)  }}
     {{- fail "Rabbitmq migration flag is disabled. Please enable the rabbitmq.rabbitmqUpgradeReady flag after manually enabling the feature flags in rabbitmq" }}
 {{- end }}
-{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
+{{- if or (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") .Values.rabbitmq.persistence.overrideSize }}
 {{- if .Values.rabbitmq.migration.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
@@ -37,7 +37,7 @@ automountServiceAccountToken: {{ .Values.rabbitmq.migration.serviceAccount.autom
 {{- end }}
 ---
 {{- if .Values.rabbitmq.enabled }}
-{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
+{{- if or (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") .Values.rabbitmq.persistence.overrideSize }}
 {{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -58,7 +58,7 @@ rules:
 {{- end }}
 ---
 {{- if .Values.rabbitmq.enabled }}
-{{- if eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true" }}
+{{- if or (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") .Values.rabbitmq.persistence.overrideSize }}
 {{- if .Values.rabbitmq.migration.serviceAccount.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -295,15 +295,22 @@ spec:
               # Check if ConfigMap already exists
               if kubectl get configmap $configMapName -n {{ .Release.Namespace }} &>/dev/null; then
                 # Update existing ConfigMap
-                kubectl patch configmap $configMapName -n {{ .Release.Namespace }} --type merge -p "{\"data\":{\"replicaCountBeforeUpgrade\":\"$currentReplicaCount\"}}"
+                if [ "$currentReplicaCount" -lt "{{ .Values.rabbitmq.replicaCount }}" ]; then
+                  echo "Executing: kubectl patch configmap $configMapName -n {{ .Release.Namespace }} --type merge -p '{\"data\":{\"replicaCountBeforeUpgrade\":\"$currentReplicaCount\",\"queueGrowthCompleted\":\"false\"}}'"
+                  kubectl patch configmap "$configMapName" -n {{ .Release.Namespace }} \
+                    --type merge \
+                    -p "{\"data\":{\"replicaCountBeforeUpgrade\":\"$currentReplicaCount\",\"queueGrowthCompleted\":\"false\"}}"
+                fi
+
                 if [ $? -ne 0 ]; then
                   echo "Failed to update ConfigMap $configMapName"
                   exit 1
                 fi
+
                 echo "Updated ConfigMap $configMapName with replica count before upgrade: $currentReplicaCount"
               else
                 # Create new ConfigMap
-                kubectl create configmap $configMapName -n {{ .Release.Namespace }} --from-literal=replicaCountBeforeUpgrade=$currentReplicaCount
+                kubectl create configmap $configMapName -n {{ .Release.Namespace }} --from-literal=replicaCountBeforeUpgrade=$currentReplicaCount --from-literal=queueGrowthCompleted=false
                 if [ $? -ne 0 ]; then
                   echo "Failed to create ConfigMap $configMapName"
                   exit 1
@@ -316,7 +323,7 @@ spec:
 {{- end }}
 {{- end }}
 ---
-{{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) (gt (int .Values.global.xray.rabbitmq.replicaCount) 1) }}
+{{- if or (and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) (gt (int .Values.global.xray.rabbitmq.replicaCount) 1)) .Values.rabbitmq.persistence.overrideSize }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -377,7 +384,61 @@ spec:
               # scenarios where it is not running for any reason. This ensures that the job can complete successfully
               # in the first attempt.
 
-              rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
+              {{- if .Values.rabbitmq.persistence.overrideSize }}
+              echo "Executing: kubectl get pvc -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }} -o jsonpath='{range .items[*]}{.metadata.name}{":"}{.spec.resources.requests.storage}{\"\\n\"}{end}'"
+
+              # Fetch PVCs; if the command itself fails, the || block captures it.
+              pvcs=$(kubectl get pvc -n {{ .Release.Namespace }} \
+                -l app.kubernetes.io/name={{ template "rabbitmq.name" . }},app.kubernetes.io/instance={{ .Release.Name }} \
+                -o jsonpath='{range .items[*]}{.metadata.name}{":"}{.spec.resources.requests.storage}{"\n"}{end}') || { echo "ERROR: kubectl call failed."; exit 1; }
+
+              if [ -z "$pvcs" ]; then
+                echo "No RabbitMQ PVCs found. Skipping storage check."
+              else
+                while IFS=":" read -r name current; do
+                  new="{{ .Values.rabbitmq.persistence.overrideSize }}"
+                  
+                  [ "$current" = "$new" ] && echo "PVC $name is already $new. Skipping." && continue
+
+                  # Robust numeric extraction: strips all non-digits (handles Gi, G, Ti, etc.)
+                  cur_val=$(echo "$current" | sed 's/[^0-9]*//g')
+                  new_val=$(echo "$new" | sed 's/[^0-9]*//g')
+
+                  if [ "$new_val" -lt "$cur_val" ] 2>/dev/null; then
+                    echo "SKIPPING $name: Cannot shrink $current to $new."
+                    continue
+                  fi
+
+                  echo "Executing: kubectl patch pvc $name -n {{ .Release.Namespace }} --type merge -p \"{\\\"spec\\\":{\\\"resources\\\":{\\\"requests\\\":{\\\"storage\\\":\\\"$new\\\"}}}\""
+                  kubectl patch pvc "$name" -n {{ .Release.Namespace }} --type merge \
+                    -p "{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"$new\"}}}}" \
+                    && echo "SUCCESS: $name updated" \
+                    || { echo "ERROR: Patch failed for $name"; exit 1; }
+
+                done <<< "$pvcs"
+              fi
+              {{- end }}
+
+              echo "Running post upgrade hook"
+              {{- if and (eq (include "xray.rabbitmq.migration.isHookRegistered" .) "true") (.Values.global.xray.rabbitmq.haQuorum.enabled) (gt (int .Values.global.xray.rabbitmq.replicaCount) 1) }}
+              {{- if not .Values.disableQueuesGrowInPostUpgradeHook }}
+
+              update_growth_status() {
+                  local cm_name=$1
+                  local status=$2
+                  local namespace="{{ .Release.Namespace }}"
+                  echo "Executing: kubectl patch configmap $cm_name -n $namespace --type merge -p '{\"data\":{\"queueGrowthCompleted\":\"$status\"}}'"
+                  kubectl patch configmap "$cm_name" -n "$namespace" \
+                    --type merge \
+                    -p "{\"data\":{\"queueGrowthCompleted\":\"$status\"}}"
+                  if [ $? -ne 0 ]; then
+                      echo "Error: Failed to update ConfigMap $cm_name. Next run may re-trigger growth logic."
+                      return 1
+                  else
+                      return 0
+                  fi
+              }
+
               configMapName="{{ template "xray.fullname" . }}-rabbitmq-deployment-status"
 
               # Getting the replica count from statefulset
@@ -390,29 +451,23 @@ spec:
               # Check if forceGrow is enabled
               forceGrow={{ .Values.rabbitmq.migration.forceGrow | default false }}
 
-              if [ "$forceGrow" = "true" ]; then
-                echo "forceGrow is enabled. Proceeding with queue growth regardless of replica count change."
-              else
-                # Read the replica count before upgrade from ConfigMap
-                replicaCountBeforeUpgrade=$(kubectl get configmap $configMapName -n {{ .Release.Namespace }} -o jsonpath='{.data.replicaCountBeforeUpgrade}' 2>/dev/null)
+              echo "Reading ConfigMap: $configMapName"
 
-                if [ -z "$replicaCountBeforeUpgrade" ]; then
-                  echo "ConfigMap $configMapName not found or replicaCountBeforeUpgrade not set."
-                  echo "This may happen on first upgrade or if pre-upgrade hook did not run. Treating replica count before upgrade as 0."
-                  replicaCountBeforeUpgrade=0
-                fi
-
-                echo "Replica count before upgrade: $replicaCountBeforeUpgrade"
-                echo "Replica count after upgrade: $replicaCount"
-
-                # Only grow queues if replica count increased
-                if [ "$replicaCountBeforeUpgrade" -ge "$replicaCount" ]; then
-                  echo "Replica count did not increase (before: $replicaCountBeforeUpgrade, after: $replicaCount). No need to grow queues. Exiting."
-                  exit 0
-                fi
-
-                echo "Replica count increased from $replicaCountBeforeUpgrade to $replicaCount. Proceeding with queue growth."
+              queueGrowthCompleted=$(kubectl get cm "$configMapName" -n {{ .Release.Namespace }} \
+                -o jsonpath='{.data.queueGrowthCompleted}' 2>/dev/null)
+              if [ -z "$queueGrowthCompleted" ]; then
+                echo "queueGrowthCompleted missing in $configMapName; defaulting to false."
+                queueGrowthCompleted=false
               fi
+
+              echo "queueGrowthCompleted=$queueGrowthCompleted | forceGrow=$forceGrow"
+
+              if [ "$forceGrow" = "false" ] && [ "$queueGrowthCompleted" = "true" ]; then
+                echo "No growth needed: forceGrow=false, growth already completed"
+                exit 0
+              fi
+
+              rabbitMqZeroPodName="{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-0"
 
               # Sleep for 30 seconds to ensure that all pods are scheduled by the k8s controller so that they don't get
               # missed out while checking the pod status.
@@ -520,11 +575,16 @@ spec:
 
               if [ "$minMemberCount" -eq "$replicaCount" ]; then
                 echo "All queues are running with the expected number of replicas. No queues to grow. Exiting."
+                update_growth_status "$configMapName" "true"
                 exit 0
               fi
 
               echo "Need to grow the queues as minimum replica count for queues is $minMemberCount"
-
+              kubectl rollout status statefulsets/{{ .Release.Name }}-{{ template "rabbitmq.name" . }}
+              if [ $? -ne 0 ]; then
+                echo "StatefulSet rollout did not complete successfully. Aborting queue growth."
+                exit 1
+              fi
               for ((i = $minMemberCount + 1; i <= runningNodeCount && i <= 3; i++)); do
                 echo "Growing node rabbit@{{ .Release.Name }}-{{ template "rabbitmq.name" . }}-$(($i-1))"
 
@@ -541,6 +601,10 @@ spec:
               done
 
               echo "Queue growth completed."
+
+              update_growth_status "$configMapName" "true"
+              {{- end }}
+              {{- end }}
       restartPolicy: Never
       terminationGracePeriodSeconds: 0
 {{- end }}

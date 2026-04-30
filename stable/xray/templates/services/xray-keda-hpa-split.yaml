@@ -1,5 +1,5 @@
 {{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled true) }}
+{{- if and (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -40,8 +40,8 @@ spec:
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled true) }}
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
+{{- if and (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -83,7 +83,7 @@ spec:
 ---
 
 {{- if  .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled true) }}
+{{- if and (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -125,7 +125,7 @@ spec:
 ---
 
 {{- if  .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled true) }}
+{{- if and (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -167,7 +167,7 @@ spec:
 ---
 
 {{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.sbom.autoscaling.enabled) (eq .Values.sbom.autoscaling.keda.enabled true) (.Values.sbom.enabled) }}
+{{- if and (.Values.sbom.autoscaling.enabled) (eq .Values.sbom.autoscaling.keda.enabled true) (.Values.sbom.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -203,47 +203,5 @@ spec:
         {{- .Values.sbom.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
   triggers:
   {{- include "xray.autoscalingQueuesSbom" . | indent 4 }}
-{{- end }}
-{{- end }}
-
----
-
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.panoramic.autoscaling.enabled) (eq .Values.panoramic.autoscaling.keda.enabled true) (.Values.panoramic.enabled) }}
-apiVersion: keda.sh/v1alpha1
-kind: ScaledObject
-metadata:
-  labels:
-    app: {{ template "xray.name" . }}
-    chart: {{ template "xray.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
-  name: {{ template "xray.fullname" . }}-panoramic
-  {{- if or .Values.global.autoscaling.keda.annotations .Values.panoramic.autoscaling.keda.annotations }}
-  annotations:
-    {{- with .Values.global.autoscaling.keda.annotations }}
-{{ toYaml . | indent 4 }}
-    {{- end }}
-    {{- with .Values.panoramic.autoscaling.keda.annotations }}
-{{ toYaml . | indent 4 }}
-    {{- end }}
-  {{- end }}
-spec:
-  scaleTargetRef:
-    kind: Deployment
-    name: {{ template "xray.fullname" . }}-panoramic
-  minReplicaCount: {{ .Values.panoramic.autoscaling.minReplicas }}
-  maxReplicaCount: {{ .Values.panoramic.autoscaling.maxReplicas }}
-  pollingInterval: {{ .Values.panoramic.autoscaling.keda.pollingInterval }}
-  cooldownPeriod: {{ .Values.panoramic.autoscaling.keda.cooldownPeriod }}
-  advanced:
-    horizontalPodAutoscalerConfig:
-      behavior:
-        scaleUp:
-        {{- .Values.panoramic.autoscaling.keda.scaleUp | toYaml | nindent 10 }}
-        scaleDown:
-        {{- .Values.panoramic.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
-  triggers:
-  {{- include "xray.autoscalingQueuesPanoramic" . | indent 4 }}
 {{- end }}
 {{- end }}

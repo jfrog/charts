@@ -165,37 +165,3 @@ spec:
           averageUtilization: {{ .Values.sbom.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
 {{- end }}
-
----
-
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.panoramic.autoscaling.enabled) (.Values.panoramic.enabled) (eq .Values.panoramic.autoscaling.keda.enabled  false) }}
-  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
-apiVersion: autoscaling/v2
-  {{- else }}
-apiVersion: autoscaling/v2beta2
-  {{- end }}
-kind: HorizontalPodAutoscaler
-metadata:
-  labels:
-    app: {{ template "xray.name" . }}
-    chart: {{ template "xray.chart" . }}
-    heritage: {{ .Release.Service }}
-    release: {{ .Release.Name }}
-  name: {{ template "xray.fullname" . }}-panoramic
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: {{ template "xray.fullname" . }}-panoramic
-  minReplicas: {{ .Values.panoramic.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.panoramic.autoscaling.maxReplicas }}
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: {{ .Values.panoramic.autoscaling.targetCPUUtilizationPercentage }}
-{{- end }}
-{{- end }}
