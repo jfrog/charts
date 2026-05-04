@@ -1,14 +1,19 @@
 # JFrog Distribution Helm Chart
 
+> [!NOTE]
+> See the [JFrog Helm Charts README](https://github.com/jfrog/charts#container-image-migration-notice) for important notices including the container image migration.
+
 **IMPORTANT!** Our Helm Chart docs have moved to our main documentation site. Below you will find the basic instructions for installing Distribution. For all other information, refer to [Installing Distribution](https://jfrog.com/help/r/jfrog-installation-setup-documentation/installing-distribution).
 
 ## Prerequisites Details
-* Kubernetes 1.19+
+* Kubernetes 1.23+
 
 ## Chart Details
 This chart does the following:
 * Deploy PostgreSQL database
 * Deploy distribution
+
+> **Note:** From Distribution 2.37.0, Redis is no longer included in this chart. For more information, see the [Distribution 2.37.0 release notes](https://docs.jfrog.com/releases/docs/distribution-release-notes#distribution-2370).
 
 ## Requirements
 - A running Kubernetes cluster
@@ -44,6 +49,18 @@ To apply the chart with recommended sizing configurations :
 For small configurations :
 ```bash
 helm upgrade --install distribution jfrog/distribution -f sizing/distribution-small.yaml --namespace distribution --create-namespace
+```
+
+## Upgrading to Distribution 2.37.0 or Later
+
+From Distribution 2.37.0, Redis has been removed from the chart. For more details, please refer to the [Distribution 2.37.0 release notes](https://docs.jfrog.com/releases/docs/distribution-release-notes#distribution-2370).
+
+When upgrading from a version prior to 2.37.0, a pre-upgrade webhook (`distribution-upgrade-hook`) is automatically executed. This webhook handles the migration by deleting the existing StatefulSet with `--cascade=orphan` (preserving running pods) to allow the updated spec — which no longer includes Redis — to be applied cleanly.
+
+In most cases, no manual intervention is required. However, if the hook job fails (for example, due to RBAC permissions or image pull issues), you may need to manually delete the StatefulSet before retrying the upgrade:
+
+```bash
+kubectl delete statefulset <release-name>-distribution --cascade=orphan -n <namespace>
 ```
 
 ## Uninstalling Distribution
