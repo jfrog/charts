@@ -68,6 +68,9 @@ metadata:
 {{- end }}
 spec:
   serviceName: {{ template "artifactory-ha.primary.name" . }}
+  {{- with .Values.artifactory.statefulset.podManagementPolicy }}
+  podManagementPolicy: {{ . }}
+  {{- end }}
   replicas: {{ .Values.artifactory.primary.replicaCount }}
   updateStrategy: {{- toYaml .Values.artifactory.primary.updateStrategy | nindent 4}}
   selector:
