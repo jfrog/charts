@@ -178,6 +178,11 @@ onemodel:
 {{- if and .Values.rtfs.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
 rtfs:
   enabled: true
+  {{- if eq (default "" .Values.rtfs.database.type) "postgresql" }}
+  database:
+    type: {{ .Values.rtfs.database.type }}
+    driver: {{ .Values.rtfs.database.driver }}
+  {{- end }}
 {{- else }}
 rtfs:
   enabled: false
