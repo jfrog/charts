@@ -50,8 +50,12 @@ metadata:
 {{- if .Values.initContainerImage }}
     {{- fail "\n .Values.initContainerImage is no longer supported. Replace it with .Values.initContainers.image.registry .Values.initContainers.image.repository and .Values.initContainers.image.tag" }}
 {{- end }}
-{{- if and (eq .Values.rtfs.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+{{- $hasDedicatedRtfsDb := and .Values.rtfs.database .Values.rtfs.database.type (ne (toString .Values.rtfs.database.type) "") }}
+{{- if and (eq .Values.rtfs.enabled true) (not $hasDedicatedRtfsDb) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
     {{- fail "\n RTFS supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable RTFS." }}
+{{- end }}
+{{- if and (eq .Values.rtfs.enabled true) $hasDedicatedRtfsDb (ne (toString .Values.rtfs.database.type) "postgresql") }}
+    {{- fail "\n RTFS dedicated database supports only PostgreSQL. Set rtfs.database.type to postgresql." }}
 {{- end }}
 {{- if and (eq .Values.unifiedpolicy.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
     {{- fail "\n Unified Policy supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable Unified Policy." }}

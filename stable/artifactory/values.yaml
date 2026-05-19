@@ -70,7 +70,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1773939694
+    tag: 9.7.1777857961
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -1049,7 +1049,7 @@ frontend:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.456.7
+    tag: 1.456.8
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
@@ -2135,7 +2135,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 2.0.9
+    tag: 2.0.11
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2152,6 +2152,8 @@ rtfs:
   database:
     type:
     driver:
+    # When using RTFS specific database, you must set driver value
+    # driver: org.postgresql.Driver
     url:
     user:
     password:
@@ -2314,7 +2316,7 @@ apptrust:
     registry: releases-docker.jfrog.io
     repository: jfrog/apptrust
     pullPolicy: IfNotPresent
-    tag: 1.59.4
+    tag: 1.59.6
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2568,7 +2570,7 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.45.7
+    tag: 1.45.8
     # digest:
   jfrogUrl: ""
   replicaCount: 1
