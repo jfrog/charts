@@ -72,7 +72,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1773939694
+    tag: 9.7.1777857961
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -343,7 +343,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.320.9
+    tag: 7.320.19
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -1140,7 +1140,7 @@ frontend:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.456.4
+    tag: 1.456.11
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
@@ -2165,7 +2165,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 2.0.8
+    tag: 2.0.12
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2182,6 +2182,8 @@ rtfs:
   database:
     type:
     driver:
+    # When using RTFS specific database, you must set driver value
+    # driver: org.postgresql.Driver
     url:
     user:
     password:
@@ -2343,7 +2345,7 @@ apptrust:
     registry: releases-docker.jfrog.io
     repository: jfrog/apptrust
     pullPolicy: IfNotPresent
-    tag: 1.59.4
+    tag: 1.59.6
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2467,7 +2469,7 @@ jfbus:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfbus-service
     pullPolicy: IfNotPresent
-    tag: 1.50.2
+    tag: 1.52.2
     # digest:
   replicaCount: 1
   internalRestPort: 8057
@@ -2595,7 +2597,7 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.45.7
+    tag: 1.45.10
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2719,7 +2721,7 @@ platformfederation:
     registry: releases-docker.jfrog.io
     repository: jfrog/platformfederation
     pullPolicy: IfNotPresent
-    tag: 1.615.2
+    tag: 1.615.6
     # digest:
   # Default is empty string which means it will try use internal artifactory URL
   # If url is external then it should be set to the external URL of the JFrog Platform instance
