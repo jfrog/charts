@@ -9,7 +9,7 @@ All changes to this chart will be documented in this file.
 ## [107.147.0] - Apr 2, 2026
 * Added support for Gateway API (Gateway, HTTPRoute)
 
-## [107.146.12] - Apr 30, 2026
+## [107.146.13] - Apr 30, 2026
 * Added support for configuring a dedicated PostgreSQL database for RTFS, separate from the main Artifactory database, using `rtfs.database.type: postgresql`
 * Added support for providing RTFS database credentials inline or via an external Kubernetes secret using `rtfs.database.secrets`
 * Added new AWS SDK v2 parameters to `awsS3V3` binarystore configuration
