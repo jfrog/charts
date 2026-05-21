@@ -58,13 +58,16 @@ shared:
     username: "{{ .Values.xray.mongoUsername }}"
     password: "{{ .Values.xray.mongoPassword }}"
   {{- end }}
-{{- if or .Values.server.mailServer .Values.server.indexAllBuilds .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
+{{- if or .Values.server.mailServer .Values.server.indexAllBuilds .Values.server.blockDownloadOnRemoteReposDeprecated .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost .Values.global.xray.rabbitmq.migrateMessagesFromOtherRabbitMq }}
 server:
   {{- if .Values.server.mailServer }}
   mailServer: "{{ .Values.server.mailServer }}"
   {{- end }}
   {{- if .Values.server.indexAllBuilds }}
   indexAllBuilds: {{ .Values.server.indexAllBuilds }}
+  {{- end }}
+  {{- if .Values.server.blockDownloadOnRemoteReposDeprecated }}
+  blockDownloadOnRemoteReposDeprecated: {{ .Values.server.blockDownloadOnRemoteReposDeprecated }}
   {{- end }}
   {{- if .Values.global.xray.rabbitmq.migrateMessagesFromXrayDefaultVhost }}
   dataMigrations:
