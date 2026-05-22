@@ -144,4 +144,7 @@ location / {
     {{- end }}
   }
 }
+{{- if .Values.nginx.customServerSnippet }}
+{{ .Values.nginx.customServerSnippet }}
+{{- end }}
 }

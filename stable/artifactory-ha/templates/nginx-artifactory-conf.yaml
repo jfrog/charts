@@ -15,4 +15,7 @@ data:
 {{- else }}
 {{ tpl ( .Files.Get "files/nginx-artifactory-conf.yaml" ) . | indent 4 }}
 {{- end }}
+{{- if .Values.nginx.customConfFile }}
+{{ tpl .Values.nginx.customConfFile . | indent 2 }}
+{{ end }}
 {{- end }}
