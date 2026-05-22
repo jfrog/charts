@@ -95,8 +95,8 @@ logging:
 initContainers:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.7.1764794109
+    repository: jfrog/echo-mini
+    tag: "20260416"
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -1894,7 +1894,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.320.14
+    tag: 7.320.18
     imagePullPolicy: IfNotPresent
 
   serviceRegistry:
