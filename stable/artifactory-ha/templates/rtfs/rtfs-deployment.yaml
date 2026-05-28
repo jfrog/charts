@@ -14,6 +14,9 @@ metadata:
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
     component: {{ .Values.rtfs.name }}
+{{- with .Values.rtfs.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 {{- if .Values.rtfs.deployment.labels }}
 {{ toYaml .Values.rtfs.deployment.labels | indent 4 }}
 {{- end }}
@@ -53,6 +56,9 @@ spec:
         component: {{ .Values.rtfs.name }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
+        {{- with .Values.rtfs.labels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
     spec:
       {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
 {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
