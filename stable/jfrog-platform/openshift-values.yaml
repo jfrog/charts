@@ -14,6 +14,11 @@ artifactory:
   artifactory:
     podSecurityContext:
       enabled: false
+  frontend:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
   jfbus:
     podSecurityContext:
       enabled: false
@@ -24,9 +29,15 @@ artifactory:
       enabled: false
     containerSecurityContext:
       enabled: false
+  observability:
+    containerSecurityContext:
+      enabled: false
   platformfederation:
     podSecurityContext:
       enabled: false
+    containerSecurityContext:
+      enabled: false
+  router:
     containerSecurityContext:
       enabled: false
   rtfs:
@@ -60,9 +71,6 @@ distribution:
     enabled: false
   containerSecurityContext:
     enabled: false
-  redis:
-    containerSecurityContext:
-      enabled: false
 
 # postgresql subchart
 postgresql:
