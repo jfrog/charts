@@ -4,8 +4,6 @@ All changes to this chart will be documented in this file.
 ## [11.5.4] - May 28, 2026
 * Update dependency catalog chart version to 101.39.1
 * Update dependency artifactory chart version to 107.146.15
-* Update dependency catalog chart version to 101.39.0
-* Update dependency artifactory chart version to 107.146.13
 * Update dependency xray chart version to 103.143.19
 
 ## [11.5.3] - May 19, 2026
