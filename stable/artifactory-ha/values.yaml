@@ -2172,6 +2172,8 @@ rtfs:
   internalRestPort: 8025
   apiContext: rtfs
   serviceAccountName: ""
+  ## Labels to add to the RTFS Deployment and pod template
+  labels: {}
   # If set to true, Service will wait until Artifactory is available before starting.
   # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
   waitForArtifactory: true

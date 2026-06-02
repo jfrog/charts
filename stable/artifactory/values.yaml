@@ -2145,6 +2145,8 @@ rtfs:
   waitForArtifactory: true
   internalRestPort: 8025
   apiContext: rtfs
+  ## Labels to add to the RTFS Deployment and pod template
+  labels: {}
   ## Optional dedicated RTFS database (Artifactory 7.144+). When rtfs.database.type is postgresql, RTFS uses a separate database instead of the shared one; leave type unset to use the main Artifactory database (PostgreSQL only, see chart notes).
   ## If type is set, you must provide url here or database.secrets.url (each secret ref: name: <k8s Secret name>, key: <key holding the value>).
   ## Credentials: use inline url / user / password below, OR point database.secrets.url, .user, .password at existing Secrets. If database.secrets is used, reference Secrets for every credential you do not put inline; do not rely on the chart-generated RTFS DB Secret when any database.secrets entry is set.

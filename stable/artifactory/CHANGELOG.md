@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file.
 * Fixed filebeat container image resolution to use `filebeat.image.registry` directly instead of being overridden by `global.imageRegistry`
 * Added dedicated PostgreSQL `type` and `driver` for RTFS to rendered `system.yaml` when RTFS uses its own PostgreSQL.
 * Fixed RTFS template validation so a non-PostgreSQL primary Artifactory database is allowed when RTFS uses a dedicated PostgreSQL database.
+* Added `rtfs.labels` to label the RTFS Deployment and pod template.
 
 ## [107.147.0] - Apr 2, 2026
 * Added support for Gateway API (Gateway, HTTPRoute)
