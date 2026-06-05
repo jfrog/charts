@@ -1,8 +1,8 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.38.0] - Jan 19, 2026
-* Removed Redis - no longer part of Distribution
+## [102.39.0] - Mar 20, 2026
+* Removed Redis - no longer part of Distribution and updated readme
 
 ## [102.35.0] - Dec 02, 2025
 * Added support for the environment variable `JF_SHARED_NODE_POD_IP`. Its value will be used for `shared.node.ip` if a specific `shared.node.ip` is not provided
