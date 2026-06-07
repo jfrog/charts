@@ -1,13 +1,19 @@
 # JFrog Artifactory-ha Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.146.13] - May 11, 2026
+## [107.150.0] - May 11, 2026
+* Fixed filebeat container image resolution to use `filebeat.image.registry` directly instead of being overridden by `global.imageRegistry`
+* Added dedicated PostgreSQL `type` and `driver` for RTFS to rendered `system.yaml` when RTFS uses its own PostgreSQL.
+* Fixed RTFS template validation so a non-PostgreSQL primary Artifactory database is allowed when RTFS uses a dedicated PostgreSQL database.
+
+## [107.147.0] - Apr 2, 2026
+* Added support for Gateway API (Gateway, HTTPRoute)
+
+## [107.146.15] - Apr 30, 2026
 * Added support for configuring a dedicated PostgreSQL database for RTFS, separate from the main Artifactory database, using `rtfs.database.type: postgresql`
 * Added support for providing RTFS database credentials inline or via an external Kubernetes secret using `rtfs.database.secrets`
 * Added new AWS SDK v2 parameters to `awsS3V3` binarystore configuration
 * Added `nginx.httpUseProxyProtocol` and `nginx.httpsUseProxyProtocol` so NGINX can accept the HAProxy PROXY protocol on HTTP/HTTPS listeners. ([GH-2156](https://github.com/jfrog/charts/pull/2156))
-* Added dedicated PostgreSQL `type` and `driver` for RTFS to rendered `system.yaml` when RTFS uses its own PostgreSQL.
-* Fixed RTFS template validation so a non-PostgreSQL primary Artifactory database is allowed when RTFS uses a dedicated PostgreSQL database.
 
 ## [107.143.0] - Mar 30, 2026
 * Fixing duplicate volume names in the unified volume configuration
