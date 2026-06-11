@@ -238,6 +238,9 @@ spec:
       hostAliases:
 {{ toYaml .Values.hostAliases | indent 6 }}
       {{- end }}
+      {{- if .Values.filebeat.terminationGracePeriod }}
+      terminationGracePeriodSeconds: {{ .Values.filebeat.terminationGracePeriod }}
+      {{- end }}
       containers:
       - name: {{ .Values.distribution.name }}
         image: {{ include "distribution.getImageInfoByValue" (list $ "distribution") }}
@@ -468,7 +471,6 @@ spec:
 {{ toYaml .Values.filebeat.readinessProbe | indent 10 }}
         resources:
 {{ toYaml .Values.filebeat.resources | indent 10 }}
-        terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
       {{- end }}
     {{- if or .Values.common.customSidecarContainers .Values.global.customSidecarContainers }}
 {{ tpl (include "distribution.customSidecarContainers" .) . | indent 6 }}
