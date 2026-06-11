@@ -72,7 +72,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: ubi9/ubi-minimal
-    tag: 9.7.1777857961
+    tag: 9.8.1779809423
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -343,7 +343,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.320.19
+    tag: 7.320.32
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -1140,7 +1140,7 @@ frontend:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.456.11
+    tag: 1.456.14
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
@@ -1772,7 +1772,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.33.0
+    tag: 2.33.2
     pullPolicy: IfNotPresent
     # digest:
   persistence:
@@ -2165,7 +2165,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 2.0.12
+    tag: 2.0.13
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2345,7 +2345,7 @@ apptrust:
     registry: releases-docker.jfrog.io
     repository: jfrog/apptrust
     pullPolicy: IfNotPresent
-    tag: 1.59.6
+    tag: 1.59.10
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2469,7 +2469,7 @@ jfbus:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfbus-service
     pullPolicy: IfNotPresent
-    tag: 1.52.2
+    tag: 1.52.3
     # digest:
   replicaCount: 1
   internalRestPort: 8057
@@ -2597,7 +2597,7 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.45.10
+    tag: 1.45.16
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2721,7 +2721,7 @@ platformfederation:
     registry: releases-docker.jfrog.io
     repository: jfrog/platformfederation
     pullPolicy: IfNotPresent
-    tag: 1.615.6
+    tag: 1.615.18
     # digest:
   # Default is empty string which means it will try use internal artifactory URL
   # If url is external then it should be set to the external URL of the JFrog Platform instance
