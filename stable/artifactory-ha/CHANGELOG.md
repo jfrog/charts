@@ -8,6 +8,7 @@ All changes to this chart will be documented in this file
 * Added `nginx.httpUseProxyProtocol` and `nginx.httpsUseProxyProtocol` so NGINX can accept the HAProxy PROXY protocol on HTTP/HTTPS listeners. ([GH-2156](https://github.com/jfrog/charts/pull/2156))
 * Added dedicated PostgreSQL `type` and `driver` for RTFS to rendered `system.yaml` when RTFS uses its own PostgreSQL.
 * Fixed RTFS template validation so a non-PostgreSQL primary Artifactory database is allowed when RTFS uses a dedicated PostgreSQL database.
+* Removed `component` label selector from PodDisruptionBudget to match selector of StatefulSet of `artifactory-primary`
 
 ## [107.143.0] - Mar 30, 2026
 * Fixing duplicate volume names in the unified volume configuration
