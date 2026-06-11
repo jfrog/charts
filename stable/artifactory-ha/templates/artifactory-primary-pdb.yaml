@@ -16,7 +16,6 @@ metadata:
 spec:
   selector:
     matchLabels:
-      component: {{ .Values.artifactory.name }}
       app: {{ template "artifactory-ha.name" . }}
       role: {{ template "artifactory-ha.primary.name" . }}
       release: {{ .Release.Name }}
