@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.143.17] - Mar 17, 2026
+## [103.143.26] - Mar 17, 2026
 * Add support to set observability tag from global.versions
 
 ## [103.141.0] - TBD
