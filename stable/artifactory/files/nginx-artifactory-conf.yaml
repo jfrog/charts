@@ -1,5 +1,12 @@
 {{- if .Values.nginx.https.enabled }}
-ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+{{- if .Values.nginx.https.protocols }}
+ssl_protocols {{ .Values.nginx.https.protocols }};
+{{- else -}}
+ssl_protocols TLSv1.2 TLSv1.3;
+{{- end }}
+{{- if .Values.nginx.https.ciphers }}
+ssl_ciphers {{ .Values.nginx.https.ciphers }};
+{{- end }}
 ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
 ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
 ssl_session_cache shared:SSL:1m;
