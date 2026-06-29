@@ -1,7 +1,9 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.40.5] - Mar 20, 2026
+## [102.37.0] - Mar 20, 2026
+* Upgrade postgres image version to `17.10` (`17.10-helm`)
+* Migrate bundled postgres image from `bitnami/postgresql` to `echohq/postgres`
 * Removed Redis - no longer part of Distribution and updated readme
 
 ## [102.35.0] - Dec 02, 2025
