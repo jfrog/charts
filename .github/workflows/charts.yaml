@@ -169,7 +169,6 @@ jobs:
                 --title "[$PRODUCT] $CHART_VERSION" \
                 --notes-file "$NOTES_FILE" \
                 || echo "::warning::Release for $TAG may already exist"
-              rm -f "$NOTES_FILE"
 
               # Create PR for this product
               TITLE="[$PRODUCT] $CHART_VERSION release"
@@ -181,15 +180,27 @@ jobs:
 
               This is an automated update by the JFrog Charts update workflow."
 
-              gh pr create \
+              PR_URL=$(gh pr create \
                 --title "$TITLE" \
                 --body "$BODY" \
                 --base "${{ github.event.repository.default_branch }}" \
                 --head "$BRANCH" \
                 --label "automated" \
-                --label "update"
+                --label "update")
+              echo "✓ Created release and PR for $PRODUCT: $PR_URL"
 
-              echo "✓ Successfully created release and PR for $PRODUCT"
+              # Auto-merge only when the changelog has no GitHub references
+              # (e.g. "GH-2177"). Those usually point at issues/PRs that a
+              # human should review, so leave such PRs open.
+              if grep -qE 'GH-[0-9]+' "$NOTES_FILE"; then
+                echo "::notice::$PRODUCT changelog contains GitHub references (GH-...); leaving PR open for manual review"
+              else
+                echo "No GitHub references in changelog; auto-merging $PRODUCT PR"
+                gh pr merge "$PR_URL" --squash --delete-branch \
+                  || echo "::warning::auto-merge failed for $PRODUCT (checks/permissions?); PR left open"
+              fi
+
+              rm -f "$NOTES_FILE"
             else
               echo "No changes detected for $PRODUCT"
               # Clean up the branch if no changes
