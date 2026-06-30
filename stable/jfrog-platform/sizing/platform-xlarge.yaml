@@ -225,6 +225,24 @@ artifactory:
       limits:
         # cpu: "4"
         memory: 2Gi
+  
+  apptrust:
+    resources:
+      requests:
+        cpu: 2
+        memory: 1Gi
+      limits:
+        # cpu: "4"
+        memory: 2Gi
+  
+  unifiedpolicy:
+    resources:
+      requests:
+        cpu: 2
+        memory: 1Gi
+      limits:
+        # cpu: "4"
+        memory: 2Gi
 xray:
   ##############################################################
   # The xlarge sizing

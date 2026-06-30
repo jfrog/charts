@@ -226,6 +226,24 @@ artifactory:
       limits:
         # cpu: "2"
         memory: 500Mi
+  
+  apptrust:
+    resources:
+      requests:
+        cpu: 150m
+        memory: 100Mi
+      limits:
+        # cpu: "2"
+        memory: 300Mi
+  
+  unifiedpolicy:
+    resources:
+      requests:
+        cpu: 150m
+        memory: 100Mi
+      limits:
+        # cpu: "2"
+        memory: 300Mi
 xray:
   ##############################################################
   # The xsmall sizing
