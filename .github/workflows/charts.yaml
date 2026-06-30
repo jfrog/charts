@@ -14,11 +14,6 @@ on:
         required: false
         default: false
         type: boolean
-      create_release:
-        description: 'Create GitHub release for updated charts'
-        required: false
-        default: false
-        type: boolean
 
 env:
   HELM_EXPERIMENTAL_OCI: 1
@@ -84,6 +79,11 @@ jobs:
           git config --global user.name "IN-Automation"
           git config --global user.email "in-automation@jfrog.com"
 
+      - name: Install yq
+        run: |
+          sudo curl -sL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+
       - name: Setup Helm
         uses: azure/setup-helm@v4
         with:
@@ -111,6 +111,8 @@ jobs:
           CHART_VERSIONS="${{ steps.set-vars.outputs.chart_versions }}"
           TIMESTAMP="${{ steps.set-vars.outputs.timestamp }}"
           
+          chmod +x .github/workflows/generate_release_notes.sh
+
           # Create labels if they don't exist
           gh label create automated --color "0E8A16" --description "Automated changes" || true
           gh label create update --color "1D76DB" --description "Update pull request" || true
@@ -150,32 +152,35 @@ jobs:
 
             # Add all files except those in charts directories
             find "stable/$PRODUCT" -type f ! -path "*/charts/*" -exec git add {} +
-            # Use CHART_VERSION for jfrog-platform, VERSION for others
-            COMMIT_VERSION="$VERSION"
-            if [ "$PRODUCT" = "jfrog-platform" ]; then
-              COMMIT_VERSION="$CHART_VERSION"
-            fi
-            
-            if git commit -m "[$PRODUCT] $COMMIT_VERSION release"; then
-              # Create and push tag
-              RAW_TAG="$PRODUCT/$CHART_VERSION"
-              TAG="${RAW_TAG//\//-}"
-              git tag "$TAG"
-              
-              # Push branch and tag
+            if git commit -m "[$PRODUCT] $VERSION release"; then
+              # Push the update branch
               git push origin "$BRANCH"
-              git push origin "$TAG"
-              
+
+              # Generate full release notes (changelog delta, dependency
+              # version summary, official docs links) from charts.jfrog.io.
+              TAG="$PRODUCT-$CHART_VERSION"
+              NOTES_FILE="$(mktemp)"
+              .github/workflows/generate_release_notes.sh "$PRODUCT" "$CHART_VERSION" "$VERSION" > "$NOTES_FILE"
+
+              # Create the GitHub release; this creates the tag at the branch
+              # commit. No standalone tag is pushed anymore.
+              gh release create "$TAG" \
+                --target "$BRANCH" \
+                --title "[$PRODUCT] $CHART_VERSION" \
+                --notes-file "$NOTES_FILE" \
+                || echo "::warning::Release for $TAG may already exist"
+              rm -f "$NOTES_FILE"
+
               # Create PR for this product
               TITLE="[$PRODUCT] $CHART_VERSION release"
               BODY="## Chart Update Details
-              
+
               🔄 Updating $PRODUCT
               - Chart version: $CHART_VERSION
               - App version: $VERSION
-              
+
               This is an automated update by the JFrog Charts update workflow."
-              
+
               gh pr create \
                 --title "$TITLE" \
                 --body "$BODY" \
@@ -183,8 +188,8 @@ jobs:
                 --head "$BRANCH" \
                 --label "automated" \
                 --label "update"
-              
-              echo "✓ Successfully created PR for $PRODUCT"
+
+              echo "✓ Successfully created release and PR for $PRODUCT"
             else
               echo "No changes detected for $PRODUCT"
               # Clean up the branch if no changes
@@ -195,22 +200,3 @@ jobs:
             # Return to default branch for next iteration
             git checkout "${{ github.event.repository.default_branch }}"
           done
-
-
-      - name: Create GitHub Releases (if enabled)
-        if: ${{ inputs.create_release == 'true' }}
-        run: |
-          PRODUCTS="${{ steps.set-vars.outputs.products }}"
-          VERSIONS="${{ steps.set-vars.outputs.versions }}"
-
-          IFS=',' read -r -a PRODUCT_ARRAY <<< "$PRODUCTS"
-          IFS=',' read -r -a VERSION_ARRAY <<< "$VERSIONS"
-
-          for i in "${!PRODUCT_ARRAY[@]}"; do
-            PRODUCT="${PRODUCT_ARRAY[$i]}"
-            VERSION="${VERSION_ARRAY[$i]}"
-            TAG="$PRODUCT/$VERSION"
-            gh release create $TAG --title "$PRODUCT $VERSION" --notes "Release for $PRODUCT $VERSION" || echo "Release already exists"
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
