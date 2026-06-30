@@ -9,7 +9,7 @@ The JFrog Platform Helm Chart provides a unified deployment solution for the JFr
     >
 
 - RabbitMQ using the `bitnami/rabbitmq` chart (can be changed)
-- Optional Nginx server
+- Optional Nginx server 
 
 
 
