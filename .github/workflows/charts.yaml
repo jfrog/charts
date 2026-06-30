@@ -127,15 +127,15 @@ jobs:
             VERSION="${VERSION_ARRAY[$i]}"
             CHART_VERSION="${CHART_VERSION_ARRAY[$i]}"
             
-            if [ -z "$VERSION" ]; then
-              echo "Warning: Version for $PRODUCT is empty, skipping."
+            if [ -z "$CHART_VERSION" ]; then
+              echo "Warning: Chart version for $PRODUCT is empty, skipping."
               continue
             fi
-            
-            echo "Processing $PRODUCT version $VERSION"
-            
+
+            echo "Processing $PRODUCT chart version $CHART_VERSION (app $VERSION)"
+
             # Create a new branch for this product
-            BRANCH="$PRODUCT-$VERSION-$TIMESTAMP"
+            BRANCH="$PRODUCT-$CHART_VERSION-$TIMESTAMP"
             git checkout -b "$BRANCH" "${{ github.event.repository.default_branch }}"
             
             WORKSPACE_DIR="$PWD"
@@ -152,7 +152,7 @@ jobs:
 
             # Add all files except those in charts directories
             find "stable/$PRODUCT" -type f ! -path "*/charts/*" -exec git add {} +
-            if git commit -m "[$PRODUCT] $VERSION release"; then
+            if git commit -m "[$PRODUCT] $CHART_VERSION release"; then
               # Push the update branch
               git push origin "$BRANCH"
 
