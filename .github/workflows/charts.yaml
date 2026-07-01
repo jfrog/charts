@@ -192,11 +192,18 @@ jobs:
               # Auto-merge only when the changelog has no GitHub references
               # (e.g. "GH-2177"). Those usually point at issues/PRs that a
               # human should review, so leave such PRs open.
+              #
+              # --auto queues GitHub's native auto-merge instead of merging
+              # immediately: branch policy requires checks that haven't
+              # necessarily run yet right after PR creation, so an immediate
+              # `gh pr merge` can be rejected even though the PR is otherwise
+              # eligible. --auto completes the merge once those requirements
+              # are satisfied instead of giving up.
               if grep -qE 'GH-[0-9]+' "$NOTES_FILE"; then
                 echo "::notice::$PRODUCT changelog contains GitHub references (GH-...); leaving PR open for manual review"
               else
-                echo "No GitHub references in changelog; auto-merging $PRODUCT PR"
-                gh pr merge "$PR_URL" --squash --delete-branch \
+                echo "No GitHub references in changelog; queuing auto-merge for $PRODUCT PR"
+                gh pr merge "$PR_URL" --squash --delete-branch --auto \
                   || echo "::warning::auto-merge failed for $PRODUCT (checks/permissions?); PR left open"
               fi
 
