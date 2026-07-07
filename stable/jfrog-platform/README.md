@@ -235,33 +235,6 @@ artifactory:
 
 -----
 
-## 🐰 RabbitMQ Quorum Queues
-
-Xray is migrating from mirrored classic queues to **Quorum Queues**.
-
-### Fresh Install (Quorum Enabled)
-
-To install a fresh environment with Quorum queues enabled immediately:
-
-```bash
-helm upgrade --install jfrog-platform jfrog/jfrog-platform \
-  -f rabbitmq/ha-quorum.yaml \
-  --namespace jfrog-platform
-```
-
-### Migration (Existing Setup)
-
-To migrate an existing Xray installation to Quorum queues:
-
-```bash
-helm upgrade --install jfrog-platform jfrog/jfrog-platform \
-  -f rabbitmq/ha-quorum.yaml \
-  -f rabbitmq/migration-to-ha-quorum.yaml \
-  --namespace jfrog-platform
-```
-
------
-
 ## 🗑️ Uninstallation
 
 To remove the JFrog Platform:

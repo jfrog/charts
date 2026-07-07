@@ -1,6 +1,11 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.5.7] - July 06, 2026
+* Update dependency xray chart version to 103.143.30
+* Update rabbitmq.migration.image.tag to 1.35.6
+* Added rabbitmq `quorum_queue_non_voters` feature flag and increased `max_message_size` to 128 MB.
+
 ## [11.5.6] - June 29, 2026
 * Update dependency artifactory chart version to 107.146.22
 
