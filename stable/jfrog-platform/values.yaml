@@ -186,7 +186,7 @@ rabbitmq:
     # existingPasswordSecret: <name-of-existing-secret>
   ## To support upgrade from 3.8.x to 3.11.x , featureFlags are needed
   ## ref: https://blog.rabbitmq.com/posts/2022/07/required-feature-flags-in-rabbitmq-3.11/
-  featureFlags: drop_unroutable_metric,empty_basic_get_metric,implicit_default_bindings,maintenance_mode_status,quorum_queue,stream_queue,user_limits,virtual_host_metadata
+  featureFlags: drop_unroutable_metric,empty_basic_get_metric,implicit_default_bindings,maintenance_mode_status,quorum_queue,stream_queue,user_limits,virtual_host_metadata,quorum_queue_non_voters
   maxAvailableSchedulers: null
   onlineSchedulers: null
   persistence:
@@ -222,8 +222,8 @@ rabbitmq:
       enabled: false
     image:
       registry: "{{ .Values.global.imageRegistry }}"
-      repository: bitnami/kubectl
-      tag: 1.31.2
+      repository: echohq/kubectl
+      tag: 1.35.6
       pullPolicy: IfNotPresent
     resources:
       requests:
@@ -266,6 +266,7 @@ rabbitmq:
 
   extraConfiguration: |-
     management.listener.ssl = {{ .Values.global.rabbitmq.auth.tls.enabled }}
+    max_message_size = 134217728
 
   initContainers: |
     {{ template "waitForPreviousPods" . }}
@@ -284,7 +285,7 @@ rabbitmq:
 artifactory:
   enabled: true
   unifiedUpgradeAllowed: true
-  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.5.6-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
+  installerInfo: '{"productId":"Helm_JFrogPlatform/{{ printf "11.5.7-%s" .Chart.AppVersion  }}","features":[{"featureId":"Platform/{{ printf "%s-%s" "kubernetes" .Capabilities.KubeVersion.Version }}"},{"featureId":"Database/{{ .Values.database.type }}"},{"featureId":"Nginx_Enabled/{{ .Values.nginx.enabled }}"},{"featureId":"ArtifactoryPersistence_Type/{{ .Values.artifactory.persistence.type }}"},{"featureId":"SplitServicesToContainers_Enabled/{{ .Values.splitServicesToContainers }}"},{"featureId":"Filebeat_Enabled/{{ .Values.filebeat.enabled }}"},{"featureId":"ReplicaCount/{{ .Values.artifactory.replicaCount }}"}]}'
   postgresql:
     enabled: false
   waitForDatabase: false
