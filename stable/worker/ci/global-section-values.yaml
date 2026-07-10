@@ -26,9 +26,9 @@ global:
      command:
        - 'sh'
        - '-c'
-       - 'touch /opt/jfrog/worker/var/init-global'
+       - 'touch /var/opt/jfrog/worker/init-global'
      volumeMounts:
-       - mountPath: "/opt/jfrog/worker/var"
+       - mountPath: "/var/opt/jfrog/worker"
          name: data
   customSidecarContainers: |
    - name: "sidecar-list-global"
@@ -66,9 +66,9 @@ common:
      command:
        - 'sh'
        - '-c'
-       - 'touch /opt/jfrog/worker/var/init-local'
+       - 'touch /var/opt/jfrog/worker/init-local'
      volumeMounts:
-       - mountPath: "/opt/jfrog/worker/var"
+       - mountPath: "/var/opt/jfrog/worker"
          name: data
   customSidecarContainers: |
    - name: "sidecar-list-local"
