@@ -270,15 +270,20 @@ changelog_delta() {
     # only difference is the version header itself, treat it as no entries.
     content=$(printf '%s\n' "$raw" | grep -vE '^#*[[:space:]]*\[[^]]*\]' || true)
     if [[ -z "$raw" || -z "$content" ]]; then
-        # No new lines between the two versions — typically the upstream
-        # changelog only bumped its top header (same bullets) without adding
-        # entries. Fall back to the new version's own changelog section so we
-        # still surface its notes instead of showing nothing.
-        local section
-        section=$(extract_changelog_section "$new_file" "$new_version")
-        if [[ -n "$section" ]]; then
+        # No new content lines — only version headers differ (or nothing at
+        # all). This can mean the upstream changelog only bumped its header
+        # without adding entries (nothing to report), OR that genuinely new
+        # bullets exist but happen to also appear verbatim elsewhere in OLD's
+        # full history, hiding them from the whole-file grep above. Tell
+        # these apart by comparing NEW's own section against OLD's own
+        # section: only surface it as new when it actually differs from what
+        # was already published as of old_version.
+        local new_section old_section
+        new_section=$(extract_changelog_section "$new_file" "$new_version")
+        old_section=$(extract_changelog_section "$old_file" "$old_version")
+        if [[ -n "$new_section" && "$new_section" != "$old_section" ]]; then
             echo "**[$new_version]**"
-            printf '%s\n' "$section" | sed '/^[[:space:]]*$/d'
+            printf '%s\n' "$new_section" | sed '/^[[:space:]]*$/d'
         else
             echo "_No changelog entries in range \`$new_version\` .. \`$old_version\`._"
         fi
