@@ -321,17 +321,32 @@ docs_release_url() {
     esac
 }
 
+# The product name to display in the "official release notes" link text.
+# artifactory-ha/jcr/oss/cpp-ce all share Artifactory's own release-notes
+# page (see docs_release_url above) rather than having their own, so the
+# link should read "artifactory X.Y.Z", not e.g. "artifactory-ha X.Y.Z".
+docs_release_display_name() {
+    local chart="$1"
+    case "$chart" in
+        artifactory-ha|artifactory-jcr|artifactory-oss|artifactory-cpp-ce)
+            echo "artifactory" ;;
+        *)
+            echo "$chart" ;;
+    esac
+}
+
 # Inline "official release notes" suffix appended to a heading line, rendered
 # in a smaller font via <sub>. Returns an empty string when the chart has no
 # public release-notes page. Shared by individual-chart and platform notes so
 # both render the link identically.
 release_notes_suffix() {
-    local chart="$1" app_version="$2" url
+    local chart="$1" app_version="$2" url display_chart
     url=$(docs_release_url "$chart" "$app_version")
     [[ -z "$url" ]] && { echo ""; return; }
+    display_chart=$(docs_release_display_name "$chart")
     printf '%s<sub>📖 Official release notes: [%s %s](%s)</sub>' \
         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" \
-        "$chart" "$app_version" "$url"
+        "$display_chart" "$app_version" "$url"
 }
 
 # ---------------------------------------------------------------------------
