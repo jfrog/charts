@@ -132,8 +132,8 @@ idx_dep_version() {
     echo "$v"
 }
 
-# Emit a "Dependency Version Summary" table for CHART comparing OLD vs NEW
-# versions. Prints nothing and returns 1 when the chart declares no
+# Emit a "Dependency Chart Version Summary" table for CHART comparing OLD vs
+# NEW versions. Prints nothing and returns 1 when the chart declares no
 # dependencies; returns 0 when at least one dependency version changed and 2
 # when all are unchanged (so callers can decide whether to show details).
 emit_dependency_summary() {
@@ -142,7 +142,7 @@ emit_dependency_summary() {
     dep_names=$(idx_dep_names "$chart" "$new_version")
     [[ -z "$dep_names" ]] && return 1
 
-    echo "## Dependency Version Summary"
+    echo "## Dependency Chart Version Summary"
     echo ""
     echo "| Dependency | Previous | New | Status |"
     echo "|------------|----------|-----|--------|"
@@ -666,14 +666,16 @@ EOF
     emit_dependency_summary "jfrog-platform" "$prev_version" "$CHART_VERSION" && rc=0 || rc=$?
     [[ "$rc" -eq 2 ]] && has_changes=false
 
-    # ---- detailed dependency changelogs ----
-    echo "## Dependency Changes"
-    echo ""
-
     if [[ "$has_changes" == false ]]; then
+        echo "## Dependency Changes"
+        echo ""
         echo "_No dependency version changes detected._"
         return
     fi
+
+    # ---- detailed dependency changelogs ----
+    echo "## Dependency Changes"
+    echo ""
 
     while IFS= read -r dep; do
         [[ -z "$dep" ]] && continue
@@ -683,7 +685,7 @@ EOF
         [[ "$old_v" == "$new_v" ]] && continue
 
         if [[ "$dep" == "postgresql" || "$dep" == "rabbitmq" ]]; then
-            echo "### $(capitalize "$dep") (\`$old_v\` → \`$new_v\`)"
+            echo "### $(capitalize "$dep") (\`${old_v:-none}\` → \`$new_v\`)"
             echo ""
             echo "_Infrastructure dependency updated._"
             echo ""
@@ -695,7 +697,7 @@ EOF
 
         local dep_app_v
         dep_app_v=$(resolve_app_version "$dep" "$new_v")
-        echo "### $(capitalize "$dep") (\`$old_v\` → \`$new_v\`)$(release_notes_suffix "$dep" "$dep_app_v")"
+        echo "### $(capitalize "$dep") (\`${old_v:-none}\` → \`$new_v\`)$(release_notes_suffix "$dep" "$dep_app_v")"
         echo ""
 
         echo "<details open>"
@@ -705,8 +707,27 @@ EOF
         echo ""
         echo "</details>"
         echo ""
+    done <<< "$dep_names"
 
-        echo "<details open>"
+    # ---- image version summary ----
+    echo "## Image Version Summary"
+    echo ""
+
+    while IFS= read -r dep; do
+        [[ -z "$dep" ]] && continue
+        local old_v new_v
+        old_v=$(idx_dep_version "jfrog-platform" "$prev_version" "$dep")
+        new_v=$(idx_dep_version "jfrog-platform" "$CHART_VERSION" "$dep")
+        [[ "$old_v" == "$new_v" ]] && continue
+        [[ "$dep" == "postgresql" || "$dep" == "rabbitmq" ]] && continue
+
+        echo "---"
+        echo ""
+
+        echo "### $(capitalize "$dep") (\`${old_v:-none}\` → \`$new_v\`)"
+        echo ""
+
+        echo "<details>"
         echo "<summary><b>Images</b></summary>"
         echo ""
         emit_images_table "$dep" "$old_v" "$new_v"
