@@ -285,8 +285,8 @@ initContainers:
   ##
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.4.949.1716471857
+    repository: jfrog/echo-mini
+    tag: "20260702"
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -418,10 +418,10 @@ common:
       command:
         - 'sh'
         - '-c'
-        - 'ls /opt/jfrog/worker/var/etc/'
-        # - 'curl -o /opt/jfrog/worker/var/etc/system-custom.yaml https://<repo-url>/systemyaml'
+        - 'ls /var/opt/jfrog/worker/etc/'
+        # - 'curl -o /var/opt/jfrog/worker/etc/system-custom.yaml https://<repo-url>/systemyaml'
       volumeMounts:
-        - mountPath: "/opt/jfrog/worker/var"
+        - mountPath: "/var/opt/jfrog/worker"
           name: data
 
   ## Add custom sidecar containers
@@ -441,7 +441,7 @@ common:
         - '-c'
         - 'sh /scripts/script.sh'
       volumeMounts:
-        - mountPath: "/opt/jfrog/worker/var"
+        - mountPath: "/var/opt/jfrog/worker"
           name: data
         - mountPath: "/scripts/script.sh"
           name: custom-script
@@ -558,7 +558,7 @@ filebeat:
 
   filebeatYml: |
     logging.level: info
-    path.data: /opt/jfrog/worker/var/log/filebeat
+    path.data: /var/opt/jfrog/worker/log/filebeat
     name: worker-filebeat
     queue.spool:
       file:
@@ -568,7 +568,7 @@ filebeat:
       enabled: true
       close_eof: ${CLOSE:false}
       paths:
-         - /opt/jfrog/worker/var/log/*.log
+         - /var/opt/jfrog/worker/log/*.log
       fields:
         service: "jfwks"
         log_type: "worker"

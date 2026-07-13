@@ -56,19 +56,19 @@ spec:
             - '/bin/bash'
             - '-c'
             - >
-              echo "Copy system.yaml to /opt/jfrog/worker/var/etc";
-              mkdir -p /opt/jfrog/worker/var/etc;
+              echo "Copy system.yaml to /var/opt/jfrog/worker/etc";
+              mkdir -p /var/opt/jfrog/worker/etc;
             {{- if .Values.systemYamlOverride.existingSecret }}
-              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} /opt/jfrog/worker/var/etc/system.yaml;
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} /var/opt/jfrog/worker/etc/system.yaml;
             {{- else }}
-              cp -fv /tmp/etc/system.yaml /opt/jfrog/worker/var/etc/system.yaml;
+              cp -fv /tmp/etc/system.yaml /var/opt/jfrog/worker/etc/system.yaml;
             {{- end }}
-              echo "Remove /opt/jfrog/worker/var/lost+found folder if exists";
-              rm -rfv /opt/jfrog/worker/var/lost+found;
-              mkdir -p /opt/jfrog/worker/var/data/worker/usage;
+              echo "Remove /var/opt/jfrog/worker/lost+found folder if exists";
+              rm -rfv /var/opt/jfrog/worker/lost+found;
+              mkdir -p /var/opt/jfrog/worker/data/worker/usage;
           volumeMounts:
             - name: data
-              mountPath: "/opt/jfrog/worker/var"
+              mountPath: "/var/opt/jfrog/worker"
             - name: systemyaml
               {{- if .Values.systemYamlOverride.existingSecret }}
               mountPath: "/tmp/etc/{{ .Values.systemYamlOverride.dataKey }}"
@@ -94,7 +94,7 @@ spec:
 {{ include "worker.copyCustomCerts" . | indent 14 }}
           volumeMounts:
             - name: data
-              mountPath: "/opt/jfrog/worker/var"
+              mountPath: "/var/opt/jfrog/worker"
             - name: ca-certs
               mountPath: "/tmp/certs"
       {{- end }}
@@ -179,7 +179,7 @@ spec:
 {{- end }}
           volumeMounts:
             - name: data
-              mountPath: "/opt/jfrog/worker/var"
+              mountPath: "/var/opt/jfrog/worker"
       {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "worker.customVolumeMounts" .) . | indent 12 }}
       {{- end }}
@@ -359,10 +359,10 @@ spec:
           command:
             - 'sh'
             - '-c'
-            - 'sh /scripts/tail-log.sh /opt/jfrog/worker/var/log {{ . }}'
+            - 'sh /scripts/tail-log.sh /var/opt/jfrog/worker/log {{ . }}'
           volumeMounts:
             - name: data
-              mountPath: "/opt/jfrog/worker/var"
+              mountPath: "/var/opt/jfrog/worker"
             - name: tail-logger-script
               mountPath: /scripts/tail-log.sh
               subPath: tail-log.sh
@@ -384,7 +384,7 @@ spec:
               readOnly: true
               subPath: filebeat.yml
             - name: data
-              mountPath: "/opt/jfrog/worker/var"
+              mountPath: "/var/opt/jfrog/worker"
           livenessProbe:
 {{ toYaml .Values.filebeat.livenessProbe | indent 12 }}
           readinessProbe:
