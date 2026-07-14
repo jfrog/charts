@@ -51,6 +51,9 @@ spec:
       metricType: Utilization
       metadata:
         value: {{ .Values.autoscaling.targetCPUUtilizationPercentage | quote }}
+        {{- if .Values.autoscaling.targetCPUContainerName }}
+        containerName: {{ .Values.autoscaling.targetCPUContainerName | quote }}
+        {{- end }}
   {{- end }}
   {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
     - type: memory

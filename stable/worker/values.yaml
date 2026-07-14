@@ -153,6 +153,8 @@ autoscaling:
     stabilizationWindowSeconds: 300
   # targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  ## When set (with KEDA cpu trigger), uses ContainerResource for this container only (kube 1.20+). Empty = pod aggregate.
+  targetCPUContainerName: ""
   keda:
     threshold: '3'
     query: sum(avg_over_time(jfwks_execution_processing_count{service="{{ .Release.Name }}", namespace="{{ .Release.Namespace }}"}[1m]))
@@ -198,7 +200,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.205.10
+    tag: 7.320.44
     imagePullPolicy: IfNotPresent
   serviceRegistry:
     ## Service registry (Access) TLS verification skipped if enabled
@@ -299,8 +301,8 @@ initContainers:
   ##
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.7.1773939694
+    repository: jfrog/echo-mini
+    tag: "20260709"
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -437,9 +439,9 @@ common:
     #   command:
     #     - 'sh'
     #     - '-c'
-    #     - 'curl -o /opt/jfrog/worker/var/etc/system.yaml https://<repo-url>/systemyaml'
+    #     - 'curl -o /var/opt/jfrog/worker/etc/system.yaml https://<repo-url>/systemyaml'
     #   volumeMounts:
-    #     - mountPath: "/opt/jfrog/worker/var"
+    #     - mountPath: "/var/opt/jfrog/worker"
     #       name: data
 
   ## Add custom sidecar containers
@@ -459,7 +461,7 @@ common:
     #     - '-c'
     #     - 'sh /scripts/script.sh'
     #   volumeMounts:
-    #     - mountPath: "/opt/jfrog/worker/var"
+    #     - mountPath: "/var/opt/jfrog/worker"
     #       name: data
     #     - mountPath: "/scripts/script.sh"
     #       name: custom-script
@@ -609,7 +611,7 @@ filebeat:
 
   filebeatYml: |
     logging.level: info
-    path.data: /opt/jfrog/worker/var/log/filebeat
+    path.data: /var/opt/jfrog/worker/log/filebeat
     name: worker-filebeat
     queue.spool:
       file:
@@ -619,7 +621,7 @@ filebeat:
       enabled: true
       close_eof: ${CLOSE:false}
       paths:
-         - /opt/jfrog/worker/var/log/*.log
+         - /var/opt/jfrog/worker/log/*.log
       fields:
         service: "jfwks"
         log_type: "worker"
@@ -633,7 +635,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.32.0
+    tag: 2.49.2
     pullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
