@@ -16,11 +16,10 @@ shared:
     parameters: mode=single;password={{ .Values.cache.password }}
 {{- end }}
     defaultKeyExpirationSecs: 3600
-    maxWarmupKeys: 1000
-    warmupPoolSize: 10
-    warmupDBMaxOpenConns: 10
-    warmupDBMaxIdleConns: 5
-    invalidationIntervalSecs: 60
+    publicInvalidation:
+      maxWarmupKeys: 1000
+      maxWarmupPoolSize: 10
+      intervalSecs: 60
 {{- end }}
 catalog:
   mode: "singleTenant"
