@@ -150,8 +150,13 @@ jobs:
             # Return to workspace root for git operations
             cd "$WORKSPACE_DIR"
 
-            # Add all files except those in charts directories
-            find "stable/$PRODUCT" -type f ! -path "*/charts/*" -exec git add {} +
+            # Stage adds, updates, AND deletions for the pulled chart.
+            # `find … git add` only staged existing files, so templates removed
+            # upstream (e.g. top-level rtfs-*.yaml after the move to templates/rtfs/)
+            # stayed in this repo forever as orphans.
+            git add -A -- "stable/${PRODUCT}"
+            # Keep prior policy: do not commit Helm dependency packages under charts/.
+            git reset -q -- "stable/${PRODUCT}/charts" 2>/dev/null || true
             if git commit -m "[$PRODUCT] $CHART_VERSION release"; then
               # Push the update branch
               git push origin "$BRANCH"
