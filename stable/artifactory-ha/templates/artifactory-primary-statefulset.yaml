@@ -60,8 +60,8 @@ metadata:
 {{- if and (eq .Values.unifiedpolicy.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
     {{- fail "\n Unified Policy supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable Unified Policy." }}
 {{- end }}
-{{- if and (eq .Values.platformfederation.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
-    {{- fail "\n Platform Federation supports only PostgreSQL databases and is not compatible with other databases. If you are currently using a different database, disable PlatformFederation." }}
+{{- if and (eq .Values.evaluation.enabled true) (ne .Values.database.type "postgresql") (not (empty .Values.database.type))}}
+    {{- fail "\n Evaluation supports only PostgreSQL database and is not compatible with other databases. If you are currently using a different database, disable Evaluation." }}
 {{- end }}
 {{- with .Values.artifactory.primary.labels }}
 {{ toYaml . | indent 4 }}
@@ -1653,6 +1653,10 @@ spec:
           value: "false"
         - name : JF_EVIDENCE_ENABLED
           value: "false"
+        - name : JF_JFMELT_ENABLED
+          value: "false"
+        - name : JF_JFBUS_ENABLED
+          value: "false"
         - name : JF_ONEMODEL_ENABLED
           value: "false"
         - name : JF_ACCESS_ENABLED
@@ -1857,9 +1861,9 @@ spec:
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
-          - 'sh'
+          - 'bash'
           - '-c'
-          - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+          - 'bash /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
@@ -1878,9 +1882,9 @@ spec:
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
       {{- end }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
-        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
+        - 'bash /scripts/tail-log.sh {{ $mountPath }}/log/tomcat {{ . }}'
         volumeMounts:
         - name: volume
           mountPath: {{ $mountPath }}
@@ -1893,7 +1897,7 @@ spec:
       {{- end }}
       {{- if .Values.filebeat.enabled }}
       - name: {{ .Values.filebeat.name }}
-        image: '{{ include "artifactory-ha.getImageInfoByValue" (list . "filebeat") }}'
+        image: "{{ .Values.filebeat.image.registry }}/{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.tag }}"
         imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
       {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
