@@ -99,6 +99,10 @@ artifactory:
 frontend:
   session:
     timeMinutes: {{ .Values.frontend.session.timeoutMinutes | quote }}
+{{- if .Values.ml.enabled }}
+  ml:
+    jfrogMlAppState: VISIBLE
+{{- end }}
 access:
   database:
     maxOpenConnections: {{ .Values.access.database.maxOpenConnections }}
@@ -147,6 +151,10 @@ metadata:
 {{- if and .Values.jfconnect.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
 jfconnect:
   enabled: true
+{{- if .Values.jfconnect.airgap.enabled }}
+  airgap:
+      enabled: {{ .Values.jfconnect.airgap.enabled }}
+{{- end }}
 {{- else }}
 jfconnect:
   enabled: false
@@ -156,9 +164,9 @@ jfconnect_service:
 
 onemodel:
   enabled: {{ .Values.onemodel.enabled }}
-  {{- if .Values.onemodel.apolloYaml }}
-  apolloYaml:
-{{ toYaml .Values.onemodel.apolloYaml | nindent 6 }}
+  {{- if .Values.onemodel.cosmo }}
+  cosmo:
+  {{ toYaml .Values.onemodel.cosmo | nindent 6 }}
   {{- end}}
 {{- if and .Values.rtfs.enabled  (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}
 rtfs:
@@ -230,6 +238,13 @@ jfbus:
   enabled: true
 {{- else }}
 jfbus:
+  enabled: false
+{{- end }}
+{{- if eq (include "artifactory-ha.jfmelt.enabled" .) "true" }}
+jfmelt:
+  enabled: true
+{{- else }}
+jfmelt:
   enabled: false
 {{- end }}
 {{- if and .Values.platformfederation.enabled (not (regexMatch "^.*(oss|cpp-ce|jcr).*$" .Values.artifactory.image.repository)) }}

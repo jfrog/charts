@@ -108,7 +108,7 @@ spec:
           name: http-internal
         {{- end }}
         {{- if .Values.nginx.https }}
-        {{- if .Values.nginx.https.enabled }}
+        {{- if include "nginx.httpsEffective" . }}
         - containerPort: {{ .Values.nginx.https.internalPort }}
           name: https
         {{- end }}
@@ -132,7 +132,7 @@ spec:
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/conf.d/"
         - name: nginx-volume
           mountPath: {{ .Values.nginx.persistence.mountPath | quote }}
-        {{- if .Values.nginx.https.enabled }}
+        {{- if include "nginx.httpsEffective" . }}
         - name: ssl-certificates
           mountPath: "{{ .Values.nginx.persistence.mountPath }}/ssl"
         {{- end }}
@@ -209,13 +209,9 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- if .Values.nginx.https.enabled }}
+      {{- if include "nginx.httpsEffective" . }}
       - name: ssl-certificates
         secret:
-      {{- if .Values.nginx.tlsSecretName }}
-          secretName: {{ .Values.nginx.tlsSecretName }}
-      {{- else }}
-          secretName: {{ template "artifactory-ha.fullname" . }}-nginx-certificate
-      {{- end }}
+          secretName: {{ include "nginx.tlsSecretEffective" . }}
       {{- end }}
 {{- end }}

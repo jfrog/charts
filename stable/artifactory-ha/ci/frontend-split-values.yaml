@@ -40,10 +40,10 @@ frontend:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the frontend preStop handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the frontend preStop handler >> /tmp/message"]
   autoscaling:
     enabled: false
 

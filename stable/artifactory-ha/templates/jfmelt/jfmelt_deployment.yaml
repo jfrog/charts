@@ -1,68 +1,70 @@
-{{- if .Values.platformfederation.enabled -}}
+{{- if eq (include "artifactory-ha.jfmelt.enabled" .) "true" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "platformfederation.fullname" . }}
+  name: {{ include "jfmelt.fullname" . }}
   labels:
     app: {{ template "artifactory-ha.name" . }}
     chart: {{ template "artifactory-ha.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    component: {{ .Values.platformfederation.name }}
-{{- if .Values.platformfederation.deployment.labels }}
-{{ toYaml .Values.platformfederation.deployment.labels | indent 4 }}
+    component: {{ .Values.jfmelt.name }}
+{{- if .Values.jfmelt.deployment.labels }}
+{{ toYaml .Values.jfmelt.deployment.labels | indent 4 }}
 {{- end }}
-{{- with .Values.platformfederation.deployment.annotations }}
+{{- with .Values.jfmelt.deployment.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  replicas: {{ .Values.platformfederation.replicaCount }}
+  replicas: {{ .Values.jfmelt.replicaCount }}
+  strategy:
+    type: "RollingUpdate"
   selector:
     matchLabels:
       app: {{ template "artifactory-ha.name" . }}
       release: {{ .Release.Name }}
-      component: {{ .Values.platformfederation.name }}
+      component: {{ .Values.jfmelt.name }}
   template:
     metadata:
       annotations:
       {{- if not .Values.artifactory.unifiedSecretInstallation }}
-        checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
         checksum/database-secrets: {{ include (print $.Template.BasePath "/artifactory-database-secrets.yaml") . | sha256sum }}
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
       {{- else }}
         checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
       {{- end }}
-      {{- with .Values.platformfederation.pod.annotations }}
+      {{- with .Values.jfmelt.pod.annotations }}
 {{ toYaml . | indent 8 }}
       {{- end }}
       labels:
         app: {{ template "artifactory-ha.name" . }}
         chart: {{ template "artifactory-ha.chart" . }}
-        component: {{ .Values.platformfederation.name }}
+        component: {{ .Values.jfmelt.name }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
-      {{- with .Values.platformfederation.pod.labels }}
+      {{- with .Values.jfmelt.pod.labels }}
 {{ toYaml . | indent 8 }}
       {{- end }}
     spec:
       {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
-  {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
+      {{- include "artifactory-ha.imagePullSecrets" . | indent 6 }}
       {{- end }}
-      {{- if .Values.platformfederation.podSecurityContext.enabled }}
-      securityContext: {{- omit .Values.platformfederation.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- if .Values.jfmelt.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.jfmelt.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
-      {{- if .Values.platformfederation.serviceAccountName }}
-      serviceAccountName: {{ .Values.platformfederation.serviceAccountName }}
+      {{- if .Values.jfmelt.serviceAccountName }}
+      serviceAccountName: {{ .Values.jfmelt.serviceAccountName }}
       {{- end}}
       initContainers:
-        {{- if .Values.platformfederation.customInitContainers }}
-{{ tpl (include "artifactory.platformfederation.customInitContainers" .)  . | indent 8 }}
+        {{- if .Values.jfmelt.customInitContainers }}
+{{ tpl (include "artifactory.jfmelt.customInitContainers" .)  . | indent 8 }}
         {{- end }}
         - name: 'copy-system-yaml'
           image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
-          {{- if .Values.platformfederation.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.platformfederation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.initContainers.resources }}
           resources:
@@ -72,28 +74,32 @@ spec:
             - '/bin/bash'
             - '-c'
             - >
-              echo "Copy system.yaml to {{ .Values.platformfederation.persistence.mountPath }}/etc";
-              mkdir -p {{ .Values.platformfederation.persistence.mountPath }}/etc;
-              mkdir -p {{ .Values.platformfederation.persistence.mountPath }}/etc/access/keys/trusted;
-            {{- if .Values.systemYamlOverride.existingSecret }}
-              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.platformfederation.persistence.mountPath }}/etc/system.yaml;
-            {{- else }}
-              cp -fv /tmp/etc/system.yaml {{ .Values.platformfederation.persistence.mountPath }}/etc/system.yaml;
-            {{- end }}
-              echo "Copy certificate access-root-ca.crt to {{ .Values.platformfederation.persistence.mountPath }}/data/router/keys/trusted if needed";
-              mkdir -p {{ .Values.platformfederation.persistence.mountPath }}/data/router/keys/trusted;
-              cp /tmp/etc/trusted/access-root-ca.crt {{ .Values.platformfederation.persistence.mountPath }}/data/router/keys/trusted/access-root-ca.crt || echo "Could not copy certificate";
-              echo "Remove {{ .Values.platformfederation.persistence.mountPath }}/lost+found folder if exists";
-              rm -rfv {{ .Values.platformfederation.persistence.mountPath }}/lost+found;
+              echo "Copy system.yaml to {{ .Values.jfmelt.persistence.mountPath }}/etc";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc;
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/access/keys/trusted;
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.jfmelt.persistence.mountPath }}/etc/system.yaml;
+              {{- else }}
+              cp -fv /tmp/etc/system.yaml {{ .Values.jfmelt.persistence.mountPath }}/etc/system.yaml;
+              {{- end }}
+
+              echo "Copy certificate access-root-ca.crt to {{ .Values.jfmelt.persistence.mountPath }}/data/router/keys/trusted if needed";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/data/router/keys/trusted;
+              cp -fv /tmp/etc/trusted/access-root-ca.crt {{ .Values.jfmelt.persistence.mountPath }}/data/router/keys/trusted/access-root-ca.crt || echo "Could not copy certificate";
+              echo "Remove {{ .Values.jfmelt.persistence.mountPath }}/lost+found folder if exists";
+              rm -rfv {{ .Values.jfmelt.persistence.mountPath }}/lost+found;
           {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
-              echo "Copy joinKey to {{ .Values.platformfederation.persistence.mountPath }}/etc/security";
-              mkdir -p {{ .Values.platformfederation.persistence.mountPath }}/etc/security;
-              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.platformfederation.persistence.mountPath }}/etc/security/join.key;
+              echo "Copy joinKey to {{ .Values.jfmelt.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.jfmelt.persistence.mountPath }}/etc/security/join.key;
           {{- end }}
           {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
-              echo "Copy masterKey to {{ .Values.platformfederation.persistence.mountPath }}/etc/security";
-              mkdir -p {{ .Values.platformfederation.persistence.mountPath }}/etc/security;
-              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.platformfederation.persistence.mountPath }}/etc/security/master.key;
+              echo "Copy masterKey to {{ .Values.jfmelt.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.jfmelt.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
+          {{- if or .Values.jfmelt.customCertificates.enabled .Values.global.customCertificates.enabled }}
+{{ include "jfmelt.copyCustomCerts" . | indent 14 }}
           {{- end }}
           env:
           {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
@@ -120,7 +126,7 @@ spec:
           {{- end }}
           volumeMounts:
             - name: data
-              mountPath: {{ .Values.platformfederation.persistence.mountPath | quote }}
+              mountPath: {{ .Values.jfmelt.persistence.mountPath | quote }}
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
             - name: systemyaml
             {{- else }}
@@ -133,13 +139,39 @@ spec:
               mountPath: "/tmp/etc/system.yaml"
               subPath: "system.yaml"
               {{- end }}
+            {{- if or .Values.jfmelt.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+            {{- end }}
+        {{- if .Values.jfmelt.waitForArtifactory }}
+        - name: wait-for-artifactory
+          image: {{ include "artifactory-ha.getImageInfoByValue" (list . "initContainers") }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources:
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+          - /bin/bash
+          - -c
+          - |
+            echo "Waiting for Artifactory service to be ready..."
+            ready=false;
+            while ! $ready; do echo waiting;
+              curl -k --silent --output /dev/null --max-time 3 --fail "{{ tpl (include "artifactory-ha.jfrogUrl" .) . }}/artifactory/api/v1/system/readiness"; exit_status=$?;
+              if [[ $exit_status -eq 0 ]]; then ready=true; echo "Artifactory is ready. Proceeding..."; fi; sleep 1;
+            done
+        {{- end }}
       containers:
         {{- if .Values.observability.enabled }}
         - name: {{ .Values.observability.name }}
           image: {{ include "artifactory-ha.getImageInfoByValue" (list . "observability") }}
-          imagePullPolicy: {{ .Values.artifactory.image.pullPolicy }}
-          {{- if .Values.platformfederation.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.platformfederation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- with .Values.observability.lifecycle }}
           lifecycle:
@@ -167,96 +199,40 @@ spec:
           livenessProbe:
 {{ tpl .Values.observability.livenessProbe.config . | indent 12 }}
           {{- end }}
-      {{- end }}
-        - name: {{ .Values.platformfederation.name}}
-          image: {{ include "artifactory-ha.getImageInfoByValue" (list . "platformfederation") }}
-          imagePullPolicy: {{ .Values.platformfederation.image.pullPolicy | quote }}
-          {{- if .Values.platformfederation.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.platformfederation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+        {{- end }}
+        - name: jfmelt
+          image: {{ include "artifactory-ha.getImageInfoByValue" (list . "jfmelt") }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- if .Values.platformfederation.customCommand }}
+          {{- if .Values.jfmelt.customCommand }}
           command:
-{{- tpl (include "platformfederation.command" .) . | indent 12 }}
+{{- tpl (include "jfmelt.command" .) . | indent 12 }}
           {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.platformfederation.port }}
+              containerPort: {{ .Values.jfmelt.internalRestPort }}
               protocol: TCP
             - name: grpc
-              containerPort: {{ .Values.platformfederation.grpcPort }}
+              containerPort: {{ .Values.jfmelt.grpcPort }}
               protocol: TCP
-          {{- if .Values.platformfederation.startupProbe.enabled }}
-          startupProbe:
-{{ tpl .Values.platformfederation.startupProbe.config . | indent 12 }}
-          {{- end }}
-          {{- if .Values.platformfederation.readinessProbe.enabled }}
-          readinessProbe:
-{{ tpl .Values.platformfederation.readinessProbe.config . | indent 12 }}
-          {{- end }}
-          {{- if .Values.platformfederation.livenessProbe.enabled }}
-          livenessProbe:
-{{ tpl .Values.platformfederation.livenessProbe.config . | indent 12 }}
-          {{- end }}
-          resources: {{- toYaml .Values.platformfederation.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.jfmelt.persistence.mountPath | quote }}
+            {{- if .Values.jfmelt.customVolumeMounts }}
+{{ tpl (include "artifactory.jfmelt.customVolumeMounts" .) . | indent 12 }}
+            {{- end }}
           env:
-{{- with .Values.platformfederation.extraEnvironmentVariables }}
-{{ tpl (toYaml .) $ | indent 12 }}
-{{- end }}
+            - name: SERVICE_JSON_LOGS
+              value: {{.Values.logging.logToStdoutJson | quote }}
+            ## Warning: This JF_JFMELT_LISTENADDR env is for probe, you may remove this if not needed.
+            - name: JF_JFMELT_LISTENADDR
+              value: "0.0.0.0"
             - name: JF_SHARED_NODE_ID
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          {{- if or .Values.database.secrets.user .Values.database.user }}
-            - name: JF_SHARED_DATABASE_USERNAME
-              valueFrom:
-                secretKeyRef:
-            {{- if .Values.database.secrets.user }}
-                  name: {{ tpl .Values.database.secrets.user.name . }}
-                  key: {{ tpl .Values.database.secrets.user.key . }}
-            {{- else if .Values.database.user }}
-                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
-                  name: {{ template "artifactory-ha.fullname" . }}-database-creds
-                  {{- else }}
-                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
-                  {{- end }}
-                  key: db-user
-            {{- end }}
-          {{- end }}
-          {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
-            - name: JF_SHARED_DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-            {{- if .Values.database.secrets.password }}
-                  name: {{ tpl .Values.database.secrets.password.name . }}
-                  key: {{ tpl .Values.database.secrets.password.key . }}
-            {{- else if .Values.database.password }}
-                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
-                  name: {{ template "artifactory-ha.fullname" . }}-database-creds
-                  {{- else }}
-                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
-                  {{- end }}
-                  key: db-password
-            {{- else if .Values.postgresql.enabled }}
-                  name: {{ .Release.Name }}-postgresql
-                  key: password
-            {{- end }}
-          {{- end }}
-          {{- if or .Values.database.secrets.url .Values.database.url }}
-            - name: JF_SHARED_DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-            {{- if .Values.database.secrets.url }}
-                  name: {{ tpl .Values.database.secrets.url.name . }}
-                  key: {{ tpl .Values.database.secrets.url.key . }}
-            {{- else if .Values.database.url }}
-                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
-                  name: {{ template "artifactory-ha.fullname" . }}-database-creds
-                  {{- else }}
-                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
-                  {{- end }}
-                  key: db-url
-            {{- end }}
-          {{- end }}
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
@@ -279,14 +255,27 @@ spec:
                 {{- end }}
                   key: join-key
             {{- end }}
-          volumeMounts:
-            - name: data
-              mountPath: {{ .Values.platformfederation.persistence.mountPath }}
-            {{- if .Values.platformfederation.customVolumeMounts }}
-{{ tpl (include "artifactory.platformfederation.customVolumeMounts" .) . | indent 12 }}
+            {{- if .Values.jfmelt.javaOpts }}
+            - name: EXTRA_JAVA_OPTS
+              value: {{ .Values.jfmelt.javaOpts }}
             {{- end }}
-          # this sleep is here in order to keep our service responding while k8s is removing it from network
-          {{- with .Values.platformfederation.lifecycle }}
+{{- with .Values.jfmelt.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          resources: {{- toYaml .Values.jfmelt.resources | nindent 12 }}
+          {{- if .Values.jfmelt.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.jfmelt.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.jfmelt.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.jfmelt.readinessProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.jfmelt.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.jfmelt.livenessProbe.config . | indent 12 }}
+          {{- end }}
+          {{- with .Values.jfmelt.lifecycle }}
           lifecycle:
 {{ toYaml . | indent 12 }}
           {{- end }}
@@ -294,12 +283,17 @@ spec:
           image: {{ include "artifactory-ha.getImageInfoByValue" (list . "router") }}
           imagePullPolicy: {{ .Values.router.image.pullPolicy }}
           resources: {{- toYaml .Values.router.resources | nindent 12 }}
-          {{- if .Values.platformfederation.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.platformfederation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
           env:
             - name: JF_SHARED_JFROGURL
-              value: {{ tpl (include "platformfederation.jfrogUrl" .) . }}
+              value: {{ tpl (include "jfmelt.jfrogUrl" .) . }}
             - name: JF_SHARED_NODE_ID
               valueFrom:
                 fieldRef:
@@ -309,7 +303,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-              value: "jfpfed"
+              value: "jfmelt"
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
@@ -360,20 +354,8 @@ spec:
           lifecycle:
 {{ toYaml . | indent 12 }}
             {{- end }}
-      {{- if .Values.platformfederation.customSidecarContainers }}
-{{ tpl (include "artifactory.platformfederation.customSidecarContainers" .)  . | indent 8 }}
-      {{- end }}
-      {{- with .Values.platformfederation.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.platformfederation.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.platformfederation.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
+      {{- if .Values.jfmelt.customSidecarContainers }}
+{{ tpl (include "artifactory.jfmelt.customSidecarContainers" .)  . | indent 8 }}
       {{- end }}
       volumes:
         # system yaml
@@ -382,8 +364,9 @@ spec:
           secret:
             secretName: {{ .Values.systemYamlOverride.existingSecret }}
         {{- end }}
+
         #########  unifiedSecretInstallation ###########
-      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.platformfederation.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory-ha.jfmelt.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
         - name: {{ include "artifactory-ha.unifiedCustomSecretVolumeName" . }}
           secret:
             secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
@@ -394,8 +377,8 @@ spec:
             secretName: {{ template "artifactory-ha.primary.name" . }}-system-yaml
         {{- end }}
       {{- end }}
-        {{- if .Values.platformfederation.customVolumes }}
-{{ tpl (include "artifactory.platformfederation.customVolumes" .)  . | indent 8 }}
+        {{- if .Values.jfmelt.customVolumes }}
+{{ tpl (include "artifactory.jfmelt.customVolumes" .)  . | indent 8 }}
         {{- end }}
         {{- if .Values.observability.customVolumes }}
 {{ tpl (include "artifactory-ha.observability.customVolumes" .)  . | indent 8 }}
@@ -403,6 +386,24 @@ spec:
         {{- if .Values.router.customVolumes }}
 {{ tpl (include "artifactory-ha.router.customVolumes" .)  . | indent 8 }}
         {{- end }}
+        # jfmelt-certs secrets
+        {{- if or .Values.jfmelt.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.jfmelt.customCertificates.certificateSecretName }}
+        {{- end }}
         - name: data
           emptyDir: {}
+      {{- with .Values.jfmelt.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.jfmelt.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.jfmelt.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}

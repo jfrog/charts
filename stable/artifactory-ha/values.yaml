@@ -22,6 +22,7 @@ global:
   # router:
   # unifiedpolicy:
   # apptrust:
+  # evaluation:
   # metadata:
   # platformfederation:
   digests: {}
@@ -29,6 +30,7 @@ global:
   # observability:
   # unifiedpolicy:
   # apptrust:
+  # evaluation:
   # artifactory:
   # initContainers:
   # rtfs:
@@ -58,6 +60,8 @@ global:
     # certificateSecretName:
   ## Applies to artifactory and nginx pods
   nodeSelector: {}
+## Set to true when cluster keys (masterKey, joinKey) are passed via artifactory.extraSystemYaml, artifactory.systemYaml, or artifactory.systemYamlOverride.
+keysPassedViaSystemyaml: false
 ## String to partially override artifactory-ha.fullname template (will maintain the release name)
 # nameOverride:
 
@@ -71,8 +75,8 @@ logging:
 initContainers:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.8.1779809423
+    repository: jfrog/echo-mini
+    tag: "20260716"
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -136,6 +140,12 @@ ingress:
   enabled: false
   defaultBackend:
     enabled: true
+  ## Ingress backend target. Use "artifactory" (default) to route directly to the Artifactory
+  ## service, or "nginx" to route through the chart's nginx service when using a non-nginx
+  ## ingress controller while keeping nginx as the last-hop reverse proxy.
+  backendService: artifactory
+  ## Service port used when backendService is "nginx". Defaults to nginx HTTP externalPort.
+  nginxBackendPort:
   ## Used to create an Ingress record.
   hosts: []
   ## Useful in controllers where ImplementationSpecific is considered as a Regex Match and, not a Prefix match
@@ -170,6 +180,74 @@ ingress:
 
   ## This is an experimental feature, enabling this feature will route all traffic through the Router.
   disableRouterBypass: false
+## Gateway API (GatewayClass, Gateway, HTTPRoute) - alternative to Ingress
+## Ref: https://gateway-api.sigs.k8s.io/
+## When enabled, creates Gateway API resources. Use either ingress or gatewayApi, or both for migration.
+gatewayApi:
+  enabled: false
+  ## Name of existing GatewayClass (e.g. "nginx" for nginx gateway controller)
+  gatewayClassName: ""
+  ## Gateway name (default: <fullname>-gateway). Suffixed to avoid naming collision with
+  ## NGINX Gateway Fabric's auto-provisioned data-plane service (<gateway-name>-nginx).
+  name: ""
+  ## Hostnames for HTTPRoute (same semantics as ingress.hosts)
+  hosts: []
+  httpExternalPort: 80
+  httpsExternalPort: 443
+  ## Path settings (mirror ingress)
+  routerPath: /
+  artifactoryPath: /artifactory/
+  pathType: PathPrefix # PathPrefix | Exact | RegularExpression
+  disableRouterBypass: false
+  ## Additional path rules appended to the HTTPRoute (string or list; supports {{ tpl }} expressions).
+  ## Use {{ include "artifactory-ha.fullname" . }} for service name.
+  additionalDirectRoutes: ""
+  ## Additional HTTPRoute rules (YAML string, rendered via tpl; each item is a complete rule with matches + backendRefs)
+  additionalRules: ""
+  ## TLS for Gateway HTTPS listeners. Creates one HTTPS listener per host for SNI matching.
+  ## Hosts fallback: tls[].hosts > gatewayApi.hosts > wildcard (no hostname). secretName is required.
+  tls: []
+  labels: {}
+  annotations: {}
+  httpRoute:
+    enabled: true
+    name: ""
+    labels: {}
+    annotations: {}
+    ## Filters applied to the router path rule (e.g. ExtensionRef to a SnippetsFilter for URL rewrites)
+    filters: []
+    # filters:
+    #   - type: ExtensionRef
+    #     extensionRef:
+    #       group: gateway.nginx.org
+    #       kind: SnippetsFilter
+    #       name: artifactory-docker-rewrites
+  ## Extension filter resource — creates a controller-specific filter (e.g. SnippetsFilter, EnvoyFilter)
+  ## and auto-wires it into the HTTPRoute as an ExtensionRef filter.
+  extensionFilter:
+    enabled: false
+    ## Override the filter resource name (default: <fullname>-extension-filter)
+    name: ""
+    ## apiVersion of the filter CRD (e.g. gateway.nginx.org/v1alpha1)
+    apiVersion: ""
+    ## kind of the filter CRD (e.g. SnippetsFilter)
+    kind: ""
+    ## spec of the filter resource (controller-specific)
+    spec: {}
+    # Example: NGINX Gateway Fabric SnippetsFilter for Docker v2 rewrites + proxy settings
+    # apiVersion: gateway.nginx.org/v1alpha1
+    # kind: SnippetsFilter
+    # spec:
+    #   snippets:
+    #     - context: http.server
+    #       value: |
+    #         client_max_body_size 0;
+    #         proxy_read_timeout 600;
+    #         proxy_send_timeout 600;
+    #     - context: http.server.location
+    #       value: |
+    #         rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+    #         rewrite ^/(v2)/([^\/]*)(/.*) /artifactory/api/docker/$2/$1$3;
 ## Allows to add custom ingress
 customIngress: {}
 ## There is a need to separate HTTP1.1 traffic from gRPC (HTTP2) to benefit
@@ -177,6 +255,10 @@ customIngress: {}
 ## 2. Keep gRPC over the HTTP2 connections only
 ingressGrpc:
   enabled: false
+  ## Create only the backing gRPC Service, without the gRPC Ingress object.
+  ## Useful when an external/multi-tenant ingress already routes gRPC traffic and
+  ## only the in-cluster Service is required
+  enableServiceOnly: false
   name: grpc
   defaultBackend:
     enabled: true
@@ -233,8 +315,8 @@ postgresql:
   enabled: true
   image:
     registry: releases-docker.jfrog.io
-    repository: bitnami/postgresql
-    tag: 17.6.0-debian-12-r2
+    repository: echohq/postgres
+    tag: 17.10-helm-20260716
   auth:
     username: "artifactory"
     password: ""
@@ -343,7 +425,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.320.43
+    tag: 7.729.15
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -370,10 +452,10 @@ router:
     ## From Artifactory versions 7.52.x, Wait for Artifactory to complete any open uploads or downloads before terminating
     preStop:
       exec:
-        command: ["sh", "-c", "while [[ $(curl --fail --silent --connect-timeout 2 http://localhost:8081/artifactory/api/v1/system/liveness) =~ OK ]]; do echo Artifactory is still alive; sleep 2; done"]
+        command: ["bash", "-c", "while [[ $(curl --fail --silent --connect-timeout 2 http://localhost:8081/artifactory/api/v1/system/liveness) =~ OK ]]; do echo Artifactory is still alive; sleep 2; done"]
         # postStart:
         #   exec:
-        #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+        #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   ## Security context for the router container
   containerSecurityContext:
     enabled: true
@@ -570,7 +652,7 @@ artifactory:
     #       drop:
     #         - NET_RAW
     #   command:
-    #     - 'sh'
+    #     - 'bash'
     #     - '-c'
     #     - 'touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup'
     #   volumeMounts:
@@ -589,7 +671,7 @@ artifactory:
     #       drop:
     #         - NET_RAW
     #   command:
-    #     - 'sh'
+    #     - 'bash'
     #     - '-c'
     #     - 'curl -o {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
     #   volumeMounts:
@@ -609,9 +691,9 @@ artifactory:
     #       drop:
     #         - NET_RAW
     #   command:
-    #     - 'sh'
+    #     - 'bash'
     #     - '-c'
-    #     - 'sh /scripts/script.sh'
+    #     - 'bash /scripts/script.sh'
     #   volumeMounts:
     #     - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
     #       name: volume
@@ -728,10 +810,10 @@ artifactory:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## Extra environment variables that can be used to tune Artifactory to your needs.
   ## Uncomment and set value as needed
@@ -1130,17 +1212,20 @@ artifactory:
       ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
       type: "soft"
       topologyKey: "kubernetes.io/hostname"
+## JFrog AIML settings
+ml:
+  enabled: false
 frontend:
   name: frontend
   enabled: true
   ## When asPod is true, frontend runs as a standalone Deployment instead of a container in the StatefulSet
-  asPod: false
+  asPod: true
   internalPort: 8070
   ## Image details for pod mode (when asPod: true)
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.456.27
+    tag: 1.652.18
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
@@ -1169,10 +1254,10 @@ frontend:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## Annotations and labels to add to the deployment (pod mode)
   deployment:
@@ -1196,9 +1281,9 @@ frontend:
   podSecurityContext:
     enabled: true
     runAsNonRoot: true
-    runAsUser: 1030
-    runAsGroup: 1030
-    fsGroup: 1030
+    runAsUser: 1031
+    runAsGroup: 1031
+    fsGroup: 1031
   ## Security context for the container (pod mode)
   containerSecurityContext:
     enabled: true
@@ -1367,10 +1452,10 @@ evidence:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -1426,10 +1511,10 @@ metadata:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -1478,10 +1563,10 @@ event:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -1509,6 +1594,8 @@ jfconnect:
   name: jfconnect
   enabled: true
   internalPort: 8030
+  airgap:
+    enabled: false
   ## Extra environment variables that can be used to tune jfconnect to your needs.
   ## Uncomment and set value as needed
   extraEnvironmentVariables:
@@ -1526,10 +1613,10 @@ jfconnect:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## You can use a pre-existing secret by specifying customCertificatesSecretName
   ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=tls.crt --key=tls.key`
@@ -1557,18 +1644,21 @@ jfconnect:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: 5
-## One Model is a centralized hub for all GraphQL APIs that defines a mechanism for creating and maintaining a unified model of entities managed by the JFrog Platform, promoting a common language used by all JFrog products and services. This also includes a third-party service called Apollo Router.
-## Refer - https://jfrog.com/help/r/jfrog-rest-apis/evidence-one-model-graphql-schema
+## One Model is a centralized hub for all GraphQL APIs that defines a mechanism for creating and maintaining a unified model of entities managed by the JFrog Platform, promoting a common language used by all JFrog products and services. This also includes a third-party service called Cosmo.
+## Refer - https://docs.jfrog.com/integrations/docs/jfrog-one-model-graphql
 onemodel:
   name: onemodel
   enabled: true
-  ## Apollo Router Yaml is used to configure one of the components of one model (Apollo Router)
-  ## This allows you to change the port etc. for the Apollo Router
+  ## Cosmo Router Yaml is used to configure one of the components of one model (Cosmo Router)
+  ## This allows you to change the port etc. for the Cosmo Router
   ## This doesn't need to change for usual cases
-  apolloYaml:
-  # Example
-  # supergraph:
-  #     listen: 127.0.0.1:8079
+  ## See options: https://cosmo-docs.wundergraph.com/router/configuration
+  # cosmo:
+  # Example of a sample configuration for the Cosmo Router
+  # router:
+  #   devModeEnabled: false
+  #   introspectionEnabled: false
+  #   port: 8073
   internalPort: 8071
   ## Extra environment variables that can be used to tune onemodel to your needs.
   ## Uncomment and set value as needed
@@ -1587,10 +1677,10 @@ onemodel:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -1654,10 +1744,10 @@ topology:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -1720,10 +1810,10 @@ jfconfig:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -1772,7 +1862,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.33.3
+    tag: 2.47.3
     pullPolicy: IfNotPresent
     # digest:
   persistence:
@@ -1789,10 +1879,10 @@ observability:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
   livenessProbe:
@@ -2049,8 +2139,25 @@ nginx:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: 5
-  ## The SSL secret that will be used by the Nginx pod
-  # tlsSecretName: chart-example-tls
+  ## TLS Secret for nginx HTTPS.
+  ## Preferred on fresh install when nginx.https.enabled=true (the default).
+  ## Create the secret out-of-band and set its name here:
+  ##   kubectl create secret tls <name> --cert=tls.crt --key=tls.key -n <namespace>
+  ##
+  ## If neither this field nor nginx.generateSelfSignedCert is set on a fresh
+  ## install with HTTPS enabled, the install fails with a clear error message.
+  ## To install with HTTP only, also set:  --set nginx.https.enabled=false
+  ##
+  ## On upgrade this field is not enforced: if a pre-existing certificate Secret
+  ## from an earlier release is present in the namespace, it is reused so HTTPS
+  ## keeps working. In that case (or when explicitly set) HTTPS remains enabled.
+  tlsSecretName: ""
+  ## Generate a self-signed TLS certificate for nginx HTTPS. Opt-in, default off.
+  ## DEV/TEST ONLY. The generated private key is created inside the cluster and
+  ## is not issued by a trusted CA. In production, provide a real certificate
+  ## via nginx.tlsSecretName instead.
+  ## Ignored when nginx.tlsSecretName is set or nginx.https.enabled is false.
+  generateSelfSignedCert: false
   ## Custom ConfigMap for nginx.conf
   customConfigMap:
   ## Custom ConfigMap for artifactory.conf
@@ -2165,7 +2272,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 2.0.29
+    tag: 2.126.10
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2241,8 +2348,8 @@ rtfs:
     enabled: true
     config: |
       httpGet:
-        path: /router/api/v1/system/readiness
-        port: {{ .Values.router.internalPort }}
+        path: /{{ .Values.rtfs.apiContext }}/api/v1/system/readiness
+        port: {{ .Values.rtfs.internalRestPort }}
         scheme: HTTP
       initialDelaySeconds: 0
       periodSeconds: 5
@@ -2277,10 +2384,10 @@ rtfs:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   annotations: {}
   deployment:
@@ -2289,9 +2396,9 @@ rtfs:
   podSecurityContext:
     enabled: true
     runAsNonRoot: true
-    runAsUser: 1030
-    runAsGroup: 1030
-    fsGroup: 1030
+    runAsUser: 1038
+    runAsGroup: 1038
+    fsGroup: 1038
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true
@@ -2345,7 +2452,7 @@ apptrust:
     registry: releases-docker.jfrog.io
     repository: jfrog/apptrust
     pullPolicy: IfNotPresent
-    tag: 1.59.13
+    tag: 1.86.5
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2424,10 +2531,10 @@ apptrust:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   annotations: {}
   deployment:
@@ -2436,9 +2543,9 @@ apptrust:
   podSecurityContext:
     enabled: true
     runAsNonRoot: true
-    runAsUser: 1117
-    runAsGroup: 1117
-    fsGroup: 1117
+    runAsUser: 1120
+    runAsGroup: 1120
+    fsGroup: 1120
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true
@@ -2464,18 +2571,17 @@ apptrust:
 ## Jfbus service
 jfbus:
   name: jfbus
-  enabled: false
+  enabled: true
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfbus-service
     pullPolicy: IfNotPresent
-    tag: 1.52.7
+    tag: 1.386.2
     # digest:
   replicaCount: 1
   internalRestPort: 8057
   grpcPort: 8058
   apiContext: jfbus
-  activeProfile: postgres
   # If set to true, Service will wait until Artifactory is available before starting.
   # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
   waitForArtifactory: true
@@ -2558,7 +2664,7 @@ jfbus:
         command: ["sleep", "15"]
         # preStop:
         #   exec:
-        #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+        #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
   pod:
     annotations: {}
     labels: {}
@@ -2568,9 +2674,133 @@ jfbus:
   podSecurityContext:
     enabled: true
     runAsNonRoot: true
-    runAsUser: 1030
-    runAsGroup: 1030
-    fsGroup: 1030
+    runAsUser: 1127
+    runAsGroup: 1127
+    fsGroup: 1127
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customInitContainers: ""
+  customSidecarContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
+  customCommand:
+  extraEnvironmentVariables: []
+## JFMelt Service (requires jfbus.enabled and jfconnect.enabled; Pro only)
+## Enabled by default. To disable, set jfmelt.enabled: false in your values override.
+jfmelt:
+  name: jfmelt
+  enabled: true
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/jfmelt
+    pullPolicy: IfNotPresent
+    tag: 1.12.3
+    # digest:
+  replicaCount: 1
+  # If set to true, Service will wait until Artifactory is available before starting.
+  # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
+  waitForArtifactory: true
+  internalRestPort: 8032
+  grpcPort: 8038
+  apiContext: jfmelt
+  persistence:
+    mountPath: "/var/opt/jfrog/jfmelt"
+  ## Apply horizontal pod auto scaling on jfmelt pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 70  # Target memory usage is 70% of the allocated memory per pod
+  javaOpts: ""
+  serviceAccountName: ""
+  ## You can use a pre-existing secret by specifying certificateSecretName
+  ## Example : Create a tls secret using `kubectl create secret tls <secret-name> --cert=<tls.crt|tls.cer|tls.pem> --key=tls.key`
+  customCertificates:
+    enabled: false
+    # certificateSecretName: ""
+  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/liveness
+        port: {{ .Values.jfmelt.internalRestPort }}
+      initialDelaySeconds: 0
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.jfmelt.internalRestPort }}
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.jfmelt.internalRestPort }}
+        scheme: HTTP
+      initialDelaySeconds: 5
+      failureThreshold: 30
+      periodSeconds: 15
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 800Mi
+  # requests:
+  #   cpu: 300m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for jfmelt container
+  lifecycle:
+    preStop:
+      exec:
+        command: ["sleep", "15"]
+        # postStart:
+        #   exec:
+        #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
+  pod:
+    annotations: {}
+    labels: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1128
+    runAsGroup: 1128
+    fsGroup: 1128
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true
@@ -2597,7 +2827,7 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.45.18
+    tag: 1.70.6
     # digest:
   jfrogUrl: ""
   replicaCount: 1
@@ -2675,10 +2905,10 @@ unifiedpolicy:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
+  #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
   fullnameOverride: ""
   annotations: {}
@@ -2688,9 +2918,129 @@ unifiedpolicy:
   podSecurityContext:
     enabled: true
     runAsNonRoot: true
-    runAsUser: 1117
-    runAsGroup: 1117
-    fsGroup: 1117
+    runAsUser: 1125
+    runAsGroup: 1125
+    fsGroup: 1125
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      drop:
+        - ALL
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  customInitContainers: ""
+  customSidecarContainers: ""
+  customVolumes: ""
+  customVolumeMounts: ""
+  ## @param extraEnvironmentVariables that can be used to add extra environment variables.
+  ## Example:
+  ## extraEnvironmentVariables:
+  ##   - name: MY_ENV_VAR
+  ##     value: ""
+  extraEnvironmentVariables: []
+## Evaluation Service
+evaluation:
+  name: evaluation
+  enabled: false
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/evaluation
+    pullPolicy: IfNotPresent
+    tag: 1.27.8
+    # digest:
+  # Wait for Artifactory to be ready before starting the evaluation service
+  waitForArtifactory: true
+  jfrogUrl: ""
+  replicaCount: 1
+  serviceAccountName: ""
+  internalRestPort: 8065
+  internalGrpcPort: 8066
+  apiContext: evaluation
+  persistence:
+    mountPath: "/var/opt/jfrog/evaluation"
+  ## Apply horizontal pod auto scaling on evaluation pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+    metrics: |
+      # - type: Resource
+      #   resource:
+      #     name: memory
+      #     target:
+      #       type: Utilization
+      #       averageUtilization: 70  # Target memory usage is 70% of the allocated memory per pod
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.evaluation.internalRestPort }}/api/v1/system/liveness
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+  readinessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.evaluation.internalRestPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.evaluation.internalRestPort }}/api/v1/system/readiness
+      initialDelaySeconds: 120
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 30
+      successThreshold: 1
+  resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+  # Add lifecycle hooks for evaluation container
+  lifecycle: {}
+  fullnameOverride: ""
+  annotations: {}
+  deployment:
+    annotations: {}
+    labels: {}
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1132
+    runAsGroup: 1132
+    fsGroup: 1132
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true
@@ -2721,7 +3071,7 @@ platformfederation:
     registry: releases-docker.jfrog.io
     repository: jfrog/platformfederation
     pullPolicy: IfNotPresent
-    tag: 1.615.40
+    tag: 1.1328.8
     # digest:
   # Default is empty string which means it will try use internal artifactory URL
   # If url is external then it should be set to the external URL of the JFrog Platform instance
@@ -2782,7 +3132,7 @@ platformfederation:
           - -c
           - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.platformfederation.port }}/api/v1/system/readiness
       initialDelaySeconds: 120
-      failureThreshold: 5
+      failureThreshold: 30
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
       successThreshold: 1
@@ -2802,10 +3152,10 @@ platformfederation:
   lifecycle:
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "sleep 15"]
+        command: ["/bin/bash", "-c", "sleep 15"]
         # postStart:
         #   exec:
-        #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler"]
+        #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler"]
   pod:
     annotations: {}
     labels: {}
@@ -2815,8 +3165,9 @@ platformfederation:
   podSecurityContext:
     enabled: true
     runAsNonRoot: true
-    fsGroup: 1117
-    runAsUser: 1117
+    runAsGroup: 1129
+    fsGroup: 1129
+    runAsUser: 1129
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true

@@ -1,3 +1,38 @@
+{{/*
+Combined install-time validation: mandatory keys + nginx TLS cert.
+Any/all missing prerequisites are reported in a single composed error so the
+operator sees everything they need to fix in one shot.
+*/}}
+{{- $keysMissing := and (not .Values.keysPassedViaSystemyaml) (ne (include "artifactory.mandatoryKeysConfigurationValid" .) "true") -}}
+{{- $tlsMissing  := eq (include "nginx.tlsCertMissingOnInstall" .) "true" -}}
+{{- if or $keysMissing $tlsMissing -}}
+    {{- $msg := "" -}}
+    {{- if $keysMissing -}}
+        {{- $msg = printf "%s%s" $msg (include "artifactory.mandatoryKeysValidationFailMessage" .) -}}
+    {{- end -}}
+    {{- if $tlsMissing -}}
+        {{- $msg = printf "%s%s" $msg (include "nginx.tlsCertValidationFailMessage" .) -}}
+    {{- end -}}
+    {{- fail $msg -}}
+{{- end -}}
+
+{{- if .Values.ml.enabled }}
+{{- if not .Values.jfconnect.enabled }}
+{{- fail (include "artifactory.aimlValidationFailMessage" .) }}
+{{- end }}
+{{- if .Values.jfconnect.airgap.enabled }}
+{{- fail (include "artifactory.aimlAirgapValidationFailMessage" .) }}
+{{- end }}
+{{- end }}
+
+{{- if .Values.gatewayApi.enabled }}
+    {{- if not (or (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1") (.Capabilities.APIVersions.Has "gateway.networking.k8s.io/v1beta1")) }}
+        {{- fail "\n\ngatewayApi.enabled is true but Gateway API CRDs (gateway.networking.k8s.io) are not installed in the cluster.\n" }}
+    {{- end }}
+{{- end }}
+{{- if not .Values.splitServicesToContainers }}
+    {{- fail "\n\n'splitServicesToContainers: false' is no longer supported.\nStarting with releases from 7.161.x, the Helm chart no longer supports running all services in a single container.\nSet 'splitServicesToContainers: true' to proceed.\n" }}
+{{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
     {{- if  not (default .Values.databaseUpgradeReady false )  }}
         {{- fail (tpl ( $.Files.Get "files/postgresUpgradeWarning.txt" ) .) }}
@@ -25,4 +60,11 @@
     {{- if .Values.postgresql.resources  }}
         {{- fail "\n\nThe key 'postgresql.resources' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.resources' to proceed with installation.\n" }}
     {{- end }}
+{{- end }}
+
+{{- if and (eq .Values.ingress.backendService "nginx") (not .Values.nginx.enabled) }}
+    {{- fail "\n\ningress.backendService is set to 'nginx' but nginx.enabled is false.\nEnable nginx or set ingress.backendService to 'artifactory'.\n" }}
+{{- end }}
+{{- if and .Values.ingress.backendService (not (has .Values.ingress.backendService (list "artifactory" "nginx"))) }}
+    {{- fail (printf "\n\ningress.backendService must be 'artifactory' or 'nginx', got '%s'.\n" .Values.ingress.backendService) }}
 {{- end }}
