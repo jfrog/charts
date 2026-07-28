@@ -1,15 +1,61 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.146.29] - Jun 15, 2026
+## [107.161.15] - Jul 27, 2026
+* **BREAKING CHANGE — mandatory keys:** Both `masterKey` and `joinKey` are now mandatory at install time (centralizes key management across the JFrog Platform).
+  * **On fresh install** — both keys must be provided before running `helm install`.
+  * **On upgrade** — reuse the existing keys from the running cluster; do **not** generate new ones.
+  * See [Install JFrog Artifactory using Helm](https://docs.jfrog.com/installation/docs/helm-charts#install-jfrog-artifactory-using-helm) for how to generate, retrieve, and configure the keys.
+* **BREAKING CHANGE — nginx TLS certificate:** The chart no longer auto-generates the nginx TLS certificate by default. You must decide how nginx serves HTTPS.
+  * **On fresh install** (with `nginx.https.enabled=true`, the default), the install fails unless one of these is set:
+    * `nginx.tlsSecretName=<name>` — supply your own `kubernetes.io/tls` Secret (production, recommended).
+    * `nginx.generateSelfSignedCert=true` — opt in to a chart-generated self-signed certificate (dev / test only; not issued by a trusted CA).
+    * `nginx.https.enabled=false` — disable HTTPS entirely (HTTP only; TLS terminates elsewhere).
+  * **On upgrade**, the previously auto-generated Secret in the cluster is discovered via `lookup`, reused, and annotated `helm.sh/resource-policy: keep`, so existing HTTPS installs keep working with no operator action. That Secret still contains a chart-generated private key from earlier releases — **operators are strongly encouraged to rotate it** by creating their own `kubernetes.io/tls` Secret and setting `nginx.tlsSecretName` on the next upgrade, which replaces the previously auto-generated certificate with a custom one.
+  * For how to generate your own `tls.crt` / `tls.key`, see [Establish TLS in Artifactory and the JFrog Platform › Generate Certificates](https://docs.jfrog.com/installation/docs/establish-tls-in-artifactory-and-jfrog-platform#generate-certs).
+* Block Helm deployments when `splitServicesToContainers` is set to `false`. Starting with releases from 7.161.x, running all services in a single container is no longer supported; set `splitServicesToContainers: true` to proceed.
+* Added Evaluation Service.
+* Added `ingress.backendService` to route the Ingress object through the chart's nginx service (`backendService: nginx`) instead of directly to the Artifactory service.
+* Added support for enabling JFrog AIML mode natively through Helm.
+  To enable AIML, set `.Values.ml.enabled: true`. This sets `frontend.ml.jfrogMlAppState: VISIBLE` in system.yaml.
+* Added observability container for jfmelt deployment
+* Switch initContainer image from ubi-minimal to jfrog/echo-mini
+* Removed the `jfbus.activeProfile` configuration from the Helm chart. It is now managed internally
+* Platform federation is supported with all databases
+* Upgraded postgres image tag version to `17.10-helm-20260716`
+
+## [107.158.0] - Jun 25, 2026
+* Added `onemodel.cosmo` to configure the OneModel Cosmo Router (for example, the router port) via `system.yaml`. This follows OneModel's migration from Apollo Router to Cosmo Router.
+
+## [107.157.0] - Jun 10, 2026
+* Added `ingressGrpc.enableServiceOnly` to support deploying the gRPC Service without an Ingress object, for environments where an external ingress controller already routes gRPC traffic
+
+## [107.156.0] - Jun 03, 2026
+* Upgrade postgres image version to `17.10` (`17.10-helm`)
+* Migrate bundled postgres image from `bitnami/postgresql` to `echohq/postgres`
+
+## [107.154.0] - May 28, 2026
+* Enabled frontend as Pod by default
+* Added observability container for rtfs,jfbus,apptrust,unifiedpolicy deployments
+* Added support for air-gapped environments in the chart.
+  To configure the JFrog Platform to work in an air-gapped environment, set `.Values.jfconnect.airgap.enabled: true`
+
+## [107.150.0] - May 28, 2026
+* Fixed filebeat container image resolution to use `filebeat.image.registry` directly instead of being overridden by `global.imageRegistry`
+* Added dedicated PostgreSQL `type` and `driver` for RTFS to rendered `system.yaml` when RTFS uses its own PostgreSQL.
+* Fixed RTFS template validation so a non-PostgreSQL primary Artifactory database is allowed when RTFS uses a dedicated PostgreSQL database.
+* Mandatory Join and Master Key functionality validation added. This enhancement focuses on standardizing and centralizing the way keys are managed and passed across the JFrog platform
+
+## [107.147.0] - May 28, 2026
+* Added support for Gateway API (Gateway, HTTPRoute)
+
+## [107.146.0] - May 28, 2026
 * Added support for configuring a dedicated PostgreSQL database for RTFS, separate from the main Artifactory database, using `rtfs.database.type: postgresql`
 * Added support for providing RTFS database credentials inline or via an external Kubernetes secret using `rtfs.database.secrets`
 * Added new AWS SDK v2 parameters to `awsS3V3` binarystore configuration
 * Added `nginx.httpUseProxyProtocol` and `nginx.httpsUseProxyProtocol` so NGINX can accept the HAProxy PROXY protocol on HTTP/HTTPS listeners. ([GH-2156](https://github.com/jfrog/charts/pull/2156))
-* Added dedicated PostgreSQL `type` and `driver` for RTFS to rendered `system.yaml` when RTFS uses its own PostgreSQL.
-* Fixed RTFS template validation so a non-PostgreSQL primary Artifactory database is allowed when RTFS uses a dedicated PostgreSQL database.
-* Fixed `awsS3V3` binarystore rendering so optional fields (`multiPartLimit`, `multipartElementSize`, `connectionTimeout`, `socketTimeout`, `useHttp`, `maxConnections`, `awsSdkV2`, `connectionAcquisitionTimeout`, `proxyPort`, `disableChecksumValidation`, `disableChunkedEncoding`, `crtTargetThroughputInGbps`, `crtEnableConnectionHealth`, `crtMinimumThroughputTimeoutSeconds`, `crtMinimumThroughputInBps`, `server-side-encryption-aws-kms`) are now omitted from `binarystore.xml` when not set in `values.yaml`, instead of being silently emitted as `0`/empty and overriding Artifactory's built-in defaults. `enableSignedUrlRedirect` and `enablePathStyleAccess` keep the `hasKey` guard so the chart's explicit `false` default still renders
 * Added sizing resources for AppTrust and UnifiedPolicy
+* Fixed `awsS3V3` binarystore rendering so optional fields (`multiPartLimit`, `multipartElementSize`, `connectionTimeout`, `socketTimeout`, `useHttp`, `maxConnections`, `awsSdkV2`, `connectionAcquisitionTimeout`, `proxyPort`, `disableChecksumValidation`, `disableChunkedEncoding`, `crtTargetThroughputInGbps`, `crtEnableConnectionHealth`, `crtMinimumThroughputTimeoutSeconds`, `crtMinimumThroughputInBps`, `server-side-encryption-aws-kms`) are now omitted from `binarystore.xml` when not set in `values.yaml`, instead of being silently emitted as `0`/empty and overriding Artifactory's built-in defaults. `enableSignedUrlRedirect` and `enablePathStyleAccess` keep the `hasKey` guard so the chart's explicit `false` default still renders
 
 ## [107.143.0] - Mar 30, 2026
 * Fixing duplicate volume names in the unified volume configuration

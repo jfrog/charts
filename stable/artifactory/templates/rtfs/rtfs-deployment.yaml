@@ -105,9 +105,42 @@ spec:
                   echo "No matching files found, creating an empty artifactory-federation.properties file";
                   touch {{ .Values.rtfs.persistence.mountPath }}/etc/artifactory-federation.properties;
               fi;
+          {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+              echo "Copy joinKey to {{ .Values.rtfs.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.rtfs.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.rtfs.persistence.mountPath }}/etc/security/join.key;
+          {{- end }}
+          {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+              echo "Copy masterKey to {{ .Values.rtfs.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.rtfs.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.rtfs.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
               {{- if or .Values.rtfs.customCertificates.enabled .Values.global.customCertificates.enabled }}
 {{ include "rtfs.copyCustomCerts" . | indent 14 }}
               {{- end }}
+          env:
+          {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+          - name: ARTIFACTORY_JOIN_KEY
+            valueFrom:
+              secretKeyRef:
+              {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+                name: {{ include "artifactory.joinKeySecretName" . }}
+              {{- else }}
+                name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+                key: join-key
+          {{- end }}
+          {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+          - name: ARTIFACTORY_MASTER_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+                name: {{ include "artifactory.masterKeySecretName" . }}
+                {{- else }}
+                name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                key: master-key
+          {{- end }}
           volumeMounts:
             - name: data
               mountPath: {{ .Values.rtfs.persistence.mountPath | quote }}
@@ -143,7 +176,7 @@ spec:
             {{- toYaml .Values.initContainers.resources | nindent 12 }}
           {{- end }}
           command:
-          - /bin/sh
+          - /bin/bash
           - -c
           - |
             echo "Waiting for Artifactory service to be ready..."
@@ -154,6 +187,40 @@ spec:
             done
         {{- end }}
       containers:
+        {{- if .Values.observability.enabled }}
+        - name: {{ .Values.observability.name }}
+          image: {{ include "artifactory.getImageInfoByValue" (list . "observability") }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          {{- if .Values.rtfs.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.rtfs.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.observability.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+          - name: JF_SHARED_PLATFORMSERVICES_ENABLED
+            value: "true"
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 10 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.observability.resources | indent 12 }}
+          {{- if .Values.observability.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 12 }}
+          {{- end }}
+        {{- end }}
         - name: rtfs
           image: {{ include "artifactory.getImageInfoByValue" (list . "rtfs") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
@@ -414,6 +481,12 @@ spec:
 
         {{- if .Values.rtfs.customVolumes }}
 {{ tpl (include "artifactory.rtfs.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.observability.customVolumes }}
+{{ tpl (include "artifactory.observability.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.router.customVolumes }}
+{{ tpl (include "artifactory.router.customVolumes" .)  . | indent 8 }}
         {{- end }}
         # rtfs-certs secrets
         {{- if or .Values.rtfs.customCertificates.enabled .Values.global.customCertificates.enabled }}
