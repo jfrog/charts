@@ -1,30 +1,30 @@
-{{- if .Values.jfbus.enabled -}}
+{{- if eq (include "artifactory.jfmelt.enabled" .) "true" -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "jfbus.fullname" . }}
+  name: {{ include "jfmelt.fullname" . }}
   labels:
     app: {{ template "artifactory.name" . }}
     chart: {{ template "artifactory.chart" . }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-    component: {{ .Values.jfbus.name }}
-{{- if .Values.jfbus.deployment.labels }}
-{{ toYaml .Values.jfbus.deployment.labels | indent 4 }}
+    component: {{ .Values.jfmelt.name }}
+{{- if .Values.jfmelt.deployment.labels }}
+{{ toYaml .Values.jfmelt.deployment.labels | indent 4 }}
 {{- end }}
-{{- with .Values.jfbus.deployment.annotations }}
+{{- with .Values.jfmelt.deployment.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  replicas: {{ .Values.jfbus.replicaCount }}
+  replicas: {{ .Values.jfmelt.replicaCount }}
   strategy:
     type: "RollingUpdate"
   selector:
     matchLabels:
       app: {{ template "artifactory.name" . }}
       release: {{ .Release.Name }}
-      component: {{ .Values.jfbus.name }}
+      component: {{ .Values.jfmelt.name }}
   template:
     metadata:
       annotations:
@@ -34,37 +34,37 @@ spec:
       {{- else }}
         checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
       {{- end }}
-      {{- with .Values.jfbus.pod.annotations }}
+      {{- with .Values.jfmelt.pod.annotations }}
 {{ toYaml . | indent 8 }}
       {{- end }}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
-        component: {{ .Values.jfbus.name }}
+        component: {{ .Values.jfmelt.name }}
         heritage: {{ .Release.Service }}
         release: {{ .Release.Name }}
-      {{- with .Values.jfbus.pod.labels }}
+      {{- with .Values.jfmelt.pod.labels }}
 {{ toYaml . | indent 8 }}
       {{- end }}
     spec:
       {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
   {{- include "artifactory.imagePullSecrets" . | indent 6 }}
       {{- end }}
-      {{- if .Values.jfbus.podSecurityContext.enabled }}
-      securityContext: {{- omit .Values.jfbus.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- if .Values.jfmelt.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.jfmelt.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
-      {{- if .Values.jfbus.serviceAccountName }}
-      serviceAccountName: {{ .Values.jfbus.serviceAccountName }}
+      {{- if .Values.jfmelt.serviceAccountName }}
+      serviceAccountName: {{ .Values.jfmelt.serviceAccountName }}
       {{- end}}
       initContainers:
-        {{- if .Values.jfbus.customInitContainers }}
-{{ tpl (include "artifactory.jfbus.customInitContainers" .)  . | indent 8 }}
+        {{- if .Values.jfmelt.customInitContainers }}
+{{ tpl (include "artifactory.jfmelt.customInitContainers" .)  . | indent 8 }}
         {{- end }}
         - name: 'copy-system-yaml'
           image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
-          {{- if .Values.jfbus.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.initContainers.resources }}
           resources:
@@ -74,32 +74,32 @@ spec:
             - '/bin/bash'
             - '-c'
             - >
-              echo "Copy system.yaml to {{ .Values.jfbus.persistence.mountPath }}/etc";
-              mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc;
-              mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc/access/keys/trusted;
+              echo "Copy system.yaml to {{ .Values.jfmelt.persistence.mountPath }}/etc";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc;
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/access/keys/trusted;
               {{- if .Values.systemYamlOverride.existingSecret }}
-              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.jfbus.persistence.mountPath }}/etc/system.yaml;
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.jfmelt.persistence.mountPath }}/etc/system.yaml;
               {{- else }}
-              cp -fv /tmp/etc/system.yaml {{ .Values.jfbus.persistence.mountPath }}/etc/system.yaml;
+              cp -fv /tmp/etc/system.yaml {{ .Values.jfmelt.persistence.mountPath }}/etc/system.yaml;
               {{- end }}
 
-              echo "Copy certificate access-root-ca.crt to {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted if needed";
-              mkdir -p {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted;
-              cp -fv /tmp/etc/trusted/access-root-ca.crt {{ .Values.jfbus.persistence.mountPath }}/data/router/keys/trusted/access-root-ca.crt || echo "Could not copy certificate";
-              echo "Remove {{ .Values.jfbus.persistence.mountPath }}/lost+found folder if exists";
-              rm -rfv {{ .Values.jfbus.persistence.mountPath }}/lost+found;
+              echo "Copy certificate access-root-ca.crt to {{ .Values.jfmelt.persistence.mountPath }}/data/router/keys/trusted if needed";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/data/router/keys/trusted;
+              cp -fv /tmp/etc/trusted/access-root-ca.crt {{ .Values.jfmelt.persistence.mountPath }}/data/router/keys/trusted/access-root-ca.crt || echo "Could not copy certificate";
+              echo "Remove {{ .Values.jfmelt.persistence.mountPath }}/lost+found folder if exists";
+              rm -rfv {{ .Values.jfmelt.persistence.mountPath }}/lost+found;
           {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
-              echo "Copy joinKey to {{ .Values.jfbus.persistence.mountPath }}/etc/security";
-              mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc/security;
-              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.jfbus.persistence.mountPath }}/etc/security/join.key;
+              echo "Copy joinKey to {{ .Values.jfmelt.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.jfmelt.persistence.mountPath }}/etc/security/join.key;
           {{- end }}
           {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
-              echo "Copy masterKey to {{ .Values.jfbus.persistence.mountPath }}/etc/security";
-              mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc/security;
-              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.jfbus.persistence.mountPath }}/etc/security/master.key;
+              echo "Copy masterKey to {{ .Values.jfmelt.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.jfmelt.persistence.mountPath }}/etc/security/master.key;
           {{- end }}
-          {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}
-{{ include "jfbus.copyCustomCerts" . | indent 14 }}
+          {{- if or .Values.jfmelt.customCertificates.enabled .Values.global.customCertificates.enabled }}
+{{ include "jfmelt.copyCustomCerts" . | indent 14 }}
           {{- end }}
           env:
           {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
@@ -126,7 +126,7 @@ spec:
           {{- end }}
           volumeMounts:
             - name: data
-              mountPath: {{ .Values.jfbus.persistence.mountPath | quote }}
+              mountPath: {{ .Values.jfmelt.persistence.mountPath | quote }}
             {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
             - name: systemyaml
             {{- else }}
@@ -139,19 +139,19 @@ spec:
               mountPath: "/tmp/etc/system.yaml"
               subPath: "system.yaml"
               {{- end }}
-            {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}
+            {{- if or .Values.jfmelt.customCertificates.enabled .Values.global.customCertificates.enabled }}
             - name: ca-certs
               mountPath: "/tmp/certs"
             {{- end }}
-        {{- if .Values.jfbus.waitForArtifactory }}
+        {{- if .Values.jfmelt.waitForArtifactory }}
         - name: wait-for-artifactory
           image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
-          {{- if .Values.jfbus.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.initContainers.resources }}
-          resources: 
+          resources:
             {{- toYaml .Values.initContainers.resources | nindent 12 }}
           {{- end }}
           command:
@@ -170,8 +170,8 @@ spec:
         - name: {{ .Values.observability.name }}
           image: {{ include "artifactory.getImageInfoByValue" (list . "observability") }}
           imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
-          {{- if .Values.jfbus.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- with .Values.observability.lifecycle }}
           lifecycle:
@@ -200,89 +200,39 @@ spec:
 {{ tpl .Values.observability.livenessProbe.config . | indent 12 }}
           {{- end }}
         {{- end }}
-        - name: jfbus
-          image: {{ include "artifactory.getImageInfoByValue" (list . "jfbus") }}
+        - name: jfmelt
+          image: {{ include "artifactory.getImageInfoByValue" (list . "jfmelt") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
-          {{- if .Values.jfbus.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- if .Values.jfbus.customCommand }}
+          {{- if .Values.jfmelt.customCommand }}
           command:
-{{- tpl (include "jfbus.command" .) . | indent 12 }}
+{{- tpl (include "jfmelt.command" .) . | indent 12 }}
           {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.jfbus.internalRestPort }}
+              containerPort: {{ .Values.jfmelt.internalRestPort }}
               protocol: TCP
             - name: grpc
-              containerPort: {{ .Values.jfbus.grpcPort }}
+              containerPort: {{ .Values.jfmelt.grpcPort }}
               protocol: TCP
           volumeMounts:
             - name: data
-              mountPath: {{ .Values.jfbus.persistence.mountPath | quote }}
-            {{- if .Values.jfbus.customVolumeMounts }}
-{{ tpl (include "artifactory.jfbus.customVolumeMounts" .) . | indent 12 }}
+              mountPath: {{ .Values.jfmelt.persistence.mountPath | quote }}
+            {{- if .Values.jfmelt.customVolumeMounts }}
+{{ tpl (include "artifactory.jfmelt.customVolumeMounts" .) . | indent 12 }}
             {{- end }}
           env:
             - name: SERVICE_JSON_LOGS
               value: {{.Values.logging.logToStdoutJson | quote }}
-            - name: JAVA_TOOL_OPTIONS
-              value: "-Dio.opentelemetry.javaagent.slf4j.simpleLogger.defaultLogLevel=off"
+            ## Warning: This JF_JFMELT_LISTENADDR env is for probe, you may remove this if not needed.
+            - name: JF_JFMELT_LISTENADDR
+              value: "0.0.0.0"
             - name: JF_SHARED_NODE_ID
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          {{- if or .Values.database.secrets.user .Values.database.user }}
-            - name: JF_SHARED_DATABASE_USERNAME
-              valueFrom:
-                secretKeyRef:
-            {{- if .Values.database.secrets.user }}
-                  name: {{ tpl .Values.database.secrets.user.name . }}
-                  key: {{ tpl .Values.database.secrets.user.key . }}
-            {{- else if .Values.database.user }}
-                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
-                  name: {{ template "artifactory.fullname" . }}-database-creds
-                  {{- else }}
-                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
-                  {{- end }}
-                  key: db-user
-            {{- end }}
-          {{- end }}
-          {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
-            - name: JF_SHARED_DATABASE_PASSWORD
-              valueFrom:
-                secretKeyRef:
-            {{- if .Values.database.secrets.password }}
-                  name: {{ tpl .Values.database.secrets.password.name . }}
-                  key: {{ tpl .Values.database.secrets.password.key . }}
-            {{- else if .Values.database.password }}
-                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
-                  name: {{ template "artifactory.fullname" . }}-database-creds
-                  {{- else }}
-                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
-                  {{- end }}
-                  key: db-password
-            {{- else if .Values.postgresql.enabled }}
-                  name: {{ .Release.Name }}-postgresql
-                  key: password
-            {{- end }}
-          {{- end }}
-          {{- if or .Values.database.secrets.url .Values.database.url }}
-            - name: JF_SHARED_DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-            {{- if .Values.database.secrets.url }}
-                  name: {{ tpl .Values.database.secrets.url.name . }}
-                  key: {{ tpl .Values.database.secrets.url.key . }}
-            {{- else if .Values.database.url }}
-                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
-                  name: {{ template "artifactory.fullname" . }}-database-creds
-                  {{- else }}
-                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
-                  {{- end }}
-                  key: db-url
-            {{- end }}
-          {{- end }}
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
@@ -305,27 +255,27 @@ spec:
                 {{- end }}
                   key: join-key
             {{- end }}
-            {{- if .Values.jfbus.javaOpts }}
+            {{- if .Values.jfmelt.javaOpts }}
             - name: EXTRA_JAVA_OPTS
-              value: {{ .Values.jfbus.javaOpts }}
+              value: {{ .Values.jfmelt.javaOpts }}
             {{- end }}
-{{- with .Values.jfbus.extraEnvironmentVariables }}
+{{- with .Values.jfmelt.extraEnvironmentVariables }}
 {{ tpl (toYaml .) $ | indent 12 }}
 {{- end }}
-          resources: {{- toYaml .Values.jfbus.resources | nindent 12 }}
-          {{- if .Values.jfbus.startupProbe.enabled }}
+          resources: {{- toYaml .Values.jfmelt.resources | nindent 12 }}
+          {{- if .Values.jfmelt.startupProbe.enabled }}
           startupProbe:
-{{ tpl .Values.jfbus.startupProbe.config . | indent 12 }}
+{{ tpl .Values.jfmelt.startupProbe.config . | indent 12 }}
           {{- end }}
-          {{- if .Values.jfbus.readinessProbe.enabled }}
+          {{- if .Values.jfmelt.readinessProbe.enabled }}
           readinessProbe:
-{{ tpl .Values.jfbus.readinessProbe.config . | indent 12 }}
+{{ tpl .Values.jfmelt.readinessProbe.config . | indent 12 }}
           {{- end }}
-          {{- if .Values.jfbus.livenessProbe.enabled }}
+          {{- if .Values.jfmelt.livenessProbe.enabled }}
           livenessProbe:
-{{ tpl .Values.jfbus.livenessProbe.config . | indent 12 }}
+{{ tpl .Values.jfmelt.livenessProbe.config . | indent 12 }}
           {{- end }}
-          {{- with .Values.jfbus.lifecycle }}
+          {{- with .Values.jfmelt.lifecycle }}
           lifecycle:
 {{ toYaml . | indent 12 }}
           {{- end }}
@@ -333,8 +283,8 @@ spec:
           image: {{ include "artifactory.getImageInfoByValue" (list . "router") }}
           imagePullPolicy: {{ .Values.router.image.pullPolicy }}
           resources: {{- toYaml .Values.router.resources | nindent 12 }}
-          {{- if .Values.jfbus.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- if .Values.jfmelt.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfmelt.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           command:
             - '/bin/bash'
@@ -343,7 +293,7 @@ spec:
               exec /opt/jfrog/router/app/bin/entrypoint-router.sh
           env:
             - name: JF_SHARED_JFROGURL
-              value: {{ tpl (include "jfbus.jfrogUrl" .) . }}
+              value: {{ tpl (include "jfmelt.jfrogUrl" .) . }}
             - name: JF_SHARED_NODE_ID
               valueFrom:
                 fieldRef:
@@ -353,7 +303,7 @@ spec:
                 fieldRef:
                   fieldPath: status.podIP
             - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
-              value: "jfbus"
+              value: "jfmelt"
             {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
             - name: JF_SHARED_SECURITY_MASTERKEY
               valueFrom:
@@ -404,8 +354,8 @@ spec:
           lifecycle:
 {{ toYaml . | indent 12 }}
             {{- end }}
-      {{- if .Values.jfbus.customSidecarContainers }}
-{{ tpl (include "artifactory.jfbus.customSidecarContainers" .)  . | indent 8 }}
+      {{- if .Values.jfmelt.customSidecarContainers }}
+{{ tpl (include "artifactory.jfmelt.customSidecarContainers" .)  . | indent 8 }}
       {{- end }}
       volumes:
         # system yaml
@@ -416,7 +366,7 @@ spec:
         {{- end }}
 
         #########  unifiedSecretInstallation ###########
-      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.jfbus.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.jfmelt.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
         - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
           secret:
             secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
@@ -427,8 +377,8 @@ spec:
             secretName: {{ printf "%s-%s" (include "artifactory.fullname" .) "systemyaml" }}
         {{- end }}
       {{- end }}
-        {{- if .Values.jfbus.customVolumes }}
-{{ tpl (include "artifactory.jfbus.customVolumes" .)  . | indent 8 }}
+        {{- if .Values.jfmelt.customVolumes }}
+{{ tpl (include "artifactory.jfmelt.customVolumes" .)  . | indent 8 }}
         {{- end }}
         {{- if .Values.observability.customVolumes }}
 {{ tpl (include "artifactory.observability.customVolumes" .)  . | indent 8 }}
@@ -436,23 +386,23 @@ spec:
         {{- if .Values.router.customVolumes }}
 {{ tpl (include "artifactory.router.customVolumes" .)  . | indent 8 }}
         {{- end }}
-        # jfbus-certs secrets
-        {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}
+        # jfmelt-certs secrets
+        {{- if or .Values.jfmelt.customCertificates.enabled .Values.global.customCertificates.enabled }}
         - name: ca-certs
           secret:
-            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.jfbus.customCertificates.certificateSecretName }}
+            secretName: {{ default .Values.global.customCertificates.certificateSecretName .Values.jfmelt.customCertificates.certificateSecretName }}
         {{- end }}
         - name: data
           emptyDir: {}
-      {{- with .Values.jfbus.nodeSelector }}
+      {{- with .Values.jfmelt.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.jfbus.affinity }}
+      {{- with .Values.jfmelt.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.jfbus.tolerations }}
+      {{- with .Values.jfmelt.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

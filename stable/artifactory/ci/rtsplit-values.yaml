@@ -20,10 +20,10 @@ artifactory:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the artifactory postStart handler >> /tmp/message"]
 
 postgresql:
   auth:
@@ -60,10 +60,10 @@ jfconnect:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the jfconnect postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the jfconnect postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the jfconnect postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the jfconnect postStart handler >> /tmp/message"]
 
 
 mc:
@@ -82,10 +82,10 @@ router:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the router postStart handler >> /tmp/message"]
 
 frontend:
   resources:
@@ -99,10 +99,10 @@ frontend:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the frontend postStart handler >> /tmp/message"]
 
 metadata:
   resources:
@@ -115,10 +115,10 @@ metadata:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the metadata postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the metadata postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the metadata postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the metadata postStart handler >> /tmp/message"]
 
 event:
   resources:
@@ -131,10 +131,10 @@ event:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the event postStart handler >> /tmp/message"]
 
 observability:
   resources:
@@ -147,7 +147,7 @@ observability:
   lifecycle:
     postStart:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
     preStop:
       exec:
-        command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
+        command: ["/bin/bash", "-c", "echo Hello from the observability postStart handler >> /tmp/message"]
