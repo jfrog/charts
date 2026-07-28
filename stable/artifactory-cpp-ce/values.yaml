@@ -46,6 +46,7 @@ artifactory:
   nginx:
     enabled: true
     tlsSecretName: ""
+    generateSelfSignedCert: false
     service:
       type: LoadBalancer
 
@@ -71,6 +72,9 @@ artifactory:
   # database:
 
   jfconnect:
+    enabled: false
+
+  jfmelt:
     enabled: false
 
   rtfs:
