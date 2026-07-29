@@ -24,6 +24,32 @@ Congratulations! JFrog Xray services are deployed!
   {{- end }}
 {{- end }}
 
+{{- if and (not .Values.isJfrogSaas) .Values.rabbitmq.enabled (hasPrefix "3" (.Values.rabbitmq.image.tag | toString)) (not .Values.global.xray.rabbitmq.haQuorum.enabled) }}
+
+********************************************************** WARNING ***********************************************************
+* You are using RabbitMQ 3.x without quorum queues enabled.                                                                  *
+*                                                                                                                            *
+* RabbitMQ 3.x with classic mirrored queues will be DEPRECATED soon and will be removed in                                   *
+* future releases. It is recommended to upgrade to RabbitMQ 4.x with quorum queues.                                          *
+*                                                                                                                            *
+* For detailed migration steps, refer to the documentation:                                                                  *
+* https://docs.jfrog.com/installation/docs/quorum-queue-enablement-for-xray-and-platform-helm-charts#switch-to-rabbitmq-4x   *
+******************************************************************************************************************************
+{{- end }}
+
+{{- if and (not .Values.isJfrogSaas) .Values.rabbitmq.enabled (hasPrefix "3" (.Values.rabbitmq.image.tag | toString)) .Values.global.xray.rabbitmq.haQuorum.enabled }}
+
+********************************************************** WARNING ***********************************************************
+* You have quorum queues enabled but are still using RabbitMQ 3.x.                                                           *
+*                                                                                                                            *
+* RabbitMQ 3.x will be DEPRECATED soon and will be removed in future releases.                                               *
+* It is recommended to upgrade to RabbitMQ 4.x.                                                                              *
+*                                                                                                                            *
+* For detailed migration steps, refer to the documentation:                                                                  *
+* https://docs.jfrog.com/installation/docs/quorum-queue-enablement-for-xray-and-platform-helm-charts#switch-to-rabbitmq-4x   *
+******************************************************************************************************************************
+{{- end }}
+
 {{- if and (or (or (or .Values.systemYamlOverride.existingSecret (or .Values.xray.masterKeySecretName .Values.global.masterKeySecretName)) (or .Values.xray.joinKeySecretName .Values.global.joinKeySecretName)) .Values.database.secrets) .Values.xray.unifiedSecretInstallation }}
 ****************************************** WARNING **************************************************************************************************
 * The unifiedSecretInstallation flag is currently enabled, which creates the unified secret. The existing secrets will continue as separate secrets.*

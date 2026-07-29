@@ -204,4 +204,166 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesSbom" . | indent 4 }}
 {{- end }}
+
+---
+
+{{- if and (.Values.aiscanner.autoscaling.enabled) (eq .Values.aiscanner.autoscaling.keda.enabled true) (.Values.aiscanner.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-aiscanner
+  {{- if or .Values.global.autoscaling.keda.annotations .Values.aiscanner.autoscaling.keda.annotations }}
+  annotations:
+    {{- with .Values.global.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- with .Values.aiscanner.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-aiscanner
+  minReplicaCount: {{ .Values.aiscanner.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.aiscanner.autoscaling.maxReplicas }}
+  pollingInterval: {{ .Values.aiscanner.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.aiscanner.autoscaling.keda.cooldownPeriod }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+        {{- .Values.aiscanner.autoscaling.keda.scaleUp | toYaml | nindent 10 }}
+        scaleDown:
+        {{- .Values.aiscanner.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
+  triggers:
+  {{- include "xray.autoscalingQueuesAiscanner" . | indent 4 }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
+{{- if and (.Values.reporting.autoscaling.enabled) (eq .Values.reporting.autoscaling.keda.enabled true) (.Values.reporting.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-reporting
+  {{- if or .Values.global.autoscaling.keda.annotations .Values.reporting.autoscaling.keda.annotations }}
+  annotations:
+    {{- with .Values.global.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- with .Values.reporting.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-reporting
+  minReplicaCount: {{ .Values.reporting.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.reporting.autoscaling.maxReplicas }}
+  pollingInterval: {{ .Values.reporting.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.reporting.autoscaling.keda.cooldownPeriod }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+        {{- .Values.reporting.autoscaling.keda.scaleUp | toYaml | nindent 10 }}
+        scaleDown:
+        {{- .Values.reporting.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
+  triggers:
+  {{- include "xray.autoscalingQueuesReporting" . | indent 4 }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (.Values.jascontextual.autoscaling.enabled) (eq .Values.jascontextual.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-jascontextual
+  {{- if or .Values.global.autoscaling.keda.annotations .Values.jascontextual.autoscaling.keda.annotations }}
+  annotations:
+    {{- with .Values.global.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- with .Values.jascontextual.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-jascontextual
+  minReplicaCount: {{ .Values.jascontextual.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.jascontextual.autoscaling.maxReplicas }}
+  pollingInterval: {{ .Values.jascontextual.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.jascontextual.autoscaling.keda.cooldownPeriod }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+        {{- .Values.jascontextual.autoscaling.keda.scaleUp | toYaml | nindent 10 }}
+        scaleDown:
+        {{- .Values.jascontextual.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
+  triggers:
+  {{- include "xray.autoscalingQueuesJasContextual" . | indent 4 }}
+{{- end }}
+
+---
+
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (.Values.jasexposures.autoscaling.enabled) (eq .Values.jasexposures.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-jasexposures
+  {{- if or .Values.global.autoscaling.keda.annotations .Values.jasexposures.autoscaling.keda.annotations }}
+  annotations:
+    {{- with .Values.global.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+    {{- with .Values.jasexposures.autoscaling.keda.annotations }}
+{{ toYaml . | indent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-jasexposures
+  minReplicaCount: {{ .Values.jasexposures.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.jasexposures.autoscaling.maxReplicas }}
+  pollingInterval: {{ .Values.jasexposures.autoscaling.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.jasexposures.autoscaling.keda.cooldownPeriod }}
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+        {{- .Values.jasexposures.autoscaling.keda.scaleUp | toYaml | nindent 10 }}
+        scaleDown:
+        {{- .Values.jasexposures.autoscaling.keda.scaleDown | toYaml | nindent 10 }}
+  triggers:
+  {{- include "xray.autoscalingQueuesJasExposures" . | indent 4 }}
 {{- end }}

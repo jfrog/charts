@@ -164,4 +164,134 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.sbom.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
+
+---
+
+{{- if and (.Values.aiscanner.autoscaling.enabled) (.Values.aiscanner.enabled) (eq .Values.aiscanner.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-aiscanner
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-aiscanner
+  minReplicas: {{ .Values.aiscanner.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.aiscanner.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.aiscanner.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
+{{- if and (.Values.reporting.autoscaling.enabled) (.Values.reporting.enabled) (eq .Values.reporting.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-reporting
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-reporting
+  minReplicas: {{ .Values.reporting.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.reporting.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.reporting.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+{{- end }}
+
+---
+
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (.Values.jascontextual.autoscaling.enabled) (eq .Values.jascontextual.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-jascontextual
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-jascontextual
+  minReplicas: {{ .Values.jascontextual.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.jascontextual.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.jascontextual.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
+
+---
+
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (.Values.jasexposures.autoscaling.enabled) (eq .Values.jasexposures.autoscaling.keda.enabled  false) }}
+  {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
+apiVersion: autoscaling/v2
+  {{- else }}
+apiVersion: autoscaling/v2beta2
+  {{- end }}
+kind: HorizontalPodAutoscaler
+metadata:
+  labels:
+    app: {{ template "xray.name" . }}
+    chart: {{ template "xray.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  name: {{ template "xray.fullname" . }}-jasexposures
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ template "xray.fullname" . }}-jasexposures
+  minReplicas: {{ .Values.jasexposures.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.jasexposures.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.jasexposures.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}

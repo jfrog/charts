@@ -15,7 +15,7 @@ metadata:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  pollingInterval: 10
+  pollingInterval: {{ .Values.persist.autoscaling.keda.pollingInterval }}
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 5
   maxReplicaCount: {{ .Values.persist.autoscaling.maxReplicas }}
