@@ -33,7 +33,6 @@ shared:
     ha_quorum: true
     vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
     replicasCount: {{ .Values.global.xray.rabbitmq.replicaCount }}
-    waitForQuorumOnly: {{ .Values.global.xray.rabbitmq.waitForQuorumOnly | default true }}
   {{- end }}
     erlangCookie:
       value: "{{ .Values.rabbitmq.external.erlangCookie }}"
@@ -47,7 +46,6 @@ shared:
     ha_quorum: true
     vhost: {{ .Values.global.xray.rabbitmq.haQuorum.vhost }}
     replicasCount: {{ .Values.rabbitmq.replicaCount }}
-    waitForQuorumOnly: {{ .Values.global.xray.rabbitmq.waitForQuorumOnly | default true }}
   {{- if and .Values.rabbitmq.enabled .Values.global.xray.rabbitmq.producerConnectionBlockAware.enabled }}
     producerConnectionBlockAware: true
   {{- end }}
@@ -109,12 +107,24 @@ executionService:
 contextualAnalysis:
   registry: {{ include "xray.getRegistryByService" (list . "contextualAnalysis") }}
   image: {{ .Values.contextualAnalysis.image.repository }}
+  tag: {{ include "xray.getJasScannerImageTag" (list . "contextualAnalysis") }}
 exposures:
   container:
     registry: {{ include "xray.getRegistryByService" (list . "exposures") }}
     image: {{ .Values.exposures.image.repository }}
-{{- if .Values.jas.healthcheck.enabled }}
+    tag: {{ include "xray.getJasScannerImageTag" (list . "exposures") }}
+{{- if or .Values.jas.healthcheck.enabled (and .Values.splitXraytoSeparateDeployments.fullSplit .Values.jas.separate.service.enabled) }}
 jas:
+  {{- if .Values.jas.healthcheck.enabled }}
   healthCheckApi:
     enabled: true
+  {{- end }}
+  {{- if and .Values.splitXraytoSeparateDeployments.fullSplit .Values.jas.separate.service.enabled }}
+  separate:
+    service:
+      enabled: true
+      {{- if .Values.jas.separate.service.extractionDir }}
+      extractionDir: {{ .Values.jas.separate.service.extractionDir | quote }}
+      {{- end }}
+  {{- end }}
 {{- end }}

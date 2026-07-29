@@ -82,6 +82,13 @@ topologySpreadConstraints:
 Common initContainers for the pods
 */}}
 {{- define "xray.initContainers" -}}
+{{- $skipQuorum := false -}}
+{{- $ctx := . -}}
+{{- if and (kindIs "map" .) (hasKey . "root") -}}
+{{- $ctx = .root -}}
+{{- $skipQuorum = default false .skipRabbitmqQuorumWait -}}
+{{- end -}}
+{{- with $ctx -}}
 {{- if or .Values.common.customInitContainersBegin .Values.global.customInitContainersBegin }}
 {{ tpl (include "xray.customInitContainersBegin" .) . }}
 {{- end }}
@@ -259,7 +266,7 @@ Common initContainers for the pods
     done
 {{- end }}
 {{- end }}
-{{- if and .Values.global.xray.rabbitmq.haQuorum.enabled .Values.common.rabbitmq.waitForReplicasQuorumOnStartup }}
+{{- if and .Values.global.xray.rabbitmq.haQuorum.enabled .Values.common.rabbitmq.waitForReplicasQuorumOnStartup (not $skipQuorum) }}
 - name: "wait-for-rabbitmq-replicas-quorum"
   image: {{ include "xray.getImageInfoByValue" (list . "initContainers") }}
   imagePullPolicy: {{ .Values.initContainers.image.pullPolicy }}
@@ -270,8 +277,7 @@ Common initContainers for the pods
 {{ toYaml .Values.initContainers.resources | indent 4 }}
   command:
   - 'bash'
-  - '-c'
-  - -ecx
+  - -ec
   - |
     echo "Waiting for rabbitmq replicas quorum to be running"
     ready=false;
@@ -285,15 +291,15 @@ Common initContainers for the pods
       additionalFlags="--insecure"
     fi
     rabbitMqManagementUrl=$(echo $JF_SHARED_RABBITMQ_URL | sed -e "s/amqp:/${managerSchema}:/" -e "s/amqps:/${managerSchema}:/" -e "s/:${amqpPort}/:${managerPort}/" -e "s/:${amqpTlsPort}/:${managerPort}/")
-    while ! $ready; do echo waiting;
+    while ! $ready; do echo "waiting for rabbitmq quorum...";
       # This would be better done with jq instead of grep -o
       # jq 'map(select ( .running == true )) | length')
       # but currently we do not have jq in the UBI-minimal base image approved by the installer team
       nodesNum=$(curl -s ${additionalFlags} -u${JF_SHARED_RABBITMQ_USERNAME}:${JF_SHARED_RABBITMQ_PASSWORD} ${rabbitMqManagementUrl}api/nodes | grep -o '"running"\s*:true' | wc -l | tr -d '[:space:]')
-      echo $nodesNum
+      echo "running nodes: $nodesNum"
       quorumSize=$(( $JF_SHARED_RABBITMQ_REPLICASCOUNT/2 + 1 ))
-      echo $quorumSize
-      if [[ "$nodesNum" -ge "$quorumSize" ]]; then ready=true; echo "rabbitmq ok"; fi; sleep 5;
+      echo "quorum required: $quorumSize"
+      if [[ "$nodesNum" -ge "$quorumSize" ]]; then ready=true; echo "rabbitmq quorum ok"; fi; sleep 5;
     done
   env:
 {{- if eq (include "xray.rabbitmq.isManagementListenerTlsEnabled" .) "true" }}
@@ -350,6 +356,7 @@ Common initContainers for the pods
 hostAliases:
 {{ toYaml .Values.hostAliases }}
 {{- end }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -397,6 +404,14 @@ Common router container for the pods
     value: "jfxr,jfob"
 {{- else if eq $indexReference "curation" }}
     value: "jfxcur"
+{{- else if eq $indexReference "aiscanner" }}
+    value: "jfxais"
+{{- else if eq $indexReference "reporting" }}
+    value: "jfxrep"
+{{- else if eq $indexReference "jascontextual" }}
+    value: "jfxjac"
+{{- else if eq $indexReference "jasexposures" }}
+    value: "jfxjae"
 {{- end }}
   - name: JF_ROUTER_TOPOLOGY_LOCAL_ENABLEUNHEALTHYONSERVICEDOWN
     value: {{ include "router.topology.local.enableUnhealthyOnServiceDown" $dot }}
@@ -492,6 +507,14 @@ Common router container for the scale to zero pods
     value: "jfxpe"
 {{- else if eq $indexReference "server" }}
     value: "jfxr,jfob"
+{{- else if eq $indexReference "aiscanner" }}
+    value: "jfxais"
+{{- else if eq $indexReference "reporting" }}
+    value: "jfxrep"
+{{- else if eq $indexReference "jascontextual" }}
+    value: "jfxjac"
+{{- else if eq $indexReference "jasexposures" }}
+    value: "jfxjae"
 {{- end }}
   - name: JF_ROUTER_LIFECYCLE_SHUTDOWN_ENTRYPOINTSGRACETIMEOUT
     value: "1s"
@@ -775,6 +798,72 @@ Resolve autoscalingQueues value for sbom
 {{- end -}}
 
 {{/*
+Resolve autoscalingQueues value for jascontextual
+*/}}
+{{- define "xray.autoscalingQueuesJasContextual" -}}
+{{- if .Values.jascontextual.autoscaling.keda.queues }}
+{{- range .Values.jascontextual.autoscaling.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for jasexposures
+*/}}
+{{- define "xray.autoscalingQueuesJasExposures" -}}
+{{- if .Values.jasexposures.autoscaling.keda.queues }}
+{{- range .Values.jasexposures.autoscaling.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for aiscanner
+*/}}
+{{- define "xray.autoscalingQueuesAiscanner" -}}
+{{- if .Values.aiscanner.autoscaling.keda.queues }}
+{{- range .Values.aiscanner.autoscaling.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Resolve autoscalingQueues value for policyenforcer
 */}}
 {{- define "xray.autoscalingQueuesPolicyenforcer" -}}
@@ -824,6 +913,28 @@ Resolve autoscalingQueues value for curation
 {{- define "xray.autoscalingQueuesCuration" -}}
 {{- if .Values.curation.autoscaling.keda.queues }}
 {{- range .Values.curation.autoscaling.keda.queues }}
+- type: rabbitmq
+  metadata:
+    name: "{{- .name -}}-queue"
+    protocol: amqp
+    queueName: {{ .name }}
+    mode: QueueLength
+    value: "{{ .value }}"
+{{- if $.Values.global.xray.rabbitmq.haQuorum.enabled }}
+    vhostName: "{{ $.Values.global.xray.rabbitmq.haQuorum.vhost }}"
+{{- end }}
+  authenticationRef:
+    name: keda-trigger-auth-rabbitmq-conn-xray
+{{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Resolve autoscalingQueues value for reporting
+*/}}
+{{- define "xray.autoscalingQueuesReporting" -}}
+{{- if .Values.reporting.autoscaling.keda.queues }}
+{{- range .Values.reporting.autoscaling.keda.queues }}
 - type: rabbitmq
   metadata:
     name: "{{- .name -}}-queue"

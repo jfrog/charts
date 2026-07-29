@@ -1,24 +1,24 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.splitXraytoSeparateDeployments.kedaJobs) (.Values.sbom.enabled) (.Values.sbom.autoscaling.keda.enabled) (.Values.sbom.autoscaling.keda.queues) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (.Values.splitXraytoSeparateDeployments.kedaJobs) (.Values.jasexposures.autoscaling.keda.enabled) (.Values.jasexposures.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
 metadata:
-  name: {{ template "xray.fullname" . }}-sbom
+  name: {{ template "xray.fullname" . }}-jasexposures
   labels:
 {{ include "xray.labels" . | indent 4 }}
     heritage: {{ .Release.Service }}
-    servicename: sbom
+    servicename: jasexposures
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
-{{- with .Values.sbom.deployment.annotations }}
+{{- with .Values.jasexposures.deployment.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-  pollingInterval: {{ .Values.sbom.autoscaling.keda.pollingInterval }}
+  pollingInterval: 10
   successfulJobsHistoryLimit: 0
   failedJobsHistoryLimit: 5
-  maxReplicaCount: {{ .Values.sbom.autoscaling.maxReplicas }}
+  maxReplicaCount: {{ .Values.jasexposures.autoscaling.maxReplicas }}
   jobTargetRef:
     parallelism: 1
     completions: 1
@@ -27,14 +27,14 @@ spec:
       metadata:
         labels:
 {{ include "xray.labels" . | indent 10 }}
-          servicename: sbom
+          servicename: jasexposures
           component: {{ .Values.xray.name }}
         {{- with .Values.xray.labels }}
 {{ toYaml . | indent 10 }}
         {{- end }}
         annotations:
 {{- include "xray.annotations" . | indent 10 }}
-          {{- with .Values.sbom.annotations }}
+          {{- with .Values.jasexposures.annotations }}
 {{ toYaml . | indent 10 }}
           {{- end }}
           {{- with .Values.xray.annotations }}
@@ -46,9 +46,9 @@ spec:
 {{- include "xray.initContainers" . | indent 8 }}
         containers:
 {{- include "xray.observabilityContainerScaletoZero" . | nindent 8 }}
-{{- include "xray.routerContainerScaletoZero" (list . "sbom") | indent 8 }}
-        - name: {{ .Values.sbom.name }}
-          image: {{ include "xray.getImageInfoByValue" (list . "sbom") }}
+{{- include "xray.routerContainerScaletoZero" (list . "jasexposures") | indent 8 }}
+        - name: {{ .Values.jasexposures.name }}
+          image: {{ include "xray.getImageInfoByValue" (list . "jasexposures") }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
           {{- if .Values.containerSecurityContext.enabled }}
           securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 12 }}
@@ -63,15 +63,15 @@ spec:
               echo "Running custom common preStartCommand command"
               {{ tpl . $ }}
               {{- end }}
-              {{- with .Values.sbom.preStartCommand }}
-              echo "Running custom SBOM preStartCommand command"
+              {{- with .Values.jasexposures.preStartCommand }}
+              echo "Running custom JasExposures preStartCommand command"
               {{ tpl . $ }}
               {{- end }}
               $MAIN_CMD
               CODE=$?
               touch "$EXIT_FILE"
               exit $CODE
-          {{- with .Values.sbom.lifecycle }}
+          {{- with .Values.jasexposures.lifecycle }}
           lifecycle:
 {{ toYaml . | indent 12 }}
           {{- end }}
@@ -170,30 +170,30 @@ spec:
           {{- if .Values.common.extraEnvVars }}
           {{- tpl .Values.common.extraEnvVars . | nindent 10 }}
           {{- end }}
-          {{- if .Values.sbom.extraEnvVars }}
-          {{- tpl .Values.sbom.extraEnvVars . | nindent 10 }}
+          {{- if .Values.jasexposures.extraEnvVars }}
+          {{- tpl .Values.jasexposures.extraEnvVars . | nindent 10 }}
           {{- end }}
           ports:
-          - containerPort: {{ .Values.sbom.internalPort }}
-            name: http-sbom
+          - containerPort: {{ .Values.jasexposures.internalPort }}
+            name: http-jasexp
           volumeMounts:
           - name: data-volume
             mountPath: "{{ .Values.xray.persistence.mountPath }}"
 {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "xray.customVolumeMounts" .) . | indent 10 }}
 {{- end }}
-{{- with .Values.sbom.customVolumeMounts }}
+{{- with .Values.jasexposures.customVolumeMounts }}
 {{ tpl . $ | indent 10 }}
 {{- end }}
           resources:
-{{ toYaml .Values.sbom.resources | indent 12 }}
-{{- if .Values.sbom.startupProbe.enabled }}
+{{ toYaml .Values.jasexposures.resources | indent 12 }}
+{{- if .Values.jasexposures.startupProbe.enabled }}
           startupProbe:
-{{ tpl .Values.sbom.startupProbe.config . | indent 12 }}
+{{ tpl .Values.jasexposures.startupProbe.config . | indent 12 }}
 {{- end }}
-{{- if .Values.sbom.livenessProbe.enabled }}
+{{- if .Values.jasexposures.livenessProbe.enabled }}
           livenessProbe:
-{{ tpl .Values.sbom.livenessProbe.config . | indent 12 }}
+{{ tpl .Values.jasexposures.livenessProbe.config . | indent 12 }}
 {{- end }}
         {{- $mountPath := .Values.xray.persistence.mountPath }}
         {{- range .Values.xray.loggers }}
@@ -225,37 +225,40 @@ spec:
       {{- if or .Values.xray.nodeSelector .Values.global.nodeSelector }}
 {{ tpl (include "xray.nodeSelector" .) . | indent 8 }}
       {{- end }}
-      {{- if .Values.sbom.affinity }}
-      {{- with .Values.sbom.affinity }}
+      {{- if .Values.jasexposures.affinity }}
+      {{- with .Values.jasexposures.affinity }}
         affinity:
 {{ toYaml . | indent 10 }}
       {{- end }}
-      {{- else if eq .Values.sbom.podAntiAffinity.type "soft" }}
+      {{- else if eq .Values.jasexposures.podAntiAffinity.type "soft" }}
         affinity:
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
               - weight: 100
                 podAffinityTerm:
-                  topologyKey: {{ .Values.sbom.podAntiAffinity.topologyKey }}
+                  topologyKey: {{ .Values.jasexposures.podAntiAffinity.topologyKey }}
                   labelSelector:
                     matchLabels:
                       app: {{ template "xray.name" . }}
                       release: {{ .Release.Name }}
-                      servicename: sbom
-      {{- else if eq .Values.sbom.podAntiAffinity.type "hard" }}
+                      servicename: jasexposures
+      {{- else if eq .Values.jasexposures.podAntiAffinity.type "hard" }}
         affinity:
           podAntiAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
-              - topologyKey: {{ .Values.sbom.podAntiAffinity.topologyKey }}
+              - topologyKey: {{ .Values.jasexposures.podAntiAffinity.topologyKey }}
                 labelSelector:
                   matchLabels:
                     app: {{ template "xray.name" . }}
                     release: {{ .Release.Name }}
-                    servicename: sbom
+                    servicename: jasexposures
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- if .Values.jasexposures.tolerations }}
         tolerations:
-{{ toYaml . | indent 10 }}
+{{ toYaml .Values.jasexposures.tolerations | indent 10 }}
+      {{- else if .Values.tolerations }}
+        tolerations:
+{{ toYaml .Values.tolerations | indent 10 }}
       {{- end }}
         volumes:
         ########## External secrets ###########
@@ -277,7 +280,7 @@ spec:
         {{- end }}
         - name: data-volume
           emptyDir:
-            sizeLimit: {{ .Values.sbom.persistence.size }}
+            sizeLimit: {{ .Values.jasexposures.persistence.size }}
         {{- if and .Values.xray.unifiedSecretInstallation (eq (include "xray.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
         #########  unifiedSecretInstallation ###########
         - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}
@@ -311,5 +314,5 @@ spec:
             name: {{ template "xray.fullname" . }}-configmaps
         {{- end }}
   triggers:
-  {{- include "xray.autoscalingQueuesSbom" . | indent 4 }}
+  {{- include "xray.autoscalingQueuesJasExposures" . | indent 4 }}
 {{- end }}
