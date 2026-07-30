@@ -1,6 +1,15 @@
 # If this is an upgrade over an existing platform chart, explicitly pass 'gaUpgradeReady=true' to upgrade
 gaUpgradeReady: true
 
+artifactory:
+  ## Generate a self-signed TLS certificate for nginx HTTPS. Opt-in, default off.
+  ## DEV/TEST ONLY. The generated private key is created inside the cluster and
+  ## is not issued by a trusted CA. In production, provide a real certificate
+  ## via nginx.tlsSecretName instead.
+  ## Ignored when nginx.tlsSecretName is set or nginx.https.enabled is false.
+  nginx:
+    generateSelfSignedCert: true
+
 # Xray disabled
 xray:
   enabled: false

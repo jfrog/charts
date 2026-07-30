@@ -35,6 +35,18 @@ createUser(){
     fi
 }
 
+# Refresh collation version on the built-in system databases.
+# Needed after a Postgres base-image bump that ships a newer glibc than the one
+# the on-disk template databases were created with (e.g. 2.36 -> 2.41). Without
+# this, every CREATE DATABASE reads template1 and fails with:
+#   ERROR: template database "template1" has a collation version mismatch
+# The statements are idempotent — if versions already match they are no-ops.
+refreshCollationVersions() {
+    for sys_db in template1 postgres; do
+        ${PSQL} $POSTGRES_OPTIONS -d "${sys_db}" -c "ALTER DATABASE ${sys_db} REFRESH COLLATION VERSION;" 1>/dev/null 2>&1 || true
+    done
+}
+
 # Create database if it does not exist
 createDB(){
     local db=$1
@@ -118,6 +130,8 @@ setupDB(){
 POSTGRES_OPTIONS="sslmode=${DB_SSL_MODE} --host=${DB_HOST} -p ${DB_PORT} -U ${PGUSERNAME} -w"
 
 init
+
+refreshCollationVersions
 
 log "Setting up DB $DB_NAME and user $DB_USERNAME on Postgres for $CHART_NAME chart."
 setupDB "${DB_USERNAME}" "${DB_PASSWORD}" "${DB_NAME}" || true

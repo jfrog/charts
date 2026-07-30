@@ -1,6 +1,24 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.6.0] - July 29, 2026
+* **BREAKING CHANGE — nginx TLS certificate (artifactory subchart `107.161.x` and later):** nginx no longer auto-generates its TLS certificate. On the JFrog Platform chart, configure it under the `artifactory.nginx.*` values.
+  * **Fresh install** (with `artifactory.nginx.https.enabled=true`, the default) fails unless one of these is set:
+    * `artifactory.nginx.tlsSecretName=<name>` — supply your own `kubernetes.io/tls` Secret (production, recommended).
+    * `artifactory.nginx.generateSelfSignedCert=true` — opt in to a chart-generated self-signed cert (dev/test only, not from a trusted CA).
+    * `artifactory.nginx.https.enabled=false` — HTTP only, TLS terminates elsewhere.
+  * **Upgrade:** any previously auto-generated Secret is discovered via `lookup`, reused, and annotated `helm.sh/resource-policy: keep`, so existing HTTPS installs keep working with no operator action. That Secret still holds a chart-generated key from earlier releases — **rotate it** by creating your own `kubernetes.io/tls` Secret and setting `artifactory.nginx.tlsSecretName` on the next upgrade.
+  * To generate your own `tls.crt` / `tls.key`, see [Establish TLS in Artifactory and the JFrog Platform › Generate Certificates](https://docs.jfrog.com/installation/docs/establish-tls-in-artifactory-and-jfrog-platform#generate-certs).
+* Added new dependency chart `wingman` which is disabled by default and set `wingman.enabled: true` to enable it.
+  See the [Wingman MCP documentation](https://docs.jfrog.com/installation/docs/mcp#/) for details.
+* Update dependency artifactory chart version to 107.161.15
+* Update dependency xray chart version to 3.150.17
+* Update dependency catalog chart version to 101.42.1
+* Update dependency distribution chart version to 102.52.2
+* Update dependency worker chart version to 101.216.0
+* Update dependency bridge chart version to 101.262.17
+* Update postgresql image version to `17.10-helm-20260716`
+
 ## [11.5.13] - July 29, 2026
 * Update dependency xray chart version to 103.143.34
 
@@ -23,8 +41,7 @@ All changes to this chart will be documented in this file.
 * Update dependency artifactory chart version to 107.146.25
 * Update dependency distribution chart version to 102.52.2
 
-## [11.5.7] - July 06, 2026
-* Update dependency xray chart version to 103.143.30
+## [11.5.7] - July 6, 2026
 * Update rabbitmq.migration.image.tag to 1.35.6
 * Added rabbitmq `quorum_queue_non_voters` feature flag and increased `max_message_size` to 128 MB.
 
@@ -57,7 +74,7 @@ All changes to this chart will be documented in this file.
 * Update dependency artifactory chart version to 107.146.8
 * Update dependency xray chart version to 103.143.6
 * Update dependency catalog chart version to 101.37.2
-
+  
 ## [11.5.0] - April 17, 2026
 * Update dependency artifactory chart version to 107.146.7
 * Update dependency catalog chart version to 101.35.2
