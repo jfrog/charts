@@ -218,6 +218,15 @@ artifactory:
         # cpu: "2"
         memory: 3500Mi
   
+  jfmelt:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 500Mi
+      limits:
+        # cpu: "2"
+        memory: 1Gi
+  
   platformfederation:
     resources:
       requests:
@@ -237,6 +246,15 @@ artifactory:
         memory: 300Mi
   
   unifiedpolicy:
+    resources:
+      requests:
+        cpu: 150m
+        memory: 100Mi
+      limits:
+        # cpu: "2"
+        memory: 300Mi
+  
+  evaluation:
     resources:
       requests:
         cpu: 150m

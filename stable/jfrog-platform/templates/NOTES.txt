@@ -51,6 +51,54 @@ Instructions for accessing the JFrog Platform
    - Password: password
 {{- end }}
 
+{{- if and .Values.artifactory.enabled .Values.artifactory.nginx.enabled .Values.artifactory.nginx.https.enabled .Values.artifactory.nginx.generateSelfSignedCert (not .Values.artifactory.nginx.tlsSecretName) }}
+
+
+***************************************** WARNING ******************************************
+* nginx is using a CHART-GENERATED self-signed TLS certificate (DEV/TEST only).            *
+* The private key is generated inside the cluster and is not issued by a trusted CA.       *
+*                                                                                          *
+* For production, supply your own certificate via artifactory.nginx.tlsSecretName:         *
+********************************************************************************************
+
+  $ kubectl create secret tls artifactory-nginx-tls \
+      --cert=./tls.crt --key=./tls.key -n {{ .Release.Namespace }}
+  $ helm upgrade {{ .Release.Name }} <chart> \
+      --reuse-values --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls \
+      --set artifactory.nginx.generateSelfSignedCert=false
+{{- end }}
+
+{{- if and .Release.IsUpgrade .Values.artifactory.enabled .Values.artifactory.nginx.enabled .Values.artifactory.nginx.https.enabled (not .Values.artifactory.nginx.tlsSecretName) (not .Values.artifactory.nginx.generateSelfSignedCert) }}
+{{-   $legacyNginxSecretName := printf "%s-nginx-certificate" (include "jfrog-platform.artifactory.fullname" .) }}
+{{-   $legacyNginxSecret := lookup "v1" "Secret" .Release.Namespace $legacyNginxSecretName }}
+{{-   if $legacyNginxSecret }}
+
+
+***************************************** WARNING ******************************************
+* ACTION RECOMMENDED: replace the chart-generated TLS certificate with your own.           *
+*                                                                                          *
+* This upgrade reused the previously auto-generated Secret so HTTPS stays                  *
+* available. That certificate is self-signed by the chart, not issued by a                 *
+* trusted CA, and its private key was created by earlier chart versions.                   *
+* It is not suitable for production use.                                                   *
+*                                                                                          *
+* Switch nginx to a custom certificate on the next upgrade:                                *
+********************************************************************************************
+
+  $ kubectl create secret tls artifactory-nginx-tls \
+      --cert=./tls.crt --key=./tls.key -n {{ .Release.Namespace }}
+  $ helm upgrade {{ .Release.Name }} <chart> \
+      --reuse-values --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls
+
+********************************************************************************************
+* Once nginx is running on your certificate, the previously auto-generated                 *
+* Secret is retained (helm.sh/resource-policy: keep) and can be removed:                   *
+********************************************************************************************
+
+  $ kubectl delete secret {{ $legacyNginxSecretName }} -n {{ .Release.Namespace }}
+{{-   end }}
+{{- end }}
+
 {{- if .Values.postgresql.enabled }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
