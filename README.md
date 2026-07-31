@@ -4,19 +4,43 @@ This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** f
 
 For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
-> [!IMPORTANT]
+> [!TIP]
 > ### Container Image Migration Notice
 >
-> To ensure long-term sustainability following recent pricing model changes from our current image provider, **we are migrating our container images to a new vendor.**
+> **Migration complete.** Container images used by JFrog Helm charts — including the widely adopted **JFrog Platform** chart and its product dependencies — have moved from our previous image provider to **Echo Distroless** for faster security updates and a stronger CVE management posture.
 >
-> | | |
+> **Effective from JFrog Platform chart version 11.6.0 and above only** — including the service chart versions bundled in that Platform release and later.
+>
+> **You do not need to do anything.** Chart upgrades apply the new images automatically. Chart structure and functionality are unchanged — only image bases / repositories (and their tags) have been updated.
+>
+> #### Image changes (tags omitted)
+>
+> Organised by chart under `stable/`. Service image repository names stay `jfrog/...`; bases rebuilt on Echo Distroless.
+>
+> **JFrog Service Images**
+>
+> | Chart | Services |
 > |---|---|
-> | ✅ **Zero Disruption** | Your existing upstream charts will continue to work exactly as they do today — no modifications required on your end. |
-> | 🔄 **What Is Changing** | Only the image registries and tags will be updated. Chart structures and underlying functionality remain completely untouched. |
-> | 📅 **Timeline** | New images are currently under internal testing. Phased rollout targeted towards end of **Q2 2026**. Updated tag documentation will be shared well in advance. |
+> | jfrog-platform | Umbrella chart that deploys the product charts below |
+> | artifactory, artifactory-ha, artifactory-oss, artifactory-jcr, artifactory-cpp-ce | Artifactory Pro, Artifactory OSS, Artifactory JCR, Artifactory C++ CE, Frontend, Router, Observability, AppTrust, JFBus, JFMelt, Unified Policy, Evaluation, Platform Federation, Artifactory Federation (RTFS) |
+> | xray | Server, Analysis, Indexer, Persist, Policy Enforcer, SBOM, Curation, Reporting, JAS Contextual, JAS Exposures, AI Scanner, Router, Observability |
+> | distribution | Distribution, Router, Observability |
+> | catalog | Catalog, Router |
+> | worker | Worker, Router, Observability |
 >
-> Thank you for your patience — feel free to drop any questions in the [issues section](https://github.com/jfrog/charts/issues).
-
+> **JFrog Dependent Images** — Echo targets where migration has landed:
+>
+> | Chart | Role | Echo |
+> |---|---|---|
+> | artifactory, artifactory-ha, xray, catalog, worker | Init containers | `jfrog/echo-mini` |
+> | artifactory, artifactory-ha, xray, distribution, jfrog-platform | PostgreSQL | `echohq/postgres` |
+> | xray, jfrog-platform | kubectl (migration / upgrade hooks) | `echohq/kubectl` |
+> | xray | Valkey | `echohq/valkey`, `echohq/valkey-sentinel` |
+>
+> **Other images**
+> - Any images not yet migrated will move to Echo Distroless in upcoming patch releases as each chart rolls forward. No operator action is required.
+>
+> Questions? Use the [issues section](https://github.com/jfrog/charts/issues).
 ## Install Helm (only V3 is supported)
 
 Get the latest [Helm release](https://github.com/helm/helm#install).
