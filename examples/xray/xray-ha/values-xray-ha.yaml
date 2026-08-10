@@ -1,0 +1,37 @@
+global:
+  jfrogUrl: "http://art-artifactory:8082"
+  joinKeySecretName: joinkey-secret
+  masterKeySecretName: masterkey-secret
+  xray:
+    rabbitmq:
+      replicaCount: 3
+      haQuorum:
+        enabled: true
+      migrateMessagesFromXrayDefaultVhost: true
+
+rabbitmq:
+  # 3 replicas are needed for RabbitMQ HA in quorum mode
+  replicaCount: 3
+  podManagementPolicy: Parallel
+  auth:
+    username: guest
+    existingPasswordSecret: rabbitmq-password-secret
+    existingSecretPasswordKey: rabbitmq-password
+
+postgresql:
+  enabled: false
+
+## If NOT using the PostgreSQL in this chart (postgresql.enabled=false),
+database:
+  type: "postgresql"
+  driver: "org.postgresql.Driver"
+  secrets:
+    user:
+      name: "xray-database-creds"
+      key: "db-user"
+    password:
+      name: "xray-database-creds"
+      key: "db-password"
+    url:
+      name: "xray-database-creds"
+      key: "db-url"

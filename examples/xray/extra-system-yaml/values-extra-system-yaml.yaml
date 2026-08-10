@@ -1,0 +1,21 @@
+global:
+  jfrogUrl: "http://art-artifactory:8082"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+rabbitmq:
+  auth:
+    username: admin
+    password: changeme
+
+postgresql:
+  auth:
+    password: changeme
+
+xray:
+  ## Adds extra system yaml settings to the xray deployment
+  extraSystemYaml:
+    shared:
+      logging:
+        application:
+          level: debug
