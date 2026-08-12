@@ -146,3 +146,38 @@ rabbitmq:
                 values:
                   - xray
           topologyKey: kubernetes.io/hostname
+
+catalog:
+  resources:
+    requests:
+      cpu: "6"
+      memory: 16Gi
+    limits:
+      cpu: "12"
+      memory: 32Gi
+
+valkey:
+  primary:
+    resources:
+      requests:
+        cpu: "4"
+        memory: 12Gi
+      limits:
+        cpu: "8"
+        memory: 24Gi
+  replica:
+    resources:
+      requests:
+        cpu: "4"
+        memory: 12Gi
+      limits:
+        cpu: "8"
+        memory: 24Gi
+  sentinel:
+    resources:
+      requests:
+        cpu: "250m"
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi

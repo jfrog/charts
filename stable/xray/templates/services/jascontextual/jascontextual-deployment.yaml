@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "jascontextual")) "true") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

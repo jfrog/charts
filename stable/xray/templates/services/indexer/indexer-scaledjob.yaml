@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.splitXraytoSeparateDeployments.kedaJobs) (.Values.indexer.autoscaling.keda.enabled) (.Values.indexer.autoscaling.keda.queues) }}
+{{- if eq (include "xray.service.renderScaledJob" (list . "indexer")) "true" }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
 metadata:

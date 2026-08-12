@@ -773,6 +773,71 @@ Resolve autoscalingQueues value for ipa
 {{- end -}}
 
 {{/*
+KEDA ScaledJob decisions for the split services (indexer, persist, analysis, policyenforcer, sbom,
+aiscanner, reporting, jascontextual, jasexposures). Both take a list of (root context, service key
+under .Values) and print "true"/"false", e.g.
+  {{- if eq (include "xray.service.renderScaledJob" (list . "indexer")) "true" }}
+*/}}
+
+{{/*
+Resolve the effective kedaJobs flag for a service.
+An explicit per-service kedaJobs boolean wins over splitXraytoSeparateDeployments.kedaJobs in both
+directions: true opts the service in even when the global flag is off, false opts it out even when
+the global flag is on. An absent or null service value inherits the global flag - the key is left
+commented out in values.yaml so the default is "inherit" rather than an explicit opt-out.
+Reject other types so a value such as the string "false" cannot read as truthy.
+Use this in the Deployment/HPA/ScaledObject guards, which render when it is not "true".
+*/}}
+{{- define "xray.service.kedaJobsEnabled" -}}
+{{- $dot := index . 0 -}}
+{{- $service := index . 1 -}}
+{{- $serviceValues := index $dot.Values $service -}}
+{{- $value := $dot.Values.splitXraytoSeparateDeployments.kedaJobs -}}
+{{- if and (kindIs "map" $serviceValues) (hasKey $serviceValues "kedaJobs") (ne (index $serviceValues "kedaJobs") nil) -}}
+{{- $value = index $serviceValues "kedaJobs" -}}
+{{- end -}}
+{{- if not (kindIs "bool" $value) -}}
+{{- fail (printf "%s.kedaJobs must be a boolean or null" $service) -}}
+{{- end -}}
+{{- if $value -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+True when the service should render a ScaledJob. Holds every ScaledJob precondition in one place:
+  - splitXraytoSeparateDeployments.fullSplit is on
+  - the service is enabled: services with no "enabled" key are always on, and the two JAS services
+    are also switched on by jas.separate.service.enabled
+  - the effective kedaJobs flag is true (see xray.service.kedaJobsEnabled)
+  - autoscaling.keda.enabled is on with a non-empty autoscaling.keda.queues, which KEDA requires to
+    build the ScaledJob triggers
+The last condition is a documented precondition for ScaledJobs, so it is deliberately not mirrored
+in the Deployment guards: kedaJobs=true with KEDA autoscaling off is a misconfiguration and is not
+silently turned back into a Deployment.
+*/}}
+{{- define "xray.service.renderScaledJob" -}}
+{{- $dot := index . 0 -}}
+{{- $service := index . 1 -}}
+{{- $serviceValues := index $dot.Values $service -}}
+{{- $enabled := true -}}
+{{- if hasKey $serviceValues "enabled" -}}
+{{- $enabled = $serviceValues.enabled -}}
+{{- end -}}
+{{- if or (eq $service "jascontextual") (eq $service "jasexposures") -}}
+{{- $enabled = or $enabled $dot.Values.jas.separate.service.enabled -}}
+{{- end -}}
+{{- $keda := $serviceValues.autoscaling.keda -}}
+{{- if and $dot.Values.splitXraytoSeparateDeployments.fullSplit $enabled (eq (include "xray.service.kedaJobsEnabled" .) "true") $keda.enabled $keda.queues -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
 Return the secret name of rabbitmq TLS certs.
 */}}
 {{- define "xray.rabbitmqCustomCertificateshandler" -}}

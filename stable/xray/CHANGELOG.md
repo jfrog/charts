@@ -1,10 +1,12 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.150.20] - Jun 26, 2026
+## [103.150.23] - Jun 26, 2026
 * Fix `wait-for-rabbitmq-replicas-quorum` init container exposing RabbitMQ credentials in pod logs due to bash trace mode (`-x`).
 * Added support for the rabbitmq `quorum_queue_non_voters` feature flag and increased `max_message_size` to 128 MB.
 * Update valkey.kubectl.image.repository and valkey.kubectl.image.tag to `echohq/kubectl:1.35.6`
+* Added optional per-service `kedaJobs` overrides that inherit from `splitXraytoSeparateDeployments.kedaJobs`. Setting `<service>.kedaJobs` to `true` or `false` overrides the global flag for that service; leaving it unset or `null` inherits the global value.
+* Added `.Values.jasexposures.exitOnIdleTimeToWait` and `.Values.jascontextual.exitOnIdleTimeToWait` to configure `JF_SHARED_EXIT_ON_IDLE_TIME_TO_WAIT` separately for each of those KEDA ScaledJobs (default `900`).
 
 ## [103.148.0] - Jun 25, 2026
 * Update postgresql tag version to `17.10.0-debian`

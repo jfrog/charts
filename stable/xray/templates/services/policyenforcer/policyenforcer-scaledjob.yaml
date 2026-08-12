@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.splitXraytoSeparateDeployments.kedaJobs) (.Values.policyenforcer.autoscaling.keda.enabled) (.Values.policyenforcer.autoscaling.keda.queues) }}
+{{- if eq (include "xray.service.renderScaledJob" (list . "policyenforcer")) "true" }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
 metadata:

@@ -1,5 +1,4 @@
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "indexer")) "true") (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled true) (.Values.indexer.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -36,12 +35,10 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesIndexer" . | indent 4 }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "persist")) "true") (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled true) (.Values.persist.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -78,12 +75,10 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesPersist" . | indent 4 }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if  .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "analysis")) "true") (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled true) (.Values.analysis.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -120,12 +115,10 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesAnalysis" . | indent 4 }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if  .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "policyenforcer")) "true") (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled true) (.Values.policyenforcer.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -162,12 +155,10 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesPolicyenforcer" . | indent 4 }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.sbom.autoscaling.enabled) (eq .Values.sbom.autoscaling.keda.enabled true) (.Values.sbom.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.sbom.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "sbom")) "true") (.Values.sbom.autoscaling.enabled) (eq .Values.sbom.autoscaling.keda.enabled true) (.Values.sbom.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -207,7 +198,7 @@ spec:
 
 ---
 
-{{- if and (.Values.aiscanner.autoscaling.enabled) (eq .Values.aiscanner.autoscaling.keda.enabled true) (.Values.aiscanner.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.aiscanner.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "aiscanner")) "true") (.Values.aiscanner.autoscaling.enabled) (eq .Values.aiscanner.autoscaling.keda.enabled true) (.Values.aiscanner.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -244,12 +235,10 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesAiscanner" . | indent 4 }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit }}
-{{- if and (.Values.reporting.autoscaling.enabled) (eq .Values.reporting.autoscaling.keda.enabled true) (.Values.reporting.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.reporting.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "reporting")) "true") (.Values.reporting.autoscaling.enabled) (eq .Values.reporting.autoscaling.keda.enabled true) (.Values.reporting.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -286,11 +275,10 @@ spec:
   triggers:
   {{- include "xray.autoscalingQueuesReporting" . | indent 4 }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (.Values.jascontextual.autoscaling.enabled) (eq .Values.jascontextual.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "jascontextual")) "true") (.Values.jascontextual.autoscaling.enabled) (eq .Values.jascontextual.autoscaling.keda.enabled true) (.Values.jascontextual.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
@@ -330,7 +318,7 @@ spec:
 
 ---
 
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (.Values.jasexposures.autoscaling.enabled) (eq .Values.jasexposures.autoscaling.keda.enabled true) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "jasexposures")) "true") (.Values.jasexposures.autoscaling.enabled) (eq .Values.jasexposures.autoscaling.keda.enabled true) (.Values.jasexposures.autoscaling.keda.queues) }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:

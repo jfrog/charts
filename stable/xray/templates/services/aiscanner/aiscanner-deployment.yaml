@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.aiscanner.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.aiscanner.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "aiscanner")) "true") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

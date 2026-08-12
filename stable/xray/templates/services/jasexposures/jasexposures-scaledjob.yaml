@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (.Values.splitXraytoSeparateDeployments.kedaJobs) (.Values.jasexposures.autoscaling.keda.enabled) (.Values.jasexposures.autoscaling.keda.queues) }}
+{{- if eq (include "xray.service.renderScaledJob" (list . "jasexposures")) "true" }}
 apiVersion: keda.sh/v1alpha1
 kind: ScaledJob
 metadata:
@@ -81,7 +81,7 @@ spec:
           - name: JF_SHARED_EXIT_ON_IDLE_ENABLED
             value: "true"
           - name: JF_SHARED_EXIT_ON_IDLE_TIME_TO_WAIT
-            value: "1800"
+            value: "{{ .Values.jasexposures.exitOnIdleTimeToWait }}"
         {{ include "xray.envVariables" . | indent 10 }}
         {{ include "xray.rabbitmqTlsEnvVariables" . | indent 10 }}
         {{- if and .Values.rabbitmq.external.secrets (not .Values.common.rabbitmq.connectionConfigFromEnvironment) }}
