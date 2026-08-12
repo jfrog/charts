@@ -59,8 +59,8 @@ logging:
 initContainers:
   image:
     registry: releases-docker.jfrog.io
-    repository: ubi9/ubi-minimal
-    tag: 9.8.1779809423
+    repository: jfrog/echo-mini
+    tag: "20260810"
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -190,7 +190,7 @@ postgresql:
   image:
     registry: releases-docker.jfrog.io
     repository: echohq/postgres
-    tag: 17.10-helm
+    tag: 17.10-helm-20260716
     # digest:
   auth:
     username: "distribution"
@@ -291,7 +291,7 @@ common:
     #       drop:
     #         - NET_RAW
     #   command:
-    #     - 'sh'
+    #     - 'bash'
     #     - '-c'
     #     - 'touch {{ .Values.distribution.persistence.mountPath }}/example-custom-setup'
     #   volumeMounts:
@@ -309,7 +309,7 @@ common:
     #       drop:
     #         - NET_RAW
     #   command:
-    #     - 'sh'
+    #     - 'bash'
     #     - '-c'
     #     - 'curl -o {{ .Values.distribution.persistence.mountPath }}/etc/system.yaml https://<repo-url>/systemyaml'
     #   volumeMounts:
@@ -328,9 +328,9 @@ common:
     #       drop:
     #         - NET_RAW
     #   command:
-    #     - 'sh'
+    #     - 'bash'
     #     - '-c'
-    #     - 'sh /scripts/script.sh'
+    #     - 'bash /scripts/script.sh'
     #   volumeMounts:
     #     - mountPath: "{{ .Values.distribution.persistence.mountPath }}"
     #       name: volume
@@ -374,10 +374,10 @@ distribution:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the postStart handler > /usr/share/message"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the preStart handler > /usr/share/message"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the preStart handler > /usr/share/message"]
 
   internalPort: 8080
   externalPort: 80
@@ -558,7 +558,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.320.35
+    tag: 7.729.32
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -579,10 +579,10 @@ router:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the router postStart handler > /usr/share/message"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the router postStart handler > /usr/share/message"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the router preStart handler > /usr/share/message"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the router preStart handler > /usr/share/message"]
 
   ## Add custom volumesMounts
   customVolumeMounts: |
@@ -640,7 +640,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.42.0
+    tag: 2.56.0
     # digest:
     pullPolicy: IfNotPresent
   internalPort: 8036
@@ -656,10 +656,10 @@ observability:
   lifecycle: {}
   # postStart:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the observability postStart handler > /usr/share/message"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the observability postStart handler > /usr/share/message"]
   # preStop:
   #   exec:
-  #     command: ["/bin/sh", "-c", "echo Hello from the observability preStart handler > /usr/share/message"]
+  #     command: ["/bin/bash", "-c", "echo Hello from the observability preStart handler > /usr/share/message"]
 
   livenessProbe:
     enabled: true
