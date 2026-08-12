@@ -3,17 +3,10 @@
 # This size is intended for large organizations. It can be increased with adding replicas or moving to the xlarge sizing
 ##############################################################
 
-replicaCount: 2
+replicaCount: 4
 databaseUpgradeReady: true
 waitForDatabase: true
 unifiedUpgradeAllowed: true
-
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 6
-  targetCPUUtilizationPercentage: 200
-  targetMemoryUtilizationPercentage: 800
 
 xray:
   podAntiAffinity:
@@ -24,7 +17,7 @@ xray:
 analysis:
   resources:
     requests:
-      cpu: "100m"
+      cpu: "60m"
       memory: 250Mi
     limits:
       # cpu: "4"
@@ -34,7 +27,7 @@ indexer:
   resources:
     requests:
       cpu: "300m"
-      memory: 550Mi
+      memory: 1Gi
     limits:
       # cpu: "6"
       memory: 8Gi
@@ -42,7 +35,7 @@ indexer:
 persist:
   resources:
     requests:
-      cpu: "100m"
+      cpu: "60m"
       memory: 250Mi
     limits:
       # cpu: "4"
@@ -51,11 +44,11 @@ persist:
 server:
   resources:
     requests:
-      cpu: "300m"
+      cpu: "180m"
       memory: 500Mi
     limits:
       # cpu: "4"
-      memory: 6Gi
+      memory: 10Gi
 
 router:
   resources:
@@ -63,22 +56,22 @@ router:
       cpu: "60m"
       memory: 100Mi
     limits:
-      # cpu: "1"
+      # cpu: "3"
       memory: 1Gi
 
 observability:
   resources:
     requests:
-      cpu: "10m"
+      cpu: "5m"
       memory: 25Mi
     limits:
-      # cpu: "1"
+      # cpu: "850m"
       memory: 250Mi
 
 sbom:
   resources:
     requests:
-      cpu: "100m"
+      cpu: "60m"
       memory: 250Mi
     limits:
       # cpu: "4"
@@ -132,10 +125,10 @@ rabbitmq:
   resources:
     requests:
       cpu: "200m"
-      memory: 500Mi
+      memory: 300Mi
     limits:
       # cpu: "2"
-      memory: 4Gi
+      memory: 3Gi
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:

@@ -8,13 +8,6 @@ databaseUpgradeReady: true
 waitForDatabase: true
 unifiedUpgradeAllowed: true
 
-autoscaling:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 2
-  targetCPUUtilizationPercentage: 200
-  targetMemoryUtilizationPercentage: 800
-
 xray:
   podAntiAffinity:
     ## Valid values are "soft" or "hard"; any other value indicates no anti-affinity
@@ -24,74 +17,74 @@ xray:
 analysis:
   resources:
     requests:
-      cpu: "100m"
+      cpu: "30m"
       memory: 250Mi
     limits:
-      # cpu: "4"
-      memory: 10Gi
+      # cpu: "3"
+      memory: 4Gi
 
 indexer:
   resources:
     requests:
-      cpu: "300m"
-      memory: 550Mi
+      cpu: "36m"
+      memory: 800Mi
     limits:
-      # cpu: "6"
-      memory: 8Gi
+      # cpu: "4"
+      memory: 4Gi
 
 persist:
   resources:
     requests:
-      cpu: "100m"
+      cpu: "30m"
       memory: 250Mi
     limits:
-      # cpu: "4"
-      memory: 8Gi
+      # cpu: "3"
+      memory: 4Gi
 
 server:
   resources:
     requests:
-      cpu: "300m"
-      memory: 500Mi
+      cpu: "60m"
+      memory: 250Mi
     limits:
-      # cpu: "4"
-      memory: 6Gi
+      # cpu: "3"
+      memory: 4Gi
 
 router:
   resources:
     requests:
-      cpu: "60m"
-      memory: 100Mi
+      cpu: "24m"
+      memory: 50Mi
     limits:
-      # cpu: "1"
+      # cpu: "3"
       memory: 1Gi
 
 observability:
   resources:
     requests:
-      cpu: "10m"
+      cpu: "5m"
       memory: 25Mi
     limits:
-      # cpu: "1"
+      # cpu: "850m"
       memory: 250Mi
 
 sbom:
   resources:
     requests:
-      cpu: "100m"
+      cpu: "30m"
       memory: 250Mi
     limits:
-      # cpu: "4"
-      memory: 10Gi
+      # cpu: "3"
+      memory: 4Gi
 
 policyenforcer:
   resources:
     requests:
       memory: "250Mi"
-      cpu: "60m"
+      cpu: "30m"
     limits:
-      memory: "8Gi"
-      # cpu: "4"
+      memory: "4Gi"
+      # cpu: "3"
 
 # PostgreSQL
 ## Configuration values for the postgresql dependency
@@ -131,7 +124,7 @@ rabbitmq:
     {{- end }}
   resources:
     requests:
-      cpu: "50m"
+      cpu: "200m"
       memory: 300Mi
     limits:
       # cpu: "2"
