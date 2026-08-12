@@ -1,5 +1,4 @@
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "indexer")) "true") (.Values.indexer.autoscaling.enabled) (eq .Values.indexer.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -28,12 +27,10 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.indexer.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "persist")) "true") (.Values.persist.autoscaling.enabled) (eq .Values.persist.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -62,12 +59,10 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.persist.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "analysis")) "true") (.Values.analysis.autoscaling.enabled) (eq .Values.analysis.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -96,12 +91,10 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.analysis.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (ne (include "xray.service.kedaJobsEnabled" (list . "policyenforcer")) "true") (.Values.policyenforcer.autoscaling.enabled) (eq .Values.policyenforcer.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -130,12 +123,10 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.policyenforcer.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.sbom.autoscaling.enabled) (.Values.sbom.enabled) (eq .Values.sbom.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.sbom.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "sbom")) "true") (.Values.sbom.autoscaling.enabled) (eq .Values.sbom.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -167,7 +158,7 @@ spec:
 
 ---
 
-{{- if and (.Values.aiscanner.autoscaling.enabled) (.Values.aiscanner.enabled) (eq .Values.aiscanner.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.aiscanner.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "aiscanner")) "true") (.Values.aiscanner.autoscaling.enabled) (eq .Values.aiscanner.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -196,12 +187,10 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.aiscanner.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if .Values.splitXraytoSeparateDeployments.fullSplit  }}
-{{- if and (.Values.reporting.autoscaling.enabled) (.Values.reporting.enabled) (eq .Values.reporting.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.reporting.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "reporting")) "true") (.Values.reporting.autoscaling.enabled) (eq .Values.reporting.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -230,11 +219,10 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.reporting.autoscaling.targetCPUUtilizationPercentage }}
 {{- end }}
-{{- end }}
 
 ---
 
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (.Values.jascontextual.autoscaling.enabled) (eq .Values.jascontextual.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jascontextual.enabled .Values.jas.separate.service.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "jascontextual")) "true") (.Values.jascontextual.autoscaling.enabled) (eq .Values.jascontextual.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}
@@ -266,7 +254,7 @@ spec:
 
 ---
 
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (.Values.jasexposures.autoscaling.enabled) (eq .Values.jasexposures.autoscaling.keda.enabled  false) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (or .Values.jasexposures.enabled .Values.jas.separate.service.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "jasexposures")) "true") (.Values.jasexposures.autoscaling.enabled) (eq .Values.jasexposures.autoscaling.keda.enabled false) }}
   {{- if semverCompare ">=v1.23.0-0" .Capabilities.KubeVersion.Version }}
 apiVersion: autoscaling/v2
   {{- else }}

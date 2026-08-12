@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.sbom.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.sbom.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "sbom")) "true") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

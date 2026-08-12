@@ -1,4 +1,4 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.reporting.enabled) (not .Values.splitXraytoSeparateDeployments.kedaJobs) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.reporting.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "reporting")) "true") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

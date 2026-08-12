@@ -95,7 +95,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/echo-mini
-    tag: "20260729"
+    tag: "20260805"
     pullPolicy: IfNotPresent
   resources:
     requests:
@@ -218,7 +218,7 @@ xray:
   ## You can modify specific entries with your own value under `xray.extraSystemYaml`, The values under extraSystemYaml overrides the values under 'xray.systemYaml' and files/system.yaml
 
   extraSystemYaml: {}
-      
+
   ## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
   ## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
   # systemYaml:
@@ -758,7 +758,7 @@ rabbitmq:
           echo $HOSTNAME
           if [[ $HOSTNAME == *-0 ]]; then
              exit 0
-          fi  
+          fi
           if [ -d "$RABBITMQ_MNESIA_DIR" ]; then
              exit 0
           fi
@@ -780,8 +780,8 @@ rabbitmq:
               break || sleep 5;
               if [ "$i" == "$maxIterations" ]; then exit 1; fi
               i=$((i+1))
-          done;   
-    
+          done;
+
           # node x waits for x previous nodes to join cluster (since node number is zero based)
           nodeSerialNum=$(echo "$MY_POD_NAME" | grep -o "[0-9]*$")
           timeoutSeconds=180
@@ -821,6 +821,13 @@ valkey:
     persistence:
       enabled: true
       size: 1Gi
+    # resources:
+    #   requests:
+    #     memory: "1Gi"
+    #     cpu: "500m"
+    #   limits:
+    #     memory: "2Gi"
+    #     cpu: "1"
   replica:
     # Three Valkey nodes: 1 primary + 2 replicas (also forms the 3-member Sentinel quorum).
     replicaCount: 3
@@ -830,6 +837,13 @@ valkey:
     persistence:
       enabled: true
       size: 1Gi
+    # resources:
+    #   requests:
+    #     memory: "1Gi"
+    #     cpu: "500m"
+    #   limits:
+    #     memory: "2Gi"
+    #     cpu: "1"
   # Sentinel runs as a sidecar in every Valkey pod and handles primary election.
   sentinel:
     enabled: true
@@ -852,6 +866,13 @@ valkey:
       # Create a stable `<release>-valkey-primary` Service whose selector is
       # updated to always point at the currently elected primary pod.
       createPrimary: true
+    # resources:
+    #   requests:
+    #     memory: "256Mi"
+    #     cpu: "250m"
+    #   limits:
+    #     memory: "1Gi"
+    #     cpu: "1"
   # Image used by the failover-controller sidecar that patches the primary
   # Service selector after a Sentinel-driven failover. Must be multi-arch.
   kubectl:
@@ -1014,6 +1035,12 @@ common:
   extraEnvVars:
 
 analysis:
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-analysis
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1147,6 +1174,12 @@ analysis:
 
 sbom:
   enabled: false
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-sbom
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1275,6 +1308,12 @@ jascontextual:
   ## Deployed if this is true OR jas.separate.service.enabled is true (also requires
   ## splitXraytoSeparateDeployments.fullSplit: true).
   enabled: false
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-jascontextual
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1327,6 +1366,10 @@ jascontextual:
           value: "30"
         - name: cveApplicabilityExecutionPriority255
           value: "30"
+
+  ## Seconds a jascontextual KEDA ScaledJob pod stays alive with no work before it exits
+  ## (JF_SHARED_EXIT_ON_IDLE_TIME_TO_WAIT). Only used when this service runs as a ScaledJob.
+  exitOnIdleTimeToWait: 900
 
   # Add lifecycle hooks for the jascontextual pod
   lifecycle: {}
@@ -1396,6 +1439,12 @@ jasexposures:
   ## Deployed if this is true OR jas.separate.service.enabled is true (also requires
   ## splitXraytoSeparateDeployments.fullSplit: true).
   enabled: false
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-jasexposures
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1448,6 +1497,10 @@ jasexposures:
           value: "30"
         - name: exposuresScanExecutionPriority255
           value: "30"
+
+  ## Seconds a jasexposures KEDA ScaledJob pod stays alive with no work before it exits
+  ## (JF_SHARED_EXIT_ON_IDLE_TIME_TO_WAIT). Only used when this service runs as a ScaledJob.
+  exitOnIdleTimeToWait: 900
 
   # Add lifecycle hooks for the jasexposures pod
   lifecycle: {}
@@ -1515,6 +1568,12 @@ jasexposures:
 
 aiscanner:
   enabled: true
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-aiscanner
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1625,6 +1684,12 @@ aiscanner:
   resources: {}
 
 policyenforcer:
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-policyenforcer
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1739,10 +1804,16 @@ policyenforcer:
   #    cpu: "100m"
   #  limits:
   #    memory: "2Gi"
-  #    cpu: "1" 
+  #    cpu: "1"
 
 
 indexer:
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-indexer
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -1865,6 +1936,12 @@ indexer:
   #    cpu: "1"
 
 persist:
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-persist
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -2119,6 +2196,12 @@ curation:
 
 reporting:
   enabled: false
+  ## Per-service override of splitXraytoSeparateDeployments.kedaJobs. Set to true to deploy this
+  ## service as a KEDA ScaledJob even when the global flag is off, or to false to keep it a
+  ## Deployment even when the global flag is on. Leave unset (or null) to inherit the global flag.
+  ## kedaJobs=true requires splitXraytoSeparateDeployments.fullSplit=true, autoscaling.keda.enabled=true
+  ## and autoscaling.keda.queues set.
+  # kedaJobs: false
   name: xray-reporting
   ## Note that by default we use appVersion to get image tag/version
   image:
@@ -2149,7 +2232,7 @@ reporting:
     ## Note: keda should be installed on the target cluster
     ## Ref: https://keda.sh/docs/2.10/deploy/
     keda:
-      enabled: true
+      enabled: false
       annotations: {}
       scaleUp:
         stabilizationWindowSeconds: 90
@@ -2420,7 +2503,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.729.23
+    tag: 7.729.34
     imagePullPolicy: IfNotPresent
 
   serviceRegistry:
@@ -2492,7 +2575,7 @@ router:
 
   readinessProbe:
     enabled: true
-    config: | 
+    config: |
       httpGet:
         path: /router/api/v1/system/readiness
         port: {{ .Values.router.internalPort }}
@@ -2514,7 +2597,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.53.0
+    tag: 2.54.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
@@ -2678,9 +2761,11 @@ splitXraytoSeparateDeployments:
   fullSplit: false
 ## To prevent downtime (both the statefulset pod and deployment pod are kept together, with gradual upgrade set to false, which can turn off statefulsets in subsequent upgrades)
   gradualUpgrade: false
-## When kedaJobs is true, KEDA ScaledJobs are used instead of Deployments for services (indexer, persist, analysis, sbom, policyenforcer)
+## When kedaJobs is true, KEDA ScaledJobs are used instead of Deployments for all supported services (indexer, persist, analysis, policyenforcer, sbom, aiscanner, reporting, jascontextual, jasexposures)
 ## ScaledJobs allow services to shut down gracefully when not processing messages
-## Requires: fullSplit=true, kedaJobs=true, and service-specific autoscaling.keda.enabled=true
+## Requires: fullSplit=true, kedaJobs=true, and service-specific autoscaling.keda.enabled=true with queues set
+## Any service can override this with an explicit <service>.kedaJobs boolean (true opts in, false opts out);
+## services that leave <service>.kedaJobs unset or null inherit this value
   kedaJobs: false
 
 ###################################################################################
@@ -2722,7 +2807,7 @@ autoscalingServer:
     pollingInterval: 10
     cooldownPeriod: 10
     queues: []
- 
+
 ## Apply horizontal pod auto scaling on Xray ipa pods
 ## Only applicable when (splitXraytoSeparateDeployments.ipa) is set to true
 ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
@@ -2811,7 +2896,7 @@ catalog:
         echo "Waiting for PostgreSQL and catalogdb to become available"
         ready=false
         start_time=$(date +%s)
-        while ! $ready; do 
+        while ! $ready; do
             echo "Checking PostgreSQL connection and database availability..."
             psql "postgres://{{ .Values.database.user }}:{{ .Values.database.password }}@{{ .Release.Name }}-postgresql:5432/catalogdb?sslmode=disable" -c "\q" 2>/dev/null
             exit_status=$?
@@ -2837,7 +2922,7 @@ catalog:
     enabled: true
     image: releases-docker.jfrog.io/postgres:15.6-alpine
   ## Change database connection details to external database. Bundled postgresql is not recomended for production use.
-  ## When using bundled postgresql, provide the same credentials as used by xray. 
+  ## When using bundled postgresql, provide the same credentials as used by xray.
   ## Xray post upgrade hook will create the catalog db in the bundled postgresql.
   ## Catalog customInitContainers will wait for the database to be available before starting the catalog. (Only applicable for bundled postgresql)
   database:
@@ -2850,3 +2935,10 @@ catalog:
     # (see `valkey.sentinel.service.createPrimary`) that always routes to the
     # currently elected primary pod.
     connectionString: "redis://{{ .Release.Name }}-valkey-primary:6379"
+  # resources:
+  #   requests:
+  #     memory: "1Gi"
+  #     cpu: "100m"
+  #   limits:
+  #     memory: "2Gi"
+  #     cpu: "1"
