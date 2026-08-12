@@ -86,6 +86,51 @@ policyenforcer:
       memory: "8Gi"
       # cpu: "4"
 
+aiscanner:
+  resources:
+    requests:
+      cpu: "30m"
+      memory: 100Mi
+    limits:
+      # cpu: "2"
+      memory: 4Gi
+
+curation:
+  resources:
+    requests:
+      cpu: "180m"
+      memory: 500Mi
+    limits:
+      # cpu: "4"
+      memory: 6Gi
+
+jascontextual:
+  resources:
+    requests:
+      cpu: "1.5"
+      memory: 4Gi
+    limits:
+      # cpu: "3.0"
+      memory: 16Gi
+
+jasexposures:
+  resources:
+    requests:
+      cpu: "1.5"
+      memory: 4Gi
+    limits:
+      # cpu: "3.0"
+      memory: 16Gi
+
+reporting:
+  resources:
+    requests:
+      cpu: "180m"
+      memory: 500Mi
+    limits:
+      # cpu: "4"
+      memory: 10Gi
+
 # PostgreSQL
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
