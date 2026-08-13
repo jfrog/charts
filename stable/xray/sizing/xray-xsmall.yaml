@@ -131,6 +131,15 @@ reporting:
       # cpu: "3"
       memory: 4Gi
 
+initContainers:
+  resources:
+    requests:
+      memory: "50Mi"
+      cpu: "12m"
+    limits:
+      memory: "1Gi"
+      cpu: "250m"
+
 # PostgreSQL
 ## Configuration values for the postgresql dependency
 ## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
@@ -193,6 +202,22 @@ catalog:
     limits:
       cpu: "2"
       memory: 6Gi
+  initContainers:
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "12m"
+      limits:
+        memory: "1Gi"
+        cpu: "250m"
+  router:
+    resources:
+      requests:
+        cpu: "24m"
+        memory: 50Mi
+      limits:
+        # cpu: "3"
+        memory: 1Gi
 
 valkey:
   primary:
@@ -219,3 +244,11 @@ valkey:
       limits:
         cpu: "1"
         memory: 1Gi
+  kubectl:
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "12m"
+      limits:
+        memory: "250Mi"
+        cpu: "250m"
