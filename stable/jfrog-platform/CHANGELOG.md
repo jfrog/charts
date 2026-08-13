@@ -1,6 +1,14 @@
 # JFrog Platform Chart Changelog (GA releases only)
 All changes to this chart will be documented in this file.
 
+## [11.6.1] - August 13, 2026
+* Update dependency artifactory chart version to 107.161.16
+* Update dependency xray chart version to 103.150.23
+* Update dependency distribution chart version to 102.52.16
+* Update dependency wingman chart version to 100.606.22
+* Update dependency bridge chart version to 101.262.34
+* Update dependency catalog chart version to 101.43.5
+
 ## [11.6.0] - July 29, 2026
 * **BREAKING CHANGE — nginx TLS certificate (artifactory subchart `107.161.x` and later):** nginx no longer auto-generates its TLS certificate. On the JFrog Platform chart, configure it under the `artifactory.nginx.*` values.
   * **Fresh install** (with `artifactory.nginx.https.enabled=true`, the default) fails unless one of these is set:

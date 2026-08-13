@@ -80,6 +80,7 @@ artifactory:
         memory: 1Gi
   
   frontend:
+    replicaCount: 1
     resources:
       requests:
         cpu: 50m
@@ -201,6 +202,7 @@ artifactory:
         memory: 1Gi
   
   rtfs:
+    replicaCount: 1
     resources:
       requests:
         cpu: 500m
@@ -210,6 +212,7 @@ artifactory:
         memory: 3500Mi
   
   jfbus:
+    replicaCount: 1
     resources:
       requests:
         cpu: 500m
@@ -219,6 +222,7 @@ artifactory:
         memory: 3500Mi
   
   jfmelt:
+    replicaCount: 1
     resources:
       requests:
         cpu: 500m
@@ -228,6 +232,7 @@ artifactory:
         memory: 1Gi
   
   platformfederation:
+    replicaCount: 1
     resources:
       requests:
         cpu: 125m
@@ -237,6 +242,7 @@ artifactory:
         memory: 500Mi
   
   apptrust:
+    replicaCount: 1
     resources:
       requests:
         cpu: 150m
@@ -246,6 +252,7 @@ artifactory:
         memory: 300Mi
   
   unifiedpolicy:
+    replicaCount: 1
     resources:
       requests:
         cpu: 150m
@@ -255,6 +262,7 @@ artifactory:
         memory: 300Mi
   
   evaluation:
+    replicaCount: 1
     resources:
       requests:
         cpu: 150m
@@ -388,6 +396,40 @@ xray:
                       - xray
               topologyKey: kubernetes.io/hostname
   
+  catalog:
+    resources:
+      requests:
+        cpu: "1"
+        memory: 3Gi
+      limits:
+        cpu: "2"
+        memory: 6Gi
+  
+  valkey:
+    primary:
+      resources:
+        requests:
+          cpu: "500m"
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+    replica:
+      resources:
+        requests:
+          cpu: "500m"
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi
+    sentinel:
+      resources:
+        requests:
+          cpu: "250m"
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
 rabbitmq:
   extraConfiguration: |-
     vm_memory_high_watermark.absolute = 2G
