@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.161.15] - Jul 27, 2026
+## [107.161.16] - Aug 04, 2026
 * **BREAKING CHANGE — mandatory keys:** Both `masterKey` and `joinKey` are now mandatory at install time (centralizes key management across the JFrog Platform).
   * **On fresh install** — both keys must be provided before running `helm install`.
   * **On upgrade** — reuse the existing keys from the running cluster; do **not** generate new ones.
@@ -23,6 +23,11 @@ All changes to this chart will be documented in this file.
 * Removed the `jfbus.activeProfile` configuration from the Helm chart. It is now managed internally
 * Platform federation is supported with all databases
 * Upgraded postgres image tag version to `17.10-helm-20260716`
+* Added `fullnameOverride` support to all service fullname helpers (`frontend`, `rtfs`, `jfbus`, `jfmelt`, `apptrust`, `unifiedpolicy`, `evaluation`, and `platformfederation`).
+* Aligned the default `replicaCount` of the `frontend`, `rtfs`, `jfbus`, `jfmelt`, `apptrust`, `unifiedpolicy`, `evaluation` and `platformfederation` Deployments with `artifactory.replicaCount`, in `values.yaml` and in all sizing files.
+* Raised `autoscaling.maxReplicas` to the profile `replicaCount` in the xlarge (4) and 2xlarge (6) sizing files, for Artifactory and for the above services, so enabling autoscaling no longer caps these workloads below the size of the profile.
+  Each of these services keeps its own `replicaCount`, so changing `artifactory.replicaCount` does not change theirs; they must be updated separately. A warning is printed when they are out of sync.
+
 
 ## [107.158.0] - Jun 25, 2026
 * Added `onemodel.cosmo` to configure the OneModel Cosmo Router (for example, the router port) via `system.yaml`. This follows OneModel's migration from Apollo Router to Cosmo Router.

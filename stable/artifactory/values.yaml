@@ -355,7 +355,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.729.15
+    tag: 7.729.23
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -1134,10 +1134,11 @@ frontend:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.652.18
+    tag: 1.652.21
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
+  ## Aligned with artifactory.replicaCount. Update it separately to scale frontend independently.
   replicaCount: 1
   serviceID: "jffe"
   ## If set to true, Service will wait until Artifactory is available before starting.
@@ -1760,7 +1761,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.47.3
+    tag: 2.47.5
     # digest:
     pullPolicy: IfNotPresent
   persistence:
@@ -2244,6 +2245,7 @@ rtfs:
     tag: 2.126.10
     # digest:
   jfrogUrl: ""
+  ## Aligned with artifactory.replicaCount. Update it separately to scale rtfs independently.
   replicaCount: 1
   serviceAccountName: ""
   # If set to true, Service will wait until Artifactory is available before starting.
@@ -2358,7 +2360,6 @@ rtfs:
   #   exec:
   #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
-  fullnameOverride: ""
   annotations: {}
   deployment:
     annotations: {}
@@ -2425,6 +2426,7 @@ apptrust:
     tag: 1.86.5
     # digest:
   jfrogUrl: ""
+  ## Aligned with artifactory.replicaCount. Update it separately to scale apptrust independently.
   replicaCount: 1
   internalRestPort: 8013
   apiContext: apptrust
@@ -2505,7 +2507,6 @@ apptrust:
   #   exec:
   #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
-  fullnameOverride: ""
   annotations: {}
   deployment:
     annotations: {}
@@ -2548,6 +2549,7 @@ jfbus:
     pullPolicy: IfNotPresent
     tag: 1.386.2
     # digest:
+  ## Aligned with artifactory.replicaCount. Update it separately to scale jfbus independently.
   replicaCount: 1
   # If set to true, Service will wait until Artifactory is available before starting.
   # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
@@ -2677,8 +2679,9 @@ jfmelt:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfmelt
     pullPolicy: IfNotPresent
-    tag: 1.12.3
+    tag: 1.12.4
     # digest:
+  ## Aligned with artifactory.replicaCount. Update it separately to scale jfmelt independently.
   replicaCount: 1
   # If set to true, Service will wait until Artifactory is available before starting.
   # Set this to false if you're using an external Artifactory, meaning an Artifactory instance hosted at an external URL and not installed as part of this setup.
@@ -2799,9 +2802,10 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.70.6
+    tag: 1.70.7
     # digest:
   jfrogUrl: ""
+  ## Aligned with artifactory.replicaCount. Update it separately to scale unifiedpolicy independently.
   replicaCount: 1
   serviceAccountName: ""
   internalRestPort: 8027
@@ -2882,7 +2886,6 @@ unifiedpolicy:
   #   exec:
   #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
-  fullnameOverride: ""
   annotations: {}
   deployment:
     annotations: {}
@@ -2923,9 +2926,10 @@ evaluation:
     registry: releases-docker.jfrog.io
     repository: jfrog/evaluation
     pullPolicy: IfNotPresent
-    tag: 1.27.8
+    tag: 1.27.9
     # digest:
   jfrogUrl: ""
+  ## Aligned with artifactory.replicaCount. Update it separately to scale evaluation independently.
   replicaCount: 1
   serviceAccountName: ""
   waitForArtifactory: true
@@ -3008,7 +3012,6 @@ evaluation:
   #   exec:
   #     command: ["/bin/sh","-c","echo Hello from the preStop handler"]
 
-  fullnameOverride: ""
   annotations: {}
   deployment:
     annotations: {}
@@ -3049,10 +3052,11 @@ platformfederation:
     registry: releases-docker.jfrog.io
     repository: jfrog/platformfederation
     pullPolicy: IfNotPresent
-    tag: 1.1328.8
+    tag: 1.1328.9
     # digest:
   port: 8017
   grpcPort: 8018
+  ## Aligned with artifactory.replicaCount. Update it separately to scale platformfederation independently.
   replicaCount: 1
   # Default is empty string which means it will try use internal artifactory URL
   # If url is external then it should be set to the external URL of the JFrog Platform instance
