@@ -1,7 +1,7 @@
 # JFrog Distribution Chart Changelog
 All changes to this project chart be documented in this file.
 
-## [102.89.0] - Jul 21, 2026
+## [102.52.16] - Jul 21, 2026
 * Upgraded postgres image tag version to `17.10-helm-20260716`
 
 ## [102.41.0] - Jun 11, 2026
