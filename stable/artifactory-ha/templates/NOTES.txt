@@ -204,6 +204,22 @@ jconsole {{ template "artifactory-ha.primary.name" . }}:{{ .Values.artifactory.p
 *******************************************************************************************************************************
 {{- end }}
 
+{{- $artifactoryReplicaCount := .Values.artifactory.primary.replicaCount | int64 }}
+{{- $servicesOutOfSync := list }}
+{{- range $name := (list "frontend" "rtfs" "jfbus" "jfmelt" "apptrust" "unifiedpolicy" "evaluation" "platformfederation") }}
+  {{- $service := index $.Values $name }}
+  {{- if and $service.enabled (ne ($service.replicaCount | int64) $artifactoryReplicaCount) }}
+    {{- $servicesOutOfSync = append $servicesOutOfSync $name }}
+  {{- end }}
+{{- end }}
+{{- if $servicesOutOfSync }}
+***************************************** WARNING *****************************************************************************
+* Changing 'artifactory.primary.replicaCount' does not change the replica count of these Deployments:                         *
+{{ printf "*   %-122s*" (join ", " $servicesOutOfSync) }}
+* Each service has its own 'replicaCount' in values.yaml and must be updated separately.                                      *
+*******************************************************************************************************************************
+{{- end }}
+
 {{- if .Values.postgresql.enabled }}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 ***WARNING*** You are using the bundled PostgreSQL database from the chart. This bundled database is not suitable for production use cases.
