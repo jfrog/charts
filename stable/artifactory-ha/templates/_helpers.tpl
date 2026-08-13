@@ -789,7 +789,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "rtfs.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.rtfs.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -886,7 +886,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "apptrust.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.apptrust.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -982,7 +982,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "unifiedpolicy.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.unifiedpolicy.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -1078,7 +1078,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "evaluation.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.evaluation.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -1214,7 +1214,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "jfbus.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.jfbus.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -1345,7 +1345,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "jfmelt.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.jfmelt.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -1453,7 +1453,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "platformfederation.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.platformfederation.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}
@@ -1555,7 +1555,7 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 */}}
 {{- define "frontend.fullname" -}}
 {{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-%s" (.Values.fullnameOverride | trunc 63 | trimSuffix "-") .Values.frontend.name -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.nameOverride -}}
 {{- if contains $name .Release.Name -}}

@@ -3,6 +3,8 @@
 # This size is intended for very large organizations. It can be increased with adding replicas
 # [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
 # hence this configuration will be overridden when enabling systemYamlOverride
+# [NOTE] Each 'autoscaling.maxReplicas' below matches the 'replicaCount' of this profile, so
+# enabling autoscaling never caps a workload below the size this profile is meant to run at
 ##############################################################################################
 splitServicesToContainers: true
 artifactory:
@@ -51,6 +53,9 @@ artifactory:
     - name: SKIP_WAIT_FOR_EXTERNAL_DB
       value: "true"
 
+autoscaling:
+  maxReplicas: 6
+
 router:
   resources:
     requests:
@@ -61,6 +66,9 @@ router:
       memory: 4Gi
 
 frontend:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: "1"
@@ -205,6 +213,9 @@ evidence:
       memory: 4Gi
 
 rtfs:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 500m
@@ -214,6 +225,9 @@ rtfs:
       memory: 3500Mi
 
 jfbus:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 500m
@@ -223,6 +237,9 @@ jfbus:
       memory: 3500Mi
 
 jfmelt:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 500m
@@ -232,6 +249,9 @@ jfmelt:
       memory: 1Gi
 
 platformfederation:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 225m
@@ -241,6 +261,9 @@ platformfederation:
       memory: 2Gi
 
 apptrust:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 2
@@ -250,6 +273,9 @@ apptrust:
       memory: 2.5Gi
 
 unifiedpolicy:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 2
@@ -259,6 +285,9 @@ unifiedpolicy:
       memory: 2.5Gi
 
 evaluation:
+  replicaCount: 6
+  autoscaling:
+    maxReplicas: 6
   resources:
     requests:
       cpu: 2
