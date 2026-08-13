@@ -401,7 +401,7 @@ spec:
         securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}
         command:
-          - '/bin/sh'
+          - '/bin/bash'
           - '-c'
           - >
           {{- with .Values.common.preStartCommand }}
@@ -435,9 +435,9 @@ spec:
         securityContext: {{- omit $.Values.containerSecurityContext "enabled" | toYaml | nindent 10 }}
         {{- end }}
         command:
-        - 'sh'
+        - 'bash'
         - '-c'
-        - 'sh /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
+        - 'bash /scripts/tail-log.sh {{ $mountPath }}/log {{ . }}'
         volumeMounts:
         - name: distribution-data
           mountPath: {{ $mountPath }}

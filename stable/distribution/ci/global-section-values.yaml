@@ -28,7 +28,7 @@ global:
      image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
      imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
-       - 'sh'
+       - 'bash'
        - '-c'
        - 'touch {{ .Values.distribution.persistence.mountPath }}/init-begin-global'
      volumeMounts:
@@ -46,7 +46,7 @@ global:
      image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
      imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
-       - 'sh'
+       - 'bash'
        - '-c'
        - 'touch {{ .Values.distribution.persistence.mountPath }}/init-global'
      volumeMounts:
@@ -61,7 +61,7 @@ global:
        capabilities:
          drop:
            - NET_RAW
-     command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
+     command: ["bash","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "/scriptsglobal"
          name: custom-volume-global
@@ -79,7 +79,7 @@ common:
      image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
      imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
-       - 'sh'
+       - 'bash'
        - '-c'
        - 'touch {{ .Values.distribution.persistence.mountPath }}/init-begin-local'
      volumeMounts:
@@ -97,7 +97,7 @@ common:
      image: {{ include "distribution.getImageInfoByValue" (list . "initContainers") }}
      imagePullPolicy: "{{ .Values.initContainers.image.pullPolicy }}"
      command:
-       - 'sh'
+       - 'bash'
        - '-c'
        - 'touch {{ .Values.distribution.persistence.mountPath }}/init-local'
      volumeMounts:
@@ -112,7 +112,7 @@ common:
        capabilities:
          drop:
            - NET_RAW
-     command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecar.txt; cat /scriptslocal/sidecar.txt; while true; do sleep 30; done"]
+     command: ["bash","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecar.txt; cat /scriptslocal/sidecar.txt; while true; do sleep 30; done"]
      volumeMounts:
        - mountPath: "/scriptslocal"
          name: custom-volume-local
