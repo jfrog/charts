@@ -4,6 +4,8 @@ artifactory:
   # This size is intended for very large organizations. It can be increased with adding replicas
   # [WARNING] Some of the configuration mentioned in this file are taken inside system.yaml
   # hence this configuration will be overridden when enabling systemYamlOverride
+  # [NOTE] Each 'autoscaling.maxReplicas' below matches the 'replicaCount' of this profile, so
+  # enabling autoscaling never caps a workload below the size this profile is meant to run at
   ##############################################################################################
   splitServicesToContainers: true
   artifactory:
@@ -48,6 +50,9 @@ artifactory:
       - name: MALLOC_ARENA_MAX
         value: "16"
   
+  autoscaling:
+    maxReplicas: 4
+  
   access:
     tomcat:
       connector:
@@ -79,6 +84,9 @@ artifactory:
         memory: 2Gi
   
   frontend:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: "1"
@@ -200,6 +208,9 @@ artifactory:
         memory: 1Gi
   
   rtfs:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 500m
@@ -209,6 +220,9 @@ artifactory:
         memory: 3500Mi
   
   jfbus:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 500m
@@ -218,6 +232,9 @@ artifactory:
         memory: 3500Mi
   
   jfmelt:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 500m
@@ -227,6 +244,9 @@ artifactory:
         memory: 1Gi
   
   platformfederation:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 250m
@@ -236,6 +256,9 @@ artifactory:
         memory: 2Gi
   
   apptrust:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 2
@@ -245,6 +268,9 @@ artifactory:
         memory: 2Gi
   
   unifiedpolicy:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 2
@@ -254,6 +280,9 @@ artifactory:
         memory: 2Gi
   
   evaluation:
+    replicaCount: 4
+    autoscaling:
+      maxReplicas: 4
     resources:
       requests:
         cpu: 2
@@ -387,6 +416,40 @@ xray:
                       - xray
               topologyKey: kubernetes.io/hostname
   
+  catalog:
+    resources:
+      requests:
+        cpu: "5"
+        memory: 12Gi
+      limits:
+        cpu: "10"
+        memory: 24Gi
+  
+  valkey:
+    primary:
+      resources:
+        requests:
+          cpu: "2"
+          memory: 6Gi
+        limits:
+          cpu: "4"
+          memory: 12Gi
+    replica:
+      resources:
+        requests:
+          cpu: "2"
+          memory: 6Gi
+        limits:
+          cpu: "4"
+          memory: 12Gi
+    sentinel:
+      resources:
+        requests:
+          cpu: "250m"
+          memory: 256Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
 rabbitmq:
   extraConfiguration: |-
     vm_memory_high_watermark.absolute = 4G
