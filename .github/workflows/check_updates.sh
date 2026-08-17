@@ -11,7 +11,7 @@ UPDATED_CHART_VERSIONS=""
 UPDATED_APP_VERSIONS=""
 
 # List of all charts
-CHARTS=("artifactory-cpp-ce" "artifactory-ha" "artifactory-jcr" "artifactory-oss" "artifactory" "catalog" "distribution" "jfrog-platform" "worker" "xray")
+CHARTS=("artifactory-cpp-ce" "artifactory-ha" "artifactory-jcr" "artifactory-oss" "artifactory" "bridge" "catalog" "distribution" "jfrog-common" "jfrog-platform" "wingman" "worker" "xray")
 
 if [ -n "$CHART_NAME" ]; then
   IFS=',' read -r -a CHARTS <<< "$CHART_NAME"
@@ -47,10 +47,11 @@ SKIPPED_REASONS=""
 for chart in "${CHARTS[@]}"; do
   chart_path="stable/$chart"
   if [ ! -d "$chart_path" ]; then
-    echo "Chart path $chart_path does not exist, skipping."
-    SKIPPED_CHARTS="${SKIPPED_CHARTS}${chart},"
-    SKIPPED_REASONS="${SKIPPED_REASONS}${chart}: Directory not found in stable/\n"
-    continue
+    # First-time chart: the directory has not been seeded yet. Rather than
+    # skipping, fall through with an empty current version so the latest
+    # published version is treated as an available update and charts.yaml
+    # seeds stable/$chart on the next run.
+    echo "Chart path $chart_path does not exist; treating latest published version as a new chart to seed."
   fi
 
   current_version=$(get_current_version "$chart_path")
