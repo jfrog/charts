@@ -1,0 +1,22 @@
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
+wingman:
+  service:
+    version: {{ .Chart.AppVersion | quote }}
+
+shared:
+  jfrogUrl: {{ include "wingman.jfrogUrl" . | quote }}
+{{- if or .Values.postgresql.enabled .Values.database.url }}
+  database:
+    {{- if .Values.database.type }}
+    type: {{ .Values.database.type | quote }}
+    {{- end }}
+    {{- if .Values.database.driver }}
+    driver: {{ .Values.database.driver | quote }}
+    {{- end }}
+    {{- if .Values.postgresql.enabled }}
+    url: {{ include "wingman.bundledDbUrl" . | quote }}
+    username: {{ .Values.postgresql.auth.username | quote }}
+    {{- end }}
+{{- end }}

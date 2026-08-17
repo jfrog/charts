@@ -1,0 +1,203 @@
+{{/*
+Chart-level input validations.
+
+This template renders no Kubernetes resources — it only short-circuits
+`helm install|upgrade|template` with a clear error message when the user
+supplies an inconsistent combination of values.
+
+All `{{- fail ... }}` checks live in this one well-known place instead of
+being scattered inline across the other templates.
+*/}}
+
+{{/* JFrog Online Beta Agreement consent gate.
+     Self-hosted only (WNGM-3800). Wingman ships as a beta feature on
+     the SH path; installation is blocked until the operator explicitly
+     acknowledges the JFrog Online Beta Agreement by setting
+     `consentToJfrogOnlineBetaAgreement: true` (see values.yaml).
+     Scoped via the wingman.deploymentMode helper, which resolves
+     shared.deploymentMode from .Values.systemYaml (SaaS string blob,
+     always "saas" via infra-core-config) or .Values.extraSystemYaml
+     (SH structured map; defaults to "self_hosted"). On SaaS this gate
+     is therefore a no-op. Strict type+value check so missing keys, the
+     string "true", numeric 1, or any other truthy value all fail
+     (Helm's `eq` panics on cross-type comparison, hence the explicit
+     `kindIs "bool"` gate before testing the value). Runs first (before
+     every other validation) so SH operators see the consent
+     requirement before any unrelated misconfiguration noise.
+
+     Threat-model note: this gate is an acknowledgement mechanism, not
+     authorization. Anyone who can set the chart's input values can
+     either flip `consentToJfrogOnlineBetaAgreement: true` directly or
+     set `extraSystemYaml.shared.deploymentMode: "saas"` to bypass it
+     entirely. Both inputs sit at the same trust level, so the bypass
+     is not a security boundary worth hardening — the gate exists to
+     make a deliberate legal acknowledgement explicit on the SH path.
+     Failure body lives in files/betaAgreementConsentRequired.txt
+     (mirrors the chart's existing $.Files.Get pattern for
+     postgresUpgradeWarning.txt; keeps the message readable as plain
+     text and lets Legal edit wording without touching templating). */}}
+{{- if ne (include "wingman.deploymentMode" .) "saas" }}
+  {{- $consent := .Values.consentToJfrogOnlineBetaAgreement }}
+  {{- if not (and (kindIs "bool" $consent) $consent) }}
+    {{- fail (tpl ($.Files.Get "files/betaAgreementConsentRequired.txt") .) }}
+  {{- end }}
+{{- end }}
+
+{{/* systemYamlOverride.existingSecret requires an explicit dataKey so the
+     copy-system-yaml initContainer knows which key in that Secret holds
+     the system.yaml payload. */}}
+{{- if and .Values.systemYamlOverride.existingSecret (not .Values.systemYamlOverride.dataKey) }}
+  {{- fail "systemYamlOverride.dataKey is required when systemYamlOverride.existingSecret is set" }}
+{{- end }}
+
+{{/* wait-for-artifactory polls jfrogUrl. waitForArtifactory defaults true
+     (umbrella installs always supply global.jfrogUrl); a standalone install
+     that leaves jfrogUrl empty would otherwise hang forever in Init polling
+     an empty host. Unlike artifactory's chart — whose jfrogUrl helper falls
+     back to its own in-cluster service URL — wingman has no internal
+     artifactory to point at, so the empty case is reachable here. Fail fast
+     with an actionable message instead of hanging. Gated on
+     wingman.waitForArtifactoryEnabled so the guard tracks the init
+     container's effective enablement. */}}
+{{- if and (eq (include "wingman.waitForArtifactoryEnabled" .) "true") (not (include "wingman.jfrogUrl" . | trim)) }}
+  {{- fail "waitForArtifactory is true but no jfrogUrl is set. Set jfrogUrl (or global.jfrogUrl) to the JFrog Platform URL, or set waitForArtifactory: false for standalone installs not fronted by a JFrog Platform." }}
+{{- end }}
+
+{{/* Legacy chart-level discrete-field DB inputs are removed in favor of
+     .Values.database.url. Operators using
+     extraSystemYaml.wingman.database.{host,port,name,user} for a
+     dedicated DB tier are unaffected — those go directly into the
+     wingman.database block of system.yaml and the backend's
+     dedicated-tier reader consumes them. Fail fast on the legacy
+     chart-level fields so values files carried over from older chart
+     versions surface the migration instead of being silently ignored.
+     Runs before the "no DB configured" check so operators get the
+     migration hint rather than the generic external-DB-required
+     message. */}}
+{{- range $field := list "host" "port" "name" }}
+  {{- if index $.Values.database $field }}
+    {{- fail (printf ".Values.database.%s has been removed. Migrate to .Values.database.url (e.g. --set 'database.url=postgresql://host:5432/wingman') or set the discrete fields under .Values.extraSystemYaml.wingman.database for a dedicated Wingman DB target." $field) }}
+  {{- end }}
+{{- end }}
+
+{{/* Database-tier configuration validations.
+
+     Three independent operator-facing axes:
+       - postgresql.enabled (bundled PostgreSQL via the Bitnami subchart)
+       - dedicated database (.Values.extraSystemYaml.wingman.database.* or
+         JF_WINGMAN_DATABASE_{URL,HOST} via extraEnvironmentVariables)
+       - shared database (.Values.database.url chart shortcut,
+         .Values.extraSystemYaml.shared.database.url, or
+         JF_SHARED_DATABASE_URL via extraEnvironmentVariables)
+
+     Detection of the dedicated and shared signals is centralized in the
+     wingman.dedicatedWingmanDbConfigured and wingman.sharedDbConfigured
+     helpers in _helpers.tpl. The blocks below reuse those helpers
+     verbatim — do NOT replicate detection logic here.
+
+     Order matters: more specific / more common misconfigurations fire
+     first so the operator sees the most actionable hint. */}}
+
+{{- $dedicated := include "wingman.dedicatedWingmanDbConfigured" . -}}
+{{- $shared := include "wingman.sharedDbConfigured" . -}}
+
+{{/* No-database guard. postgresql.enabled=false AND no external database
+     signal — Wingman has no reachable database at all. Fail at template
+     time so the operator sees a clear message instead of a backend-side
+     crash at pod start. */}}
+{{- if and (not .Values.postgresql.enabled) (not (or $dedicated $shared)) }}
+  {{- fail "postgresql.enabled is false but no external database is configured. Configure one of: .Values.database.url, .Values.extraSystemYaml.wingman.database.{url,host}, .Values.extraSystemYaml.shared.database.url, or JF_WINGMAN_DATABASE_{URL,HOST} / JF_SHARED_DATABASE_URL via .Values.extraEnvironmentVariables." }}
+{{- end }}
+
+{{/* Bundled-vs-external conflict. postgresql.enabled=true (the chart
+     default) AND an external database is also configured. Without this
+     guard the chart would deploy a Bitnami StatefulSet that the backend
+     ignores at runtime (resolver precedence: dedicated > shared >
+     bundled), wasting a Pod and PVC. Strict opt-out: bringing your own
+     external database requires explicitly setting postgresql.enabled
+     to false. */}}
+{{- if and .Values.postgresql.enabled (or $dedicated $shared) }}
+  {{- fail "postgresql.enabled=true (chart default) conflicts with the configured external database. Set `postgresql.enabled: false` in your values file to use only the external database, or remove the external-database configuration to use the bundled PostgreSQL." }}
+{{- end }}
+
+{{/* Dedicated-vs-shared conflict. Both a dedicated Wingman database
+     (.Values.extraSystemYaml.wingman.database.* / JF_WINGMAN_DATABASE_*)
+     and a shared platform database (.Values.database.url,
+     .Values.extraSystemYaml.shared.database.* / JF_SHARED_DATABASE_URL)
+     are configured. The backend resolver picks the dedicated tier and
+     silently ignores the shared one, leaving dead env vars and Secret
+     keys in the rendered Pod spec. Fail fast so the operator picks one
+     tier explicitly. */}}
+{{- if and $dedicated $shared }}
+  {{- fail "Both a dedicated Wingman database (.Values.extraSystemYaml.wingman.database.* / JF_WINGMAN_DATABASE_*) and a shared platform database (.Values.database.url, .Values.extraSystemYaml.shared.database.* / JF_SHARED_DATABASE_URL) are configured. The backend uses the dedicated database and ignores the shared one — pick one tier and remove the other." }}
+{{- end }}
+
+{{/* createSecret.name and createSecret.create were removed when the chart
+     consolidated master-key / join-key / database-password / operator
+     extras into a single release-scoped <release>-wingman-unified-secret
+     (wingman.unifiedSecretName). Values files carried over from the old chart
+     layout would otherwise be silently ignored, so fail fast with an
+     actionable message. */}}
+{{- if hasKey (.Values.createSecret | default dict) "name" }}
+  {{- fail "createSecret.name has been removed: the unified platform Secret name is derived from the release (wingman.unifiedSecretName). Delete .Values.createSecret.name from your values file." }}
+{{- end }}
+{{- if hasKey (.Values.createSecret | default dict) "create" }}
+  {{- fail "createSecret.create has been removed: the unified platform Secret is always rendered (it carries master-key/join-key/database-password). Delete .Values.createSecret.create from your values file." }}
+{{- end }}
+
+{{/* rbac.create=true requires a non-empty roleBinding.name.
+     templates/rolebinding.yaml uses it in metadata.name, roleRef.name, and
+     subjects[0].name; an empty value yields an unbindable RoleBinding. */}}
+{{- if and .Values.rbac.create (not .Values.roleBinding.name) }}
+  {{- fail "rbac.create=true requires roleBinding.name to be set." }}
+{{- end }}
+
+{{/* masterKey / joinKey enforcement.
+     Either the literal value or a *SecretName must be provided, scoped
+     to either .Values or .Values.global. Without one of each, Wingman
+     fails at runtime when the platform tries to authenticate. */}}
+{{- $global := .Values.global | default dict -}}
+{{- if not (or $global.masterKey .Values.masterKey $global.masterKeySecretName .Values.masterKeySecretName) }}
+  {{- fail "Provide masterKey or masterKeySecretName (via .Values or .Values.global)." }}
+{{- end }}
+{{- if not (or $global.joinKey .Values.joinKey $global.joinKeySecretName .Values.joinKeySecretName) }}
+  {{- fail "Provide joinKey or joinKeySecretName (via .Values or .Values.global)." }}
+{{- end }}
+
+{{/* Bundled PostgreSQL helm upgrade safety hook + bitnami v11→v12 legacy
+     key guards. The upgrade hook fires only on `helm upgrade` against a
+     live release with bundled PG enabled, forcing operators to
+     acknowledge they have pinned postgresql.image.tag (see
+     files/postgresUpgradeWarning.txt) before a major-version bump. The
+     legacy-key fails redirect operators bringing forward
+     pre-Bitnami-subchart paths (postgresql.service, .persistence,
+     .resources from the old hand-written StatefulSet) to the Bitnami
+     v12+ schema. */}}
+{{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
+  {{- if not (default .Values.databaseUpgradeReady false) }}
+    {{- fail (tpl ($.Files.Get "files/postgresUpgradeWarning.txt") .) }}
+  {{- end }}
+{{- end }}
+{{- if .Values.postgresql.enabled }}
+  {{- if .Values.postgresql.postgresqlPassword }}
+    {{- fail "\n\nThe key 'postgresql.postgresqlPassword' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.password' to proceed with installation.\n" }}
+  {{- end }}
+  {{- if .Values.postgresql.postgresqlUsername }}
+    {{- fail "\n\nThe key 'postgresql.postgresqlUsername' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.username' to proceed with installation.\n" }}
+  {{- end }}
+  {{- if .Values.postgresql.postgresqlDatabase }}
+    {{- fail "\n\nThe key 'postgresql.postgresqlDatabase' is not supported in the latest packaged version of Postgres in this chart.\nUse the new key 'postgresql.auth.database' to proceed with installation.\n" }}
+  {{- end }}
+  {{- if .Values.postgresql.postgresqlExtendedConf }}
+    {{- fail "\n\nThe key 'postgresql.postgresqlExtendedConf' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.extendedConfiguration' to proceed with installation.\n" }}
+  {{- end }}
+  {{- if .Values.postgresql.persistence }}
+    {{- fail "\n\nThe key 'postgresql.persistence' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.persistence' to proceed with installation.\n" }}
+  {{- end }}
+  {{- if .Values.postgresql.service }}
+    {{- fail "\n\nThe key 'postgresql.service' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.service' to proceed with installation.\n" }}
+  {{- end }}
+  {{- if .Values.postgresql.resources }}
+    {{- fail "\n\nThe key 'postgresql.resources' is not supported in the latest packaged version of postgres in this chart.\nUse the new key 'postgresql.primary.resources' to proceed with installation.\n" }}
+  {{- end }}
+{{- end }}
