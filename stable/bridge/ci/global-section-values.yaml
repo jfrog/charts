@@ -1,0 +1,114 @@
+requests:
+  memory: "1Gi"
+  cpu: "1"
+limits:
+  memory: "3Gi"
+  cpu: "2"
+global:
+  masterKey: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  jfrogUrl: "http://artifactory-local:8082"
+  versions:
+    bridge: 1.0.0
+  extraVolumes:
+    - name: custom-volume-global
+      emptyDir:
+        sizeLimit: 100Mi
+  extraVolumeMounts:
+    - name: custom-volume-global
+      mountPath: "/scriptsglobal"
+  customInitContainers: |
+   - name: "custom-init-global"
+     image: {{ template "initContainers.image" $ }}
+     imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch /var/opt/jfrog/bridge/init-global'
+     volumeMounts:
+       - mountPath: "/var/opt/jfrog/bridge"
+         name: data
+  customSidecarContainers: |
+   - name: "sidecar-list-global"
+     image: {{ template "initContainers.image" $ }}
+     imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in global' >> /scriptsglobal/sidecar.txt; cat /scriptsglobal/sidecar.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scriptsglobal"
+         name: custom-volume-global
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+  systemYamlOverride:
+    ## You can use a pre-existing secret by specifying existingSecret
+    existingSecret: "the-secret"
+    ## The dataKey should be the name of the secret data key created.
+    dataKey: "the-key"
+
+common:
+  extraVolumes:
+    - name: custom-volume-local
+      emptyDir:
+        sizeLimit: 100Mi
+  extraVolumeMounts:
+    - name: custom-volume-local
+      mountPath: "/scriptslocal"
+  customInitContainers: |
+   - name: "custom-init-local"
+     image: {{ template "initContainers.image" $ }}
+     imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+     command:
+       - 'sh'
+       - '-c'
+       - 'touch /var/opt/jfrog/bridge/init-local'
+     volumeMounts:
+       - mountPath: "/var/opt/jfrog/bridge"
+         name: data
+  customSidecarContainers: |
+   - name: "sidecar-list-local"
+     image: {{ template "initContainers.image" $ }}
+     imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+     securityContext:
+       allowPrivilegeEscalation: false
+       capabilities:
+         drop:
+           - NET_RAW
+     command: ["sh","-c","echo 'Sidecar is running in local' >> /scriptslocal/sidecar.txt; cat /scriptslocal/sidecar.txt; while true; do sleep 30; done"]
+     volumeMounts:
+       - mountPath: "/scriptslocal"
+         name: custom-volume-local
+     resources:
+       requests:
+         memory: "32Mi"
+         cpu: "50m"
+       limits:
+         memory: "128Mi"
+         cpu: "100m"
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+observability:
+  enabled: true
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"

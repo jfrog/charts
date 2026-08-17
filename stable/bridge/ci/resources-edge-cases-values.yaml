@@ -1,0 +1,12 @@
+# Edge cases: undefined/empty resources, only requests, only limits
+# Ensures common.resources helper handles nil/partial values (linter runs helm template)
+jfrogUrl: "http://artifactory-local:8082"
+mode: server
+# Case 1: resources explicitly empty (default dict in template handles this)
+resources: {}
+router:
+  resources: {}
+observability:
+  enabled: true
+  resources: {}
+# Loggers and filebeat use loggersResources / filebeat.resources - leave default

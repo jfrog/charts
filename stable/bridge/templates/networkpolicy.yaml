@@ -1,0 +1,31 @@
+{{- range .Values.networkpolicy }}
+apiVersion: {{ include "common.capabilities.networkPolicy.apiVersion" $ }}
+kind: NetworkPolicy
+metadata:
+  name: {{ template "bridge.fullname" $ }}-{{ .name }}-networkpolicy
+  namespace: {{ $.Release.Namespace | quote }}
+  labels: {{ include "common.labels.standard" $ | nindent 4 }}
+spec:
+{{- if .podSelector }}
+  podSelector:
+{{ .podSelector | toYaml | trimSuffix "\n" | indent 4 }}
+{{ else }}
+  podSelector: {}
+{{- end }}
+  policyTypes:
+  {{- if .ingress }}
+  - Ingress
+  {{- end }}
+  {{- if .egress }}
+  - Egress
+  {{- end }}
+{{- if .ingress }}
+  ingress:
+{{ .ingress | toYaml | trimSuffix "\n" | indent 2 }}
+{{- end }}
+{{- if .egress }}
+  egress:
+{{ .egress | toYaml | trimSuffix "\n" | indent 2 }}
+{{- end }}
+---
+{{- end -}}
