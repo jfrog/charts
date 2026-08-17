@@ -1,0 +1,374 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wingman.fullname" . }}
+  labels:
+    app: {{ template "wingman.name" . }}
+    chart: {{ template "wingman.chart" . }}
+    component: {{ include "wingman.name" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    {{- include "wingman.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "wingman.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/unified-secret: {{ include (print $.Template.BasePath "/wingman-unified-secret.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "wingman.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "wingman.imagePullSecrets" . | nindent 6 }}
+      terminationGracePeriodSeconds: {{ .Values.gracefulShutdown.terminationGracePeriodSeconds | default 40 }}
+      serviceAccountName: {{ include "wingman.serviceAccountName" . }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext:
+        {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          image: {{ template "wingman.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JF_PRODUCT_HOME
+              value: {{ .Values.persistence.mountPath | quote }}
+            - name: UVICORN_TIMEOUT_GRACEFUL_SHUTDOWN
+              value: {{ .Values.gracefulShutdown.uvicornTimeoutSeconds | default 25 | quote }}
+            {{- if not .Values.systemYamlOverride.existingSecret }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wingman.joinKeySecretName" . }}
+                  key: join-key
+                  optional: true
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wingman.masterKeySecretName" . }}
+                  key: master-key
+                  optional: true
+            {{- end }}
+            {{- include "wingman.databaseEnvVars" . | nindent 12 }}
+            {{- include "wingman.secretEnvVars" . | nindent 12 }}
+            {{- with .Values.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.internalPort }}
+        {{- if .Values.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.readinessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep {{ .Values.gracefulShutdown.preStopSleepSeconds | default 10 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- /* When LOGGING_FILES_ENABLED=true, mount /var/log/wingman via .Values.volumeMounts/.Values.volumes to avoid unbounded rootfs growth. */}}
+          {{- /* Mount the shared data emptyDir only at <productHome>/var (matches platform-extension/worker convention). Wingman writes usage files to <productHome>/var/data/jfwn/usage/, which lands at emptyDir-relative `data/jfwn/usage/`. The JFOB sidecar mounts the same emptyDir at /var/opt/jfrog/observability and reaches it via the in-image symlink /opt/jfrog/observability/var → /var/opt/jfrog/observability. */}}
+          volumeMounts:
+            - name: data
+              mountPath: "{{ .Values.persistence.mountPath }}/var"
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if and .Values.playground .Values.playground.enabled }}
+        - name: playground
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          image: {{ template "wingman.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: [ "/usr/bin/python3.11" ]
+          args: [ "app/playground.py" ]
+          env:
+            {{- include "wingman.databaseEnvVars" . | nindent 12 }}
+            {{- include "wingman.secretEnvVars" . | nindent 12 }}
+            {{- with .Values.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.playground.servicePort }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        {{- end }}
+        - name: router
+          image: {{ template "router.image" . }}
+          imagePullPolicy: {{ .Values.router.image.pullPolicy }}
+          resources: {{- toYaml .Values.router.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+          {{- with .Values.router.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: "jfwn"
+            - name: JF_SHARED_JFROGURL
+              value: "{{ include "wingman.jfrogUrl" . }}"
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            {{- if not .Values.systemYamlOverride.existingSecret }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wingman.joinKeySecretName" . }}
+                  key: join-key
+                  optional: true
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wingman.masterKeySecretName" . }}
+                  key: master-key
+                  optional: true
+            {{- end }}
+          {{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: "/var/opt/jfrog/router"
+          ports:
+            - name: http
+              containerPort: {{ .Values.router.internalPort }}
+            - name: http-router
+              containerPort: {{ .Values.router.externalPort }}
+        {{- if .Values.router.customStartupProbe }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customStartupProbe "context" $) | nindent 12 }}
+        {{- else if .Values.router.startupProbe.enabled }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.startupProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.router.customReadinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customReadinessProbe "context" $) | nindent 12 }}
+        {{- else if .Values.router.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.readinessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.router.customLivenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.customLivenessProbe "context" $) | nindent 12 }}
+        {{- else if .Values.router.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.router.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.observability.enabled }}
+        - name: observability
+          image: {{ template "observability.image" . }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          resources: {{- toYaml .Values.observability.resources | nindent 12 }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            - name: JF_SHARED_JFROGURL
+              value: "{{ include "wingman.jfrogUrl" . }}"
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JF_OBSERVABILITY_PARENT_PRODUCT
+              value: jfwn  {{- /* jfwn = service key / JFrog router topology type, not the human-readable name "wingman" */}}
+            {{- if not .Values.systemYamlOverride.existingSecret }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wingman.joinKeySecretName" . }}
+                  key: join-key
+                  optional: true
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wingman.masterKeySecretName" . }}
+                  key: master-key
+                  optional: true
+            {{- end }}
+          {{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+          {{- end }}
+          ports:
+            - name: http-obs
+              containerPort: 8036  {{- /* JFOB listens on 8036; probes route via router.externalPort */}}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+          {{- with .Values.observability.customVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if .Values.observability.livenessProbe.enabled }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.observability.livenessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- if .Values.observability.readinessProbe.enabled }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.observability.readinessProbe.config "context" $) | nindent 12 }}
+        {{- end }}
+        {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        {{- /* Umbrella hook: a YAML list of sibling init containers prepended
+               before copy-system-yaml (NOT a shell snippet). */}}
+        {{- with (include "wingman.customInitContainersBegin" .) }}
+        {{- . | trim | nindent 8 }}
+        {{- end }}
+        {{- if eq (include "wingman.waitForArtifactoryEnabled" .) "true" }}
+        {{- /* Gate startup until the platform router is reachable: on a
+               one-shot jfrog-platform install, artifactory comes up in
+               parallel and the router would otherwise crash-loop. Set
+               waitForArtifactory: false for standalone installs. */}}
+        - name: 'wait-for-artifactory'
+          image: {{ template "initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              echo "Waiting for Artifactory router at {{ include "wingman.jfrogUrl" . }}";
+              until curl -k -s -f --max-time 3 "{{ include "wingman.jfrogUrl" . }}/router/api/v1/system/readiness" > /dev/null 2>&1; do
+                echo "Artifactory router not ready, retrying in {{ .Values.waitForArtifactoryRetryInterval | default 5 }}s...";
+                sleep {{ .Values.waitForArtifactoryRetryInterval | default 5 }};
+              done;
+              echo "Artifactory router is ready";
+        {{- end }}
+        - name: 'copy-system-yaml'
+          image: {{ template "initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              {{- /* Single system.yaml copy: the data emptyDir is mounted at <productHome>/var here and in the wingman container, and at /var/opt/jfrog/observability in the JFOB sidecar (which resolves /opt/jfrog/observability/var/etc/system.yaml through the in-image symlink). All three containers therefore read the same emptyDir-relative `etc/system.yaml`. */}}
+              echo "Copy system.yaml to {{ .Values.persistence.mountPath }}/var/etc";
+              mkdir -p {{ .Values.persistence.mountPath }}/var/etc {{ .Values.persistence.mountPath }}/var/data/jfwn/usage;
+            {{- if .Values.systemYamlOverride.existingSecret }}
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.persistence.mountPath }}/var/etc/system.yaml;
+            {{- else }}
+              cp -fv /tmp/etc/system.yaml {{ .Values.persistence.mountPath }}/var/etc/system.yaml;
+            {{- end }}
+              echo "Remove {{ .Values.persistence.mountPath }}/var/lost+found folder if exists";
+              rm -rfv {{ .Values.persistence.mountPath }}/var/lost+found;
+          volumeMounts:
+            - name: data
+              mountPath: "{{ .Values.persistence.mountPath }}/var"
+            - name: systemyaml
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              mountPath: "/tmp/etc/{{ .Values.systemYamlOverride.dataKey }}"
+              subPath: {{ .Values.systemYamlOverride.dataKey }}
+              {{- else }}
+              mountPath: "/tmp/etc/system.yaml"
+              subPath: system.yaml
+              {{- end }}
+        {{- if or .Values.global.customCertificates.enabled .Values.customCertificates.enabled }}
+        {{- /* Copy operator-provided CA certs from the mounted Secret into the
+               shared data volume so Wingman trusts them at startup (custom CA
+               support). Certs go to two trust stores, both reachable via the
+               shared data emptyDir: var/etc/security/keys/trusted for
+               Wingman's Python HTTP clients, and var/data/router/keys/trusted
+               for the jfrog router sidecar (egress to JF_SHARED_JFROGURL). See
+               wingman.copyCustomCerts in _helpers.tpl for the actual script. */}}
+        - name: 'copy-custom-certificates'
+          image: {{ template "initContainers.image" . }}
+          imagePullPolicy: {{ .Values.initContainers.pullPolicy | quote }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            # Literal block scalar (|), NOT folded (>): this is a multi-line shell
+            # script with two if/fi blocks. A folded scalar collapses the adjacent
+            # `fi` / `if` lines into `fi if`, which is a bash syntax error.
+            - |
+              {{- include "wingman.copyCustomCerts" . | nindent 14 }}
+          volumeMounts:
+            - name: data
+              mountPath: "{{ .Values.persistence.mountPath }}/var"
+            - name: ca-certs
+              mountPath: "/tmp/certs"
+        {{- end }}
+        {{- with (include "wingman.customInitContainers" .) }}
+        {{- . | trim | nindent 8 }}
+        {{- end }}
+      volumes:
+        {{- /* Umbrella hook: volumes companion to customInitContainersBegin
+               (e.g. postgres-setup-init-vol), merged into the pod volumes. */}}
+        {{- with (or .Values.global.customVolumes .Values.customVolumes) }}
+        {{ tpl . $ | nindent 8 | trim }}
+        {{- end }}
+        - name: data
+          emptyDir: {}
+        - name: systemyaml
+          secret:
+            secretName: {{ default (include "wingman.unifiedSecretName" .) .Values.systemYamlOverride.existingSecret }}
+        {{- if or .Values.global.customCertificates.enabled .Values.customCertificates.enabled }}
+        - name: ca-certs
+          secret:
+            secretName: {{ required "customCertificates.certificateSecretName must be set when customCertificates.enabled=true" (or .Values.customCertificates.certificateSecretName .Values.global.customCertificates.certificateSecretName) | quote }}
+        {{- end }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
