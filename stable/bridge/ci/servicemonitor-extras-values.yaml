@@ -1,0 +1,15 @@
+## CI values file: exercises serviceMonitor.additionalLabels and serviceMonitor.relabelings.
+jfrogUrl: "http://artifactory-local:8082"
+mode: server
+serviceMonitor:
+  enabled: true
+  observabilityEnabled: true
+  tokenName: bridge-monitor-token
+  kubePromApp: prometheus
+  kubePromFullName: prometheus
+  additionalLabels:
+    export_team: bridge
+  relabelings:
+    - action: replace
+      replacement: high
+      targetLabel: export_priority

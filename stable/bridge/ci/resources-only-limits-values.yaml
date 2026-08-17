@@ -1,0 +1,8 @@
+# Edge case: resources with only limits (no requests), disableCpuLimits true
+jfrogUrl: "http://artifactory-local:8082"
+mode: server
+resources:
+  disableCpuLimits: true
+  limits:
+    cpu: "1"
+    memory: 512Mi

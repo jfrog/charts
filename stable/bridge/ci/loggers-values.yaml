@@ -1,0 +1,26 @@
+jfrogUrl: "http://artifactory-local:8082"
+loggers:
+  - router-request.log
+  - router-service.log
+  - router-traefik.log
+  - bridge-client-service.log
+  - bridge-client-request.log
+
+router:
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+observability:
+  enabled: true
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
