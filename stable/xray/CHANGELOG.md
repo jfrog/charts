@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.150.23] - Jun 26, 2026
+## [103.150.24] - Jun 26, 2026
 * Fix `wait-for-rabbitmq-replicas-quorum` init container exposing RabbitMQ credentials in pod logs due to bash trace mode (`-x`).
 * Added support for the rabbitmq `quorum_queue_non_voters` feature flag and increased `max_message_size` to 128 MB.
 * Update valkey.kubectl.image.repository and valkey.kubectl.image.tag to `echohq/kubectl:1.35.6`
