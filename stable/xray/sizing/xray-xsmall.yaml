@@ -3,6 +3,9 @@
 # This is the minimum size recommended for running JFrog Xray
 ##############################################################
 
+# For autoscaling, refer to the KEDA HPA example:
+# https://github.com/jfrog/charts/tree/master/examples/xray/xray-with-keda-hpa
+# If KEDA cannot be installed in your cluster, a static replicaCount (as set below) is recommended.
 replicaCount: 1
 databaseUpgradeReady: true
 waitForDatabase: true
@@ -200,7 +203,7 @@ catalog:
       cpu: "1"
       memory: 3Gi
     limits:
-      cpu: "2"
+      # cpu: "2"
       memory: 6Gi
   initContainers:
     resources:
@@ -226,7 +229,7 @@ valkey:
         cpu: "500m"
         memory: 1Gi
       limits:
-        cpu: "1"
+        # cpu: "1"
         memory: 2Gi
   replica:
     resources:
@@ -234,7 +237,7 @@ valkey:
         cpu: "500m"
         memory: 1Gi
       limits:
-        cpu: "1"
+        # cpu: "1"
         memory: 2Gi
   sentinel:
     resources:
@@ -242,7 +245,7 @@ valkey:
         cpu: "250m"
         memory: 256Mi
       limits:
-        cpu: "1"
+        # cpu: "1"
         memory: 1Gi
   kubectl:
     resources:

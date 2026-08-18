@@ -3,6 +3,9 @@
 # This size is intended for large organizations. It can be increased with adding replicas
 ##############################################################
 
+# For autoscaling, refer to the KEDA HPA example:
+# https://github.com/jfrog/charts/tree/master/examples/xray/xray-with-keda-hpa
+# If KEDA cannot be installed in your cluster, a static replicaCount (as set below) is recommended.
 replicaCount: 7
 databaseUpgradeReady: true
 waitForDatabase: true
@@ -200,7 +203,7 @@ catalog:
       cpu: "6"
       memory: 16Gi
     limits:
-      cpu: "12"
+      # cpu: "12"
       memory: 32Gi
   initContainers:
     resources:
@@ -226,7 +229,7 @@ valkey:
         cpu: "4"
         memory: 12Gi
       limits:
-        cpu: "8"
+        # cpu: "8"
         memory: 24Gi
   replica:
     resources:
@@ -234,7 +237,7 @@ valkey:
         cpu: "4"
         memory: 12Gi
       limits:
-        cpu: "8"
+        # cpu: "8"
         memory: 24Gi
   sentinel:
     resources:
@@ -242,7 +245,7 @@ valkey:
         cpu: "250m"
         memory: 256Mi
       limits:
-        cpu: "1"
+        # cpu: "1"
         memory: 1Gi
   kubectl:
     resources:

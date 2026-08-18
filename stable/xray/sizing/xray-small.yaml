@@ -3,6 +3,9 @@
 # This is the size recommended for running Xray for small teams
 ##############################################################
 
+# For autoscaling, refer to the KEDA HPA example:
+# https://github.com/jfrog/charts/tree/master/examples/xray/xray-with-keda-hpa
+# If KEDA cannot be installed in your cluster, a static replicaCount (as set below) is recommended.
 replicaCount: 2
 databaseUpgradeReady: true
 waitForDatabase: true
@@ -199,7 +202,7 @@ catalog:
       cpu: "2"
       memory: 4Gi
     limits:
-      cpu: "4"
+      # cpu: "4"
       memory: 8Gi
   initContainers:
     resources:
@@ -225,7 +228,7 @@ valkey:
         cpu: "1"
         memory: 2Gi
       limits:
-        cpu: "2"
+        # cpu: "2"
         memory: 4Gi
   replica:
     resources:
@@ -233,7 +236,7 @@ valkey:
         cpu: "1"
         memory: 2Gi
       limits:
-        cpu: "2"
+        # cpu: "2"
         memory: 4Gi
   sentinel:
     resources:
@@ -241,7 +244,7 @@ valkey:
         cpu: "250m"
         memory: 256Mi
       limits:
-        cpu: "1"
+        # cpu: "1"
         memory: 1Gi
   kubectl:
     resources:
