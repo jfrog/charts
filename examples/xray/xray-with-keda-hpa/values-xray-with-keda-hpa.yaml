@@ -1,0 +1,82 @@
+splitXraytoSeparateDeployments:
+  fullSplit: true
+
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+analysis:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+indexer:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+persist:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+policyenforcer:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+sbom:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+aiscanner:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    keda:
+      enabled: true
+
+reporting:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 7
+    keda:
+      enabled: true
+
+jascontextual:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    keda:
+      enabled: true
+
+jasexposures:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    keda:
+      enabled: true
