@@ -1,12 +1,105 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.150.24] - Jun 26, 2026
+## [103.150.26] - Jun 26, 2026
 * Fix `wait-for-rabbitmq-replicas-quorum` init container exposing RabbitMQ credentials in pod logs due to bash trace mode (`-x`).
 * Added support for the rabbitmq `quorum_queue_non_voters` feature flag and increased `max_message_size` to 128 MB.
 * Update valkey.kubectl.image.repository and valkey.kubectl.image.tag to `echohq/kubectl:1.35.6`
 * Added optional per-service `kedaJobs` overrides that inherit from `splitXraytoSeparateDeployments.kedaJobs`. Setting `<service>.kedaJobs` to `true` or `false` overrides the global flag for that service; leaving it unset or `null` inherits the global value.
 * Added `.Values.jasexposures.exitOnIdleTimeToWait` and `.Values.jascontextual.exitOnIdleTimeToWait` to configure `JF_SHARED_EXIT_ON_IDLE_TIME_TO_WAIT` separately for each of those KEDA ScaledJobs (default `900`).
+* **Valkey `maxmemory` and `maxmemory-policy` are now set by the sizing profiles**
+
+  Valkey shipped without a `maxmemory`, which leaves the dataset unbounded: rather than evicting, a Valkey node grows until it reaches its container memory limit and is OOMKilled by the kernel. With Sentinel that costs a failover, and the replacement node fills up the same way.
+
+* **Breaking change: Valkey Sentinel enabled by default — the Valkey StatefulSet and its PVCs are replaced**
+
+  What changed: Valkey now runs in replication + Sentinel (HA) mode — `valkey.architecture: replication`, `valkey.replica.replicaCount: 3`, `valkey.sentinel.enabled: true`. Chart versions up to and including `103.143.0` ran `valkey.architecture: standalone` with `valkey.replica.replicaCount: 0`.
+
+  Who is affected: only environments that already have `valkey.enabled: true` deployed. Valkey is disabled by default.
+
+  Standalone mode deploys a single StatefulSet `<release>-valkey-primary`; with Sentinel the chart deploys `<release>-valkey-node` with all nodes in one StatefulSet. Because the name differs, `helm upgrade` creates the new StatefulSet and removes the old one instead of updating it — so the upgrade itself does not fail, but **the PVCs are recreated rather than migrated**. A StatefulSet's `volumeClaimTemplates` is immutable, so the claims cannot be carried across the replacement: the new StatefulSet provisions its own `valkey-data-<release>-valkey-node-<ordinal>` PVCs, one per node, and `valkey-data-<release>-valkey-primary-0` is neither reused nor deleted.
+
+  Two consequences:
+
+  * **The cached data is discarded.** Valkey here only backs the catalog cache, so it repopulates on demand and no action is required.
+  * **The old PVC is left behind.** StatefulSet PVCs carry no `ownerReferences`, so deleting the StatefulSet does not delete them and nothing reclaims them automatically — the volume stays allocated until removed by hand. After the upgrade:
+    ```shell
+    kubectl get pvc -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name | grep -E '/valkey-data-.*-valkey-(primary|replicas)-'
+
+    kubectl get pvc -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name | grep -E '/valkey-data-.*-valkey-(primary|replicas)-' \
+      | xargs -r kubectl delete --namespace <namespace>
+    ```
+
+  Also note that storage goes from one Valkey PVC to one per node (three by default), so confirm the StorageClass can provision that before upgrading.
+* **Breaking change: Valkey PVC size default increased from `1Gi` to `200Gi`**
+
+  What changed: `valkey.primary.persistence.size` and `valkey.replica.persistence.size` both moved from `1Gi` to `200Gi`. With Sentinel enabled — the default since `103.150.26` — all Valkey nodes run in one StatefulSet whose PVC size comes from `valkey.replica.persistence.size`; `valkey.primary.persistence.size` has no effect in that mode.
+
+  Who is affected: only environments that already have `valkey.enabled: true` deployed. Fresh installs with `valkey.enabled: true` create Valkey PVCs at 200Gi and need no extra steps; default chart installs leave Valkey disabled and create no Valkey PVCs.
+
+  Why an upgrade needs a manual step: a PVC size lives in the StatefulSet's `volumeClaimTemplates`, and Kubernetes treats that field as immutable once the StatefulSet exists, so the StatefulSet has to be replaced for the new size to take effect. Where the StatefulSet keeps its name, `helm upgrade` would otherwise fail with:
+  ```text
+  Forbidden: updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+  ```
+
+  On an upgrade of an existing `valkey.enabled: true` release, the chart stops with the steps below printed instead.
+
+  **Step 1 — See which Valkey objects the release has.** The object names depend on the architecture the release was deployed with, so discover them rather than assuming a layout or a replica count. Filtering on the `valkey-data-` prefix keeps Sentinel's `sentinel-data` PVCs out of the resize — they carry identical labels, hold Sentinel state rather than cache, and must be left alone.
+  ```shell
+  kubectl get statefulset -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name
+  kubectl get pvc -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name | grep '/valkey-data-'
+  ```
+
+  Each command in the following steps re-runs that lookup and pipes it into `kubectl`. Do not collect the list into a shell variable and pass it unquoted — zsh does not split it into separate arguments, and `kubectl` rejects it with `arguments in resource/name form may not have more than one slash`.
+
+  Both must return something before continuing. The StatefulSet name tells you which case you are in:
+
+  | StatefulSet | Deployed from | PVCs | Use |
+  |---|---|---|---|
+  | `<release>-valkey-primary` (and `-valkey-replicas`) | 103.143.x or earlier — `architecture: standalone`, `replicaCount: 0` | `valkey-data-<release>-valkey-primary-0` | Step 3b |
+  | `<release>-valkey-node` | 103.150.x or later — replication + Sentinel | `valkey-data-<release>-valkey-node-0` … `-<replicaCount - 1>` | Step 3a or 3b |
+
+  In the first case this upgrade also moves the release to the Sentinel layout, whose StatefulSet is named `<release>-valkey-node`. Because that is a different name, Helm creates it and removes the old StatefulSet, and it provisions its own PVCs at 200Gi — the old `valkey-data` PVCs are not reused, and StatefulSet PVCs carry no `ownerReferences`, so nothing reclaims them automatically. Step 3b deletes them.
+
+  **Step 2 — Check whether volume expansion is enabled in the StorageClass of the Valkey PVCs**
+  ```shell
+  kubectl get pvc -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name | grep '/valkey-data-' \
+    | xargs -r kubectl get --namespace <namespace> -o custom-columns=NAME:.metadata.name,SIZE:.spec.resources.requests.storage,CLASS:.spec.storageClassName
+
+  kubectl get storageclass <storage-class> -o jsonpath='{.allowVolumeExpansion}'
+  ```
+
+  If the SIZE column already reads `200Gi`, there is nothing to resize — skip to step 4.
+
+  **Step 3 — Replace or expand the PVCs**
+
+  3a. Expand in place — keeps the cached data. Only for a `<release>-valkey-node` StatefulSet **and** `allowVolumeExpansion: true`. Patching PVCs that belong to a `-valkey-primary` / `-valkey-replicas` StatefulSet has no effect on this upgrade: the new Sentinel StatefulSet creates its own PVCs, and the patched ones are left behind — stuck part-expanded if the StorageClass has no resizer.
+  ```shell
+  kubectl delete statefulset -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace>
+
+  kubectl get pvc -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name | grep '/valkey-data-' \
+    | xargs -r -I{} kubectl patch {} --namespace <namespace> --type=json -p '[{"op": "replace", "path": "/spec/resources/requests/storage", "value": "200Gi"}]'
+  ```
+
+  3b. Replace — discards the cache, and works for either layout on any StorageClass. Valkey here only backs the catalog cache, so its data is disposable and repopulates on demand. Delete the StatefulSet before the PVCs: while its pods are running, PVC deletion blocks on the in-use protection finalizer.
+  ```shell
+  kubectl delete statefulset -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace>
+
+  kubectl get pvc -l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=<release> --namespace <namespace> -o name | grep '/valkey-data-' \
+    | xargs -r kubectl delete --namespace <namespace>
+  ```
+
+  **Step 4 — REQUIRED: add this to your custom values file.** The upgrade stays blocked until it is present, and it must stay there for all future upgrades.
+  ```yaml
+  valkeyPvcResizeAcknowledged: true
+  ```
+
+  **Step 5 — Run the upgrade again**
+  ```shell
+  helm upgrade <release> ... --namespace <namespace>
+  ```
+
+  Already on `200Gi`, or already done steps 1-3? Then only steps 4 and 5 are needed.
 
 ## [103.148.0] - Jun 25, 2026
 * Update postgresql tag version to `17.10.0-debian`

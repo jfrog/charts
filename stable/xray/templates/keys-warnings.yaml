@@ -3,6 +3,111 @@
 {{- else if and (not .Release.IsUpgrade) (eq .Values.rabbitmq.auth.password "") .Values.rabbitmq.enabled (not .Values.rabbitmq.external.secrets) (not .Values.rabbitmq.auth.existingPasswordSecret) }}
 {{- fail "\n\n**************************************\nSTOP! INSTALLATION not allowed without RabbitMQ password!\nPlease provide the RabbitMQ password before proceeding with the installation.\n**************************************\n" }}
 {{- end }}
+{{/*
+Valkey PVC size upgrade guard.
+This chart version raises the Valkey PVC default from 1Gi to 200Gi. Stop an upgrade of an
+existing Valkey release with actionable steps instead of letting it fail on an opaque API
+server error, and make sure the old PVCs are dealt with rather than silently orphaned.
+
+The steps discover the StatefulSet and PVC names from the cluster instead of naming them here,
+because they depend on the architecture the release was deployed with:
+  - 103.143.x and earlier (standalone, replicaCount 0) -> <release>-valkey-primary
+    (plus <release>-valkey-replicas when replicaCount > 0), PVC valkey-data-<sts>-<ordinal>
+  - 103.150.x and later (replication + Sentinel)       -> <release>-valkey-node
+A label selector covers both, and filtering on the valkey-data- prefix keeps Sentinel's
+sentinel-data PVCs out of the resize - they carry identical labels.
+
+Applies to upgrades only; fresh installs create their PVCs at the new size directly. Set
+`valkeyPvcResizeAcknowledged=true` once the steps are done, to let this and later upgrades
+through.
+*/}}
+{{- define "xray.valkeyPvcSizeUpgradeWarning" -}}
+{{- $size := .Values.valkey.replica.persistence.size }}
+{{- $ns := printf "--namespace %s" .Release.Namespace }}
+{{- $sel := printf "-l app.kubernetes.io/name=valkey,app.kubernetes.io/instance=%s" .Release.Name }}
+
+**************************************** ACTION REQUIRED ****************************************
+
+ The Valkey PVC size default changed from 1Gi to 200Gi in this chart version.
+ This release renders {{ $size }}.
+
+ A PVC size lives in the StatefulSet's volumeClaimTemplates, which Kubernetes does not allow to
+ change, so the Valkey StatefulSet has to be replaced for the new size to take effect. See the
+ chart CHANGELOG for details.
+
+-------------------------------------------------------------------------------------------------
+ STEP 1 - See which Valkey objects this release has
+-------------------------------------------------------------------------------------------------
+   kubectl get statefulset {{ $sel }} {{ $ns }} -o name
+   kubectl get pvc {{ $sel }} {{ $ns }} -o name | grep '/valkey-data-'
+
+ Both must return something before continuing. The StatefulSet name tells you which case you are in:
+
+   {{ .Release.Name }}-valkey-primary (and -valkey-replicas)
+       Upgrading from 103.143.x or earlier, where Valkey ran standalone. This upgrade also enables
+       Sentinel, which replaces that StatefulSet with {{ .Release.Name }}-valkey-node running
+       {{ .Values.valkey.replica.replicaCount }} nodes.
+
+   {{ .Release.Name }}-valkey-node
+       Already on the Sentinel layout (103.150.x or later). The StatefulSet keeps its name, so
+       Helm tries to update it in place and the immutable volumeClaimTemplates field rejects the
+       new size. Its PVCs can either be expanded (3a) or replaced (3b).
+
+-------------------------------------------------------------------------------------------------
+ STEP 2 - Check whether volume expansion is enabled in the StorageClass of the Valkey PVCs
+-------------------------------------------------------------------------------------------------
+   kubectl get pvc {{ $sel }} {{ $ns }} -o name | grep '/valkey-data-' \
+     | xargs -r kubectl get {{ $ns }} -o custom-columns=NAME:.metadata.name,SIZE:.spec.resources.requests.storage,CLASS:.spec.storageClassName
+
+   kubectl get storageclass <storage-class> -o jsonpath='{.allowVolumeExpansion}'
+
+ If the SIZE column already reads {{ $size }}, there is nothing to resize - skip to step 4.
+
+-------------------------------------------------------------------------------------------------
+ STEP 3 - Replace or expand the PVCs
+-------------------------------------------------------------------------------------------------
+ 3a. Expand in place - keeps the cached data. Only for a {{ .Release.Name }}-valkey-node
+     StatefulSet AND allowVolumeExpansion: true.
+
+   1. kubectl delete statefulset {{ $sel }} {{ $ns }}
+
+   2. kubectl get pvc {{ $sel }} {{ $ns }} -o name | grep '/valkey-data-' \
+        | xargs -r -I{} kubectl patch {} {{ $ns }} --type=json -p '[{"op": "replace", "path": "/spec/resources/requests/storage", "value": "{{ $size }}"}]'
+
+ 3b. Replace - discards the cache, and works for either layout and any StorageClass.
+     Delete the StatefulSet before the PVCs: while its pods are running, PVC deletion blocks on
+     the in-use protection finalizer.
+
+   1. kubectl delete statefulset {{ $sel }} {{ $ns }}
+
+   2. kubectl get pvc {{ $sel }} {{ $ns }} -o name | grep '/valkey-data-' \
+        | xargs -r kubectl delete {{ $ns }}
+
+-------------------------------------------------------------------------------------------------
+ STEP 4 - REQUIRED: add this to your custom values file (the upgrade stays blocked until you do)
+-------------------------------------------------------------------------------------------------
+   valkeyPvcResizeAcknowledged: true
+
+   Keep it in your values file for all future upgrades.
+
+-------------------------------------------------------------------------------------------------
+ STEP 5 - Run the upgrade again
+-------------------------------------------------------------------------------------------------
+   helm upgrade {{ .Release.Name }} <chart> {{ $ns }} ...
+
+ Already on {{ $size }}, or already done steps 1-3? Then only steps 4 and 5 are needed.
+*************************************************************************************************
+
+{{ end }}
+
+{{- if and .Release.IsUpgrade .Values.valkey.enabled (not .Values.valkeyPvcResizeAcknowledged) }}
+    {{- $size := .Values.valkey.replica.persistence.size | toString }}
+    {{- if eq $size "1Gi" }}
+        {{- fail "\n\n**************************************\nSTOP! Upgrading with the retired 1Gi Valkey PVC size is not supported.\nRemove the 'valkey.replica.persistence.size' (and 'valkey.primary.persistence.size') override from your values so the chart size applies, then run the upgrade again to get the PVC resize steps.\n**************************************\n" }}
+    {{- else }}
+        {{- fail (include "xray.valkeyPvcSizeUpgradeWarning" .) }}
+    {{- end }}
+{{- end }}
 
 {{- if .Values.postgresql.enabled }}
     {{- if .Values.postgresql.postgresqlPassword  }}

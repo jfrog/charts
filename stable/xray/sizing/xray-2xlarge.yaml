@@ -165,6 +165,13 @@ valkey:
       limits:
         cpu: "8"
         memory: 24Gi
+    ## Bound the cache below limits.memory so Valkey evicts instead of being
+    ## OOMKilled. The headroom covers fork() copy-on-write during AOF rewrite,
+    ## replication buffers and allocator fragmentation.
+    ## Applied when sentinel.enabled=false; keep in sync with limits.memory.
+    configuration: |-
+      maxmemory 18gb
+      maxmemory-policy allkeys-lru
   replica:
     resources:
       requests:
@@ -173,6 +180,11 @@ valkey:
       limits:
         cpu: "8"
         memory: 24Gi
+    ## With sentinel.enabled=true (the default) every node runs from this
+    ## block, so this is the setting that actually takes effect.
+    configuration: |-
+      maxmemory 18gb
+      maxmemory-policy allkeys-lru
   sentinel:
     resources:
       requests:
