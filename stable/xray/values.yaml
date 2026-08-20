@@ -95,15 +95,15 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/echo-mini
-    tag: "20260805"
+    tag: "20260812"
     pullPolicy: IfNotPresent
   resources:
     requests:
       memory: "50Mi"
-      cpu: "10m"
+      cpu: "12m"
     limits:
       memory: "1Gi"
-      cpu: "1"
+      cpu: "250m"
 
 # For supporting pulling from private registries
 imagePullSecrets:
@@ -802,6 +802,14 @@ rabbitmq:
           {{- end }}
     {{- end }}
 
+# Acknowledgement that the Valkey PVC resize described in the CHANGELOG has been done.
+# This chart version raises the Valkey PVC size from 1Gi to 200Gi. That size lives in the
+# StatefulSet's volumeClaimTemplates, which Kubernetes does not allow to change, so an existing
+# Valkey release has to have its StatefulSet replaced for the new size to take effect.
+# `helm upgrade` stops with those steps until this is set to true. Fresh installs are unaffected.
+# Keep it set for all future upgrades.
+valkeyPvcResizeAcknowledged: false
+
 # Valkey deployed in replication + Sentinel (HA) mode.
 valkey:
   enabled: false
@@ -820,7 +828,7 @@ valkey:
   primary:
     persistence:
       enabled: true
-      size: 1Gi
+      size: 200Gi
     # resources:
     #   requests:
     #     memory: "1Gi"
@@ -828,15 +836,24 @@ valkey:
     #   limits:
     #     memory: "2Gi"
     #     cpu: "1"
+    # Without a maxmemory the dataset is unbounded and the container is OOMKilled
+    # once it reaches its memory limit, rather than evicting.
+    # With sentinel.enabled=true this block is not rendered - see replica below.
+    # configuration: |-
+    #   maxmemory 1gb
+    #   maxmemory-policy allkeys-lru
   replica:
     # Three Valkey nodes: 1 primary + 2 replicas (also forms the 3-member Sentinel quorum).
     replicaCount: 3
     # Mount the ServiceAccount token in replica pods so the failover controller
     # can call the Kubernetes API.
     automountServiceAccountToken: true
+    # With sentinel.enabled=true, this is the size actually used for every node's
+    # PVC (the single shared StatefulSet's volumeClaimTemplates reads only
+    # .Values.replica.persistence.*); .Values.primary.persistence is unused here.
     persistence:
       enabled: true
-      size: 1Gi
+      size: 200Gi
     # resources:
     #   requests:
     #     memory: "1Gi"
@@ -844,6 +861,11 @@ valkey:
     #   limits:
     #     memory: "2Gi"
     #     cpu: "1"
+    # With sentinel.enabled=true every Valkey node runs from this block, so this
+    # is the maxmemory that takes effect. See the note under primary above.
+    # configuration: |-
+    #   maxmemory 1gb
+    #   maxmemory-policy allkeys-lru
   # Sentinel runs as a sidecar in every Valkey pod and handles primary election.
   sentinel:
     enabled: true
@@ -2597,7 +2619,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.54.0
+    tag: 2.57.0
     imagePullPolicy: IfNotPresent
   internalPort: 8036
   resources: {}
