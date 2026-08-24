@@ -47,7 +47,7 @@ spec:
     spec:
 {{- include "xray.spec" . | indent 6 }}
       initContainers:
-{{- include "xray.initContainers" . | indent 6 }}
+{{- include "xray.initContainers" (dict "root" $ "skipRabbitmqQuorumWait" .Values.global.xray.allowLimitedAvailabilityMode) | indent 6 }}
       containers:
 {{- include "xray.observabilityContainer" . | nindent 6 }}
 {{- include "xray.routerContainer" (list . "server") | indent 6 }}

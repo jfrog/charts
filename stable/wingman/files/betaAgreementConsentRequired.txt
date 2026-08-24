@@ -1,0 +1,8 @@
+
+
+Installation failed: The JFrog MCP Server is currently in beta. In order to use the JFrog MCP Server in a Self-Managed environment, you must accept and agree to the JFrog Online Beta Agreement: {{ include "wingman.betaAgreementUrl" . }}.
+You provide your consent by setting consentToJfrogOnlineBetaAgreement to the boolean true using one of the following methods:
+  CLI flag:    --set consentToJfrogOnlineBetaAgreement=true
+  values.yaml: consentToJfrogOnlineBetaAgreement: true
+For more information, see the comment above consentToJfrogOnlineBetaAgreement in this chart's values.yaml file.
+Note: The value must be the exact YAML boolean true. Strings like "true" or numbers like 1 won't work.

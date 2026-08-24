@@ -1,22 +1,22 @@
-{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.panoramic.enabled) }}
+{{- if and (.Values.splitXraytoSeparateDeployments.fullSplit) (.Values.aiscanner.enabled) (ne (include "xray.service.kedaJobsEnabled" (list . "aiscanner")) "true") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "xray.fullname" . }}-panoramic
+  name: {{ template "xray.fullname" . }}-aiscanner
   labels:
 {{ include "xray.labels" . | indent 4 }}
     heritage: {{ .Release.Service }}
-    servicename: panoramic
+    servicename: aiscanner
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 4 }}
     {{- end }}
-{{- with .Values.panoramic.deployment.annotations }}
+{{- with .Values.aiscanner.deployment.annotations }}
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
 spec:
-{{- if not .Values.panoramic.autoscaling.enabled }}
-  replicas: {{ .Values.panoramic.replicaCount }}
+{{- if not .Values.aiscanner.autoscaling.enabled }}
+  replicas: {{ .Values.aiscanner.replicaCount }}
 {{- end }}
 {{- with .Values.deployment.strategy }}
   strategy:
@@ -27,18 +27,18 @@ spec:
       app: {{ template "xray.name" . }}
       release: {{ .Release.Name }}
       component: {{ .Values.xray.name }}
-      servicename: panoramic
+      servicename: aiscanner
   template:
     metadata:
       labels:
 {{ include "xray.labels" . | indent 8 }}
-        servicename: panoramic
+        servicename: aiscanner
     {{- with .Values.xray.labels }}
 {{ toYaml . | indent 8 }}
     {{- end }}
       annotations:
 {{- include "xray.annotations" . | indent 8 }}
-        {{- with .Values.panoramic.annotations }}
+        {{- with .Values.aiscanner.annotations }}
 {{ toYaml . | indent 8 }}
         {{- end }}
         {{- with .Values.xray.annotations }}
@@ -50,10 +50,10 @@ spec:
 {{- include "xray.initContainers" . | indent 6 }}
       containers:
 {{- include "xray.observabilityContainer" . | nindent 6 }}
-{{- include "xray.routerContainer" (list . "panoramic") | indent 6 }}
-{{- if .Values.panoramic.enabled }}
-      - name: {{ .Values.panoramic.name }}
-        image: {{ include "xray.getImageInfoByValue" (list . "panoramic") }}
+{{- include "xray.routerContainer" (list . "aiscanner") | indent 6 }}
+{{- if .Values.aiscanner.enabled }}
+      - name: {{ .Values.aiscanner.name }}
+        image: {{ include "xray.getImageInfoByValue" (list . "aiscanner") }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         {{- if .Values.containerSecurityContext.enabled }}
         securityContext: {{- tpl (omit .Values.containerSecurityContext "enabled" | toYaml) . | nindent 10 }}
@@ -66,12 +66,12 @@ spec:
             echo "Running custom common preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
-          {{- with .Values.panoramic.preStartCommand }}
-            echo "Running custom panoramic preStartCommand command";
+          {{- with .Values.aiscanner.preStartCommand }}
+            echo "Running custom Aiscanner preStartCommand command";
             {{ tpl . $ }};
           {{- end }}
             exec /opt/jfrog/xray/app/bin/wrapper.sh;
-        {{- with .Values.panoramic.lifecycle }}
+        {{- with .Values.aiscanner.lifecycle }}
         lifecycle:
 {{ toYaml . | indent 10 }}
         {{- end }}
@@ -86,11 +86,6 @@ spec:
             secretKeyRef:
               name: {{ tpl .Values.rabbitmq.external.secrets.username.name . }}
               key: {{ tpl .Values.rabbitmq.external.secrets.username.key . }}
-        - name: JF_SHARED_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ tpl .Values.rabbitmq.external.secrets.password.name . }}
-              key: {{ tpl .Values.rabbitmq.external.secrets.password.key . }}
         - name: JF_SHARED_RABBITMQ_URL
           valueFrom:
             secretKeyRef:
@@ -129,25 +124,6 @@ spec:
               key: db-actualUsername
         {{- end }}
       {{- end }}
-      {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
-        - name: JF_SHARED_DATABASE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-        {{- if .Values.database.secrets.password }}
-              name: {{ tpl .Values.database.secrets.password.name . }}
-              key: {{ tpl .Values.database.secrets.password.key . }}
-        {{- else if .Values.database.password }}
-              {{- if not .Values.xray.unifiedSecretInstallation }}
-              name: {{ template "xray.fullname" . }}-database-creds
-              {{- else }}
-              name: "{{ template "xray.fullname" . }}-unified-secret"
-              {{- end }}
-              key: db-password
-        {{- else if .Values.postgresql.enabled }}
-              name: {{ .Release.Name }}-postgresql
-              key: postgresql-password
-        {{- end }}
-      {{- end }}
       {{- if or .Values.database.secrets.url .Values.database.url }}
         - name: JF_SHARED_DATABASE_URL
           valueFrom:
@@ -169,11 +145,6 @@ spec:
           value: {{ include "rabbitmq.user" .}}
         - name: JF_SHARED_RABBITMQ_URL
           value: {{ include "rabbitmq.url" .}}
-        - name: JF_SHARED_RABBITMQ_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "rabbitmq.passwordSecretName" .}}
-              key: rabbitmq-password
       {{- end }}
         - name: XRAY_HA_NODE_ID
           valueFrom:
@@ -195,30 +166,34 @@ spec:
         {{- if .Values.common.extraEnvVars }}
         {{- tpl .Values.common.extraEnvVars . | nindent 8 }}
         {{- end }}
-      {{- if .Values.panoramic.extraEnvVars }}
-      {{- tpl .Values.panoramic.extraEnvVars . | nindent 8 }}
+        {{- if .Values.aiscanner.extraEnvVars }}
+        {{- tpl .Values.aiscanner.extraEnvVars . | nindent 8 }}
         {{- end }}
         ports:
-        - containerPort: {{ .Values.panoramic.internalPort }}
-          name: http-panoramic
+        - containerPort: {{ .Values.aiscanner.internalPort }}
+          name: http-aiscanner
         volumeMounts:
         - name: data-volume
           mountPath: "{{ .Values.xray.persistence.mountPath }}"
 {{- if or .Values.common.customVolumeMounts .Values.global.customVolumeMounts }}
 {{ tpl (include "xray.customVolumeMounts" .) . | indent 8 }}
 {{- end }}
-{{- with .Values.panoramic.customVolumeMounts }}
+{{- with .Values.aiscanner.customVolumeMounts }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
         resources:
-{{ toYaml .Values.panoramic.resources | indent 10 }}
-{{- if .Values.panoramic.startupProbe.enabled }}
+{{ toYaml .Values.aiscanner.resources | indent 10 }}
+{{- if .Values.aiscanner.startupProbe.enabled }}
         startupProbe:
-{{ tpl .Values.panoramic.startupProbe.config . | indent 10 }}
+{{ tpl .Values.aiscanner.startupProbe.config . | indent 10 }}
 {{- end }}
-{{- if .Values.panoramic.livenessProbe.enabled }}
+{{- if .Values.aiscanner.readinessProbe.enabled }}
+        readinessProbe:
+{{ tpl .Values.aiscanner.readinessProbe.config . | indent 10 }}
+{{- end }}
+{{- if .Values.aiscanner.livenessProbe.enabled }}
         livenessProbe:
-{{ tpl .Values.panoramic.livenessProbe.config . | indent 10 }}
+{{ tpl .Values.aiscanner.livenessProbe.config . | indent 10 }}
 {{- end }}
 {{- end }}
       {{- $mountPath := .Values.xray.persistence.mountPath }}
@@ -251,33 +226,33 @@ spec:
     {{- if or .Values.xray.nodeSelector .Values.global.nodeSelector }}
 {{ tpl (include "xray.nodeSelector" .) . | indent 6 }}
     {{- end }}
-    {{- if .Values.panoramic.affinity }}
-    {{- with .Values.panoramic.affinity }}
+    {{- if .Values.aiscanner.affinity }}
+    {{- with .Values.aiscanner.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
     {{- end }}
-    {{- else if eq .Values.panoramic.podAntiAffinity.type "soft" }}
+    {{- else if eq .Values.aiscanner.podAntiAffinity.type "soft" }}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
               podAffinityTerm:
-                topologyKey: {{ .Values.panoramic.podAntiAffinity.topologyKey }}
+                topologyKey: {{ .Values.aiscanner.podAntiAffinity.topologyKey }}
                 labelSelector:
                   matchLabels:
                     app: {{ template "xray.name" . }}
                     release: {{ .Release.Name }}
-                    servicename: panoramic
-    {{- else if eq .Values.panoramic.podAntiAffinity.type "hard" }}
+                    servicename: aiscanner
+    {{- else if eq .Values.aiscanner.podAntiAffinity.type "hard" }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: {{ .Values.panoramic.podAntiAffinity.topologyKey }}
+            - topologyKey: {{ .Values.aiscanner.podAntiAffinity.topologyKey }}
               labelSelector:
                 matchLabels:
                   app: {{ template "xray.name" . }}
                   release: {{ .Release.Name }}
-                  servicename: panoramic
+                  servicename: aiscanner
     {{- end }}
     {{- with .Values.tolerations }}
       tolerations:
@@ -303,7 +278,7 @@ spec:
       {{- end }}
       - name: data-volume
         emptyDir:
-          sizeLimit: {{ .Values.panoramic.persistence.size }}
+          sizeLimit: {{ .Values.aiscanner.persistence.size }}
       {{- if and .Values.xray.unifiedSecretInstallation (eq (include "xray.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
       #########  unifiedSecretInstallation ###########
       - name: {{ include "xray.unifiedCustomSecretVolumeName" . }}

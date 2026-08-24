@@ -14,12 +14,22 @@ artifactory:
   artifactory:
     podSecurityContext:
       enabled: false
+  evaluation:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
   frontend:
     podSecurityContext:
       enabled: false
     containerSecurityContext:
       enabled: false
   jfbus:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+  jfmelt:
     podSecurityContext:
       enabled: false
     containerSecurityContext:
@@ -87,6 +97,13 @@ postgresql:
 
 # rabbitmq subchart
 rabbitmq:
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+# wingman subchart
+wingman:
   podSecurityContext:
     enabled: false
   containerSecurityContext:

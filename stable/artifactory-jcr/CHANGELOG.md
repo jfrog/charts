@@ -1,7 +1,20 @@
 # JFrog Container Registry Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.146.29] - Jan 28, 2026
+## [107.161.16] - Jul 27, 2026
+* **BREAKING CHANGE — mandatory keys:** Both `masterKey` and `joinKey` are now mandatory at install time (inherited from the `artifactory` sub-chart; centralizes key management across the JFrog Platform).
+  * **On fresh install** — both keys must be provided before running `helm install`.
+  * **On upgrade** — reuse the existing keys from the running cluster; do **not** generate new ones.
+  * See [Install JFrog Artifactory using Helm](https://docs.jfrog.com/installation/docs/helm-charts#install-jfrog-artifactory-using-helm) for how to generate, retrieve, and configure the keys.
+* **BREAKING CHANGE — nginx TLS certificate:** The chart no longer auto-generates the nginx TLS certificate by default (inherited from the `artifactory` sub-chart). You must decide how nginx serves HTTPS.
+  * **On fresh install** (with `artifactory.nginx.https.enabled=true`, the default), the install fails unless one of these is set:
+    * `artifactory.nginx.tlsSecretName=<name>` — supply your own `kubernetes.io/tls` Secret (production, recommended).
+    * `artifactory.nginx.generateSelfSignedCert=true` — opt in to a chart-generated self-signed certificate (dev / test only; not issued by a trusted CA).
+    * `artifactory.nginx.https.enabled=false` — disable HTTPS entirely (HTTP only; TLS terminates elsewhere).
+  * **On upgrade**, the previously auto-generated Secret in the cluster is discovered via `lookup`, reused, and annotated `helm.sh/resource-policy: keep`, so existing HTTPS installs keep working with no operator action. That Secret still contains a chart-generated private key from earlier releases — **operators are strongly encouraged to rotate it** by creating their own `kubernetes.io/tls` Secret and setting `artifactory.nginx.tlsSecretName` on the next upgrade.
+  * For how to generate your own `tls.crt` / `tls.key`, see [Establish TLS in Artifactory and the JFrog Platform › Generate Certificates](https://docs.jfrog.com/installation/docs/establish-tls-in-artifactory-and-jfrog-platform#generate-certs).
+
+## [107.133.0] - Jan 28, 2026
 * JFbus service is disabled by default, no explicit disablement is needed
 * Fixed README: Updated PostgreSQL password parameter from `artifactory.postgresql.postgresqlPassword` to `artifactory.postgresql.auth.password` in installation command [GH-2177](https://github.com/jfrog/charts/pull/2177)
 

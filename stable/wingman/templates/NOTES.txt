@@ -1,0 +1,42 @@
+Congratulations. You have just deployed JFrog Wingman!
+
+{{- $global := .Values.global | default dict }}
+
+{{- if and (eq .Values.masterKey "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") (not .Values.masterKeySecretName) (not $global.masterKeySecretName) (not $global.masterKey) }}
+
+
+***************************************** WARNING ******************************************
+* Your Wingman master key is still set to the provided example.                             *
+*                                                                                           *
+* You should change this to your own generated key:                                         *
+* $ export MASTER_KEY=$(openssl rand -hex 32)                                               *
+* $ echo ${MASTER_KEY}                                                                      *
+*                                                                                           *
+* Pass the created master key to helm with '--set masterKey=${MASTER_KEY}'                  *
+*********************************************************************************************
+{{- end }}
+
+{{- if and (eq .Values.joinKey "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE") (not .Values.joinKeySecretName) (not $global.joinKeySecretName) (not $global.joinKey) }}
+
+***************************************** WARNING ******************************************
+* Your Wingman join key is still set to the provided example.                               *
+*                                                                                           *
+* Set it explicitly to the join key from your Artifactory installation:                     *
+* '--set joinKey=<value-from-Artifactory>'                                                  *
+* Or reference an existing secret with '--set joinKeySecretName=<secretName>'               *
+*********************************************************************************************
+{{- end }}
+
+{{- if not (include "wingman.jfrogUrl" .) }}
+
+***************************************** WARNING ******************************************
+* .Values.jfrogUrl is empty. Wingman cannot register with Artifactory without it.           *
+* Set it via '--set jfrogUrl=<artifactory-base-url>' or under .Values.global.jfrogUrl       *
+* (when installed under an umbrella chart).                                                 *
+*********************************************************************************************
+{{- end }}
+
+Open Artifactory - {{ include "wingman.jfrogUrl" . }} in your browser. Wingman should be activated with Artifactory.
+
+Inspect the deployed Wingman resources:
+  kubectl -n {{ .Release.Namespace }} get all -l app.kubernetes.io/instance={{ .Release.Name }}

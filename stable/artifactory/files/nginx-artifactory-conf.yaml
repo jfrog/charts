@@ -1,4 +1,4 @@
-{{- if .Values.nginx.https.enabled }}
+{{- if include "nginx.httpsEffective" . }}
 ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
 ssl_certificate  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.crt;
 ssl_certificate_key  {{ .Values.nginx.persistence.mountPath }}/ssl/tls.key;
@@ -27,13 +27,15 @@ upstream artifactory {
 ## server configuration
 server {
 {{- if .Values.nginx.internalPortHttps }}
+{{- if include "nginx.httpsEffective" . }}
 {{- if .Values.nginx.singleStackIPv6Cluster }}
 listen [::]:{{ .Values.nginx.internalPortHttps }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- else -}}
 listen {{ .Values.nginx.internalPortHttps }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- end }}
+{{- end }}
 {{- else -}}
-{{- if .Values.nginx.https.enabled }}
+{{- if include "nginx.httpsEffective" . }}
 {{- if .Values.nginx.singleStackIPv6Cluster }}
 listen [::]:{{ .Values.nginx.https.internalPort }} {{ if .Values.nginx.httpsUseProxyProtocol }}proxy_protocol{{ end }} ssl;
 {{- else -}}

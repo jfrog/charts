@@ -33,8 +33,60 @@ helm repo update
 ### Install Chart
 To install the chart with the release name `jfrog-container-registry`:
 ```bash
-helm upgrade --install jfrog-container-registry --set artifactory.postgresql.auth.password=<postgres_password> jfrog/artifactory-jcr --namespace artifactory-jcr --create-namespace
+helm upgrade --install jfrog-container-registry jfrog/artifactory-jcr \
+    --namespace artifactory-jcr --create-namespace \
+    --set artifactory.postgresql.auth.password=<postgres_password> \
+    --set artifactory.nginx.generateSelfSignedCert=true
 ```
+
+The `artifactory.nginx.generateSelfSignedCert=true` above is a dev/test opt-in
+so the example succeeds out-of-the-box. For production, replace it with
+`artifactory.nginx.tlsSecretName=<your-secret>` — see [Nginx TLS Certificate](#nginx-tls-certificate).
+
+### Nginx TLS Certificate
+
+Starting with `artifactory` sub-chart version 107.161.x, the chart no longer auto-generates the nginx TLS certificate by default. You must decide how nginx serves HTTPS. All nginx values in this wrapper chart are namespaced under `artifactory.nginx.*`.
+
+**Fresh install** — with `artifactory.nginx.https.enabled=true` (the default), the install fails unless one of the following is set:
+
+| Option | Values flag | When to use |
+|---|---|---|
+| Supply your own certificate (recommended) | `--set artifactory.nginx.tlsSecretName=<name>` | Production; you create a `kubernetes.io/tls` Secret out-of-band |
+| Chart-generated self-signed certificate | `--set artifactory.nginx.generateSelfSignedCert=true` | Dev / test only — the private key is chart-generated and not issued by a trusted CA |
+| Disable HTTPS entirely | `--set artifactory.nginx.https.enabled=false` | HTTP-only installs; TLS termination happens elsewhere or is not required |
+
+To generate your own `tls.crt` / `tls.key` for the recommended option, see the JFrog documentation:
+[Establish TLS in Artifactory and the JFrog Platform › Generate Certificates](https://docs.jfrog.com/installation/docs/establish-tls-in-artifactory-and-jfrog-platform#generate-certs).
+
+Supplying your own certificate:
+
+```bash
+kubectl create secret tls artifactory-nginx-tls \
+    --cert=./tls.crt --key=./tls.key -n artifactory-jcr
+helm upgrade --install jfrog-container-registry jfrog/artifactory-jcr \
+    --namespace artifactory-jcr --create-namespace \
+    --set artifactory.postgresql.auth.password=<postgres_password> \
+    --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls
+```
+
+**Upgrade from earlier chart versions** — if the prior release auto-generated the Secret `<release>-artifactory-nginx-certificate`, the chart discovers it via `helm lookup`, reuses its `tls.crt`/`tls.key` byte-for-byte, and annotates it with `helm.sh/resource-policy: keep`. HTTPS continues to work with no operator action, and the certificate data is not modified.
+
+The reused certificate is still self-signed by the previous chart and is not suitable for production. Replace it with your own certificate on your next upgrade:
+
+```bash
+kubectl create secret tls artifactory-nginx-tls \
+    --cert=./tls.crt --key=./tls.key -n artifactory-jcr
+helm upgrade jfrog-container-registry jfrog/artifactory-jcr \
+    --reuse-values --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls
+```
+
+Once nginx is running on your certificate, the previously auto-generated Secret is retained (`helm.sh/resource-policy: keep`) and can be removed manually:
+
+```bash
+kubectl delete secret <release>-artifactory-nginx-certificate -n artifactory-jcr
+```
+
+If a custom certificate is supplied on the first upgrade to sub-chart version 107.161.x, the legacy auto-generated Secret is deleted by Helm during that upgrade. If you plan to migrate to a custom certificate, no additional cleanup is required.
 
 ### Accessing JFrog Container Registry
 **NOTE:** If using artifactory or nginx service type `LoadBalancer`, it might take a few minutes for JFrog Container Registry's public IP to become available.

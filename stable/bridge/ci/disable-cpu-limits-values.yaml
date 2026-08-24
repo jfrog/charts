@@ -1,0 +1,31 @@
+# Values for testing disableCpuLimits: main Bridge container and router
+# Used by lint (helm template) to ensure chart renders with disableCpuLimits enabled
+jfrogUrl: "http://artifactory-local:8082"
+mode: server
+resources:
+  disableCpuLimits: true
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+router:
+  resources:
+    disableCpuLimits: true
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+observability:
+  enabled: true
+  resources:
+    disableCpuLimits: true
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi

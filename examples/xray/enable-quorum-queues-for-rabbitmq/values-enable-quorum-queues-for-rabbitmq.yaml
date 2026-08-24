@@ -1,0 +1,22 @@
+global:
+  jfrogUrl: "http://art-artifactory:8082"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  xray:
+    rabbitmq:
+      replicaCount: 3
+      haQuorum:
+        enabled: true
+      migrateMessagesFromXrayDefaultVhost: true
+
+rabbitmq:
+  # 3 replicas are needed for RabbitMQ HA in quorum mode
+  replicaCount: 3
+  podManagementPolicy: Parallel
+  auth:
+    username: admin
+    password: changeme
+
+postgresql:
+  auth:
+    password: changeme

@@ -1,0 +1,417 @@
+{{- if .Values.evaluation.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "evaluation.fullname" . }}
+  labels:
+    app: {{ template "artifactory.name" . }}
+    chart: {{ template "artifactory.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.evaluation.name }}
+{{- if .Values.evaluation.deployment.labels }}
+{{ toYaml .Values.evaluation.deployment.labels | indent 4 }}
+{{- end }}
+{{- with .Values.evaluation.deployment.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.evaluation.replicaCount }}
+  strategy:
+    type: "RollingUpdate"
+  selector:
+    matchLabels:
+      app: {{ template "artifactory.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.evaluation.name }}
+  template:
+    metadata:
+      annotations:
+      {{- if not .Values.artifactory.unifiedSecretInstallation }}
+        checksum/database-secrets: {{ include (print $.Template.BasePath "/artifactory-database-secrets.yaml") . | sha256sum }}
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/artifactory-system-yaml.yaml") . | sha256sum }}
+      {{- else }}
+        checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
+      {{- end }}
+      {{- with .Values.evaluation.annotations }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+      labels:
+        app: {{ template "artifactory.name" . }}
+        chart: {{ template "artifactory.chart" . }}
+        component: {{ .Values.evaluation.name }}
+        heritage: {{ .Release.Service }}
+        release: {{ .Release.Name }}
+    spec:
+      {{- if or .Values.imagePullSecrets .Values.global.imagePullSecrets }}
+  {{- include "artifactory.imagePullSecrets" . | indent 6 }}
+      {{- end }}
+      {{- if .Values.evaluation.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.evaluation.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.evaluation.serviceAccountName }}
+      serviceAccountName: {{ .Values.evaluation.serviceAccountName }}
+      {{- end}}
+      initContainers:
+        {{- if .Values.evaluation.customInitContainers }}
+{{ tpl (include "artifactory.evaluation.customInitContainers" .)  . | indent 8 }}
+        {{- end }}
+        - name: 'copy-configs'
+          image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.evaluation.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.evaluation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources: 
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              echo "Copy system.yaml to {{ .Values.evaluation.persistence.mountPath }}/etc";
+              mkdir -p {{ .Values.evaluation.persistence.mountPath }}/etc;
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              cp -fv /tmp/etc/{{ .Values.systemYamlOverride.dataKey }} {{ .Values.evaluation.persistence.mountPath }}/etc/system.yaml;
+              {{- else }}
+              cp -fv /tmp/etc/system.yaml {{ .Values.evaluation.persistence.mountPath }}/etc/system.yaml;
+              {{- end }}
+          {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+              echo "Copy joinKey to {{ .Values.evaluation.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.evaluation.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.evaluation.persistence.mountPath }}/etc/security/join.key;
+          {{- end }}
+          {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+              echo "Copy masterKey to {{ .Values.evaluation.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.evaluation.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.evaluation.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
+          env:
+          {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+          - name: ARTIFACTORY_JOIN_KEY
+            valueFrom:
+              secretKeyRef:
+              {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+                name: {{ include "artifactory.joinKeySecretName" . }}
+              {{- else }}
+                name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+                key: join-key
+          {{- end }}
+          {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+          - name: ARTIFACTORY_MASTER_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+                name: {{ include "artifactory.masterKeySecretName" . }}
+                {{- else }}
+                name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                key: master-key
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.evaluation.persistence.mountPath | quote }}
+            {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.systemYamlOverride.existingSecret }}
+            - name: systemyaml
+            {{- else }}
+            - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
+            {{- end }}
+              {{- if .Values.systemYamlOverride.existingSecret }}
+              mountPath: "/tmp/etc/{{.Values.systemYamlOverride.dataKey }}"
+              subPath: {{ .Values.systemYamlOverride.dataKey }}
+              {{- else  }}
+              mountPath: "/tmp/etc/system.yaml"
+              subPath: "system.yaml"
+              {{- end }}
+        {{- if .Values.evaluation.waitForArtifactory }}
+        - name: wait-for-artifactory
+          image: {{ include "artifactory.getImageInfoByValue" (list . "initContainers") }}
+          imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
+          {{- if .Values.evaluation.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.evaluation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.initContainers.resources }}
+          resources:
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
+          {{- end }}
+          command:
+          - /bin/bash
+          - -c
+          - |
+            echo "Waiting for Artifactory service to be ready..."
+            ready=false;
+            while ! $ready; do echo waiting;
+              curl -k --silent --output /dev/null --max-time 3 --fail "{{ tpl (include "artifactory.jfrogUrl" .) . }}/artifactory/api/v1/system/readiness"; exit_status=$?;
+              if [[ $exit_status -eq 0 ]]; then ready=true; echo "Artifactory is ready. Proceeding..."; fi; sleep 1;
+            done
+        {{- end }}
+      containers:
+        {{- if .Values.observability.enabled }}
+        - name: {{ .Values.observability.name }}
+          image: {{ include "artifactory.getImageInfoByValue" (list . "observability") }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          {{- if .Values.evaluation.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.evaluation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.observability.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+          - name: JF_SHARED_PLATFORMSERVICES_ENABLED
+            value: "true"
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 10 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.observability.resources | indent 12 }}
+          {{- if .Values.observability.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 12 }}
+          {{- end }}
+        {{- end }}
+        - name: evaluation
+          image: {{ include "artifactory.getImageInfoByValue" (list . "evaluation") }}
+          imagePullPolicy: {{ .Values.evaluation.image.pullPolicy | quote }}
+          {{- if .Values.evaluation.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.evaluation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.evaluation.persistence.mountPath | quote }}
+            {{- if .Values.evaluation.customVolumeMounts }}
+{{ tpl (include "artifactory.evaluation.customVolumeMounts" .) . | indent 12 }}
+            {{- end }}
+          env:
+            - name: JF_SHARED_NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          {{- if or .Values.database.secrets.user .Values.database.user }}
+            - name: JF_SHARED_DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.database.secrets.user }}
+                  name: {{ tpl .Values.database.secrets.user.name . }}
+                  key: {{ tpl .Values.database.secrets.user.key . }}
+            {{- else if .Values.database.user }}
+                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
+                  name: {{ template "artifactory.fullname" . }}-database-creds
+                  {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                  {{- end }}
+                  key: db-user
+            {{- end }}
+          {{- end }}
+          {{ if or .Values.database.secrets.password .Values.database.password .Values.postgresql.enabled }}
+            - name: JF_SHARED_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.database.secrets.password }}
+                  name: {{ tpl .Values.database.secrets.password.name . }}
+                  key: {{ tpl .Values.database.secrets.password.key . }}
+            {{- else if .Values.database.password }}
+                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
+                  name: {{ template "artifactory.fullname" . }}-database-creds
+                  {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                  {{- end }}
+                  key: db-password
+            {{- else if .Values.postgresql.enabled }}
+                  name: {{ .Release.Name }}-postgresql
+                  key: password
+            {{- end }}
+          {{- end }}
+          {{- if or .Values.database.secrets.url .Values.database.url }}
+            - name: JF_SHARED_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+            {{- if .Values.database.secrets.url }}
+                  name: {{ tpl .Values.database.secrets.url.name . }}
+                  key: {{ tpl .Values.database.secrets.url.key . }}
+            {{- else if .Values.database.url }}
+                  {{- if not .Values.artifactory.unifiedSecretInstallation }}
+                  name: {{ template "artifactory.fullname" . }}-database-creds
+                  {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                  {{- end }}
+                  key: db-url
+            {{- end }}
+          {{- end }}
+            {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+                  name: {{ include "artifactory.masterKeySecretName" . }}
+                {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                  key: master-key
+            {{- end }}
+            {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+                  name: {{ include "artifactory.joinKeySecretName" . }}
+                {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
+            {{- end }}
+{{- with .Values.evaluation.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          resources: {{- toYaml .Values.evaluation.resources | nindent 12 }}
+          {{- if .Values.evaluation.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.evaluation.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.evaluation.readinessProbe.enabled }}
+          readinessProbe:
+{{ tpl .Values.evaluation.readinessProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.evaluation.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.evaluation.livenessProbe.config . | indent 12 }}
+          {{- end }}
+          {{- with .Values.evaluation.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+        - name: router
+          image: {{ include "artifactory.getImageInfoByValue" (list . "router") }}
+          imagePullPolicy: {{ .Values.router.image.pullPolicy | quote }}
+          resources: {{- toYaml .Values.router.resources | nindent 12 }}
+          {{- if .Values.evaluation.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.evaluation.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          command:
+            - '/bin/bash'
+            - '-c'
+            - >
+              exec /opt/jfrog/router/app/bin/entrypoint-router.sh
+          env:
+            - name: JF_ROUTER_TOPOLOGY_LOCAL_REQUIREDSERVICETYPES
+              value: "jfevl"
+            - name: JF_SHARED_NODE_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: JF_SHARED_JFROGURL
+              value: {{ tpl (include "evaluation.jfrogUrl" .) . }}
+            {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+            - name: JF_SHARED_SECURITY_MASTERKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+                  name: {{ include "artifactory.masterKeySecretName" . }}
+                {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                  key: master-key
+            {{- end }}
+            {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+            - name: JF_SHARED_SECURITY_JOINKEY
+              valueFrom:
+                secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+                  name: {{ include "artifactory.joinKeySecretName" . }}
+                {{- else }}
+                  name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                  key: join-key
+            {{- end }}
+{{- with .Values.router.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 12 }}
+{{- end }}
+          ports:
+            - name: http-router
+              containerPort: {{ .Values.router.internalPort }}
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.router.persistence.mountPath | quote }}
+{{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 12 }}
+{{- end }}
+            {{- if .Values.router.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.router.startupProbe.config . | indent 12 }}
+            {{- end }}
+            {{- if .Values.router.readinessProbe.enabled }}
+          readinessProbe: 
+{{ tpl .Values.router.readinessProbe.config . | indent 12 }}
+            {{- end }}
+            {{- if .Values.router.livenessProbe.enabled }}
+          livenessProbe: 
+{{ tpl .Values.router.livenessProbe.config . | indent 12 }}
+            {{- end }}
+            {{- with .Values.router.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+            {{- end }}
+        {{- if .Values.evaluation.customSidecarContainers }}
+{{ tpl (include "artifactory.evaluation.customSidecarContainers" .)  . | indent 8 }}
+        {{- end }}
+      volumes:
+        # system yaml
+        {{- if .Values.systemYamlOverride.existingSecret }}
+        - name: systemyaml
+          secret:
+            secretName: {{ .Values.systemYamlOverride.existingSecret }}
+        {{- end }}
+
+        #########  unifiedSecretInstallation ###########
+      {{- if and .Values.artifactory.unifiedSecretInstallation (eq (include "artifactory.evaluation.checkDuplicateUnifiedCustomVolume" .) "false" ) }}
+        - name: {{ include "artifactory.unifiedCustomSecretVolumeName" . }}
+          secret:
+            secretName: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+      {{- else if not .Values.artifactory.unifiedSecretInstallation }}
+        {{- if not .Values.systemYamlOverride.existingSecret }}
+        - name: systemyaml
+          secret:
+            secretName: {{ printf "%s-%s" (include "artifactory.fullname" .) "systemyaml" }}
+        {{- end }}
+      {{- end }}
+
+        {{- if .Values.evaluation.customVolumes }}
+{{ tpl (include "artifactory.evaluation.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.observability.customVolumes }}
+{{ tpl (include "artifactory.observability.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.router.customVolumes }}
+{{ tpl (include "artifactory.router.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        - name: data
+          emptyDir: {}
+        {{- if .Values.evaluation.extraVolumes }}
+        {{- toYaml .Values.evaluation.extraVolumes | nindent 8 }}
+        {{- end }}
+      {{- with .Values.evaluation.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.evaluation.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.evaluation.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

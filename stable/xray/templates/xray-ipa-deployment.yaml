@@ -17,7 +17,7 @@ metadata:
     unifiedUpgradeAllowed: {{ required "\n\n**************************************\nSTOP! UPGRADE from Xray 2.x (appVersion) currently not supported!\nIf this is an upgrade over an existing Xray 3.x, explicitly pass 'unifiedUpgradeAllowed=true' to upgrade.\n**************************************\n" .Values.unifiedUpgradeAllowed | quote }}
 {{- end }}
 {{- if and .Release.IsUpgrade .Values.postgresql.enabled }}
-    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), pass postgresql.image.tag '9.6.18-debian-10-r7' or '10.13.0-debian-10-r38' or '12.5.0-debian-10-r25' or 13.10.0-debian-11-r14 or 15.2.0-debian-11-r23 or 15.10.0-debian-12-r2 or 16.6.0-debian-12-r2 or 17.6.0-debian-12-r2 or 17.8.0-debian and databaseUpgradeReady=true if you are upgrading from chart version which has postgresql version 9.6.x or 10.13.x or 12.5.x or 13.x or 15.x or 17.x" .Values.databaseUpgradeReady | quote }}
+    databaseUpgradeReady: {{ required "\n\n*********\nIMPORTANT: UPGRADE STOPPED to prevent data loss!\nReview CHANGELOG.md (https://github.com/jfrog/charts/blob/master/stable/xray/CHANGELOG.md), postgresql upgrades are not supported, please pass postgresql.image.tag to use the same postgresql image version as defined in your previous chart defaults before proceeding with the upgrade" .Values.databaseUpgradeReady | quote }}
 {{- end }}
 {{- with .Values.server.statefulset.annotations }}
   annotations:
@@ -284,8 +284,7 @@ spec:
 {{ toYaml .Values.initContainers.resources | indent 10 }}
         command:
         - 'bash'
-        - '-c'
-        - -ecx
+        - -ec
         - |
           echo "Waiting for rabbitmq replicas quorum to be running"
           ready=false;
@@ -299,15 +298,15 @@ spec:
             additionalFlags="--insecure"
           fi
           rabbitMqManagementUrl=$(echo $JF_SHARED_RABBITMQ_URL | sed -e "s/amqp:/${managerSchema}:/" -e "s/amqps:/${managerSchema}:/" -e "s/:${amqpPort}/:${managerPort}/" -e "s/:${amqpTlsPort}/:${managerPort}/")
-          while ! $ready; do echo waiting;
+          while ! $ready; do echo "waiting for rabbitmq quorum...";
             # This would be better done with jq instead of grep -o
             # jq 'map(select ( .running == true )) | length')
             # but currently we do not have jq in the UBI-minimal base image approved by the installer team
             nodesNum=$(curl -s ${additionalFlags} -u${JF_SHARED_RABBITMQ_USERNAME}:${JF_SHARED_RABBITMQ_PASSWORD} ${rabbitMqManagementUrl}api/nodes | grep -o '"running"\s*:true' | wc -l | tr -d '[:space:]')
-            echo $nodesNum
+            echo "running nodes: $nodesNum"
             quorumSize=$(( $JF_SHARED_RABBITMQ_REPLICASCOUNT/2 + 1 ))
-            echo $quorumSize
-            if [[ "$nodesNum" -ge "$quorumSize" ]]; then ready=true; echo "rabbitmq ok"; fi; sleep 5; 
+            echo "quorum required: $quorumSize"
+            if [[ "$nodesNum" -ge "$quorumSize" ]]; then ready=true; echo "rabbitmq quorum ok"; fi; sleep 5;
           done
         env:
       {{- if eq (include "xray.rabbitmq.isManagementListenerTlsEnabled" .) "true" }}

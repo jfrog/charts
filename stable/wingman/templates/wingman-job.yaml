@@ -1,0 +1,84 @@
+{{- if and .Values.jobs .Values.jobs.summary .Values.jobs.summary.enable }}
+{{- $jobName := default "wingman-cleanup-task" .Values.jobs.summary.name }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $jobName | trunc 48 }}-job
+  labels:
+    app: {{ template "wingman.name" . }}
+    chart: {{ template "wingman.chart" . }}
+    component: {{ $jobName }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  #https://pkg.go.dev/github.com/robfig/cron/v3#hdr-CRON_Expression_Format
+  {{- with .Values.jobs.summary.schedule }}
+  schedule: {{- toYaml . | nindent 12 }}
+  {{- end }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+        {{- with .Values.jobs.summary.podAnnotations }}
+          annotations:
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.jobs.summary.labels }}
+          labels:
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+        spec:
+          {{- include "wingman.imagePullSecrets" . | nindent 10 }}
+          containers:
+            - name: {{ $jobName }}
+              image: {{ template "wingman.image" . }}
+              imagePullPolicy: IfNotPresent
+              command: ["/usr/bin/python3.11"]
+              args: ["app/job.py"]
+              env:
+                - name: JF_PRODUCT_HOME
+                  value: {{ .Values.persistence.mountPath | quote }}
+                {{- include "wingman.databaseEnvVars" . | nindent 16 }}
+                {{- include "wingman.secretEnvVars" . | nindent 16 }}
+                {{- with .Values.jobs.summary.extraEnvironmentVariables }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+              volumeMounts:
+                - name: systemyaml
+                  mountPath: "{{ .Values.persistence.mountPath }}/var/etc/system.yaml"
+                  {{- if .Values.systemYamlOverride.existingSecret }}
+                  subPath: {{ .Values.systemYamlOverride.dataKey }}
+                  {{- else }}
+                  subPath: system.yaml
+                  {{- end }}
+                  readOnly: true
+              resources:
+                {{- toYaml .Values.jobs.summary.resources | nindent 16 }}
+              {{- if .Values.containerSecurityContext.enabled }}
+              securityContext:
+                {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 16 }}
+              {{- end }}
+          volumes:
+            - name: systemyaml
+              secret:
+                secretName: {{ default (include "wingman.unifiedSecretName" .) .Values.systemYamlOverride.existingSecret }}
+          restartPolicy: OnFailure
+          serviceAccountName: {{ include "wingman.serviceAccountName" . }}
+          {{- if .Values.podSecurityContext.enabled }}
+          securityContext:
+            {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.jobs.summary.nodeSelector }}
+          nodeSelector:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.jobs.summary.affinity }}
+          affinity:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.jobs.summary.tolerations }}
+          tolerations:
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}

@@ -21,6 +21,45 @@ The xray-sbom name
 {{- end -}}
 
 {{/*
+The xray-jascontextual name
+*/}}
+{{- define "xray-jascontextual.name" -}}
+{{- default .Chart.Name .Values.jascontextual.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The xray-jasexposures name
+*/}}
+{{- define "xray-jasexposures.name" -}}
+{{- default .Chart.Name .Values.jasexposures.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The xray-aiscanner name
+*/}}
+{{- define "xray-aiscanner.name" -}}
+{{- default .Chart.Name .Values.aiscanner.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "xray-aiscanner.fullname" -}}
+{{- if .Values.aiscanner.fullnameOverride -}}
+{{- .Values.aiscanner.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.aiscanner.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 The xray-policyenforcer name
 */}}
 {{- define "xray-policyenforcer.name" -}}
@@ -53,6 +92,13 @@ The xray-curation name
 */}}
 {{- define "xray-curation.name" -}}
 {{- default .Chart.Name .Values.curation.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+The xray-reporting name
+*/}}
+{{- define "xray-reporting.name" -}}
+{{- default .Chart.Name .Values.reporting.name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -134,6 +180,42 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
+{{- define "xray-jascontextual.fullname" -}}
+{{- if .Values.jascontextual.fullnameOverride -}}
+{{- .Values.jascontextual.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.jascontextual.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "xray-jasexposures.fullname" -}}
+{{- if .Values.jasexposures.fullnameOverride -}}
+{{- .Values.jasexposures.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.jasexposures.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
 {{- define "xray-indexer.fullname" -}}
 {{- if .Values.indexer.fullnameOverride -}}
 {{- .Values.indexer.fullnameOverride | trunc 63 | trimSuffix "-" -}}
@@ -193,6 +275,24 @@ If release name contains chart name it will be used as a full name.
 {{- .Values.curation.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- $name := default .Chart.Name .Values.curation.name -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "xray-reporting.fullname" -}}
+{{- if .Values.reporting.fullnameOverride -}}
+{{- .Values.reporting.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.reporting.name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -468,7 +568,7 @@ Return the proper xray chart image names
 {{- $registryName := index $dot.Values $indexReference "image" "registry" -}}
 {{- $repositoryName := index $dot.Values $indexReference "image" "repository" -}}
 {{- $tag := default $dot.Chart.AppVersion (index $dot.Values $indexReference "image" "tag") | toString -}}
-{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "curation") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer")) }}
+{{- if and $dot.Values.common.xrayVersion (or (eq $indexReference "persist") (eq $indexReference "curation") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "aiscanner") (eq $indexReference "indexer") (eq $indexReference "policyenforcer") (eq $indexReference "reporting") (eq $indexReference "jascontextual") (eq $indexReference "jasexposures")) }}
 {{- $tag = $dot.Values.common.xrayVersion | toString -}}
 {{- end -}}
 {{- if $dot.Values.global }}
@@ -481,7 +581,7 @@ Return the proper xray chart image names
     {{- if and $dot.Values.global.versions.observability (eq $indexReference "observability") }}
     {{- $tag = $dot.Values.global.versions.observability | toString -}}
     {{- end -}}
-    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "curation") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "indexer") (eq $indexReference "policyenforcer")) }}
+    {{- if and $dot.Values.global.versions.xray (or (eq $indexReference "persist") (eq $indexReference "curation") (eq $indexReference "server") (eq $indexReference "analysis") (eq $indexReference "sbom") (eq $indexReference "aiscanner") (eq $indexReference "indexer") (eq $indexReference "policyenforcer") (eq $indexReference "reporting") (eq $indexReference "jascontextual") (eq $indexReference "jasexposures")) }}
     {{- $tag = $dot.Values.global.versions.xray | toString -}}
     {{- end -}}
     {{- if $dot.Values.global.imageRegistry }}
@@ -492,6 +592,23 @@ Return the proper xray chart image names
 {{- else -}}
     {{- printf "%s/%s:%s" $registryName $repositoryName $tag -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Return the proper JAS scanner image tag.
+*/}}
+{{- define "xray.getJasScannerImageTag" -}}
+{{- $dot := index . 0 -}}
+{{- $service := index . 1 -}}
+{{- $tag := default "" (index $dot.Values $service "image" "tag") | toString -}}
+{{- $xrayVersion := default $dot.Chart.AppVersion $dot.Values.common.xrayVersion | toString -}}
+{{- if and $dot.Values.global $dot.Values.global.versions.xray -}}
+    {{- $xrayVersion = $dot.Values.global.versions.xray | toString -}}
+{{- end -}}
+{{- if or (not $tag) (eq $tag "None") (eq $tag "none") -}}
+    {{- $tag = $xrayVersion -}}
+{{- end -}}
+{{- printf "%s" $tag -}}
 {{- end -}}
 
 {{/*
@@ -652,6 +769,71 @@ Resolve autoscalingQueues value for ipa
   authenticationRef:
     name: keda-trigger-auth-rabbitmq-conn-xray
 {{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+KEDA ScaledJob decisions for the split services (indexer, persist, analysis, policyenforcer, sbom,
+aiscanner, reporting, jascontextual, jasexposures). Both take a list of (root context, service key
+under .Values) and print "true"/"false", e.g.
+  {{- if eq (include "xray.service.renderScaledJob" (list . "indexer")) "true" }}
+*/}}
+
+{{/*
+Resolve the effective kedaJobs flag for a service.
+An explicit per-service kedaJobs boolean wins over splitXraytoSeparateDeployments.kedaJobs in both
+directions: true opts the service in even when the global flag is off, false opts it out even when
+the global flag is on. An absent or null service value inherits the global flag - the key is left
+commented out in values.yaml so the default is "inherit" rather than an explicit opt-out.
+Reject other types so a value such as the string "false" cannot read as truthy.
+Use this in the Deployment/HPA/ScaledObject guards, which render when it is not "true".
+*/}}
+{{- define "xray.service.kedaJobsEnabled" -}}
+{{- $dot := index . 0 -}}
+{{- $service := index . 1 -}}
+{{- $serviceValues := index $dot.Values $service -}}
+{{- $value := $dot.Values.splitXraytoSeparateDeployments.kedaJobs -}}
+{{- if and (kindIs "map" $serviceValues) (hasKey $serviceValues "kedaJobs") (ne (index $serviceValues "kedaJobs") nil) -}}
+{{- $value = index $serviceValues "kedaJobs" -}}
+{{- end -}}
+{{- if not (kindIs "bool" $value) -}}
+{{- fail (printf "%s.kedaJobs must be a boolean or null" $service) -}}
+{{- end -}}
+{{- if $value -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end -}}
+
+{{/*
+True when the service should render a ScaledJob. Holds every ScaledJob precondition in one place:
+  - splitXraytoSeparateDeployments.fullSplit is on
+  - the service is enabled: services with no "enabled" key are always on, and the two JAS services
+    are also switched on by jas.separate.service.enabled
+  - the effective kedaJobs flag is true (see xray.service.kedaJobsEnabled)
+  - autoscaling.keda.enabled is on with a non-empty autoscaling.keda.queues, which KEDA requires to
+    build the ScaledJob triggers
+The last condition is a documented precondition for ScaledJobs, so it is deliberately not mirrored
+in the Deployment guards: kedaJobs=true with KEDA autoscaling off is a misconfiguration and is not
+silently turned back into a Deployment.
+*/}}
+{{- define "xray.service.renderScaledJob" -}}
+{{- $dot := index . 0 -}}
+{{- $service := index . 1 -}}
+{{- $serviceValues := index $dot.Values $service -}}
+{{- $enabled := true -}}
+{{- if hasKey $serviceValues "enabled" -}}
+{{- $enabled = $serviceValues.enabled -}}
+{{- end -}}
+{{- if or (eq $service "jascontextual") (eq $service "jasexposures") -}}
+{{- $enabled = or $enabled $dot.Values.jas.separate.service.enabled -}}
+{{- end -}}
+{{- $keda := $serviceValues.autoscaling.keda -}}
+{{- if and $dot.Values.splitXraytoSeparateDeployments.fullSplit $enabled (eq (include "xray.service.kedaJobsEnabled" .) "true") $keda.enabled $keda.queues -}}
+true
+{{- else -}}
+false
 {{- end -}}
 {{- end -}}
 

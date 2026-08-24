@@ -1,7 +1,17 @@
 # Leave this file empty to ensure that CI runs builds against the default configuration in values.yaml.
 artifactory:
   databaseUpgradeReady: true
-
+  artifactory:
+    joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+    masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  ## Generate a self-signed TLS certificate for nginx HTTPS. Opt-in, default off.
+  ## DEV/TEST ONLY. The generated private key is created inside the cluster and
+  ## is not issued by a trusted CA. In production, provide a real certificate
+  ## via nginx.tlsSecretName instead.
+  ## Ignored when nginx.tlsSecretName is set or nginx.https.enabled is false.
+  nginx:
+    generateSelfSignedCert: true
   # To Fix ct tool --reuse-values - PASSWORDS ERROR: you must provide your current passwords when upgrade the release
   postgresql:
-    postgresqlPassword: password
+    auth:
+      password: password

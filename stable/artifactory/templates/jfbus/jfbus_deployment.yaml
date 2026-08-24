@@ -151,11 +151,11 @@ spec:
           securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.initContainers.resources }}
-          resources:
+          resources: 
             {{- toYaml .Values.initContainers.resources | nindent 12 }}
           {{- end }}
           command:
-          - /bin/sh
+          - /bin/bash
           - -c
           - |
             echo "Waiting for Artifactory service to be ready..."
@@ -166,6 +166,40 @@ spec:
             done
         {{- end }}
       containers:
+        {{- if .Values.observability.enabled }}
+        - name: {{ .Values.observability.name }}
+          image: {{ include "artifactory.getImageInfoByValue" (list . "observability") }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          {{- if .Values.jfbus.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.jfbus.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.observability.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+          - name: JF_SHARED_PLATFORMSERVICES_ENABLED
+            value: "true"
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 10 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.observability.resources | indent 12 }}
+          {{- if .Values.observability.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 12 }}
+          {{- end }}
+        {{- end }}
         - name: jfbus
           image: {{ include "artifactory.getImageInfoByValue" (list . "jfbus") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
@@ -271,8 +305,6 @@ spec:
                 {{- end }}
                   key: join-key
             {{- end }}
-            - name: SPRING_PROFILES_ACTIVE
-              value: {{ .Values.jfbus.activeProfile | quote }}
             {{- if .Values.jfbus.javaOpts }}
             - name: EXTRA_JAVA_OPTS
               value: {{ .Values.jfbus.javaOpts }}
@@ -397,6 +429,12 @@ spec:
       {{- end }}
         {{- if .Values.jfbus.customVolumes }}
 {{ tpl (include "artifactory.jfbus.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.observability.customVolumes }}
+{{ tpl (include "artifactory.observability.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.router.customVolumes }}
+{{ tpl (include "artifactory.router.customVolumes" .)  . | indent 8 }}
         {{- end }}
         # jfbus-certs secrets
         {{- if or .Values.jfbus.customCertificates.enabled .Values.global.customCertificates.enabled }}

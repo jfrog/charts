@@ -1,0 +1,586 @@
+## Default values for wingman.
+## This is a YAML-formatted file.
+## Declare variables to be passed into your templates.
+
+## JFrog Platform umbrella values, shared across all charts. Set via the
+## umbrella chart's values; honored when this chart is installed under
+## one (e.g. jfrog/artifactory). Standalone installs typically leave
+## this block empty and configure the chart-level values below.
+global:
+  # imagePullSecrets: []
+  # jfrogUrl: ""
+  # masterKey: ""
+  # masterKeySecretName: ""
+  # joinKey: ""
+  # joinKeySecretName: ""
+  ## Raw YAML list of sibling init containers prepended before copy-system-yaml
+  ## (e.g. the umbrella's postgres-setup-init). NOT a shell snippet.
+  # customInitContainersBegin: |
+  ## Raw YAML list of additional init containers appended after copy-system-yaml.
+  # customInitContainers: |
+  ## Raw YAML list of volumes merged into the pod's volumes (companion to
+  ## customInitContainersBegin, e.g. the umbrella's postgres-setup-init-vol).
+  # customVolumes: |
+  ## Certificates added to this Secret are copied into Wingman's and the
+  ## router sidecar's trust stores. customCertificates below takes
+  ## precedence over this when both are set.
+  customCertificates:
+    enabled: false
+    # certificateSecretName:
+  ## Allow the bundled PostgreSQL subchart (Bitnami) to use the
+  ## echohq/postgres image instead of Bitnami's own.
+  security:
+    allowInsecureImages: true
+
+## String to partially override wingman.name template (will maintain the release name)
+# nameOverride:
+
+## String to fully override wingman.fullname template
+# fullnameOverride:
+
+## Self-hosted only: explicit consent to the JFrog Online Beta Agreement.
+##
+## Wingman currently ships as a beta feature on the self-hosted (SH)
+## install path. By setting this to `true` you confirm that you have
+## read and accepted the JFrog Online Beta Agreement, which governs
+## use of Wingman in beta. The chart fails fast at template time
+## (no Kubernetes resources are rendered) when this value is missing,
+## false, or not exactly the YAML boolean `true`. The failure message
+## surfaces the agreement URL itself (defined once in the
+## `wingman.betaAgreementUrl` helper in templates/_helpers.tpl), so
+## operators do not need to look it up here — read and accept the
+## linked agreement in the install error before setting this value.
+##
+## SaaS installs bypass this gate entirely and ignore this value. The
+## bypass triggers when `shared.deploymentMode == "saas"` is supplied
+## by the operator via either the `systemYaml` string blob (which
+## infra-core-config's `values-jfrog-saas.yaml.j2` always emits on
+## SaaS environments) or the `extraSystemYaml` map; either input slot
+## works, and `extraSystemYaml` overrides `systemYaml` on conflict.
+## See templates/wingman-validations.yaml and the
+## `wingman.deploymentMode` helper.
+##
+## Do NOT default this to `true` in shared values files.
+##
+## Examples:
+##   helm install jfrog-platform-wingman ... --set consentToJfrogOnlineBetaAgreement=true
+##   # or in your values file:
+##   #   consentToJfrogOnlineBetaAgreement: true
+##
+## Note: `--set` works because Helm's strvals coerces the unquoted
+## token `true` to a YAML boolean. `--set-string
+## consentToJfrogOnlineBetaAgreement=true` does NOT pass the gate
+## because it produces the string `"true"`, and the gate strictly
+## requires the YAML boolean. Use plain `--set` (or set the boolean
+## in your values file) instead.
+consentToJfrogOnlineBetaAgreement: false
+
+## Add image pull secrets for private image repositories. Mandatory for
+## charts pulled from authenticated registries. Honored alongside
+## global.imagePullSecrets (chart-level wins when both are set).
+imagePullSecrets: []
+# - name: myRegistryKeySecretName
+
+## Artifactory URL. Mandatory.
+jfrogUrl:
+
+## Gate startup on the platform router being reachable via an opt-in
+## wait-for-artifactory init container (polls <jfrogUrl>/router/api/v1/system/readiness).
+## Prevents router crash-loops during one-shot jfrog-platform installs.
+## Set false for standalone installs not fronted by a JFrog Platform.
+waitForArtifactory: true
+## Seconds between readiness polls in the wait-for-artifactory init container.
+waitForArtifactoryRetryInterval: 5
+
+## Wingman requires a unique master key.
+## You can generate one with the command:
+##   'openssl rand -hex 32'
+## Pass it to helm with '--set masterKey=${MASTER_KEY}'
+## IMPORTANT: You should NOT use the example masterKey for a production deployment!
+masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+# masterKeySecretName:
+
+joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+# joinKeySecretName:
+
+## For HA
+replicaCount: 1
+
+## Wingman application image
+## Note that by default we use appVersion to get image tag/version
+image:
+  registry: releases-docker.jfrog.io
+  repository: jfrog/wingman
+  # tag:
+  pullPolicy: IfNotPresent
+
+## Init containers that prepare the Wingman data volume. The image below
+## is shared by every chart-rendered init container.
+initContainers:
+  pullPolicy: IfNotPresent
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/echo-mini
+    tag: "20260731"
+    # digest:
+  resources: {}
+  # requests:
+  #   memory: "64Mi"
+  #   cpu: "10m"
+  # limits:
+  #   memory: "256Mi"
+  #   cpu: "100m"
+
+## Probes shared timeout (seconds) - referenced by liveness/readiness configs below.
+probes:
+  timeoutSeconds: 5
+
+## ServiceAccount used by the Wingman Deployment + Job.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+## RoleBinding for the wingman group.
+## Disabled by default; set rbac.create=true and provide roleBinding.name
+## to bind the named ClusterRole to the wingman group in the
+## release namespace.
+## ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+rbac:
+  create: false
+roleBinding:
+  name: ""
+
+## Configure the Pod's SecurityContext.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext:
+  enabled: true
+  runAsUser: 1142
+  runAsGroup: 1142
+  fsGroup: 1142
+  runAsNonRoot: true
+  # fsGroupChangePolicy: "Always"
+
+## Configure the Container's SecurityContext (Wingman, router, init).
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
+
+## Horizontal Pod Autoscaler for the Wingman Deployment.
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 15
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+## Prometheus ServiceMonitor (kube-prometheus-stack). When enabled, the
+## chart renders a ServiceMonitor scraping /router/api/v1/metrics and
+## /wingman/api/v1/metrics on the router's external port.
+##
+## Requires podLabels.app (below) to match the Service selector.
+serviceMonitor:
+  enabled: false
+  ## Namespace and selector labels of the kube-prometheus-stack release
+  ## that should pick up this ServiceMonitor.
+  kubePromFullName: ""
+  kubePromApp: ""
+  ## Auth: pick exactly one of bearerTokenFile (Prometheus reads from a
+  ## file mounted in the Prometheus pod) or tokenName (Secret with key
+  ## `token` referenced by bearerTokenSecret).
+  bearerTokenFile: ""
+  tokenName: ""
+  ## Scrape settings.
+  interval: 60s
+  scrapeTimeout: 15s
+  scheme: http
+  targetPort: 8082
+  ## Where to look for the wingman Service.
+  namespaceSelector:
+    any: false
+    matchNames: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+## Pod Disruption Budget. ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+pdb:
+  create: true
+  minAvailable: 1
+
+## Kubernetes Ingress for the Wingman service.
+## Set enabled=true and provide hosts to expose Wingman externally.
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts: []
+  # - host: wingman.example.com
+  #   paths:
+  #     - path: /
+  #       pathType: Prefix
+  tls: []
+  # - secretName: wingman-tls
+  #   hosts:
+  #     - wingman.example.com
+
+## Wingman service configuration
+service:
+  type: ClusterIP
+  ## Kubernetes Service name (used by the Service, Ingress, and NOTES).
+  name: wingman
+
+## Wingman container filesystem layout. mountPath is the product home dir
+## consumed by the Deployment, Job, and init containers for volume mounts
+## and env vars. No PersistentVolumeClaim is created for the main pod
+## today — this is a path constant. Matches the distribution/router chart
+## convention (persistence.mountPath).
+persistence:
+  mountPath: /opt/jfrog/wingman
+
+## Port Wingman listens on inside the container. Used for the main pod's
+## containerPort and for liveness/readiness probe targets. The external
+## entrypoint is the router sidecar (see router.externalPort below).
+internalPort: 8000
+
+## Wingman container resources.
+## ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 3Gi
+
+## Graceful shutdown coordination. Order of events when a pod is removed:
+##   1. preStop hook sleeps preStopSleepSeconds — gives the Service time
+##      to drop the pod from its endpoints before SIGTERM.
+##   2. SIGTERM is delivered; Wingman gives uvicorn uvicornTimeoutSeconds
+##      to drain in-flight requests.
+##   3. The pod is force-killed if still running after
+##      terminationGracePeriodSeconds.
+gracefulShutdown:
+  terminationGracePeriodSeconds: 40
+  preStopSleepSeconds: 10
+  uvicornTimeoutSeconds: 25
+
+## Liveness and readiness probes. The `config` block is rendered with `tpl`,
+## so it can reference other values like {{ .Values.internalPort }} and
+## {{ .Values.probes.timeoutSeconds }}.
+livenessProbe:
+  enabled: true
+  config: |
+    exec: null
+    httpGet:
+      path: /api/v1/system/liveness
+      port: {{ .Values.internalPort }}
+    failureThreshold: 3
+    periodSeconds: 15
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+readinessProbe:
+  enabled: true
+  config: |
+    exec: null
+    httpGet:
+      path: /api/v1/system/readiness?noCache=true
+      port: {{ .Values.internalPort }}
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 15
+    timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+## Annotations applied to the Wingman pod template.
+podAnnotations: {}
+
+## Labels applied to the Wingman pod template. The `app` label is also
+## consumed by the ServiceMonitor selector (templates/servicemonitor.yaml)
+## when serviceMonitor.enabled=true — keep it set if Prometheus scraping
+## is in scope.
+podLabels:
+  app: wingman
+
+## Extra environment variables that can be used to tune Wingman to your needs.
+## Uncomment and set value as needed.
+##
+## JF_-prefixed env vars take precedence over system.yaml.
+extraEnvironmentVariables: []
+# - name: JF_WINGMAN_DATABASE_URL
+#   value: "postgresql://localhost:5432/wingman"
+# - name: JF_WINGMAN_DATABASE_PASSWORD
+#   valueFrom:
+#     secretKeyRef:
+#       name: my-db-secret
+#       key: db-password
+
+## Additional volumes attached to the Wingman pod template.
+## Provide list entries here to mount extra ConfigMaps, Secrets, emptyDirs, etc.
+volumes: []
+
+## Extra volumeMounts attached to the wingman container. Pair with
+## .Values.volumes for log persistence (LOGGING_FILES_ENABLED=true) or
+## any other operator-supplied mount.
+volumeMounts: []
+
+## Adding entries to a Pod's /etc/hosts file
+## For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases: []
+
+## External PostgreSQL (postgresql.enabled=false). Provide a full DSN
+## via `url` and the chart will route it as JF_SHARED_DATABASE_URL env
+## var sourced from the unified platform Secret. system.yaml only
+## carries shared.database.type and driver on this path. Username and
+## password are delivered the same way through
+## JF_SHARED_DATABASE_USERNAME and JF_SHARED_DATABASE_PASSWORD.
+##
+## Need a dedicated Wingman-only DB target? Use
+## extraSystemYaml.wingman.database.{url,host,...} — the backend
+## resolver prefers the dedicated tier over the shared tier.
+##
+## Wingman only supports PostgreSQL. The backend validates
+## wingman.database.type and shared.database.type at startup and
+## rejects anything else (or shared.database.allowNonPostgresql=true).
+##
+## `username` is the canonical key (matches shared.database.username and
+## the rest of the JFrog Platform). `user` is accepted as a
+## backward-compatible alias for values files carried over from older
+## chart versions; when both are set `username` wins. The alias may be
+## removed in a future minor version.
+database:
+  type: postgresql
+  driver: org.postgresql.Driver
+  url: ""
+  username: ""
+  # user: ""  # deprecated alias for `username`
+  password: ""
+
+## helm upgrade safety hook for the bundled PostgreSQL subchart.
+## Set to true on `helm upgrade` to acknowledge you have read
+## files/postgresUpgradeWarning.txt and pinned postgresql.image.tag
+## to the currently running version (avoids a destructive major-version bump).
+databaseUpgradeReady: false
+
+## PostgreSQL (For Self-hosted - bundled) via the Bitnami postgresql
+## subchart. Evaluation / demo only — single replica, no backups, no HA.
+##
+## Default: true ("just works" out-of-box install). Production deployments
+## using a dedicated or shared external database MUST explicitly set
+## `postgresql.enabled: false` — chart validation fails fast on the
+## conflict (see templates/wingman-validations.yaml) to prevent a useless
+## StatefulSet being deployed alongside the real database. See README.md
+## for the full database-tier matrix (dedicated > shared > bundled).
+##
+## Full knob reference:
+##   https://github.com/bitnami/charts/tree/main/bitnami/postgresql
+postgresql:
+  enabled: true
+  image:
+    registry: releases-docker.jfrog.io
+    repository: echohq/postgres
+    ## Bumped 17.10-helm -> 17.10-helm-20260621 (WNGM-4987): fixes libperl5.40 CVE.
+    tag: 17.10-helm-20260621
+    pullPolicy: IfNotPresent
+  auth:
+    username: wingman
+    ## Leave empty to auto-generate (persisted across upgrades by Bitnami).
+    password: ""
+    database: wingman
+    ## Use a pre-created Secret instead (Bitnami keys: postgres-password, password).
+    existingSecret: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 500Mi
+      storageClass: ""
+    service:
+      ports:
+        postgresql: 5432
+    resources: {}
+
+## Router sidecar (registers Wingman with the Platform Access service).
+router:
+  name: router
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/router
+    ## Bumped 7.320.24 -> 7.320.28 (WNGM-4794): router binary rebuilt with
+    ## golang.org/x/crypto 0.52.0 and golang.org/x/net 0.55.0 (clears the 6 router CVEs:
+    ## CVE-2026-39830/39831/39832/39833/42508 + CVE-2026-39821).
+    tag: 7.320.44
+    pullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: false
+  internalPort: 8046
+  externalPort: 8082
+  tlsEnabled: false
+  ## Add lifecycle hooks for the router pod
+  lifecycle: {}
+  # postStart:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the router postStart handler > /usr/share/message"]
+  # preStop:
+  #   exec:
+  #     command: ["/bin/sh", "-c", "echo Hello from the router preStop handler > /usr/share/message"]
+  resources: {}
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
+  ## Extra env vars for the router container.
+  extraEnvironmentVariables: []
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: "/router/api/v1/system/liveness"
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "wingman.scheme" . | upper }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: "/router/api/v1/system/readiness"
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "wingman.scheme" . | upper }}
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}30{{ else }}0{{ end }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 5
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: "/router/api/v1/system/readiness"
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "wingman.scheme" . | upper }}
+      initialDelaySeconds: 30
+      failureThreshold: 80
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  ## Full probe overrides (advanced). When non-empty, these REPLACE the
+  ## templated {liveness,readiness,startup}Probe blocks above. Each value
+  ## is a complete Kubernetes probe definition; supports tpl rendering.
+  customLivenessProbe: {}
+  customReadinessProbe: {}
+  customStartupProbe: {}
+
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
+
+## Observability sidecar (ships usage metrics and logs to Artifactory via the
+## JFrog Platform telemetry pipeline). Self-hosted only — SaaS uses its own
+## platform-level telemetry pipeline and sets observability.enabled: false in
+## infra-core-config.
+##
+## When enabled, a third container is appended to the pod (alongside wingman
+## and router). It mounts the same system.yaml, master-key, and join-key as
+## the other containers so it can register with the router and join the
+## platform on startup.
+##
+## The image version can be pinned from an umbrella chart via
+## global.versions.observability (takes precedence over observability.image.tag).
+observability:
+  enabled: true
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/observability
+    ## Used only for standalone chart installs.
+    ## In umbrella-chart deployments global.versions.observability takes precedence (see _helpers.tpl 'observability.image').
+    tag: 2.53.0
+    pullPolicy: IfNotPresent
+  resources: {}
+  # requests:
+  #   memory: "100Mi"
+  #   cpu: "100m"
+  # limits:
+  #   memory: "1Gi"
+  #   cpu: "1"
+  ## Extra env vars for the observability container.
+  extraEnvironmentVariables: []
+  ## Extra volume mounts for the observability container.
+  customVolumeMounts: []
+
+  livenessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /observability/api/v1/system/liveness
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "wingman.scheme" . | upper }}
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /observability/api/v1/system/readiness
+        port: {{ .Values.router.externalPort }}
+        scheme: {{ include "wingman.scheme" . | upper }}
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 3
+      successThreshold: 1
+
+  persistence:
+    mountPath: "/var/opt/jfrog/observability"
+
+## Partial system.yaml override merged on top of the chart-rendered base.
+extraSystemYaml: {}
+
+## Inline full system.yaml override (replaces the chart-rendered base).
+# systemYaml: |
+
+## Full system.yaml override sourced from an existing Kubernetes Secret
+## (advanced). For inline and partial overrides see systemYaml and
+## extraSystemYaml respectively.
+systemYamlOverride:
+  existingSecret: ""
+  dataKey:
+
+## Operator-provided credential extras folded into the unified platform
+## Secret. Each key becomes a base64 entry in the Secret AND an env var
+## (uppercased) on the Wingman / playground containers. See README.md →
+## Secrets rendered by the chart.
+createSecret:
+  values: {}
+
+## Custom CA certificates for self-hosted deployments behind corporate
+## proxies or internal PKI (privately-signed certs). When enabled, the
+## copy-custom-certificates init container mounts the named Secret at
+## /tmp/certs and copies every cert (excluding .key files) into
+## <persistence.mountPath>/var/etc/security/keys/trusted on the shared data
+## volume. Wingman's HTTP clients load that directory at startup (layered on
+## top of certifi defaults) — see backend app.core.ssl_context.
+customCertificates:
+  enabled: false
+  ## Name of a K8s Secret containing .crt/.pem CA certificate files.
+  certificateSecretName: ""

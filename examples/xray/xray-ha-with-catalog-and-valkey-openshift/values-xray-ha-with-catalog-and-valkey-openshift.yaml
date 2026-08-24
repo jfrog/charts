@@ -1,0 +1,86 @@
+unifiedUpgradeAllowed: true
+databaseUpgradeReady: true
+
+global:
+  jfrogUrl: http://art-artifactory:8082
+  masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  xray:
+    rabbitmq:
+      replicaCount: 3
+      haQuorum:
+        enabled: true
+      migrateMessagesFromXrayDefaultVhost: true
+
+containerSecurityContext:
+  enabled: false
+podSecurityContext:
+  enabled: false
+
+rbac:
+  create: true
+serviceAccount:
+  create: true
+
+xray:
+  ## Adds extra system yaml settings to the xray deployment
+  extraSystemYaml:
+    shared:
+      application:
+        level: info
+
+database:
+  type: "postgresql"
+  driver: "org.postgresql.Driver"
+  url: postgres://my-postgresql:5432/xraydb?sslmode=disable
+  user: xray
+  password: xray
+
+catalog:
+  enabled: true
+  replicaCount: 2
+  ## Adds extra system yaml settings to the catalog deployment
+  extraSystemYaml:
+    shared:
+      application:
+        level: info
+  cache:
+    enabled: true
+  containerSecurityContext:
+    enabled: false
+  podSecurityContext:
+    enabled: false
+  database:
+    url: "postgres://my-postgresql-catalog:5432/catalogdb?sslmode=disable"
+    user: "catalog"
+    password: "catalog"
+
+valkey:
+  enabled: true
+  rbac:
+    create: true
+  serviceAccount:
+    create: true
+  replica:
+    replicaCount: 3
+  sentinel:
+    enabled: true
+
+rabbitmq:
+  # 3 replicas are needed for RabbitMQ HA in quorum mode
+  replicaCount: 3
+  image:
+    repository: echohq/rabbitmq
+    tag: 4.1-helm-20260716
+  podManagementPolicy: Parallel
+  auth:
+    password: guest
+  rbac:
+    create: true
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+postgresql:
+  enabled: false

@@ -1,8 +1,10 @@
 {{- if .Values.ingress.enabled -}}
-{{- $serviceName := include "artifactory-ha.fullname" . -}}
-{{- $servicePort := .Values.artifactory.externalPort -}}
+{{- $useNginxBackend := eq .Values.ingress.backendService "nginx" -}}
+{{- $serviceName := ternary (include "artifactory-ha.nginx.fullname" .) (include "artifactory-ha.fullname" .) $useNginxBackend -}}
+{{- $nginxBackendPort := .Values.ingress.nginxBackendPort | default .Values.nginx.http.externalPort -}}
+{{- $servicePort := ternary $nginxBackendPort .Values.artifactory.externalPort $useNginxBackend -}}
+{{- $artifactoryServicePort := ternary $nginxBackendPort .Values.artifactory.externalArtifactoryPort $useNginxBackend -}}
 {{- $serviceRTFSName := include "rtfs.fullname" . -}}
-{{- $artifactoryServicePort := .Values.artifactory.externalArtifactoryPort -}}
 {{- $ingressName := default ( include "artifactory-ha.fullname" . ) .Values.ingress.name -}}
 {{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1" }}
 apiVersion: networking.k8s.io/v1
@@ -57,7 +59,7 @@ spec:
               name: {{ $serviceName }}
               port:
                 number: {{ $servicePort }}
-        {{- if not $.Values.ingress.disableRouterBypass }}
+        {{- if and (not $useNginxBackend) (not $.Values.ingress.disableRouterBypass) }}
         - path: {{ $.Values.ingress.artifactoryPath }}
           pathType: {{ $.Values.ingress.pathType | default "ImplementationSpecific" }}
           backend:
@@ -81,11 +83,13 @@ spec:
           backend:
             serviceName: {{ $serviceName }}
             servicePort: {{ $servicePort }}
+        {{- if and (not $useNginxBackend) (not $.Values.ingress.disableRouterBypass) }}
         - path: {{ $.Values.ingress.artifactoryPath }}
           backend:
             serviceName: {{ $serviceName }}
             servicePort: {{ $artifactoryServicePort }}
-    {{- end }}
+        {{- end }}
+      {{- end }}
   {{- end }}
 {{- end -}}
   {{- with .Values.ingress.additionalRules }}

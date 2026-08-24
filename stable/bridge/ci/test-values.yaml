@@ -1,0 +1,656 @@
+# Default values for bridge.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  # imageRegistry: ""
+  imagePullSecrets:
+    - regcred
+
+  ## JFrog Bridge service requires a unique master key.
+  ## You can generate one with the command: "openssl rand -hex 32"
+  ## An initial one is auto generated on first startup.
+  # masterKey: ""
+
+  ## Alternatively, you can use a pre-existing secret with a key
+  ## called "master-key" by specifying "masterKeySecretName"
+  # masterKeySecretName: ""
+
+  ## Join Key to connect other services to Artifactory
+  ## IMPORTANT: Setting this value overrides the existing joinKey
+  joinKey: "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+
+  ## Alternatively, you can use a pre-existing secret with a key
+  ## called "join-key" by specifying "joinKeySecretName"
+  masterKey: "1111111111111111111111111111111111111111111111111111111111111111"
+
+  ## Note: tags customInitContainers,extraVolumes,extraVolumeMounts,customSidecarContainers can be used both from global and application level simultaneously
+  # extraVolumes: |
+
+  # extraVolumeMounts: |
+
+  # customInitContainers: |
+
+  # customSidecarContainers: |
+
+  ## certificates added to this secret will be copied to $JFROG_HOME/var/etc/security/keys/trusted directory
+  # customCertificates:
+    # enabled: false
+    # certificateSecretName:
+
+  ## Applies to Bridge pods
+  nodeSelector:
+    kubernetes.io/hostname: kind-singletenant-control-plane
+
+jfrogUrl: "http://artifactory-local:8082"
+
+## Number of replicas used when autoscaling is disabled
+replicaCount: 1
+
+## JFrog Bridge run mode. Possible values: client, server
+mode: client
+
+## Configuration for the tunnel. Depending on the mode, the client or server configuration is used
+tunnel:
+  client:
+    bridges:
+      default:
+        ## Configuration for the local endpoint. Client will forward requests to this endpoint
+        local:
+          url: https://localhost
+        ## Configuration for the remote endpoint. Client will open a tunnel to this endpoint
+        remote:
+          url: https://remote-host
+
+## Token used to authenticate the client with the remote endpoint in order to open a tunnel
+## Token should have scope 'system:bridge:x' and be long-lived
+tunnelClientToken: the-token
+## Alternatively, you can use a pre-existing secret with a key called tunnel-client-token by specifying tunnelClientTokenSecretName
+tunnelClientTokenSecretName: ""
+
+## JFrog Bridge image
+image:
+  registry: entplus.jfrog.io
+  pullSecrets:
+    - "regcred"
+  repository: dev-feature-bridge-5-docker-virtual/jfrog/bridge
+  tag: 0.0.0-feature-BRIDGE-5-20250210132841-84a3c71b1ba2-5
+  # pullPolicy: IfNotPresent
+
+## String to partially override bridge.name template (will maintain the release name)
+nameOverride: "bridgename"
+## String to fully override bridge.fullname template
+fullnameOverride: "bridgefullname"
+
+## Specify common probes parameters
+probes:
+  timeoutSeconds: 110
+
+## Service Account
+## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
+##
+serviceAccount:
+  ## Specifies whether a service account should be created
+  create: false
+  ## Annotations to add to the service account
+  annotations: {}
+  ## The name of the service account to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+## Annotations added to JFrog Bridge pods
+podAnnotations:
+  custom: mybridge
+
+## Disable podSecurityContext for openshift
+podSecurityContext:
+  enabled: true
+  fsGroup: 1065
+  runAsUser: 1065
+
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
+## Disable containerSecurityContext for openshift
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
+
+## Set sleep in order to keep service responding while k8s is removing it from network
+lifecycle:
+  preStopSleepSeconds: 5
+
+## Bridge service configuration
+service:
+  type: ClusterIP
+  port: 8069
+  nodePort: 30000
+  productHome: /opt/jfrog/bridge
+
+## Bridge service ingress configuration
+ingress:
+  enabled: true
+  ingress_class: "nginx-internal"
+  hostname: "bridge-client.test.svc.cluster.local"
+  annotations: {}
+  tls: []
+  clientBodyTimeout: 43200s
+
+## Network Policy configuration
+## ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+##
+networkpolicy:
+  ## Allows all ingress and egress
+  - name: bridge
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/name: bridge
+    egress:
+    - {}
+    ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            networkpolicy: allowed
+      - podSelector: {}
+
+## Bridge container resources
+resources:
+  limits:
+    cpu: 1
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
+## Autoscaling configuration for JFrog Bridge deployment
+autoscaling:
+  ## @param autoscaling.enabled Enable replica autoscaling settings
+  ##
+  enabled: true
+  minReplicas: 1
+  ## @param autoscaling.maxReplicas Maximum replicas for the pod autoscaling
+  ##
+  maxReplicas: 5
+  ## @param autoscaling.targetCPU Percentage of CPU to consider when autoscaling
+  ##
+  targetCPU: 90
+  ## @param autoscaling.targetMemory Percentage of Memory to consider when autoscaling
+  ##
+  targetMemory: 90
+
+## @param serviceMonitor Declaratively specifies how groups of Kubernetes services should be monitored.
+## Ref: https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/user-guides/getting-started.md
+serviceMonitor:
+  observabilityEnabled: true
+  scheme: http
+  targetPort: 8082
+  enabled: false
+  interval: 60s
+  scrapeTimeout: 15s
+  kubePromApp: ""
+  kubePromFullName: ""
+  namespaceSelector:
+    any: true
+  additionalLabels: {}
+  relabelings: []
+
+## Applies to bridge pods
+# nodeSelector: {}
+
+## Applies to bridge pods
+# tolerations: []
+
+## Applies to bridge pods
+# affinity: {}
+
+## Extra environment variables that can be used to tune JFrog Bridge service to your needs.
+## Uncomment and set value as needed
+extraEnvironmentVariables:
+  - name: MY_ENV_VAR
+    value: "4"
+
+
+router:
+  name: router
+  image:
+    registry: entplus.jfrog.io
+    repository: jfrog-docker/jfrog/router
+    tag: 7.157.0
+  #   imagePullPolicy: IfNotPresent
+  serviceRegistry:
+    ## Service registry (Access) TLS verification skipped if enabled
+    insecure: true
+  internalPort: 8046
+  externalPort: 8082
+  tlsEnabled: false
+
+  ## Extra environment variables that can be used to tune router to your needs.
+  ## Uncomment and set value as needed
+  extraEnvironmentVariables:
+    - name: MY_ENV_VAR
+      value: "5"
+
+      # resources:
+      #   requests: {}
+      #    memory: "100Mi"
+      #    cpu: "100m"
+      # limits: {}
+  #    memory: "1Gi"
+  #    cpu: "1"
+
+  ## Add custom volumesMounts
+  extraVolumeMounts:
+    - name: custom-script
+      mountPath: /scripts/router-script.sh
+      subPath: script.sh
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      failureThreshold: 10
+      successThreshold: 1
+  # readinessProbe:
+  #   enabled: true
+  #   config: |
+  #     exec:
+  #       command:
+  #         - sh
+  #         - -c
+  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+  #     initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}60{{ else }}0{{ end }}
+  #     periodSeconds: 5
+  #     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  #     failureThreshold: 10
+  #     successThreshold: 1
+  # startupProbe:
+  #   enabled: true
+  #   config: |
+  #     exec:
+  #       command:
+  #         - sh
+  #         - -c
+  #         - curl -s -k --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.router.internalPort }}/router/api/v1/system/readiness
+  #     initialDelaySeconds: 0
+  #     failureThreshold: 60
+  #     periodSeconds: 5
+  #     timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  persistence:
+    mountPath: "/var/opt/jfrog/router"
+
+## @section Init Container Parameters
+##
+
+## Init Container parameters
+
+initContainers:
+  ## @param volumePermissions.enabled Enable init container that changes the owner and group of the persistent volume(s) mountpoint to `runAsUser:fsGroup`
+  ##
+  ## @param initContainers.image.registry Init container volume-permissions image registry
+  ## @param initContainers.image.repository Init container volume-permissions image repository
+  ## @param initContainers.image.tag Init container volume-permissions image tag
+  ## @param initContainers.image.pullPolicy Init container volume-permissions image pull policy
+  ## @param initContainers.image.pullSecrets Specify docker-registry secret names as an array
+  ##
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/echo-mini
+    tag: "20260629"
+    ## Specify a imagePullPolicy
+    ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+    ## ref: https://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    ##
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets (secrets must be manually created in the namespace)
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## Example:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets:
+      - "regcred"
+  ## Init Container resource requests and limits
+  ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param volumePermissions.resources.limits Init container volume-permissions resource limits
+  ## @param volumePermissions.resources.requests Init container volume-permissions resource requests
+  ##
+  resources:
+    ## Example:
+    ## limits:
+    ##    cpu: 100m
+    ##    memory: 128Mi
+    ##
+    limits: {}
+    ## Examples:
+    ## requests:
+    ##    cpu: 100m
+    ##    memory: 128Mi
+    ##
+    requests: {}
+
+## a unique master key.
+## You can generate one with the command: "openssl rand -hex 32"
+## An initial one is auto generated by Artifactory on first startup.
+# masterKey: FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+## Alternatively, you can use a pre-existing secret with a key called master-key by specifying masterKeySecretName
+# masterKeySecretName: ""
+
+## Join Key to connect other services to Artifactory
+## IMPORTANT: Setting this value overrides the existing joinKey
+## IMPORTANT: You should NOT use the example joinKey for a production deployment!
+# joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+## Alternatively, you can use a pre-existing secret with a key called join-key by specifying joinKeySecretName
+# joinKeySecretName: ""
+
+## System YAML entries now reside under files/system.yaml.
+## You can provide the specific values that you want to add or override under 'extraSystemYaml'.
+## For example:
+## extraSystemYaml:
+##   shared:
+##     node:
+##       id: my-instance
+## The entries provided under 'extraSystemYaml' are merged with files/system.yaml to create the final system.yaml.
+## If you have already provided system.yaml under, 'systemYaml', the values in that entry take precedence over files/system.yaml
+## You can modify specific entries with your own value under `extraSystemYaml`, The values under extraSystemYaml overrides the values under 'systemYaml' and files/system.yaml
+extraSystemYaml: {}
+
+## systemYaml is intentionally commented and the previous content has been moved under files/system.yaml.
+## You have to add the all entries of the system.yaml file here, and it overrides the values in files/system.yaml.
+# systemYaml:
+
+## JFrog Bridge systemYaml override
+## This is for advanced use cases where users wants to provide their own systemYaml for configuring JFrog Bridge
+## Note: This will override existing (default) .Values.systemYaml in values.yaml
+## Alternatively, systemYaml can be overridden via customInitContainers using external sources like vaults, external repositories etc. Please refer customInitContainer section below for an example.
+## Note: Order of preference is 1) customInitContainers 2) systemYamlOverride existingSecret 3) default systemYaml in values.yaml
+# systemYamlOverride:
+#   ## You can use a pre-existing secret by specifying existingSecret
+#   existingSecret: ""
+#   ## The dataKey should be the name of the secret data key created.
+#   dataKey:
+
+## @param commonAnnotations Annotations to add to all deployed objects
+##
+commonAnnotations:
+  jfrog.io/service_type: jfbrc
+
+## @param podLabels integration Pod labels. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+podLabels:
+  podlabel: number1
+
+## JFrog Bridge deployment labels
+labels:
+  dpLabel: number2
+
+common:
+  ## Spread JFrog Bridge pods evenly across your nodes or some other topology
+  topologySpreadConstraints: []
+    # - maxSkew: 1
+    #   topologyKey: kubernetes.io/hostname
+    #   whenUnsatisfiable: DoNotSchedule
+    #   labelSelector:
+    #     matchLabels:
+    #       app: '{{ template "bridge.name" . }}'
+    #       role: '{{ template "bridge.name" . }}'
+    #       release: "{{ .Release.Name }}"
+
+  ## Custom command to run before microservice startup. Runs BEFORE any microservice-specific preStartCommand
+  preStartCommand: "ls"
+
+  ## Add custom volumes
+  extraVolumes:
+    - name: custom-script
+      configMap:
+        name: custom-script
+
+  ## Add custom volumesMounts
+  extraVolumeMounts:
+    - name: custom-script
+      mountPath: /scripts/script.sh
+      subPath: script.sh
+
+  ## Add any list of configmaps to bridge
+  configMaps: |
+    posthook-start.sh: |-
+      echo "This is a post start script"
+    posthook-end.sh: |-
+      echo "This is a post end script"
+
+  ## Add custom init containers execution after predefined init containers
+  customInitContainers: |
+    - name: "custom-systemyaml-setup"
+      image: {{ template "initContainers.image" $ }}
+      imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - NET_RAW
+      command:
+        - 'sh'
+        - '-c'
+        - 'ls /var/opt/jfrog/bridge/etc/'
+        # - 'curl -o /var/opt/jfrog/bridge/etc/system-custom.yaml https://<repo-url>/systemyaml'
+      volumeMounts:
+        - mountPath: "/var/opt/jfrog/bridge"
+          name: data
+
+  ## Add custom sidecar containers
+  ## - The provided example uses a custom volume (extraVolumes)
+  customSidecarContainers: |
+    - name: "sidecar-list-etc"
+      image: {{ template "initContainers.image" $ }}
+      imagePullPolicy: {{ $.Values.initContainers.image.pullPolicy | quote }}
+      securityContext:
+        runAsNonRoot: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - NET_RAW
+      command:
+        - 'sh'
+        - '-c'
+        - 'sh /scripts/script.sh'
+      volumeMounts:
+        - mountPath: "/var/opt/jfrog/bridge"
+          name: data
+        - mountPath: "/scripts/script.sh"
+          name: custom-script
+          subPath: script.sh
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+
+## certificates added to this secret will be copied to $JFROG_HOME/var/etc/security/keys/trusted directory
+customCertificates:
+  enabled: true
+  certificateSecretName: platformcert
+
+## Adding entries to a Pod's /etc/hosts file
+## For an example, refer - https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases
+hostAliases:
+  - ip: "100.64.0.1"
+    hostnames:
+      - "webhook.site"
+
+## Bridge liveness probe configuration
+livenessProbe:
+  enabled: true
+
+## Bridge readiness probe configuration
+readinessProbe:
+  enabled: true
+
+## Add any of the loggers to a sidecar if you want to be able to see them with kubectl logs or a log collector in your k8s cluster
+loggers:
+  - router-request.log
+  - router-service.log
+  - router-traefik.log
+  - bridge-client-service.log
+  - bridge-client-request.log
+
+## Loggers containers resources
+loggersResources:
+  requests:
+    memory: "64Mi"
+    cpu: "25m"
+  limits:
+    memory: "128Mi"
+    cpu: "50m"
+
+## Filebeat Sidecar container
+## The provided filebeat configuration is for JFrog Bridge logs. It assumes you have a logstash installed and configured properly.
+filebeat:
+  enabled: true
+  name: bridge-filebeat
+  image:
+    repository: docker.elastic.co/beats/filebeat
+    version: 7.17.27
+    pullPolicy: IfNotPresent
+  logstashUrl: "logstash-logstash-headless:9600"
+
+  terminationGracePeriod: 10
+
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          curl --fail 127.0.0.1:5066
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  readinessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - |
+          #!/usr/bin/env bash -e
+          filebeat test output
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  resources:
+    requests:
+      memory: "300Mi"
+      cpu: "100m"
+    limits:
+      memory: "300Mi"
+      cpu: "100m"
+
+  filebeatYml: |
+    logging.level: info
+    path.data: /var/opt/jfrog/bridge/log/filebeat
+    name: bridge-filebeat
+    queue.spool:
+      file:
+        permissions: 0760
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      close_eof: ${CLOSE:false}
+      paths:
+         - /var/opt/jfrog/bridge/log/*.log
+      fields:
+        service: "jfbrc"
+        log_type: "bridge-client"
+    output:
+      logstash:
+         hosts: ["{{ .Values.filebeat.logstashUrl }}"]
+
+observability:
+  image:
+    registry: releases-docker.jfrog.io
+    repository: jfrog/observability
+    tag: 1.31.11
+  enabled: true
+  name: observability
+  internalPort: 8036
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "1"
+
+  ## Add lifecycle hooks for the observability pod
+  lifecycle:
+    postStart:
+      exec:
+        command: ["/bin/sh", "-c", "echo 'Hello from the observability postStart handler'"]
+    preStop:
+      exec:
+        command: ["/bin/sh", "-c", "echo 'Hello from the observability preStart handler'"]
+
+  livenessProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/liveness
+      initialDelaySeconds: {{ if semverCompare "<v1.20.0-0" .Capabilities.KubeVersion.Version }}90{{ else }}0{{ end }}
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
+
+  startupProbe:
+    enabled: true
+    config: |
+      exec:
+        command:
+          - sh
+          - -c
+          - curl --fail --max-time {{ .Values.probes.timeoutSeconds }} http://localhost:{{ .Values.observability.internalPort }}/api/v1/system/readiness
+      initialDelaySeconds: 30
+      failureThreshold: 90
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+
+  persistence:
+    mountPath: "/var/opt/jfrog/observability"
+
+## Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+##
+pdb:
+  ## @param pdb.create Enable/disable a Pod Disruption Budget creation
+  ##
+  create: true
+  ## @param pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
+  ##
+  minAvailable: 2
+  ## @param pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+  ##
+  maxUnavailable: 1

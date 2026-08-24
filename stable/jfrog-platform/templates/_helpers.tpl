@@ -115,6 +115,9 @@ Resolve unifiedSecretInstallation name
 {{- if eq .Chart.Name "catalog" -}}
 {{- printf "%s" (include "catalog.fullname" .)  -}}
 {{- end }}
+{{- if eq .Chart.Name "wingman" -}}
+{{- printf "%s-%s" (include "wingman.fullname" .) "unified-secret" -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
@@ -431,3 +434,81 @@ extra init container for rabbitmq quorum
       {{- end }}
 {{- end }}
 {{- end }}
+{{/*
+Override the artifactory subchart's `nginx.tlsCertValidationFailMessage` so the
+error banner rendered on a fresh install of the JFrog Platform chart guides
+operators to the correct umbrella-scope value paths (`artifactory.nginx.*`),
+not the base-chart-scope ones (`nginx.*`).
+
+Helm named templates live in a single global namespace across the whole
+release; the last-parsed definition wins. Parent-chart templates load AFTER
+their dependencies, so this definition supersedes the artifactory subchart's.
+The gate that decides *when* the message renders (`nginx.tlsCertMissingOnInstall`)
+still lives in the artifactory subchart and reads `.Values.nginx.*` in its own
+scope — which Helm already populates from `artifactory.nginx.*` on the umbrella.
+*/}}
+{{- define "nginx.tlsCertValidationFailMessage" -}}
+{{- print "\n" -}}
+{{- print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" -}}
+{{- print " 🛑  ERROR: MISSING NGINX TLS CERTIFICATE (JFrog Platform)\n" -}}
+{{- print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" -}}
+{{- print "artifactory.nginx.https.enabled=true but artifactory.nginx.tlsSecretName\n" -}}
+{{- print "is not set, and artifactory.nginx.generateSelfSignedCert is not enabled.\n" -}}
+{{- print "By default the JFrog Platform chart does NOT generate TLS certificates.\n\n" -}}
+{{- print "👉 OPTION 1 (Production Recommended): SUPPLY YOUR OWN CERTIFICATE\n" -}}
+{{- print "      Create a kubernetes.io/tls secret:\n" -}}
+{{- printf "      kubectl create secret tls artifactory-nginx-tls -n %s \\\n" .Release.Namespace -}}
+{{- print "        --cert=./tls.crt --key=./tls.key\n" -}}
+{{- print "      Reference the secret name in helm values:\n" -}}
+{{- print "      --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls\n\n" -}}
+{{- print "👉 OPTION 2 (Dev/Test only): OPT IN TO A SELF-SIGNED CERTIFICATE\n" -}}
+{{- print "      Enable chart-side generation in helm values:\n" -}}
+{{- print "      --set artifactory.nginx.generateSelfSignedCert=true\n" -}}
+{{- print "      WARNING: The chart-generated key is unique per install but is not\n" -}}
+{{- print "               issued by a trusted CA. Do not use in production.\n\n" -}}
+{{- print "👉 OPTION 3: DISABLE HTTPS (HTTP only)\n" -}}
+{{- print "      Disable HTTPS in helm values:\n" -}}
+{{- print "      --set artifactory.nginx.https.enabled=false\n\n" -}}
+{{- print "📚 TO LEARN MORE:\n" -}}
+{{- print "    https://docs.jfrog.com/installation/docs/establish-tls-in-artifactory-and-jfrog-platform\n" -}}
+{{- print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" -}}
+{{- print "\n" -}}
+{{- end -}}
+
+{{/*
+Override wingman subchart's `wingman.imagePullSecrets` helper so it accepts
+list-of-strings AND list-of-objects. The upstream wingman chart does a raw
+`toYaml` on `.Values.global.imagePullSecrets`, which for the string form
+(`global.imagePullSecrets: [ entplus ]` — the format the platform chart and
+its sibling subcharts document and accept) emits:
+  imagePullSecrets:
+  - entplus
+Kubernetes rejects that (`imagePullSecrets` needs `[{name: <ref>}]`) with:
+  json: cannot unmarshal string into Go struct field
+        PodSpec.spec.template.spec.imagePullSecrets of type v1.LocalObjectReference
+
+Helm named templates share one global namespace across the release and the
+last-parsed definition wins; parent-chart templates load after their
+dependencies, so this override supersedes wingman's without touching the
+remote subchart (upgrade-safe on `helm dep update`). Same technique as the
+nginx TLS validation banner override earlier in this file.
+*/}}
+{{- define "wingman.imagePullSecrets" -}}
+{{- $global := .Values.global | default dict -}}
+{{- $refs := list -}}
+{{- if $global.imagePullSecrets -}}
+{{- $refs = $global.imagePullSecrets -}}
+{{- else if .Values.imagePullSecrets -}}
+{{- $refs = .Values.imagePullSecrets -}}
+{{- end -}}
+{{- if $refs -}}
+imagePullSecrets:
+{{- range $refs }}
+{{- if kindIs "string" . }}
+  - name: {{ . }}
+{{- else }}
+  - {{ toYaml . | nindent 4 | trim }}
+{{- end }}
+{{- end }}
+{{- end -}}
+{{- end -}}

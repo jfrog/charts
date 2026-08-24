@@ -78,6 +78,39 @@ spec:
               {{- else }}
               cp -fv /tmp/etc/system.yaml {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/system.yaml;
               {{- end }}
+          {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+              echo "Copy joinKey to {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_JOIN_KEY} > {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/security/join.key;
+          {{- end }}
+          {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+              echo "Copy masterKey to {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/security";
+              mkdir -p {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/security;
+              echo -n ${ARTIFACTORY_MASTER_KEY} > {{ .Values.unifiedpolicy.persistence.mountPath }}/etc/security/master.key;
+          {{- end }}
+          env:
+          {{- if or .Values.artifactory.joinKey .Values.global.joinKey .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+          - name: ARTIFACTORY_JOIN_KEY
+            valueFrom:
+              secretKeyRef:
+              {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.joinKeySecretName .Values.global.joinKeySecretName }}
+                name: {{ include "artifactory-ha.joinKeySecretName" . }}
+              {{- else }}
+                name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+              {{- end }}
+                key: join-key
+          {{- end }}
+          {{- if or .Values.artifactory.masterKey .Values.global.masterKey .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+          - name: ARTIFACTORY_MASTER_KEY
+            valueFrom:
+              secretKeyRef:
+                {{- if or (not .Values.artifactory.unifiedSecretInstallation) .Values.artifactory.masterKeySecretName .Values.global.masterKeySecretName }}
+                name: {{ include "artifactory-ha.masterKeySecretName" . }}
+                {{- else }}
+                name: "{{ template "artifactory.unifiedSecretPrependReleaseName" . }}-unified-secret"
+                {{- end }}
+                key: master-key
+          {{- end }}
           volumeMounts:
             - name: data
               mountPath: {{ .Values.unifiedpolicy.persistence.mountPath | quote }}
@@ -94,6 +127,40 @@ spec:
               subPath: "system.yaml"
               {{- end }}
       containers:
+        {{- if .Values.observability.enabled }}
+        - name: {{ .Values.observability.name }}
+          image: {{ include "artifactory-ha.getImageInfoByValue" (list . "observability") }}
+          imagePullPolicy: {{ .Values.observability.image.pullPolicy }}
+          {{- if .Values.unifiedpolicy.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.unifiedpolicy.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.observability.lifecycle }}
+          lifecycle:
+{{ toYaml . | indent 12 }}
+          {{- end }}
+          env:
+          - name: JF_SHARED_PLATFORMSERVICES_ENABLED
+            value: "true"
+{{- with .Values.observability.extraEnvironmentVariables }}
+{{ tpl (toYaml .) $ | indent 10 }}
+{{- end }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.observability.persistence.mountPath | quote }}
+{{- with .Values.observability.customVolumeMounts }}
+{{ tpl . $ | indent 10 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.observability.resources | indent 12 }}
+          {{- if .Values.observability.startupProbe.enabled }}
+          startupProbe:
+{{ tpl .Values.observability.startupProbe.config . | indent 12 }}
+          {{- end }}
+          {{- if .Values.observability.livenessProbe.enabled }}
+          livenessProbe:
+{{ tpl .Values.observability.livenessProbe.config . | indent 12 }}
+          {{- end }}
+        {{- end }}
         - name: unifiedpolicy
           image: {{ include "artifactory-ha.getImageInfoByValue" (list . "unifiedpolicy") }}
           imagePullPolicy: {{ .Values.initContainers.image.pullPolicy | quote }}
@@ -260,8 +327,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: {{ .Values.router.persistence.mountPath | quote }}
-            {{- if .Values.router.extraVolumeMounts }}
-            {{- toYaml .Values.router.extraVolumeMounts | nindent 12 }}
+            {{- with .Values.router.customVolumeMounts }}
+{{ tpl . $ | indent 12 }}
             {{- end }}
             {{- if .Values.router.startupProbe.enabled }}
           startupProbe:
@@ -304,6 +371,12 @@ spec:
       {{- end }}
         {{- if .Values.unifiedpolicy.customVolumes }}
 {{ tpl (include "artifactory.unifiedpolicy.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.observability.customVolumes }}
+{{ tpl (include "artifactory-ha.observability.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.router.customVolumes }}
+{{ tpl (include "artifactory-ha.router.customVolumes" .)  . | indent 8 }}
         {{- end }}
         - name: data
           emptyDir: {}

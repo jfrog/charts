@@ -152,13 +152,6 @@ spec:
 {{ tpl (toYaml .) $ | indent 10 }}
 {{- end }}
           volumeMounts:
-          {{- if or .Values.artifactory.customVolumeMounts .Values.global.customVolumeMounts }}
-{{ tpl (include "artifactory-ha.customVolumeMounts" .) . | indent 10 }}
-          {{- end }}
-          {{- if .Values.artifactory.customPersistentVolumeClaim }}
-          - name: {{ .Values.artifactory.customPersistentVolumeClaim.name }}
-            mountPath: {{ .Values.artifactory.customPersistentVolumeClaim.mountPath }}
-          {{- end }}
           - name: data
             mountPath: {{ .Values.observability.persistence.mountPath | quote }}
 {{- with .Values.observability.customVolumeMounts }}
@@ -403,6 +396,12 @@ spec:
       {{- end }}
         {{- if .Values.platformfederation.customVolumes }}
 {{ tpl (include "artifactory.platformfederation.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.observability.customVolumes }}
+{{ tpl (include "artifactory-ha.observability.customVolumes" .)  . | indent 8 }}
+        {{- end }}
+        {{- if .Values.router.customVolumes }}
+{{ tpl (include "artifactory-ha.router.customVolumes" .)  . | indent 8 }}
         {{- end }}
         - name: data
           emptyDir: {}

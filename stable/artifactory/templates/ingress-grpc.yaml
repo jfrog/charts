@@ -1,4 +1,4 @@
-{{- if .Values.ingressGrpc.enabled -}}
+{{- if and .Values.ingressGrpc.enabled (not .Values.ingressGrpc.enableServiceOnly) -}}
 {{- $serviceName := include "artifactory.serviceGrpc.fullname" . -}}
 {{- $servicePort := .Values.artifactory.externalPort -}}
 {{- $ingressName := include "artifactory.ingressGrpc.fullname" . -}}

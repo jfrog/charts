@@ -1,0 +1,14 @@
+router:
+  serviceRegistry:
+    insecure: {{ .Values.router.serviceRegistry.insecure }}
+  entrypoints:
+    internalPort: {{ .Values.router.internalPort }}
+bridge:
+  port: {{ .Values.service.port }}
+  tunnel:
+    client:
+      bridges:
+        {{- include "bridge.clientBridges" . | indent 8 }}
+    server:
+      forward:
+        dialTimeoutSecs: {{ .Values.tunnel.server.forward.dialTimeoutSecs }}
