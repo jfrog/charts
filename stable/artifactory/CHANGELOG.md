@@ -1,7 +1,7 @@
 # JFrog Artifactory Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [107.161.16] - Aug 04, 2026
+## [107.161.17] - Aug 04, 2026
 * **BREAKING CHANGE — mandatory keys:** Both `masterKey` and `joinKey` are now mandatory at install time (centralizes key management across the JFrog Platform).
   * **On fresh install** — both keys must be provided before running `helm install`.
   * **On upgrade** — reuse the existing keys from the running cluster; do **not** generate new ones.
@@ -27,6 +27,7 @@ All changes to this chart will be documented in this file.
 * Aligned the default `replicaCount` of the `frontend`, `rtfs`, `jfbus`, `jfmelt`, `apptrust`, `unifiedpolicy`, `evaluation` and `platformfederation` Deployments with `artifactory.replicaCount`, in `values.yaml` and in all sizing files.
 * Raised `autoscaling.maxReplicas` to the profile `replicaCount` in the xlarge (4) and 2xlarge (6) sizing files, for Artifactory and for the above services, so enabling autoscaling no longer caps these workloads below the size of the profile.
   Each of these services keeps its own `replicaCount`, so changing `artifactory.replicaCount` does not change theirs; they must be updated separately. A warning is printed when they are out of sync.
+* Added `nginx.customConfFile` and `nginx.customServerSnippet` to extend the nginx configuration without replacing it [GH-2290](https://github.com/jfrog/charts/pull/2290)
 
 
 ## [107.158.0] - Jun 25, 2026

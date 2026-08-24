@@ -1,7 +1,7 @@
 # JFrog Artifactory OSS Chart Changelog
 All changes to this chart will be documented in this file
 
-## [107.161.16] - Jul 27, 2026
+## [107.161.17] - Jul 27, 2026
 * **BREAKING CHANGE — mandatory keys:** Both `masterKey` and `joinKey` are now mandatory at install time (inherited from the `artifactory` sub-chart; centralizes key management across the JFrog Platform).
   * **On fresh install** — both keys must be provided before running `helm install`.
   * **On upgrade** — reuse the existing keys from the running cluster; do **not** generate new ones.

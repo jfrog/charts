@@ -355,7 +355,7 @@ router:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/router
-    tag: 7.729.23
+    tag: 7.729.40
     # digest:
     pullPolicy: IfNotPresent
   serviceRegistry:
@@ -1134,7 +1134,7 @@ frontend:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.652.21
+    tag: 1.652.41
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
@@ -1761,7 +1761,7 @@ observability:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/observability
-    tag: 2.47.5
+    tag: 2.47.9
     # digest:
     pullPolicy: IfNotPresent
   persistence:
@@ -1940,6 +1940,16 @@ nginx:
   customCommand:
   ##  allows overwriting the command for the nginx container.
   ##  defaults to [ 'nginx', '-g', 'daemon off;' ]
+
+  ## Additional conf files to add to the nginx conf.d directory, alongside the generated artifactory.conf.
+  ## Each entry is a `<filename>.conf: |` block and is included by the http block of the nginx main conf.
+  customConfFile: ""
+  #   custom.conf: |
+  #     log_format nginxartifactory '$proxy_protocol_addr - $remote_user [$time_local] "$request"';
+
+  ## Additional directives to add to the artifactory server block of the nginx artifactory conf.
+  customServerSnippet: ""
+  #   access_log /dev/stdout nginxartifactory;
 
   service:
     ## For minikube, set this to NodePort, elsewhere use LoadBalancer
@@ -2242,7 +2252,7 @@ rtfs:
     registry: releases-docker.jfrog.io
     repository: jfrog/artifactory-federation
     pullPolicy: IfNotPresent
-    tag: 2.126.10
+    tag: 2.126.17
     # digest:
   jfrogUrl: ""
   ## Aligned with artifactory.replicaCount. Update it separately to scale rtfs independently.
@@ -2423,7 +2433,7 @@ apptrust:
     registry: releases-docker.jfrog.io
     repository: jfrog/apptrust
     pullPolicy: IfNotPresent
-    tag: 1.86.5
+    tag: 1.86.8
     # digest:
   jfrogUrl: ""
   ## Aligned with artifactory.replicaCount. Update it separately to scale apptrust independently.
@@ -2547,7 +2557,7 @@ jfbus:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfbus-service
     pullPolicy: IfNotPresent
-    tag: 1.386.2
+    tag: 1.386.17
     # digest:
   ## Aligned with artifactory.replicaCount. Update it separately to scale jfbus independently.
   replicaCount: 1
@@ -2679,7 +2689,7 @@ jfmelt:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfmelt
     pullPolicy: IfNotPresent
-    tag: 1.12.4
+    tag: 1.12.6
     # digest:
   ## Aligned with artifactory.replicaCount. Update it separately to scale jfmelt independently.
   replicaCount: 1
@@ -2926,7 +2936,7 @@ evaluation:
     registry: releases-docker.jfrog.io
     repository: jfrog/evaluation
     pullPolicy: IfNotPresent
-    tag: 1.27.9
+    tag: 1.27.13
     # digest:
   jfrogUrl: ""
   ## Aligned with artifactory.replicaCount. Update it separately to scale evaluation independently.
@@ -3052,7 +3062,7 @@ platformfederation:
     registry: releases-docker.jfrog.io
     repository: jfrog/platformfederation
     pullPolicy: IfNotPresent
-    tag: 1.1328.9
+    tag: 1.1328.11
     # digest:
   port: 8017
   grpcPort: 8018
