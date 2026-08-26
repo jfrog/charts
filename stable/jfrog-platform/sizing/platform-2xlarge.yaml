@@ -296,17 +296,13 @@ xray:
   # This size is intended for large organizations. It can be increased with adding replicas
   ##############################################################
   
-  replicaCount: 3
+  # For autoscaling, refer to the KEDA HPA example:
+  # https://github.com/jfrog/charts/tree/master/examples/xray/xray-with-keda-hpa
+  # If KEDA cannot be installed in your cluster, a static replicaCount (as set below) is recommended.
+  replicaCount: 7
   databaseUpgradeReady: true
   waitForDatabase: true
   unifiedUpgradeAllowed: true
-  
-  autoscaling:
-    enabled: true
-    minReplicas: 3
-    maxReplicas: 12
-    targetCPUUtilizationPercentage: 200
-    targetMemoryUtilizationPercentage: 800
   
   xray:
     podAntiAffinity:
@@ -317,7 +313,7 @@ xray:
   analysis:
     resources:
       requests:
-        cpu: "100m"
+        cpu: "60m"
         memory: 250Mi
       limits:
         # cpu: "4"
@@ -327,7 +323,7 @@ xray:
     resources:
       requests:
         cpu: "300m"
-        memory: 550Mi
+        memory: 1Gi
       limits:
         # cpu: "6"
         memory: 8Gi
@@ -335,7 +331,7 @@ xray:
   persist:
     resources:
       requests:
-        cpu: "100m"
+        cpu: "60m"
         memory: 250Mi
       limits:
         # cpu: "4"
@@ -344,11 +340,11 @@ xray:
   server:
     resources:
       requests:
-        cpu: "300m"
+        cpu: "180m"
         memory: 500Mi
       limits:
         # cpu: "4"
-        memory: 6Gi
+        memory: 10Gi
   
   router:
     resources:
@@ -356,22 +352,22 @@ xray:
         cpu: "60m"
         memory: 100Mi
       limits:
-        # cpu: "1"
+        # cpu: "3"
         memory: 1Gi
   
   observability:
     resources:
       requests:
-        cpu: "10m"
+        cpu: "5m"
         memory: 25Mi
       limits:
-        # cpu: "1"
+        # cpu: "850m"
         memory: 250Mi
   
   sbom:
     resources:
       requests:
-        cpu: "100m"
+        cpu: "60m"
         memory: 250Mi
       limits:
         # cpu: "4"
@@ -385,6 +381,60 @@ xray:
       limits:
         memory: "8Gi"
         # cpu: "4"
+  
+  aiscanner:
+    resources:
+      requests:
+        cpu: "30m"
+        memory: 100Mi
+      limits:
+        # cpu: "2"
+        memory: 4Gi
+  
+  curation:
+    resources:
+      requests:
+        cpu: "180m"
+        memory: 500Mi
+      limits:
+        # cpu: "4"
+        memory: 6Gi
+  
+  jascontextual:
+    resources:
+      requests:
+        cpu: "1.5"
+        memory: 4Gi
+      limits:
+        # cpu: "3.0"
+        memory: 16Gi
+  
+  jasexposures:
+    resources:
+      requests:
+        cpu: "1.5"
+        memory: 4Gi
+      limits:
+        # cpu: "3.0"
+        memory: 16Gi
+  
+  reporting:
+    resources:
+      requests:
+        cpu: "180m"
+        memory: 500Mi
+      limits:
+        # cpu: "4"
+        memory: 10Gi
+  
+  initContainers:
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "12m"
+      limits:
+        memory: "1Gi"
+        cpu: "250m"
   
   # PostgreSQL
   ## Configuration values for the postgresql dependency
@@ -422,8 +472,24 @@ xray:
         cpu: "6"
         memory: 16Gi
       limits:
-        cpu: "12"
+        # cpu: "12"
         memory: 32Gi
+    initContainers:
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "12m"
+        limits:
+          memory: "1Gi"
+          cpu: "250m"
+    router:
+      resources:
+        requests:
+          cpu: "60m"
+          memory: 100Mi
+        limits:
+          # cpu: "3"
+          memory: 1Gi
   
   valkey:
     primary:
@@ -432,24 +498,44 @@ xray:
           cpu: "4"
           memory: 12Gi
         limits:
-          cpu: "8"
+          # cpu: "8"
           memory: 24Gi
+      ## Bound the cache below limits.memory so Valkey evicts instead of being
+      ## OOMKilled. The headroom covers fork() copy-on-write during AOF rewrite,
+      ## replication buffers and allocator fragmentation.
+      ## Applied when sentinel.enabled=false; keep in sync with limits.memory.
+      configuration: |-
+        maxmemory 18gb
+        maxmemory-policy allkeys-lru
     replica:
       resources:
         requests:
           cpu: "4"
           memory: 12Gi
         limits:
-          cpu: "8"
+          # cpu: "8"
           memory: 24Gi
+      ## With sentinel.enabled=true (the default) every node runs from this
+      ## block, so this is the setting that actually takes effect.
+      configuration: |-
+        maxmemory 18gb
+        maxmemory-policy allkeys-lru
     sentinel:
       resources:
         requests:
           cpu: "250m"
           memory: 256Mi
         limits:
-          cpu: "1"
+          # cpu: "1"
           memory: 1Gi
+    kubectl:
+      resources:
+        requests:
+          memory: "50Mi"
+          cpu: "12m"
+        limits:
+          memory: "250Mi"
+          cpu: "250m"
 rabbitmq:
   extraConfiguration: |-
     vm_memory_high_watermark.absolute = 6G
@@ -458,11 +544,11 @@ rabbitmq:
     {{- end }}
   resources:
     requests:
-      cpu: "500m"
-      memory: 1Gi
+      cpu: "200m"
+      memory: 500Mi
     limits:
-      # cpu: "8"
-      memory: 7Gi
+      # cpu: "4"
+      memory: 5Gi
 
 distribution:
   ##############################################################
