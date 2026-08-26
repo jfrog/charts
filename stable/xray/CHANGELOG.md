@@ -1,7 +1,7 @@
 # JFrog Xray Chart Changelog
 All changes to this chart will be documented in this file.
 
-## [103.150.31] - Jun 26, 2026
+## [103.150.33] - Jun 26, 2026
 * Fix `wait-for-rabbitmq-replicas-quorum` init container exposing RabbitMQ credentials in pod logs due to bash trace mode (`-x`).
 * Added support for the rabbitmq `quorum_queue_non_voters` feature flag and increased `max_message_size` to 128 MB.
 * Update valkey.kubectl.image.repository and valkey.kubectl.image.tag to `echohq/kubectl:1.35.6`
@@ -33,7 +33,7 @@ All changes to this chart will be documented in this file.
   Also note that storage goes from one Valkey PVC to one per node (three by default), so confirm the StorageClass can provision that before upgrading.
 * **Breaking change: Valkey PVC size default increased from `1Gi` to `200Gi`**
 
-  What changed: `valkey.primary.persistence.size` and `valkey.replica.persistence.size` both moved from `1Gi` to `200Gi`. With Sentinel enabled — the default since `103.150.31` — all Valkey nodes run in one StatefulSet whose PVC size comes from `valkey.replica.persistence.size`; `valkey.primary.persistence.size` has no effect in that mode.
+  What changed: `valkey.primary.persistence.size` and `valkey.replica.persistence.size` both moved from `1Gi` to `200Gi`. With Sentinel enabled — the default since `103.150.33` — all Valkey nodes run in one StatefulSet whose PVC size comes from `valkey.replica.persistence.size`; `valkey.primary.persistence.size` has no effect in that mode.
 
   Who is affected: only environments that already have `valkey.enabled: true` deployed. Fresh installs with `valkey.enabled: true` create Valkey PVCs at 200Gi and need no extra steps; default chart installs leave Valkey disabled and create no Valkey PVCs.
 
