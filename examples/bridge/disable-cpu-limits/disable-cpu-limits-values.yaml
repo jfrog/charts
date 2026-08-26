@@ -1,0 +1,14 @@
+global:
+  jfrogUrl: "http://artifactory-local.my-arti.svc.cluster.local:8082"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+# disableCpuLimits: true - bridge container should have limits without cpu
+resources:
+  disableCpuLimits: true
+  limits:
+    cpu: "1"
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 512Mi

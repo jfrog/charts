@@ -1,0 +1,27 @@
+global:
+  jfrogUrl: "http://artifactory-local.my-arti.svc.cluster.local:8082"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+image:
+  tag: 1.262.47
+  digest: sha256:bf6f9c4717b477d6b29c8d84f60ce2cee51d05804ae2e77b8ab8d6490bad25f1
+router:
+  image:
+    tag: 7.729.46
+    digest: sha256:08e960dd2bb06be4941a2f1da18064ebe6fce54e5960c765d6208222bc03411c
+initContainers:
+  image:
+    tag: "20260825"
+    digest: sha256:53fdd65f79885478e083923b3f0d61cee288691984fdaa5ce44aaadd91b3414e
+observability:
+  image:
+    tag: 2.58.0
+    digest: sha256:5fa295cad7f0c6926553bf5cf0d2fcea341db1bf519c09332a4109ca0aa4265e
+
+filebeat:
+  enabled: true
+  image:
+    repository: jfrog-docker/beats/filebeat
+    tag: 7.17.29
+    digest: sha256:dadb25469a97e523d8e3fc784168f303eaac444b3c72c0c8cd06245316ca0a8b
