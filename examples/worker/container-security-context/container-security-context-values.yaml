@@ -1,0 +1,10 @@
+jfrogUrl: "http://artifactory-local.my-arti.svc.cluster.local:8082"
+joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - NET_RAW
