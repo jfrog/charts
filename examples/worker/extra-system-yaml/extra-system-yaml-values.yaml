@@ -1,0 +1,16 @@
+global:
+  jfrogUrl: "http://artifactory-local.my-arti.svc.cluster.local:8082"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+extraSystemYaml:
+  shared:
+    node:
+      id: my-node-id
+      ip: 10.0.0.1
+  router:
+    serviceRegistry:
+      insecure: true
+  worker:
+    logging:
+      application:
+        level: debug
