@@ -2,6 +2,9 @@
 
 All changes to this chart will be documented in this file
 
+## [101.262.52] - Aug 28, 2026
+* Fixed a nil-pointer failure rendering the chart when `global.digests` is unset by the parent chart (e.g. `jfrog-platform` with `catalog`, `worker` or `wingman` also enabled)
+
 ## [101.213.0] - Jun 30, 2026
 * Switch initContainer image to echo-mini:20260629
 
