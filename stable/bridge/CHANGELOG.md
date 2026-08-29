@@ -2,6 +2,9 @@
 
 All changes to this chart will be documented in this file
 
+## [101.262.52] - Aug 28, 2026
+* Added `checksum/` annotations for the system.yaml and secrets templates so configuration changes roll the pod
+
 ## [101.213.0] - Jun 30, 2026
 * Switch initContainer image to echo-mini:20260629
 
