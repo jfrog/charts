@@ -1,0 +1,13 @@
+consentToJfrogOnlineBetaAgreement: true
+jfrogUrl: "https://my-platform.example.com"
+
+# Disabling the bundled PostgreSQL is mandatory when pointing at an
+# external database — the chart fails at template time if both are set.
+postgresql:
+  enabled: false
+
+database:
+  type: postgresql
+  url: "postgresql://wingman-db.example.com:5432/wingman"
+  username: wingman
+  password: changeme

@@ -1,0 +1,17 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # for this example; use a real tlsSecretName in production (see
+  # ../tls-end-to-end).
+  nginx:
+    generateSelfSignedCert: true
+
+# The value must be the YAML boolean `true` (not the string "true") or the
+# chart's beta-agreement check fails at template time.
+wingman:
+  enabled: true
+  consentToJfrogOnlineBetaAgreement: true

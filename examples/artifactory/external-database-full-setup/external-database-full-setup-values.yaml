@@ -1,0 +1,30 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  tlsSecretName: artifactory-tls
+
+# Disables the bundled PostgreSQL sub-chart. Without this, the chart ignores
+# every database.* value below and keeps using the bundled instance.
+postgresql:
+  enabled: false
+
+database:
+  type: postgresql
+  driver: org.postgresql.Driver
+  url: "jdbc:postgresql://external-postgres.example.com:5432/my-artifactory-db"
+  # Prefer secrets over plain user/password in production — see the
+  # commented alternative below.
+  user: artifactory
+  password: R3placeMeWithAStrongPassword!
+  # secrets:
+  #   user:
+  #     name: "external-db-creds"
+  #     key: "user"
+  #   password:
+  #     name: "external-db-creds"
+  #     key: "password"
+  #   url:
+  #     name: "external-db-creds"
+  #     key: "url"

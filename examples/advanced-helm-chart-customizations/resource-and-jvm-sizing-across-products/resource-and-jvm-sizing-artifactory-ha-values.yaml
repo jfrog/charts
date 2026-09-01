@@ -1,0 +1,18 @@
+global:
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+nginx:
+  generateSelfSignedCert: true
+
+artifactory:
+  primary:
+    javaOpts:
+      xms: "1g"
+      xmx: "4g"
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "6Gi"

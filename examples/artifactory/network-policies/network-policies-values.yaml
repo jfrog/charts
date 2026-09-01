@@ -1,0 +1,28 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  tlsSecretName: artifactory-tls
+
+networkpolicy:
+  # Allow all ingress/egress to/from Artifactory pods.
+  - name: artifactory
+    podSelector:
+      matchLabels:
+        app: artifactory
+    egress:
+      - {}
+    ingress:
+      - {}
+  # Allow only Artifactory pods to reach the bundled PostgreSQL pod; nothing may
+  # initiate traffic out of PostgreSQL.
+  - name: postgres
+    podSelector:
+      matchLabels:
+        app: postgresql
+    ingress:
+      - from:
+          - podSelector:
+              matchLabels:
+                app: artifactory

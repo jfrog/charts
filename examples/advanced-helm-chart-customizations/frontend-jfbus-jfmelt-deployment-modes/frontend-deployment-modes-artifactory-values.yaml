@@ -1,0 +1,28 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  tlsSecretName: artifactory-tls
+
+# splitServicesToContainers: true is the default and, from Artifactory
+# 7.161.x, the only supported value — shown here for clarity, not required.
+splitServicesToContainers: true
+
+# Restore Frontend to running in-pod (the old, pre-7.161.x default) instead
+# of as its own standalone Deployment.
+frontend:
+  asPod: false
+
+router:
+  customVolumes: |
+    - name: custom-script
+      configMap:
+        name: router-script
+  customVolumeMounts: |
+    - name: custom-script
+      mountPath: /scripts/script.sh
+      subPath: script.sh
+  extraEnvironmentVariables:
+    - name: MY_ENV_VAR
+      value: "example"

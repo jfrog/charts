@@ -1,0 +1,18 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  tlsSecretName: artifactory-tls
+
+rtfs:
+  enabled: true
+  # Optional: give RTFS its own dedicated PostgreSQL instead of sharing
+  # Artifactory's database (requires Artifactory 7.146.7+). Leave `type`
+  # unset to use the shared database instead.
+  # database:
+  #   type: postgresql
+  #   driver: org.postgresql.Driver
+  #   url: "jdbc:postgresql://<POSTGRES_HOST>:5432/<RTFS_DATABASE_NAME>"
+  #   user: "<RTFS_DB_USER>"
+  #   password: "<RTFS_DB_PASSWORD>"

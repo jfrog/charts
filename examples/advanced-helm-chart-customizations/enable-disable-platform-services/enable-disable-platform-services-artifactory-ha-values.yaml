@@ -1,0 +1,16 @@
+global:
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+nginx:
+  generateSelfSignedCert: true
+
+# observability defaults to true; disable it to save resources if you don't
+# use the built-in metrics/tracing endpoints.
+observability:
+  enabled: false
+
+# platformfederation defaults to false; enable it for Enterprise+
+# cross-instance repository/access federation.
+platformfederation:
+  enabled: true

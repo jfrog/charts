@@ -1,0 +1,23 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # for this example; use a real tlsSecretName in production (see
+  # ../tls-end-to-end).
+  nginx:
+    generateSelfSignedCert: true
+  apptrust:
+    enabled: true
+  unifiedpolicy:
+    enabled: true
+  evaluation:
+    enabled: true
+  # Compliance has no dedicated chart value, so it's enabled through the
+  # merged system.yaml instead.
+  artifactory:
+    extraSystemYaml:
+      compliance:
+        enabled: true

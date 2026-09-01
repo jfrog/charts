@@ -1,0 +1,28 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  access:
+    accessConfig:
+      security:
+        tls: true
+  nginx:
+    http:
+      enabled: false
+    tlsSecretName: nginx-tls-secret
+
+xray:
+  enabled: true
+  router:
+    tlsEnabled: true
+    serviceRegistry:
+      insecure: true
+
+distribution:
+  enabled: true
+  router:
+    tlsEnabled: true
+    serviceRegistry:
+      insecure: true

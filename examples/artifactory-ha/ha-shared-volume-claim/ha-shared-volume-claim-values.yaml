@@ -1,0 +1,14 @@
+global:
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+nginx:
+  generateSelfSignedCert: true
+
+artifactory:
+  persistence:
+    type: file-system
+    fileSystem:
+      existingSharedClaim:
+        enabled: true
+        numberOfExistingClaims: 2

@@ -1,0 +1,44 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  enabled: false
+
+# Enables Artifactory to work as a Docker Registry using the Repository Path
+# method (example.com/artifactory/api/docker/<repo>), on the Kubernetes
+# community ingress-nginx controller (nginx.ingress.kubernetes.io/ prefix).
+ingress:
+  enabled: true
+  defaultBackend:
+    enabled: false
+  hosts:
+    - myhost.example.com
+  annotations:
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    ingress.kubernetes.io/proxy-body-size: "0"
+    ingress.kubernetes.io/proxy-read-timeout: "600"
+    ingress.kubernetes.io/proxy-send-timeout: "600"
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+      rewrite ^/(v2)/([^\/]*)/(.*) /artifactory/api/docker/$2/$1/$3;
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+  tls:
+    - secretName: artifactory-tls
+      hosts:
+        - myhost.example.com
+  # additionalRules is rendered with Helm's `tpl` function, so it must be a
+  # YAML block-scalar STRING (not a native list) — a list here fails the
+  # install with "wrong type for value; expected string; got []interface{}".
+  additionalRules: |
+    - host: myhost.example.com
+      http:
+        paths:
+          - path: /xray
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: xray-xray-server
+                port:
+                  number: 8000

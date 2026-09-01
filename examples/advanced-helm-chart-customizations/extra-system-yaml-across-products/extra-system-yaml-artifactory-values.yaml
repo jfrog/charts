@@ -1,0 +1,13 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  tlsSecretName: artifactory-tls
+
+artifactory:
+  extraSystemYaml:
+    shared:
+      logging:
+        consoleLog:
+          enabled: true

@@ -1,0 +1,20 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # for this example; use a real tlsSecretName in production (see
+  # ../tls-end-to-end).
+  nginx:
+    generateSelfSignedCert: true
+
+xray:
+  serviceAccount:
+    create: true
+  rbac:
+    create: true
+  jas:
+    healthcheck:
+      enabled: true

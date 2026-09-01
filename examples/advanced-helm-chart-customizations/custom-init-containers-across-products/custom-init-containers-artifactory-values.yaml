@@ -1,0 +1,24 @@
+global:
+  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+nginx:
+  tlsSecretName: artifactory-tls
+
+artifactory:
+  ## Runs before Artifactory's own predefined init containers
+  customInitContainersBegin: |
+    - name: "custom-setup"
+      image: alpine:3.19
+      command: ["sh", "-c", "touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup"]
+      volumeMounts:
+        - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+          name: artifactory-volume
+  ## Runs after Artifactory's own predefined init containers
+  customInitContainers: |
+    - name: "custom-systemyaml-fetch"
+      image: alpine:3.19
+      command: ["sh", "-c", "curl -o {{ .Values.artifactory.persistence.mountPath }}/etc/system.yaml https://internal-repo.example.com/systemyaml"]
+      volumeMounts:
+        - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+          name: artifactory-volume

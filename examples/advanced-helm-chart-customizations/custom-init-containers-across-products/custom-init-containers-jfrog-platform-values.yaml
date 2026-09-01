@@ -1,0 +1,20 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  # DO NOT set global.customInitContainersBegin here — the platform chart
+  # pre-populates it with '{{ template "initdb" . }}' to bootstrap PostgreSQL.
+  # Overriding it breaks database initialization. Use the product-scoped key
+  # below instead.
+
+artifactory:
+  nginx:
+    generateSelfSignedCert: true
+  artifactory:
+    customInitContainersBegin: |
+      - name: "custom-setup"
+        image: alpine:3.19
+        command: ["sh", "-c", "touch {{ .Values.artifactory.persistence.mountPath }}/example-custom-setup"]
+        volumeMounts:
+          - mountPath: "{{ .Values.artifactory.persistence.mountPath }}"
+            name: artifactory-volume

@@ -1,0 +1,18 @@
+global:
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+artifactory:
+  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # for this example; use a real tlsSecretName in production.
+  nginx:
+    generateSelfSignedCert: true
+
+  # These are single-nested under artifactory.* (like mc/apptrust), NOT
+  # double-nested under artifactory.artifactory.* (like license/persistence)
+  # — verified by rendering both forms and confirming which one actually
+  # removes/adds the service's container.
+  observability:
+    enabled: false
+  platformfederation:
+    enabled: true

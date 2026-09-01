@@ -1,0 +1,21 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+worker:
+  enabled: true
+
+# The default for this nested flag is the unresolved template string
+# '{{ .Values.worker.enabled }}', which Helm renders as a non-empty (truthy)
+# string regardless of worker.enabled above. Set it explicitly as a real
+# string to make the Artifactory-side toggle match what you intend.
+artifactory:
+  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # for this example; use a real tlsSecretName in production (see
+  # ../tls-end-to-end).
+  nginx:
+    generateSelfSignedCert: true
+  artifactory:
+    worker:
+      enabled: 'true'

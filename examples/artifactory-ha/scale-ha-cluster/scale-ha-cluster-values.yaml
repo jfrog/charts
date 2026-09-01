@@ -1,0 +1,14 @@
+global:
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+nginx:
+  generateSelfSignedCert: true
+
+postgresql:
+  auth:
+    password: <existing-db-password>
+
+artifactory:
+  primary:
+    replicaCount: 4

@@ -1,0 +1,29 @@
+global:
+  jfrogUrl: "https://artifactory.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  nginx:
+    enabled: false
+
+  ingress:
+    enabled: true
+    defaultBackend:
+      enabled: true
+    hosts:
+      - artifactory.example.com
+    routerPath: /
+    artifactoryPath: /artifactory/
+    className: "nginx"
+    annotations:
+      nginx.org/client-max-body-size: "0"
+      nginx.org/proxy-read-timeout: "600"
+      nginx.org/proxy-send-timeout: "600"
+      nginx.org/location-snippets: |
+        rewrite ^/(v2)/token /artifactory/api/docker/null/v2/token;
+        rewrite ^/(v2)/([^\/]*)(/.*) /artifactory/api/docker/$2/$1$3;
+    tls:
+      - secretName: artifactory-tls
+        hosts:
+          - artifactory.example.com

@@ -1,0 +1,24 @@
+global:
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+
+nginx:
+  generateSelfSignedCert: true
+
+splitServicesToContainers: true
+
+frontend:
+  asPod: false
+
+router:
+  customVolumes: |
+    - name: custom-script
+      configMap:
+        name: router-script
+  customVolumeMounts: |
+    - name: custom-script
+      mountPath: /scripts/script.sh
+      subPath: script.sh
+  extraEnvironmentVariables:
+    - name: MY_ENV_VAR
+      value: "example"
