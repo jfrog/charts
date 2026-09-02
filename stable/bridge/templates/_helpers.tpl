@@ -30,10 +30,10 @@ Return the proper bridge image name
 */}}
 {{- define "bridge.image" -}}
 {{- $imageRoot := .Values.image | deepCopy }}
-{{- if (.Values.global.digests).bridge }}
-{{- $_ := set $imageRoot "digest" (.Values.global.digests).bridge }}
+{{- if ((.Values.global).digests).bridge }}
+{{- $_ := set $imageRoot "digest" ((.Values.global).digests).bridge }}
 {{- end -}}
-{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" .Values.global.versions.bridge "appVer" .Chart.AppVersion)) -}}
+{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" ((.Values.global).versions).bridge "appVer" .Chart.AppVersion)) -}}
 {{- end -}}
 
 {{/*
@@ -41,10 +41,10 @@ Return the proper router image name
 */}}
 {{- define "router.image" -}}
 {{- $imageRoot := .Values.router.image | deepCopy }}
-{{- if (.Values.global.digests).router }}
-{{- $_ := set $imageRoot "digest" (.Values.global.digests).router }}
+{{- if ((.Values.global).digests).router }}
+{{- $_ := set $imageRoot "digest" ((.Values.global).digests).router }}
 {{- end -}}
-{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" .Values.global.versions.router)) -}}
+{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" ((.Values.global).versions).router)) -}}
 {{- end -}}
 
 {{/*
@@ -52,10 +52,10 @@ Return the proper initContainers image name
 */}}
 {{- define "initContainers.image" -}}
 {{- $imageRoot := .Values.initContainers.image | deepCopy }}
-{{- if (.Values.global.digests).initContainers }}
-{{- $_ := set $imageRoot "digest" (.Values.global.digests).initContainers }}
+{{- if ((.Values.global).digests).initContainers }}
+{{- $_ := set $imageRoot "digest" ((.Values.global).digests).initContainers }}
 {{- end -}}
-{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" .Values.global.versions.initContainers)) -}}
+{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" ((.Values.global).versions).initContainers)) -}}
 {{- end -}}
 
 {{/*
@@ -63,10 +63,10 @@ Return the proper observability image name
 */}}
 {{- define "observability.image" -}}
 {{- $imageRoot := .Values.observability.image | deepCopy }}
-{{- if (.Values.global.digests).observability }}
-{{- $_ := set $imageRoot "digest" (.Values.global.digests).observability }}
+{{- if ((.Values.global).digests).observability }}
+{{- $_ := set $imageRoot "digest" ((.Values.global).digests).observability }}
 {{- end -}}
-{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" .Values.global.versions.observability)) -}}
+{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" ((.Values.global).versions).observability)) -}}
 {{- end -}}
 
 {{/*
@@ -74,10 +74,10 @@ Return the proper filebeat image name
 */}}
 {{- define "filebeat.image" -}}
 {{- $imageRoot := .Values.filebeat.image | deepCopy }}
-{{- if (.Values.global.digests).filebeat }}
-{{- $_ := set $imageRoot "digest" (.Values.global.digests).filebeat }}
+{{- if ((.Values.global).digests).filebeat }}
+{{- $_ := set $imageRoot "digest" ((.Values.global).digests).filebeat }}
 {{- end -}}
-{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" .Values.global.versions.filebeat)) -}}
+{{- trim (include "common.images.global.image" (dict "imageRoot" $imageRoot "global" .Values.global "globalVersion" ((.Values.global).versions).filebeat)) -}}
 {{- end -}}
 
 {{/*
