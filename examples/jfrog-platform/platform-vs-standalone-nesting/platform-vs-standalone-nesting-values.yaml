@@ -1,0 +1,11 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+# Platform-chart form of settings that are un-nested in the standalone
+# artifactory chart (artifactory.javaOpts, nginx.tlsSecretName) — see the
+# translation table in README.md.
+artifactory:
+  artifactory:
+    javaOpts:
+      xms: "1g"
+      xmx: "4g"

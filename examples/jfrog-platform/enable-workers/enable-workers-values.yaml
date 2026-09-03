@@ -1,0 +1,14 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+worker:
+  enabled: true
+
+# The default for this nested flag is the unresolved template string
+# '{{ .Values.worker.enabled }}', which Helm renders as a non-empty (truthy)
+# string regardless of worker.enabled above. Set it explicitly as a real
+# string to make the Artifactory-side toggle match what you intend.
+artifactory:
+  artifactory:
+    worker:
+      enabled: 'true'

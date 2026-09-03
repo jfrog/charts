@@ -1,0 +1,9 @@
+artifactory:
+  # These are single-nested under artifactory.* (like mc/apptrust), NOT
+  # double-nested under artifactory.artifactory.* (like license/persistence)
+  # — verified by rendering both forms and confirming which one actually
+  # removes/adds the service's container.
+  observability:
+    enabled: false
+  platformfederation:
+    enabled: true

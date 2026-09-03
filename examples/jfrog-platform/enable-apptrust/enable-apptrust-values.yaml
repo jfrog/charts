@@ -1,0 +1,16 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+artifactory:
+  apptrust:
+    enabled: true
+  unifiedpolicy:
+    enabled: true
+  evaluation:
+    enabled: true
+  # Compliance has no dedicated chart value, so it's enabled through the
+  # merged system.yaml instead.
+  artifactory:
+    extraSystemYaml:
+      compliance:
+        enabled: true

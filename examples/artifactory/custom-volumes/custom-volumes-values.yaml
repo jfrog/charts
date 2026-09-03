@@ -1,0 +1,9 @@
+artifactory:
+  customVolumes: |
+    - name: custom-truststore
+      configMap:
+        name: custom-truststore
+  customVolumeMounts: |
+    - name: custom-truststore
+      mountPath: /opt/jfrog/artifactory/var/etc/security/keys/trusted/custom-ca.pem
+      subPath: custom-ca.pem

@@ -1,0 +1,10 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+# Pass as --set flags on `helm upgrade` rather than committing `true` here;
+# see the README for when each flag is required.
+gaUpgradeReady: false
+databaseUpgradeReady: false
+
+# insight.enabled / pipelines.enabled: do NOT add these keys.
+# They were removed in chart 11.x and abort the install/upgrade if present.

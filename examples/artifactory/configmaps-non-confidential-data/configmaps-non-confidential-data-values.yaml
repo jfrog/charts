@@ -1,0 +1,26 @@
+artifactory:
+  # Any number of non-confidential files can be listed here; each becomes a
+  # key in a chart-managed ConfigMap named "<release-name>-artifactory-configmaps".
+  configMaps: |
+    logback.xml: |
+      <configuration debug="false">
+          <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+              <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                  <layout class="org.artifactory.logging.layout.BackTracePatternLayout">
+                      <pattern>%date [%-5level] \(%-20c{3}:%L\) %message%n</pattern>
+                  </layout>
+              </encoder>
+          </appender>
+          <logger name="/artifactory">
+              <level value="INFO"/>
+              <appender-ref ref="CONSOLE"/>
+          </logger>
+      </configuration>
+
+  customVolumeMounts: |
+    - name: artifactory-configmaps
+      mountPath: /tmp/my-config-map
+
+  copyOnEveryStartup:
+    - source: /tmp/my-config-map/logback.xml
+      target: etc/artifactory

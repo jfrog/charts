@@ -1,0 +1,12 @@
+artifactory:
+  artifactory:
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      runAsUser: 1030
+      runAsGroup: 1030
+      fsGroup: 1030
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false

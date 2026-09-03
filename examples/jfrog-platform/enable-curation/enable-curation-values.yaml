@@ -1,0 +1,24 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  # Required workaround: enabling catalog and bridge together, without this
+  # explicit (empty) digests map, breaks Helm's cross-subchart global value
+  # merge and crashes bridge's image-name helper at template time. See
+  # "How it works" in the README for details.
+  digests: {}
+
+xray:
+  enabled: true
+  valkey:
+    enabled: true
+  splitXraytoSeparateDeployments:
+    fullSplit: true
+  curation:
+    separateRoute: true
+
+catalog:
+  enabled: true
+  cache:
+    enabled: true
+
+bridge:
+  enabled: true
