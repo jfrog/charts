@@ -1,9 +1,6 @@
-global:
-  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-
 nginx:
-  tlsSecretName: artifactory-tls
+  https:
+    enabled: false
 
 artifactory:
   # Any number of non-confidential files can be listed here; each becomes a

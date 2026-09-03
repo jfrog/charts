@@ -11,7 +11,10 @@ See the [enable-disable-platform-services-values.yaml](enable-disable-platform-s
 
 ## Deploy
 ```console
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-disable-platform-services-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-disable-platform-services-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

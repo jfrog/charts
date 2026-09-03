@@ -13,5 +13,8 @@ See the [enable-mcp-server-wingman-values.yaml](enable-mcp-server-wingman-values
 ## Deploy
 
 ```console
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-mcp-server-wingman-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-mcp-server-wingman-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```

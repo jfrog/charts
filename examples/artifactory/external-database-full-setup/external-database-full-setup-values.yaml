@@ -1,9 +1,6 @@
-global:
-  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-
 nginx:
-  tlsSecretName: artifactory-tls
+  https:
+    enabled: false
 
 # Disables the bundled PostgreSQL sub-chart. Without this, the chart ignores
 # every database.* value below and keeps using the bundled instance.

@@ -19,5 +19,8 @@ Enabling `catalog` and `bridge` together on `jfrog-platform` (chart 11.6.3) brea
 ## Deploy
 
 ```console
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-curation-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-curation-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```

@@ -23,5 +23,8 @@ kubectl create secret generic artifactory-cluster-license \
 ```
 2. Install with the license values file:
 ```shell
-helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f multi-node-license-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f multi-node-license-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```

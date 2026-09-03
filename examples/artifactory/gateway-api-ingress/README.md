@@ -19,7 +19,10 @@ kubectl get gatewayclass
 
 > `helm template`/`helm install` against a cluster (or API server) without the Gateway API CRDs installed fails fast with `gatewayApi.enabled is true but Gateway API CRDs ... are not installed`. That's the chart working as designed, not a bug — install the CRDs first. To dry-run this example without a live cluster, add `--api-versions gateway.networking.k8s.io/v1` to `helm template`.
 ```shell
-helm upgrade --install artifactory jfrog/artifactory --namespace artifactory --create-namespace -f gateway-api-ingress-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory jfrog/artifactory --namespace artifactory --create-namespace -f gateway-api-ingress-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

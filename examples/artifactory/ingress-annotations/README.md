@@ -12,7 +12,10 @@ See the [ingress-annotations-values.yaml](ingress-annotations-values.yaml) for t
 
 ## Deploy
 ```shell
-helm upgrade --install artifactory --namespace artifactory jfrog/artifactory -f ingress-annotations-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory --namespace artifactory jfrog/artifactory -f ingress-annotations-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

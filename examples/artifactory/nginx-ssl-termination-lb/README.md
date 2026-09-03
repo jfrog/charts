@@ -11,13 +11,19 @@ See the [nginx-ssl-termination-lb-values.yaml](nginx-ssl-termination-lb-values.y
 
 ## Deploy
 ```shell
-helm upgrade --install artifactory --namespace artifactory jfrog/artifactory -f nginx-ssl-termination-lb-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory --namespace artifactory jfrog/artifactory -f nginx-ssl-termination-lb-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Notes
 The same two keys (`nginx.https.enabled`, `nginx.service.ssloffload`) and annotation shape apply unchanged on `artifactory-ha`:
 ```shell
-helm upgrade --install artifactory-ha --namespace artifactory-ha jfrog/artifactory-ha -f nginx-ssl-termination-lb-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory-ha --namespace artifactory-ha jfrog/artifactory-ha -f nginx-ssl-termination-lb-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

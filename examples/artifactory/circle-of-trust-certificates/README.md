@@ -11,7 +11,10 @@ See the [circle-of-trust-certificates-values.yaml](circle-of-trust-certificates-
 ## Deploy
 ```shell
 kubectl create secret generic edge-root-crt --from-file=./edge-root.crt
-helm upgrade --install artifactory jfrog/artifactory -f circle-of-trust-certificates-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory jfrog/artifactory -f circle-of-trust-certificates-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

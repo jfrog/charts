@@ -21,5 +21,8 @@ kubectl create secret tls nginx-tls-secret --cert=tls.crt --key=tls.key --namesp
 ```
 2. Install:
 ```shell
-helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f ha-tls-setup-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f ha-tls-setup-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```

@@ -12,7 +12,10 @@ See the [circle-of-trust-certificates-values.yaml](circle-of-trust-certificates-
 ## Deploy
 ```shell
 kubectl create secret generic edge-root-crt -n jfrog-platform --from-file=./edge-root.crt
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f circle-of-trust-certificates-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f circle-of-trust-certificates-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

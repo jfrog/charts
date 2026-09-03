@@ -1,10 +1,9 @@
 global:
   jfrogUrl: "https://my-platform.example.com"
-  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
 artifactory:
   nginx:
-    generateSelfSignedCert: true
+    https:
+      enabled: false
   artifactory:
     circleOfTrustCertificatesSecret: edge-root-crt

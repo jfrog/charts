@@ -1,14 +1,13 @@
 global:
   jfrogUrl: "https://my-platform.example.com"
-  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
 artifactory:
-  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
   # for this example; use a real tlsSecretName in production (see
   # ../tls-end-to-end).
   nginx:
-    generateSelfSignedCert: true
+    https:
+      enabled: false
   artifactory:
     replicaCount: 3
     persistence:

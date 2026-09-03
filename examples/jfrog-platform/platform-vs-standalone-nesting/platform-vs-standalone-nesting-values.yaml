@@ -1,7 +1,5 @@
 global:
   jfrogUrl: "https://my-platform.example.com"
-  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
 # Platform-chart form of settings that are un-nested in the standalone
 # artifactory chart (artifactory.javaOpts, nginx.tlsSecretName) — see the
@@ -12,4 +10,5 @@ artifactory:
       xms: "1g"
       xmx: "4g"
   nginx:
-    tlsSecretName: nginx-tls-secret
+    https:
+      enabled: false

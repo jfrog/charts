@@ -1,7 +1,5 @@
 global:
   jfrogUrl: "https://my-platform.example.com"
-  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 
 # Pass as --set flags on `helm upgrade` rather than committing `true` here;
 # see the README for when each flag is required.
@@ -9,10 +7,11 @@ gaUpgradeReady: false
 databaseUpgradeReady: false
 
 artifactory:
-  # generateSelfSignedCert only satisfies the chart's fresh-install TLS gate
+  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
   # for this example; use a real tlsSecretName in production.
   nginx:
-    generateSelfSignedCert: true
+    https:
+      enabled: false
 
 # insight.enabled / pipelines.enabled: do NOT add these keys.
 # They were removed in chart 11.x and abort the install/upgrade if present.

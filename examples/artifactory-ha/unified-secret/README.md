@@ -9,7 +9,10 @@ See the [unified-secret-values.yaml](unified-secret-values.yaml) for the configu
 
 ## Deploy
 ```shell
-helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f unified-secret-values.yaml
+export MASTER_KEY=$(openssl rand -hex 32)
+export JOIN_KEY=$(openssl rand -hex 32)
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f unified-secret-values.yaml \
+  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
 ## Related

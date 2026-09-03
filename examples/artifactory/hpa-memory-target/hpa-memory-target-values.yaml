@@ -1,9 +1,6 @@
-global:
-  masterKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  joinKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-
 nginx:
-  tlsSecretName: artifactory-tls
+  https:
+    enabled: false
 
 # From Artifactory 7.111, HPA on the single-node artifactory chart requires
 # minReplicas >= 2 (High Availability mode). The artifactory-ha chart has no
