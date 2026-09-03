@@ -6,12 +6,5 @@ global:
 gaUpgradeReady: false
 databaseUpgradeReady: false
 
-artifactory:
-  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
-  # for this example; use a real tlsSecretName in production.
-  nginx:
-    https:
-      enabled: false
-
 # insight.enabled / pipelines.enabled: do NOT add these keys.
 # They were removed in chart 11.x and abort the install/upgrade if present.

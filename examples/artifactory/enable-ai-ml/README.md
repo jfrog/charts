@@ -19,7 +19,7 @@ helm upgrade --install artifactory jfrog/artifactory -f enable-ai-ml-values.yaml
   --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
-> The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic. The values file also sets `nginx.https.enabled: false` to skip the mandatory TLS-secret gate for this example; use a real `nginx.tlsSecretName` in production.
+> The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic.
 
 ## Related
 See [enable-ai-ml](../../artifactory-ha/enable-ai-ml) and [enable-ai-ml](../../jfrog-platform/enable-ai-ml) for the equivalent configuration on the HA and platform charts (same `ml.enabled`/`jfconnect.enabled` shape).

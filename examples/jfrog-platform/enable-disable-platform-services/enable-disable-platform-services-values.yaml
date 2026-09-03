@@ -1,10 +1,4 @@
 artifactory:
-  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
-  # for this example; use a real tlsSecretName in production.
-  nginx:
-    https:
-      enabled: false
-
   # These are single-nested under artifactory.* (like mc/apptrust), NOT
   # double-nested under artifactory.artifactory.* (like license/persistence)
   # — verified by rendering both forms and confirming which one actually

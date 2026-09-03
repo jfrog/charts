@@ -18,4 +18,4 @@ helm upgrade --install artifactory jfrog/artifactory -f custom-volumes-values.ya
   --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
 ```
 
-> The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic. The values file also sets `nginx.https.enabled: false` to skip the mandatory TLS-secret gate for this example; use a real `nginx.tlsSecretName` in production.
+> The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic.

@@ -9,12 +9,6 @@ worker:
 # string regardless of worker.enabled above. Set it explicitly as a real
 # string to make the Artifactory-side toggle match what you intend.
 artifactory:
-  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
-  # for this example; use a real tlsSecretName in production (see
-  # ../tls-end-to-end).
-  nginx:
-    https:
-      enabled: false
   artifactory:
     worker:
       enabled: 'true'

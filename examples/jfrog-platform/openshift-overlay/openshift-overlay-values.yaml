@@ -4,12 +4,6 @@ global:
 # Your own overrides go here — combine with the chart's shipped
 # openshift-values.yaml on the command line (that file last), see README.
 artifactory:
-  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
-  # for this example; use a real tlsSecretName in production (see
-  # ../tls-end-to-end).
-  nginx:
-    https:
-      enabled: false
   artifactory:
     resources:
       requests:

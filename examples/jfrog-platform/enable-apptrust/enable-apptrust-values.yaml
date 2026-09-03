@@ -2,12 +2,6 @@ global:
   jfrogUrl: "https://my-platform.example.com"
 
 artifactory:
-  # nginx.https.enabled: false only satisfies the chart's fresh-install TLS gate (skips HTTPS entirely)
-  # for this example; use a real tlsSecretName in production (see
-  # ../tls-end-to-end).
-  nginx:
-    https:
-      enabled: false
   apptrust:
     enabled: true
   unifiedpolicy:
