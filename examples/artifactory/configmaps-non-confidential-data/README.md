@@ -13,10 +13,7 @@ See the [configmaps-non-confidential-data-values.yaml](configmaps-non-confidenti
 
 ## Deploy
 ```shell
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory jfrog/artifactory -f configmaps-non-confidential-data-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory jfrog/artifactory -f configmaps-non-confidential-data-values.yaml
 ```
 
 > The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic.

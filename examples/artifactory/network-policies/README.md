@@ -12,10 +12,7 @@ See the [network-policies-values.yaml](network-policies-values.yaml) for the con
 
 ## Deploy
 ```shell
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory jfrog/artifactory -f network-policies-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory jfrog/artifactory -f network-policies-values.yaml
 ```
 
 > The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic.

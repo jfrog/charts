@@ -18,10 +18,7 @@ helm install nginx-ingress nginx/nginx-ingress --namespace nginx-ingress --creat
 kubectl create secret tls artifactory-tls --cert=tls.crt --key=tls.key -n jfrog-platform
 ```
 ```shell
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f nginx-ingress-controller-platform-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f nginx-ingress-controller-platform-values.yaml
 ```
 
 ## Related

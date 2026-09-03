@@ -14,12 +14,9 @@ See the [openshift-overlay-values.yaml](openshift-overlay-values.yaml) for the c
 
 ```console
 helm pull jfrog/jfrog-platform --untar
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
 helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace ./jfrog-platform \
   -f openshift-overlay-values.yaml \
-  -f jfrog-platform/openshift-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+  -f jfrog-platform/openshift-values.yaml
 ```
 
 ## Notes

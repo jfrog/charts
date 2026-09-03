@@ -16,10 +16,7 @@ See the [ha-postgres-password-management-values.yaml](ha-postgres-password-manag
 ## Deploy
 
 ```shell
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f ha-postgres-password-management-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f ha-postgres-password-management-values.yaml
 ```
 
 ## Notes

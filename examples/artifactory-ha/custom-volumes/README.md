@@ -13,10 +13,7 @@ See the [custom-volumes-values.yaml](custom-volumes-values.yaml) for the configu
 ## Deploy
 ```shell
 kubectl create configmap custom-trust-store --namespace artifactory-ha --from-file=custom-ca.pem
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f custom-volumes-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f custom-volumes-values.yaml
 ```
 
 ## Related

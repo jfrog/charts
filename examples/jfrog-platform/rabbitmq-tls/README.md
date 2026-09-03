@@ -13,10 +13,7 @@ See the [rabbitmq-tls-values.yaml](rabbitmq-tls-values.yaml) for the configurati
 ## Deploy
 
 ```console
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f rabbitmq-tls-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f rabbitmq-tls-values.yaml
 ```
 
 ## Notes

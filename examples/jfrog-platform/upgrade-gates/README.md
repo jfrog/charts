@@ -16,10 +16,7 @@ See the [upgrade-gates-values.yaml](upgrade-gates-values.yaml) for the configura
 
 ```console
 # Fresh install: omit both gate flags entirely (they default to false)
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f upgrade-gates-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f upgrade-gates-values.yaml
 
 # Upgrading an existing >=10.0.0 release, database already on the current major version:
 helm upgrade jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform \

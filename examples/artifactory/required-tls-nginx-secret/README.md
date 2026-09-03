@@ -13,10 +13,7 @@ See the [required-tls-nginx-secret-values.yaml](required-tls-nginx-secret-values
 ## Deploy
 ```shell
 kubectl create secret tls artifactory-tls --cert=tls.crt --key=tls.key
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory jfrog/artifactory -f required-tls-nginx-secret-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory jfrog/artifactory -f required-tls-nginx-secret-values.yaml
 ```
 
 > The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic. The values file also includes placeholder `nginx.tlsSecretName` — replace it with your own real TLS secret before deploying to a real cluster.

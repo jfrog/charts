@@ -23,10 +23,7 @@ See the [custom-volumes-multi-product-values.yaml](custom-volumes-multi-product-
 ```console
 kubectl create configmap custom-trust-store -n jfrog-platform --from-file=truststore.jks
 kubectl create configmap catalog-custom-config -n jfrog-platform --from-file=extra.conf
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f custom-volumes-multi-product-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f custom-volumes-multi-product-values.yaml
 ```
 
 ## Notes

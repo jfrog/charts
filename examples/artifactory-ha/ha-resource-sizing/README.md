@@ -16,8 +16,5 @@ See the [ha-resource-sizing-values.yaml](ha-resource-sizing-values.yaml) for the
 ## Deploy
 
 ```shell
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f ha-resource-sizing-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory-ha jfrog/artifactory-ha --namespace artifactory-ha -f ha-resource-sizing-values.yaml
 ```

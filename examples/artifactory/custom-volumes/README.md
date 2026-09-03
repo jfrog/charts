@@ -12,10 +12,7 @@ See the [custom-volumes-values.yaml](custom-volumes-values.yaml) for the configu
 ## Deploy
 ```shell
 kubectl create configmap custom-truststore --from-file=custom-ca.pem
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory jfrog/artifactory -f custom-volumes-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory jfrog/artifactory -f custom-volumes-values.yaml
 ```
 
 > The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic.

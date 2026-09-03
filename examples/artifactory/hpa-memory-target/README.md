@@ -11,10 +11,7 @@ See the [hpa-memory-target-values.yaml](hpa-memory-target-values.yaml) for the c
 
 ## Deploy
 ```shell
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install artifactory jfrog/artifactory -f hpa-memory-target-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install artifactory jfrog/artifactory -f hpa-memory-target-values.yaml
 ```
 
 > The Deploy command above supplies `global.masterKey`/`global.joinKey` via `--set` — every fresh Artifactory install requires them regardless of this example's topic.

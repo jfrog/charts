@@ -13,10 +13,7 @@ See the [enable-apptrust-values.yaml](enable-apptrust-values.yaml) for the confi
 ## Deploy
 
 ```console
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-apptrust-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f enable-apptrust-values.yaml
 ```
 
 ## Related

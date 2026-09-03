@@ -16,10 +16,7 @@ See the [ha-via-platform-chart-values.yaml](ha-via-platform-chart-values.yaml) f
 ## Deploy
 
 ```console
-export MASTER_KEY=$(openssl rand -hex 32)
-export JOIN_KEY=$(openssl rand -hex 32)
-helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f ha-via-platform-chart-values.yaml \
-  --set global.masterKey=$MASTER_KEY --set global.joinKey=$JOIN_KEY
+helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namespace jfrog/jfrog-platform -f ha-via-platform-chart-values.yaml
 ```
 
 ## Notes
