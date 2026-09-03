@@ -1,0 +1,16 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+preUpgradeHook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 1
+      memory: 1Gi
+  tolerations:
+    - key: dedicated
+      operator: Equal
+      value: jfrog
+      effect: NoSchedule

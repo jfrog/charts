@@ -1,0 +1,13 @@
+hostAliases:
+  - ip: "10.1.2.3"
+    hostnames:
+      - "internal-registry.local"
+      - "ldap.internal"
+
+additionalResources: |
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: {{ include "artifactory.fullname" . }}-extra
+  data:
+    setting: value

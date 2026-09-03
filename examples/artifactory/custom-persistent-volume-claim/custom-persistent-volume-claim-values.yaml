@@ -1,0 +1,8 @@
+artifactory:
+  customPersistentVolumeClaim:
+    name: artifactory-plugins
+    mountPath: /var/opt/jfrog/artifactory-plugins
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    storageClassName: standard

@@ -28,3 +28,8 @@ helm upgrade jfrog-platform --namespace jfrog-platform jfrog/jfrog-platform \
 ## Notes
 
 - These flags are upgrade-time acknowledgments, not persistent configuration — most teams pass them via `--set` on the upgrade command itself rather than committing `true` into a values file, so a later fresh install of the same values file doesn't skip a gate it should have hit.
+
+## Related
+
+- [upgrade-blocking-chart-flags](../upgrade-blocking-chart-flags), [upgrade-blocking-chart-flags](../../artifactory/upgrade-blocking-chart-flags), [upgrade-blocking-chart-flags](../../artifactory-ha/upgrade-blocking-chart-flags) — `splitServicesToContainers` and `waitForDatabase`, the other two chart flags that abort an install/upgrade outright.
+- [platform-pre-upgrade-hook](../platform-pre-upgrade-hook) — the Job that actually runs before every upgrade and enforces a related guard (a disabled-but-still-running Distribution).

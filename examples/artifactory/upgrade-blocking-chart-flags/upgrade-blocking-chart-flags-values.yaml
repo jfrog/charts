@@ -1,0 +1,7 @@
+# splitServicesToContainers: true is already the default — omit the key
+# entirely rather than setting it explicitly. Setting it to false aborts
+# the install from chart releases in the 7.161.x line onward.
+
+# waitForDatabase defaults to true; only set it false when something else
+# (e.g. your own init container) already guarantees database ordering.
+waitForDatabase: true

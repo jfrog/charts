@@ -1,0 +1,8 @@
+artifactory:
+  customPersistentVolumeClaim:
+    name: artifactory-plugins
+    mountPath: /var/opt/jfrog/artifactory-plugins
+    accessModes:
+      - ReadWriteMany
+    size: 10Gi
+    storageClassName: nfs

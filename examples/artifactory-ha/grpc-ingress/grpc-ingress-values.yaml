@@ -1,0 +1,9 @@
+ingressGrpc:
+  enabled: true
+  name: grpc
+  hosts:
+    - grpc.artifactory.example.com
+  className: "nginx"
+  grpcPath: /com.jfrog
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: GRPCS
