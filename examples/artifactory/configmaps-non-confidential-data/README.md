@@ -9,7 +9,7 @@ See the [configmaps-non-confidential-data-values.yaml](configmaps-non-confidenti
 - `artifactory.copyOnEveryStartup` then copies specific files out of that mount into their real target location (`etc/artifactory` here) every time the pod starts — the mounted ConfigMap itself is read-only, so files that Artifactory needs to be able to see at a normal writable path have to be copied out first.
 - The same mechanism works for any non-confidential file — an init shell script, `mimetypes.xml`, etc. — not just `logback.xml`.
 - For a custom `nginx.conf` specifically, create the ConfigMap yourself with `kubectl create configmap nginx-config --from-file=nginx.conf` and point the chart at it with `nginx.customConfigMap: nginx-config`, rather than using `artifactory.configMaps`.
-- For **confidential** data (credentials, keys), use a Kubernetes Secret instead — see [custom-secrets-across-products](../../advanced-helm-chart-customizations/custom-secrets-across-products) once available, or `artifactory.userPluginSecrets`/`database.secrets` for existing narrower examples.
+- For **confidential** data (credentials, keys), use a Kubernetes Secret instead — see [custom-secrets](../custom-secrets), or `artifactory.userPluginSecrets`/`database.secrets` for existing narrower examples.
 
 ## Deploy
 ```shell

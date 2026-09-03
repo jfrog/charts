@@ -1,0 +1,31 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  nginx:
+    generateSelfSignedCert: true
+  artifactory:
+    extraSystemYaml:
+      shared:
+        logging:
+          consoleLog:
+            enabled: true
+
+xray:
+  xray:
+    extraSystemYaml:
+      shared:
+        logging:
+          consoleLog:
+            enabled: true
+
+distribution:
+  enabled: true
+  distribution:
+    extraSystemYaml:
+      shared:
+        logging:
+          consoleLog:
+            enabled: true

@@ -24,7 +24,7 @@ helm upgrade --install artifactory jfrog/artifactory --namespace artifactory --c
 
 ## Related
 ### JFrog Platform
-Nest the same keys one level under `artifactory:` — see [platform-vs-standalone-nesting](../../advanced-helm-chart-customizations/platform-vs-standalone-nesting):
+Nest the same keys one level under `artifactory:` — see [platform-vs-standalone-nesting](../../jfrog-platform/platform-vs-standalone-nesting):
 ```yaml
 artifactory:
   nginx:

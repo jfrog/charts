@@ -15,4 +15,4 @@ helm upgrade --install jfrog-platform --namespace jfrog-platform --create-namesp
 
 ## Related
 - [enable-federation](../../artifactory/enable-federation) and [enable-federation](../../artifactory-ha/enable-federation) — the equivalent configuration on the standalone `artifactory`/`artifactory-ha` charts.
-- [advanced-helm-chart-customizations/enable-disable-platform-services](../../advanced-helm-chart-customizations/enable-disable-platform-services) — shows the bare `rtfs.enabled` flag generically alongside `platformfederation` and the platform's other in-pod-style service toggles.
+- [enable-disable-platform-services](../enable-disable-platform-services) — shows the bare `rtfs.enabled` flag generically alongside `platformfederation` and the platform's other in-pod-style service toggles.

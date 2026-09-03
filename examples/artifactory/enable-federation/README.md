@@ -20,4 +20,4 @@ helm upgrade --install artifactory jfrog/artifactory -f enable-federation-values
 
 ## Related
 - [enable-federation](../../artifactory-ha/enable-federation) and [enable-federation](../../jfrog-platform/enable-federation) — the equivalent configuration on the HA and platform charts.
-- [advanced-helm-chart-customizations/enable-disable-platform-services](../../advanced-helm-chart-customizations/enable-disable-platform-services) — shows the bare `rtfs.enabled` flag generically alongside the platform's other in-pod-style service toggles; this example is the fuller, dedicated federation setup.
+- [enable-disable-platform-services](../enable-disable-platform-services) — shows the bare `rtfs.enabled` flag generically alongside the platform's other in-pod-style service toggles; this example is the fuller, dedicated federation setup.

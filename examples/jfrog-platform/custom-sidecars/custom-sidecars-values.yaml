@@ -1,0 +1,25 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+  joinKey: EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  masterKey: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+artifactory:
+  nginx:
+    generateSelfSignedCert: true
+  artifactory:
+    customVolumes: |
+      - name: custom-script
+        configMap:
+          name: sidecar-script
+    customVolumeMounts: |
+      - name: custom-script
+        mountPath: /scripts/script.sh
+        subPath: script.sh
+    customSidecarContainers: |
+      - name: "sidecar-list-etc"
+        image: alpine:3.19
+        command: ["sh", "/scripts/script.sh"]
+        volumeMounts:
+          - name: custom-script
+            mountPath: /scripts/script.sh
+            subPath: script.sh
