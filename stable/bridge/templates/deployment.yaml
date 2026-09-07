@@ -22,8 +22,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/bridge-systemyaml: {{ include (print $.Template.BasePath "/system-yaml.yaml") . | sha256sum }}
-        checksum/bridge-secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         {{- if .Values.commonAnnotations }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 8 }}
         {{- end }}
