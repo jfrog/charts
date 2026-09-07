@@ -1,0 +1,36 @@
+probes:
+  timeoutSeconds: 10
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+
+artifactory:
+  ## Raised failureThreshold to tolerate slow/heavily-loaded storage on
+  ## startup, instead of loosening the liveness probe. Flat under
+  ## artifactory: — not primary-node-scoped, unlike updateStrategy/
+  ## minAvailable below.
+  startupProbe:
+    config: |
+      httpGet:
+        path: /artifactory/api/v1/system/readiness
+        port: {{ .Values.artifactory.tomcat.maintenanceConnector.port }}
+      initialDelaySeconds: 10
+      failureThreshold: 180
+      periodSeconds: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  primary:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+    updateStrategy:
+      type: RollingUpdate
+    ## Only meaningful once replicaCount > 1 — keep it below replicaCount
+    ## or node drains will hang.
+    # minAvailable: 1

@@ -1,0 +1,28 @@
+artifactory:
+  nginx:
+    ## Nginx uses a plain name field, not the priorityClass block form below.
+    priorityClassName: high-priority
+
+  artifactory:
+    nodeSelector:
+      jfrog-workload: artifactory
+    tolerations:
+      - key: "jfrog-dedicated"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+    ## Only applied when affinity is empty — supplying your own affinity
+    ## replaces this generated rule entirely.
+    podAntiAffinity:
+      type: "hard"
+      topologyKey: "kubernetes.io/hostname"
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: artifactory
+    priorityClass:
+      create: true
+      value: 1000000000

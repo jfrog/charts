@@ -1,0 +1,21 @@
+# Disable the bundled Nginx pod — leaving it on alongside a Gateway gives you
+# two entry points and two external load balancers, with nothing routing to
+# the second one.
+nginx:
+  enabled: false
+
+gatewayApi:
+  enabled: true
+  gatewayClassName: "nginx"
+  hosts:
+    - artifactory.example.com
+  routerPath: /
+  artifactoryPath: /artifactory/
+  pathType: PathPrefix
+  disableRouterBypass: false
+  httpRoute:
+    enabled: true
+  tls:
+    - secretName: artifactory-tls
+      hosts:
+        - artifactory.example.com

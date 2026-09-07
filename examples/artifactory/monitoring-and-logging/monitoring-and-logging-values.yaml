@@ -1,0 +1,16 @@
+artifactory:
+  javaOpts:
+    jmx:
+      enabled: true
+      port: 9010
+
+filebeat:
+  enabled: true
+  logstashUrl: "logstash.monitoring.svc.cluster.local:5044"
+  resources:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"

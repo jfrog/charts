@@ -1,0 +1,9 @@
+access:
+  customCertificatesSecretName: access-ca
+  database:
+    maxOpenConnections: 80
+  tomcat:
+    connector:
+      maxThreads: 50
+      sendReasonPhrase: false
+      extraConfig: 'acceptCount="100"'

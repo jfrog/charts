@@ -1,0 +1,48 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+artifactory:
+  artifactory:
+    customVolumes: |
+      - name: custom-trust-store
+        configMap:
+          name: custom-trust-store
+    customVolumeMounts: |
+      - name: custom-trust-store
+        mountPath: "/opt/jfrog/artifactory/var/etc/security/keys/trusted/truststore.jks"
+        subPath: truststore.jks
+
+xray:
+  enabled: true
+  common:
+    customVolumes: |
+      - name: custom-trust-store
+        configMap:
+          name: custom-trust-store
+    customVolumeMounts: |
+      - name: custom-trust-store
+        mountPath: "/opt/jfrog/xray/var/etc/security/keys/trusted/truststore.jks"
+        subPath: truststore.jks
+
+worker:
+  enabled: true
+  common:
+    customVolumes: |
+      - name: custom-trust-store
+        configMap:
+          name: custom-trust-store
+    customVolumeMounts: |
+      - name: custom-trust-store
+        mountPath: "/opt/jfrog/worker/var/etc/security/keys/trusted/truststore.jks"
+        subPath: truststore.jks
+
+catalog:
+  enabled: true
+  extraVolumes:
+    - name: catalog-custom-config
+      configMap:
+        name: catalog-custom-config
+  extraVolumeMounts:
+    - name: catalog-custom-config
+      mountPath: "/opt/jfrog/catalog/var/etc/extra.conf"
+      subPath: extra.conf

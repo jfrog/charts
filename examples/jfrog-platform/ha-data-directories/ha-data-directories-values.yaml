@@ -1,0 +1,16 @@
+global:
+  jfrogUrl: "https://my-platform.example.com"
+
+artifactory:
+  artifactory:
+    replicaCount: 3
+    persistence:
+      type: cluster-file-system
+    haDataDir:
+      enabled: true
+      path: /var/opt/jfrog/artifactory-ha/data
+    haBackupDir:
+      enabled: true
+      path: /var/opt/jfrog/artifactory-ha/backup
+    coldStorage:
+      enabled: true

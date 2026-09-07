@@ -1,0 +1,30 @@
+artifactory:
+  ## Flat under artifactory: — not primary-node-scoped, unlike
+  ## nodeSelector/tolerations/podAntiAffinity below.
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app: artifactory-ha
+  priorityClass:
+    create: true
+    value: 1000000000
+  primary:
+    nodeSelector:
+      jfrog-workload: artifactory
+    tolerations:
+      - key: "jfrog-dedicated"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+    ## Only applied when affinity is empty — supplying your own affinity
+    ## replaces this generated rule entirely.
+    podAntiAffinity:
+      type: "hard"
+      topologyKey: "kubernetes.io/hostname"
+
+nginx:
+  ## Nginx uses a plain name field, not the priorityClass block form above.
+  priorityClassName: high-priority

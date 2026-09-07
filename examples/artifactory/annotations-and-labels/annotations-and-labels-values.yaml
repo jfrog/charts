@@ -1,0 +1,14 @@
+artifactory:
+  annotations:
+    sidecar.istio.io/inject: "true"
+    cost-center: "platform-engineering"
+  labels:
+    team: platform
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/artifactory-role"
