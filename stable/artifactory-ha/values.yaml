@@ -76,7 +76,7 @@ initContainers:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/echo-mini
-    tag: "20260902"
+    tag: "20260907"
     # digest:
     pullPolicy: IfNotPresent
   resources:
@@ -1225,7 +1225,7 @@ frontend:
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/frontend
-    tag: 1.652.44
+    tag: 1.652.49
     pullPolicy: IfNotPresent
     # digest:
   apiContext: frontend
@@ -2842,7 +2842,7 @@ unifiedpolicy:
     registry: releases-docker.jfrog.io
     repository: jfrog/unifiedpolicy
     pullPolicy: IfNotPresent
-    tag: 1.70.14
+    tag: 1.70.15
     # digest:
   jfrogUrl: ""
   ## Aligned with artifactory.primary.replicaCount. Update it separately to scale unifiedpolicy independently.
