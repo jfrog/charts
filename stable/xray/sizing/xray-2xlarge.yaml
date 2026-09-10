@@ -182,10 +182,10 @@ rabbitmq:
   resources:
     requests:
       cpu: "200m"
-      memory: 500Mi
+      memory: 2Gi
     limits:
       # cpu: "4"
-      memory: 5Gi
+      memory: 10Gi
   affinity:
     podAntiAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
