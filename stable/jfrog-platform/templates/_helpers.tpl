@@ -476,6 +476,24 @@ scope — which Helm already populates from `artifactory.nginx.*` on the umbrell
 {{- end -}}
 
 {{/*
+Fail install and upgrade when the former public joinKey placeholder is set.
+*/}}
+{{- define "jfrog-platform.insecureJoinKeyFailMessage" -}}
+{{- print "\n" -}}
+{{- print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" -}}
+{{- print " 🛑  ERROR: INSECURE joinKey IS NOT ALLOWED (JFrog Platform)\n" -}}
+{{- print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" -}}
+{{- print "global.joinKey (or artifactory.joinKey) is the former public placeholder\n" -}}
+{{- print "(EEEE…). Install and upgrade cannot use that value.\n\n" -}}
+{{- print "Generate a unique join key and set it in Helm values:\n" -}}
+{{- print "  export JOIN_KEY=$(openssl rand -hex 32)\n" -}}
+{{- print "  --set global.joinKey=$JOIN_KEY\n\n" -}}
+{{- print "Or set global.joinKeySecretName to a Secret whose data key is join-key.\n\n" -}}
+{{- print "See https://docs.jfrog.com/installation/docs/manage-keys\n" -}}
+{{- print "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" -}}
+{{- end -}}
+
+{{/*
 Override wingman subchart's `wingman.imagePullSecrets` helper so it accepts
 list-of-strings AND list-of-objects. The upstream wingman chart does a raw
 `toYaml` on `.Values.global.imagePullSecrets`, which for the string form

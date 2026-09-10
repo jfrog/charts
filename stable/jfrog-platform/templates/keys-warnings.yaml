@@ -27,3 +27,10 @@
     {{- fail "\n\nInsight (insight.enabled) and Pipelines (pipelines.enabled) are not supported from chart version 11.x. \n\nUse version 10.x of the JFrog-Platform chart to continue using these products, or set insight.enabled=false and pipelines.enabled=false. \n" }}
 {{- end }}
 {{- end }}
+
+{{- $legacyJoin := "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE" }}
+{{- $join := (.Values.global.joinKey | default ((.Values.artifactory).joinKey | default "") | default "") }}
+{{- $joinSecret := (.Values.global.joinKeySecretName | default ((.Values.artifactory).joinKeySecretName | default "") | default "") }}
+{{- if and (not $joinSecret) $join (eq $join $legacyJoin) }}
+{{-   fail (include "jfrog-platform.insecureJoinKeyFailMessage" .) }}
+{{- end }}

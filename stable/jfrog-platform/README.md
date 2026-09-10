@@ -17,6 +17,7 @@ The JFrog Platform Helm Chart provides a unified deployment solution for the JFr
 >
 >   * **GA Release:** This is the General Availability release. Backward compatibility with versions `< 10.0.0` is **not supported**.
 >   * **Pipelines & Insights:** As of version `11.x`, JFrog Pipelines and Insights are decoupled from this chart. If you require these products, please utilize the `10.x` chart versions.
+>   * **Join / Master keys (11.6.4+):** This chart from **11.6.4** version does not ship default `global.joinKey` / `global.masterKey` values. Passing both (or `global.joinKeySecretName` / `global.masterKeySecretName`) is **mandatory** on install and upgrade.
 
 ## 📋 Prerequisites
 
@@ -48,9 +49,18 @@ helm repo update
 
 Deploy the JFrog Platform with the release name `jfrog-platform`. From chart 11.6.0 onwards the fresh install fails HTTPS validation unless you tell nginx how to serve TLS — pick one of the paths below. See [Nginx TLS Certificate](#-nginx-tls-certificate) for the full breakdown.
 
+This chart from **11.6.4** version does not ship default `global.joinKey` / `global.masterKey` values. Passing both is **mandatory** on install and upgrade. Generate them with separate `openssl rand -hex 32` commands, then pass `--set`, or use `global.joinKeySecretName` / `global.masterKeySecretName`. Install and upgrade **fail** if `joinKey` is the former public placeholder (`EEEE…`). See [Manage Keys](https://docs.jfrog.com/installation/docs/manage-keys).
+
+```bash
+export JOIN_KEY=$(openssl rand -hex 32)
+export MASTER_KEY=$(openssl rand -hex 32)
+```
+
 **Option A — Production (recommended):** create your own `kubernetes.io/tls` Secret first, then install:
 
 ```bash
+export JOIN_KEY=$(openssl rand -hex 32)
+export MASTER_KEY=$(openssl rand -hex 32)
 kubectl create namespace jfrog-platform
 kubectl create secret tls artifactory-nginx-tls \
   --cert=./tls.crt --key=./tls.key \
@@ -58,16 +68,22 @@ kubectl create secret tls artifactory-nginx-tls \
 
 helm upgrade --install jfrog-platform jfrog/jfrog-platform \
   --namespace jfrog-platform \
-  --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls
+  --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls \
+  --set global.joinKey=$JOIN_KEY \
+  --set global.masterKey=$MASTER_KEY
 ```
 
 **Option B — Dev / test only** (chart-generated self-signed cert; not from a trusted CA):
 
 ```bash
+export JOIN_KEY=$(openssl rand -hex 32)
+export MASTER_KEY=$(openssl rand -hex 32)
 helm upgrade --install jfrog-platform jfrog/jfrog-platform \
   --namespace jfrog-platform \
   --create-namespace \
-  --set artifactory.nginx.generateSelfSignedCert=true
+  --set artifactory.nginx.generateSelfSignedCert=true \
+  --set global.joinKey=$JOIN_KEY \
+  --set global.masterKey=$MASTER_KEY
 ```
 
 Alternatively, disable HTTPS entirely with `--set artifactory.nginx.https.enabled=false` if TLS terminates elsewhere.
@@ -92,11 +108,15 @@ To generate your own `tls.crt` / `tls.key` for the recommended option, see the J
 **Supplying your own certificate:**
 
 ```bash
+export JOIN_KEY=$(openssl rand -hex 32)
+export MASTER_KEY=$(openssl rand -hex 32)
 kubectl create secret tls artifactory-nginx-tls \
     --cert=./tls.crt --key=./tls.key -n jfrog-platform
 helm upgrade --install jfrog-platform jfrog/jfrog-platform \
     --namespace jfrog-platform --create-namespace \
-    --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls
+    --set artifactory.nginx.tlsSecretName=artifactory-nginx-tls \
+    --set global.joinKey=$JOIN_KEY \
+    --set global.masterKey=$MASTER_KEY
 ```
 
 **Upgrade from earlier chart versions** — if the prior release auto-generated the Secret `<release>-artifactory-nginx-certificate`, this chart discovers it via `helm lookup`, reuses its `tls.crt`/`tls.key` byte-for-byte, and annotates it with `helm.sh/resource-policy: keep`. HTTPS continues to work with no operator action, and the certificate data is not modified.
@@ -120,7 +140,7 @@ If a custom certificate is supplied on the first upgrade to chart 11.6.0, the le
 
 ### Post-install warnings
 
-After `helm install` / `helm upgrade` the chart's NOTES output surfaces one of three warning banners when nginx TLS needs operator attention. Each one names the exact `helm upgrade` command to resolve it:
+After `helm install` / `helm upgrade` the chart's NOTES output surfaces warning banners when nginx TLS needs operator attention. Each one names the exact `helm upgrade` command to resolve it:
 
 | Banner | When it appears | What to do |
 |---|---|---|
