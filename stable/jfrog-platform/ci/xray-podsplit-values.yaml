@@ -1,4 +1,9 @@
 # If this is an upgrade over an existing platform chart, explicitly pass 'gaUpgradeReady=true' to upgrade
+global:
+  # Required on install and upgrade. CI only — not for production.
+  joinKey: 85dcd0f0cf5b93e9887ca15228cb9ae0b089f227d54a3aea65d06eb4e7f71610
+  masterKey: 152d10e0abe89ef70a796807412a2af2fbc2004a891465439ec1b26f5788489b
+
 gaUpgradeReady: true
 
 artifactory:
