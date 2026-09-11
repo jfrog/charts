@@ -1,0 +1,23 @@
+# An example of installing Xray with Catalog Valkey caching
+
+### Install
+# helm repo add jfrog https://charts.jfrog.io
+# helm repo update
+# helm upgrade --install xray jfrog/xray -f ./values-xray.yaml
+
+### Uninstall
+# helm uninstall xray
+# kubectl get pvc ...
+# kubectl delete pvc ...
+
+catalog:
+  enabled: true
+  cache:
+    enabled: true
+
+valkey:
+  enabled: true
+
+# RabbitMQ is required for Xray (enabled by default in the xray chart)
+rabbitmq:
+  enabled: true
