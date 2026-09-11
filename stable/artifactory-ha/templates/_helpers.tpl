@@ -513,7 +513,7 @@ Custom certificate copy command for jfbus
 {{- define "jfbus.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+for file in $(ls -1 /tmp/certs/* 2>/dev/null | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cert_count=$(grep -c "BEGIN CERTIFICATE" "${file}" 2>/dev/null || echo 0); if [ "${cert_count}" -gt 1 ]; then echo "Splitting certificate bundle ${file}"; awk -v outdir="{{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted" -v base="$(basename \"${file}\")" '/-----BEGIN CERTIFICATE-----/ { n++; fname=sprintf("%s/%s-%03d.pem", outdir, base, n) } { if (n>0) print > fname }' "${file}"; else cp -v ${file} {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted; fi; fi done;
 if [ -f {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.jfbus.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
@@ -523,7 +523,7 @@ Custom certificate copy command for rtfs
 {{- define "rtfs.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+for file in $(ls -1 /tmp/certs/* 2>/dev/null | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cert_count=$(grep -c "BEGIN CERTIFICATE" "${file}" 2>/dev/null || echo 0); if [ "${cert_count}" -gt 1 ]; then echo "Splitting certificate bundle ${file}"; awk -v outdir="{{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted" -v base="$(basename \"${file}\")" '/-----BEGIN CERTIFICATE-----/ { n++; fname=sprintf("%s/%s-%03d.pem", outdir, base, n) } { if (n>0) print > fname }' "${file}"; else cp -v ${file} {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted; fi; fi done;
 if [ -f {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.rtfs.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
@@ -533,7 +533,7 @@ Custom certificate copy command for artifactory
 {{- define "artifactory-ha.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+for file in $(ls -1 /tmp/certs/* 2>/dev/null | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cert_count=$(grep -c "BEGIN CERTIFICATE" "${file}" 2>/dev/null || echo 0); if [ "${cert_count}" -gt 1 ]; then echo "Splitting certificate bundle ${file}"; awk -v outdir="{{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted" -v base="$(basename \"${file}\")" '/-----BEGIN CERTIFICATE-----/ { n++; fname=sprintf("%s/%s-%03d.pem", outdir, base, n) } { if (n>0) print > fname }' "${file}"; else cp -v ${file} {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted; fi; fi done;
 if [ -f {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.artifactory.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
@@ -1362,7 +1362,7 @@ Custom certificate copy command for jfmelt
 {{- define "jfmelt.copyCustomCerts" -}}
 echo "Copy custom certificates to {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+for file in $(ls -1 /tmp/certs/* 2>/dev/null | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cert_count=$(grep -c "BEGIN CERTIFICATE" "${file}" 2>/dev/null || echo 0); if [ "${cert_count}" -gt 1 ]; then echo "Splitting certificate bundle ${file}"; awk -v outdir="{{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted" -v base="$(basename \"${file}\")" '/-----BEGIN CERTIFICATE-----/ { n++; fname=sprintf("%s/%s-%03d.pem", outdir, base, n) } { if (n>0) print > fname }' "${file}"; else cp -v ${file} {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted; fi; fi done;
 if [ -f {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.jfmelt.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 
