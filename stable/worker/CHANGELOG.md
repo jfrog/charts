@@ -1,7 +1,7 @@
 # JFrog Worker Chart Changelog
 All changes to this chart will be documented in this file
 
-## [101.216.0] - Jul 8, 2026
+## [101.215.0] - Jul 8, 2026
 * Updated paths to reflect changes in the docker image
 
 ## [101.203.0] - Apr 21, 2026
