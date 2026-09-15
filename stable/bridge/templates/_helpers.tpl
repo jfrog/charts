@@ -186,7 +186,7 @@ Custom certificate copy command
 {{- if or .Values.customCertificates.enabled .Values.global.customCertificates.enabled -}}
 echo "Copy custom certificates to /var/opt/jfrog/bridge/etc/security/keys/trusted";
 mkdir -p /var/opt/jfrog/bridge/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} /var/opt/jfrog/bridge/etc/security/keys/trusted; fi done;
+for file in $(ls -1 /tmp/certs/* 2>/dev/null | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cert_count=$(grep -c "BEGIN CERTIFICATE" "${file}" 2>/dev/null || echo 0); if [ "${cert_count}" -gt 1 ]; then echo "Splitting certificate bundle ${file}"; awk -v outdir="/var/opt/jfrog/bridge/etc/security/keys/trusted" -v base="$(basename \"${file}\")" '/-----BEGIN CERTIFICATE-----/ { n++; fname=sprintf("%s/%s-%03d.pem", outdir, base, n) } { if (n>0) print > fname }' "${file}"; else cp -v ${file} /var/opt/jfrog/bridge/etc/security/keys/trusted; fi; fi done;
 if [ -f /var/opt/jfrog/bridge/etc/security/keys/trusted/tls.crt ]; then mv -v /var/opt/jfrog/bridge/etc/security/keys/trusted/tls.crt /var/opt/jfrog/bridge/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 {{- if .Values.tunnelClientCertificateSecretName -}}
