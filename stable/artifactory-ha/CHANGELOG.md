@@ -5,6 +5,7 @@ All changes to this chart will be documented in this file
 * Added `artifactory.persistence.nfs.accessMode` to configure the access mode for NFS data and backup PersistentVolumes and PersistentVolumeClaims. The default remains `ReadWriteOnce`; set it to `ReadWriteMany` when multiple Artifactory pods need to mount the shared NFS storage across Kubernetes nodes.
 
 ## [107.161.24] - Aug 04, 2026
+## [107.161.26] - Aug 04, 2026
 * **BREAKING CHANGE — mandatory keys:** Both `masterKey` and `joinKey` are now mandatory at install time (centralizes key management across the JFrog Platform).
   * **On fresh install** — both keys must be provided before running `helm install`.
   * **On upgrade** — reuse the existing keys from the running cluster; do **not** generate new ones.
