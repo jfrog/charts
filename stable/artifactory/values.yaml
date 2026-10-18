@@ -1367,7 +1367,7 @@ metadata:
   #   exec:
   #     command: ["/bin/bash","-c","echo Hello from the preStop handler"]
 
-  ## The following settings are to configure the frequency of the liveness and startup probes when splitServicesToContainers set to true
+  ## The following settings are to configure the frequency of the liveness, readiness and startup probes when splitServicesToContainers set to true
   livenessProbe:
     enabled: true
     config: |
@@ -1389,6 +1389,17 @@ metadata:
       failureThreshold: 90
       periodSeconds: 5
       timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+  readinessProbe:
+    enabled: true
+    config: |
+      httpGet:
+        path: /api/v1/system/readiness
+        port: {{ .Values.metadata.internalPort }}
+      initialDelaySeconds: 0
+      failureThreshold: 5
+      timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+      periodSeconds: 10
+      successThreshold: 1
 evidence:
   name: evidence
   enabled: true
