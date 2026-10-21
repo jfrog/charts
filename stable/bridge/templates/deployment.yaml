@@ -28,6 +28,13 @@ spec:
         {{- if .Values.podAnnotations }}
         {{ include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
         {{- end }}
+        {{- if not (or .Values.systemYamlOverride.existingSecret .Values.global.systemYamlOverride.existingSecret) }}
+        checksum/systemyaml: {{ include (print $.Template.BasePath "/system-yaml.yaml") . | sha256sum }}
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.common.configMaps }}
+        checksum/configmaps: {{ include (print $.Template.BasePath "/bridge-configmaps.yaml") . | sha256sum }}
+        {{- end }}
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         {{- if .Values.podLabels }}
         {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}

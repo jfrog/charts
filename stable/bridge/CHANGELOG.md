@@ -2,6 +2,12 @@
 
 All changes to this chart will be documented in this file
 
+## [101.262.57] - Sep 2, 2026
+* Added `checksum/systemyaml`, `checksum/secrets`, and `checksum/configmaps` annotations to the Deployment pod template so pods roll out on `helm upgrade` when values feeding `system.yaml`, the main Secret, or user-supplied ConfigMaps change [GH-2520](https://github.com/jfrog/charts/pull/2520)
+
+## [101.262.56] - Sep 2, 2026
+* Fixed chart rendering failure (`nil pointer evaluating interface {}.<key>`) when `global.digests` or `global.versions` is explicitly set to `null` [GH-2519](https://github.com/jfrog/charts/pull/2519)
+
 ## [101.213.0] - Jun 30, 2026
 * Switch initContainer image to echo-mini:20260629
 

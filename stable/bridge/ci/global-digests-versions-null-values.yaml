@@ -1,0 +1,9 @@
+# Regression test: chart must render when global.digests and
+# global.versions are explicitly null (not just the values.yaml default of {}).
+jfrogUrl: "http://artifactory-local:8082"
+mode: server
+global:
+  digests: null
+  versions: null
+filebeat:
+  enabled: true
