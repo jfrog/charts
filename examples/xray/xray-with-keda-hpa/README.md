@@ -42,9 +42,9 @@ The values below are JFrog's published prod sizing `minReplicas`/`maxReplicas` p
 
 > Autoscaling is disabled by default on `xsmall` (except `server`); the ranges above are what applies if you turn it on.
 
-## Prod sizing reference (persistence / PVC size)
+## Prod sizing reference (persistence / ephemeral storage size)
 
-The values below are JFrog's published prod sizing PVC size (`<service>.persistence.size`) per tier, per microservice. Each replica gets its own PVC of this size, so total provisioned storage scales with `maxReplicas`.
+The values below are JFrog's published prod sizing storage size (`<service>.persistence.size`) per tier, per microservice. With `fullSplit`, each service runs as a Deployment whose data volume is an `emptyDir` and this value is its `sizeLimit`; no PVC is created. The data is ephemeral (lost on pod restart) and is backed by the node's disk, so each replica consumes up to this much node storage and total usage scales with `maxReplicas`. Disk IOPS and throughput come from the node, not from a storage class. In the monolith (StatefulSet) mode the same size would instead be a PVC via `common.persistence.size`.
 
 | Service | xsmall | small | medium | large | xlarge |
 |---|---|---|---|---|---|
@@ -54,7 +54,6 @@ The values below are JFrog's published prod sizing PVC size (`<service>.persiste
 | persist | 50Gi | 50Gi | 50Gi | 50Gi | 50Gi |
 | policyenforcer | 50Gi | 50Gi | 50Gi | 50Gi | 50Gi |
 | sbom | 200Gi | 200Gi | 200Gi | 200Gi | 200Gi |
-| panoramic | 50Gi | 50Gi | 50Gi | 50Gi | 50Gi |
 
 Example override (applies on top of your sizing file):
 
@@ -77,9 +76,6 @@ policyenforcer:
 sbom:
   persistence:
     size: 200Gi
-panoramic:
-  persistence:
-    size: 50Gi
 ```
 
 ## Deploy
