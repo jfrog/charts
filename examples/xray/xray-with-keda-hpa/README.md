@@ -42,6 +42,46 @@ The values below are JFrog's published prod sizing `minReplicas`/`maxReplicas` p
 
 > Autoscaling is disabled by default on `xsmall` (except `server`); the ranges above are what applies if you turn it on.
 
+## Prod sizing reference (persistence / PVC size)
+
+The values below are JFrog's published prod sizing PVC size (`<service>.persistence.size`) per tier, per microservice. Each replica gets its own PVC of this size, so total provisioned storage scales with `maxReplicas`.
+
+| Service | xsmall | small | medium | large | xlarge |
+|---|---|---|---|---|---|
+| server | 100Gi | 100Gi | 100Gi | 100Gi | 100Gi |
+| indexer | 200Gi | 200Gi | 200Gi | 200Gi | 200Gi |
+| analysis | 200Gi | 200Gi | 200Gi | 200Gi | 200Gi |
+| persist | 50Gi | 50Gi | 50Gi | 50Gi | 50Gi |
+| policyenforcer | 50Gi | 50Gi | 50Gi | 50Gi | 50Gi |
+| sbom | 200Gi | 200Gi | 200Gi | 200Gi | 200Gi |
+| panoramic | 50Gi | 50Gi | 50Gi | 50Gi | 50Gi |
+
+Example override (applies on top of your sizing file):
+
+```yaml
+server:
+  persistence:
+    size: 100Gi
+indexer:
+  persistence:
+    size: 200Gi
+analysis:
+  persistence:
+    size: 200Gi
+persist:
+  persistence:
+    size: 50Gi
+policyenforcer:
+  persistence:
+    size: 50Gi
+sbom:
+  persistence:
+    size: 200Gi
+panoramic:
+  persistence:
+    size: 50Gi
+```
+
 ## Deploy
 
 Always apply a sizing file to provide the correct resources to the containers:
