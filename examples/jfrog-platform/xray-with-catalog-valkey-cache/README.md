@@ -35,6 +35,77 @@ global:
     password: "your-custom-password"
 ```
 
+### Enabling Valkey in Sentinel (High Availability) Mode
+
+The single-node (standalone) configuration above runs a single Valkey pod, which is a single point of failure. For production or high-availability deployments, you can run Valkey in **replication** mode with **Sentinel** enabled. In this mode, Valkey runs one primary and multiple replicas, and Sentinel monitors them and automatically promotes a replica to primary if the current primary fails.
+
+The way Sentinel is enabled depends on your chart version.
+
+#### From 3.150.x onwards (Sentinel enabled by default)
+
+Starting with version `3.150.x`, Sentinel-based high availability is the built-in default for Valkey. You do **not** need to provide any replication or Sentinel configuration — simply enabling Valkey is enough:
+
+```yaml
+catalog:
+  enabled: true
+  cache:
+    enabled: true
+
+xray:
+  valkey:
+    enabled: true
+
+# RabbitMQ is required for Xray
+rabbitmq:
+  enabled: true
+```
+
+#### From 3.143.9 up to 3.150.x (manual configuration)
+
+On versions from `3.143.9` up to (but not including) `3.150.x`, Sentinel is supported but must be configured explicitly. Provide the full configuration under `xray.valkey` in your `values.yaml`:
+
+```yaml
+catalog:
+  enabled: true
+  cache:
+    enabled: true
+
+xray:
+  valkey:
+    enabled: true
+    architecture: replication
+    rbac:
+      create: true
+    replica:
+      replicaCount: 3
+      automountServiceAccountToken: true
+      persistence:
+        enabled: true
+        size: 1Gi
+    sentinel:
+      enabled: true
+      image:
+        registry: releases-docker.jfrog.io
+        repository: bitnami/valkey-sentinel
+        tag: 8.1-echo
+      downAfterMilliseconds: 2000
+      failoverTimeout: 18000
+      automateClusterRecovery: true
+      service:
+        createPrimary: true
+    kubectl:
+      image:
+        registry: releases-docker.jfrog.io
+        repository: echohq/kubectl
+        tag: 1.35.6
+```
+
+> [!CAUTION]
+> **When upgrading to `3.150.x`, remove the `xray.valkey.sentinel.image.tag` and `xray.valkey.kubectl.image.tag` overrides from your values.**
+> If you previously configured Sentinel manually, your values file pins these image tags. Leaving them pinned prevents you from receiving the image versions shipped with subsequent chart upgrades. Delete both `tag` entries so the chart manages the images and you automatically get future updates.
+
+You can still override the password using the `global.valkey.password` setting described above.
+
 ## Deployment
 
 1. Create a `custom-values.yaml` file with the configurations above (or use the provided `values-xray.yaml`).
