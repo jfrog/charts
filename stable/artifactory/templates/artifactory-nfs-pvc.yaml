@@ -19,7 +19,7 @@ spec:
   capacity:
     storage: {{ .Values.artifactory.persistence.nfs.capacity }}
   accessModes:
-  - ReadWriteOnce
+  - {{ .Values.artifactory.persistence.nfs.accessMode }}
   persistentVolumeReclaimPolicy: Retain
   nfs:
     server: {{ .Values.artifactory.persistence.nfs.ip }}
@@ -38,7 +38,7 @@ metadata:
     type: nfs-volume
 spec:
   accessModes:
-  - ReadWriteOnce
+  - {{ .Values.artifactory.persistence.nfs.accessMode }}
   storageClassName: ""
   resources:
     requests:
@@ -69,7 +69,7 @@ spec:
   capacity:
     storage: {{ .Values.artifactory.persistence.nfs.capacity }}
   accessModes:
-  - ReadWriteOnce
+  - {{ .Values.artifactory.persistence.nfs.accessMode }}
   persistentVolumeReclaimPolicy: Retain
   nfs:
     server: {{ .Values.artifactory.persistence.nfs.ip }}
@@ -88,7 +88,7 @@ metadata:
     type: nfs-volume
 spec:
   accessModes:
-  - ReadWriteOnce
+  - {{ .Values.artifactory.persistence.nfs.accessMode }}
   storageClassName: ""
   resources:
     requests:
