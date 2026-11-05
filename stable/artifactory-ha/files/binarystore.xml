@@ -348,8 +348,8 @@
         {{- with .multipartElementSize }}
         <multipartElementSize>{{ . | int64 }}</multipartElementSize>
         {{- end }}
-        {{- with .awsSdkV2 }}
-        <awsSdkV2>{{ . }}</awsSdkV2>
+        {{- if hasKey . "awsSdkV2" }}
+        <awsSdkV2>{{ .awsSdkV2 }}</awsSdkV2>
         {{- end }}
         {{- with .connectionAcquisitionTimeout }}
         <connectionAcquisitionTimeout>{{ . | int64 }}</connectionAcquisitionTimeout>
