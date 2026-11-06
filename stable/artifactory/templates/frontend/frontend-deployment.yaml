@@ -33,6 +33,9 @@ spec:
       {{- else }}
         checksum/artifactory-unified-secret: {{ include (print $.Template.BasePath "/artifactory-unified-secret.yaml") . | sha256sum }}
       {{- end }}
+      {{- with .Values.frontend.pod.annotations }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
       labels:
         app: {{ template "artifactory.name" . }}
         chart: {{ template "artifactory.chart" . }}
