@@ -56,6 +56,9 @@ spec:
       {{- if .Values.jfbus.serviceAccountName }}
       serviceAccountName: {{ .Values.jfbus.serviceAccountName }}
       {{- end}}
+      {{- if .Values.jfbus.priorityClassName }}
+      priorityClassName: {{ .Values.jfbus.priorityClassName | quote }}
+      {{- end }}
       initContainers:
         {{- if .Values.jfbus.customInitContainers }}
 {{ tpl (include "artifactory.jfbus.customInitContainers" .)  . | indent 8 }}

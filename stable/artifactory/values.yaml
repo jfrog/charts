@@ -1206,6 +1206,7 @@ frontend:
         - ALL
   ## Node and Pod configuration (pod mode)
   serviceAccountName: ""
+  priorityClassName: ""
   nodeSelector: {}
   tolerations: []
   affinity: {}
@@ -2553,6 +2554,7 @@ apptrust:
 jfbus:
   name: jfbus
   enabled: true
+  priorityClassName: ""
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfbus-service
@@ -2685,6 +2687,7 @@ jfbus:
 jfmelt:
   name: jfmelt
   enabled: true
+  priorityClassName: ""
   image:
     registry: releases-docker.jfrog.io
     repository: jfrog/jfmelt
