@@ -49,6 +49,9 @@ spec:
       {{- if .Values.frontend.serviceAccountName }}
       serviceAccountName: {{ .Values.frontend.serviceAccountName }}
       {{- end}}
+      {{- if .Values.frontend.priorityClassName }}
+      priorityClassName: {{ .Values.frontend.priorityClassName | quote }}
+      {{- end }}
       {{- if .Values.frontend.schedulerName }}
       schedulerName: {{ .Values.frontend.schedulerName | quote }}
       {{- end }}

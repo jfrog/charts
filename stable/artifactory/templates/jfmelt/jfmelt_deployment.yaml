@@ -56,6 +56,9 @@ spec:
       {{- if .Values.jfmelt.serviceAccountName }}
       serviceAccountName: {{ .Values.jfmelt.serviceAccountName }}
       {{- end}}
+      {{- if .Values.jfmelt.priorityClassName }}
+      priorityClassName: {{ .Values.jfmelt.priorityClassName | quote }}
+      {{- end }}
       initContainers:
         {{- if .Values.jfmelt.customInitContainers }}
 {{ tpl (include "artifactory.jfmelt.customInitContainers" .)  . | indent 8 }}
