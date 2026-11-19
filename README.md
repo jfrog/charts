@@ -4,6 +4,13 @@ This repository hosts the official **[JFrog](https://jfrog.com/) Helm Charts** f
 
 For older version please refer to https://github.com/jfrog/charts/tree/pre-unified-platform
 
+> [!IMPORTANT]
+> ### Moving to Secure Releases
+>
+> JFrog has transitioned to a secure, authenticated release process for self-managed installations. Only older public versions remain available in this repository.
+>
+> To access the latest Helm charts and releases, log in to [MyJFrog](https://my.jfrog.com/). If you need assistance, please contact [JFrog Support](https://support.jfrog.com/).
+
 > [!TIP]
 > ### Container Image Migration Notice
 >
