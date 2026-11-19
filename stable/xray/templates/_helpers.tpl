@@ -643,7 +643,7 @@ Custom certificate copy command
 {{- if or .Values.xray.customCertificates.enabled .Values.global.customCertificates.enabled -}}
 echo "Copy custom certificates to {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted";
 mkdir -p {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted;
-for file in $(ls -1 /tmp/certs/* | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cp -v ${file} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted; fi done;
+for file in $(ls -1 /tmp/certs/* 2>/dev/null | grep -v .key | grep -v ":" | grep -v grep); do if [ -f "${file}" ]; then cert_count=$(grep -c "BEGIN CERTIFICATE" "${file}" 2>/dev/null || echo 0); if [ "${cert_count}" -gt 1 ]; then echo "Splitting certificate bundle ${file}"; awk -v outdir="{{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted" -v base="$(basename \"${file}\")" '/-----BEGIN CERTIFICATE-----/ { n++; fname=sprintf("%s/%s-%03d.pem", outdir, base, n) } { if (n>0) print > fname }' "${file}"; else cp -v ${file} {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted; fi; fi done;
 if [ -f {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/tls.crt ]; then mv -v {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/tls.crt {{ .Values.xray.persistence.mountPath }}/etc/security/keys/trusted/ca.crt; fi;
 {{- end -}}
 {{- end -}}
