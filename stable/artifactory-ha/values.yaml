@@ -986,6 +986,7 @@ artifactory:
       dataDir: "/var/opt/jfrog/artifactory-ha"
       backupDir: "/var/opt/jfrog/artifactory-backup"
       capacity: 200Gi
+      accessMode: ReadWriteOnce
       mountOptions: []
     ## For artifactory.persistence.type google-storage, google-storage-v2, google-storage-v2-direct
     googleStorage:
